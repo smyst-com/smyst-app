@@ -125,9 +125,9 @@ zone_name = "twynt.com"
 [env.storage.vars]
 CANONICAL_HOST = "https://twynt.com"
 ORIGIN_URL = "https://twynt-app.pages.dev"
-IDRIVE_E2_ENDPOINT = "https://b2x4.fra.idrivee2-31.com"
+IDRIVE_E2_ENDPOINT = "https://s3.eu-central-1.idrivee2.com"
 IDRIVE_E2_BUCKET = "twynt-memories"
-IDRIVE_E2_REGION = "fra"
+IDRIVE_E2_REGION = "eu-central-1"
 
 [[env.storage.kv_namespaces]]
 binding = "TRANSLATIONS"
