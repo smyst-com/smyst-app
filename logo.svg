@@ -1,0 +1,5 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="twynt.com">
+  <rect width="120" height="120" rx="28" fill="#0B1C44"/>
+  <path d="M30 30H90V43H67V92H53V43H30V30Z" fill="#FFFFFF"/>
+  <path d="M37 68C45 76 52 80 60 80C68 80 75 76 83 68" fill="none" stroke="#59C7FF" stroke-width="7" stroke-linecap="round"/>
+</svg>

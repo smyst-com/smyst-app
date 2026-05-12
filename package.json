@@ -1,0 +1,50 @@
+{
+  "name": "twynt-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "app:assets": "node scripts/generate-app-assets.mjs",
+    "app:sync": "npm run build && npm run app:assets && cap sync",
+    "app:ios": "npm run app:sync && cap open ios",
+    "app:android": "npm run app:sync && cap open android",
+    "workers:dev": "wrangler dev workers/translate.ts",
+    "workers:deploy": "wrangler deploy",
+    "workers:warmup:deploy": "wrangler deploy --env warmup",
+    "workers:auth:deploy": "wrangler deploy --env auth",
+    "workers:storage:deploy": "wrangler deploy --env storage",
+    "workers:deploy:all": "npm run workers:deploy && npm run workers:warmup:deploy && npm run workers:auth:deploy && npm run workers:storage:deploy",
+    "workers:warmup:trigger": "curl -s -X GET https://twynt-warmup.workers.dev/warmup -H \"Authorization: Bearer $ADMIN_TOKEN\"",
+    "kv:list": "wrangler kv:namespace list",
+    "lint:tsc": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250101.0",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5",
+    "wrangler": "^3.99.0"
+  }
+}
