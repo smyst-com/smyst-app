@@ -471,19 +471,51 @@ function SmystStartPage({
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [menuOpen])
 
-  const resizeInput = (value: string) => {
-    setInput(value)
+  const fitInputHeight = () => {
     const textarea = textareaRef.current
     if (!textarea) return
+
     textarea.style.height = '0px'
-    const maxHeight = Math.min(Math.max(window.innerHeight * 0.38, 132), 280)
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+    const headerHeight = document.querySelector('main.fixed > header')?.getBoundingClientRect().height ?? 0
+    const iconBarHeight = textarea.parentElement?.nextElementSibling?.getBoundingClientRect().height ?? 56
+    const textWrapStyle = window.getComputedStyle(textarea.parentElement ?? textarea)
+    const textWrapPadding =
+      Number.parseFloat(textWrapStyle.paddingTop || '0') + Number.parseFloat(textWrapStyle.paddingBottom || '0')
+    const topGap = selectedTwin ? 10 : Math.max(viewportHeight * 0.12, 96)
+    const availableHeight = viewportHeight - headerHeight - iconBarHeight - textWrapPadding - topGap
+    const selectedMaxHeight = Math.max(120, availableHeight)
+    const startMaxHeight = Math.min(Math.max(viewportHeight * 0.38, 132), 280)
+    const maxHeight = selectedTwin ? selectedMaxHeight : startMaxHeight
     textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 46), maxHeight)}px`
   }
+
+  const resizeInput = (value: string) => {
+    setInput(value)
+    window.requestAnimationFrame(fitInputHeight)
+  }
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(fitInputHeight)
+    const onResize = () => window.requestAnimationFrame(fitInputHeight)
+
+    window.addEventListener('resize', onResize)
+    window.visualViewport?.addEventListener('resize', onResize)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', onResize)
+      window.visualViewport?.removeEventListener('resize', onResize)
+    }
+  }, [input, selectedTwin])
 
   const selectTwin = (twin: StartTwin) => {
     setSelectedTwin(twin)
     setQuery('')
-    textareaRef.current?.focus()
+    window.requestAnimationFrame(() => {
+      fitInputHeight()
+      textareaRef.current?.focus()
+    })
   }
 
   const streamText = async (messageId: string, content: string) => {
@@ -826,7 +858,7 @@ function SmystStartPage({
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
-            className="block min-h-[46px] max-h-[38dvh] w-full resize-none overflow-y-auto bg-transparent text-2xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:text-3xl"
+            className="block min-h-[46px] w-full resize-none overflow-y-auto bg-transparent text-2xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:text-3xl"
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
