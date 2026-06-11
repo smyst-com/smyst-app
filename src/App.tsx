@@ -704,9 +704,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                   key={twin.id}
                   type="button"
                   onClick={() => selectTwin(twin)}
-                  className={`flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px] ${
-                    selectedTwin?.id === twin.id ? 'bg-white/[0.045]' : ''
-                  }`}
+                  className="flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px]"
                 >
                   <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.72] sm:w-[92px]">
                     <User className="h-10 w-10 sm:h-12 sm:w-12" />
