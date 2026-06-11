@@ -50,6 +50,16 @@ check_body_contains() {
 need_curl
 
 check_body_contains "$WEB_BASE_URL/" "id=\"root\""
+first_script="$(grep -o 'src="/assets/[^"]*\.js"' "$TMP_OUT" | head -n 1 | sed 's/src="//;s/"//')"
+first_style="$(grep -o 'href="/assets/[^"]*\.css"' "$TMP_OUT" | head -n 1 | sed 's/href="//;s/"//')"
+if [ -z "$first_script" ] || [ -z "$first_style" ]; then
+  echo "FAILED $WEB_BASE_URL/ expected built JS and CSS asset links" >&2
+  head -c 1000 "$TMP_OUT" >&2 || true
+  echo >&2
+  exit 1
+fi
+check_content_type "$WEB_BASE_URL$first_script" "application/javascript"
+check_content_type "$WEB_BASE_URL$first_style" "text/css"
 check_content_type "$WEB_BASE_URL/manifest.webmanifest" "application/manifest+json"
 check_content_type "$WEB_BASE_URL/sw.js" "application/javascript"
 check_content_type "$WEB_BASE_URL/logo.svg" "image/svg+xml"

@@ -123,11 +123,17 @@ async function fetchOrigin(env: Env, normalizedPath: string, request: Request): 
     fwdHeaders.set(k, v);
   }
   fwdHeaders.set('Accept', 'text/html');
+  fwdHeaders.set('Cache-Control', 'no-cache');
+  fwdHeaders.set('Pragma', 'no-cache');
 
   return fetch(originUrl.toString(), {
     method: 'GET',
     headers: fwdHeaders,
     redirect: 'follow',
+    cf: {
+      cacheTtl: 0,
+      cacheEverything: false,
+    },
   });
 }
 
