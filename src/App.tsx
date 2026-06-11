@@ -82,6 +82,15 @@ function User(props: IconProps) {
   )
 }
 
+function MenuGlyph(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M5 8h14" />
+      <path d="M5 15h10" />
+    </svg>
+  )
+}
+
 type AppView =
   | 'landing'
   | 'account-profile'
@@ -249,9 +258,7 @@ export default function App() {
               aria-expanded={mobileNavOpen}
               className="inline-flex h-11 w-11 items-center justify-center border border-white/[0.1] bg-white/[0.04] text-white backdrop-blur-md hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 md:hidden"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <MenuGlyph className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -664,82 +671,94 @@ function SmystStartPage({
         </div>
       </aside>
 
-      <header className="z-20 shrink-0 border-b border-white/10 bg-[rgba(11,16,24,0.88)] pt-[max(env(safe-area-inset-top),18px)] shadow-[0_18px_45px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
-        <div className="relative flex min-h-[96px] flex-col items-center justify-center px-4 pb-3 sm:min-h-[112px]">
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            aria-label="Menü öffnen"
-            aria-expanded={menuOpen}
-            className="absolute left-4 top-4 grid h-11 w-11 shrink-0 place-items-center text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:left-8 sm:h-14 sm:w-14"
-          >
-            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M6 7.5h12M6 12h12M6 16.5h12" />
-            </svg>
-          </button>
+      {selectedTwin ? (
+        <header className="z-20 shrink-0 border-b border-white/[0.08] bg-[rgba(9,13,20,0.9)] pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
+          <div className="relative flex min-h-[72px] items-center justify-center px-4 sm:min-h-[82px]">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Menü öffnen"
+              aria-expanded={menuOpen}
+              className="absolute left-0 top-0 grid h-12 w-14 shrink-0 place-items-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:h-14 sm:w-16"
+            >
+              <MenuGlyph className="h-7 w-7" />
+            </button>
 
-          <div className="inline-block text-left">
-            <h1 className="font-smyst-logo text-[38px] font-medium leading-none tracking-normal text-white sm:text-6xl md:text-7xl">
-              smyst<span className="text-[0.78em]">.com</span>
-            </h1>
-            <p className="mt-1.5 text-base font-medium leading-tight text-[#9aa6b7] sm:text-2xl">
-              Create Your AI Twin
-            </p>
-          </div>
-
-          {selectedTwin && (
-            <div className="mt-3 flex h-12 w-full max-w-[340px] items-stretch border border-white/[0.08] bg-[#111722] text-left sm:h-14 sm:max-w-[460px]">
+            <div className="flex h-14 max-w-[min(310px,calc(100vw-100px))] items-stretch border border-white/[0.08] bg-[#111722] text-left sm:h-16 sm:max-w-[460px]">
               <span className="grid aspect-square h-full shrink-0 place-items-center border-r border-white/[0.08] bg-[#171f2c] text-white/[0.72]">
-                <User className="h-7 w-7 sm:h-8 sm:w-8" />
+                <User className="h-8 w-8 sm:h-9 sm:w-9" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-3">
                 <span className="truncate text-base font-bold leading-tight text-white sm:text-lg">{selectedTwin.name}</span>
                 <span className="truncate text-xs font-medium leading-tight text-[#8e97a8] sm:text-sm">{selectedTwin.role}</span>
               </span>
             </div>
-          )}
-        </div>
+          </div>
+        </header>
+      ) : (
+        <header className="z-20 shrink-0 border-b border-white/10 bg-[rgba(11,16,24,0.88)] pt-[max(env(safe-area-inset-top),18px)] shadow-[0_18px_45px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
+          <div className="relative flex min-h-[96px] flex-col items-center justify-center px-4 pb-3 sm:min-h-[112px]">
+            <button
+              type="button"
+              onClick={() => setMenuOpen(true)}
+              aria-label="Menü öffnen"
+              aria-expanded={menuOpen}
+              className="absolute left-4 top-4 grid h-11 w-11 shrink-0 place-items-center text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:left-8 sm:h-14 sm:w-14"
+            >
+              <MenuGlyph className="h-7 w-7" />
+            </button>
 
-        <div className="flex min-h-[70px] items-stretch border-y border-white/[0.08] bg-[#090d14] sm:min-h-[82px]">
-          <button
-            type="button"
-            onClick={() => {
-              const twin = filteredTwins[0] ?? activeTwin
-              selectTwin(twin)
-            }}
-            className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-r border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
-            aria-label={t.start.chooseTwin}
-          >
-            <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
-            <span className="whitespace-nowrap">Name wählen</span>
-          </button>
-          <label className="relative flex min-w-0 flex-1 items-stretch">
-            <Search
-              className={`pointer-events-none absolute right-5 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
-                query ? 'opacity-0' : 'opacity-100'
-              }`}
-              aria-hidden="true"
-            />
-            <span className="sr-only">{t.start.searchLabel}</span>
-            <input
-              value={query}
-              onChange={(event) => {
-                setQuery(event.target.value)
-                setSelectedTwin(null)
-              }}
-              onKeyDown={(event) => {
-                if (event.key !== 'Enter') return
-                const twin = filteredTwins[0]
-                if (!twin) return
-                event.preventDefault()
+            <div className="inline-block text-left">
+              <h1 className="font-smyst-logo text-[38px] font-medium leading-none tracking-normal text-white sm:text-6xl md:text-7xl">
+                smyst<span className="text-[0.78em]">.com</span>
+              </h1>
+              <p className="mt-1.5 text-base font-medium leading-tight text-[#9aa6b7] sm:text-2xl">
+                Create Your AI Twin
+              </p>
+            </div>
+          </div>
+
+          <div className="flex min-h-[70px] items-stretch border-y border-white/[0.08] bg-[#090d14] sm:min-h-[82px]">
+            <button
+              type="button"
+              onClick={() => {
+                const twin = filteredTwins[0] ?? activeTwin
                 selectTwin(twin)
               }}
-              placeholder="Name suchen"
-              className="min-w-0 flex-1 rounded-none border-0 bg-[#101722] px-5 pr-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
-            />
-          </label>
-        </div>
-      </header>
+              className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-r border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
+              aria-label={t.start.chooseTwin}
+            >
+              <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
+              <span className="whitespace-nowrap">Name wählen</span>
+            </button>
+            <label className="relative flex min-w-0 flex-1 items-stretch">
+              <Search
+                className={`pointer-events-none absolute right-5 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
+                  query ? 'opacity-0' : 'opacity-100'
+                }`}
+                aria-hidden="true"
+              />
+              <span className="sr-only">{t.start.searchLabel}</span>
+              <input
+                value={query}
+                onChange={(event) => {
+                  setQuery(event.target.value)
+                  setSelectedTwin(null)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return
+                  const twin = filteredTwins[0]
+                  if (!twin) return
+                  event.preventDefault()
+                  selectTwin(twin)
+                }}
+                placeholder="Name suchen"
+                className="min-w-0 flex-1 rounded-none border-0 bg-[#101722] px-5 pr-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
+              />
+            </label>
+          </div>
+        </header>
+      )}
 
       <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#090d14]">
         <div className="min-h-full">
