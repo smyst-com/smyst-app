@@ -672,11 +672,11 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               const twin = filteredTwins[0] ?? activeTwin
               selectTwin(twin)
             }}
-            className="inline-flex w-[132px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] bg-[#141a25] px-3 text-sm font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
+            className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
             aria-label={t.start.chooseTwin}
           >
             <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
-            <span className="truncate">Name wählen</span>
+            <span className="whitespace-nowrap">Name wählen</span>
           </button>
         </div>
       </header>
