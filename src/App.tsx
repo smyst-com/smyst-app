@@ -643,11 +643,14 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </div>
         </div>
 
-        <div className="flex min-h-[82px] items-stretch border-t border-white/[0.08] bg-[#090d14] sm:min-h-[92px]">
-          <label className="flex min-w-0 flex-1 items-stretch">
-            <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.92] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:w-[92px]">
-              <Search className="h-10 w-10 sm:h-12 sm:w-12" aria-hidden="true" />
-            </span>
+        <div className="flex min-h-[82px] items-stretch gap-2 border-t border-white/[0.08] bg-[#090d14] px-3 py-3 sm:min-h-[92px] sm:gap-3 sm:px-8">
+          <label className="relative flex min-w-0 flex-1 items-stretch">
+            <Search
+              className={`pointer-events-none absolute left-4 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:left-5 sm:h-8 sm:w-8 ${
+                query ? 'opacity-0' : 'opacity-100'
+              }`}
+              aria-hidden="true"
+            />
             <span className="sr-only">{t.start.searchLabel}</span>
             <input
               value={query}
@@ -665,7 +668,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 selectTwin(twin)
               }}
               placeholder="Name suchen"
-              className="min-w-0 flex-1 bg-transparent px-5 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] sm:px-7 sm:text-4xl"
+              className="min-w-0 flex-1 rounded-none border border-white/[0.12] bg-[#141a25] px-5 pl-14 text-2xl font-bold text-white outline-none shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] placeholder:text-[#8e97a8] focus:border-white/[0.22] sm:px-7 sm:pl-16 sm:text-4xl"
             />
           </label>
           <button
@@ -674,7 +677,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               const twin = filteredTwins[0] ?? activeTwin
               selectTwin(twin)
             }}
-            className="inline-flex w-[132px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] bg-[#141a25] px-3 text-sm font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
+            className="inline-flex w-[132px] shrink-0 items-center justify-center gap-2 border border-white/[0.12] bg-[#141a25] px-3 text-sm font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
             aria-label={t.start.chooseTwin}
           >
             <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
