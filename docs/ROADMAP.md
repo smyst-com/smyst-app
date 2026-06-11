@@ -1,23 +1,35 @@
-# Twynt Roadmap
+# Smyst Roadmap
+
+## Current Free-Only Constraint
+
+Phase 1 and the current MVP must use only GitHub Free, Cloudflare Free and
+IDrive e2 with hard quotas. VPS/RackNerd, Docker-Production, FastAPI as a
+production backend, PostgreSQL, Redis, pgvector, Caddy, DeepL, Google
+Translate, Google OAuth, GA4 and Google Search Console are not production
+dependencies.
+
+All phases after Phase 2 are product vision. They are not approved production
+architecture until a new written Free-Only review confirms that they still work
+without paid services.
 
 ## Phase 1: Foundation
 
 Goal: Make the existing app deployable, protected and connected.
 
-- Create GitHub repository `twynt-app`
+- Create GitHub repository `smyst-app`
 - Initialize Git in this project folder
 - Push existing code to GitHub
 - Connect GitHub to Cloudflare Pages
-- Configure `twynt.com` on Cloudflare
+- Configure `smyst.com` on Cloudflare
 - Create Cloudflare KV namespaces
-- Create IDrive E2 bucket `twynt-memories`
+- Create IDrive E2 bucket `smyst-memories`
 - Set Cloudflare secrets for auth, translation and storage
 - Deploy Workers for translation, auth and storage
 - Verify production URL and custom domain
 
 Success criteria:
 
-- `https://twynt.com` loads from Cloudflare
+- `https://smyst.com` loads from Cloudflare
 - GitHub is the source of truth for code
 - Cloudflare Pages deploys from `main`
 - Workers are deployed
@@ -25,7 +37,7 @@ Success criteria:
 
 ## Phase 2: Product MVP
 
-Goal: Make twynt usable as an early product.
+Goal: Make smyst usable as an early product.
 
 - User login
 - Twin profile
@@ -64,6 +76,11 @@ Success criteria:
 - User sees pending/processing/ready states
 - Memories become searchable after processing
 
+Free-only gate:
+
+- No paid AI, queue, database, vector, translation or monitoring service may be
+  introduced by this phase without a new approval.
+
 ## Phase 4: Persona And Memory Engine
 
 Goal: Make the twin feel meaningfully personal.
@@ -84,7 +101,7 @@ Success criteria:
 
 ## Phase 5: Global Discovery
 
-Goal: Make twynt discoverable worldwide.
+Goal: Make smyst discoverable worldwide.
 
 - `/locations`
 - Country pages
@@ -103,7 +120,12 @@ Success criteria:
 
 ## Phase 6: Monetization And Scale
 
-Goal: Turn twynt into a global platform.
+Goal: Turn smyst into a global platform.
+
+Status: Long-term business vision only, not part of the current Free-Only-MVP.
+Any paid product, paid access, payment provider or paid infrastructure path
+requires a separate written approval and must not be a production dependency for
+Phase 1.
 
 - Subscriptions
 - Creator monetization
@@ -138,4 +160,3 @@ Success criteria:
 - Voice/video works without slowing the core API
 - Consent and privacy are explicit
 - Media cost remains measurable
-

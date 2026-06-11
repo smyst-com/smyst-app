@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>twynt.com</string>
+	<string>smyst.com</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,8 +22,31 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.smyst.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>smyst</string>
+			</array>
+		</dict>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>smyst.com kann die Kamera verwenden, wenn du ein Profilbild oder eine Erinnerung direkt aufnehmen und zu IDrive e2 hochladen möchtest.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>smyst.com kann das Mikrofon verwenden, wenn du Audio-Erinnerungen direkt aufnehmen und zu IDrive e2 hochladen möchtest.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>smyst.com braucht Zugriff auf ausgewählte Fotos und Videos, wenn du Medien als Erinnerungen oder Profilbild zu IDrive e2 hochladen möchtest.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>smyst.com kann exportierte Inhalte nur speichern, wenn du dies ausdrücklich auslöst.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>smyst.com kann von dir ausgewählte Dokumente hochladen, um sie in deinem KI-Zwilling-Kontext zu speichern.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

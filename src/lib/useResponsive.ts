@@ -1,5 +1,5 @@
 /**
- * Responsive Helper Hooks für twynt.com.
+ * Responsive Helper Hooks für smyst.com.
  *
  * Tailwind-konforme Breakpoints (sm/md/lg/xl/2xl) als Hook + Helpers für
  * portrait/landscape, prefers-reduced-motion und Touch-Detection.

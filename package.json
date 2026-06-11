@@ -1,11 +1,11 @@
 {
-  "name": "twynt-app",
+  "name": "smyst-app",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "node scripts/generate-sitemap.mjs && tsc -b && vite build",
     "preview": "vite preview",
     "app:assets": "node scripts/generate-app-assets.mjs",
     "app:sync": "npm run build && npm run app:assets && cap sync",
@@ -16,8 +16,9 @@
     "workers:warmup:deploy": "wrangler deploy --env warmup",
     "workers:auth:deploy": "wrangler deploy --env auth",
     "workers:storage:deploy": "wrangler deploy --env storage",
-    "workers:deploy:all": "npm run workers:deploy && npm run workers:warmup:deploy && npm run workers:auth:deploy && npm run workers:storage:deploy",
-    "workers:warmup:trigger": "curl -s -X GET https://twynt-warmup.workers.dev/warmup -H \"Authorization: Bearer $ADMIN_TOKEN\"",
+    "workers:api:deploy": "wrangler deploy --env api",
+    "workers:deploy:all": "npm run workers:deploy && npm run workers:warmup:deploy && npm run workers:auth:deploy && npm run workers:storage:deploy && npm run workers:api:deploy",
+    "workers:warmup:trigger": "curl -s -X GET https://smyst-warmup.workers.dev/warmup -H \"Authorization: Bearer $ADMIN_TOKEN\"",
     "kv:list": "wrangler kv:namespace list",
     "lint:tsc": "tsc --noEmit"
   },

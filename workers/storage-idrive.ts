@@ -1,53 +1,145 @@
 /**
- * Twynt Storage-Worker — IDrive E2 (S3-kompatibel) für Memory-Files
+ * Smyst Storage-Worker — IDrive E2 (S3-kompatibel) fuer alle Dateiobjekte
  *
  * Endpoints:
  *   POST /storage/upload-url    → erzeugt Presigned PUT URL für Direct-Upload
  *                                 (Audio/Bilder/Videos vom Browser direkt zu IDrive)
- *   GET  /storage/file/<key>    → proxied GET mit Auth-Check (User darf nur eigene Files)
- *   POST /storage/multipart/start    → tus.io-kompatibler resumable Upload Stage 1
- *   PATCH /storage/multipart/<id>    → Upload-Chunk
- *   POST /storage/multipart/<id>/complete → Multipart finalisieren
+ *   POST /storage/upload-complete → markiert KV-Metadaten als hochgeladen
+ *   GET  /storage/uploads       → kleine KV-Liste eigener Uploads
+ *   GET  /storage/file/<key>    → signed GET redirect mit Auth-Check
+ *   DELETE /storage/file/<key>  → Objektloeschung + KV-Status
  *
  * Sicherheit:
- *   - Alle Endpoints prüfen Session-Cookie (twynt_session) gegen SESSIONS KV
- *   - File-Keys haben Pattern: users/<userSub>/<contentType>/<uuid>.<ext>
+ *   - Alle Endpoints prüfen Session-Cookie (smyst_session) gegen SESSIONS KV
+ *   - File-Keys haben User-Prefix und Kategorie-Pfade.
  *   - Presigned URLs sind 15 Minuten gültig — keine Long-Lived Tokens
  *   - Server-Side-Encryption AES-256 bei Bucket-Konfiguration (manuell in IDrive E2)
  *
- * Kostenmodell:
- *   - IDrive E2 Storage: $0.004/GB/Monat (Frankfurt EU-Region)
- *   - Egress: kostenlos
- *   - PUT/GET: $0.01 / 10.000 ops
- *   - Twynt Estimat: 100k User × 100 MB ≈ 10 TB → ~40 USD/Monat
+ * Free-only-Regel:
+ *   - Keine kostenpflichtige IDrive-e2-Nutzung erzeugen.
+ *   - Uploads werden vor Erreichen der konfigurierten Free-/Trial-Quota blockiert.
+ *   - IDrive e2 ist Objekt-Speicher, kein Compute-Server und keine Datenbank.
  */
 
-import type { AuthEnv } from './auth-google';
+import type { AuthEnv } from './auth-github';
+import {
+  clientKey,
+  errorResponse,
+  jsonResponse,
+  readJsonBody,
+  requireSameOrigin,
+  requireRateLimit,
+  safeHandler,
+  strictCorsPreflight,
+  withSecurity,
+} from './_shared';
 
 export interface StorageEnv extends AuthEnv {
   /** IDrive E2 Endpoint, z. B. "https://b2x4.fra.idrivee2-31.com" */
   IDRIVE_E2_ENDPOINT: string;
-  /** Bucket-Name, z. B. "twynt-memories" */
+  /** Bucket-Name, z. B. "smyst-memories" */
   IDRIVE_E2_BUCKET: string;
   /** Region — IDrive nutzt fixe Region-Codes wie "fra" oder "ams" */
   IDRIVE_E2_REGION: string;
   IDRIVE_E2_ACCESS_KEY: string;
   IDRIVE_E2_SECRET_KEY: string;
+  /** Maximal erlaubtes Objekt in Bytes. Default: 10 MiB. */
+  IDRIVE_E2_MAX_FILE_BYTES?: string;
+  /** Maximal erlaubter monatlicher Upload pro User in Bytes. Default: 50 MiB. */
+  IDRIVE_E2_USER_MONTHLY_BYTES?: string;
+  /** Maximal erlaubter Gesamt-Upload fuer die Free-only-Phase in Bytes. Default: 1 GiB. */
+  IDRIVE_E2_GLOBAL_BYTES?: string;
+  /** Maximal aktiv gespeicherte Bytes pro User. Default: 100 MiB. */
+  IDRIVE_E2_USER_STORAGE_BYTES?: string;
+  /** Maximal aktiv gespeicherte Bytes global. Default: 1 GiB. */
+  IDRIVE_E2_GLOBAL_STORAGE_BYTES?: string;
+  IDRIVE_E2_MAX_IMAGE_BYTES?: string;
+  IDRIVE_E2_MAX_VIDEO_BYTES?: string;
+  IDRIVE_E2_MAX_AUDIO_BYTES?: string;
+  IDRIVE_E2_MAX_DOCUMENT_BYTES?: string;
+  IDRIVE_E2_MAX_PROFILE_IMAGE_BYTES?: string;
+  IDRIVE_E2_MAX_BACKUP_BYTES?: string;
+  IDRIVE_E2_MAX_TWIN_DATA_BYTES?: string;
+  /** Optional getrennte KV fuer kleine Metadaten. Faellt auf SESSIONS mit Prefixes zurueck. */
+  METADATA?: KVNamespace;
 }
 
 const PRESIGN_TTL_SECONDS = 60 * 15; // 15 Min
-const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB pro Datei
-const ALLOWED_CONTENT_TYPES: ReadonlySet<string> = new Set([
-  // Audio
-  'audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/ogg', 'audio/webm',
-  'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/opus',
-  // Images
-  'image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/heic', 'image/heif',
-  // Videos
-  'video/mp4', 'video/quicktime', 'video/webm',
-  // Documents (Memory-PDFs, Tagebücher)
-  'application/pdf', 'text/plain', 'text/markdown',
+const DEFAULT_MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // harte Obergrenze pro Objekt
+const DEFAULT_USER_MONTHLY_BYTES = 50 * 1024 * 1024; // 50 MiB pro User/Monat
+const DEFAULT_GLOBAL_BYTES = 1024 * 1024 * 1024; // 1 GiB Gesamtbudget fuer Free-only-Phase
+const DEFAULT_USER_STORAGE_BYTES = 100 * 1024 * 1024; // 100 MiB aktiv pro User
+const DEFAULT_GLOBAL_STORAGE_BYTES = 1024 * 1024 * 1024; // 1 GiB aktiv global
+
+type StorageCategory = 'audio' | 'image' | 'video' | 'document' | 'profile_image' | 'backup' | 'twin_data';
+
+const STORAGE_CATEGORIES: ReadonlySet<StorageCategory> = new Set([
+  'audio',
+  'image',
+  'video',
+  'document',
+  'profile_image',
+  'backup',
+  'twin_data',
 ]);
+
+const CONTENT_TYPE_EXTENSIONS: Record<string, string[]> = {
+  'audio/mpeg': ['.mp3'],
+  'audio/mp4': ['.m4a', '.mp4'],
+  'audio/aac': ['.aac'],
+  'audio/ogg': ['.ogg'],
+  'audio/webm': ['.webm'],
+  'audio/wav': ['.wav'],
+  'audio/x-wav': ['.wav'],
+  'audio/flac': ['.flac'],
+  'audio/opus': ['.opus'],
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'image/webp': ['.webp'],
+  'image/avif': ['.avif'],
+  'image/heic': ['.heic'],
+  'image/heif': ['.heif'],
+  'video/mp4': ['.mp4'],
+  'video/quicktime': ['.mov'],
+  'video/webm': ['.webm'],
+  'application/pdf': ['.pdf'],
+  'text/plain': ['.txt'],
+  'text/markdown': ['.md', '.markdown'],
+  'text/csv': ['.csv'],
+  'application/json': ['.json'],
+  'application/zip': ['.zip'],
+  'application/gzip': ['.gz'],
+  'application/x-tar': ['.tar'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+};
+
+const CONTENT_TYPE_BY_EXTENSION = Object.entries(CONTENT_TYPE_EXTENSIONS).reduce<Record<string, string>>(
+  (acc, [contentType, extensions]) => {
+    for (const ext of extensions) acc[ext] = contentType;
+    return acc;
+  },
+  {},
+);
+
+const ALLOWED_CONTENT_TYPES_BY_CATEGORY: Record<StorageCategory, ReadonlySet<string>> = {
+  audio: new Set(['audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/ogg', 'audio/webm', 'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/opus']),
+  image: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/heic', 'image/heif']),
+  video: new Set(['video/mp4', 'video/quicktime', 'video/webm']),
+  document: new Set([
+    'application/pdf',
+    'text/plain',
+    'text/markdown',
+    'text/csv',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  ]),
+  profile_image: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
+  backup: new Set(['application/json', 'application/zip', 'application/gzip', 'application/x-tar', 'text/plain']),
+  twin_data: new Set(['application/json', 'text/plain', 'text/markdown']),
+};
 
 // ---------- Hex/Base64 Helpers ----------
 
@@ -126,7 +218,10 @@ async function presignUrl(opts: SigV4Options & { expiresIn: number }): Promise<s
   const { method, url, region, service, accessKey, secretKey, expiresIn } = opts;
   const { dateStamp, amzDate } = isoAmzDate();
   const credential = `${accessKey}/${dateStamp}/${region}/${service}/aws4_request`;
-  const signedHeaders = 'host';
+  const headers = Object.entries({ ...(opts.headers ?? {}), host: url.host })
+    .map(([key, value]) => [key.toLowerCase(), value.trim()] as const)
+    .sort(([a], [b]) => a.localeCompare(b));
+  const signedHeaders = headers.map(([key]) => key).join(';');
 
   // Query-Parameter (in alphabetischer Reihenfolge!)
   url.searchParams.set('X-Amz-Algorithm', 'AWS4-HMAC-SHA256');
@@ -140,7 +235,7 @@ async function presignUrl(opts: SigV4Options & { expiresIn: number }): Promise<s
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
     .join('&');
-  const canonicalHeaders = `host:${url.host}\n`;
+  const canonicalHeaders = headers.map(([key, value]) => `${key}:${value}\n`).join('');
   const payloadHash = 'UNSIGNED-PAYLOAD';
 
   const canonicalRequest = [
@@ -173,10 +268,22 @@ interface SessionData {
   sub: string;
   email: string;
   name?: string;
+  roles?: string[];
+  permissions?: string[];
   expiresAt: number;
 }
 
-const SESSION_COOKIE = 'twynt_session';
+const SESSION_COOKIE = 'smyst_session';
+
+function readLimit(raw: string | undefined, fallback: number): number {
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+function monthKey(now = new Date()): string {
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+}
 
 function readCookie(request: Request, name: string): string | null {
   const header = request.headers.get('Cookie') || '';
@@ -192,6 +299,10 @@ async function authenticate(request: Request, env: StorageEnv): Promise<SessionD
   return data;
 }
 
+function hasPermission(session: SessionData, permission: string): boolean {
+  return session.permissions?.includes(permission) ?? false;
+}
+
 // ---------- Endpoints ----------
 
 interface UploadUrlRequest {
@@ -200,25 +311,84 @@ interface UploadUrlRequest {
   filename?: string;
   /** Erwartete Größe in Bytes, optional aber empfohlen für Quota-Check. */
   size?: number;
-  /** Memory-Kategorie: 'audio' | 'image' | 'video' | 'document'. */
-  category: 'audio' | 'image' | 'video' | 'document';
+  /** Zentrale Speicher-Kategorie. */
+  category: StorageCategory;
+  /** Pflicht fuer KI-Zwilling-Daten. */
+  twinId?: string;
 }
 
 interface UploadUrlResponse {
+  /** Kurzlebige Upload-ID fuer KV-Status. */
+  uploadId: string;
   /** Presigned PUT URL. */
   uploadUrl: string;
   /** S3-Key relativ zum Bucket — als Referenz speichern. */
   key: string;
-  /** Permanenter GET-Pfad innerhalb von Twynt. */
+  /** Permanenter GET-Pfad innerhalb von Smyst. */
   getUrl: string;
   /** UTC-Zeitstempel, wann die uploadUrl ungültig wird. */
   expiresAt: number;
+  /** Normalisierter Content-Type, der beim PUT exakt gesetzt werden muss. */
+  contentType: string;
 }
 
-function generateKey(category: string, userSub: string, filename?: string): string {
-  const ext = filename ? extractExtension(filename) : '';
+interface UploadRecord {
+  id: string;
+  userSub: string;
+  key: string;
+  category: StorageCategory;
+  contentType: string;
+  filename?: string;
+  twinId?: string;
+  size: number;
+  status: 'url_issued' | 'uploaded' | 'deleted';
+  createdAt: number;
+  updatedAt: number;
+  expiresAt?: number;
+}
+
+interface UploadCompleteRequest {
+  uploadId: string;
+  key: string;
+  size: number;
+}
+
+interface UploadListResponse {
+  uploads: Array<Pick<UploadRecord, 'id' | 'key' | 'category' | 'contentType' | 'filename' | 'size' | 'status' | 'createdAt' | 'updatedAt'>>;
+}
+
+function safePathSegment(raw: string): string {
+  return raw.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80) || 'unknown';
+}
+
+function userRoot(userSub: string): string {
+  return safePathSegment(userSub);
+}
+
+function ownsUserKey(key: string, userSub: string): boolean {
+  return key.startsWith(`users/${userRoot(userSub)}/`) || key.startsWith(`users/${userSub}/`);
+}
+
+function generateKey(category: StorageCategory, userSub: string, contentType: string, filename?: string, twinId?: string): string {
+  const ext = chooseExtension(contentType, filename);
   const uuid = crypto.randomUUID();
-  return `users/${userSub}/${category}/${uuid}${ext}`;
+  const root = `users/${userRoot(userSub)}`;
+  switch (category) {
+    case 'audio':
+      return `${root}/uploads/audio/${uuid}${ext}`;
+    case 'image':
+      return `${root}/uploads/images/${uuid}${ext}`;
+    case 'video':
+      return `${root}/uploads/videos/${uuid}${ext}`;
+    case 'document':
+      return `${root}/uploads/documents/${uuid}${ext}`;
+    case 'profile_image':
+      return `${root}/profile/images/${uuid}${ext}`;
+    case 'backup':
+      return `${root}/backups/${monthKey()}/${uuid}${ext}`;
+    case 'twin_data':
+      return `${root}/twins/${safePathSegment(twinId ?? 'unassigned')}/data/${uuid}${ext}`;
+  }
 }
 
 function extractExtension(filename: string): string {
@@ -226,29 +396,207 @@ function extractExtension(filename: string): string {
   return m ? m[0].toLowerCase() : '';
 }
 
+function sanitizeFilename(raw: unknown): string | undefined {
+  if (typeof raw !== 'string') return undefined;
+  const clean = raw
+    .replace(/[\u0000-\u001F\u007F<>:"/\\|?*]/g, '_')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 180);
+  return clean || undefined;
+}
+
+function chooseExtension(contentType: string, filename?: string): string {
+  const allowed = CONTENT_TYPE_EXTENSIONS[contentType] ?? ['.bin'];
+  const ext = filename ? extractExtension(filename) : '';
+  return ext && allowed.includes(ext) ? ext : allowed[0];
+}
+
+function normalizeContentType(raw: string, filename?: string): string {
+  const trimmed = raw.split(';')[0].trim().toLowerCase();
+  if (trimmed && trimmed !== 'application/octet-stream') return trimmed;
+  const ext = filename ? extractExtension(filename) : '';
+  return CONTENT_TYPE_BY_EXTENSION[ext] ?? trimmed;
+}
+
+function isCategory(raw: string): raw is StorageCategory {
+  return STORAGE_CATEGORIES.has(raw as StorageCategory);
+}
+
+function categoryLimit(env: StorageEnv, category: StorageCategory): number {
+  const fallbackByCategory: Record<StorageCategory, number> = {
+    audio: 25 * 1024 * 1024,
+    image: 10 * 1024 * 1024,
+    video: 50 * 1024 * 1024,
+    document: 20 * 1024 * 1024,
+    profile_image: 2 * 1024 * 1024,
+    backup: 25 * 1024 * 1024,
+    twin_data: 10 * 1024 * 1024,
+  };
+  const envByCategory: Record<StorageCategory, string | undefined> = {
+    audio: env.IDRIVE_E2_MAX_AUDIO_BYTES,
+    image: env.IDRIVE_E2_MAX_IMAGE_BYTES,
+    video: env.IDRIVE_E2_MAX_VIDEO_BYTES,
+    document: env.IDRIVE_E2_MAX_DOCUMENT_BYTES,
+    profile_image: env.IDRIVE_E2_MAX_PROFILE_IMAGE_BYTES,
+    backup: env.IDRIVE_E2_MAX_BACKUP_BYTES,
+    twin_data: env.IDRIVE_E2_MAX_TWIN_DATA_BYTES,
+  };
+  return Math.min(
+    readLimit(env.IDRIVE_E2_MAX_FILE_BYTES, DEFAULT_MAX_FILE_SIZE_BYTES),
+    readLimit(envByCategory[category], fallbackByCategory[category]),
+  );
+}
+
+function metadataStore(env: StorageEnv): KVNamespace {
+  return env.METADATA ?? env.SESSIONS;
+}
+
+function uploadRecordKey(userSub: string, uploadId: string): string {
+  return `meta:upload:${userSub}:${uploadId}`;
+}
+
+function uploadIndexKey(userSub: string): string {
+  return `meta:uploads:${userSub}`;
+}
+
+function storageUserKey(userSub: string): string {
+  return `storage:user:${userSub}:active`;
+}
+
+function storageGlobalKey(): string {
+  return 'storage:global:active';
+}
+
+async function getNumber(kv: KVNamespace, key: string): Promise<number> {
+  const value = Number((await kv.get(key)) ?? '0');
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+async function addNumber(kv: KVNamespace, key: string, delta: number): Promise<number> {
+  const next = Math.max(0, (await getNumber(kv, key)) + delta);
+  await kv.put(key, String(next), { expirationTtl: 60 * 60 * 24 * 370 });
+  return next;
+}
+
+async function getJson<T>(kv: KVNamespace, key: string, fallback: T): Promise<T> {
+  const value = (await kv.get(key, 'json')) as T | null;
+  return value ?? fallback;
+}
+
+async function putUploadRecord(env: StorageEnv, record: UploadRecord): Promise<void> {
+  const kv = metadataStore(env);
+  await kv.put(uploadRecordKey(record.userSub, record.id), JSON.stringify(record), {
+    expirationTtl: 60 * 60 * 24 * 370,
+  });
+}
+
+async function addUploadToIndex(env: StorageEnv, userSub: string, uploadId: string): Promise<void> {
+  const kv = metadataStore(env);
+  const key = uploadIndexKey(userSub);
+  const current = await getJson<string[]>(kv, key, []);
+  const next = [uploadId, ...current.filter((id) => id !== uploadId)].slice(0, 100);
+  await kv.put(key, JSON.stringify(next), { expirationTtl: 60 * 60 * 24 * 370 });
+}
+
+async function verifyObjectHead(
+  env: StorageEnv,
+  key: string,
+  expectedSize: number,
+  expectedContentType: string,
+): Promise<Response | null> {
+  const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
+  const presignedHead = await presignUrl({
+    method: 'HEAD',
+    url,
+    region: env.IDRIVE_E2_REGION,
+    service: 's3',
+    accessKey: env.IDRIVE_E2_ACCESS_KEY,
+    secretKey: env.IDRIVE_E2_SECRET_KEY,
+    expiresIn: 60,
+  });
+  const res = await fetch(presignedHead, { method: 'HEAD' });
+  if (!res.ok) {
+    return errorResponse('object_not_found', 'Uploaded object could not be verified in IDrive e2', 409, { status: res.status });
+  }
+  const length = Number(res.headers.get('content-length'));
+  if (Number.isFinite(length) && length !== expectedSize) {
+    return errorResponse('object_size_mismatch', 'Uploaded object size does not match the upload intent', 409, {
+      expectedSize,
+      actualSize: length,
+    });
+  }
+  const actualContentType = res.headers.get('content-type')?.split(';')[0].trim().toLowerCase();
+  if (actualContentType && actualContentType !== expectedContentType) {
+    return errorResponse('object_type_mismatch', 'Uploaded object content type does not match the upload intent', 409, {
+      expectedContentType,
+      actualContentType,
+    });
+  }
+  return null;
+}
+
 async function handleUploadUrl(request: Request, env: StorageEnv): Promise<Response> {
   const session = await authenticate(request, env);
-  if (!session) return jsonResponse({ error: 'Unauthorized' }, 401);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:write')) return errorResponse('forbidden', 'Missing storage write permission', 403);
 
-  let body: UploadUrlRequest;
-  try {
-    body = (await request.json()) as UploadUrlRequest;
-  } catch {
-    return jsonResponse({ error: 'Invalid JSON' }, 400);
-  }
+  const parsed = await readJsonBody<UploadUrlRequest>(request, 16 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.value;
+  const filename = sanitizeFilename(body.filename);
+
+  const contentType = normalizeContentType(body.contentType || '', filename);
 
   // Validierung
-  if (!body.contentType || !ALLOWED_CONTENT_TYPES.has(body.contentType)) {
-    return jsonResponse({ error: `Unsupported content type: ${body.contentType}` }, 400);
+  if (!isCategory(body.category)) {
+    return errorResponse('invalid_category', 'Invalid category', 400);
   }
-  if (!['audio', 'image', 'video', 'document'].includes(body.category)) {
-    return jsonResponse({ error: 'Invalid category' }, 400);
+  if (body.category === 'twin_data' && !body.twinId?.trim()) {
+    return errorResponse('twin_id_required', 'twinId is required for twin_data uploads', 400);
   }
-  if (body.size !== undefined && body.size > MAX_FILE_SIZE_BYTES) {
-    return jsonResponse({ error: `File too large: ${body.size} > ${MAX_FILE_SIZE_BYTES}` }, 413);
+  const allowedTypes = ALLOWED_CONTENT_TYPES_BY_CATEGORY[body.category];
+  if (!contentType || !allowedTypes.has(contentType)) {
+    return errorResponse('unsupported_content_type', `Unsupported content type for ${body.category}: ${contentType || body.contentType}`, 400);
+  }
+  if (body.size === undefined || !Number.isFinite(body.size) || body.size <= 0) {
+    return errorResponse('file_size_required', 'File size is required for free-only quota enforcement', 400);
   }
 
-  const key = generateKey(body.category, session.sub, body.filename);
+  const maxFileBytes = categoryLimit(env, body.category);
+  const userMonthlyBytes = readLimit(env.IDRIVE_E2_USER_MONTHLY_BYTES, DEFAULT_USER_MONTHLY_BYTES);
+  const globalBytes = readLimit(env.IDRIVE_E2_GLOBAL_BYTES, DEFAULT_GLOBAL_BYTES);
+  const userStorageBytes = readLimit(env.IDRIVE_E2_USER_STORAGE_BYTES, DEFAULT_USER_STORAGE_BYTES);
+  const globalStorageBytes = readLimit(env.IDRIVE_E2_GLOBAL_STORAGE_BYTES, DEFAULT_GLOBAL_STORAGE_BYTES);
+
+  if (body.size > maxFileBytes) {
+    return errorResponse('file_too_large', `File too large: ${body.size} > ${maxFileBytes}`, 413);
+  }
+
+  const kv = metadataStore(env);
+  const period = monthKey();
+  const userQuotaKey = `quota:user:${session.sub}:${period}`;
+  const globalQuotaKey = `quota:global:${period}`;
+  const userCurrent = Number((await env.SESSIONS.get(userQuotaKey)) ?? '0');
+  const globalCurrent = Number((await env.SESSIONS.get(globalQuotaKey)) ?? '0');
+  const userStorageCurrent = await getNumber(kv, storageUserKey(session.sub));
+  const globalStorageCurrent = await getNumber(kv, storageGlobalKey());
+
+  if (userCurrent + body.size > userMonthlyBytes) {
+    return errorResponse('user_quota_exceeded', 'Free-only user upload quota exceeded', 429);
+  }
+  if (globalCurrent + body.size > globalBytes) {
+    return errorResponse('global_quota_exceeded', 'Free-only global upload quota exceeded', 429);
+  }
+  if (userStorageCurrent + body.size > userStorageBytes) {
+    return errorResponse('user_storage_exceeded', 'Free-only user storage limit exceeded', 429);
+  }
+  if (globalStorageCurrent + body.size > globalStorageBytes) {
+    return errorResponse('global_storage_exceeded', 'Free-only global storage limit exceeded', 429);
+  }
+
+  const uploadId = crypto.randomUUID();
+  const key = generateKey(body.category, session.sub, contentType, filename, body.twinId);
   const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
 
   const uploadUrl = await presignUrl({
@@ -258,14 +606,125 @@ async function handleUploadUrl(request: Request, env: StorageEnv): Promise<Respo
     service: 's3',
     accessKey: env.IDRIVE_E2_ACCESS_KEY,
     secretKey: env.IDRIVE_E2_SECRET_KEY,
+    headers: { 'content-type': contentType },
     expiresIn: PRESIGN_TTL_SECONDS,
   });
 
   const response: UploadUrlResponse = {
+    uploadId,
     uploadUrl,
     key,
     getUrl: `/storage/file/${encodeURIComponent(key)}`,
     expiresAt: Date.now() + PRESIGN_TTL_SECONDS * 1000,
+    contentType,
+  };
+
+  const quotaTtl = 60 * 60 * 24 * 45;
+  await env.SESSIONS.put(userQuotaKey, String(userCurrent + body.size), { expirationTtl: quotaTtl });
+  await env.SESSIONS.put(globalQuotaKey, String(globalCurrent + body.size), { expirationTtl: quotaTtl });
+
+  const now = Date.now();
+  await putUploadRecord(env, {
+    id: uploadId,
+    userSub: session.sub,
+    key,
+    category: body.category,
+    contentType,
+    filename,
+    twinId: body.twinId,
+    size: body.size,
+    status: 'url_issued',
+    createdAt: now,
+    updatedAt: now,
+    expiresAt: response.expiresAt,
+  });
+  await addUploadToIndex(env, session.sub, uploadId);
+
+  return jsonResponse(response);
+}
+
+async function handleUploadComplete(request: Request, env: StorageEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:write')) return errorResponse('forbidden', 'Missing storage write permission', 403);
+
+  const parsed = await readJsonBody<UploadCompleteRequest>(request, 8 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.value;
+
+  if (!body.uploadId || !body.key || !Number.isFinite(body.size) || body.size <= 0) {
+    return errorResponse('invalid_upload_completion', 'Invalid upload completion payload', 400);
+  }
+
+  if (!ownsUserKey(body.key, session.sub)) {
+    return errorResponse('forbidden', 'Forbidden', 403);
+  }
+
+  const kv = metadataStore(env);
+  const record = (await kv.get(uploadRecordKey(session.sub, body.uploadId), 'json')) as UploadRecord | null;
+  if (!record || record.key !== body.key || record.size !== body.size) {
+    return errorResponse('upload_intent_mismatch', 'Upload intent not found or mismatched', 404);
+  }
+  if (record.expiresAt && record.expiresAt < Date.now()) {
+    return errorResponse('upload_intent_expired', 'Upload intent has expired. Please request a new upload URL.', 409);
+  }
+
+  const verificationError = await verifyObjectHead(env, body.key, body.size, record.contentType);
+  if (verificationError) return verificationError;
+
+  const next: UploadRecord = {
+    ...record,
+    status: 'uploaded',
+    updatedAt: Date.now(),
+  };
+  await putUploadRecord(env, next);
+  await addUploadToIndex(env, session.sub, next.id);
+  if (record.status !== 'uploaded') {
+    await addNumber(kv, storageUserKey(session.sub), next.size);
+    await addNumber(kv, storageGlobalKey(), next.size);
+  }
+
+  return jsonResponse({
+    ok: true,
+    upload: {
+      id: next.id,
+      key: next.key,
+      category: next.category,
+      contentType: next.contentType,
+      filename: next.filename,
+      size: next.size,
+      status: next.status,
+      createdAt: next.createdAt,
+      updatedAt: next.updatedAt,
+    },
+  });
+}
+
+async function handleListUploads(request: Request, env: StorageEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:read')) return errorResponse('forbidden', 'Missing storage read permission', 403);
+
+  const kv = metadataStore(env);
+  const ids = await getJson<string[]>(kv, uploadIndexKey(session.sub), []);
+  const records = await Promise.all(
+    ids.slice(0, 50).map((id) => kv.get(uploadRecordKey(session.sub, id), 'json') as Promise<UploadRecord | null>),
+  );
+
+  const response: UploadListResponse = {
+    uploads: records
+      .filter((record): record is UploadRecord => Boolean(record))
+      .map((record) => ({
+        id: record.id,
+        key: record.key,
+        category: record.category,
+        contentType: record.contentType,
+        filename: record.filename,
+        size: record.size,
+        status: record.status,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+      })),
   };
 
   return jsonResponse(response);
@@ -273,12 +732,12 @@ async function handleUploadUrl(request: Request, env: StorageEnv): Promise<Respo
 
 async function handleGetFile(request: Request, env: StorageEnv, key: string): Promise<Response> {
   const session = await authenticate(request, env);
-  if (!session) return jsonResponse({ error: 'Unauthorized' }, 401);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:read')) return errorResponse('forbidden', 'Missing storage read permission', 403);
 
   // Authorisierung: Nutzer darf nur eigene Files (Pfad-Prefix muss "users/<sub>/" sein)
-  const expectedPrefix = `users/${session.sub}/`;
-  if (!key.startsWith(expectedPrefix)) {
-    return jsonResponse({ error: 'Forbidden — file does not belong to user' }, 403);
+  if (!ownsUserKey(key, session.sub)) {
+    return errorResponse('forbidden', 'File does not belong to user', 403);
   }
 
   // Presigned GET → 302 Redirect — Browser lädt direkt vom IDrive E2 Edge
@@ -293,22 +752,22 @@ async function handleGetFile(request: Request, env: StorageEnv, key: string): Pr
     expiresIn: 60 * 5, // 5 Minuten reichen für Browser-Stream
   });
 
-  return new Response(null, {
+  return withSecurity(new Response(null, {
     status: 302,
     headers: {
       Location: presignedGet,
       'Cache-Control': 'private, max-age=60',
     },
-  });
+  }));
 }
 
 async function handleDeleteFile(request: Request, env: StorageEnv, key: string): Promise<Response> {
   const session = await authenticate(request, env);
-  if (!session) return jsonResponse({ error: 'Unauthorized' }, 401);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
 
-  const expectedPrefix = `users/${session.sub}/`;
-  if (!key.startsWith(expectedPrefix)) {
-    return jsonResponse({ error: 'Forbidden' }, 403);
+  if (!ownsUserKey(key, session.sub)) {
+    return errorResponse('forbidden', 'Forbidden', 403);
   }
 
   const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
@@ -325,59 +784,102 @@ async function handleDeleteFile(request: Request, env: StorageEnv, key: string):
   // Worker führt das Delete server-seitig aus (User-Browser bekommt nur OK/FAIL)
   const res = await fetch(presignedDelete, { method: 'DELETE' });
   if (!res.ok && res.status !== 404) {
-    return jsonResponse({ error: 'Delete failed', status: res.status }, 502);
+    return errorResponse('delete_failed', 'Delete failed', 502, { status: res.status });
   }
+
+  const kv = metadataStore(env);
+  const ids = await getJson<string[]>(kv, uploadIndexKey(session.sub), []);
+  const records = await Promise.all(
+    ids.map((id) => kv.get(uploadRecordKey(session.sub, id), 'json') as Promise<UploadRecord | null>),
+  );
+  const record = records.find((item) => item?.key === key);
+  if (record) {
+    await putUploadRecord(env, { ...record, status: 'deleted', updatedAt: Date.now() });
+    if (record.status === 'uploaded') {
+      await addNumber(kv, storageUserKey(session.sub), -record.size);
+      await addNumber(kv, storageGlobalKey(), -record.size);
+    }
+  }
+
   return jsonResponse({ ok: true });
-}
-
-// ---------- Helpers ----------
-
-function jsonResponse(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      'content-type': 'application/json; charset=utf-8',
-      'cache-control': 'no-store',
-    },
-  });
 }
 
 // ---------- Worker Entry ----------
 
 export default {
   async fetch(request: Request, env: StorageEnv): Promise<Response> {
-    const url = new URL(request.url);
+    return safeHandler(async () => {
+      const url = new URL(request.url);
+      const kv = metadataStore(env);
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          'Access-Control-Allow-Origin': env.CANONICAL_HOST,
-          'Access-Control-Allow-Credentials': 'true',
-          'Access-Control-Allow-Methods': 'GET, POST, DELETE',
-          'Access-Control-Allow-Headers': 'Content-Type',
-        },
-      });
-    }
+      if (request.method === 'OPTIONS') {
+        return strictCorsPreflight(request, env.CANONICAL_HOST, 'GET, POST, DELETE');
+      }
 
-    // POST /storage/upload-url
-    if (url.pathname === '/storage/upload-url' && request.method === 'POST') {
-      return handleUploadUrl(request, env);
-    }
+      const csrf = requireSameOrigin(request, env.CANONICAL_HOST);
+      if (csrf) {
+        return csrf;
+      }
 
-    // GET /storage/file/:key
-    if (url.pathname.startsWith('/storage/file/') && request.method === 'GET') {
-      const key = decodeURIComponent(url.pathname.slice('/storage/file/'.length));
-      return handleGetFile(request, env, key);
-    }
+      // POST /storage/upload-url
+      if (url.pathname === '/storage/upload-url' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:upload-url'),
+          limit: 30,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleUploadUrl(request, env);
+      }
 
-    // DELETE /storage/file/:key
-    if (url.pathname.startsWith('/storage/file/') && request.method === 'DELETE') {
-      const key = decodeURIComponent(url.pathname.slice('/storage/file/'.length));
-      return handleDeleteFile(request, env, key);
-    }
+      // POST /storage/upload-complete
+      if (url.pathname === '/storage/upload-complete' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:upload-complete'),
+          limit: 60,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleUploadComplete(request, env);
+      }
 
-    return new Response('Not found', { status: 404 });
+      // GET /storage/uploads
+      if (url.pathname === '/storage/uploads' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:list'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleListUploads(request, env);
+      }
+
+      // GET /storage/file/:key
+      if (url.pathname.startsWith('/storage/file/') && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:get-file'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        const key = decodeURIComponent(url.pathname.slice('/storage/file/'.length));
+        return handleGetFile(request, env, key);
+      }
+
+      // DELETE /storage/file/:key
+      if (url.pathname.startsWith('/storage/file/') && request.method === 'DELETE') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:delete-file'),
+          limit: 30,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        const key = decodeURIComponent(url.pathname.slice('/storage/file/'.length));
+        return handleDeleteFile(request, env, key);
+      }
+
+      return errorResponse('not_found', 'Not found', 404);
+    });
   },
 };
 

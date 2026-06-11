@@ -1,10 +1,10 @@
 /**
- * useAuth Hook — Frontend Session-Management für twynt.com.
+ * useAuth Hook — Frontend Session-Management für smyst.com.
  *
  * Strategie:
  *  - Beim Mount: GET /auth/me → liefert { authenticated, user? }
  *  - Wir caches NICHT in localStorage; Cookie ist authoritative
- *  - signInWithGoogle() = window.location → /auth/google/start
+ *  - signInWithGitHub() = window.location → /auth/github/start
  *  - signOut() = POST /auth/logout, dann reload
  *
  * Sicherheit:
@@ -21,6 +21,8 @@ export interface AuthUser {
   name: string | null;
   picture: string | null;
   locale: string | null;
+  roles: string[];
+  permissions: string[];
 }
 
 export interface AuthState {
@@ -31,16 +33,25 @@ export interface AuthState {
 interface MeResponse {
   authenticated: boolean;
   user?: AuthUser;
+  session?: {
+    tokenType: 'httpOnly-cookie';
+    expiresAt: number;
+  };
 }
 
 const ME_ENDPOINT = '/auth/me';
-const START_ENDPOINT = '/auth/google/start';
+const START_ENDPOINT = '/auth/github/start';
 const LOGOUT_ENDPOINT = '/auth/logout';
 
-export function useAuth() {
+export function useAuth(options: { enabled?: boolean } = {}) {
+  const enabled = options.enabled ?? true;
   const [state, setState] = useState<AuthState>({ status: 'loading', user: null });
 
   const fetchMe = useCallback(async () => {
+    if (!enabled) {
+      setState({ status: 'anonymous', user: null });
+      return;
+    }
     try {
       const res = await fetch(ME_ENDPOINT, {
         method: 'GET',
@@ -61,9 +72,13 @@ export function useAuth() {
       console.warn('[auth] /auth/me failed', err);
       setState({ status: 'anonymous', user: null });
     }
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) {
+      setState({ status: 'anonymous', user: null });
+      return;
+    }
     fetchMe();
     // Re-prüfe bei Tab-Fokus (User könnte in einem anderen Tab eingeloggt haben)
     const onVisibility = () => {
@@ -71,9 +86,9 @@ export function useAuth() {
     };
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, [fetchMe]);
+  }, [enabled, fetchMe]);
 
-  const signInWithGoogle = useCallback((returnTo?: string) => {
+  const signInWithGitHub = useCallback((returnTo?: string) => {
     const target = returnTo ?? window.location.pathname + window.location.search;
     const url = `${START_ENDPOINT}?return_to=${encodeURIComponent(target)}`;
     window.location.href = url;
@@ -95,7 +110,7 @@ export function useAuth() {
 
   return {
     ...state,
-    signInWithGoogle,
+    signInWithGitHub,
     signOut,
     refresh: fetchMe,
   };

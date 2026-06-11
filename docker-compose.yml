@@ -1,0 +1,108 @@
+name: smyst-foundation
+
+# Legacy local-development reference only.
+# Production is not allowed to depend on Docker, PostgreSQL, Redis, Caddy, or a VPS.
+# Use GitHub Free + Cloudflare Free + IDrive e2 for production.
+
+services:
+  postgres:
+    profiles: ["legacy-local"]
+    image: pgvector/pgvector:pg16
+    container_name: smyst-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smyst}
+      POSTGRES_USER: ${POSTGRES_USER:-smyst}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smyst_dev_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - ./database/migrations:/migrations:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smyst} -d ${POSTGRES_DB:-smyst}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    profiles: ["legacy-local"]
+    image: redis:7-alpine
+    container_name: smyst-redis
+    restart: unless-stopped
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    profiles: ["legacy-local"]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: smyst-backend
+    restart: unless-stopped
+    env_file:
+      - ./config/env.example
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-smyst}:${POSTGRES_PASSWORD:-smyst_dev_password}@postgres:5432/${POSTGRES_DB:-smyst}
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    profiles: ["legacy-local"]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: smyst-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  reverse-proxy:
+    profiles: ["legacy-local"]
+    image: caddy:2-alpine
+    container_name: smyst-caddy
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
+  caddy_data:
+  caddy_config:

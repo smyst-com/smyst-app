@@ -1,0 +1,33 @@
+{
+  "locale": "zh",
+  "dir": "ltr",
+  "seo": {
+    "title": "smyst.com | AI Twin、数字档案和 Twin Chat",
+    "description": "smyst.com 是一个 free-only AI Twin 平台，用于公开和私有档案、知识、记忆以及快速 Twin 聊天。",
+    "keywords": "AI Twin, 数字孪生, 知识档案, 记忆, smyst"
+  },
+  "start": {
+    "searchLabel": "搜索 Twin",
+    "searchPlaceholder": "按姓名或 Twin 搜索",
+    "changeTwin": "更改所选 Twin",
+    "chooseTwin": "选择 Twin",
+    "emptyText": "在上方选择姓名，或直接开始输入。所选 Twin 会固定在右上角。",
+    "messagePlaceholder": "给 {{name}} 发消息",
+    "addFile": "添加文件",
+    "voiceInput": "语音输入",
+    "send": "发送消息",
+    "freeOnlyNotice": "Free-only MVP：GitHub Free、Cloudflare Free、IDrive e2。没有付费 AI 或分析服务。"
+  },
+  "chat": {
+    "replyIntro": "我将以 {{name}} 的身份回答。",
+    "replyMvp": "在 free-only MVP 中，我使用本地模拟回复逻辑，不依赖付费 AI 服务。",
+    "replyQuestion": "你的问题：\"{{question}}\"",
+    "replyNextStep": "下一步：真实 Twin 数据将通过 Cloudflare Worker/KV 和 IDrive e2 提供。"
+  },
+  "profile": {
+    "publicProfile": "公开 Twin 档案",
+    "privateProfile": "私有 Twin 档案",
+    "chatButton": "与 Twin 聊天",
+    "noindex": "私有档案不会被索引。"
+  }
+}

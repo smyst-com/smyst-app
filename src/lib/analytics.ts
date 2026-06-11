@@ -1,29 +1,12 @@
 /**
- * twynt.com Analytics — GA4 mit Google Consent Mode v2
+ * smyst.com Analytics — Free-only local consent adapter.
  *
- * DSGVO-konform:
- *  - Default: ALLE Storage-Permissions auf "denied"
- *  - Cookie-Banner setzt nach Klick "granted" oder bleibt auf "denied"
- *  - Bevor Consent erteilt wurde, sendet GA4 nur "Cookieless Pings" (anonymized,
- *    keine personenbezogenen Daten, kein Cookie gesetzt)
- *  - Mit IP-Anonymisierung (default in GA4)
- *
- * Der Measurement-ID wird zur Build-Zeit injiziert via
- *   VITE_GA_MEASUREMENT_ID  (z. B. "G-XXXXXXX")
- *
- * Wenn ENV nicht gesetzt → Analytics komplett deaktiviert (Dev-Mode).
+ * Production darf keine externen Analytics-Abhaengigkeiten laden.
+ * Diese Datei speichert nur Consent lokal und
+ * stellt No-op Tracking-Hooks bereit, damit UI-Code stabil bleibt.
  */
 
-declare global {
-  interface Window {
-    dataLayer?: any[];
-    gtag?: (...args: any[]) => void;
-  }
-}
-
-const MEASUREMENT_ID = (import.meta as any).env?.VITE_GA_MEASUREMENT_ID as string | undefined;
-
-const CONSENT_STORAGE_KEY = 'twynt_consent_v1';
+const CONSENT_STORAGE_KEY = 'smyst_consent_v1';
 
 export type ConsentChoice = 'granted' | 'denied';
 
@@ -76,54 +59,14 @@ function writeStoredConsent(state: ConsentState): void {
 }
 
 /**
- * Initialisiert GA4 + Consent Mode.
- * Sollte SO FRÜH wie möglich aufgerufen werden — idealerweise in main.tsx.
+ * Initialisiert keine externen Analytics. Bleibt als stabiler App-Hook erhalten.
  */
 export function initAnalytics(): void {
-  if (!MEASUREMENT_ID) {
-    console.debug('[analytics] VITE_GA_MEASUREMENT_ID not set, analytics disabled');
-    return;
-  }
-
-  // Consent Mode v2: Default DENIED, BEVOR gtag-Script geladen wird
-  const stored = readStoredConsent();
-  const consent = stored ?? DEFAULT_DENIED;
-
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function gtag() {
-    // eslint-disable-next-line prefer-rest-params
-    window.dataLayer!.push(arguments);
-  };
-
-  // Default-Consent (vor Tag-Init!)
-  window.gtag('consent', 'default', {
-    ad_storage: consent.ad_storage,
-    analytics_storage: consent.analytics_storage,
-    ad_user_data: consent.ad_user_data,
-    ad_personalization: consent.ad_personalization,
-    functionality_storage: consent.functionality_storage,
-    personalization_storage: consent.personalization_storage,
-    security_storage: consent.security_storage,
-    wait_for_update: 500, // 500ms warten, damit Banner-Klick durchkommt vor erstem Hit
-  });
-
-  // GA4-Script async laden
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`;
-  document.head.appendChild(script);
-
-  window.gtag('js', new Date());
-  window.gtag('config', MEASUREMENT_ID, {
-    anonymize_ip: true,
-    send_page_view: true,
-    // Cookieless Pings sind aktiviert, da Default-Consent denied
-    // (siehe https://support.google.com/analytics/answer/9976101)
-  });
+  console.debug('[analytics] external analytics disabled by free-only policy');
 }
 
 /**
- * User hat Cookie-Banner akzeptiert oder abgelehnt — Update an gtag senden.
+ * User hat Cookie-Banner akzeptiert oder abgelehnt.
  */
 export function setConsent(opts: {
   analytics: boolean;
@@ -142,39 +85,13 @@ export function setConsent(opts: {
     version: CONSENT_VERSION,
   };
   writeStoredConsent(next);
-
-  if (window.gtag) {
-    window.gtag('consent', 'update', {
-      ad_storage: next.ad_storage,
-      analytics_storage: next.analytics_storage,
-      ad_user_data: next.ad_user_data,
-      ad_personalization: next.ad_personalization,
-      functionality_storage: next.functionality_storage,
-      personalization_storage: next.personalization_storage,
-    });
-  }
 }
 
 /**
- * User möchte Consent zurückziehen — alle GA-Cookies löschen.
+ * User möchte Consent zurückziehen.
  */
 export function revokeConsent(): void {
   writeStoredConsent({ ...DEFAULT_DENIED, decidedAt: Date.now() });
-  if (window.gtag) {
-    window.gtag('consent', 'update', {
-      ad_storage: 'denied',
-      analytics_storage: 'denied',
-      ad_user_data: 'denied',
-      ad_personalization: 'denied',
-      functionality_storage: 'denied',
-      personalization_storage: 'denied',
-    });
-  }
-  // _ga / _gid Cookies aktiv löschen (Domain '.twynt.com')
-  for (const name of ['_ga', '_gid', '_gat']) {
-    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Domain=.${location.hostname.split('.').slice(-2).join('.')}`;
-    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT`;
-  }
 }
 
 /**
@@ -187,21 +104,16 @@ export function hasDecidedConsent(): boolean {
 
 /**
  * Custom Event tracken — z. B. Twin-Erstellung, Memory-Upload.
- * Wird nur gesendet wenn analytics_storage = granted.
+ * No-op in der Free-only-Phase.
  */
-export function trackEvent(eventName: string, params?: Record<string, unknown>): void {
-  if (!MEASUREMENT_ID || !window.gtag) return;
-  window.gtag('event', eventName, params || {});
+export function trackEvent(_eventName: string, _params?: Record<string, unknown>): void {
+  return;
 }
 
 /**
  * Page-View manuell triggern (für SPA-Routenwechsel).
  */
 export function trackPageView(path: string, title?: string): void {
-  if (!MEASUREMENT_ID || !window.gtag) return;
-  window.gtag('event', 'page_view', {
-    page_path: path,
-    page_title: title ?? document.title,
-    page_location: location.origin + path,
-  });
+  void path;
+  void title;
 }

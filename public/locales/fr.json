@@ -1,0 +1,33 @@
+{
+  "locale": "fr",
+  "dir": "ltr",
+  "seo": {
+    "title": "smyst.com | Jumeaux IA, profils numériques et Twin Chat",
+    "description": "smyst.com est une plateforme free-only de jumeaux IA pour profils publics et privés, connaissances, souvenirs et chats rapides.",
+    "keywords": "jumeau IA, jumeau numérique, profil de connaissance, souvenirs, smyst"
+  },
+  "start": {
+    "searchLabel": "Rechercher un twin",
+    "searchPlaceholder": "Rechercher par nom ou twin",
+    "changeTwin": "Changer le twin sélectionné",
+    "chooseTwin": "Choisir un twin",
+    "emptyText": "Choisis un nom en haut ou écris directement. Le twin sélectionné reste fixé en haut à droite.",
+    "messagePlaceholder": "Message à {{name}}",
+    "addFile": "Ajouter un fichier",
+    "voiceInput": "Saisie vocale",
+    "send": "Envoyer le message",
+    "freeOnlyNotice": "MVP free-only : GitHub Free, Cloudflare Free, IDrive e2. Aucun service IA ou analytics payant."
+  },
+  "chat": {
+    "replyIntro": "Je réponds comme {{name}}.",
+    "replyMvp": "Pour le MVP free-only, j'utilise une logique de réponse locale et simulée sans service IA payant.",
+    "replyQuestion": "Ta question : \"{{question}}\"",
+    "replyNextStep": "Prochaine étape : les vraies données de twin passeront par Cloudflare Worker/KV et IDrive e2."
+  },
+  "profile": {
+    "publicProfile": "Profil twin public",
+    "privateProfile": "Profil twin privé",
+    "chatButton": "Discuter avec le twin",
+    "noindex": "Les profils privés ne sont pas indexés."
+  }
+}

@@ -1,173 +1,118 @@
-# Twynt Infrastructure Setup
+# Smyst Infrastructure Setup
 
-This is the practical connection plan for GitHub, Cloudflare and IDrive E2.
+Production folgt ausschliesslich der Free-Only-Regel:
+
+- GitHub.com Free fuer Code, CI/CD, Dokumentation und Deployment-Pipelines
+- Cloudflare.com Free fuer DNS, SSL, CDN, Pages, Workers, KV, WAF-Basis und Edge
+- IDrive e2 als zentraler Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten
+
+Alle anderen Dienste sind in Production optional/verboten und duerfen nicht als Start- oder Betriebsbedingung auftauchen.
 
 ## 1. GitHub
 
-Create a private repository:
-
 ```text
-Owner: twyntcom
-Repository: twynt-app
+Owner: smystcom
+Repository: smyst-app
 Visibility: Private
-Initialize README: No
-Initialize .gitignore: No
-Initialize license: No
 ```
 
-Then initialize local Git from this project folder:
-
-```bash
-git init
-git branch -M main
-git add .
-git commit -m "Initial commit: Twynt platform foundation"
-git remote add origin https://github.com/twyntcom/twynt-app.git
-git push -u origin main
-```
-
-If GitHub asks for a password, use a GitHub Personal Access Token or GitHub CLI login.
+GitHub Actions fuehrt nur Free-Only-kompatible Checks, Builds und Cloudflare-Deploys aus.
 
 ## 2. Cloudflare
 
-Use Cloudflare for:
-
-- DNS
-- CDN
-- WAF
-- Pages deployment
-- Workers
-- KV namespaces
-- Rate limiting
-- Edge routing
-
-Required Cloudflare resources:
+Cloudflare-Ressourcen:
 
 ```text
-Pages project:
-twynt-app
-
-Domain:
-twynt.com
-
-Workers:
-twynt-translate
-twynt-warmup
-twynt-auth
-twynt-storage
-
-KV namespaces:
-TRANSLATIONS
-TRANSLATIONS_PREVIEW
-WARMUP_CONFIG
-SESSIONS
-OAUTH_STATE
+Pages project: smyst-app
+Domain: smyst.com
+Workers: smyst-translate, smyst-warmup, smyst-auth, smyst-storage, smyst-api
+KV namespaces: TRANSLATIONS, TRANSLATIONS_PREVIEW, WARMUP_CONFIG, SESSIONS, OAUTH_STATE, METADATA
 ```
 
-Cloudflare Pages build settings:
+Pages build:
 
 ```text
 Framework preset: Vite
 Build command: npm run build
 Build output directory: dist
-Root directory: empty
 ```
 
-After Pages creates the project URL, update `wrangler.toml`:
+## 3. Auth
 
-```toml
-[vars]
-ORIGIN_URL = "https://YOUR-PAGES-URL.pages.dev"
-CANONICAL_HOST = "https://twynt.com"
-```
+Production-Login nutzt GitHub OAuth. Google OAuth ist deaktiviert.
 
-## 3. IDrive E2
-
-Create bucket:
-
-```text
-Bucket name: twynt-memories
-Region: eu-frankfurt-1 or eu-amsterdam-1
-Versioning: Off for MVP
-Object Lock: Off for MVP
-```
-
-Create access keys:
-
-```text
-Access Key ID: stored as Cloudflare secret
-Secret Access Key: stored as Cloudflare secret
-Endpoint URL: stored in wrangler.toml vars
-```
-
-Recommended object structure:
-
-```text
-users/{userId}/twins/{twinId}/audio/{fileId}
-users/{userId}/twins/{twinId}/video/{fileId}
-users/{userId}/twins/{twinId}/images/{fileId}
-users/{userId}/twins/{twinId}/documents/{fileId}
-public/{twinId}/assets/{fileId}
-```
-
-Security rule:
-
-```text
-Never expose IDrive E2 access keys to the app or browser.
-Only the backend/Worker creates signed upload or download URLs.
-```
-
-## 4. Cloudflare Secrets
-
-Set secrets through Wrangler:
+Secrets:
 
 ```bash
-npx wrangler secret put DEEPL_API_KEY
-npx wrangler secret put GOOGLE_TRANSLATE_API_KEY
-npx wrangler secret put ADMIN_TOKEN
-npx wrangler secret put GOOGLE_OAUTH_CLIENT_ID --env auth
-npx wrangler secret put GOOGLE_OAUTH_CLIENT_SECRET --env auth
+npx wrangler secret put GITHUB_OAUTH_CLIENT_ID --env auth
+npx wrangler secret put GITHUB_OAUTH_CLIENT_SECRET --env auth
 npx wrangler secret put AUTH_HMAC_SECRET --env auth
+```
+
+## 4. IDrive e2
+
+IDrive e2 ist der zentrale S3-kompatible Speicher.
+
+```text
+Bucket name: smyst-memories
+Object layout:
+users/{userId}/uploads/{category}/{fileId}-{filename}
+```
+
+Secrets:
+
+```bash
 npx wrangler secret put IDRIVE_E2_ACCESS_KEY --env storage
 npx wrangler secret put IDRIVE_E2_SECRET_KEY --env storage
 ```
 
-Generate an auth secret:
-
-```bash
-openssl rand -base64 48
-```
-
-## 5. Deploy Order
-
-Use this order:
+Vars:
 
 ```text
-1. Push code to GitHub
-2. Connect GitHub to Cloudflare Pages
-3. Verify Pages build
-4. Connect twynt.com custom domain
-5. Create KV namespaces
-6. Update wrangler.toml with real KV IDs and Pages origin URL
-7. Set Cloudflare secrets
-8. Deploy Workers
-9. Test auth, translation and storage endpoints
+IDRIVE_E2_ENDPOINT
+IDRIVE_E2_BUCKET
+IDRIVE_E2_REGION
+IDRIVE_E2_MAX_FILE_BYTES
+IDRIVE_E2_USER_MONTHLY_BYTES
+IDRIVE_E2_GLOBAL_BYTES
 ```
 
-## 6. Production Checklist
+## 5. Nicht erlaubte Production-Abhaengigkeiten
 
-Before launch:
+Diese Bausteine duerfen nicht als Production-Pflicht verwendet werden:
 
-- Cloudflare SSL mode is `Full (strict)`
-- `twynt.com` and `www.twynt.com` resolve correctly
-- Pages deploys from GitHub `main`
-- Worker routes are active
-- KV namespace IDs are real, not placeholders
-- Secrets are set in Cloudflare, not committed to Git
-- Storage keys are not exposed in frontend code
-- Uploads require login
-- Private downloads use signed URLs
-- Google OAuth redirect URLs match production URLs
-- Sitemap is generated
-- Google Search Console verifies domain ownership
+```text
+VPS / RackNerd
+Docker-Production
+FastAPI-Backend
+PostgreSQL / Redis / pgvector
+Caddy
+DeepL / Google Translate
+Google OAuth
+GA4
+Google Search Console als Pflichtbestandteil
+```
 
+## 6. Deploy Order
+
+```text
+1. Code nach GitHub pushen
+2. GitHub Actions Free-Only Checks bestehen lassen
+3. Cloudflare Pages Artifact bauen
+4. Cloudflare Pages deployen
+5. Cloudflare Workers deployen
+6. Storage/Auth/Translation smoke testen
+```
+
+## 7. Skalierung
+
+Die Free-Only-Architektur ist eine Kosten- und Abhaengigkeitsregel fuer den aktuellen Stand. Die langfristige Milliarden-Nutzer-Vision bleibt ein Architekturziel, ist aber mit kostenlosen Kontingenten allein nicht erreichbar.
+
+## 8. Datenablage
+
+Siehe `docs/FREE_ONLY_DATA_MAP.md`.
+
+- Cloudflare KV: Sessions, OAuth-State, Quotas, Upload-Intent, Upload-Status, kleine Indizes.
+- IDrive e2: Dateien, Medien, Dokumente, Profilbilder, Uploads, Backups, KI-Zwilling-Daten, Archivobjekte.
+- GitHub: Code und Dokumentation.
+- Cloudflare Pages: statische Web-/PWA-Artefakte.

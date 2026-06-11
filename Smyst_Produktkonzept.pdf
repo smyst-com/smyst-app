@@ -1,0 +1,3198 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<<
+/Producer (ReportLab PDF Library \055 \050opensource\051)
+/Author (smyst\056com)
+/CreationDate (D\07220260428142915\05300\04700\047)
+/Creator (\050unspecified\051)
+/Keywords ()
+/ModDate (D\07220260428142915\05300\04700\047)
+/Subject (Produktkonzept basierend auf dem aktuellen Code\055Stand)
+/Title (Smyst \204 Produkt\055 \046 Feature\055Konzept)
+/Trapped (\057False)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 13
+/Kids [ 4 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R 27 0 R 29 0 R 31 0 R 33 0 R 35 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+4 0 obj
+<<
+/Contents 5 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+5 0 obj
+<<
+/Length 3634
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 1) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 736.6772 cm
+Q
+q
+1 0 0 1 62.69291 726.6772 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (DIGITAL TWIN PLATFORM \267 PRODUKTKONZEPT V1) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 688.6772 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 30 Tf 34 TL (Smyst) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 658.6772 cm
+q
+BT 1 0 0 1 0 4 Tm 24 TL /F2 20 Tf .545098 .486275 1 rg (Produkt- & Feature-Konzept) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 598.6772 cm
+q
+.333333 .356863 .392157 rg
+BT 1 0 0 1 0 36 Tm /F1 12 Tf 16 TL (Eine produktgetriebene Sicht auf den aktuellen Code-Stand der Smyst-App: Welche) Tj T* (Features sind heute gebaut, wie h\344ngen sie zusammen, was liefert wirklich Nutzerwert) Tj T* (\227 und welche L\374cken m\374ssen vor dem \366ffentlichen Launch geschlossen werden.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 424.6772 cm
+q
+.960784 .964706 .972549 rg
+n 0 156 453.5433 -156 re f*
+.066667 .12549 .254902 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 12 139 Tm (Erstellt am) Tj T* ET
+.168627 .184314 .211765 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 119.7165 139 Tm (28. April 2026) Tj T* ET
+.066667 .12549 .254902 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 12 113 Tm (Version) Tj T* ET
+.168627 .184314 .211765 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 119.7165 113 Tm (1.0 \267 Parallel zum bestehenden Strategie-Konzept) Tj T* ET
+.066667 .12549 .254902 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 12 87 Tm (Code-Basis) Tj T* ET
+.168627 .184314 .211765 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 119.7165 87 Tm (smyst-app v0.1.0 \(Vite + React 18 + TypeScript + Tailwind 3\)) Tj T* ET
+.066667 .12549 .254902 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 12 61 Tm (Umfang) Tj T* ET
+.168627 .184314 .211765 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 119.7165 61 Tm (5 Views \267 4-Step Builder \267 Persona Engine \267 Memory-Pipeline) Tj T* ET
+.066667 .12549 .254902 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 12 35 Tm (Sprache) Tj T* ET
+.168627 .184314 .211765 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 119.7165 35 Tm (Deutsch) Tj T* ET
+.066667 .12549 .254902 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 12 9 Tm (Zielgruppe) Tj T* ET
+.168627 .184314 .211765 rg
+BT /F1 10 Tf 12 TL ET
+BT 1 0 0 1 119.7165 9 Tm (Produkt, Engineering, Stakeholder) Tj T* ET
+q
+1 J
+1 j
+1 1 1 RG
+n 0 156 m 453.5433 156 l S
+n 0 0 m 453.5433 0 l S
+n 0 0 m 0 156 l S
+n 453.5433 0 m 453.5433 156 l S
+.3 w
+n 0 130 m 453.5433 130 l S
+n 0 104 m 453.5433 104 l S
+n 0 78 m 453.5433 78 l S
+n 0 52 m 453.5433 52 l S
+n 0 26 m 453.5433 26 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 407.6693 cm
+Q
+q
+1 0 0 1 62.69291 388.6693 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 18 4 Tm /F3 11 Tf 15 TL (\204Dein Leben. Deine Stimme. F\374r immer.\223) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 370.1654 cm
+Q
+q
+1 0 0 1 62.69291 363.5654 cm
+q
+.6 w
+1 J
+.847059 .858824 .878431 RG
+n 0 0 m 469.8898 0 l S
+Q
+Q
+q
+1 0 0 1 62.69291 317.5654 cm
+q
+.333333 .356863 .392157 rg
+BT 1 0 0 1 0 27 Tm /F1 9 Tf 12 TL (Hinweis: Dieses Dokument ist eine eigenst\344ndige Erg\344nzung zum bereits vorhandenen Smyst_Konzept \(Strategie,) Tj T* (GTM, Monetarisierung\). Es betrachtet das Produkt aus der Feature-Perspektive \227 was gebaut ist, wie es sich anf\374hlt,) Tj T* (was funktional fehlt.) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+6 0 obj
+<<
+/F1 7 0 R
+/F2 8 0 R
+/F3 9 0 R
+/F4 10 0 R
+/F5 11 0 R
+/F6 12 0 R
+>>
+endobj
+7 0 obj
+<<
+/BaseFont /Helvetica
+/Encoding /WinAnsiEncoding
+/Name /F1
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+8 0 obj
+<<
+/BaseFont /Helvetica-Bold
+/Encoding /WinAnsiEncoding
+/Name /F2
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+9 0 obj
+<<
+/BaseFont /Helvetica-Oblique
+/Encoding /WinAnsiEncoding
+/Name /F3
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+10 0 obj
+<<
+/BaseFont /Courier
+/Encoding /WinAnsiEncoding
+/Name /F4
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+11 0 obj
+<<
+/BaseFont /Symbol
+/Name /F5
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+12 0 obj
+<<
+/BaseFont /ZapfDingbats
+/Name /F6
+/Subtype /Type1
+/Type /Font
+>>
+endobj
+13 0 obj
+<<
+/Contents 14 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+14 0 obj
+<<
+/Length 4069
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 2) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (INHALT) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Inhaltsverzeichnis) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 437.1969 cm
+q
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 261 Tm (1) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 259 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Executive Summary) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 441.9833 261 Tm (3) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 233 Tm (2) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 231 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Aktueller Produktstand) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 441.9833 233 Tm (4) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 205 Tm (3) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 203 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Informationsarchitektur) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 441.9833 205 Tm (5) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 177 Tm (4) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 175 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Kern-Features im Detail) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 441.9833 177 Tm (6) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 149 Tm (5) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 147 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (User Journeys & Flows) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 436.4233 149 Tm (10) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 121 Tm (6) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 119 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Datenmodell & Persona Engine) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 436.4233 121 Tm (12) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 93 Tm (7) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 91 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Funktionale L\374cken) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 436.4233 93 Tm (14) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 65 Tm (8) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 63 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Produkt-Roadmap \(Feature-Sicht\)) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 436.4233 65 Tm (15) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 37 Tm (9) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 35 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Design & Tonalit\344t) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 436.4233 37 Tm (16) Tj T* ET
+.545098 .486275 1 rg
+BT /F2 10 Tf 12 TL ET
+BT 1 0 0 1 4 9 Tm (10) Tj T* ET
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 38.01575 7 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Tech-Snapshot) Tj T* ET
+Q
+Q
+.462745 .490196 .529412 rg
+BT 1 0 0 1 436.4233 9 Tm (17) Tj T* ET
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 252 m 453.5433 252 l S
+n 0 224 m 453.5433 224 l S
+n 0 196 m 453.5433 196 l S
+n 0 168 m 453.5433 168 l S
+n 0 140 m 453.5433 140 l S
+n 0 112 m 453.5433 112 l S
+n 0 84 m 453.5433 84 l S
+n 0 56 m 453.5433 56 l S
+n 0 28 m 453.5433 28 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+ 
+
+endstream
+endobj
+15 0 obj
+<<
+/Contents 16 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+16 0 obj
+<<
+/Length 3932
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 3) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 1) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Executive Summary) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 647.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 60 Tm /F1 10 Tf 14 TL 3.918976 Tw (Smyst ist eine Digital-Twin-Plattform, die pers\366nliche Identit\344t \227 Werte, Erinnerungen, Sprachstil,) Tj T* 0 Tw 5.338863 Tw (Entscheidungsmuster \227 in einen konversationsf\344higen digitalen Zwilling \374berf\374hrt. Der aktuelle) Tj T* 0 Tw 10.34108 Tw (Code-Stand ist ein vollst\344ndiger UI-Prototyp: Landing Page, vierstufiger Twin Builder,) Tj T* 0 Tw 2.43664 Tw (Memory-Upload-Oberfl\344che, Twin-Chat und Dashboard sind vorhanden und navigierbar, jedoch noch) Tj T* 0 Tw (ohne echtes Backend, Auth oder AI-Integration.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 585.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 46 Tm /F1 10 Tf 14 TL 6.311976 Tw (Das Produkt positioniert sich prim\344r B2C \(Familien-Legacy, pers\366nliche Weisheit\) mit klaren) Tj T* 0 Tw 4.96497 Tw (B2B-Andockpunkten \(Founder-Legacy, Expertenwissen\). Diese Doppelpositionierung ist im UI an) Tj T* 0 Tw 5.441395 Tw (mehreren Stellen explizit \(Use-Cases-Sektion, B2B-Kontakt-CTA, \204Auch f\374r Unternehmenswissen) Tj T* 0 Tw (geeignet\223\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 570.6929 cm
+Q
+q
+1 0 0 1 62.69291 540.6929 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Kerngedanke in einem Satz) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 519.6929 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 18 4 Tm /F3 11 Tf 15 TL (\204Smyst ist nicht das Archiv eines Lebens, sondern dessen fortgef\374hrte Stimme.\223) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 489.6929 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Wo das Produkt heute steht) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 455.6929 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 455.6929 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (UI-Prototyp komplett) Tj /F1 10 Tf ( \227 alle f\374nf Hauptansichten sind in ) Tj /F4 9 Tf (App.tsx) Tj /F1 10 Tf ( implementiert \(~874 Zeilen,) Tj T* (single-file React\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 421.6929 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 421.6929 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Visuelle Sprache definiert) Tj /F1 10 Tf ( \227 Glassmorphism, Mesh-Gradient, Manrope/Space-Grotesk-Typografie,) Tj T* (Farbsystem Deep Blue / Violet / Cyan.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 387.6929 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 387.6929 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Inhalte vorhanden) Tj /F1 10 Tf ( \227 Use-Cases, Feature-Beschreibungen, Trust-Elemente und Tonalit\344t sind bereits) Tj T* (getextet und konsistent.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 353.6929 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 353.6929 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Was fehlt) Tj /F1 10 Tf ( \227 Backend, Auth, AI-Integration, persistente Daten, Audio-/Video-Verarbeitung, Routing) Tj T* (\(statt useState-View-Switching\), Tests, i18n.) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+17 0 obj
+<<
+/Contents 18 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+18 0 obj
+<<
+/Length 5147
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 4) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 2) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Aktueller Produktstand) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 675.1969 cm
+q
+BT 1 0 0 1 0 32 Tm .07229 Tw 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Der Code beschreibt ein klar abgegrenztes Produkt mit f\374nf Ansichten, die \374ber einen ) Tj /F4 9 Tf (useState) Tj /F1 10 Tf (-basierten) Tj T* 0 Tw .100888 Tw (View-Switch verbunden sind. Es gibt noch kein React-Router-Setup, obwohl ) Tj /F4 9 Tf (react-router-dom) Tj /F1 10 Tf ( bereits in) Tj T* 0 Tw (den Dependencies steht \227 das ist der erste konkrete Hinweis auf geplante Erweiterung.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 645.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Bestehende Views) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 385.1969 cm
+q
+.066667 .12549 .254902 rg
+n 0 254 453.5433 -26 re f*
+1 1 1 rg
+BT /F2 10 Tf 12 TL ET
+q
+1 0 0 1 8 234 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (View) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 234 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Funktionsumfang heute) Tj T* ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 8 208 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Landing Page) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 180 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL (Hero, Vision, 6 Use-Cases, 4 Produktbereiche, Sicherheit, CTA.) Tj T* (Produktmarketing-Seite mit B2C-Schwerpunkt und) Tj T* (B2B-Andockpunkten.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 154 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Twin Builder) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 126 cm
+q
+BT 1 0 0 1 0 32 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (4-Schritte-Wizard mit Progress Bar: \(1\) Stammdaten, \(2\) Werte &) Tj T* (\334berzeugungen, \(3\) Pers\366nlichkeit & Stil, \(4\) Zugriff & Legacy. Endet) Tj T* (im Dashboard.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 100 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Memory Upload) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 86 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Drag-and-Drop-Zone, Upload-Liste mit Verarbeitungsstatus,) Tj T* (Memory-Kategorien \(Kindheit, Beruf, Familie, \205\) und Statistiken.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 60 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Twin Chat) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 46 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Chat-Interface mit zuf\344lligen Mock-Antworten, vorgefertigten) Tj T* (Vorschl\344gen, Antwort-Stil-Auswahl und Quellen-Toggle.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 20 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Dashboard) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Begr\374\337ung, drei Aktions-Karten \(Chat, Memory, Settings\),) Tj T* (Aktivit\344ts\374bersicht und Twin-Status mit drei Health-Metriken.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 228 m 453.5433 228 l S
+n 0 174 m 453.5433 174 l S
+n 0 120 m 453.5433 120 l S
+n 0 80 m 453.5433 80 l S
+n 0 40 m 453.5433 40 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 355.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Was bereits gut sitzt) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 321.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 321.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Konsistente Tonalit\344t) Tj /F1 10 Tf ( \227 ruhig, vertrauensw\374rdig, nicht-technisch. Mockup-Beispiele wie \204Empathisch,) Tj T* (reflektiert, ruhig entscheidend\223 treffen das Markenversprechen ohne Pathos.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 287.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 287.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Ehrlicher Umgang mit AI) Tj /F1 10 Tf ( \227 explizit als \204Modell-Ausgabe gekennzeichnet\223, Quellen-Anzeige im) Tj T* (Chat-Sidebar als Toggle vorgesehen.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 253.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 253.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Privacy-First-Signale) Tj /F1 10 Tf ( \227 DSGVO-Badge, Server in Deutschland, Ende-zu-Ende-Verschl\374sselung, ISO) Tj T* (27001 sind in der Security-Sektion verankert \(noch als Versprechen, nicht als Implementierung\).) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+19 0 obj
+<<
+/Contents 20 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+20 0 obj
+<<
+/Length 3641
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 5) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 3) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Informationsarchitektur) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 661.1969 cm
+q
+BT 1 0 0 1 0 46 Tm 1.691647 Tw 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Die App teilt sich in einen ) Tj /F2 10 Tf (Marketing-Modus) Tj /F1 10 Tf ( \(Landing Page\) und einen ) Tj /F2 10 Tf (Produkt-Modus) Tj /F1 10 Tf ( \(Dashboard,) Tj T* 0 Tw 2.33229 Tw (Builder, Memory, Chat\). Der Wechsel passiert \374ber den Header-Button \204Early Access\223 / \204Zur\374ck zur) Tj T* 0 Tw 1.596457 Tw (Landing Page\223 \227 eine L\366sung, die f\374r den Prototyp elegant ist, aber f\374r die Produktion durch Auth +) Tj T* 0 Tw (Routing ersetzt werden muss.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 631.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Navigationsstruktur) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 479.1969 cm
+q
+.066667 .12549 .254902 rg
+n 0 146 453.5433 -26 re f*
+1 1 1 rg
+BT /F2 10 Tf 12 TL ET
+q
+1 0 0 1 8 126 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Bereich) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 126 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Items) Tj T* ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 8 100 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Marketing-Header) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 86 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Vision \267 Anwendungen \267 Produkt \267 Sicherheit \267 i@smyst.com \267 ) Tj /F2 10 Tf (Early) Tj T* (Access) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 60 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Produkt-Header) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 46 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Dashboard \267 Twin Builder \267 Memory \267 Chat \267 ) Tj /F2 10 Tf (Zur\374ck zur Landing) Tj T* (Page) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 20 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Footer \(gleichbleibend\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Produkt-Links \267 Unternehmen \267 Rechtliches \267 LinkedIn / Instagram /) Tj T* (Mail) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 120 m 453.5433 120 l S
+n 0 80 m 453.5433 80 l S
+n 0 40 m 453.5433 40 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 449.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Empfehlung) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 387.1969 cm
+q
+BT 1 0 0 1 0 46 Tm .648651 Tw 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Der duale Header signalisiert klar zwei Modi und ist intuitiv. Sobald Auth dazukommt, sollte der Wechsel) Tj T* 0 Tw 1.213828 Tw (jedoch nicht mehr ein manueller Button sein, sondern automatisch per Login-Status. Die Landing Page) Tj T* 0 Tw 1.324342 Tw (bleibt \366ffentlich, das Produkt liegt hinter ) Tj /F4 9 Tf (/app/*) Tj /F1 10 Tf (-Routes mit ) Tj /F4 9 Tf (react-router-dom) Tj /F1 10 Tf ( \(bereits installiert, noch) Tj T* 0 Tw (nicht integriert\).) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+21 0 obj
+<<
+/Contents 22 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+22 0 obj
+<<
+/Length 6309
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 6) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 4) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Kern-Features im Detail) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 675.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL .427251 Tw (Vier Produktbereiche tragen das Smyst-Versprechen: Twin Builder, Memory Engine, Persona Engine und) Tj T* 0 Tw 2.519983 Tw (Twin Chat. Drei sind heute als UI vollst\344ndig sichtbar; die vierte \(Persona Engine\) ist konzeptionell) Tj T* 0 Tw (verankert, aber erwartungsgem\344\337 noch nicht implementiert.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 562.1969 cm
+q
+1 1 1 rg
+n 0 107 453.5433 -107 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 10 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 0 76 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2.5 Tm /F2 7.5 Tf 10 TL (FEATURE 4.1) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 59 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 12 Tf 15 TL (Twin Builder \227 der erste 15-Minuten-Twin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 1 cm
+q
+BT 1 0 0 1 0 46 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Vierstufiger Wizard, der die Persona-Grundlage erfasst: ) Tj /F2 10 Tf (Schritt 1) Tj /F1 10 Tf ( Stammdaten \(Name, Alter,) Tj T* (Beruf\), ) Tj /F2 10 Tf (Schritt 2) Tj /F1 10 Tf ( Werte und weiterzugebende Lebensweisheit, ) Tj /F2 10 Tf (Schritt 3) Tj /F1 10 Tf ( Kommunikationsstil) Tj T* (\(Dropdown: warm, direkt, humorvoll, weise\) plus Entscheidungsmuster, ) Tj /F2 10 Tf (Schritt 4) Tj /F1 10 Tf ( Zugriffsrechte) Tj T* (\(Familie, Gesch\344ftspartner, \366ffentlich\). Endet im Dashboard. Progress-Anzeige in 25%-Schritten.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.4 w
+n 0 107 m 453.5433 107 l S
+n 0 0 m 453.5433 0 l S
+n 0 0 m 0 107 l S
+n 453.5433 0 m 453.5433 107 l S
+.545098 .486275 1 RG
+2.5 w
+n 0 0 m 0 107 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 556.5276 cm
+Q
+q
+1 0 0 1 70.86614 482.5276 cm
+q
+.960784 .964706 .972549 rg
+n 0 74 453.5433 -74 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 52 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (St\344rke) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Der Builder ist bewusst kurz. Der Versprechenstext \204In 15 Minuten zum ersten Twin\223 ist mit nur) Tj T* (vier Schritten realistisch \227 das senkt die Aktivierungsh\374rde erheblich.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.34902 .780392 1 RG
+2.5 w
+n 0 0 m 0 74 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 478.2756 cm
+Q
+q
+1 0 0 1 70.86614 390.2756 cm
+q
+.960784 .964706 .972549 rg
+n 0 88 453.5433 -88 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 66 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Risiko) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+BT 1 0 0 1 0 32 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Vier Schritte erzeugen einen Twin, der noch oberfl\344chlich ist. Es braucht ein klares) Tj T* /F3 10 Tf (Progressive-Profiling) Tj /F1 10 Tf (-Modell: Der erste Twin ist eine Skizze, der \204echte\223 Twin entsteht durch) Tj T* (wiederholte Memory-Uploads und Chat-Konversationen \374ber Wochen.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.545098 .486275 1 RG
+2.5 w
+n 0 0 m 0 88 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 381.7717 cm
+Q
+q
+1 0 0 1 70.86614 274.7717 cm
+q
+1 1 1 rg
+n 0 107 453.5433 -107 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 10 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 0 76 cm
+q
+.34902 .780392 1 rg
+BT 1 0 0 1 0 2.5 Tm /F2 7.5 Tf 10 TL (FEATURE 4.2) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 59 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 12 Tf 15 TL (Memory Upload \227 Erinnerungen werden Wissen) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 1 cm
+q
+BT 1 0 0 1 0 46 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Drag-and-Drop-Zone akzeptiert PDF, DOC, TXT, MP3, WAV, JPG, PNG, MP4 \(max. 100 MB pro) Tj T* -0.011102 Tw (Datei\). Status-Pipeline: ) Tj /F3 10 Tf (Wird verarbeitet) Tj /F1 10 Tf ( ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( ) Tj /F3 10 Tf (Verarbeitet) Tj /F1 10 Tf (. Sidebar zeigt Memory-Kategorien \(Kindheit,) Tj T* 0 Tw (Beruf, Familie, Reisen, Werte\) und Statistiken \(Gesamt-Memories, verarbeitete Dateien,) Tj T* (Speichernutzung\).) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.4 w
+n 0 107 m 453.5433 107 l S
+n 0 0 m 453.5433 0 l S
+n 0 0 m 0 107 l S
+n 453.5433 0 m 453.5433 107 l S
+.34902 .780392 1 RG
+2.5 w
+n 0 0 m 0 107 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 269.1024 cm
+Q
+q
+1 0 0 1 70.86614 181.1024 cm
+q
+.960784 .964706 .972549 rg
+n 0 88 453.5433 -88 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 66 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (St\344rke) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL (Die Pipeline-Metapher \(Upload ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( Verarbeitung ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( Kategorie\) macht f\374r den Nutzer f\374hlbar, dass) Tj T* (etwas Sinnvolles mit den Dateien passiert. Das ist wichtig, weil die eigentliche Magie) Tj T* (\(Embedding, semantische Suche\) f\374r den Nutzer unsichtbar ist.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.34902 .780392 1 RG
+2.5 w
+n 0 0 m 0 88 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 176.8504 cm
+Q
+q
+1 0 0 1 70.86614 88.85039 cm
+q
+.960784 .964706 .972549 rg
+n 0 88 453.5433 -88 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 66 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Risiko) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL (Audio-/Video-Transkription ist im UI versprochen, aber technisch anspruchsvoll:) Tj T* (Sprecher-Identifikation, Dialekte, lange Aufnahmen, Hintergrundger\344usche. Hier sollte die V1.0) Tj T* (ehrlich starten \227 Text und PDF first, Audio in V1.5.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.545098 .486275 1 RG
+2.5 w
+n 0 0 m 0 88 l S
+Q
+Q
+Q
+ 
+
+endstream
+endobj
+23 0 obj
+<<
+/Contents 24 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+24 0 obj
+<<
+/Length 5618
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 7) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 70.86614 672.1969 cm
+q
+1 1 1 rg
+n 0 107 453.5433 -107 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 10 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 0 76 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 2.5 Tm /F2 7.5 Tf 10 TL (FEATURE 4.3) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 59 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 12 Tf 15 TL (Persona Engine \227 der Stil hinter den Antworten) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 1 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 46 Tm /F1 10 Tf 14 TL (Im Code nicht direkt sichtbar \(kein Backend\), aber im Marketing klar positioniert: Die Engine) Tj T* (verbindet Profil \(aus dem Builder\), Memories \(aus den Uploads\), Sprachstil und Werte zu einem) Tj T* (Kontext, der jede Chat-Antwort vor der Generierung \204f\344rbt\223. Antworten sollen \204glaubw\374rdig, ruhig) Tj T* (und pers\366nlich\223 klingen \227 der Anti-Generic-Bot.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.4 w
+n 0 107 m 453.5433 107 l S
+n 0 0 m 453.5433 0 l S
+n 0 0 m 0 107 l S
+n 453.5433 0 m 453.5433 107 l S
+.066667 .12549 .254902 RG
+2.5 w
+n 0 0 m 0 107 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 666.5276 cm
+Q
+q
+1 0 0 1 70.86614 578.5276 cm
+q
+.960784 .964706 .972549 rg
+n 0 88 453.5433 -88 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 66 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (St\344rke) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL (Die Trennung Persona-Engine ) Tj /F5 10 Tf 14 TL (\253) Tj /F1 10 Tf 14 TL ( LLM-Backend ist die richtige Architektur: Sie erlaubt einen) Tj T* (Wechsel des Sprachmodells \(OpenAI ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( Anthropic ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( lokales Modell\) ohne dass die) Tj T* (Twin-Identit\344t verloren geht.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.34902 .780392 1 RG
+2.5 w
+n 0 0 m 0 88 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 574.2756 cm
+Q
+q
+1 0 0 1 70.86614 472.2756 cm
+q
+.960784 .964706 .972549 rg
+n 0 102 453.5433 -102 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 80 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Risiko) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+BT 1 0 0 1 0 46 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Im Demo-Code liefert der Twin Chat zuf\344llige Antworten aus einem vierelementigen Array. Der) Tj T* (Sprung zu echter Persona-Treue ist der h\344rteste technische Schritt im gesamten Produkt \227 und) Tj T* (gleichzeitig das Kernversprechen. Hier muss am ehrlichsten erwartet werden, dass die ersten) Tj T* (Versionen ) Tj /F3 10 Tf (noch nicht) Tj /F1 10 Tf ( klingen wie der echte Mensch.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.545098 .486275 1 RG
+2.5 w
+n 0 0 m 0 102 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 463.7717 cm
+Q
+q
+1 0 0 1 70.86614 370.7717 cm
+q
+1 1 1 rg
+n 0 93 453.5433 -93 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 10 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 0 62 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2.5 Tm /F2 7.5 Tf 10 TL (FEATURE 4.4) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 45 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 12 Tf 15 TL (Twin Chat \227 Gespr\344che mit Kontext und Haltung) Tj T* ET
+Q
+Q
+q
+1 0 0 1 0 1 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL (Klassisches Chat-Interface mit Header \(Name + \204Online \267 Pers\366nlicher Twin\223\), Nachrichten-Stream) Tj T* (und Eingabefeld. Sidebar bietet vier Vorschl\344ge \(\204Was ist dein wichtigster Lebensrat?\223 \205\) und drei) Tj T* (Einstellungen: Antwort-Stil, Kontext-Nutzung, Quellen-Anzeige.) Tj T* ET
+Q
+Q
+q
+Q
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.4 w
+n 0 93 m 453.5433 93 l S
+n 0 0 m 453.5433 0 l S
+n 0 0 m 0 93 l S
+n 453.5433 0 m 453.5433 93 l S
+.545098 .486275 1 RG
+2.5 w
+n 0 0 m 0 93 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 365.1024 cm
+Q
+q
+1 0 0 1 70.86614 291.1024 cm
+q
+.960784 .964706 .972549 rg
+n 0 74 453.5433 -74 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 52 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (St\344rke) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Die Vorschl\344ge im Sidebar sind ein cleveres Cold-Start-Hilfsmittel: Der Nutzer wei\337 bei einem) Tj T* (Twin selten sofort, was er fragen soll \227 vier kuratierte Beispielfragen geben den Einstieg.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.34902 .780392 1 RG
+2.5 w
+n 0 0 m 0 74 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 286.8504 cm
+Q
+q
+1 0 0 1 70.86614 184.8504 cm
+q
+.960784 .964706 .972549 rg
+n 0 102 453.5433 -102 re f*
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 12 80 cm
+q
+.066667 .12549 .254902 rg
+BT 1 0 0 1 0 3 Tm /F2 11 Tf 14 TL (Risiko) Tj T* ET
+Q
+Q
+q
+1 0 0 1 12 8 cm
+q
+BT 1 0 0 1 0 46 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Es fehlt heute die ) Tj /F3 10 Tf (Nachvollziehbarkeit) Tj /F1 10 Tf (: Der Sidebar-Toggle \204Quellen anzeigen\223 existiert, aber es) Tj T* (gibt im Mock keine Anzeige, ) Tj /F3 10 Tf (welche) Tj /F1 10 Tf ( Erinnerung zur Antwort gef\374hrt hat. Genau diese) Tj T* (Verkn\374pfung ist das, was Smyst von einem generischen LLM-Chatbot unterscheidet \227 sie muss) Tj T* (prominent gebaut werden.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.545098 .486275 1 RG
+2.5 w
+n 0 0 m 0 102 l S
+Q
+Q
+Q
+ 
+
+endstream
+endobj
+25 0 obj
+<<
+/Contents 26 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+26 0 obj
+<<
+/Length 6737
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 8) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 5) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+BT 1 0 0 1 0 4 Tm 24 TL /F2 20 Tf .086275 .094118 .105882 rg (User Journeys & Flows) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 689.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL 1.89186 Tw (Aus dem Code lassen sich drei prototypische Journeys ableiten \227 alle drei sind im UI heute bereits) Tj T* 0 Tw (begehbar.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 659.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Journey A \227 \204Die Bewahrerin\223 \(B2C, 50\22665\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 625.1969 cm
+q
+BT 1 0 0 1 0 18 Tm .328443 Tw 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Ausl\366ser:) Tj /F1 10 Tf ( Anzeige auf Instagram, Headline \204Deine Enkel sollen dich kennenlernen\223. Klick auf Anzeige ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL T* 0 Tw (Landing Page.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 449.1969 cm
+q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 6 150 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (1.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 28.67717 150 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Landing Page) Tj T* ET
+Q
+Q
+q
+1 0 0 1 142.063 150 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Liest Hero, scrollt zu Use-Cases. \204Gro\337eltern ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( Enkel\223 trifft.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 124 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (2.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 28.67717 110 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F2 10 Tf 14 TL (CTA \204Starte deinen) Tj T* (Twin\223) Tj T* ET
+Q
+Q
+q
+1 0 0 1 142.063 124 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Wechselt in Twin Builder.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 84 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (3.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 28.67717 84 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Builder Schritt 1\2264) Tj T* ET
+Q
+Q
+q
+1 0 0 1 142.063 84 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Gibt Stammdaten, Werte, Stil und Zugriff \(Familie ) Tj /F6 10 Tf 14 TL (3) Tj /F1 10 Tf 14 TL (\) ein.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 58 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (4.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 28.67717 58 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Dashboard) Tj T* ET
+Q
+Q
+q
+1 0 0 1 142.063 58 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (\204Willkommen zur\374ck, Anna\223 \227 Profil 86%, Memory 92%.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 32 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (5.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 28.67717 32 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Memory Upload) Tj T* ET
+Q
+Q
+q
+1 0 0 1 142.063 32 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (L\344dt Familienfotos und Sprachnachrichten hoch.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 6 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (6.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 28.67717 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Twin Chat) Tj T* ET
+Q
+Q
+q
+1 0 0 1 142.063 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Probiert Vorschlag \204Was bedeutet Familie f\374r dich?\223.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 144 m 453.5433 144 l S
+n 0 104 m 453.5433 104 l S
+n 0 78 m 453.5433 78 l S
+n 0 52 m 453.5433 52 l S
+n 0 26 m 453.5433 26 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 440.6929 cm
+Q
+q
+1 0 0 1 62.69291 410.6929 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Journey B \227 \204Der Nachfolger\223 \(B2B, 40\22650\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 376.6929 cm
+q
+BT 1 0 0 1 0 18 Tm 4.861976 Tw 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Ausl\366ser:) Tj /F1 10 Tf ( Empfehlung im Founder-Netzwerk, gezielte Suche nach \204Founder Legacy\223. Klick auf) Tj T* 0 Tw (B2B-Mailto-Link im Footer.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 328.6929 cm
+q
+BT 1 0 0 1 0 32 Tm .475366 Tw 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Die heutige App zeigt B2B-Use-Cases prominent, leitet aber Anfragen noch \374ber ) Tj /F4 9 Tf (b2b@smyst.com) Tj /F1 10 Tf ( \227 also) Tj T* 0 Tw 1.586776 Tw (klassischer Sales-Prozess. ) Tj /F2 10 Tf (Empfehlung) Tj /F1 10 Tf (: F\374r die n\344chste Iteration eine eigene ) Tj /F4 9 Tf (/business) Tj /F1 10 Tf (-Landing mit) Tj T* 0 Tw (Demo-Request-Formular und Enterprise-FAQ.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 314.189 cm
+Q
+q
+1 0 0 1 62.69291 284.189 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Journey C \227 \204Die Wiederkehr\223 \(Engagement\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 250.189 cm
+q
+BT 1 0 0 1 0 18 Tm 1.796342 Tw 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Ausl\366ser:) Tj /F1 10 Tf ( E-Mail-Hinweis \204Du hast 18 neue Memories diesen Monat gesammelt\223 oder kalendarischer) Tj T* 0 Tw (Trigger \(\204Heute vor 2 Jahren \205\223\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 230.189 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 230.189 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Login ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( ) Tj /F2 10 Tf (Dashboard) Tj /F1 10 Tf ( mit Aktivit\344ts\374bersicht \(Letzte Konversation, neue Memories\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 210.189 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 210.189 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Klick \204Fortsetzen\223 ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( ) Tj /F2 10 Tf (Twin Chat) Tj /F1 10 Tf ( mit dem letzten Kontext.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 176.189 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 176.189 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Twin schl\344gt vor: \204M\366chtest du die Geschichte \374ber deinen Vater weiterf\374hren?\223 \227 ) Tj /F3 10 Tf (im Code heute noch) Tj T* (nicht abgebildet, aber klare n\344chste Iteration) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+27 0 obj
+<<
+/Contents 28 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+28 0 obj
+<<
+/Length 6469
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 513.6787 34.01575 Tm (Seite 9) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 6) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+BT 1 0 0 1 0 4 Tm 24 TL /F2 20 Tf .086275 .094118 .105882 rg (Datenmodell & Persona Engine) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 675.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL 3.307976 Tw (Aus den Builder-Schritten und der Memory-Pipeline l\344sst sich ein minimal-tragf\344higes Datenmodell) Tj T* 0 Tw 2.795984 Tw (ableiten. Es ist im Code bisher nicht persistent \227 sobald ein Backend dazukommt, sollte sich die) Tj T* 0 Tw (API-Struktur an dieser Logik orientieren.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 645.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Entit\344ten) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 345.1969 cm
+q
+.066667 .12549 .254902 rg
+n 0 294 453.5433 -26 re f*
+1 1 1 rg
+BT /F2 10 Tf 12 TL ET
+q
+1 0 0 1 8 274 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Entit\344t) Tj T* ET
+Q
+Q
+q
+1 0 0 1 107.2126 274 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Felder & Bedeutung) Tj T* ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 8 248 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (User) Tj T* ET
+Q
+Q
+q
+1 0 0 1 107.2126 234 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Account-Inhaber. ) Tj /F3 10 Tf (Felder:) Tj /F1 10 Tf ( id, email, password_hash, created_at, locale, plan) Tj T* (\(free/premium/family/business\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 208 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Twin) Tj T* ET
+Q
+Q
+q
+1 0 0 1 107.2126 180 cm
+q
+BT 1 0 0 1 0 32 Tm -0.070929 Tw 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Persona, geh\366rt zu einem User. ) Tj /F3 10 Tf (Felder:) Tj /F1 10 Tf ( id, owner_id, name, age, profession,) Tj T* 0 Tw (communication_style, decision_pattern, values_text, legacy_text,) Tj T* (completeness_score.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 154 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Memory) Tj T* ET
+Q
+Q
+q
+1 0 0 1 107.2126 126 cm
+q
+BT 1 0 0 1 0 32 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Hochgeladenes Asset, geh\366rt zu einem Twin. ) Tj /F3 10 Tf (Felder:) Tj /F1 10 Tf ( id, twin_id, file_path,) Tj T* (mime_type, category, original_filename, uploaded_at, processing_status,) Tj T* (transcript, embeddings_vector.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 100 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Conversation) Tj T* ET
+Q
+Q
+q
+1 0 0 1 107.2126 86 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Chat-Session, geh\366rt zu einem Twin. ) Tj /F3 10 Tf (Felder:) Tj /F1 10 Tf ( id, twin_id, started_at,) Tj T* (last_message_at, message_count.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 60 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Message) Tj T* ET
+Q
+Q
+q
+1 0 0 1 107.2126 46 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Einzelne Nachricht. ) Tj /F3 10 Tf (Felder:) Tj /F1 10 Tf ( id, conversation_id, role \(user/twin\), content,) Tj T* (sources \(array of memory_ids\), created_at.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 20 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (AccessGrant) Tj T* ET
+Q
+Q
+q
+1 0 0 1 107.2126 6 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Wer darf den Twin sehen? ) Tj /F3 10 Tf (Felder:) Tj /F1 10 Tf ( id, twin_id, grantee_email, scope) Tj T* (\(chat_only/full\), active_from, active_until, granted_by.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 268 m 453.5433 268 l S
+n 0 228 m 453.5433 228 l S
+n 0 174 m 453.5433 174 l S
+n 0 120 m 453.5433 120 l S
+n 0 80 m 453.5433 80 l S
+n 0 40 m 453.5433 40 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 315.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Persona Engine \227 Pipeline-Vorschlag) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 281.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL -0.051265 Tw (Der Weg von einer User-Frage zur Twin-Antwort sollte in drei expliziten Stufen passieren \227 das macht die) Tj T* 0 Tw (Engine debugbar und erlaubt sp\344ter die Anzeige von Quellen im Chat:) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 261.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 261.1969 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Retrieval) Tj /F1 10 Tf ( \227 Frage ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( Embedding ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( Top-k semantisch \344hnliche Memories \(z.B. k=6\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 227.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 227.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Persona Composition) Tj /F1 10 Tf ( \227 Twin-Profil \(Werte, Stil, Entscheidungsmuster\) + Retrieval-Snippets ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL T* (System-Prompt f\374r das LLM.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 193.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 193.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Generation + Provenance) Tj /F1 10 Tf ( \227 LLM-Antwort + Liste der genutzten Memory-IDs ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( wird im UI als) Tj T* (\204Quellen\223 darstellbar.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 163.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Schnittstelle zum Chat-UI) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 115.1969 cm
+q
+BT 1 0 0 1 0 32 Tm 1.08498 Tw 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Die heutige Chat-Komponente hat bereits den Toggle \204Quellen anzeigen\223 im Sidebar. Das Datenmodell) Tj T* 0 Tw .283059 Tw (oben unterst\374tzt das ohne weitere Anpassungen \227 ) Tj /F4 9 Tf (Message.sources) Tj /F1 10 Tf ( ist die einzige Verbindung, die das) Tj T* 0 Tw (UI braucht.) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+29 0 obj
+<<
+/Contents 30 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+30 0 obj
+<<
+/Length 5687
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 509.2307 34.01575 Tm (Seite 10) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 7) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Funktionale L\374cken) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 675.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 32 Tm /F1 10 Tf 14 TL 1.023735 Tw (Das, was im Marketing versprochen wird, und das, was im Code heute lebt, fallen an mehreren Stellen) Tj T* 0 Tw 2.543059 Tw (auseinander. Diese L\374cken sind normal f\374r einen UI-Prototyp \227 sie sollten aber bewusst priorisiert) Tj T* 0 Tw (werden.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 215.1969 cm
+q
+.066667 .12549 .254902 rg
+n 0 454 453.5433 -26 re f*
+1 1 1 rg
+BT /F2 10 Tf 12 TL ET
+q
+1 0 0 1 8 434 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (L\374cke) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 434 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Beschreibung & Priorit\344t) Tj T* ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 8 408 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Auth & Persistenz) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 394 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Kein Login, kein User-Account, kein Backend. ) Tj /F4 9 Tf (useState) Tj /F1 10 Tf ( verliert alles) Tj T* (beim Refresh. ) Tj /F2 10 Tf (Priorit\344t: kritisch) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 368 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Routing) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 340 cm
+q
+BT 1 0 0 1 0 32 Tm 14 TL /F4 9 Tf .168627 .184314 .211765 rg (react-router-dom) Tj /F1 10 Tf ( ist installiert, aber Views werden \374ber einen) Tj T* /F4 9 Tf (currentView) Tj /F1 10 Tf (-State umgeschaltet. ) Tj /F2 10 Tf (Priorit\344t: hoch) Tj /F1 10 Tf ( \(auch f\374r) Tj T* (Sharing/Deeplinks\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 314 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Echte AI-Integration) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 300 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Twin-Antworten sind ein Mock-Array mit vier Stichpunkten. Echte) Tj T* (Persona-Engine fehlt. ) Tj /F2 10 Tf (Priorit\344t: kritisch) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 274 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Memory-Verarbeitung) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 260 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Upload-UI vorhanden, aber kein Embedding, keine semantische) Tj T* (Suche, keine Audio-Transkription. ) Tj /F2 10 Tf (Priorit\344t: hoch) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 234 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Quellen-Anzeige im Chat) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 220 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Toggle existiert, Anzeige nicht. ) Tj /F2 10 Tf (Priorit\344t: mittel) Tj /F1 10 Tf ( \227 aber) Tj T* (differenzierungsentscheidend.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 180 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Legacy-Access) Tj T* (\(Zeitsteuerung\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 180 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Builder-Schritt 4 erfasst Zugriffsgruppen, aber \204nach meinem Tod\223) Tj T* (und \204aktiv ab Datum X\223 fehlen. ) Tj /F2 10 Tf (Priorit\344t: mittel) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 154 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Mobile-Experience) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 140 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Tailwind-Layout ist responsive, aber keine native App, kein) Tj T* (Voice-Input f\374r Memories. ) Tj /F2 10 Tf (Priorit\344t: mittel) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 114 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (i18n) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 100 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Texte sind hart auf Deutsch verdrahtet. ) Tj /F2 10 Tf (Priorit\344t: niedrig) Tj /F1 10 Tf  T* (\(DACH-Launch ist Phase 1\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 74 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Tests) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 60 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Keine Test-Konfiguration im Repo. ) Tj /F2 10 Tf (Priorit\344t: mittel) Tj /F1 10 Tf ( sobald Logik) Tj T* (\(Persona Engine, Datei-Pipeline\) entsteht.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 34 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Onboarding-Telemetrie) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 6 cm
+q
+BT 1 0 0 1 0 32 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Keine Analytics, keine Funnel-Messung. F\374r die KPIs aus dem) Tj T* (Strategie-Konzept \(Activation, Retention, Conversion\) zwingend n\366tig.) Tj T* /F2 10 Tf (Priorit\344t: mittel) Tj /F1 10 Tf (.) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 428 m 453.5433 428 l S
+n 0 388 m 453.5433 388 l S
+n 0 334 m 453.5433 334 l S
+n 0 294 m 453.5433 294 l S
+n 0 254 m 453.5433 254 l S
+n 0 214 m 453.5433 214 l S
+n 0 174 m 453.5433 174 l S
+n 0 134 m 453.5433 134 l S
+n 0 94 m 453.5433 94 l S
+n 0 54 m 453.5433 54 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+ 
+
+endstream
+endobj
+31 0 obj
+<<
+/Contents 32 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+32 0 obj
+<<
+/Length 6989
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 509.2307 34.01575 Tm (Seite 11) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 8) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Produkt-Roadmap \(Feature-Sicht\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 689.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL -0.020682 Tw (Die folgende Roadmap fokussiert ausschlie\337lich Features \227 also was der Nutzer sehen und tun kann. Sie) Tj T* 0 Tw (erg\344nzt die technische Roadmap des bestehenden Strategiekonzepts.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 659.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Phase 1 \267 MVP \(heute ) Tj /F5 14 Tf 18 TL (\256) Tj /F2 14 Tf 18 TL ( 3 Monate\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 639.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Ziel: Ein einzelner Twin, der textbasiert glaubw\374rdig antwortet.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 619.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 619.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Auth \(E-Mail + Magic Link\) und persistente Profile) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 599.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 599.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (React-Router-Setup, Deeplinks zu allen Views) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 579.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 579.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Echte LLM-Anbindung \(1 Provider, z.B. Anthropic\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 559.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 559.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Memory Upload f\374r Text und PDF mit Embeddings) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 539.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 539.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Quellen-Anzeige im Chat \(\204Diese Antwort basiert auf \205\223\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 519.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 519.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Onboarding-Funnel mit Analytics-Events) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 489.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Phase 2 \267 V1.5 \(Monat 4\2266\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 469.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Ziel: Twin wird vielstimmig \227 Audio kommt dazu.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 449.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 449.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Audio-Upload \(MP3/WAV\) mit Transkription) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 429.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 429.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Sprecher-Tagging \(wer spricht in dieser Aufnahme?\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 409.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 409.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Voice-First-Memory-Recording in Mobile \(PWA\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 389.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 389.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Erweiterter Builder: optionale Tiefenfragen pro Lebensphase) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 369.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 369.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Legacy-Access mit Datum-/Trigger-Steuerung) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 349.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 349.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Family-Plan: bis zu 5 Twyns unter einem Account) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 319.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Phase 3 \267 V2.0 \(Monat 7\22612\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 299.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Ziel: B2B-f\344hig, multimodal, skalierbar.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 279.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 279.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Video-Upload mit Sprecher- und Szenen-Erkennung) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 259.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 259.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Enterprise-Dashboard \(mehrere Twyns, Admin-Rechte, Audit-Log\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 239.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 239.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (API f\374r Drittanbieter \(Bestattungsunternehmen, Erbrechts-Plattformen\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 219.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 219.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Multi-Language Support \(EN zuerst\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 199.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 199.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Twin-Embeds \(z.B. Bewerbungs-Twin auf eigener Website\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 179.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 2 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 179.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Kollaboratives Memory-Sammeln \(\204Lade Familie ein, Erinnerungen beizutragen\223\)) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+33 0 obj
+<<
+/Contents 34 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+34 0 obj
+<<
+/Length 5863
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 509.2307 34.01575 Tm (Seite 12) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 9) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+BT 1 0 0 1 0 4 Tm 24 TL /F2 20 Tf .086275 .094118 .105882 rg (Design & Tonalit\344t) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 689.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL .176412 Tw (Das visuelle System ist im Code sehr pr\344zise definiert und sollte konsequent durchgehalten werden, auch) Tj T* 0 Tw (in Mobile-, B2B- und Email-Touchpoints.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 659.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Design-Tokens \(aus index.css und tailwind.config\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 417.1969 cm
+q
+.066667 .12549 .254902 rg
+n 0 236 453.5433 -26 re f*
+1 1 1 rg
+BT /F2 10 Tf 12 TL ET
+q
+1 0 0 1 8 216 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Token) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 216 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Wert) Tj T* ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 8 190 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Farbe Deep Blue) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 190 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (#112041 \227 Prim\344rtext, Status-Akzente) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 164 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Farbe Soft Violet) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 164 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (#8B7CFF \227 B2B-Tag, Persona-Akzente) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 138 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Farbe Signal Cyan) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 138 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (#59C7FF \227 Primary-CTA, Progress, B2C-Tag) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 112 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Hintergrund) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 112 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Mesh-Gradient aus #f5f6f8 ) Tj /F5 10 Tf 14 TL (\256) Tj /F1 10 Tf 14 TL ( #cfd3d9, vier radiale Hotspots) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 86 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Glasmorphismus) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 72 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Backdrop-Blur 18\22632px, wei\337e Transparenz 12\22628%, Inset-Highlight) Tj T* (oben) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 46 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Typografie) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 32 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (Manrope \(Body\) \267 Space Grotesk \(Headings\) \227 ruhig, hochwertig,) Tj T* (lesbar) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Border-Radius) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (0.75rem Standard, bis 30px f\374r Hero-Karten) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 210 m 453.5433 210 l S
+n 0 184 m 453.5433 184 l S
+n 0 158 m 453.5433 158 l S
+n 0 132 m 453.5433 132 l S
+n 0 106 m 453.5433 106 l S
+n 0 66 m 453.5433 66 l S
+n 0 26 m 453.5433 26 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 387.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 14 Tf 18 TL (Tonalit\344t \227 was funktioniert, was nicht) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 353.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 353.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Funktioniert:) Tj /F1 10 Tf ( Kurze, w\374rdevolle S\344tze. \204Bewahre, was z\344hlt.\223 \204Dein Leben. Deine Stimme. F\374r immer.\223) Tj T* (\227 emotional, nicht kitschig.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 319.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 319.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Funktioniert:) Tj /F1 10 Tf ( Sachlich-warme Twin-Beispielantwort: \204Pr\374fe erst, ob die Entscheidung zu deinen Werten) Tj T* (passt.\223 \227 zeigt das Markenversprechen ohne es auszubuchstabieren.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 271.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 30 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 271.1969 cm
+q
+BT 1 0 0 1 0 32 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Vorsichtig:) Tj /F1 10 Tf ( Emoji-Use im Dashboard und Use-Cases \() Tj /F6 10 Tf 14 TL (n) Tj /F1 10 Tf 14 TL (, ) Tj /F6 10 Tf 14 TL (nnnnn) Tj /F1 10 Tf 14 TL (, ) Tj /F6 10 Tf 14 TL (n) Tj /F1 10 Tf 14 TL ( \205\). Auf einer Premium-Plattform) Tj T* -0.096686 Tw (f\374r ein sensibles Thema kann das billig wirken \227 Alternative: monochrome Lucide-Icons \() Tj /F4 9 Tf (lucide-react) Tj /F1 10 Tf  T* 0 Tw (ist bereits installiert\).) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 237.1969 cm
+BT /F1 12 Tf 14.4 TL ET
+.545098 .486275 1 rg
+BT 1 0 0 1 -4 16 Tm (\177) Tj T* ET
+Q
+q
+1 0 0 1 72.69291 237.1969 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F2 10 Tf .168627 .184314 .211765 rg (Vorsichtig:) Tj /F1 10 Tf ( Health-Scores im Dashboard \(86%, 92%, 88%\). Gamification eines Lebensbild ist heikel \227) Tj T* (die Metaphern \204Knowledge Health\223 und \204Gespr\344chsqualit\344t\223 sollten ehrlicher umformuliert werden.) Tj T* ET
+Q
+Q
+ 
+
+endstream
+endobj
+35 0 obj
+<<
+/Contents 36 0 R
+/MediaBox [ 0 0 595.2756 841.8898 ]
+/Resources <<
+/Font 6 0 R
+/ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>>
+/Rotate 0
+/Trans <<
+>>
+/Type /Page
+/Parent 2 0 R
+>>
+endobj
+36 0 obj
+<<
+/Length 4884
+>>
+stream
+1 0 0 1 0 0 cm  BT /F1 12 Tf 14.4 TL ET
+q
+.066667 .12549 .254902 rg
+n 0 831.9685 595.2756 9.92126 re f*
+.545098 .486275 1 rg
+n 0 829.1339 190.4882 2.834646 re f*
+.34902 .780392 1 rg
+n 190.4882 829.1339 107.1496 2.834646 re f*
+BT /F1 8 Tf 9.6 TL ET
+.462745 .490196 .529412 rg
+BT 1 0 0 1 56.69291 34.01575 Tm (Smyst \227 Produkt- & Feature-Konzept) Tj T* ET
+BT 1 0 0 1 509.2307 34.01575 Tm (Seite 13) Tj T* ET
+.847059 .858824 .878431 RG
+.5 w
+n 56.69291 42.51969 m 538.5827 42.51969 l S
+Q
+q
+1 0 0 1 62.69291 769.1969 cm
+q
+.545098 .486275 1 rg
+BT 1 0 0 1 0 2 Tm /F2 8 Tf 10 TL (KAPITEL 10) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 727.1969 cm
+q
+.086275 .094118 .105882 rg
+BT 1 0 0 1 0 4 Tm /F2 20 Tf 24 TL (Tech-Snapshot) Tj T* ET
+Q
+Q
+q
+1 0 0 1 62.69291 703.1969 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Kurze Standortbestimmung der Codebasis \227 als Anhang f\374r Engineering-Stakeholder.) Tj T* ET
+Q
+Q
+q
+1 0 0 1 70.86614 395.1969 cm
+q
+.066667 .12549 .254902 rg
+n 0 302 453.5433 -26 re f*
+1 1 1 rg
+BT /F2 10 Tf 12 TL ET
+q
+1 0 0 1 8 282 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Bereich) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 282 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F2 10 Tf 14 TL (Stand) Tj T* ET
+Q
+Q
+0 0 0 rg
+BT /F1 10 Tf 12 TL ET
+q
+1 0 0 1 8 256 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Framework) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 256 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (React 18.3.1 + Vite 6.0.5 + TypeScript ~5.6.2) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 230 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Styling) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 230 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Tailwind CSS 3.4.17, Custom Design Tokens, ) Tj /F4 9 Tf (tailwindcss-animate) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 204 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (UI-Lib) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 190 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Eigene shadcn-Style-Komponenten \() Tj /F4 9 Tf (Card) Tj /F1 10 Tf (, ) Tj /F4 9 Tf (Button) Tj /F1 10 Tf (\) in) Tj T* /F4 9 Tf (src/components/ui/) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 164 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Icons) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 150 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 18 Tm /F1 10 Tf 14 TL (lucide-react 0.468.0 \(installiert, im Code noch nicht genutzt \227) Tj T* (stattdessen Emoji\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 124 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Routing) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 124 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (react-router-dom 7.1.1 \(installiert, noch nicht eingebunden\)) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 98 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Class-Mgmt) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 98 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F4 9 Tf .168627 .184314 .211765 rg (class-variance-authority) Tj /F1 10 Tf (, ) Tj /F4 9 Tf (clsx) Tj /F1 10 Tf (, ) Tj /F4 9 Tf (tailwind-merge) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 72 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Struktur) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 58 cm
+q
+BT 1 0 0 1 0 18 Tm 14 TL /F1 10 Tf .168627 .184314 .211765 rg (Single-File ) Tj /F4 9 Tf (App.tsx) Tj /F1 10 Tf ( mit f\374nf Komponenten \227 sauber f\374r Prototyp,) Tj T* (sollte bei V1 in ) Tj /F4 9 Tf (src/views/) Tj /F1 10 Tf ( aufgeteilt werden) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 32 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Build) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 32 cm
+q
+BT 1 0 0 1 0 4 Tm 14 TL /F4 9 Tf .168627 .184314 .211765 rg (npm run dev) Tj /F1 10 Tf (, ) Tj /F4 9 Tf (npm run build) Tj /F1 10 Tf (, ) Tj /F4 9 Tf (npm run preview) Tj T* ET
+Q
+Q
+q
+1 0 0 1 8 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Was fehlt) Tj T* ET
+Q
+Q
+q
+1 0 0 1 135.5591 6 cm
+q
+.168627 .184314 .211765 rg
+BT 1 0 0 1 0 4 Tm /F1 10 Tf 14 TL (Backend, Tests, CI/CD, .env-Handling, ESLint-Setup, Storybook) Tj T* ET
+Q
+Q
+q
+1 J
+1 j
+.847059 .858824 .878431 RG
+.3 w
+n 0 276 m 453.5433 276 l S
+n 0 250 m 453.5433 250 l S
+n 0 224 m 453.5433 224 l S
+n 0 184 m 453.5433 184 l S
+n 0 144 m 453.5433 144 l S
+n 0 118 m 453.5433 118 l S
+n 0 92 m 453.5433 92 l S
+n 0 52 m 453.5433 52 l S
+n 0 26 m 453.5433 26 l S
+n 0 0 m 453.5433 0 l S
+Q
+Q
+Q
+q
+1 0 0 1 62.69291 381.0236 cm
+Q
+q
+1 0 0 1 62.69291 374.4236 cm
+q
+.6 w
+1 J
+.847059 .858824 .878431 RG
+n 0 0 m 469.8898 0 l S
+Q
+Q
+q
+1 0 0 1 62.69291 340.4236 cm
+q
+.333333 .356863 .392157 rg
+BT 1 0 0 1 0 15 Tm /F1 9 Tf 12 TL 10.08438 0 Td (Dieses Konzept ist eine Momentaufnahme zum 28. April 2026 und spiegelt den Code-Stand der smyst-app v0.1.0) Tj T* -0.971998 0 Td (wider. Die separate Bewertung \(\204Meinung zum Konzept\223\) erg\344nzt dieses Dokument um eine kritische Au\337ensicht.) Tj T* -9.112382 0 Td ET
+Q
+Q
+ 
+
+endstream
+endobj
+xref
+0 37
+0000000000 65535 f 
+0000000015 00000 n 
+0000000405 00000 n 
+0000000549 00000 n 
+0000000598 00000 n 
+0000000797 00000 n 
+0000004483 00000 n 
+0000004567 00000 n 
+0000004674 00000 n 
+0000004786 00000 n 
+0000004901 00000 n 
+0000005007 00000 n 
+0000005085 00000 n 
+0000005169 00000 n 
+0000005370 00000 n 
+0000009492 00000 n 
+0000009693 00000 n 
+0000013678 00000 n 
+0000013879 00000 n 
+0000019079 00000 n 
+0000019280 00000 n 
+0000022974 00000 n 
+0000023175 00000 n 
+0000029537 00000 n 
+0000029738 00000 n 
+0000035409 00000 n 
+0000035610 00000 n 
+0000042400 00000 n 
+0000042601 00000 n 
+0000049123 00000 n 
+0000049324 00000 n 
+0000055064 00000 n 
+0000055265 00000 n 
+0000062307 00000 n 
+0000062508 00000 n 
+0000068424 00000 n 
+0000068625 00000 n 
+trailer
+<<
+/Size 37
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+73562
+%%EOF

@@ -1,5 +1,5 @@
 /**
- * MobileNav — Off-Canvas Drawer für twynt.com
+ * MobileNav — Off-Canvas Drawer für smyst.com
  *
  * Mobile-First Navigation:
  *  - 44 px Touch-Targets (WCAG 2.2 AA)
@@ -120,7 +120,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
       >
         {/* Header */}
         <div className="flex items-center justify-between gap-3 border-b border-black/5 px-5 py-4 pt-[max(env(safe-area-inset-top),16px)]">
-          <span className="font-bold text-lg tracking-tight text-[#0b1c44]">twynt.com</span>
+          <span className="font-bold text-lg tracking-tight text-[#0b1c44]">smyst.com</span>
           <div className="flex items-center gap-2">
             <LangSwitcher variant="compact" />
             <button

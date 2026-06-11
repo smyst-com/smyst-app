@@ -1,0 +1,33 @@
+{
+  "locale": "en",
+  "dir": "ltr",
+  "seo": {
+    "title": "smyst.com | AI Twins, Digital Profiles and Twin Chat",
+    "description": "smyst.com is a free-only AI twin platform for public and private profiles, knowledge, memories and fast twin chats.",
+    "keywords": "AI twin, digital twin, knowledge profile, memories, smyst"
+  },
+  "start": {
+    "searchLabel": "Search twin",
+    "searchPlaceholder": "Search by name or twin",
+    "changeTwin": "Change selected twin",
+    "chooseTwin": "Choose twin",
+    "emptyText": "Choose a name above or start writing. The selected twin stays fixed in the top right.",
+    "messagePlaceholder": "Message {{name}}",
+    "addFile": "Add file",
+    "voiceInput": "Voice input",
+    "send": "Send message",
+    "freeOnlyNotice": "Free-only MVP: GitHub Free, Cloudflare Free, IDrive e2. No paid AI or analytics services."
+  },
+  "chat": {
+    "replyIntro": "I am answering as {{name}}.",
+    "replyMvp": "For the free-only MVP I use a local simulated response logic without a paid AI service.",
+    "replyQuestion": "Your question: \"{{question}}\"",
+    "replyNextStep": "Next step: real twin data will come through Cloudflare Worker/KV and IDrive e2."
+  },
+  "profile": {
+    "publicProfile": "Public twin profile",
+    "privateProfile": "Private twin profile",
+    "chatButton": "Chat with twin",
+    "noindex": "Private profiles are not indexed."
+  }
+}

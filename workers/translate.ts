@@ -1,5 +1,5 @@
 /**
- * Twynt Translate Worker — Hybrid Translation Edge-Service
+ * Smyst Translate Worker — Hybrid Translation Edge-Service
  *
  * Verantwortlich für:
  *  1. Spracherkennung pro Request (Query > Cookie > Accept-Language > Default)
@@ -25,16 +25,17 @@ import {
   type SupportedLang,
   type TranslatorEnv,
 } from './translator';
+import { clientKey, errorResponse, requireRateLimit, safeHandler, withSecurity } from './_shared';
 
 export interface Env extends TranslatorEnv {
   TRANSLATIONS: KVNamespace;
   /** Origin URL der nicht-übersetzten Seite. */
   ORIGIN_URL: string;
-  /** Optional: separater Domain-Fix für canonical (z. B. https://twynt.com). */
+  /** Optional: separater Domain-Fix für canonical (z. B. https://smyst.com). */
   CANONICAL_HOST?: string;
 }
 
-const COOKIE_NAME = 'twynt_lang';
+const COOKIE_NAME = 'smyst_lang';
 const CACHE_HEADER = 'X-Translation-Cache';
 const HASH_HEADER = 'X-Content-Hash';
 const PROVIDER_HEADER = 'X-Translation-Provider';
@@ -231,7 +232,7 @@ function applyTranslations(response: Response, opts: RewriteOptions): Response {
         inHtmlTag = true;
         el.setAttribute('lang', lang);
         if (isRtl(lang)) el.setAttribute('dir', 'rtl');
-        else el.removeAndKeepContent; // Platzhalter; siehe unten
+        else el.removeAttribute('dir');
       },
     })
     // <head> — hreflang & canonical injecten
@@ -302,7 +303,7 @@ function applyTranslations(response: Response, opts: RewriteOptions): Response {
 
 interface CachedTranslation {
   html: string;
-  provider: 'deepl' | 'google' | 'identity';
+  provider: 'static' | 'identity';
   contentHash: string;
   createdAt: number;
 }
@@ -341,7 +342,7 @@ export async function translatePage(
   lang: SupportedLang,
   request: Request,
   canonicalHost: string,
-): Promise<{ html: string; contentHash: string; provider: 'deepl' | 'google' | 'identity' } | null> {
+): Promise<{ html: string; contentHash: string; provider: 'static' | 'identity' } | null> {
   const originResp = await fetchOrigin(env, normalizedPath, request);
   if (!originResp.ok) {
     console.error('Origin fetch failed', { path: normalizedPath, status: originResp.status });
@@ -388,114 +389,132 @@ export async function translatePage(
   });
 
   const finalHtml = await rewritten.text();
-  return { html: finalHtml, contentHash, provider };
+  return { html: finalHtml, contentHash, provider: provider === 'identity' ? 'identity' : 'static' };
 }
 
 // ---------- Worker Entry ----------
 
+function applyEdgeHeaders(headers: Headers): Headers {
+  headers.set('X-Content-Type-Options', 'nosniff');
+  headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  return headers;
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
+    return safeHandler(async () => {
+      const url = new URL(request.url);
 
-    // Nicht-HTML-Pfade direkt durchreichen (Assets, API)
-    if (
-      url.pathname.startsWith('/api/') ||
-      url.pathname.startsWith('/auth/') ||
-      url.pathname.startsWith('/storage/') ||
-      url.pathname.startsWith('/assets/') ||
-      url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?|map|json|xml|txt)$/i)
-    ) {
-      return fetch(env.ORIGIN_URL + url.pathname + url.search);
-    }
-
-    const lang = detectLang(request, url);
-    const normalizedPath = stripLangFromPath(url.pathname) || '/';
-    const canonicalHost =
-      env.CANONICAL_HOST ?? `${url.protocol}//${url.host}`;
-
-    // Wenn Sprache == Default UND Pfad keine Sprach-Prefix hat → einfach Origin durchreichen
-    // (Quelltext ist bereits in DEFAULT_LANG)
-    if (lang === DEFAULT_LANG && !SUPPORTED_LANGS.includes(url.pathname.split('/')[1] as SupportedLang)) {
-      const passthrough = await fetchOrigin(env, normalizedPath, request);
-      const respHeaders = new Headers(passthrough.headers);
-      respHeaders.set(CACHE_HEADER, 'BYPASS');
-      respHeaders.set('Content-Language', DEFAULT_LANG);
-      // Cookie setzen, falls noch nicht gesetzt
-      if (!request.headers.get('Cookie')?.includes(`${COOKIE_NAME}=`)) {
-        respHeaders.append('Set-Cookie',
-          `${COOKIE_NAME}=${DEFAULT_LANG}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`);
+      // API/Auth/Storage muessen von spezifischen Workers bedient werden. Wenn
+      // dieser Catch-all-Worker sie sieht, ist die Route nicht korrekt aktiv.
+      if (
+        url.pathname.startsWith('/api/') ||
+        url.pathname.startsWith('/auth/') ||
+        url.pathname.startsWith('/storage/')
+      ) {
+        return withSecurity(errorResponse('route_not_deployed', 'Specific API worker route is not active', 503));
       }
-      return new Response(passthrough.body, {
-        status: passthrough.status,
-        headers: respHeaders,
+
+      // Nicht-HTML-Pfade direkt durchreichen (Assets und SEO/PWA-Dateien).
+      if (
+        url.pathname.startsWith('/assets/') ||
+        url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?|map|json|xml|txt|webmanifest)$/i)
+      ) {
+        return fetch(env.ORIGIN_URL + url.pathname + url.search);
+      }
+
+      const limited = await requireRateLimit(env.TRANSLATIONS, {
+        key: clientKey(request, 'translate:html'),
+        limit: 300,
+        windowSeconds: 60,
       });
-    }
+      if (limited) return limited;
 
-    // Hole Origin-HTML, um content_hash zu bestimmen
-    // (Wir brauchen das HTML eh — bei Cache-Hit nutzen wir cached HTML, aber wir
-    // müssen den Hash kennen, um den richtigen Cache-Key zu bilden.)
-    //
-    // Optimierung: ETag-Header vom Origin lesen, um Round-Trip zu sparen.
-    // Vorerst pragmatisch: kompletter Fetch.
-    const originResp = await fetchOrigin(env, normalizedPath, request);
-    if (!originResp.ok) {
-      return new Response('Origin error', { status: 502 });
-    }
-    const originHtml = await originResp.text();
-    const contentHash = await sha256Hex(originHtml);
+      const lang = detectLang(request, url);
+      const normalizedPath = stripLangFromPath(url.pathname) || '/';
+      const canonicalHost =
+        env.CANONICAL_HOST ?? `${url.protocol}//${url.host}`;
 
-    // Cache-Lookup
-    const cached = await readCache(env, normalizedPath, lang, contentHash);
-    if (cached) {
-      const headers = new Headers({
+      // Wenn Sprache == Default UND Pfad keine Sprach-Prefix hat → einfach Origin durchreichen
+      // (Quelltext ist bereits in DEFAULT_LANG)
+      if (lang === DEFAULT_LANG && !SUPPORTED_LANGS.includes(url.pathname.split('/')[1] as SupportedLang)) {
+        const passthrough = await fetchOrigin(env, normalizedPath, request);
+        const respHeaders = applyEdgeHeaders(new Headers(passthrough.headers));
+        respHeaders.set(CACHE_HEADER, 'BYPASS');
+        respHeaders.set('Content-Language', DEFAULT_LANG);
+        // Cookie setzen, falls noch nicht gesetzt
+        if (!request.headers.get('Cookie')?.includes(`${COOKIE_NAME}=`)) {
+          respHeaders.append('Set-Cookie',
+            `${COOKIE_NAME}=${DEFAULT_LANG}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`);
+        }
+        return new Response(passthrough.body, {
+          status: passthrough.status,
+          headers: respHeaders,
+        });
+      }
+
+      // Hole Origin-HTML, um content_hash zu bestimmen.
+      const originResp = await fetchOrigin(env, normalizedPath, request);
+      if (!originResp.ok) {
+        return withSecurity(errorResponse('origin_error', 'Origin error', 502));
+      }
+      const originHtml = await originResp.text();
+      const contentHash = await sha256Hex(originHtml);
+
+      // Cache-Lookup
+      const cached = await readCache(env, normalizedPath, lang, contentHash);
+      if (cached) {
+        const headers = applyEdgeHeaders(new Headers({
+          'content-type': 'text/html; charset=utf-8',
+          'Content-Language': lang,
+          [CACHE_HEADER]: 'HIT',
+          [HASH_HEADER]: contentHash,
+          [PROVIDER_HEADER]: cached.provider,
+          // Edge-Cache 5min, lokale Browser-Cache 60s; Stale-While-Revalidate aktiviert
+          'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400',
+          'Vary': 'Accept-Language, Cookie',
+        }));
+        headers.append('Set-Cookie',
+          `${COOKIE_NAME}=${lang}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`);
+        return new Response(cached.html, { status: 200, headers });
+      }
+
+      // CACHE-MISS: Origin SOFORT ausliefern, Background-Translation triggern
+      const headers = applyEdgeHeaders(new Headers({
         'content-type': 'text/html; charset=utf-8',
         'Content-Language': lang,
-        [CACHE_HEADER]: 'HIT',
+        [CACHE_HEADER]: 'MISS',
         [HASH_HEADER]: contentHash,
-        [PROVIDER_HEADER]: cached.provider,
-        // Edge-Cache 5min, lokale Browser-Cache 60s; Stale-While-Revalidate aktiviert
-        'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400',
+        // Bewusst kürzere Cache-Zeit für MISS, damit nächster Request idealerweise HIT bekommt
+        'Cache-Control': 'public, max-age=10, s-maxage=10',
         'Vary': 'Accept-Language, Cookie',
-      });
+      }));
       headers.append('Set-Cookie',
         `${COOKIE_NAME}=${lang}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`);
-      return new Response(cached.html, { status: 200, headers });
-    }
 
-    // CACHE-MISS: Origin SOFORT ausliefern, Background-Translation triggern
-    const headers = new Headers({
-      'content-type': 'text/html; charset=utf-8',
-      'Content-Language': lang,
-      [CACHE_HEADER]: 'MISS',
-      [HASH_HEADER]: contentHash,
-      // Bewusst kürzere Cache-Zeit für MISS, damit nächster Request idealerweise HIT bekommt
-      'Cache-Control': 'public, max-age=10, s-maxage=10',
-      'Vary': 'Accept-Language, Cookie',
-    });
-    headers.append('Set-Cookie',
-      `${COOKIE_NAME}=${lang}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`);
-
-    // Hintergrund-Übersetzung mit ctx.waitUntil — blockiert nicht den User-Response
-    ctx.waitUntil(
-      (async () => {
-        try {
-          const result = await translatePage(env, normalizedPath, lang, request, canonicalHost);
-          if (result && result.provider !== 'identity') {
-            await writeCache(env, normalizedPath, lang, result.contentHash, {
-              html: result.html,
-              provider: result.provider,
-              contentHash: result.contentHash,
-              createdAt: Date.now(),
-            });
-            console.log('Lazy translation cached', { path: normalizedPath, lang, provider: result.provider });
+      // Hintergrund-Übersetzung mit ctx.waitUntil — blockiert nicht den User-Response
+      ctx.waitUntil(
+        (async () => {
+          try {
+            const result = await translatePage(env, normalizedPath, lang, request, canonicalHost);
+            if (result && result.provider !== 'identity') {
+              await writeCache(env, normalizedPath, lang, result.contentHash, {
+                html: result.html,
+                provider: result.provider,
+                contentHash: result.contentHash,
+                createdAt: Date.now(),
+              });
+              console.log('Lazy translation cached', { path: normalizedPath, lang, provider: result.provider });
+            }
+          } catch (err) {
+            console.error('Lazy translation failed', { path: normalizedPath, lang, error: String(err) });
           }
-        } catch (err) {
-          console.error('Lazy translation failed', { path: normalizedPath, lang, error: String(err) });
-        }
-      })(),
-    );
+        })(),
+      );
 
-    return new Response(originHtml, { status: 200, headers });
+      return new Response(originHtml, { status: 200, headers });
+    });
   },
 };
 

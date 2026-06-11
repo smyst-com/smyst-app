@@ -1,438 +1,141 @@
-# Twynt Architecture Plan
+# Smyst Active Architecture
 
-## Goal
+Status: verbindliche Free-Only-Architektur fuer Phase 1.
 
-Build twynt.com as a global AI identity, memory, persona and media platform.
+## Grundregel
 
-Twynt is not only an AI chat app. It is a worldwide digital personality platform with memory, voice, media, access control, monetization and local/global discovery.
+Production verwendet ausschliesslich:
 
-## Current Foundation
+- GitHub.com Free fuer Code, Issues, Pull Requests, Dokumentation und GitHub Actions.
+- Cloudflare.com Free fuer DNS, TLS, CDN, Pages, Workers, KV, Security Headers, Caching und Edge-Auslieferung.
+- IDrive e2 als zentralen S3-kompatiblen Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und Twin-Daten, nur mit harten Quotas und Kostenbremse.
 
-The current repository already contains:
+Alle anderen Server-, Datenbank-, Cache-, Uebersetzungs-, Analytics-, AI- oder Monitoring-Dienste sind keine Production-Abhaengigkeit.
 
-- Vite + React web app
-- Capacitor iOS/Android app shell
-- Cloudflare Workers for translation, Google auth and IDrive E2 storage
-- Cloudflare configuration through `wrangler.toml`
-- Setup guide for Cloudflare, GitHub, Google OAuth, translation and storage
+## Phase 1
 
-This means the project should evolve from the existing foundation instead of being restarted.
+Phase 1 ist ein Free-Only-MVP. Ziel ist eine saubere, sichere, schnelle und erweiterbare Plattformbasis, nicht ein echtes Milliarden-Nutzer-Betriebssystem.
 
-## Target Architecture
+Die Milliarden-Nutzer-Skalierung bleibt die Langfristvision. Sie darf in dieser Phase nicht als Leistungsversprechen der kostenlosen Infrastruktur beschrieben werden.
+
+## Zielbild
 
 ```text
-Mobile App
-React Native later / current Capacitor shell now
-SQLite + MMKV local database/cache
+Web / PWA / Capacitor iOS / Capacitor Android
         |
-        | Auth, API, chat, uploads, signed URL requests
+        | HTTPS
         v
-Cloudflare Edge
-WAF, CDN, rate limits, cache, DNS, geo-routing, signed URLs
+Cloudflare Pages Free
         |
-        +--> Public Web / SEO Layer
-        |    Locations, countries, cities, languages, public twins
-        |
-        +--> Fastify Core API
-        |    Users, twins, chat, access, payments, subscriptions
-        |
-        +--> Realtime Layer
-        |    SSE / WebSockets for chat streaming, notifications and status
-        |
-        +--> Queue / Event System
-        |    Upload events, AI jobs, transcription, embeddings, notifications
-        |
-        +--> AI Services
-        |    Persona, memory, embeddings, retrieval, timeline, emotion analysis
-        |
-        +--> Object Storage
-        |    IDrive E2 / Cloudflare R2
-        |    Audio, video, images, PDFs, documents, profile assets
-        |
-        +--> PostgreSQL + pgvector
-             Users, twins, memories, vectors, access rights, revenue, audit logs
-```
-
-## Platform Accounts
-
-```text
-GitHub Free
-Code repository
-Version control
-Issues
-Documentation
-Later GitHub Actions for tests and deployment
-
-Cloudflare Free
-DNS
-CDN
-WAF
-Rate limiting
-Pages / Workers
-Edge routing
-Domain protection
-Global performance layer
-
-IDrive E2
-S3-compatible object storage
-Media files
-Audio files
-Video files
-Documents
-Images
-Private and public twin assets
-```
-
-## Correct Upload Flow
-
-The mobile app must never receive permanent storage keys.
-
-```text
-Mobile App
-  -> asks Fastify API or Storage Worker for upload permission
-
-API / Storage Worker
-  -> checks user session and access rights
-  -> creates signed upload URL
-
-Mobile App
-  -> uploads directly to IDrive E2 / Cloudflare R2
-
-Storage
-  -> stores file
-
-API
-  -> saves metadata in PostgreSQL
-
-Queue
-  -> starts background processing
-
-AI Services
-  -> transcription
-  -> embeddings
-  -> memory extraction
-  -> emotional weighting
-  -> persona update
-  -> timeline update
-  -> notification
-```
-
-## Event-Driven Processing
-
-```text
-Upload completed
+        +--> statisches Vite/React-Frontend
+        +--> Manifest, Service Worker, SEO-Dateien
         |
         v
-Queue Event
+Cloudflare Workers Free
         |
-        +--> Transcribe audio/video
-        +--> Extract text from documents
-        +--> Generate embeddings
-        +--> Detect people, places, topics
-        +--> Calculate emotional weight
-        +--> Update Memory Graph
-        +--> Update Persona Engine
-        +--> Update Timeline
-        +--> Send notification
+        +--> Auth und Sessions
+        +--> API fuer Profile, Twins, Chat und Suche
+        +--> Upload-Signing und Storage-Gates
+        +--> Translation aus statischen Repository-Dateien
+        +--> Security Headers, CORS, Rate Limits
+        |
+        +--> Cloudflare KV Free
+        |    Sessions, OAuth-State, Quotas, kleine Metadaten, Upload-Status
+        |
+        +--> IDrive e2
+             Dateien, Bilder, Videos, Audio, Dokumente, Backups, Twin-Daten
 ```
 
-Start with Cloudflare Queues if the project stays mostly on Cloudflare. Use BullMQ + Redis if the backend later runs as a persistent Node service and needs more queue control.
+## Datenablage
 
-## Mobile App Layer
+- GitHub: Quellcode, Dokumentation, statische Uebersetzungsdateien, CI/CD-Konfiguration.
+- Cloudflare Pages: gebautes Frontend, PWA-Artefakte, statische SEO/AEO/GEO-Dateien.
+- Cloudflare Workers: API-, Auth-, Upload-, Chat- und Storage-Logik.
+- Cloudflare KV: kleine, kurzlebige oder einfache Daten wie Sessions, Quotas, Upload-Intents, Upload-Status, Rollen und oeffentliche Index-Snapshots.
+- IDrive e2: alle grossen, nutzerbezogenen und dauerhaften Objekte.
 
-The current app uses Capacitor. That is a practical MVP path. If the product later needs deeper native performance, React Native with native Swift/Kotlin modules can become the long-term app layer.
+Details stehen in `docs/FREE_ONLY_DATA_MAP.md`.
 
-Native features needed over time:
-
-- Camera
-- Microphone
-- Voice recording
-- Push notifications
-- Biometrics
-- Video processing
-- Local encryption
-- Background upload
-- Audio playback
-- Future voice/video features
-
-Local storage:
-
-- SQLite for structured local data
-- MMKV for fast key-value state
-
-Local cache should store:
-
-- Chat history
-- Feed state
-- Drafts
-- Upload status
-- Voice drafts
-- Twin snippets
-- Notifications
-- Recently viewed memories
-
-## Backend Layer
-
-Fastify should own the main product logic.
-
-Responsibilities:
-
-- Authentication
-- User accounts
-- Twin creation
-- Chat sessions
-- Access control
-- Payment status
-- Subscription logic
-- Signed upload URLs
-- File metadata
-- Public/private permissions
-- Revenue tracking
-- Admin tools
-- Audit logs
-
-Fastify should stay separate from heavy AI work. Heavy AI jobs go to queues and AI services.
-
-## AI Services Layer
-
-AI must be separated from the main API.
-
-Core AI services:
-
-- Persona Engine: values, humor, communication style, emotional patterns, moral boundaries, priorities and personality.
-- Memory Engine: stores, ranks and connects memories.
-- Retrieval Engine: finds the right memories for each answer.
-- Embedding Engine: creates and updates vector embeddings.
-- Timeline Engine: builds the life story and chronological context.
-- Emotion Engine: weights memories by emotional importance.
-- Transcription Engine: converts audio/video into text.
-- Moderation / Safety Engine: protects private, sensitive and restricted content.
-
-## Memory System
-
-Do not build only a list of memories. Build structured memory.
-
-Recommended PostgreSQL tables:
-
-- `users`
-- `twins`
-- `memories`
-- `memory_vectors`
-- `memory_entities`
-- `memory_relationships`
-- `memory_events`
-- `memory_emotional_weights`
-- `memory_sources`
-- `memory_permissions`
-
-Memory types:
-
-- Personal memory
-- Family memory
-- Career memory
-- Relationship memory
-- Trauma/sensitive memory
-- Achievement
-- Preference
-- Belief
-- Story
-- Quote
-- Voice note
-- Document-derived memory
-
-## Memory Graph
-
-The Memory Graph connects life facts.
+## Upload Flow
 
 ```text
-Person -> Mother
-Person -> Childhood
-Childhood -> City
-City -> School
-School -> Friend
-Friend -> Important Event
-Important Event -> Emotional Weight
-Emotional Weight -> Persona Influence
+Client
+  -> fragt Cloudflare Worker nach Upload-Intent
+Worker
+  -> prueft Session, Rolle, Sichtbarkeit, Dateityp, Dateigroesse und Quota
+  -> erstellt kurzlebige IDrive-e2-Signatur
+Client
+  -> laedt direkt zu IDrive e2 hoch
+Worker
+  -> bestaetigt Upload per HEAD/Metadatenpruefung
+  -> speichert Status und sichere Metadaten in KV
 ```
 
-Start with PostgreSQL. Do not start with Neo4j unless the graph needs outgrow relational queries later.
+Clients erhalten niemals permanente Storage Keys.
 
-## Emotional Weighting
+## Auth
 
-Not every memory is equal.
+Erlaubte Free-Only-Optionen:
 
-Higher weight:
+- GitHub OAuth mit HttpOnly Secure SameSite Session-Cookies.
+- Passkey/WebAuthn ueber Cloudflare Workers und KV.
+- Sicheres Demo-Login nur fuer MVP/Preview, klar als Demo markiert.
 
-- Family
-- Love
-- Loss
-- Death
-- Trauma
-- Major success
-- Major failure
-- Life-changing decisions
-- Important relationships
-- Repeated patterns
+Google-basierte Auth ist keine Production-Pflicht und darf nicht als notwendige Login-Bedingung dokumentiert werden.
 
-Lower weight:
+## AI Twin MVP
 
-- Random facts
-- Small preferences
-- Temporary interests
-- Low-confidence extracted data
+Der erste KI-Zwilling ist ein regelbasierter oder simulierter MVP:
 
-This makes the twin feel more real.
+- Profil, Name, Beschreibung und Sichtbarkeit.
+- Wissenstexte und hochgeladene Inhalte.
+- Einfacher Twin-Kontext aus KV-Metadaten und IDrive-e2-Objekten.
+- Chat-Antworten ohne kostenpflichtige externe AI-Inferenz.
 
-## Realtime Layer
+Spaetere echte AI-Modelle muessen ueber austauschbare Adapter angebunden werden und brauchen eine neue Architektur- und Kostenfreigabe.
 
-Start simple.
+## Performance
 
-Use SSE for:
+Phase 1 optimiert auf:
 
-- AI chat streaming
-- Processing status
-- Upload progress events
-- Twin update events
+- statisches Frontend ueber Cloudflare Pages,
+- kleine JS-Bundles,
+- lazy geladene UI,
+- lokale/statische Uebersetzungen,
+- Service Worker fuer App-Shell und Offline-Fallback,
+- Worker-Antworten mit klaren Timeouts,
+- harte Upload- und Storage-Limits.
 
-Use WebSockets later for:
+## Sicherheit
 
-- Live conversations
-- Multi-device sync
-- Realtime creator dashboards
-- Live revenue stats
-- Voice/video interactions
+Pflicht fuer alle Production-Pfade:
 
-## Global Location Layer
+- sichere Headers und CSP,
+- strenge CORS-Regeln,
+- CSRF-Schutz fuer Cookie-basierte Mutationen,
+- Input-Validation,
+- Rate Limits,
+- Upload-Dateityp- und Groessenpruefung,
+- private Sichtbarkeit als Standard,
+- keine sensiblen Felder in oeffentlichen KV-Snapshots,
+- keine Secrets im Repository.
 
-Twynt should become global like a location-based platform.
+## SEO, AEO, GEO und KI-Suche
 
-Public web structure:
+Erlaubte Grundlagen:
 
-```text
-/locations
-/locations/europe
-/locations/germany
-/locations/germany/berlin
+- `robots.txt`
+- `sitemap.xml`
+- `llms.txt`
+- OpenGraph und Twitter Cards
+- Schema.org/JSON-LD
+- statische mehrsprachige Landingpages
+- SEO-freundliche oeffentliche Twin-URLs
 
-/de/locations
-/en/locations
-/tr/locations
-/fr/locations
-/es/locations
-/ar/locations
-```
+Private Profile und private Uploads duerfen nicht indexierbar sein.
 
-Global discovery supports:
+## Skalierungsrealitaet
 
-- Countries
-- Regions
-- Cities
-- Languages
-- Local creators
-- Public twins
-- Cultural context
-- Local SEO pages
-- Regional rankings
+Die Architektur haelt Modulgrenzen sauber, damit spaeter horizontal erweitert werden kann. Kostenlos nutzbare Kontingente koennen aber keine Milliarden Nutzer pro Tag garantieren.
 
-This is the growth layer. It makes public twins discoverable worldwide.
-
-## Security Layer
-
-Twynt stores deeply sensitive data.
-
-Required security:
-
-- Device binding
-- Biometric unlock
-- Session fingerprinting
-- Encryption at rest
-- Encryption in transit
-- Private signed URLs
-- Access logs
-- Consent logs
-- Export system
-- Delete system
-- Role-based access
-- Rate limiting
-- Abuse detection
-- Public/private twin permissions
-
-Very important: the mobile app must never contain storage access keys. Only the backend creates signed URLs.
-
-## Media Pipeline
-
-MVP:
-
-- Image upload
-- Audio upload
-- Document upload
-- Basic video upload
-- Signed URLs
-- Metadata storage
-
-Next:
-
-- Audio transcription
-- PDF/text extraction
-- Image thumbnails
-- Audio waveform previews
-- Video thumbnails
-
-Later:
-
-- HLS video
-- Adaptive bitrate
-- FFmpeg pipeline
-- Voice cloning checks
-- AI audio replies
-- Video twin replies
-
-## AI Cost Layer
-
-AI costs must be tracked from day one.
-
-Track:
-
-- Tokens per user
-- Tokens per twin
-- Embedding cost
-- Transcription cost
-- Chat cost
-- Storage cost
-- Video/audio processing cost
-- Revenue per user
-- Profit per user
-- Fair usage limits
-
-This prevents AI costs from exploding.
-
-## Payment / Revenue Layer
-
-Needed for later monetization:
-
-- Subscriptions
-- Creator revenue
-- Paid public twins
-- Private twin access
-- Usage-based limits
-- Revenue share
-- Invoices
-- Refund handling
-- Payment status
-
-Fastify API should own payment logic. PostgreSQL should store revenue truth.
-
-## Expert Recommendation
-
-Build twynt.com as:
-
-- Identity Platform
-- Memory Platform
-- Persona Platform
-- Media Platform
-- Global Discovery Platform
-
-Do not position it only as an AI chat app.
-
-AI chat is only the visible interface. The real product is a structured digital personality with memory, emotion, voice, location, culture, consent and monetization.
-
+Langfristige globale Skalierung erfordert eigene Entscheidungen zu Datenbanken, AI-Inferenz, Realtime, Observability, Multi-Region-Betrieb, Kostenkontrolle und Compliance. Diese Entscheidungen sind nicht Teil der Free-Only-MVP-Freigabe.

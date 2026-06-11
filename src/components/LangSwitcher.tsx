@@ -1,15 +1,15 @@
 /**
- * LangSwitcher — Sprachumschalter für twynt.com mit Suche/Filter
+ * LangSwitcher — Sprachumschalter für smyst.com mit Suche/Filter
  *
  * Features:
- *  - 50 + 1 (DE) Sprachen mit Eigennamen
+ *  - 10 Free-only Startsprachen mit Eigennamen
  *  - Such-Input filtert nach nativeName, englishName und Code
  *  - Touch-optimiert (44 px Targets, WCAG 2.2 AA)
  *  - Tastatur-Navigation (Arrow keys, Enter, Escape, Home, End)
  *  - Aria-Combobox-Pattern für Screenreader
  *  - App-preview-kompatibel (kein router-spezifisches Verhalten)
  *  - Automatischer RTL-Switch über useLanguage
- *  - Provider-Badge (DeepL / Google) für Transparenz
+ *  - Free-only: keine externen Übersetzungsprovider
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -19,14 +19,14 @@ interface Props {
   /** Anzeigevariante. */
   variant?: 'compact' | 'full';
   className?: string;
-  /** Provider-Badge ein/aus. Default: true. */
+  /** Zeigt statische/manuelle Sprachquelle. Default: false. */
   showProvider?: boolean;
 }
 
 export default function LangSwitcher({
   variant = 'compact',
   className = '',
-  showProvider = true,
+  showProvider = false,
 }: Props) {
   const { lang, setLanguage } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -141,8 +141,8 @@ export default function LangSwitcher({
       ? currentMeta.code.toUpperCase()
       : currentMeta.nativeName;
 
-  const listboxId = 'twynt-lang-listbox';
-  const inputId = 'twynt-lang-search';
+  const listboxId = 'smyst-lang-listbox';
+  const inputId = 'smyst-lang-search';
 
   return (
     <div className={`relative inline-block ${className}`}>
@@ -191,7 +191,7 @@ export default function LangSwitcher({
                 spellCheck={false}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Suche … (z. B. español, hi, japan)"
+                placeholder="Suche … (z. B. español, türkçe, japan)"
                 className="w-full min-h-[44px] rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-[#16181b] placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 aria-controls={listboxId}
                 aria-activedescendant={
@@ -254,13 +254,9 @@ export default function LangSwitcher({
                       {showProvider && meta.provider !== 'identity' && (
                         <span
                           aria-label={`Provider: ${meta.provider}`}
-                          className={`hidden sm:inline rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-                            meta.provider === 'deepl'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
+                          className="hidden sm:inline rounded-full bg-sky-100 px-1.5 py-0.5 text-[10px] font-medium text-sky-800"
                         >
-                          {meta.provider === 'deepl' ? 'DeepL' : 'Google'}
+                          Statisch
                         </span>
                       )}
                       {meta.rtl && (

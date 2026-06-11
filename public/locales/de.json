@@ -1,0 +1,33 @@
+{
+  "locale": "de",
+  "dir": "ltr",
+  "seo": {
+    "title": "smyst.com | KI-Zwillinge, digitale Profile und Twin Chat",
+    "description": "smyst.com ist eine Free-only KI-Zwilling Plattform fuer öffentliche und private Profile, Wissen, Erinnerungen und schnelle Twin-Chats.",
+    "keywords": "KI-Zwilling, AI Twin, digitaler Zwilling, Wissensprofil, Erinnerungen, smyst"
+  },
+  "start": {
+    "searchLabel": "Twin suchen",
+    "searchPlaceholder": "Name oder Twin suchen",
+    "changeTwin": "Ausgewählten Twin ändern",
+    "chooseTwin": "Twin wählen",
+    "emptyText": "Wähle oben einen Namen oder schreibe direkt. Der ausgewählte Twin bleibt oben rechts fixiert.",
+    "messagePlaceholder": "Nachricht an {{name}}",
+    "addFile": "Datei hinzufügen",
+    "voiceInput": "Spracheingabe",
+    "send": "Nachricht senden",
+    "freeOnlyNotice": "Free-only MVP: GitHub Free, Cloudflare Free, IDrive e2. Keine bezahlten KI- oder Analytics-Dienste."
+  },
+  "chat": {
+    "replyIntro": "Ich antworte als {{name}}.",
+    "replyMvp": "Für den Free-only-MVP nutze ich eine lokale, simulierte Antwortlogik ohne bezahlten KI-Dienst.",
+    "replyQuestion": "Deine Frage: \"{{question}}\"",
+    "replyNextStep": "Nächster Schritt: echte Twin-Daten kommen über Cloudflare Worker/KV und IDrive e2 dazu."
+  },
+  "profile": {
+    "publicProfile": "Öffentliches Twin-Profil",
+    "privateProfile": "Privates Twin-Profil",
+    "chatButton": "Mit Twin chatten",
+    "noindex": "Private Profile werden nicht indexiert."
+  }
+}

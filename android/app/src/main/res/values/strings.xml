@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">twynt.com</string>
-    <string name="title_activity_main">twynt.com</string>
-    <string name="package_name">com.twynt.app</string>
-    <string name="custom_url_scheme">com.twynt.app</string>
+    <string name="app_name">smyst.com</string>
+    <string name="title_activity_main">smyst.com</string>
+    <string name="package_name">com.smyst.app</string>
+    <string name="custom_url_scheme">smyst</string>
 </resources>

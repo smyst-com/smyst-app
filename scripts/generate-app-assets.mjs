@@ -1,8 +1,24 @@
+import fsSync from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import sharp from 'sharp'
 
+let sharp
 const root = process.cwd()
+if (process.env.SMYST_GENERATE_NATIVE_ASSETS !== '1') {
+  console.warn('Keeping existing native app icon and splash assets. Set SMYST_GENERATE_NATIVE_ASSETS=1 to regenerate them.')
+  process.exit(0)
+}
+
+try {
+  if (!fsSync.existsSync(path.join(root, 'node_modules/sharp/package.json'))) {
+    throw new Error('sharp is not installed')
+  }
+  sharp = (await import('sharp')).default
+} catch {
+  console.warn('sharp is not installed; keeping existing native app icon and splash assets.')
+  process.exit(0)
+}
+
 const logoPath = path.join(root, 'logo.svg')
 const logoSvg = await fs.readFile(logoPath)
 

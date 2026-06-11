@@ -1,0 +1,33 @@
+{
+  "locale": "ja",
+  "dir": "ltr",
+  "seo": {
+    "title": "smyst.com | AI Twin、デジタルプロフィール、Twin Chat",
+    "description": "smyst.com は、公開・非公開プロフィール、知識、記憶、高速な Twin チャットのための free-only AI Twin プラットフォームです。",
+    "keywords": "AI Twin, デジタルツイン, 知識プロフィール, 記憶, smyst"
+  },
+  "start": {
+    "searchLabel": "Twin を検索",
+    "searchPlaceholder": "名前または Twin を検索",
+    "changeTwin": "選択中の Twin を変更",
+    "chooseTwin": "Twin を選択",
+    "emptyText": "上で名前を選ぶか、そのまま入力してください。選択した Twin は右上に固定されます。",
+    "messagePlaceholder": "{{name}} へのメッセージ",
+    "addFile": "ファイルを追加",
+    "voiceInput": "音声入力",
+    "send": "メッセージを送信",
+    "freeOnlyNotice": "Free-only MVP: GitHub Free、Cloudflare Free、IDrive e2。有料の AI または分析サービスは使いません。"
+  },
+  "chat": {
+    "replyIntro": "{{name}} として回答します。",
+    "replyMvp": "free-only MVP では、有料 AI サービスを使わず、ローカルのシミュレーション応答ロジックを使用します。",
+    "replyQuestion": "あなたの質問: \"{{question}}\"",
+    "replyNextStep": "次のステップ: 実際の Twin データは Cloudflare Worker/KV と IDrive e2 から提供されます。"
+  },
+  "profile": {
+    "publicProfile": "公開 Twin プロフィール",
+    "privateProfile": "非公開 Twin プロフィール",
+    "chatButton": "Twin とチャット",
+    "noindex": "非公開プロフィールはインデックスされません。"
+  }
+}

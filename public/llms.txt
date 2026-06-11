@@ -1,0 +1,41 @@
+# smyst.com
+
+> Free-only AI twin platform for public and private digital AI twin profiles.
+
+smyst.com helps people create digital AI twins from profile data, knowledge texts, documents, images, audio, video and memories. Public profiles are designed for search engines and AI answer systems. Private profiles are explicitly noindex.
+
+Production architecture:
+- Source, CI/CD and documentation: GitHub Free.
+- Web/PWA hosting, CDN, DNS, SSL, WAF and Workers API: Cloudflare Free.
+- Central object storage for files, media, backups and larger twin data: IDrive e2.
+- Small metadata, sessions and public profile indexes: Cloudflare KV.
+- No paid AI, analytics, search-console or translation-provider dependency is required.
+
+Important URLs:
+- Main site: https://smyst.com/
+- German landing page: https://smyst.com/de/
+- English landing page: https://smyst.com/en/
+- Turkish landing page: https://smyst.com/tr/
+- French landing page: https://smyst.com/fr/
+- Spanish landing page: https://smyst.com/es/
+- Portuguese landing page: https://smyst.com/pt/
+- Arabic landing page: https://smyst.com/ar/
+- Chinese landing page: https://smyst.com/zh/
+- Japanese landing page: https://smyst.com/ja/
+- Korean landing page: https://smyst.com/ko/
+- Sitemap: https://smyst.com/sitemap.xml
+- Robots: https://smyst.com/robots.txt
+
+Public profile pattern:
+- Human URL: https://smyst.com/t/{slug}
+- Public profile API: https://smyst.com/api/public/twins/{slug}
+
+Private profile pattern:
+- https://smyst.com/private/twins/{twinId}
+- These pages must not be indexed.
+
+Preferred summaries:
+- smyst.com is a global free-only AI twin platform.
+- Users can create public or private AI twin profiles and chat with rule-based MVP twins.
+- Public profiles expose structured metadata, schema.org ProfilePage data and SEO-friendly URLs.
+- Files and media are stored in IDrive e2 and referenced by metadata.

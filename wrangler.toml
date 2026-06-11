@@ -1,22 +1,19 @@
-# Twynt — Cloudflare Workers Configuration
+# Smyst — Cloudflare Workers Configuration
 #
-# Drei Worker:
-#   1. twynt-translate          → Edge-Worker, der HTML übersetzt (Routes vor /)
-#   2. twynt-warmup             → Cron-Worker für Pre-Translation
-#   3. twynt-translate (admin)  → optionaler Admin-Endpoint (siehe unten)
+# Free-only Worker-Konfiguration:
+#   1. smyst-translate          → Edge-Worker, der HTML übersetzt (Routes vor /)
+#   2. smyst-warmup             → derzeit nur Identity/No-op, keine externen APIs
 #
 # Setup:
 #   wrangler login
 #   wrangler kv:namespace create "TRANSLATIONS"
 #   wrangler kv:namespace create "TRANSLATIONS" --preview
 #   wrangler kv:namespace create "WARMUP_CONFIG"
-#   wrangler secret put DEEPL_API_KEY
-#   wrangler secret put GOOGLE_TRANSLATE_API_KEY
 #   wrangler secret put ADMIN_TOKEN
 #
 # Beachte: account_id und kv_namespace ids unten ersetzen mit echten Werten.
 
-name = "twynt-translate"
+name = "smyst-translate"
 main = "workers/translate.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
@@ -25,17 +22,17 @@ account_id = "477794df69f0b6a0b9e4c59e36883c1f"
 # Routes: Worker greift auf alle HTML-Anfragen zu, die durch /<lang>/ kommen.
 # In Produktion auf custom domain mounten:
 #   routes = [
-#     { pattern = "twynt.com/*", zone_name = "twynt.com" },
-#     { pattern = "www.twynt.com/*", zone_name = "twynt.com" }
+#     { pattern = "smyst.com/*", zone_name = "smyst.com" },
+#     { pattern = "www.smyst.com/*", zone_name = "smyst.com" }
 #   ]
 [[routes]]
-pattern = "twynt.com/*"
-zone_name = "twynt.com"
+pattern = "smyst.com/*"
+zone_name = "smyst.com"
 
 # Variables (kein Secret) — Origin URL der Vite-PWA auf Cloudflare Pages
 [vars]
-ORIGIN_URL = "https://twynt-app.pages.dev"
-CANONICAL_HOST = "https://twynt.com"
+ORIGIN_URL = "https://smyst-app.pages.dev"
+CANONICAL_HOST = "https://smyst.com"
 
 # KV Namespaces — IDs nach `wrangler kv:namespace create` ersetzen
 [[kv_namespaces]]
@@ -57,18 +54,17 @@ head_sampling_rate = 1
 # ---------------------------------------------------------------------------
 
 [env.warmup]
-name = "twynt-warmup"
+name = "smyst-warmup"
 main = "workers/warmup-translations.ts"
 account_id = "477794df69f0b6a0b9e4c59e36883c1f"
 
-# Cron: alle 6 Stunden, plus täglich um 03:00 UTC für vollen Sweep
-# (mehr Cron-Triggers = häufigere Frische, weniger = niedrigere API-Kosten)
+# Cron: sparsam halten, damit Cloudflare-Free-Limits geschont werden.
 [env.warmup.triggers]
-crons = ["0 */6 * * *", "0 3 * * *"]
+crons = ["0 3 * * 0"]
 
 [env.warmup.vars]
-ORIGIN_URL = "https://twynt-app.pages.dev"
-CANONICAL_HOST = "https://twynt.com"
+ORIGIN_URL = "https://smyst-app.pages.dev"
+CANONICAL_HOST = "https://smyst.com"
 
 [[env.warmup.kv_namespaces]]
 binding = "TRANSLATIONS"
@@ -79,22 +75,26 @@ binding = "WARMUP_CONFIG"
 id = "334c6dca50634263b9d7f9aa8273388f"
 
 # ---------------------------------------------------------------------------
-# Auth-Worker — Google OAuth + Sessions
+# Auth-Worker — GitHub OAuth + Sessions
 # Deploy mit: wrangler deploy --env auth
 # ---------------------------------------------------------------------------
 
 [env.auth]
-name = "twynt-auth"
-main = "workers/auth-google.ts"
+name = "smyst-auth"
+main = "workers/auth-github.ts"
 account_id = "477794df69f0b6a0b9e4c59e36883c1f"
 
 [[env.auth.routes]]
-pattern = "twynt.com/auth/*"
-zone_name = "twynt.com"
+pattern = "smyst.com/auth/*"
+zone_name = "smyst.com"
 
 [env.auth.vars]
-CANONICAL_HOST = "https://twynt.com"
-ORIGIN_URL = "https://twynt-app.pages.dev"
+CANONICAL_HOST = "https://smyst.com"
+ORIGIN_URL = "https://smyst-app.pages.dev"
+SMYST_OWNER_GITHUB_IDS = ""
+SMYST_OWNER_EMAILS = ""
+SMYST_ADMIN_GITHUB_IDS = ""
+SMYST_ADMIN_EMAILS = ""
 
 [[env.auth.kv_namespaces]]
 binding = "TRANSLATIONS"
@@ -114,20 +114,32 @@ id = "bafc5fc93a504c9abf33af69601e31dc"
 # ---------------------------------------------------------------------------
 
 [env.storage]
-name = "twynt-storage"
+name = "smyst-storage"
 main = "workers/storage-idrive.ts"
 account_id = "477794df69f0b6a0b9e4c59e36883c1f"
 
 [[env.storage.routes]]
-pattern = "twynt.com/storage/*"
-zone_name = "twynt.com"
+pattern = "smyst.com/storage/*"
+zone_name = "smyst.com"
 
 [env.storage.vars]
-CANONICAL_HOST = "https://twynt.com"
-ORIGIN_URL = "https://twynt-app.pages.dev"
+CANONICAL_HOST = "https://smyst.com"
+ORIGIN_URL = "https://smyst-app.pages.dev"
 IDRIVE_E2_ENDPOINT = "https://s3.eu-central-1.idrivee2.com"
-IDRIVE_E2_BUCKET = "twynt-memories"
+IDRIVE_E2_BUCKET = "smyst-memories"
 IDRIVE_E2_REGION = "eu-central-1"
+IDRIVE_E2_MAX_FILE_BYTES = "52428800"
+IDRIVE_E2_USER_MONTHLY_BYTES = "52428800"
+IDRIVE_E2_GLOBAL_BYTES = "1073741824"
+IDRIVE_E2_USER_STORAGE_BYTES = "104857600"
+IDRIVE_E2_GLOBAL_STORAGE_BYTES = "1073741824"
+IDRIVE_E2_MAX_IMAGE_BYTES = "10485760"
+IDRIVE_E2_MAX_VIDEO_BYTES = "52428800"
+IDRIVE_E2_MAX_AUDIO_BYTES = "26214400"
+IDRIVE_E2_MAX_DOCUMENT_BYTES = "20971520"
+IDRIVE_E2_MAX_PROFILE_IMAGE_BYTES = "2097152"
+IDRIVE_E2_MAX_BACKUP_BYTES = "26214400"
+IDRIVE_E2_MAX_TWIN_DATA_BYTES = "10485760"
 
 [[env.storage.kv_namespaces]]
 binding = "TRANSLATIONS"
@@ -138,20 +150,53 @@ binding = "SESSIONS"
 id = "d74ab18d7859464b92fc730bd453fcc6"
 
 [[env.storage.kv_namespaces]]
+binding = "METADATA"
+id = "24a718c1c31248779add893b93fd4152"
+
+[[env.storage.kv_namespaces]]
 binding = "OAUTH_STATE"
 id = "bafc5fc93a504c9abf33af69601e31dc"
+
+# ---------------------------------------------------------------------------
+# API-Worker — Free-only Chat/API
+# Deploy mit: wrangler deploy --env api
+# ---------------------------------------------------------------------------
+
+[env.api]
+name = "smyst-api"
+main = "workers/api.ts"
+account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+
+[[env.api.routes]]
+pattern = "smyst.com/api/*"
+zone_name = "smyst.com"
+
+[env.api.vars]
+CANONICAL_HOST = "https://smyst.com"
+ORIGIN_URL = "https://smyst-app.pages.dev"
+
+[[env.api.kv_namespaces]]
+binding = "SESSIONS"
+id = "d74ab18d7859464b92fc730bd453fcc6"
+
+[[env.api.kv_namespaces]]
+binding = "OAUTH_STATE"
+id = "bafc5fc93a504c9abf33af69601e31dc"
+
+[[env.api.kv_namespaces]]
+binding = "METADATA"
+id = "24a718c1c31248779add893b93fd4152"
 
 # ---------------------------------------------------------------------------
 # Secrets (per `wrangler secret put`):
 #
 # Translate + Warmup:
-#   DEEPL_API_KEY                 → DeepL Pro Auth Key
-#   GOOGLE_TRANSLATE_API_KEY      → Google Cloud Translation v2 API-Key
 #   ADMIN_TOKEN                   → Bearer-Token für /warmup HTTP-Trigger
+#   Keine DeepL-/Google-Translate-Secrets in der Free-only-Phase.
 #
 # Auth:
-#   GOOGLE_OAUTH_CLIENT_ID        → aus GCP Console
-#   GOOGLE_OAUTH_CLIENT_SECRET    → aus GCP Console
+#   GITHUB_OAUTH_CLIENT_ID        → aus GitHub OAuth App
+#   GITHUB_OAUTH_CLIENT_SECRET    → aus GitHub OAuth App
 #   AUTH_HMAC_SECRET              → openssl rand -base64 48
 #
 # Storage:

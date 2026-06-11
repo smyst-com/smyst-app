@@ -1,0 +1,36 @@
+{
+  "name": "smyst.com",
+  "short_name": "smyst",
+  "description": "Free-only KI-Zwilling Plattform fuer digitale Profile, Wissen und schnelle Twin-Chats.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
+  "orientation": "portrait-primary",
+  "background_color": "#f7f7f5",
+  "theme_color": "#0b1c44",
+  "categories": ["productivity", "social", "utilities"],
+  "lang": "de",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Twin Chat",
+      "short_name": "Chat",
+      "url": "/?mode=chat"
+    },
+    {
+      "name": "Twin erstellen",
+      "short_name": "Twin",
+      "url": "/?mode=twin"
+    }
+  ]
+}

@@ -1,20 +1,16 @@
-# Twynt — Auto-Deploy bei Push auf main
+# Smyst — CI und kontrolliertes Production-Deployment
 #
 # Was passiert:
-#   1. Jeder PR + jeder Push auf main triggert "ci"-Job: Install + Type-Check + Build
-#   2. Push auf main triggert zusätzlich:
-#      - "deploy-pages": Frontend nach Cloudflare Pages
-#      - "deploy-workers": Translate + Auth + Warmup Worker
-#      - "deploy-storage": IDrive E2 / R2 Storage Worker (sobald gebaut)
+#   1. Jeder PR + jeder Push auf main triggert nur den "ci"-Job.
+#   2. Production-Deployment ist nur per workflow_dispatch erlaubt.
+#   3. Ohne schriftliche Freigabe mit exakt RELEASE_APPROVAL="Ja OK" wird nicht deployt.
 #
 # Erforderliche GitHub-Secrets (Settings → Secrets and variables → Actions):
 #   CLOUDFLARE_API_TOKEN          — Wrangler-Token mit Pages + Workers + KV write
 #                                   Erstellen unter dash.cloudflare.com/profile/api-tokens
 #                                   Template "Edit Cloudflare Workers" wählen
 #   CLOUDFLARE_ACCOUNT_ID         — 477794df69f0b6a0b9e4c59e36883c1f
-#   VITE_GA_MEASUREMENT_ID        — G-XXXXXXXXXX (aus GA4)
-#   VITE_GSC_VERIFICATION         — Google Search Console verification hash
-#   VITE_CANONICAL_HOST           — https://twynt.com (optional, hat Default)
+#   VITE_CANONICAL_HOST           — https://smyst.com (optional, hat Default)
 
 name: Deploy
 
@@ -23,8 +19,21 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-  # Manuelles Trigger für Notfall-Deploys
   workflow_dispatch:
+    inputs:
+      release_approval:
+        description: 'Production-Freigabe. Exakt "Ja OK" eintragen.'
+        required: true
+        type: string
+      release_version:
+        description: 'Release-Version, z. B. 0.1.0-foundation.1'
+        required: true
+        type: string
+      release_freeze_confirmed:
+        description: 'Release-Freeze ist aktiv und dokumentiert.'
+        required: true
+        default: false
+        type: boolean
 
 # Vermeide parallele Deploys, queuen wenn nötig
 concurrency:
@@ -56,9 +65,10 @@ jobs:
       - name: Build frontend
         run: npm run build
         env:
-          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
-          VITE_GSC_VERIFICATION: ${{ secrets.VITE_GSC_VERIFICATION }}
-          VITE_CANONICAL_HOST: ${{ vars.VITE_CANONICAL_HOST || 'https://twynt.com' }}
+          VITE_CANONICAL_HOST: ${{ vars.VITE_CANONICAL_HOST || 'https://smyst.com' }}
+
+      - name: Validate dist artifact
+        run: sh scripts/check-dist-artifact.sh
 
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
@@ -68,16 +78,42 @@ jobs:
           retention-days: 3
 
   # ---------- Stage 2: Deploy Pages ----------
+  release-gate:
+    name: Release Gate
+    needs: ci
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Validate written approval
+        env:
+          RELEASE_APPROVAL: ${{ inputs.release_approval }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          RELEASE_FREEZE_CONFIRMED: ${{ inputs.release_freeze_confirmed }}
+        run: |
+          test "$RELEASE_APPROVAL" = "Ja OK"
+          test -n "$RELEASE_VERSION"
+          test "$RELEASE_FREEZE_CONFIRMED" = "true"
+          echo "Release gate accepted for $RELEASE_VERSION"
+
   deploy-pages:
     name: Deploy Cloudflare Pages
-    needs: ci
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [ci, release-gate]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: read
       deployments: write
     steps:
+      - name: Validate deploy secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
       - uses: actions/checkout@v4
 
       - name: Download dist artifact
@@ -91,13 +127,13 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=twynt-app --branch=main
+          command: pages deploy dist --project-name=smyst-app --branch=main
 
   # ---------- Stage 3: Deploy Workers ----------
   deploy-workers:
     name: Deploy Cloudflare Workers
-    needs: ci
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [ci, release-gate]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
@@ -107,7 +143,16 @@ jobs:
           - { name: 'warmup',    env: 'warmup' }
           - { name: 'auth',      env: 'auth' }
           - { name: 'storage',   env: 'storage' }
+          - { name: 'api',       env: 'api' }
     steps:
+      - name: Validate deploy secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN"
+          test -n "$CLOUDFLARE_ACCOUNT_ID"
+
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -126,20 +171,14 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: ${{ matrix.worker.env != '' && format('deploy --env {0}', matrix.worker.env) || 'deploy' }}
 
-  # ---------- Stage 4: Sitemap-Ping an Google ----------
-  ping-sitemap:
-    name: Notify Search Engines
-    needs: deploy-pages
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+  live-smoke:
+    name: Live Smoke Test
+    needs: [deploy-pages, deploy-workers]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
-      - name: Ping Google
-        run: |
-          curl -s -o /dev/null -w "Google: %{http_code}\n" \
-            "https://www.google.com/ping?sitemap=https://twynt.com/sitemap.xml" || true
+      - uses: actions/checkout@v4
 
-      - name: Ping Bing (IndexNow)
-        run: |
-          curl -s -o /dev/null -w "Bing: %{http_code}\n" \
-            "https://www.bing.com/ping?sitemap=https://twynt.com/sitemap.xml" || true
+      - name: Verify live production
+        run: sh scripts/live-test.sh

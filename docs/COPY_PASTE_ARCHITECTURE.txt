@@ -1,86 +1,49 @@
-Twynt Architecture Plan
+SMYST.COM FREE-ONLY ARCHITECTURE
 
-Goal:
-Build twynt.com as a global AI identity, memory, persona and media platform.
+Production rule:
+- GitHub.com Free for repository, documentation, CI/CD and deployment pipelines.
+- Cloudflare.com Free for DNS, TLS, CDN, Pages, Workers, KV, caching, WAF basics and edge delivery.
+- IDrive e2 as central S3-compatible storage for files, media, documents, uploads, backups and twin data.
+- No paid add-on service is a production requirement.
 
-twynt.com is not only an AI chat app.
-It is a worldwide digital personality platform with memory, voice, media, access control, monetization and local/global discovery.
+Phase 1:
+- Free-Only MVP.
+- Vite/React frontend.
+- PWA and Capacitor iOS/Android shells.
+- Cloudflare Pages for static delivery.
+- Cloudflare Workers for API, auth, upload signing, storage, translation and chat MVP.
+- Cloudflare KV for sessions, OAuth/passkey state, quotas, small metadata and upload status.
+- IDrive e2 for all large and durable user-owned objects.
 
-Core Architecture:
+Target diagram:
 
-Mobile App
-React Native later / current Capacitor shell now
-SQLite + MMKV local database/cache
-        |
-        | Auth, API, chat, uploads, signed URL requests
-        v
-Cloudflare Edge
-WAF, CDN, rate limits, cache, DNS, geo-routing, signed URLs
-        |
-        +--> Public Web / SEO Layer
-        |    Locations, countries, cities, languages, public twins
-        |
-        +--> Fastify Core API
-        |    Users, twins, chat, access, payments, subscriptions
-        |
-        +--> Realtime Layer
-        |    SSE / WebSockets for chat streaming, notifications and status
-        |
-        +--> Queue / Event System
-        |    Upload events, AI jobs, transcription, embeddings, notifications
-        |
-        +--> AI Services
-        |    Persona, memory, embeddings, retrieval, timeline, emotion analysis
-        |
-        +--> Object Storage
-        |    IDrive E2 / Cloudflare R2
-        |    Audio, video, images, PDFs, documents, profile assets
-        |
-        +--> PostgreSQL + pgvector
-             Users, twins, memories, vectors, access rights, revenue, audit logs
+Client Web/PWA/iOS/Android
+  -> Cloudflare Pages
+  -> Cloudflare Workers
+  -> Cloudflare KV for small state
+  -> IDrive e2 for files and backups
 
-Correct Upload Flow:
+Data placement:
+- Code and docs: GitHub.
+- Web artifact: Cloudflare Pages.
+- API/auth/storage/chat logic: Cloudflare Workers.
+- Sessions, roles, quotas, upload intents, public-safe snapshots: Cloudflare KV.
+- Images, video, audio, documents, profile images, backups, twin context objects: IDrive e2.
 
-Mobile App
-  -> asks Fastify API or Storage Worker for upload permission
+Security:
+- No secrets in the repository.
+- No permanent storage keys in clients.
+- Signed uploads only.
+- Private by default.
+- Public profiles are filtered snapshots.
+- Private profiles are not indexed.
+- Rate limits, CORS, CSRF, CSP, input validation and upload validation are mandatory.
 
-API / Storage Worker
-  -> checks user session and access rights
-  -> creates signed upload URL
+SEO/AEO/GEO:
+- robots.txt, sitemap.xml, llms.txt, schema.org, OpenGraph, Twitter Cards and static multilingual landing pages.
+- Public profile pages only when visibility and consent allow indexing.
 
-Mobile App
-  -> uploads directly to IDrive E2 / Cloudflare R2
-
-Storage
-  -> stores file
-
-API
-  -> saves metadata in PostgreSQL
-
-Queue
-  -> starts background processing
-
-AI Services
-  -> transcription
-  -> embeddings
-  -> memory extraction
-  -> emotional weighting
-  -> persona update
-  -> timeline update
-  -> notification
-
-Expert Recommendation:
-
-Build twynt.com as:
-
-Identity Platform
-Memory Platform
-Persona Platform
-Media Platform
-Global Discovery Platform
-
-Do not position it only as an AI chat app.
-
-AI chat is only the visible interface.
-The real product is a structured digital personality with memory, emotion, voice, location, culture, consent and monetization.
-
+Scale statement:
+- Billion-user/day scale is the long-term vision.
+- The free-only stack is not a billion-user guarantee.
+- Phase 1 focuses on clean architecture, security, fast UX and future portability.

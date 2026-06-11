@@ -1,5 +1,5 @@
 /**
- * CookieConsent — DSGVO-konformer Cookie-Banner für twynt.com.
+ * CookieConsent — DSGVO-konformer Cookie-Banner für smyst.com.
  *
  * Compliance:
  *  - Alle nicht-essentiellen Cookies sind STANDARD denied (siehe analytics.ts)
@@ -39,8 +39,8 @@ export default function CookieConsent() {
       setView('settings');
       setVisible(true);
     };
-    window.addEventListener('twynt:open-cookie-settings', onOpen as EventListener);
-    return () => window.removeEventListener('twynt:open-cookie-settings', onOpen as EventListener);
+    window.addEventListener('smyst:open-cookie-settings', onOpen as EventListener);
+    return () => window.removeEventListener('smyst:open-cookie-settings', onOpen as EventListener);
   }, []);
 
   const acceptAll = () => {
@@ -85,8 +85,8 @@ export default function CookieConsent() {
               id="privacy-consent-desc"
               className="mt-1 text-sm leading-relaxed text-[#555b64]"
             >
-              twynt.com speichert notwendige App-Daten für die Funktion.
-              Optional helfen uns anonyme Nutzungsdaten, twynt.com zu verbessern. Du kannst deine
+              smyst.com speichert notwendige App-Daten für die Funktion.
+              Optional helfen uns anonyme Nutzungsdaten, smyst.com zu verbessern. Du kannst deine
               Einstellungen jederzeit ändern. Mehr in der{' '}
               <a href="/datenschutz" className="text-[#0b1c44] underline hover:no-underline">
                 Datenschutzerklärung
@@ -154,7 +154,7 @@ export default function CookieConsent() {
                   <div className="min-w-0">
                     <h3 className="text-sm font-semibold text-[#16181b]">Statistik</h3>
                     <p className="mt-0.5 text-xs text-[#555b64]">
-                      Anonymisierte Nutzungsstatistik via Google Analytics 4 mit IP-Anonymisierung.
+                      Lokale Nutzungsentscheidung. Externe Analytics sind in Production deaktiviert.
                     </p>
                   </div>
                   <input

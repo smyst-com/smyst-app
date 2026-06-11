@@ -19,6 +19,8 @@ workbox-*.js
 workbox-*.js.map
 manifest.webmanifest
 registerSW.js
+!public/sw.js
+!public/manifest.webmanifest
 
 # Auto-generated sitemaps (regen on each build)
 public/sitemap.xml

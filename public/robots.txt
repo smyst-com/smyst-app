@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /private/
+Disallow: /api/
+Allow: /api/public/twins/
+
+Sitemap: https://smyst.com/sitemap.xml
+Host: https://smyst.com

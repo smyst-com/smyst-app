@@ -1,0 +1,11 @@
+groups:
+  - name: smyst-foundation
+    rules:
+      - alert: SmystBackendDown
+        expr: up{job="smyst-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Smyst backend is down"
+

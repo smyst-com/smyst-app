@@ -1,0 +1,33 @@
+{
+  "locale": "ar",
+  "dir": "rtl",
+  "seo": {
+    "title": "smyst.com | توائم ذكاء اصطناعي وملفات رقمية ودردشة Twin",
+    "description": "smyst.com منصة free-only لتوائم الذكاء الاصطناعي للملفات العامة والخاصة والمعرفة والذكريات والدردشة السريعة.",
+    "keywords": "توأم ذكاء اصطناعي, توأم رقمي, ملف معرفة, ذكريات, smyst"
+  },
+  "start": {
+    "searchLabel": "البحث عن Twin",
+    "searchPlaceholder": "ابحث بالاسم أو Twin",
+    "changeTwin": "تغيير الـ Twin المحدد",
+    "chooseTwin": "اختر Twin",
+    "emptyText": "اختر اسما من الأعلى أو ابدأ بالكتابة مباشرة. يبقى الـ Twin المحدد مثبتا في الأعلى يمينا.",
+    "messagePlaceholder": "رسالة إلى {{name}}",
+    "addFile": "إضافة ملف",
+    "voiceInput": "إدخال صوتي",
+    "send": "إرسال الرسالة",
+    "freeOnlyNotice": "MVP free-only: GitHub Free وCloudflare Free وIDrive e2. لا توجد خدمات ذكاء اصطناعي أو تحليلات مدفوعة."
+  },
+  "chat": {
+    "replyIntro": "أجيب بصفتي {{name}}.",
+    "replyMvp": "في MVP free-only أستخدم منطق رد محلي ومحاكى بدون خدمة ذكاء اصطناعي مدفوعة.",
+    "replyQuestion": "سؤالك: \"{{question}}\"",
+    "replyNextStep": "الخطوة التالية: ستأتي بيانات الـ Twin الحقيقية عبر Cloudflare Worker/KV وIDrive e2."
+  },
+  "profile": {
+    "publicProfile": "ملف Twin عام",
+    "privateProfile": "ملف Twin خاص",
+    "chatButton": "الدردشة مع الـ Twin",
+    "noindex": "لا تتم فهرسة الملفات الخاصة."
+  }
+}

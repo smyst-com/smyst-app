@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli'
 
 const config: CapacitorConfig = {
-  appId: 'com.twynt.app',
-  appName: 'twynt.com',
+  appId: 'com.smyst.app',
+  appName: 'smyst.com',
   webDir: 'dist',
   bundledWebRuntime: false,
   server: {

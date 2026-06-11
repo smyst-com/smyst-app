@@ -1,5 +1,5 @@
 /**
- * Twynt Warmup-Worker — Pre-Translation für SEO- und Bot-relevante Seiten
+ * Smyst Warmup-Worker — Pre-Translation für SEO- und Bot-relevante Seiten
  *
  * Läuft per Cron Trigger (siehe wrangler.toml) ODER per HTTP /warmup-Endpunkt
  * (für manuelle Trigger via Admin-UI).
@@ -8,7 +8,7 @@
  *  - Liste wichtiger Seiten laden (statisch oder aus KV)
  *  - Pro Seite, pro Sprache: prüfen ob Übersetzung mit aktuellem content_hash existiert
  *  - Wenn fehlt → erzeugen via translatePage() und in KV speichern
- *  - Concurrency-Limit, damit DeepL/Google Rate-Limits eingehalten werden
+ *  - Concurrency-Limit, damit KV- und Worker-Free-Limits eingehalten werden
  *  - Läuft komplett asynchron — beeinflusst Edge-Requests von Nutzern nicht
  */
 
@@ -18,6 +18,7 @@ import {
   type SupportedLang,
 } from './translator';
 import { translatePage, type Env as TranslateEnv } from './translate';
+import { clientKey, errorResponse, jsonResponse, requireRateLimit, safeHandler } from './_shared';
 
 export interface WarmupEnv extends TranslateEnv {
   /** Optional: KV mit Liste der wichtigen Pfade (Override für SEED_PATHS). */
@@ -58,7 +59,7 @@ const SEED_PATHS: string[] = [
 /** Wieviele Übersetzungs-Jobs gleichzeitig laufen dürfen. */
 const MAX_CONCURRENCY = 3;
 
-/** Wieviel Pause zwischen einzelnen Pages, um API-Limits zu schonen. */
+/** Wieviel Pause zwischen einzelnen Pages, um Free-Plan-Limits zu schonen. */
 const PAGE_DELAY_MS = 250;
 
 interface WarmupResult {
@@ -105,7 +106,7 @@ async function fetchOriginHtml(env: WarmupEnv, path: string): Promise<{ html: st
   url.search = '';
   const res = await fetch(url.toString(), {
     method: 'GET',
-    headers: { 'Accept': 'text/html', 'User-Agent': 'TwyntWarmupBot/1.0' },
+    headers: { 'Accept': 'text/html', 'User-Agent': 'SmystWarmupBot/1.0' },
   });
   if (!res.ok) return null;
   const html = await res.text();
@@ -133,7 +134,7 @@ async function processPair(
 
   // Fake-Request für translatePage — keine echten Headers nötig
   const fakeReq = new Request(`${env.ORIGIN_URL}${path}`, {
-    headers: { 'Accept': 'text/html', 'User-Agent': 'TwyntWarmupBot/1.0' },
+    headers: { 'Accept': 'text/html', 'User-Agent': 'SmystWarmupBot/1.0' },
   });
   const canonicalHost = env.CANONICAL_HOST ?? new URL(env.ORIGIN_URL).origin;
 
@@ -181,13 +182,13 @@ async function processPath(env: WarmupEnv, path: string, result: WarmupResult): 
   for (const lang of SUPPORTED_LANGS) {
     if (lang === DEFAULT_LANG) continue;
     await processPair(env, path, lang, origin.hash, result);
-    // kleine Pause zwischen Sprach-Calls (DeepL Rate-Limit)
+    // kleine Pause zwischen Sprach-Calls, um Free-Plan-Limits zu schonen
     await new Promise((r) => setTimeout(r, 50));
   }
 }
 
 /**
- * Concurrent-Limited Worker-Pool, damit nicht alle Seiten gleichzeitig DeepL hämmern.
+ * Concurrent-Limited Worker-Pool, damit nicht alle Seiten gleichzeitig KV/Origin belasten.
  */
 async function runWarmup(env: WarmupEnv): Promise<WarmupResult> {
   const startedAt = Date.now();
@@ -249,18 +250,24 @@ export default {
    * Auth via Bearer Token aus env.ADMIN_TOKEN.
    */
   async fetch(request: Request, env: WarmupEnv & { ADMIN_TOKEN?: string }): Promise<Response> {
-    const url = new URL(request.url);
-    if (url.pathname !== '/warmup') return new Response('Not found', { status: 404 });
+    return safeHandler(async () => {
+      const url = new URL(request.url);
+      if (url.pathname !== '/warmup') return errorResponse('not_found', 'Not found', 404);
 
-    const auth = request.headers.get('Authorization');
-    if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) {
-      return new Response('Unauthorized', { status: 401 });
-    }
+      const limited = await requireRateLimit(env.WARMUP_CONFIG ?? env.TRANSLATIONS, {
+        key: clientKey(request, 'warmup:manual'),
+        limit: 5,
+        windowSeconds: 60,
+      });
+      if (limited) return limited;
 
-    const result = await runWarmup(env);
-    return new Response(JSON.stringify(result, null, 2), {
-      status: 200,
-      headers: { 'content-type': 'application/json' },
+      const auth = request.headers.get('Authorization');
+      if (!env.ADMIN_TOKEN || auth !== `Bearer ${env.ADMIN_TOKEN}`) {
+        return errorResponse('unauthorized', 'Unauthorized', 401);
+      }
+
+      const result = await runWarmup(env);
+      return jsonResponse(result);
     });
   },
 };

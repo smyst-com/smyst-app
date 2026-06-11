@@ -1,32 +1,37 @@
-# Twynt — Hybrid Translation System
+# Smyst — Free-only Language Routing
 
-Edge-basiertes Übersetzungssystem für [twynt.com](https://twynt.com) auf Cloudflare Workers.
+Edge-basiertes Sprachrouting für [smyst.com](https://smyst.com) auf Cloudflare Workers.
 
-**Architektur:** Pre-Translation (Cron) als Hauptweg + Lazy-Translation (HTML-Stream) als Sicherheitsnetz. Nutzer warten nie auf Übersetzungen — Cache-Hit liefert in unter 50 ms vom Edge.
+**Architektur:** In der Free-only-Phase werden keine externen Übersetzungs-APIs genutzt. Nicht-deutsche Sprachpfade liefern aktuell Identity-Inhalte aus; echte Mehrsprachigkeit muss statisch/manuell gepflegt und kostenlos deployt werden.
 
 ## Sprachen
 
-DE (Quelle), EN, TR, FR, ES, ZH, PT, JA, KO, AR, IT, RU — 12 Sprachen.
+DE (Quelle), EN, TR, FR, ES, PT, AR, ZH, JA, KO — 10 Sprachen.
 
 | Sprache | Provider | Hinweis |
 |---------|----------|---------|
 | DE | identity | Quellsprache, keine Übersetzung |
-| EN, TR, FR, ES, ZH, PT, JA, IT, RU | DeepL | beste Qualität |
-| KO, AR | Google Translate v2 | DeepL unterstützt diese nicht |
+| EN, TR, FR, ES, PT, ZH, JA | identity/static | keine externe API |
+| KO, AR | identity/static | keine externe API |
 | RTL-Sprachen | AR | `dir="rtl"` automatisch gesetzt |
 
-Brand-Begriffe (`Twynt`, `Twin`, `Memory Engine`, `Legacy Access`, `Founder-Legacy`, …) werden via Platzhalter-Schutz NIE übersetzt.
+Brand-Begriffe werden in der Free-only-Phase nicht automatisch übersetzt.
 
 ## Dateien
 
 ```
 workers/
-├── translator.ts            # DeepL + Google Hybrid Client mit Retry & Glossary
+├── translator.ts            # Free-only identity translator, keine externen APIs
 ├── translate.ts             # Edge-Worker: Spracherkennung, KV-Cache, ctx.waitUntil
-└── warmup-translations.ts   # Cron-Worker: Pre-Translation für SEO-Seiten
+├── _shared.ts               # Security-Headers, JSON-Fehler, CORS, KV-Rate-Limits
+├── api.ts                   # Free-only Chat/API ohne externe KI
+├── auth-github.ts           # GitHub OAuth + KV-Sessions
+├── storage-idrive.ts        # IDrive-e2-Signing + KV-Metadaten
+└── warmup-translations.ts   # Cron-Worker: sparsam, keine externen APIs
 wrangler.toml                # Konfiguration für beide Worker
 src/lib/i18n.ts              # Frontend-Spracherkennung + useLanguage Hook
-src/components/LangSwitcher.tsx  # Sprachumschalter (12 Sprachen, RTL-aware)
+src/components/LangSwitcher.tsx  # Sprachumschalter (10 Sprachen, RTL-aware)
+public/locales/*.json        # statische Repository-Uebersetzungen
 ```
 
 ## Setup
@@ -41,7 +46,7 @@ Wichtige Dev-Dependencies (in `package.json` bereits enthalten):
 
 * `wrangler` — Cloudflare CLI
 * `@cloudflare/workers-types` — TypeScript-Typen für KV, HTMLRewriter, etc.
-* `vite-plugin-pwa` — PWA-Build (Service Worker, Manifest, Workbox)
+* Vite/React-Abhaengigkeiten aus `package.json`
 
 ### 2. Cloudflare-Login
 
@@ -62,18 +67,13 @@ Die ausgegebenen IDs in `wrangler.toml` an den Stellen `REPLACE_WITH_*` einsetze
 ### 4. Secrets setzen
 
 ```bash
-npx wrangler secret put DEEPL_API_KEY
-npx wrangler secret put GOOGLE_TRANSLATE_API_KEY
 npx wrangler secret put ADMIN_TOKEN
 
 # Auch für den Warmup-Worker:
-npx wrangler secret put DEEPL_API_KEY --env warmup
-npx wrangler secret put GOOGLE_TRANSLATE_API_KEY --env warmup
 npx wrangler secret put ADMIN_TOKEN --env warmup
 ```
 
-DeepL-Key holen: <https://www.deepl.com/pro-api>
-Google-Key holen: GCP Console → APIs → Cloud Translation API → API-Key erstellen.
+Keine externen Translation-API-Secrets setzen.
 
 ### 5. Account-ID eintragen
 
@@ -86,21 +86,84 @@ In `wrangler.toml`:
 
 ```toml
 [vars]
-ORIGIN_URL = "https://twynt-pages.pages.dev"   # Vite-Build auf Pages
-CANONICAL_HOST = "https://twynt.com"
+ORIGIN_URL = "https://smyst-pages.pages.dev"   # Vite-Build auf Pages
+CANONICAL_HOST = "https://smyst.com"
 ```
 
 ### 7. Deploy
 
 ```bash
-# Translate-Worker (Edge-Service)
+# Worker deploys im Free-Only-Pfad
 npm run workers:deploy
-
-# Warmup-Worker (Cron + Admin-Endpoint)
-npm run workers:warmup:deploy
 ```
 
 ## Verwendung
+
+### Auth Worker
+
+| Endpoint | Zweck | Speicher |
+|---|---|---|
+| `GET /auth/github/start` | OAuth Flow starten | `OAUTH_STATE` KV |
+| `GET /auth/github/callback` | OAuth Callback, Session erzeugen | `SESSIONS` KV |
+| `GET /auth/me` | aktuelle Session lesen | `SESSIONS` KV |
+| `POST /auth/logout` | Session entfernen | `SESSIONS` KV |
+
+Auth verwendet ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen/Rechte werden pro User in KV gespeichert:
+
+| Rolle | Rechte |
+|---|---|
+| `member` | Auth lesen, Profil lesen, Storage lesen/schreiben/loeschen, Chat lesen/schreiben |
+| `admin` | Member-Rechte plus `admin:read` |
+| `owner` | Admin-Rechte plus `admin:write` |
+
+Owner/Admin-Zuordnung erfolgt ueber `SMYST_OWNER_GITHUB_IDS`, `SMYST_OWNER_EMAILS`, `SMYST_ADMIN_GITHUB_IDS`, `SMYST_ADMIN_EMAILS`.
+
+### Storage Worker
+
+| Endpoint | Zweck | Speicher |
+|---|---|---|
+| `POST /storage/upload-url` | Intent, Quota und signed PUT URL erzeugen | `METADATA`/`SESSIONS` KV + IDrive e2 URL |
+| `POST /storage/upload-complete` | Upload als `uploaded` markieren | `METADATA` KV |
+| `GET /storage/uploads` | kleine Upload-Liste fuer aktuellen User | `METADATA` KV |
+| `GET /storage/file/:key` | signed GET Redirect erzeugen | IDrive e2 |
+| `DELETE /storage/file/:key` | Objekt loeschen und KV-Status setzen | IDrive e2 + `METADATA` KV |
+
+Der Worker speichert keine grossen Dateien in KV. Dateiinhalt liegt immer in IDrive e2.
+
+Storage-Kategorien:
+
+| Kategorie | IDrive-e2-Pfad |
+|---|---|
+| `audio` | `users/{userSub}/uploads/audio/{uuid}.{ext}` |
+| `image` | `users/{userSub}/uploads/images/{uuid}.{ext}` |
+| `video` | `users/{userSub}/uploads/videos/{uuid}.{ext}` |
+| `document` | `users/{userSub}/uploads/documents/{uuid}.{ext}` |
+| `profile_image` | `users/{userSub}/profile/images/{uuid}.{ext}` |
+| `backup` | `users/{userSub}/backups/{YYYY-MM}/{uuid}.{ext}` |
+| `twin_data` | `users/{userSub}/twins/{twinId}/data/{uuid}.{ext}` |
+
+`Content-Type` wird beim Presign signiert und muss beim PUT exakt verwendet werden. Nach dem PUT prueft der Worker das Objekt per signed `HEAD`, bevor KV-Status und aktive Speicherzaehler aktualisiert werden.
+
+### API/Chat Worker
+
+| Endpoint | Zweck | Speicher |
+|---|---|---|
+| `GET /api/health` | API-Status | kein dauerhafter Speicher |
+| `POST /api/chat/start` | Chat-Session starten | `METADATA` KV |
+| `POST /api/chat/messages` | Free-only Demo-Antwort erzeugen | `METADATA` KV |
+| `GET /api/chat/list` | kleine Chat-Liste | `METADATA` KV |
+
+Der Chat-Worker nutzt keine externen Modell-APIs. Antworten sind bewusst statisch/free-only, bis ein erlaubter KI-Pfad definiert ist.
+
+### Security und Rate-Limits
+
+Alle API-artigen Worker nutzen:
+
+- strukturierte JSON-Fehler,
+- Security-Headers,
+- CORS-Preflight nur fuer erlaubte Methoden,
+- KV-basierte Rate-Limits mit `rate:*` Prefix,
+- `no-store` fuer private JSON-Antworten.
 
 ### Cache-Headers
 
@@ -113,14 +176,14 @@ Jede Antwort vom Translate-Worker enthält:
 | `X-Translation-Cache` | `BYPASS` | Default-Sprache, kein Translation-Pfad |
 | `X-Translation-Cache` | `WARMING` | Warmup-Worker arbeitet gerade an dieser Seite |
 | `X-Content-Hash` | `<16-hex>` | SHA-256 des Origin-HTML, Cache-Key-Bestandteil |
-| `X-Translation-Provider` | `deepl` / `google` / `identity` | welcher Provider verwendet wurde |
+| `X-Translation-Provider` | `identity` / `static` | welcher Free-only Provider verwendet wurde |
 
 ### URL-Struktur
 
-* `https://twynt.com/` → DE (Default, kein Prefix)
-* `https://twynt.com/en/` → EN
-* `https://twynt.com/tr/preise` → TR
-* `https://twynt.com/?lang=ar` → AR (Query-Parameter, einmaliger Override)
+* `https://smyst.com/` → DE (Default, kein Prefix)
+* `https://smyst.com/en/` → EN
+* `https://smyst.com/tr/preise` → TR
+* `https://smyst.com/?lang=ar` → AR (Query-Parameter, einmaliger Override)
 
 Sprache wird in Cookie + LocalStorage persistiert. Edge-Worker liest beide.
 
@@ -128,7 +191,7 @@ Sprache wird in Cookie + LocalStorage persistiert. Edge-Worker liest beide.
 
 ```bash
 # Mit Admin-Token (per `wrangler secret put ADMIN_TOKEN` gesetzt)
-curl -X GET https://twynt-warmup.workers.dev/warmup \
+curl -X GET https://smyst-warmup.workers.dev/warmup \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
 
@@ -141,7 +204,7 @@ In `wrangler.toml` (`env.warmup.triggers.crons`):
 * `0 */6 * * *` — alle 6 Stunden
 * `0 3 * * *` — täglich 03:00 UTC (Vollständiger Sweep)
 
-Anpassung beliebig. Beachte DeepL-API-Limits (500.000 Zeichen/Monat im Pro-Plan).
+Anpassung beliebig. Beachte Cloudflare-KV- und Worker-Free-Limits.
 
 ## Tests
 
@@ -159,19 +222,19 @@ curl -i http://localhost:8787/?lang=en
 
 ```bash
 # 1. Erster Request → MISS, Origin sofort, Background-Translation
-curl -i https://twynt.com/?lang=tr | head -15
+curl -i https://smyst.com/?lang=tr | head -15
 # → X-Translation-Cache: MISS
 
 # 2. ~5 Sekunden warten, dann erneut
-curl -i https://twynt.com/?lang=tr | head -15
+curl -i https://smyst.com/?lang=tr | head -15
 # → X-Translation-Cache: HIT
 ```
 
 ### Brand-Term-Schutz prüfen
 
 ```bash
-curl -s https://twynt.com/?lang=en | grep -o 'Twynt' | head -5
-# → "Twynt" muss als "Twynt" erscheinen, nicht "Twin" oder übersetzt
+curl -s https://smyst.com/?lang=en | grep -o 'Smyst' | head -5
+# → "Smyst" muss als "Smyst" erscheinen, nicht "Twin" oder übersetzt
 ```
 
 ### Performance-Ziel
@@ -179,14 +242,14 @@ curl -s https://twynt.com/?lang=en | grep -o 'Twynt' | head -5
 Cache-Hit Edge-Antwort soll **unter 50 ms** liegen. Test:
 
 ```bash
-time curl -s -H 'Cookie: twynt_lang=en' https://twynt.com/ -o /dev/null
+time curl -s -H 'Cookie: smyst_lang=en' https://smyst.com/ -o /dev/null
 # → real    0m0.04s — passt
 ```
 
 ### HTML-Struktur unverändert
 
 ```bash
-diff <(curl -s https://twynt-pages.pages.dev/) <(curl -s -H 'Cookie: twynt_lang=de' https://twynt.com/)
+diff <(curl -s https://smyst-pages.pages.dev/) <(curl -s -H 'Cookie: smyst_lang=de' https://smyst.com/)
 # → identische HTML-Struktur (außer `<head>` mit hreflang/canonical)
 ```
 
@@ -229,23 +292,22 @@ diff <(curl -s https://twynt-pages.pages.dev/) <(curl -s -H 'Cookie: twynt_lang=
 
 * **HTMLRewriter statt DOM-Parser** — streamt, skaliert linear, kein OOM auf großen Seiten.
 * **content_hash statt TTL** — Cache-Invalidation passiert automatisch bei Content-Änderung. TTL ist nur Sicherheitsnetz (90 Tage).
-* **DeepL primary, Google fallback** — DeepL hat bessere Qualität für 10 von 12 Sprachen. KO + AR brauchen Google.
-* **Brand-Glossary via Platzhalter** — robuster als DeepL-Glossary-API (die nur in einigen Sprachpaaren funktioniert).
+* **Free-only identity translator** — keine externen Übersetzungs-APIs, keine Kostenrisiken.
+* **Manuelle/statistische Mehrsprachigkeit** — hochwertige Landingpages werden als statische Inhalte gepflegt.
 * **Sub-Path-Routing /de/, /en/** — bessere SEO als `?lang=` Query-Parameter, klarere URLs.
-* **Lazy-Translation NUR via `ctx.waitUntil`** — Nutzer wartet nie. Selbst bei DeepL-Outage liefert das System Origin aus.
+* **Lazy-Path bleibt nicht-blockierend** — Nutzer wartet nie auf externe Übersetzung, weil keine externe Übersetzung stattfindet.
 
 ## Limits & Kosten
 
-| Resource | Free-Tier | Bezahl |
+| Resource | Free-Tier | Nicht nutzen |
 |----------|-----------|--------|
-| Workers Requests | 100k/Tag | 5 USD / 10M Requests |
-| KV Reads | 100k/Tag | 0.50 USD / Mio |
-| KV Writes | 1k/Tag | 5 USD / Mio |
-| KV Storage | 1 GB | 0.50 USD / GB / Monat |
-| DeepL Pro | — | 5 €/Monat + 20 €/Mio Zeichen |
-| Google Translate v2 | — | 20 USD / Mio Zeichen |
+| Workers Requests | Free-Plan-Limit beachten | Paid Workers |
+| KV Reads | Free-Plan-Limit beachten | bezahlte KV-Mehrnutzung |
+| KV Writes | Free-Plan-Limit beachten | bezahlte KV-Mehrnutzung |
+| KV Storage | Free-Plan-Limit beachten | bezahlter KV-Speicher |
+| Externe Übersetzung | nicht erlaubt | externe APIs |
 
-Bei 25 Seiten × 12 Sprachen × 5 KB pro Übersetzung ≈ 1.5 MB KV-Storage — vernachlässigbar.
+Bei manuell gepflegten statischen Sprachseiten entstehen keine externen Übersetzungskosten. KV-Nutzung bleibt trotzdem zu begrenzen.
 
 ## Troubleshooting
 
@@ -253,13 +315,9 @@ Bei 25 Seiten × 12 Sprachen × 5 KB pro Übersetzung ≈ 1.5 MB KV-Storage — 
 
 → `ORIGIN_URL` in `wrangler.toml` falsch. Pages-Deployment-URL prüfen.
 
-### "DEEPL_API_KEY missing"
+### Nicht-deutsche Seiten sind noch Deutsch
 
-→ Secret nicht gesetzt. `wrangler secret put DEEPL_API_KEY` ausführen.
-
-### Brand-Begriffe werden trotzdem übersetzt
-
-→ Liste in `workers/translator.ts` (`BRAND_TERMS`) erweitern, redeploy.
+→ Erwartet in der Free-only-Phase. Echte Übersetzungen müssen als statische Inhalte gepflegt werden.
 
 ### Cache-Hit < 50 ms wird nicht erreicht
 
@@ -271,8 +329,8 @@ Bei 25 Seiten × 12 Sprachen × 5 KB pro Übersetzung ≈ 1.5 MB KV-Storage — 
 
 ## Nächste Schritte
 
-* Translation Memory einrichten (Hash → Übersetzung Cache vor DeepL-Call), spart 30–60 % API-Kosten.
-* Quality Estimation pro Übersetzung speichern (COMET-Score), Human-Review-Queue für Landing Pages.
-* A/B-Test verschiedener Übersetzungs-Varianten (Cache-Key um `:variant:` erweitern).
+* Statische Sprachinhalte pro Zielmarkt pflegen.
+* Human-Review-Queue für Landing Pages als Repo-basierter Prozess.
+* A/B-Test verschiedener statischer Varianten (Cache-Key um `:variant:` erweitern).
 * Sub-Path-Sitemaps generieren (`/sitemap-de.xml`, `/sitemap-en.xml`, …).
 * Pseudo-Lokalisierung im Dev-Mode (Strings künstlich auf 130 % Länge), um Layout-Bugs zu finden.
