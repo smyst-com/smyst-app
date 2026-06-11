@@ -443,7 +443,8 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
     const textarea = textareaRef.current
     if (!textarea) return
     textarea.style.height = '0px'
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 132)}px`
+    const maxHeight = Math.min(Math.max(window.innerHeight * 0.38, 132), 280)
+    textarea.style.height = `${Math.min(Math.max(textarea.scrollHeight, 46), maxHeight)}px`
   }
 
   const selectTwin = (twin: StartTwin) => {
@@ -617,34 +618,58 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         </div>
       </aside>
 
-      <header className="z-20 shrink-0 border-b border-white/10 bg-[rgba(11,16,24,0.88)] pt-[max(env(safe-area-inset-top),22px)] shadow-[0_18px_45px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
-        <div className="relative flex min-h-[116px] items-center justify-center px-4 pb-5 sm:min-h-[132px]">
+      <header className="z-20 shrink-0 border-b border-white/10 bg-[rgba(11,16,24,0.88)] pt-[max(env(safe-area-inset-top),18px)] shadow-[0_18px_45px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
+        <div className="relative flex min-h-[96px] flex-col items-center justify-center px-4 pb-3 sm:min-h-[112px]">
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
             aria-label="Menü öffnen"
             aria-expanded={menuOpen}
-            className="absolute left-4 top-5 grid h-12 w-12 shrink-0 place-items-center text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:left-8 sm:h-14 sm:w-14"
+            className="absolute left-4 top-4 grid h-11 w-11 shrink-0 place-items-center text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:left-8 sm:h-14 sm:w-14"
           >
-            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M6 7.5h12M6 12h12M6 16.5h12" />
             </svg>
           </button>
 
           <div className="inline-block text-left">
-            <h1 className="font-smyst-logo text-4xl font-medium leading-none tracking-normal text-white sm:text-6xl md:text-7xl">
+            <h1 className="font-smyst-logo text-[38px] font-medium leading-none tracking-normal text-white sm:text-6xl md:text-7xl">
               smyst<span className="text-[0.78em]">.com</span>
             </h1>
-            <p className="mt-2 text-base font-medium leading-tight text-[#9aa6b7] sm:text-2xl">
+            <p className="mt-1.5 text-base font-medium leading-tight text-[#9aa6b7] sm:text-2xl">
               Create Your AI Twin
             </p>
           </div>
+
+          {selectedTwin && (
+            <div className="mt-3 flex h-12 w-full max-w-[340px] items-stretch border border-white/[0.08] bg-[#111722] text-left sm:h-14 sm:max-w-[460px]">
+              <span className="grid aspect-square h-full shrink-0 place-items-center border-r border-white/[0.08] bg-[#171f2c] text-white/[0.72]">
+                <User className="h-7 w-7 sm:h-8 sm:w-8" />
+              </span>
+              <span className="flex min-w-0 flex-1 flex-col justify-center px-3">
+                <span className="truncate text-base font-bold leading-tight text-white sm:text-lg">{selectedTwin.name}</span>
+                <span className="truncate text-xs font-medium leading-tight text-[#8e97a8] sm:text-sm">{selectedTwin.role}</span>
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className="flex min-h-[82px] items-stretch border-y border-white/[0.08] bg-[#090d14] sm:min-h-[92px]">
+        <div className="flex min-h-[70px] items-stretch border-y border-white/[0.08] bg-[#090d14] sm:min-h-[82px]">
+          <button
+            type="button"
+            onClick={() => {
+              const twin = filteredTwins[0] ?? activeTwin
+              selectTwin(twin)
+            }}
+            className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-r border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
+            aria-label={t.start.chooseTwin}
+          >
+            <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
+            <span className="whitespace-nowrap">Name wählen</span>
+          </button>
           <label className="relative flex min-w-0 flex-1 items-stretch">
             <Search
-              className={`pointer-events-none absolute left-5 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:left-7 sm:h-8 sm:w-8 ${
+              className={`pointer-events-none absolute right-5 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
                 query ? 'opacity-0' : 'opacity-100'
               }`}
               aria-hidden="true"
@@ -654,6 +679,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value)
+                setSelectedTwin(null)
               }}
               onKeyDown={(event) => {
                 if (event.key !== 'Enter') return
@@ -663,45 +689,35 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 selectTwin(twin)
               }}
               placeholder="Name suchen"
-              className="min-w-0 flex-1 rounded-none border-0 bg-[#101722] px-5 pl-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pl-16 sm:text-4xl"
+              className="min-w-0 flex-1 rounded-none border-0 bg-[#101722] px-5 pr-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
             />
           </label>
-          <button
-            type="button"
-            onClick={() => {
-              const twin = filteredTwins[0] ?? activeTwin
-              selectTwin(twin)
-            }}
-            className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
-            aria-label={t.start.chooseTwin}
-          >
-            <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
-            <span className="whitespace-nowrap">Name wählen</span>
-          </button>
         </div>
       </header>
 
       <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#090d14]">
         <div className="min-h-full">
-          <div className="divide-y divide-white/[0.08] border-b border-white/[0.08]">
-            {filteredTwins.slice(0, 3).map((twin) => (
-              <button
-                key={twin.id}
-                type="button"
-                onClick={() => selectTwin(twin)}
-                className={`flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px] ${
-                  selectedTwin?.id === twin.id ? 'bg-white/[0.045]' : ''
-                }`}
-              >
-                <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.72] sm:w-[92px]">
-                  <User className="h-10 w-10 sm:h-12 sm:w-12" />
-                </span>
-                <span className="flex min-w-0 flex-1 items-center truncate px-5 text-2xl font-bold text-[#d5dbe5] sm:px-7 sm:text-4xl">
-                  {twin.name}
-                </span>
-              </button>
-            ))}
-          </div>
+          {!selectedTwin && (
+            <div className="divide-y divide-white/[0.08] border-b border-white/[0.08]">
+              {filteredTwins.slice(0, 3).map((twin) => (
+                <button
+                  key={twin.id}
+                  type="button"
+                  onClick={() => selectTwin(twin)}
+                  className={`flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px] ${
+                    selectedTwin?.id === twin.id ? 'bg-white/[0.045]' : ''
+                  }`}
+                >
+                  <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.72] sm:w-[92px]">
+                    <User className="h-10 w-10 sm:h-12 sm:w-12" />
+                  </span>
+                  <span className="flex min-w-0 flex-1 items-center truncate px-5 text-2xl font-bold text-[#d5dbe5] sm:px-7 sm:text-4xl">
+                    {twin.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
           {messages.length > 0 && (
             <div className="relative z-10 flex flex-col gap-4 px-4 py-6 sm:px-8">
               {messages.map((message) => (
@@ -731,7 +747,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
       </section>
 
       <footer className="shrink-0 border-t border-white/[0.08] bg-[rgba(17,23,33,0.88)] shadow-[0_-22px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
-        <div className="min-h-[240px] border-b border-white/[0.08] px-4 py-6 sm:min-h-[200px] sm:px-8">
+        <div className="border-b border-white/[0.08] px-4 py-2.5 sm:px-8">
           <textarea
             ref={textareaRef}
             value={input}
@@ -747,11 +763,11 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
-            className="h-full min-h-[160px] w-full resize-none bg-transparent text-2xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:min-h-[120px] sm:text-3xl"
+            className="block min-h-[46px] max-h-[38dvh] w-full resize-none overflow-y-auto bg-transparent text-2xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:text-3xl"
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
-        <div className="flex h-[58px] items-center justify-between border-t border-white/[0.04] px-5 text-white sm:px-8">
+        <div className="flex h-[56px] items-center justify-between border-t border-white/[0.04] px-5 text-white sm:px-8">
           <div className="flex h-full items-center">
             <button
               type="button"
