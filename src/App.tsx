@@ -91,6 +91,24 @@ function MenuGlyph(props: IconProps) {
   )
 }
 
+function SmystLockup() {
+  return (
+    <div className="inline-flex items-stretch gap-2 text-left sm:gap-3" aria-label="smyst.com Create Your AI Twin">
+      <span className="font-smyst-logo text-[48px] font-medium leading-none tracking-normal text-white sm:text-[70px]">
+        smyst
+      </span>
+      <span className="flex flex-col justify-between py-[3px] sm:py-1">
+        <span className="whitespace-nowrap text-[11px] font-semibold leading-none text-[#9aa6b7] sm:text-base">
+          Create Your AI Twin
+        </span>
+        <span className="font-smyst-logo text-[28px] font-medium leading-none tracking-normal text-white sm:text-[41px]">
+          .com
+        </span>
+      </span>
+    </div>
+  )
+}
+
 type AppView =
   | 'landing'
   | 'account-profile'
@@ -103,6 +121,19 @@ type AppView =
   | 'twin-profile'
 
 type AppTheme = 'dark' | 'light'
+type NameSortMode = 'famous' | 'used' | 'popular' | 'trend' | 'manual'
+
+const nameSortOptions: Array<{ mode: NameSortMode; label: string; detail: string }> = [
+  { mode: 'famous', label: 'Berühmt zuerst', detail: 'Bekannte Profile nach oben' },
+  { mode: 'used', label: 'Mehr genutzt', detail: 'Häufige Chats zuerst' },
+  { mode: 'popular', label: 'Populär', detail: 'Starke Nachfrage zuerst' },
+  { mode: 'trend', label: 'Trend im Markt', detail: 'Aktuell viel gesprochen' },
+  { mode: 'manual', label: 'Manuell', detail: 'Eigene Reihenfolge behalten' },
+]
+
+function isNameSortMode(value: string | null): value is NameSortMode {
+  return value === 'famous' || value === 'used' || value === 'popular' || value === 'trend' || value === 'manual'
+}
 
 const viewPaths: Record<Exclude<AppView, 'twin-profile'>, string> = {
   landing: '/',
@@ -143,12 +174,20 @@ export default function App() {
     const stored = window.localStorage.getItem('smyst-theme')
     return stored === 'light' ? 'light' : 'dark'
   })
+  const [nameSortMode, setNameSortMode] = useState<NameSortMode>(() => {
+    const stored = window.localStorage.getItem('smyst-name-sort')
+    return isNameSortMode(stored) ? stored : 'famous'
+  })
   const auth = useAuth({ enabled: currentView !== 'landing' })
 
   useEffect(() => {
     window.localStorage.setItem('smyst-theme', appTheme)
     document.documentElement.dataset.smystTheme = appTheme
   }, [appTheme])
+
+  useEffect(() => {
+    window.localStorage.setItem('smyst-name-sort', nameSortMode)
+  }, [nameSortMode])
 
   useEffect(() => {
     const syncRoute = () => {
@@ -192,7 +231,13 @@ export default function App() {
   if (currentView === 'landing') {
     return (
       <div className={appTheme === 'dark' ? 'smyst-app-dark min-h-screen bg-[#111722] text-[#f4f7fb]' : 'smyst-app-light min-h-screen bg-[#d9dee7] text-[#111722]'}>
-        <SmystStartPage onNavigate={navigateTo} appTheme={appTheme} onThemeChange={setAppTheme} />
+        <SmystStartPage
+          onNavigate={navigateTo}
+          appTheme={appTheme}
+          onThemeChange={setAppTheme}
+          nameSortMode={nameSortMode}
+          onNameSortModeChange={setNameSortMode}
+        />
         <Suspense fallback={null}>
           <CookieConsent />
         </Suspense>
@@ -286,7 +331,13 @@ export default function App() {
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
         {currentView === 'memory-upload' && <MemoryUploadView />}
         {currentView === 'twin-chat' && <TwinChatView />}
-        {currentView === 'settings' && <SettingsView onNavigate={navigateTo} />}
+        {currentView === 'settings' && (
+          <SettingsView
+            onNavigate={navigateTo}
+            nameSortMode={nameSortMode}
+            onNameSortModeChange={setNameSortMode}
+          />
+        )}
         {currentView === 'twin-profile' && <TwinProfileView slug={profileSlug} privateTwinId={privateTwinId} onNavigate={navigateTo} />}
       </main>
 
@@ -355,6 +406,11 @@ const startPageTwins = [
     accent: '#71E8FF',
     initials: 'MM',
     tone: 'persönlich, ruhig, nahbar',
+    famousScore: 96,
+    usedScore: 89,
+    popularScore: 92,
+    trendScore: 84,
+    manualRank: 1,
   },
   {
     id: 'max-meier',
@@ -365,6 +421,11 @@ const startPageTwins = [
     accent: '#A8FFCB',
     initials: 'MM',
     tone: 'reflektiert, direkt, empathisch',
+    famousScore: 78,
+    usedScore: 94,
+    popularScore: 86,
+    trendScore: 72,
+    manualRank: 2,
   },
   {
     id: 'maximilian-schmidt',
@@ -375,6 +436,11 @@ const startPageTwins = [
     accent: '#9DBBFF',
     initials: 'MS',
     tone: 'klar, warm, fokussiert',
+    famousScore: 88,
+    usedScore: 76,
+    popularScore: 91,
+    trendScore: 95,
+    manualRank: 3,
   },
   {
     id: 'max-weber',
@@ -385,6 +451,11 @@ const startPageTwins = [
     accent: '#FFFFFF',
     initials: 'MW',
     tone: 'schnell, einfach, regelbasiert',
+    famousScore: 82,
+    usedScore: 82,
+    popularScore: 79,
+    trendScore: 90,
+    manualRank: 4,
   },
 ]
 
@@ -401,10 +472,14 @@ function SmystStartPage({
   onNavigate,
   appTheme,
   onThemeChange,
+  nameSortMode,
+  onNameSortModeChange,
 }: {
   onNavigate: (view: AppView) => void
   appTheme: AppTheme
   onThemeChange: (theme: AppTheme) => void
+  nameSortMode: NameSortMode
+  onNameSortModeChange: (mode: NameSortMode) => void
 }) {
   const { lang } = useLanguage({ reloadOnChange: false })
   const t = useStaticTranslations(lang)
@@ -414,19 +489,34 @@ function SmystStartPage({
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [menuOpen, setMenuOpen] = useState(false)
+  const [namePickerOpen, setNamePickerOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
   const filteredTwins = useMemo(() => {
+    const sortValue = (twin: StartTwin) => {
+      if (nameSortMode === 'used') return twin.usedScore
+      if (nameSortMode === 'popular') return twin.popularScore
+      if (nameSortMode === 'trend') return twin.trendScore
+      if (nameSortMode === 'manual') return -twin.manualRank
+      return twin.famousScore
+    }
     const normalized = query.trim().toLowerCase()
-    if (!normalized) return startPageTwins
-    return startPageTwins.filter((twin) =>
-      `${twin.name} ${twin.description} ${twin.role} ${twin.signal} ${twin.tone}`.toLowerCase().includes(normalized),
-    )
-  }, [query])
+    return [...startPageTwins]
+      .filter((twin) => {
+        if (!normalized) return true
+        return `${twin.name} ${twin.description} ${twin.role} ${twin.signal} ${twin.tone}`
+          .toLowerCase()
+          .includes(normalized)
+      })
+      .sort((a, b) => sortValue(b) - sortValue(a) || a.name.localeCompare(b.name, 'de'))
+  }, [nameSortMode, query])
 
   const activeTwin = selectedTwin ?? startPageTwins[0]
   const canSend = input.trim().length > 0
+  const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
+  const showNamePicker = !selectedTwin && (namePickerOpen || query.trim().length > 0)
+  const selectedSortOption = nameSortOptions.find((option) => option.mode === nameSortMode) ?? nameSortOptions[0]
 
   useEffect(() => {
     const title = t.seo.title
@@ -512,6 +602,7 @@ function SmystStartPage({
   const selectTwin = (twin: StartTwin) => {
     setSelectedTwin(twin)
     setQuery('')
+    setNamePickerOpen(false)
     window.requestAnimationFrame(() => {
       fitInputHeight()
       textareaRef.current?.focus()
@@ -680,6 +771,29 @@ function SmystStartPage({
               ))}
             </div>
           </div>
+
+          <div className="mt-5 border-t border-white/10 pt-5">
+            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Namen Ansicht</p>
+            <div className="mt-3 space-y-2 px-2">
+              {nameSortOptions.map((option) => (
+                <button
+                  key={option.mode}
+                  type="button"
+                  onClick={() => onNameSortModeChange(option.mode)}
+                  className={`min-h-[54px] w-full border px-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                    nameSortMode === option.mode
+                      ? 'border-white/35 bg-[#f4f7fb] text-[#111722]'
+                      : 'border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
+                  }`}
+                >
+                  <span className="block text-sm font-bold">{option.label}</span>
+                  <span className={`block text-xs ${nameSortMode === option.mode ? 'text-[#4f5866]' : 'text-[#9aa3b2]'}`}>
+                    {option.detail}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </nav>
 
         <div className="border-t border-white/10 px-5 py-4 pb-[max(env(safe-area-inset-bottom),16px)]">
@@ -740,29 +854,12 @@ function SmystStartPage({
               <MenuGlyph className="h-7 w-7" />
             </button>
 
-            <div className="inline-block text-left">
-              <h1 className="font-smyst-logo text-[38px] font-medium leading-none tracking-normal text-white sm:text-6xl md:text-7xl">
-                smyst<span className="text-[0.78em]">.com</span>
-              </h1>
-              <p className="mt-1.5 text-base font-medium leading-tight text-[#9aa6b7] sm:text-2xl">
-                Create Your AI Twin
-              </p>
-            </div>
+            <h1>
+              <SmystLockup />
+            </h1>
           </div>
 
           <div className="flex min-h-[70px] items-stretch border-y border-white/[0.08] bg-[#090d14] sm:min-h-[82px]">
-            <button
-              type="button"
-              onClick={() => {
-                const twin = filteredTwins[0] ?? activeTwin
-                selectTwin(twin)
-              }}
-              className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-r border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
-              aria-label={t.start.chooseTwin}
-            >
-              <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
-              <span className="whitespace-nowrap">Name wählen</span>
-            </button>
             <label className="relative flex min-w-0 flex-1 items-stretch">
               <Search
                 className={`pointer-events-none absolute right-5 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
@@ -776,7 +873,9 @@ function SmystStartPage({
                 onChange={(event) => {
                   setQuery(event.target.value)
                   setSelectedTwin(null)
+                  setNamePickerOpen(true)
                 }}
+                onFocus={() => setNamePickerOpen(true)}
                 onKeyDown={(event) => {
                   if (event.key !== 'Enter') return
                   const twin = filteredTwins[0]
@@ -788,29 +887,56 @@ function SmystStartPage({
                 className="min-w-0 flex-1 rounded-none border-0 bg-[#101722] px-5 pr-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
               />
             </label>
+            <button
+              type="button"
+              onClick={() => setNamePickerOpen((open) => !open)}
+              className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
+              aria-label={t.start.chooseTwin}
+              aria-expanded={namePickerOpen}
+            >
+              <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
+              <span className="whitespace-nowrap">Name wählen</span>
+            </button>
           </div>
         </header>
       )}
 
       <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#090d14]">
         <div className="min-h-full">
-          {!selectedTwin && (
-            <div className="divide-y divide-white/[0.08] border-b border-white/[0.08]">
-              {filteredTwins.slice(0, 3).map((twin) => (
-                <button
-                  key={twin.id}
-                  type="button"
-                  onClick={() => selectTwin(twin)}
-                  className="flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px]"
-                >
-                  <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.72] sm:w-[92px]">
-                    <User className="h-10 w-10 sm:h-12 sm:w-12" />
-                  </span>
-                  <span className="flex min-w-0 flex-1 items-center truncate px-5 text-2xl font-bold text-[#d5dbe5] sm:px-7 sm:text-4xl">
-                    {twin.name}
-                  </span>
-                </button>
-              ))}
+          {showNamePicker && (
+            <div className="border-b border-white/[0.08]">
+              <div className="flex min-h-[42px] items-center justify-between border-b border-white/[0.08] px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">
+                <span>{selectedSortOption.label}</span>
+                <span>{filteredTwins.length} Namen</span>
+              </div>
+              <div className="divide-y divide-white/[0.08]">
+                {filteredTwins.map((twin) => (
+                  <button
+                    key={twin.id}
+                    type="button"
+                    onClick={() => selectTwin(twin)}
+                    className="flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px]"
+                  >
+                    <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.72] sm:w-[92px]">
+                      <User className="h-10 w-10 sm:h-12 sm:w-12" />
+                    </span>
+                    <span className="flex min-w-0 flex-1 items-center justify-between gap-3 px-5 sm:px-7">
+                      <span className="min-w-0">
+                        <span className="block truncate text-2xl font-bold text-[#d5dbe5] sm:text-4xl">{twin.name}</span>
+                        <span className="mt-0.5 block truncate text-sm font-semibold text-[#8e97a8] sm:text-lg">{twin.description}</span>
+                      </span>
+                      <span className="shrink-0 text-right text-xs font-bold uppercase tracking-[0.12em] text-[#8e97a8]">
+                        {twin.role}
+                      </span>
+                    </span>
+                  </button>
+                ))}
+                {filteredTwins.length === 0 && (
+                  <div className="px-5 py-8 text-sm font-semibold text-[#8e97a8]">
+                    Kein Name gefunden.
+                  </div>
+                )}
+              </div>
             </div>
           )}
           {messages.length > 0 && (
@@ -841,8 +967,8 @@ function SmystStartPage({
         </div>
       </section>
 
-      <footer className="shrink-0 border-t border-white/[0.08] bg-[rgba(17,23,33,0.88)] shadow-[0_-22px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
-        <div className="border-b border-white/[0.08] px-4 py-2.5 sm:px-8">
+      <footer className={`shrink-0 border-t ${composerLine} bg-[rgba(17,23,33,0.88)] shadow-[0_-22px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl`}>
+        <div className={`border-b ${composerLine} px-4 py-2.5 sm:px-8`}>
           <textarea
             ref={textareaRef}
             value={input}
@@ -862,7 +988,7 @@ function SmystStartPage({
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
-        <div className="flex h-[56px] items-center justify-between border-t border-white/[0.04] px-5 text-white sm:px-8">
+        <div className="flex h-[56px] items-center justify-between px-5 text-white sm:px-8">
           <div className="flex h-full items-center">
             <button
               type="button"
@@ -1409,7 +1535,15 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   )
 }
 
-function SettingsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+function SettingsView({
+  onNavigate,
+  nameSortMode,
+  onNameSortModeChange,
+}: {
+  onNavigate: (view: AppView) => void
+  nameSortMode: NameSortMode
+  onNameSortModeChange: (mode: NameSortMode) => void
+}) {
   const auth = useAuth()
 
   return (
@@ -1443,6 +1577,32 @@ function SettingsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
             <p>App und Worker laufen ueber Cloudflare Free und GitHub Actions Free.</p>
             <p>Dateien, Medien und grosse Twin-Daten gehoeren in IDrive e2.</p>
             <p>Keine Google Fonts, keine bezahlten Auth-, Datenbank-, KI- oder Monitoring-Pflichtdienste.</p>
+          </div>
+        </Card>
+
+        <Card className="p-6 lg:col-span-2">
+          <h2 className="mb-4 text-xl font-bold">Namenliste</h2>
+          <p className="mb-4 text-sm text-[#555b64]">
+            Legt fest, welche Namen beim Suchen und bei Name wählen zuerst erscheinen.
+          </p>
+          <div className="grid gap-3 md:grid-cols-5">
+            {nameSortOptions.map((option) => (
+              <button
+                key={option.mode}
+                type="button"
+                onClick={() => onNameSortModeChange(option.mode)}
+                className={`min-h-[92px] border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#111722]/40 ${
+                  nameSortMode === option.mode
+                    ? 'border-[#111722] bg-[#111722] text-white'
+                    : 'border-[#d7dce5] bg-white/55 text-[#17191d] hover:bg-white'
+                }`}
+              >
+                <span className="block text-sm font-bold">{option.label}</span>
+                <span className={`mt-1 block text-xs ${nameSortMode === option.mode ? 'text-[#c6ceda]' : 'text-[#667085]'}`}>
+                  {option.detail}
+                </span>
+              </button>
+            ))}
           </div>
         </Card>
 
