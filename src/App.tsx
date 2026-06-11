@@ -702,7 +702,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         </div>
       </section>
 
-      <footer className="shrink-0 border-t border-white/10 bg-[#252b37] pb-[env(safe-area-inset-bottom)]">
+      <footer className="shrink-0 border-t border-white/10 bg-[#252b37]">
         <div className="min-h-[260px] border-b border-white/10 px-4 py-6 sm:min-h-[220px] sm:px-8">
           <textarea
             ref={textareaRef}
@@ -720,8 +720,8 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
-        <div className="smyst-start-toolbar grid h-[86px] items-center border-t border-white/5 text-white">
-          <div className="grid h-full place-items-center border-r border-white/5">
+        <div className="flex h-[78px] items-center justify-between border-t border-white/5 px-5 text-white sm:px-8">
+          <div className="flex h-full items-center">
             <button
               type="button"
               className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
@@ -731,8 +731,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               <Plus className="h-9 w-9" />
             </button>
           </div>
-          <div />
-          <div className="grid h-full place-items-center">
+          <div className="flex h-full items-center gap-6 sm:gap-8">
             <button
               type="button"
               className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
@@ -741,8 +740,6 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             >
               <Mic className="h-9 w-9" />
             </button>
-          </div>
-          <div className="grid h-full place-items-center">
             <button
               type="button"
               className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
@@ -751,8 +748,6 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             >
               <Waveform className="h-9 w-9" />
             </button>
-          </div>
-          <div className="grid h-full place-items-center">
             <button
               type="button"
               disabled={!canSend}
