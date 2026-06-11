@@ -93,6 +93,8 @@ type AppView =
   | 'dashboard'
   | 'twin-profile'
 
+type AppTheme = 'dark' | 'light'
+
 const viewPaths: Record<Exclude<AppView, 'twin-profile'>, string> = {
   landing: '/',
   'account-profile': '/profile',
@@ -128,7 +130,16 @@ export default function App() {
   const [profileSlug, setProfileSlug] = useState<string | null>(route.profileSlug)
   const [privateTwinId, setPrivateTwinId] = useState<string | null>(route.privateTwinId)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [appTheme, setAppTheme] = useState<AppTheme>(() => {
+    const stored = window.localStorage.getItem('smyst-theme')
+    return stored === 'light' ? 'light' : 'dark'
+  })
   const auth = useAuth({ enabled: currentView !== 'landing' })
+
+  useEffect(() => {
+    window.localStorage.setItem('smyst-theme', appTheme)
+    document.documentElement.dataset.smystTheme = appTheme
+  }, [appTheme])
 
   useEffect(() => {
     const syncRoute = () => {
@@ -171,8 +182,8 @@ export default function App() {
 
   if (currentView === 'landing') {
     return (
-      <div className="min-h-screen bg-[#111722] text-[#f4f7fb]">
-        <SmystStartPage onNavigate={navigateTo} />
+      <div className={appTheme === 'dark' ? 'smyst-app-dark min-h-screen bg-[#111722] text-[#f4f7fb]' : 'smyst-app-light min-h-screen bg-[#d9dee7] text-[#111722]'}>
+        <SmystStartPage onNavigate={navigateTo} appTheme={appTheme} onThemeChange={setAppTheme} />
         <Suspense fallback={null}>
           <CookieConsent />
         </Suspense>
@@ -181,21 +192,21 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen gradient-mesh">
+    <div className={appTheme === 'dark' ? 'smyst-app-dark min-h-screen bg-[#090d14] text-[#f4f7fb]' : 'smyst-app-light min-h-screen bg-[#d9dee7] text-[#111722]'}>
       {/* Header */}
-      <header className="sticky top-[18px] z-50 mx-auto mt-[18px] w-[calc(100%-40px)] max-w-[1200px] rounded-full border border-white/42 bg-white/24 px-5 py-4 backdrop-blur-[28px] saturate-[145%] shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_14px_34px_rgba(98,104,114,0.12)]">
-        <div className="flex items-center justify-between gap-5">
-          <button onClick={() => navigateTo('landing')} className="font-smyst-logo inline-flex items-center gap-3 text-xl hover:opacity-80 transition-opacity">
+      <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[rgba(11,16,24,0.9)] px-4 py-3 backdrop-blur-2xl sm:px-6">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-5">
+          <button onClick={() => navigateTo('landing')} className="font-smyst-logo inline-flex items-center gap-3 text-2xl text-white transition-opacity hover:opacity-80">
             <span>smyst<span className="text-[0.78em]">.com</span></span>
           </button>
 
           <nav className="hidden items-center gap-5 md:flex" aria-label="Hauptnavigation">
-            <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Dashboard</button>
-            <button onClick={() => navigateTo('account-profile')} className={`text-sm ${currentView === 'account-profile' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Profil</button>
-            <button onClick={() => navigateTo('my-twins')} className={`text-sm ${currentView === 'my-twins' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Twins</button>
-            <button onClick={() => navigateTo('twin-builder')} className={`text-sm ${currentView === 'twin-builder' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Erstellen</button>
-            <button onClick={() => navigateTo('memory-upload')} className={`text-sm ${currentView === 'memory-upload' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Upload</button>
-            <button onClick={() => navigateTo('twin-chat')} className={`text-sm ${currentView === 'twin-chat' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Chats</button>
+            <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Dashboard</button>
+            <button onClick={() => navigateTo('account-profile')} className={`text-sm ${currentView === 'account-profile' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Profil</button>
+            <button onClick={() => navigateTo('my-twins')} className={`text-sm ${currentView === 'my-twins' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Twins</button>
+            <button onClick={() => navigateTo('twin-builder')} className={`text-sm ${currentView === 'twin-builder' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Erstellen</button>
+            <button onClick={() => navigateTo('memory-upload')} className={`text-sm ${currentView === 'memory-upload' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Upload</button>
+            <button onClick={() => navigateTo('twin-chat')} className={`text-sm ${currentView === 'twin-chat' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Chats</button>
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3.5">
@@ -203,14 +214,21 @@ export default function App() {
             <div className="hidden md:block">
               <LangSwitcher variant="compact" />
             </div>
-            <a href="mailto:i@smyst.com" className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors hidden lg:block">i@smyst.com</a>
+            <button
+              type="button"
+              onClick={() => setAppTheme((theme) => (theme === 'dark' ? 'light' : 'dark'))}
+              className="hidden min-h-9 border border-white/[0.1] bg-white/[0.04] px-3 text-xs font-semibold text-white transition hover:bg-white/[0.08] sm:inline-flex sm:items-center"
+            >
+              {appTheme === 'dark' ? 'Heller' : 'Dunkler'}
+            </button>
+            <a href="mailto:i@smyst.com" className="hidden text-sm text-[#9aa6b7] transition-colors hover:text-white lg:block">i@smyst.com</a>
             {/* Auth-Action: Avatar wenn eingeloggt, sonst Sign-In/Early-Access */}
             {auth.status === 'authenticated' ? (
               <button
                 type="button"
                 onClick={() => navigateTo('dashboard')}
                 aria-label={`Eingeloggt als ${auth.user?.email}, zum Dashboard`}
-                className="hidden sm:inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/40 bg-white/40 text-xs font-semibold text-[#0b1c44] backdrop-blur-md hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="hidden h-9 w-9 items-center justify-center overflow-hidden border border-white/[0.1] bg-white/[0.06] text-xs font-semibold text-white backdrop-blur-md hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:inline-flex"
               >
                 {auth.user?.picture ? (
                   <img src={auth.user.picture} alt="" className="h-full w-full object-cover" />
@@ -229,7 +247,7 @@ export default function App() {
               onClick={() => setMobileNavOpen(true)}
               aria-label="Menü öffnen"
               aria-expanded={mobileNavOpen}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/30 backdrop-blur-md hover:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 md:hidden"
+              className="inline-flex h-11 w-11 items-center justify-center border border-white/[0.1] bg-white/[0.04] text-white backdrop-blur-md hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 md:hidden"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
                 <path d="M4 6h16M4 12h16M4 18h16" />
@@ -254,7 +272,7 @@ export default function App() {
       </Suspense>
 
       {/* Main Content */}
-      <main className="mx-auto w-[calc(100%-40px)] max-w-[1200px] pb-14">
+      <main className="mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-10 sm:px-6">
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
         {currentView === 'account-profile' && <AccountProfileView onNavigate={navigateTo} />}
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
@@ -266,45 +284,45 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mx-auto mt-20 w-[calc(100%-40px)] max-w-[1200px] border-t border-white/42 pt-12">
-        <div className="grid grid-cols-1 gap-12 md:grid-cols-[1.2fr_2.8fr] mb-10">
+      <footer className="border-t border-white/[0.08] bg-[#090d14] px-4 py-8 text-[#9aa6b7] sm:px-6">
+        <div className="mx-auto mb-8 grid max-w-[1200px] grid-cols-1 gap-10 md:grid-cols-[1.2fr_2.8fr]">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <span className="font-smyst-logo text-xl">smyst<span className="text-[0.78em]">.com</span></span>
             </div>
-            <p className="text-sm text-[#767d87]">Create Your AI Twin</p>
+            <p className="text-sm text-[#9aa6b7]">Create Your AI Twin</p>
           </div>
 
           <div className="grid grid-cols-3 gap-8">
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Produkt</h4>
-              <button onClick={() => navigateTo('twin-builder')} className="text-left text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Twin Builder</button>
-              <button onClick={() => navigateTo('memory-upload')} className="text-left text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Memory Upload</button>
-              <button onClick={() => navigateTo('twin-chat')} className="text-left text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Twin Chat</button>
+              <button onClick={() => navigateTo('twin-builder')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Builder</button>
+              <button onClick={() => navigateTo('memory-upload')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Memory Upload</button>
+              <button onClick={() => navigateTo('twin-chat')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Chat</button>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Unternehmen</h4>
-              <a href="mailto:i@smyst.com?subject=%C3%9Cber%20smyst.com" className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Über uns</a>
-              <a href="mailto:i@smyst.com?subject=Karriere%20bei%20smyst.com" className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Karriere</a>
-              <a href="mailto:b2b@smyst.com" className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">B2B-Anfragen</a>
+              <a href="mailto:i@smyst.com?subject=%C3%9Cber%20smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Über uns</a>
+              <a href="mailto:i@smyst.com?subject=Karriere%20bei%20smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Karriere</a>
+              <a href="mailto:b2b@smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">B2B-Anfragen</a>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Rechtliches</h4>
-              <a href="mailto:i@smyst.com?subject=Impressum" className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Impressum</a>
-              <a href="mailto:i@smyst.com?subject=Datenschutz" className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Datenschutz</a>
-              <a href="mailto:i@smyst.com?subject=AGB" className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">AGB</a>
+              <a href="mailto:i@smyst.com?subject=Impressum" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Impressum</a>
+              <a href="mailto:i@smyst.com?subject=Datenschutz" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Datenschutz</a>
+              <a href="mailto:i@smyst.com?subject=AGB" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">AGB</a>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/26 pt-6 md:flex-row">
-          <p className="text-sm text-[#767d87]">© 2026 smyst.com. Alle Rechte vorbehalten.</p>
+        <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-white/[0.08] pt-6 md:flex-row">
+          <p className="text-sm text-[#9aa6b7]">© 2026 smyst.com. Alle Rechte vorbehalten.</p>
           <div className="flex flex-wrap gap-5">
-            <a href="mailto:i@smyst.com" className="text-sm font-semibold text-[#555b64] hover:text-[#16181b] transition-colors">Kontakt</a>
+            <a href="mailto:i@smyst.com" className="text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Kontakt</a>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event('smyst:open-cookie-settings'))}
-              className="text-sm font-semibold text-[#555b64] hover:text-[#16181b] transition-colors"
+              className="text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white"
             >
               App-Daten
             </button>
@@ -372,7 +390,15 @@ type ChatMessage = {
   streaming?: boolean
 }
 
-function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+function SmystStartPage({
+  onNavigate,
+  appTheme,
+  onThemeChange,
+}: {
+  onNavigate: (view: AppView) => void
+  appTheme: AppTheme
+  onThemeChange: (theme: AppTheme) => void
+}) {
   const { lang } = useLanguage({ reloadOnChange: false })
   const t = useStaticTranslations(lang)
   const auth = useAuth()
@@ -595,6 +621,26 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               </li>
             ))}
           </ul>
+
+          <div className="mt-5 border-t border-white/10 pt-5">
+            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Design</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 px-2">
+              {(['dark', 'light'] as const).map((theme) => (
+                <button
+                  key={theme}
+                  type="button"
+                  onClick={() => onThemeChange(theme)}
+                  className={`min-h-[48px] border px-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                    appTheme === theme
+                      ? 'border-white/35 bg-[#f4f7fb] text-[#111722]'
+                      : 'border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
+                  }`}
+                >
+                  {theme === 'dark' ? 'Dunkler' : 'Heller'}
+                </button>
+              ))}
+            </div>
+          </div>
         </nav>
 
         <div className="border-t border-white/10 px-5 py-4 pb-[max(env(safe-area-inset-bottom),16px)]">

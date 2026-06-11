@@ -165,6 +165,22 @@
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74), 0 18px 36px rgba(94, 99, 109, 0.1);
   }
 
+  .smyst-app-dark .glass-card {
+    background: rgba(17, 23, 33, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 22px 50px rgba(0, 0, 0, 0.2);
+    color: #f4f7fb;
+  }
+
+  .smyst-app-light .glass-card {
+    background: rgba(244, 247, 251, 0.9);
+    border: 1px solid rgba(17, 23, 33, 0.12);
+    border-radius: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), 0 18px 36px rgba(17, 23, 33, 0.1);
+    color: #111722;
+  }
+
   .glass-button-primary {
     @apply backdrop-blur-[18px];
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(235, 238, 242, 0.62));
@@ -176,6 +192,116 @@
     @apply backdrop-blur-[18px];
     background: rgba(255, 255, 255, 0.18);
     border: 1px solid rgba(255, 255, 255, 0.56);
+  }
+
+  .smyst-app-dark .glass-button-primary,
+  .smyst-app-dark .glass-button-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    box-shadow: none;
+    color: #ffffff;
+  }
+
+  .smyst-app-dark .glass-button-primary:hover,
+  .smyst-app-dark .glass-button-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .smyst-app-light .glass-button-primary,
+  .smyst-app-light .glass-button-secondary {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(17, 23, 33, 0.14);
+    border-radius: 8px;
+    box-shadow: none;
+    color: #111722;
+  }
+
+  .smyst-app-light header,
+  .smyst-app-light footer {
+    background: rgba(244, 247, 251, 0.92) !important;
+    border-color: rgba(17, 23, 33, 0.12) !important;
+    color: #111722 !important;
+  }
+
+  .smyst-app-light main.fixed,
+  .smyst-app-light .bg-\[\#090d14\],
+  .smyst-app-light .bg-\[\#101722\],
+  .smyst-app-light .bg-\[\#111722\],
+  .smyst-app-light .bg-\[\#141a25\],
+  .smyst-app-light .bg-\[\#141a27\] {
+    background-color: #d9dee7 !important;
+  }
+
+  .smyst-app-light .bg-\[\#171f2c\],
+  .smyst-app-light .bg-\[\#242b37\] {
+    background-color: rgba(255, 255, 255, 0.72) !important;
+  }
+
+  .smyst-app-light .text-white,
+  .smyst-app-light .text-\[\#f4f7fb\],
+  .smyst-app-light .text-\[\#d5dbe5\] {
+    color: #111722 !important;
+  }
+
+  .smyst-app-light .text-\[\#8e97a8\],
+  .smyst-app-light .text-\[\#9aa3b2\],
+  .smyst-app-light .text-\[\#9aa6b7\],
+  .smyst-app-light .text-\[\#aeb6c4\] {
+    color: #4f5b6b !important;
+  }
+
+  .smyst-app-dark input,
+  .smyst-app-dark textarea,
+  .smyst-app-dark select {
+    background-color: rgba(16, 23, 34, 0.94) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+  }
+
+  .smyst-app-dark input::placeholder,
+  .smyst-app-dark textarea::placeholder {
+    color: rgba(174, 182, 196, 0.72) !important;
+  }
+
+  .smyst-app-light input,
+  .smyst-app-light textarea,
+  .smyst-app-light select {
+    background-color: rgba(255, 255, 255, 0.76) !important;
+    border-color: rgba(17, 23, 33, 0.14) !important;
+    border-radius: 8px !important;
+    color: #111722 !important;
+  }
+
+  .smyst-app-dark .text-\[\#555b64\],
+  .smyst-app-dark .text-\[\#667085\],
+  .smyst-app-dark .text-\[\#767d87\],
+  .smyst-app-dark .text-slate-700,
+  .smyst-app-dark .text-emerald-800,
+  .smyst-app-dark .text-green-700,
+  .smyst-app-dark .text-yellow-700 {
+    color: #9aa6b7 !important;
+  }
+
+  .smyst-app-dark .text-\[\#16181b\],
+  .smyst-app-dark .text-\[\#17191d\],
+  .smyst-app-dark .text-\[\#0b1c44\] {
+    color: #f4f7fb !important;
+  }
+
+  .smyst-app-dark .bg-white,
+  .smyst-app-dark .bg-\[\#eef6ff\],
+  .smyst-app-dark .bg-\[\#e7f6ff\] {
+    background-color: rgba(20, 26, 37, 0.96) !important;
+  }
+
+  .smyst-app-dark .rounded-full,
+  .smyst-app-dark .rounded-\[18px\],
+  .smyst-app-dark .rounded-\[22px\],
+  .smyst-app-dark .rounded-\[24px\],
+  .smyst-app-dark .rounded-\[28px\] {
+    border-radius: 8px !important;
   }
 
   .gradient-mesh {
