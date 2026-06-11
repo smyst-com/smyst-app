@@ -18,6 +18,7 @@ main = "workers/translate.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+pages_build_output_dir = "dist"
 
 # Routes: Worker greift auf alle HTML-Anfragen zu, die durch /<lang>/ kommen.
 # In Produktion auf custom domain mounten:
@@ -31,7 +32,7 @@ zone_name = "smyst.com"
 
 # Variables (kein Secret) — Origin URL der Vite-PWA auf Cloudflare Pages
 [vars]
-ORIGIN_URL = "https://smyst-app.pages.dev"
+ORIGIN_URL = "https://smyst-vite-app.pages.dev"
 CANONICAL_HOST = "https://smyst.com"
 
 # KV Namespaces — IDs nach `wrangler kv:namespace create` ersetzen
@@ -63,7 +64,7 @@ account_id = "477794df69f0b6a0b9e4c59e36883c1f"
 crons = ["0 3 * * 0"]
 
 [env.warmup.vars]
-ORIGIN_URL = "https://smyst-app.pages.dev"
+ORIGIN_URL = "https://smyst-vite-app.pages.dev"
 CANONICAL_HOST = "https://smyst.com"
 
 [[env.warmup.kv_namespaces]]
@@ -90,7 +91,7 @@ zone_name = "smyst.com"
 
 [env.auth.vars]
 CANONICAL_HOST = "https://smyst.com"
-ORIGIN_URL = "https://smyst-app.pages.dev"
+ORIGIN_URL = "https://smyst-vite-app.pages.dev"
 SMYST_OWNER_GITHUB_IDS = ""
 SMYST_OWNER_EMAILS = ""
 SMYST_ADMIN_GITHUB_IDS = ""
@@ -124,7 +125,7 @@ zone_name = "smyst.com"
 
 [env.storage.vars]
 CANONICAL_HOST = "https://smyst.com"
-ORIGIN_URL = "https://smyst-app.pages.dev"
+ORIGIN_URL = "https://smyst-vite-app.pages.dev"
 IDRIVE_E2_ENDPOINT = "https://s3.eu-central-1.idrivee2.com"
 IDRIVE_E2_BUCKET = "smyst-memories"
 IDRIVE_E2_REGION = "eu-central-1"
@@ -173,7 +174,7 @@ zone_name = "smyst.com"
 
 [env.api.vars]
 CANONICAL_HOST = "https://smyst.com"
-ORIGIN_URL = "https://smyst-app.pages.dev"
+ORIGIN_URL = "https://smyst-vite-app.pages.dev"
 
 [[env.api.kv_namespaces]]
 binding = "SESSIONS"

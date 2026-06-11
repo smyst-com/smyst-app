@@ -11,7 +11,7 @@ Alle anderen Dienste sind in Production optional/verboten und duerfen nicht als 
 ## 1. GitHub
 
 ```text
-Owner: smystcom
+Owner: smyst-com
 Repository: smyst-app
 Visibility: Private
 ```

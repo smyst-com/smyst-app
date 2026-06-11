@@ -127,7 +127,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=smyst-app --branch=main
+          command: pages deploy dist --project-name=smyst-vite-app --branch=main
 
   # ---------- Stage 3: Deploy Workers ----------
   deploy-workers:
