@@ -112,7 +112,7 @@ http://localhost:8787/auth/github/callback
 Bucket:
 
 ```text
-Bucket name: smyst-memories
+Bucket name: twynt-memories
 Region: EU region preferred
 ```
 

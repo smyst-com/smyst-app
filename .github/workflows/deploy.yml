@@ -11,6 +11,14 @@
 #                                   Template "Edit Cloudflare Workers" wählen
 #   CLOUDFLARE_ACCOUNT_ID         — 477794df69f0b6a0b9e4c59e36883c1f
 #   VITE_CANONICAL_HOST           — https://smyst.com (optional, hat Default)
+#
+# Zusaetzlich als Repository Secrets dokumentiert, damit Worker-Secrets reproduzierbar bleiben:
+#   SMYST_GITHUB_OAUTH_CLIENT_ID
+#   SMYST_GITHUB_OAUTH_CLIENT_SECRET
+#   AUTH_HMAC_SECRET
+#   IDRIVE_E2_ACCESS_KEY
+#   IDRIVE_E2_SECRET_KEY
+#   ADMIN_TOKEN
 
 name: Deploy
 

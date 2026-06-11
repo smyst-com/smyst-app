@@ -22,7 +22,7 @@ Goal: Make the existing app deployable, protected and connected.
 - Connect GitHub to Cloudflare Pages
 - Configure `smyst.com` on Cloudflare
 - Create Cloudflare KV namespaces
-- Create IDrive E2 bucket `smyst-memories`
+- Create IDrive E2 bucket `twynt-memories`
 - Set Cloudflare secrets for auth, translation and storage
 - Deploy Workers for translation, auth and storage
 - Verify production URL and custom domain
