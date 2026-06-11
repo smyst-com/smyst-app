@@ -683,20 +683,20 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
 
       <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#090d14]">
         <div className="min-h-full">
-          <div className="divide-y divide-white/[0.07] border-b border-white/[0.07]">
+          <div className="divide-y divide-white/[0.08] border-b border-white/[0.08]">
             {filteredTwins.map((twin) => (
               <button
                 key={twin.id}
                 type="button"
                 onClick={() => selectTwin(twin)}
-                className={`flex min-h-[76px] w-full items-center gap-4 px-4 text-left transition hover:bg-white/[0.04] sm:min-h-[80px] sm:px-8 ${
+                className={`flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px] ${
                   selectedTwin?.id === twin.id ? 'bg-white/[0.045]' : ''
                 }`}
               >
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:h-[54px] sm:w-[54px]">
-                  <User className="h-8 w-8 sm:h-9 sm:w-9" />
+                <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.72] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:w-[92px]">
+                  <User className="h-10 w-10 sm:h-12 sm:w-12" />
                 </span>
-                <span className="min-w-0 truncate text-xl font-semibold text-[#b6becb] sm:text-3xl">
+                <span className="flex min-w-0 flex-1 items-center truncate px-5 text-2xl font-bold text-[#d5dbe5] sm:px-7 sm:text-4xl">
                   {twin.name}
                 </span>
               </button>
