@@ -486,7 +486,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         aria-modal="true"
         aria-label="Startmenue"
         aria-hidden={!menuOpen}
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(88vw,360px)] flex-col border-r border-white/10 bg-[#141a27]/95 shadow-2xl backdrop-blur-xl transition-transform ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-[360px] flex-col border-r border-white/10 bg-[#141a27]/95 shadow-2xl backdrop-blur-xl transition-transform ${
           menuOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'
         }`}
       >
@@ -502,7 +502,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               type="button"
               onClick={() => setMenuOpen(false)}
               aria-label="Menü schließen"
-              className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6 6 18M6 6l12 12" />
@@ -511,7 +511,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </div>
 
           {auth.status === 'authenticated' ? (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <div className="flex items-center gap-3">
                 <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl border border-white/10 bg-[#242b37] text-sm font-bold text-white">
                   {auth.user?.picture ? (
@@ -527,7 +527,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <p className="mb-3 text-sm font-semibold">Anmelden oder registrieren</p>
               <Suspense fallback={null}>
                 <GitHubSignInButton variant="official" returnTo="/" label="Mit GitHub starten" />
@@ -546,7 +546,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 <button
                   type="button"
                   onClick={() => goFromMenu(item.view)}
-                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
                   <span className="min-w-0">
                     <span className="block text-sm font-bold text-white">{item.label}</span>
@@ -566,7 +566,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             <button
               type="button"
               onClick={() => void auth.signOut()}
-              className="flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] px-5 text-sm font-semibold text-white hover:bg-white/[0.1]"
+              className="flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 text-sm font-semibold text-white hover:bg-white/10"
             >
               Logout
             </button>
@@ -589,7 +589,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             onClick={() => setMenuOpen(true)}
             aria-label="Menü öffnen"
             aria-expanded={menuOpen}
-            className="absolute left-4 top-4 grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[22px] border border-white/15 bg-white/[0.06] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_34px_rgba(0,0,0,0.18)] hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:left-8 sm:h-[82px] sm:w-[82px]"
+            className="absolute left-4 top-4 grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[22px] border border-white/15 bg-white/5 text-white shadow-2xl hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:left-8 sm:h-[82px] sm:w-[82px]"
           >
             <svg viewBox="0 0 24 24" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="2.4">
               <path d="M4 6h16M4 12h16M4 18h16" />
@@ -597,10 +597,10 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </button>
 
           <div className="text-center">
-            <h1 className="font-smyst-logo text-[clamp(3.25rem,12vw,5.9rem)] font-semibold leading-none tracking-normal text-white">
+            <h1 className="font-smyst-logo text-5xl font-semibold leading-none tracking-normal text-white sm:text-7xl md:text-8xl">
               smyst<span className="text-[0.78em]">.com</span>
             </h1>
-            <p className="mt-3 text-[clamp(1.25rem,4.8vw,2.15rem)] font-semibold leading-tight text-[#aeb6c4]">
+            <p className="mt-3 text-xl font-semibold leading-tight text-[#aeb6c4] sm:text-3xl">
               Create Your AI Twin
             </p>
           </div>
@@ -626,7 +626,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 selectTwin(twin)
               }}
               placeholder="Name suchen"
-              className="h-16 min-w-0 flex-1 bg-transparent text-[clamp(1.7rem,6vw,2.65rem)] font-medium outline-none placeholder:text-[#aeb6c4]/70"
+              className="h-16 min-w-0 flex-1 bg-transparent text-2xl font-medium outline-none placeholder:text-[#aeb6c4]/70 sm:text-4xl"
             />
           </label>
           <button
@@ -635,7 +635,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               const twin = filteredTwins[0] ?? activeTwin
               selectTwin(twin)
             }}
-            className="inline-flex min-h-[54px] max-w-[42vw] shrink-0 items-center justify-center gap-3 rounded-[18px] border border-white/14 bg-white/[0.07] px-4 text-[clamp(1rem,3.6vw,1.55rem)] font-bold text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+            className="inline-flex min-h-[54px] max-w-[42vw] shrink-0 items-center justify-center gap-3 rounded-[18px] border border-white/15 bg-white/10 px-4 text-base font-bold text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:text-xl"
             aria-label={t.start.chooseTwin}
           >
             <User className="h-8 w-8 shrink-0 text-white" />
@@ -646,20 +646,20 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
 
       <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#111722]">
         <div className="min-h-full">
-          <div className="divide-y divide-white/[0.07] border-b border-white/[0.07]">
+          <div className="divide-y divide-white/10 border-b border-white/10">
             {filteredTwins.map((twin) => (
               <button
                 key={twin.id}
                 type="button"
                 onClick={() => selectTwin(twin)}
-                className={`flex min-h-[82px] w-full items-center gap-5 px-4 text-left transition hover:bg-white/[0.04] sm:px-8 ${
-                  selectedTwin?.id === twin.id ? 'bg-white/[0.035]' : ''
+                className={`flex min-h-[82px] w-full items-center gap-5 px-4 text-left transition hover:bg-white/5 sm:px-8 ${
+                  selectedTwin?.id === twin.id ? 'bg-white/5' : ''
                 }`}
               >
-                <span className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-[14px] border border-white/10 bg-white/[0.05] text-[#aeb6c4]">
+                <span className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-[14px] border border-white/10 bg-white/5 text-[#aeb6c4]">
                   <User className="h-9 w-9" />
                 </span>
-                <span className="min-w-0 truncate text-[clamp(1.55rem,5vw,2.25rem)] font-bold text-[#aeb6c4]">
+                <span className="min-w-0 truncate text-2xl font-bold text-[#aeb6c4] sm:text-3xl">
                   {twin.name}
                 </span>
               </button>
@@ -667,7 +667,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </div>
 
           {(messages.length === 0 || searchFocused) && (
-            <div className="pointer-events-none absolute left-[8%] right-[8%] top-[34%] max-w-[940px] rounded-[22px] border border-white/10 bg-[#1d2330]/82 px-6 py-9 shadow-[0_18px_60px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:left-1/2 sm:right-auto sm:w-[70vw] sm:-translate-x-1/2">
+            <div className="pointer-events-none absolute left-[8%] right-[8%] top-[34%] max-w-[940px] rounded-[22px] border border-white/10 bg-[#1d2330]/80 px-6 py-9 shadow-2xl backdrop-blur-xl sm:left-1/2 sm:right-auto sm:w-[70vw] sm:-translate-x-1/2">
               <div className="h-5 w-[58%] rounded-full bg-[#4c5564]/55" />
               <div className="mt-7 h-5 w-[74%] rounded-full bg-[#4c5564]/55" />
               <div className="mt-7 h-5 w-[42%] rounded-full bg-[#4c5564]/55" />
@@ -679,7 +679,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[86%] rounded-[22px] border px-4 py-3 text-sm leading-relaxed shadow-[0_12px_34px_rgba(0,0,0,0.2)] sm:max-w-[72%] ${
+                    className={`max-w-[86%] rounded-[22px] border px-4 py-3 text-sm leading-relaxed shadow-2xl sm:max-w-[72%] ${
                       message.role === 'user'
                         ? 'rounded-br-md border-white/12 bg-white text-[#111722]'
                         : 'rounded-bl-md border-white/10 bg-[#1d2330]/92 text-[#f4f7fb] backdrop-blur-xl'
@@ -716,15 +716,15 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               }
             }}
             placeholder="Nachricht schreiben"
-            className="h-full min-h-[180px] w-full resize-none bg-transparent text-[clamp(1.65rem,5.8vw,2.55rem)] leading-tight text-white outline-none placeholder:text-[#aeb6c4]/75 sm:min-h-[140px]"
+            className="h-full min-h-[180px] w-full resize-none bg-transparent text-2xl leading-tight text-white outline-none placeholder:text-[#aeb6c4]/75 sm:min-h-[140px] sm:text-4xl"
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
-        <div className="grid h-[86px] grid-cols-[112px_1fr_112px_112px] items-center border-t border-white/5 text-white sm:grid-cols-[144px_1fr_144px_144px]">
-          <div className="grid h-full place-items-center border-r border-white/[0.04]">
+        <div className="smyst-start-toolbar grid h-[86px] items-center border-t border-white/5 text-white">
+          <div className="grid h-full place-items-center border-r border-white/5">
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07]"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
               aria-label={t.start.addFile}
               title={t.start.addFile}
             >
@@ -735,7 +735,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           <div className="grid h-full place-items-center">
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07]"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
               aria-label={t.start.voiceInput}
               title={t.start.voiceInput}
             >
@@ -745,7 +745,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           <div className="grid h-full place-items-center">
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07]"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
               aria-label="Audio-Modus"
               title="Audio-Modus"
             >
@@ -757,7 +757,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               type="button"
               disabled={!canSend}
               onClick={() => void handleSend()}
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07] disabled:text-white/35"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10 disabled:text-white/35"
               aria-label={t.start.send}
               title={t.start.send}
             >

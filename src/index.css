@@ -104,6 +104,16 @@
     letter-spacing: 0;
   }
 
+  .smyst-start-toolbar {
+    grid-template-columns: 112px 1fr 112px 112px;
+  }
+
+  @media (min-width: 640px) {
+    .smyst-start-toolbar {
+      grid-template-columns: 144px 1fr 144px 144px;
+    }
+  }
+
   /* Fluide, responsive Typografie via clamp() */
   h1 { font-size: clamp(1.875rem, 1.5rem + 1.875vw, 3rem); line-height: 1.1; letter-spacing: -0.02em; }
   h2 { font-size: clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem); line-height: 1.15; letter-spacing: -0.015em; }

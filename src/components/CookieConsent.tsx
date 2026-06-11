@@ -105,7 +105,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={acceptOnlyNecessary}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 text-sm font-semibold text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 text-sm font-semibold text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 Nur Notwendige
               </button>
@@ -128,7 +128,7 @@ export default function CookieConsent() {
                 type="button"
                 onClick={() => setView('banner')}
                 aria-label="Zurück"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#aeb6c4] hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#aeb6c4] hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                   <path d="m15 18-6-6 6-6" />
@@ -137,7 +137,7 @@ export default function CookieConsent() {
             </div>
 
             <ul className="mt-4 space-y-3">
-              <li className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
+              <li className="rounded-xl border border-white/10 bg-white/5 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h3 className="text-sm font-semibold text-white">Notwendig</h3>
@@ -195,7 +195,7 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={revoke}
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 text-sm font-medium text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 text-sm font-medium text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 Alle widerrufen
               </button>
