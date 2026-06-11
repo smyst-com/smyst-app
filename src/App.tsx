@@ -697,12 +697,12 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 key={twin.id}
                 type="button"
                 onClick={() => selectTwin(twin)}
-                className={`group flex min-h-[72px] w-full items-center gap-4 px-4 text-left transition hover:bg-white/[0.045] sm:min-h-[84px] sm:px-8 ${
+                className={`group flex min-h-16 w-full items-center gap-3 px-4 text-left transition hover:bg-white/[0.045] sm:min-h-[84px] sm:gap-4 sm:px-8 ${
                   selectedTwin?.id === twin.id ? 'bg-white/[0.055]' : ''
                 }`}
               >
                 <span
-                  className="relative grid h-12 w-12 shrink-0 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.045] text-sm font-bold text-white/[0.84] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] transition group-hover:border-white/[0.14] sm:h-[54px] sm:w-[54px]"
+                  className="relative grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.84] shadow-[inset_0_1px_0_rgba(255,255,255,0.07)] transition group-hover:border-white/[0.14] sm:h-[54px] sm:w-[54px] sm:text-sm"
                   style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,0.07), 0 0 28px ${twin.accent}18` }}
                 >
                   {twin.initials}
@@ -713,14 +713,14 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-xl font-semibold text-[#d5dbe5] sm:text-3xl">{twin.name}</span>
+                    <span className="truncate text-lg font-semibold text-[#d5dbe5] sm:text-3xl">{twin.name}</span>
                     {selectedTwin?.id === twin.id && (
                       <span className="hidden rounded-md border border-[#71E8FF]/20 bg-[#71E8FF]/[0.08] px-2 py-1 text-[10px] font-bold uppercase text-[#bdf6ff] sm:inline">
                         active
                       </span>
                     )}
                   </span>
-                  <span className="mt-1 flex min-w-0 items-center gap-2 text-xs font-medium text-[#7f8a9d] sm:text-sm">
+                  <span className="mt-0.5 flex min-w-0 items-center gap-2 text-[11px] font-medium text-[#7f8a9d] sm:mt-1 sm:text-sm">
                     <span className="truncate">{twin.role}</span>
                     <span className="h-1 w-1 rounded-full bg-white/30" />
                     <span className="truncate">{twin.signal}</span>
@@ -732,23 +732,23 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </div>
 
           {(messages.length === 0 || searchFocused) && (
-            <div className="pointer-events-none mx-[8%] my-4 max-w-[940px] rounded-xl border border-white/[0.09] bg-white/[0.055] px-5 py-4 shadow-[0_24px_70px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:mx-auto sm:w-[70vw] sm:px-6 sm:py-5">
-              <div className="mb-3 flex items-center justify-between gap-4">
+            <div className="pointer-events-none mx-[8%] my-2 max-w-[940px] rounded-xl border border-white/[0.09] bg-white/[0.055] px-5 py-3 shadow-[0_24px_70px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:mx-auto sm:my-4 sm:w-[70vw] sm:px-6 sm:py-5">
+              <div className="mb-2 flex items-center justify-between gap-4 sm:mb-3">
                 <span className="text-xs font-bold uppercase text-white/70">Live Memory</span>
                 <span className="h-2.5 w-2.5 rounded-full bg-[#71E8FF] shadow-[0_0_18px_rgba(113,232,255,0.75)]" />
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <div>
                   <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase text-white/[0.45]">
                     <span>{activeTwin.role}</span>
                     <span>{activeTwin.signal}</span>
                   </div>
-                  <div className="h-3 w-full rounded-full bg-white/[0.08]">
+                  <div className="h-2.5 w-full rounded-full bg-white/[0.08] sm:h-3">
                     <div className="h-full w-[68%] rounded-full bg-[#71E8FF]/[0.55] shadow-[0_0_18px_rgba(113,232,255,0.18)]" />
                   </div>
                 </div>
-                <div className="h-3 w-[74%] rounded-full bg-white/[0.11]" />
-                <div className="h-3 w-[48%] rounded-full bg-white/[0.09]" />
+                <div className="h-2.5 w-[74%] rounded-full bg-white/[0.11] sm:h-3" />
+                <div className="h-2.5 w-[48%] rounded-full bg-white/[0.09] sm:h-3" />
               </div>
             </div>
           )}
@@ -782,7 +782,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
       </section>
 
       <footer className="shrink-0 border-t border-white/[0.08] bg-[rgba(17,23,33,0.88)] shadow-[0_-22px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
-        <div className="min-h-[164px] border-b border-white/[0.08] px-4 py-4 sm:min-h-[168px] sm:px-8">
+        <div className="min-h-[148px] border-b border-white/[0.08] px-4 py-4 sm:min-h-[168px] sm:px-8">
           <textarea
             ref={textareaRef}
             value={input}
@@ -795,7 +795,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               }
             }}
             placeholder="Nachricht schreiben"
-            className="h-full min-h-[104px] w-full resize-none rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-4 text-xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.62] focus:border-[#71E8FF]/[0.35] sm:min-h-[104px] sm:text-3xl"
+            className="h-full min-h-[88px] w-full resize-none rounded-xl border border-white/[0.07] bg-white/[0.035] px-4 py-4 text-xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.62] focus:border-[#71E8FF]/[0.35] sm:min-h-[104px] sm:text-3xl"
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
