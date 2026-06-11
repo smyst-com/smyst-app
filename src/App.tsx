@@ -178,23 +178,12 @@ export default function App() {
           </button>
 
           <nav className="hidden items-center gap-5 md:flex" aria-label="Hauptnavigation">
-            {currentView === 'landing' ? (
-              <>
-                <button onClick={() => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Vision</button>
-                <button onClick={() => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Anwendungen</button>
-                <button onClick={() => document.getElementById('product')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Produkt</button>
-                <button onClick={() => document.getElementById('security')?.scrollIntoView({ behavior: 'smooth' })} className="text-sm text-[#555b64] hover:text-[#16181b] transition-colors">Sicherheit</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Dashboard</button>
-                <button onClick={() => navigateTo('account-profile')} className={`text-sm ${currentView === 'account-profile' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Profil</button>
-                <button onClick={() => navigateTo('my-twins')} className={`text-sm ${currentView === 'my-twins' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Twins</button>
-                <button onClick={() => navigateTo('twin-builder')} className={`text-sm ${currentView === 'twin-builder' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Erstellen</button>
-                <button onClick={() => navigateTo('memory-upload')} className={`text-sm ${currentView === 'memory-upload' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Upload</button>
-                <button onClick={() => navigateTo('twin-chat')} className={`text-sm ${currentView === 'twin-chat' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Chats</button>
-              </>
-            )}
+            <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Dashboard</button>
+            <button onClick={() => navigateTo('account-profile')} className={`text-sm ${currentView === 'account-profile' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Profil</button>
+            <button onClick={() => navigateTo('my-twins')} className={`text-sm ${currentView === 'my-twins' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Twins</button>
+            <button onClick={() => navigateTo('twin-builder')} className={`text-sm ${currentView === 'twin-builder' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Erstellen</button>
+            <button onClick={() => navigateTo('memory-upload')} className={`text-sm ${currentView === 'memory-upload' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Upload</button>
+            <button onClick={() => navigateTo('twin-chat')} className={`text-sm ${currentView === 'twin-chat' ? 'text-[#16181b] font-semibold' : 'text-[#555b64]'} hover:text-[#16181b] transition-colors`}>Chats</button>
           </nav>
 
           <div className="flex items-center gap-2 sm:gap-3.5">
@@ -218,8 +207,8 @@ export default function App() {
                 )}
               </button>
             ) : (
-              <Button size="sm" onClick={() => navigateTo(currentView === 'landing' ? 'twin-builder' : 'landing')}>
-                {currentView === 'landing' ? 'Early Access' : 'Zurück zum Start'}
+              <Button size="sm" onClick={() => navigateTo('landing')}>
+                Zurück zum Start
               </Button>
             )}
             {/* Hamburger: Mobile */}
