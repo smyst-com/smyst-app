@@ -449,7 +449,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
 
   const selectTwin = (twin: StartTwin) => {
     setSelectedTwin(twin)
-    setQuery(twin.name)
+    setQuery('')
     textareaRef.current?.focus()
   }
 
