@@ -643,9 +643,11 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </div>
         </div>
 
-        <div className="mx-3 mb-3 flex min-h-[70px] items-center gap-3 rounded-xl border border-white/10 bg-white/[0.055] px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl sm:mx-8 sm:min-h-[74px] sm:px-5">
-          <label className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
-            <Search className="h-8 w-8 shrink-0 text-white/[0.92] sm:h-9 sm:w-9" aria-hidden="true" />
+        <div className="flex min-h-[82px] items-stretch border-t border-white/[0.08] bg-[#090d14] sm:min-h-[92px]">
+          <label className="flex min-w-0 flex-1 items-stretch">
+            <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.92] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:w-[92px]">
+              <Search className="h-10 w-10 sm:h-12 sm:w-12" aria-hidden="true" />
+            </span>
             <span className="sr-only">{t.start.searchLabel}</span>
             <input
               value={query}
@@ -663,7 +665,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 selectTwin(twin)
               }}
               placeholder="Name suchen"
-              className="h-14 min-w-0 flex-1 bg-transparent text-xl font-medium text-white outline-none placeholder:text-[#aeb6c4]/[0.62] sm:text-3xl"
+              className="min-w-0 flex-1 bg-transparent px-5 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] sm:px-7 sm:text-4xl"
             />
           </label>
           <button
@@ -672,10 +674,10 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               const twin = filteredTwins[0] ?? activeTwin
               selectTwin(twin)
             }}
-            className="inline-flex min-h-[50px] max-w-[42vw] shrink-0 items-center justify-center gap-2.5 rounded-lg border border-white/12 bg-white/[0.075] px-3 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] hover:bg-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:min-h-[54px] sm:gap-3 sm:px-4 sm:text-lg"
+            className="inline-flex w-[132px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] bg-[#141a25] px-3 text-sm font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
             aria-label={t.start.chooseTwin}
           >
-            <User className="h-7 w-7 shrink-0 text-white sm:h-8 sm:w-8" />
+            <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
             <span className="truncate">Name wählen</span>
           </button>
         </div>
