@@ -633,7 +633,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             </svg>
           </button>
 
-          <div className="text-center">
+          <div className="inline-block text-left">
             <h1 className="font-smyst-logo text-4xl font-medium leading-none tracking-normal text-white sm:text-6xl md:text-7xl">
               smyst<span className="text-[0.78em]">.com</span>
             </h1>
@@ -753,47 +753,50 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               }
             }}
             placeholder="Nachricht schreiben"
+            spellCheck={false}
+            autoCapitalize="off"
+            autoCorrect="off"
             className="h-full min-h-[160px] w-full resize-none bg-transparent text-2xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:min-h-[120px] sm:text-3xl"
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
-        <div className="flex h-[78px] items-center justify-between border-t border-white/[0.04] px-5 text-white sm:px-8">
+        <div className="flex h-[58px] items-center justify-between border-t border-white/[0.04] px-5 text-white sm:px-8">
           <div className="flex h-full items-center">
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
+              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
               aria-label={t.start.addFile}
               title={t.start.addFile}
             >
-              <Plus className="h-9 w-9" />
+              <Plus className="h-8 w-8" />
             </button>
           </div>
           <div className="flex h-full items-center gap-6 sm:gap-8">
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
+              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
               aria-label={t.start.voiceInput}
               title={t.start.voiceInput}
             >
-              <Mic className="h-9 w-9" />
+              <Mic className="h-8 w-8" />
             </button>
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
+              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
               aria-label="Audio-Modus"
               title="Audio-Modus"
             >
-              <Waveform className="h-9 w-9" />
+              <Waveform className="h-8 w-8" />
             </button>
             <button
               type="button"
               disabled={!canSend}
               onClick={() => void handleSend()}
-              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08] disabled:text-white disabled:opacity-100"
+              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08] disabled:text-white disabled:opacity-100"
               aria-label={t.start.send}
               title={t.start.send}
             >
-              <ArrowUp className="h-10 w-10" />
+              <ArrowUp className="h-9 w-9" />
             </button>
           </div>
         </div>
