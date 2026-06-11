@@ -380,7 +380,6 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
   const [selectedTwin, setSelectedTwin] = useState<StartTwin | null>(null)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [searchFocused, setSearchFocused] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -450,7 +449,6 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
   const selectTwin = (twin: StartTwin) => {
     setSelectedTwin(twin)
     setQuery(twin.name)
-    setSearchFocused(false)
     textareaRef.current?.focus()
   }
 
@@ -656,10 +654,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               value={query}
               onChange={(event) => {
                 setQuery(event.target.value)
-                setSearchFocused(true)
               }}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => window.setTimeout(() => setSearchFocused(false), 130)}
               onKeyDown={(event) => {
                 if (event.key !== 'Enter') return
                 const twin = filteredTwins[0]
