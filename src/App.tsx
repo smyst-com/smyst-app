@@ -426,6 +426,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
   }, [lang, t])
 
   useEffect(() => {
+    if (messages.length === 0) return
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' })
   }, [messages])
 
