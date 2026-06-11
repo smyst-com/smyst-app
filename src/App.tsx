@@ -43,6 +43,18 @@ function Mic(props: IconProps) {
   )
 }
 
+function Waveform(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M4 14v-4" />
+      <path d="M8 18V6" />
+      <path d="M12 21V3" />
+      <path d="M16 18V6" />
+      <path d="M20 14v-4" />
+    </svg>
+  )
+}
+
 function Plus(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
@@ -159,7 +171,7 @@ export default function App() {
 
   if (currentView === 'landing') {
     return (
-      <div className="min-h-screen bg-[#f7f7f5] text-[#16181b]">
+      <div className="min-h-screen bg-[#111722] text-[#f4f7fb]">
         <SmystStartPage onNavigate={navigateTo} />
         <Suspense fallback={null}>
           <CookieConsent />
@@ -309,10 +321,10 @@ export default function App() {
 }
 
 const startPageTwins = [
-  { id: 'maya', name: 'Maya Rosen', description: 'Entrepreneur Twin', tone: 'klar, warm, fokussiert' },
-  { id: 'max', name: 'Max Müller', description: 'Family Memory Twin', tone: 'persönlich, ruhig, nahbar' },
-  { id: 'anna', name: 'Anna Schmidt', description: 'Wissens- und Werte-Twin', tone: 'reflektiert, direkt, empathisch' },
-  { id: 'demo', name: 'Smyst Demo Twin', description: 'Free-only MVP', tone: 'schnell, einfach, regelbasiert' },
+  { id: 'max-mueller', name: 'Max Müller', description: 'Family Memory Twin', tone: 'persönlich, ruhig, nahbar' },
+  { id: 'max-meier', name: 'Max Meier', description: 'Wissens- und Werte-Twin', tone: 'reflektiert, direkt, empathisch' },
+  { id: 'maximilian-schmidt', name: 'Maximilian Schmidt', description: 'Entrepreneur Twin', tone: 'klar, warm, fokussiert' },
+  { id: 'max-weber', name: 'Max Weber', description: 'Free-only MVP', tone: 'schnell, einfach, regelbasiert' },
 ]
 
 type StartTwin = (typeof startPageTwins)[number]
@@ -345,7 +357,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
     )
   }, [query])
 
-  const activeTwin = selectedTwin ?? startPageTwins[3]
+  const activeTwin = selectedTwin ?? startPageTwins[0]
   const canSend = input.trim().length > 0
 
   useEffect(() => {
@@ -461,11 +473,11 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
   }
 
   return (
-    <main className="fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden bg-[#f7f7f5] text-[#17191d]">
+    <main className="fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden bg-[#111722] text-[#f4f7fb]">
       <div
         aria-hidden={!menuOpen}
         onClick={() => setMenuOpen(false)}
-        className={`fixed inset-0 z-40 bg-black/35 backdrop-blur-sm transition-opacity ${
+        className={`fixed inset-0 z-40 bg-black/55 backdrop-blur-sm transition-opacity ${
           menuOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         }`}
       />
@@ -474,23 +486,23 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         aria-modal="true"
         aria-label="Startmenue"
         aria-hidden={!menuOpen}
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(88vw,360px)] flex-col border-r border-black/10 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(88vw,360px)] flex-col border-r border-white/10 bg-[#141a27]/95 shadow-2xl backdrop-blur-xl transition-transform ${
           menuOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'
         }`}
       >
-        <div className="border-b border-black/5 px-5 pb-4 pt-[max(env(safe-area-inset-top),18px)]">
+        <div className="border-b border-white/10 px-5 pb-4 pt-[max(env(safe-area-inset-top),18px)]">
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
               <p className="font-smyst-logo text-2xl leading-none">
                 smyst<span className="text-[0.78em]">.com</span>
               </p>
-              <p className="mt-1 text-xs font-medium text-[#667085]">Free-only: Cloudflare, GitHub, IDrive e2</p>
+              <p className="mt-1 text-xs font-medium text-[#9aa3b2]">Create Your AI Twin</p>
             </div>
             <button
               type="button"
               onClick={() => setMenuOpen(false)}
               aria-label="Menü schließen"
-              className="grid h-11 w-11 place-items-center rounded-full bg-black/5 text-[#17191d] hover:bg-black/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b1c44]"
+              className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6 6 18M6 6l12 12" />
@@ -499,9 +511,9 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </div>
 
           {auth.status === 'authenticated' ? (
-            <div className="rounded-2xl border border-[#d9dde3] bg-[#f7f9fb] p-4">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
               <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e7f6ff] text-sm font-bold text-[#0b1c44]">
+                <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl border border-white/10 bg-[#242b37] text-sm font-bold text-white">
                   {auth.user?.picture ? (
                     <img src={auth.user.picture} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -510,17 +522,17 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold">{auth.user?.name ?? 'Angemeldet'}</p>
-                  <p className="truncate text-xs text-[#667085]">{auth.user?.email}</p>
+                  <p className="truncate text-xs text-[#9aa3b2]">{auth.user?.email}</p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-[#d9dde3] bg-[#f7f9fb] p-4">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
               <p className="mb-3 text-sm font-semibold">Anmelden oder registrieren</p>
               <Suspense fallback={null}>
                 <GitHubSignInButton variant="official" returnTo="/" label="Mit GitHub starten" />
               </Suspense>
-              <p className="mt-3 text-xs leading-relaxed text-[#667085]">
+              <p className="mt-3 text-xs leading-relaxed text-[#9aa3b2]">
                 Registrierung laeuft ueber GitHub OAuth und Cloudflare Worker, ohne bezahlten Auth-Dienst.
               </p>
             </div>
@@ -534,13 +546,13 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 <button
                   type="button"
                   onClick={() => goFromMenu(item.view)}
-                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b1c44]"
+                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
                   <span className="min-w-0">
-                    <span className="block text-sm font-bold text-[#17191d]">{item.label}</span>
-                    <span className="block truncate text-xs text-[#667085]">{item.detail}</span>
+                    <span className="block text-sm font-bold text-white">{item.label}</span>
+                    <span className="block truncate text-xs text-[#9aa3b2]">{item.detail}</span>
                   </span>
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-[#667085]" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-[#9aa3b2]" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="m9 18 6-6-6-6" />
                   </svg>
                 </button>
@@ -549,12 +561,12 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </ul>
         </nav>
 
-        <div className="border-t border-black/5 px-5 py-4 pb-[max(env(safe-area-inset-bottom),16px)]">
+        <div className="border-t border-white/10 px-5 py-4 pb-[max(env(safe-area-inset-bottom),16px)]">
           {auth.status === 'authenticated' ? (
             <button
               type="button"
               onClick={() => void auth.signOut()}
-              className="flex min-h-[48px] w-full items-center justify-center rounded-full border border-[#d9dde3] bg-white px-5 text-sm font-semibold text-[#17191d] hover:bg-[#f7f9fb]"
+              className="flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] px-5 text-sm font-semibold text-white hover:bg-white/[0.1]"
             >
               Logout
             </button>
@@ -562,7 +574,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             <button
               type="button"
               onClick={() => goFromMenu('twin-builder')}
-              className="flex min-h-[48px] w-full items-center justify-center rounded-full bg-[#17191d] px-5 text-sm font-semibold text-white hover:opacity-90"
+              className="flex min-h-[48px] w-full items-center justify-center rounded-2xl bg-white px-5 text-sm font-semibold text-[#111722] hover:opacity-90"
             >
               Twin vorbereiten
             </button>
@@ -570,40 +582,33 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         </div>
       </aside>
 
-      <header className="z-20 shrink-0 px-4 pb-3 pt-[max(env(safe-area-inset-top),16px)] sm:px-6">
-        <div className="flex items-center justify-between gap-3">
+      <header className="z-20 shrink-0 border-b border-white/10 bg-[#111722]/98 pt-[max(env(safe-area-inset-top),24px)]">
+        <div className="relative flex min-h-[128px] items-center justify-center px-4 pb-7 sm:min-h-[150px]">
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
             aria-label="Menü öffnen"
             aria-expanded={menuOpen}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#d9dde3] bg-white text-[#17191d] shadow-[0_8px_24px_rgba(30,35,42,0.06)] hover:bg-[#f7f9fb] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b1c44]"
+            className="absolute left-4 top-4 grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[22px] border border-white/15 bg-white/[0.06] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_14px_34px_rgba(0,0,0,0.18)] hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:left-8 sm:h-[82px] sm:w-[82px]"
           >
-            <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="2.4">
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
-          <div className="flex items-center gap-2">
-            <LangSwitcher variant="compact" />
-            <button
-              type="button"
-              onClick={() => {
-                setSearchFocused(true)
-                setQuery(selectedTwin?.name ?? '')
-              }}
-              className="flex max-w-[44vw] items-center gap-2 rounded-full border border-[#d9dde3] bg-white px-3 py-2 text-sm font-semibold shadow-[0_8px_24px_rgba(30,35,42,0.06)] sm:max-w-[280px]"
-              aria-label={t.start.changeTwin}
-            >
-              <User className="h-4 w-4 shrink-0 text-[#6b7280]" />
-              <span className="truncate">{selectedTwin?.name ?? t.start.chooseTwin}</span>
-            </button>
+          <div className="text-center">
+            <h1 className="font-smyst-logo text-[clamp(3.25rem,12vw,5.9rem)] font-semibold leading-none tracking-normal text-white">
+              smyst<span className="text-[0.78em]">.com</span>
+            </h1>
+            <p className="mt-3 text-[clamp(1.25rem,4.8vw,2.15rem)] font-semibold leading-tight text-[#aeb6c4]">
+              Create Your AI Twin
+            </p>
           </div>
         </div>
 
-        <div className="relative mx-auto mt-3 w-full max-w-[620px] sm:-mt-11 sm:w-[min(56vw,520px)]">
-          <label className="flex h-11 items-center rounded-full border border-[#d9dde3] bg-white px-4 shadow-[0_8px_24px_rgba(30,35,42,0.06)]">
-            <Search className="mr-3 h-4 w-4 shrink-0 text-[#6b7280]" aria-hidden="true" />
+        <div className="flex min-h-[78px] items-center gap-3 border-t border-white/10 bg-[#252b37] px-4 sm:px-8">
+          <label className="flex min-w-0 flex-1 items-center gap-4">
+            <Search className="h-10 w-10 shrink-0 text-white" aria-hidden="true" />
             <span className="sr-only">{t.start.searchLabel}</span>
             <input
               value={query}
@@ -620,65 +625,71 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                 event.preventDefault()
                 selectTwin(twin)
               }}
-              placeholder={t.start.searchPlaceholder}
-              className="h-full min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-[#8a929d]"
+              placeholder="Name suchen"
+              className="h-16 min-w-0 flex-1 bg-transparent text-[clamp(1.7rem,6vw,2.65rem)] font-medium outline-none placeholder:text-[#aeb6c4]/70"
             />
           </label>
-
-          {searchFocused && filteredTwins.length > 0 && (
-            <div className="absolute left-0 right-0 top-12 z-30 overflow-hidden rounded-2xl border border-[#d9dde3] bg-white shadow-[0_18px_42px_rgba(30,35,42,0.12)]">
-              {filteredTwins.slice(0, 5).map((twin) => (
-                <button
-                  key={twin.id}
-                  type="button"
-                  onPointerDown={(event) => {
-                    event.preventDefault()
-                    selectTwin(twin)
-                  }}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-[#f2f5f8]"
-                >
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#eef6ff] text-sm font-bold text-[#0b1c44]">
-                    {twin.name.split(' ').map((part) => part[0]).slice(0, 2).join('')}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold">{twin.name}</span>
-                    <span className="block truncate text-xs text-[#6b7280]">{twin.description}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          <button
+            type="button"
+            onClick={() => {
+              const twin = filteredTwins[0] ?? activeTwin
+              selectTwin(twin)
+            }}
+            className="inline-flex min-h-[54px] max-w-[42vw] shrink-0 items-center justify-center gap-3 rounded-[18px] border border-white/14 bg-white/[0.07] px-4 text-[clamp(1rem,3.6vw,1.55rem)] font-bold text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+            aria-label={t.start.chooseTwin}
+          >
+            <User className="h-8 w-8 shrink-0 text-white" />
+            <span className="truncate">Name wählen</span>
+          </button>
         </div>
-
       </header>
 
-      <section ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 pb-4 sm:px-6">
-        <div className="mx-auto flex min-h-full max-w-[820px] flex-col justify-end">
-          {messages.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center pb-8 text-center">
-              <h1 className="font-smyst-logo text-5xl leading-none sm:text-7xl">
-                smyst<span className="text-[0.78em]">.com</span>
-              </h1>
-              <p className="mt-4 max-w-[560px] text-base text-[#5f6670] sm:text-lg">
-                {t.start.emptyText}
-              </p>
+      <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#111722]">
+        <div className="min-h-full">
+          <div className="divide-y divide-white/[0.07] border-b border-white/[0.07]">
+            {filteredTwins.map((twin) => (
+              <button
+                key={twin.id}
+                type="button"
+                onClick={() => selectTwin(twin)}
+                className={`flex min-h-[82px] w-full items-center gap-5 px-4 text-left transition hover:bg-white/[0.04] sm:px-8 ${
+                  selectedTwin?.id === twin.id ? 'bg-white/[0.035]' : ''
+                }`}
+              >
+                <span className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-[14px] border border-white/10 bg-white/[0.05] text-[#aeb6c4]">
+                  <User className="h-9 w-9" />
+                </span>
+                <span className="min-w-0 truncate text-[clamp(1.55rem,5vw,2.25rem)] font-bold text-[#aeb6c4]">
+                  {twin.name}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {(messages.length === 0 || searchFocused) && (
+            <div className="pointer-events-none absolute left-[8%] right-[8%] top-[34%] max-w-[940px] rounded-[22px] border border-white/10 bg-[#1d2330]/82 px-6 py-9 shadow-[0_18px_60px_rgba(0,0,0,0.38)] backdrop-blur-xl sm:left-1/2 sm:right-auto sm:w-[70vw] sm:-translate-x-1/2">
+              <div className="h-5 w-[58%] rounded-full bg-[#4c5564]/55" />
+              <div className="mt-7 h-5 w-[74%] rounded-full bg-[#4c5564]/55" />
+              <div className="mt-7 h-5 w-[42%] rounded-full bg-[#4c5564]/55" />
             </div>
-          ) : (
-            <div className="flex flex-col gap-4 py-6">
+          )}
+
+          {messages.length > 0 && (
+            <div className="relative z-10 flex flex-col gap-4 px-4 py-6 sm:px-8">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[86%] rounded-[22px] px-4 py-3 text-sm leading-relaxed sm:max-w-[72%] ${
+                    className={`max-w-[86%] rounded-[22px] border px-4 py-3 text-sm leading-relaxed shadow-[0_12px_34px_rgba(0,0,0,0.2)] sm:max-w-[72%] ${
                       message.role === 'user'
-                        ? 'rounded-br-md bg-[#e7f6ff] text-[#0b1c44]'
-                        : 'rounded-bl-md bg-white text-[#17191d] shadow-[0_10px_28px_rgba(30,35,42,0.07)]'
+                        ? 'rounded-br-md border-white/12 bg-white text-[#111722]'
+                        : 'rounded-bl-md border-white/10 bg-[#1d2330]/92 text-[#f4f7fb] backdrop-blur-xl'
                     }`}
                   >
                     {message.streaming && !message.content ? (
                       <span className="inline-flex h-6 items-center gap-1">
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#6b7280]"></span>
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#6b7280] [animation-delay:120ms]"></span>
-                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#6b7280] [animation-delay:240ms]"></span>
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#aeb6c4]"></span>
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#aeb6c4] [animation-delay:120ms]"></span>
+                        <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#aeb6c4] [animation-delay:240ms]"></span>
                       </span>
                     ) : (
                       <p className="whitespace-pre-wrap break-words">{message.content}</p>
@@ -691,53 +702,68 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         </div>
       </section>
 
-      <footer className="shrink-0 px-4 pb-[calc(14px+env(safe-area-inset-bottom))] sm:px-6">
-        <div className="mx-auto max-w-[820px]">
-          <div className="flex items-end gap-2 rounded-[26px] border border-[#d9dde3] bg-white p-2 shadow-[0_18px_44px_rgba(30,35,42,0.11)]">
+      <footer className="shrink-0 border-t border-white/10 bg-[#252b37] pb-[env(safe-area-inset-bottom)]">
+        <div className="min-h-[260px] border-b border-white/10 px-4 py-6 sm:min-h-[220px] sm:px-8">
+          <textarea
+            ref={textareaRef}
+            value={input}
+            rows={1}
+            onChange={(event) => resizeInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault()
+                void handleSend()
+              }
+            }}
+            placeholder="Nachricht schreiben"
+            className="h-full min-h-[180px] w-full resize-none bg-transparent text-[clamp(1.65rem,5.8vw,2.55rem)] leading-tight text-white outline-none placeholder:text-[#aeb6c4]/75 sm:min-h-[140px]"
+            aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
+          />
+        </div>
+        <div className="grid h-[86px] grid-cols-[112px_1fr_112px_112px] items-center border-t border-white/5 text-white sm:grid-cols-[144px_1fr_144px_144px]">
+          <div className="grid h-full place-items-center border-r border-white/[0.04]">
             <button
               type="button"
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[#6b7280] transition-colors hover:bg-[#f2f5f8]"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07]"
               aria-label={t.start.addFile}
               title={t.start.addFile}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-9 w-9" />
             </button>
-            <textarea
-              ref={textareaRef}
-              value={input}
-              rows={1}
-              onChange={(event) => resizeInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault()
-                  void handleSend()
-                }
-              }}
-              placeholder={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
-              className="max-h-[132px] min-h-[44px] flex-1 resize-none bg-transparent px-1 py-2.5 text-base leading-6 outline-none placeholder:text-[#8a929d]"
-            />
+          </div>
+          <div />
+          <div className="grid h-full place-items-center">
             <button
               type="button"
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[#6b7280] transition-colors hover:bg-[#f2f5f8]"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07]"
               aria-label={t.start.voiceInput}
               title={t.start.voiceInput}
             >
-              <Mic className="h-4 w-4" />
+              <Mic className="h-9 w-9" />
             </button>
+          </div>
+          <div className="grid h-full place-items-center">
+            <button
+              type="button"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07]"
+              aria-label="Audio-Modus"
+              title="Audio-Modus"
+            >
+              <Waveform className="h-9 w-9" />
+            </button>
+          </div>
+          <div className="grid h-full place-items-center">
             <button
               type="button"
               disabled={!canSend}
               onClick={() => void handleSend()}
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#17191d] text-white transition-transform hover:-translate-y-0.5 disabled:translate-y-0 disabled:bg-[#e5e8ec] disabled:text-[#8a929d]"
+              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/[0.07] disabled:text-white/35"
               aria-label={t.start.send}
               title={t.start.send}
             >
-              <ArrowUp className="h-5 w-5" />
+              <ArrowUp className="h-10 w-10" />
             </button>
           </div>
-          <p className="mt-2 text-center text-xs text-[#7a828c]">
-            {t.start.freeOnlyNotice}
-          </p>
         </div>
       </footer>
     </main>

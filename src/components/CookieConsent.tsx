@@ -75,20 +75,20 @@ export default function CookieConsent() {
       aria-describedby="privacy-consent-desc"
       className="fixed inset-x-0 bottom-0 z-[55] mx-auto w-full max-w-3xl px-3 pb-[max(env(safe-area-inset-bottom),12px)] sm:bottom-3 sm:px-4"
     >
-      <div className="rounded-2xl border border-white/40 bg-white/95 p-4 shadow-2xl ring-1 ring-black/5 backdrop-blur-xl sm:p-5">
+      <div className="rounded-2xl border border-white/10 bg-[#171d29]/95 p-4 text-[#f4f7fb] shadow-2xl ring-1 ring-black/20 backdrop-blur-xl sm:p-5">
         {view === 'banner' ? (
           <>
-            <h2 id="privacy-consent-title" className="text-base font-semibold text-[#0b1c44] sm:text-lg">
+            <h2 id="privacy-consent-title" className="text-base font-semibold text-white sm:text-lg">
               App-Daten & Datenschutz
             </h2>
             <p
               id="privacy-consent-desc"
-              className="mt-1 text-sm leading-relaxed text-[#555b64]"
+              className="mt-1 text-sm leading-relaxed text-[#aeb6c4]"
             >
               smyst.com speichert notwendige App-Daten für die Funktion.
               Optional helfen uns anonyme Nutzungsdaten, smyst.com zu verbessern. Du kannst deine
               Einstellungen jederzeit ändern. Mehr in der{' '}
-              <a href="/datenschutz" className="text-[#0b1c44] underline hover:no-underline">
+              <a href="/datenschutz" className="text-white underline hover:no-underline">
                 Datenschutzerklärung
               </a>
               .
@@ -98,21 +98,21 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={acceptAll}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[#0b1c44] px-5 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-[#111722] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 Alle akzeptieren
               </button>
               <button
                 type="button"
                 onClick={acceptOnlyNecessary}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-gray-300 bg-white px-5 text-sm font-semibold text-[#16181b] hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 text-sm font-semibold text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 Nur Notwendige
               </button>
               <button
                 type="button"
                 onClick={() => setView('settings')}
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full px-4 text-sm font-medium text-[#0b1c44] underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:flex-none"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full px-4 text-sm font-medium text-white underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:flex-none"
               >
                 Einstellungen
               </button>
@@ -121,14 +121,14 @@ export default function CookieConsent() {
         ) : (
           <>
             <div className="flex items-start justify-between gap-2">
-              <h2 id="privacy-consent-title" className="text-base font-semibold text-[#0b1c44] sm:text-lg">
+              <h2 id="privacy-consent-title" className="text-base font-semibold text-white sm:text-lg">
                 Datenschutz-Einstellungen
               </h2>
               <button
                 type="button"
                 onClick={() => setView('banner')}
                 aria-label="Zurück"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-500 hover:bg-black/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#aeb6c4] hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                   <path d="m15 18-6-6 6-6" />
@@ -137,23 +137,23 @@ export default function CookieConsent() {
             </div>
 
             <ul className="mt-4 space-y-3">
-              <li className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+              <li className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-[#16181b]">Notwendig</h3>
-                    <p className="mt-0.5 text-xs text-[#555b64]">
+                    <h3 className="text-sm font-semibold text-white">Notwendig</h3>
+                    <p className="mt-0.5 text-xs text-[#aeb6c4]">
                       Login, Spracheinstellung, Sicherheit. Lassen sich nicht abschalten.
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs font-medium text-emerald-700">Aktiv</span>
+                  <span className="shrink-0 text-xs font-medium text-emerald-300">Aktiv</span>
                 </div>
               </li>
 
-              <li className="rounded-xl border border-gray-200 p-3">
+              <li className="rounded-xl border border-white/10 p-3">
                 <label className="flex cursor-pointer items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-[#16181b]">Statistik</h3>
-                    <p className="mt-0.5 text-xs text-[#555b64]">
+                    <h3 className="text-sm font-semibold text-white">Statistik</h3>
+                    <p className="mt-0.5 text-xs text-[#aeb6c4]">
                       Lokale Nutzungsentscheidung. Externe Analytics sind in Production deaktiviert.
                     </p>
                   </div>
@@ -161,16 +161,16 @@ export default function CookieConsent() {
                     type="checkbox"
                     checked={analytics}
                     onChange={(e) => setAnalytics(e.target.checked)}
-                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 text-[#0b1c44] focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded border-white/20 bg-transparent text-[#111722] focus:ring-2 focus:ring-white/60"
                   />
                 </label>
               </li>
 
-              <li className="rounded-xl border border-gray-200 p-3">
+              <li className="rounded-xl border border-white/10 p-3">
                 <label className="flex cursor-pointer items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-[#16181b]">Marketing</h3>
-                    <p className="mt-0.5 text-xs text-[#555b64]">
+                    <h3 className="text-sm font-semibold text-white">Marketing</h3>
+                    <p className="mt-0.5 text-xs text-[#aeb6c4]">
                       Werbe-Personalisierung. Aktuell nicht aktiv genutzt — nur als Vorsorge gelistet.
                     </p>
                   </div>
@@ -178,7 +178,7 @@ export default function CookieConsent() {
                     type="checkbox"
                     checked={marketing}
                     onChange={(e) => setMarketing(e.target.checked)}
-                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded border-gray-300 text-[#0b1c44] focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 h-5 w-5 shrink-0 cursor-pointer rounded border-white/20 bg-transparent text-[#111722] focus:ring-2 focus:ring-white/60"
                   />
                 </label>
               </li>
@@ -188,14 +188,14 @@ export default function CookieConsent() {
               <button
                 type="button"
                 onClick={saveCustom}
-                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-[#0b1c44] px-5 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-[#111722] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 Auswahl speichern
               </button>
               <button
                 type="button"
                 onClick={revoke}
-                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-gray-300 bg-white px-5 text-sm font-medium text-[#555b64] hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-5 text-sm font-medium text-white hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 Alle widerrufen
               </button>
