@@ -582,7 +582,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         </div>
       </aside>
 
-      <header className="z-20 shrink-0 border-b border-white/10 bg-[#0b1018]/88 pt-[max(env(safe-area-inset-top),22px)] shadow-[0_18px_45px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
+      <header className="z-20 shrink-0 border-b border-white/10 bg-[rgba(11,16,24,0.88)] pt-[max(env(safe-area-inset-top),22px)] shadow-[0_18px_45px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
         <div className="relative flex min-h-[116px] items-center justify-center px-4 pb-5 sm:min-h-[132px]">
           <button
             type="button"
@@ -702,7 +702,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
         </div>
       </section>
 
-      <footer className="shrink-0 border-t border-white/[0.08] bg-[#111721]/88 shadow-[0_-22px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
+      <footer className="shrink-0 border-t border-white/[0.08] bg-[rgba(17,23,33,0.88)] shadow-[0_-22px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
         <div className="min-h-[240px] border-b border-white/[0.08] px-4 py-6 sm:min-h-[200px] sm:px-8">
           <textarea
             ref={textareaRef}
