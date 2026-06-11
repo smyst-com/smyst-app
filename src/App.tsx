@@ -589,10 +589,10 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             onClick={() => setMenuOpen(true)}
             aria-label="Menü öffnen"
             aria-expanded={menuOpen}
-            className="absolute left-4 top-4 grid h-[72px] w-[72px] shrink-0 place-items-center rounded-[22px] border border-white/15 bg-white/5 text-white shadow-2xl hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:left-8 sm:h-[82px] sm:w-[82px]"
+            className="absolute left-4 top-5 grid h-12 w-12 shrink-0 place-items-center text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:left-8 sm:h-14 sm:w-14"
           >
-            <svg viewBox="0 0 24 24" className="h-9 w-9" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path d="M4 6h16M4 12h16M4 18h16" />
+            <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M6 7.5h12M6 12h12M6 16.5h12" />
             </svg>
           </button>
 
@@ -635,7 +635,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               const twin = filteredTwins[0] ?? activeTwin
               selectTwin(twin)
             }}
-            className="inline-flex min-h-[54px] max-w-[42vw] shrink-0 items-center justify-center gap-3 rounded-[18px] border border-white/15 bg-white/10 px-4 text-base font-bold text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:text-xl"
+            className="inline-flex min-h-[54px] max-w-[42vw] shrink-0 items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/10 px-4 text-base font-bold text-white hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:text-xl"
             aria-label={t.start.chooseTwin}
           >
             <User className="h-8 w-8 shrink-0 text-white" />
@@ -656,7 +656,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
                   selectedTwin?.id === twin.id ? 'bg-white/5' : ''
                 }`}
               >
-                <span className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-[14px] border border-white/10 bg-white/5 text-[#aeb6c4]">
+                <span className="grid h-[58px] w-[58px] shrink-0 place-items-center rounded-lg border border-white/10 bg-white/5 text-[#aeb6c4]">
                   <User className="h-9 w-9" />
                 </span>
                 <span className="min-w-0 truncate text-2xl font-bold text-[#aeb6c4] sm:text-3xl">
@@ -667,7 +667,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           </div>
 
           {(messages.length === 0 || searchFocused) && (
-            <div className="pointer-events-none absolute left-[8%] right-[8%] top-[34%] max-w-[940px] rounded-[22px] border border-white/10 bg-[#1d2330]/80 px-6 py-9 shadow-2xl backdrop-blur-xl sm:left-1/2 sm:right-auto sm:w-[70vw] sm:-translate-x-1/2">
+            <div className="pointer-events-none absolute left-[8%] right-[8%] top-[34%] max-w-[940px] rounded-xl border border-white/10 bg-[#1d2330]/80 px-6 py-9 shadow-2xl backdrop-blur-xl sm:left-1/2 sm:right-auto sm:w-[70vw] sm:-translate-x-1/2">
               <div className="h-5 w-[58%] rounded-full bg-[#4c5564]/55" />
               <div className="mt-7 h-5 w-[74%] rounded-full bg-[#4c5564]/55" />
               <div className="mt-7 h-5 w-[42%] rounded-full bg-[#4c5564]/55" />
@@ -679,7 +679,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[86%] rounded-[22px] border px-4 py-3 text-sm leading-relaxed shadow-2xl sm:max-w-[72%] ${
+                    className={`max-w-[86%] rounded-xl border px-4 py-3 text-sm leading-relaxed shadow-2xl sm:max-w-[72%] ${
                       message.role === 'user'
                         ? 'rounded-br-md border-white/12 bg-white text-[#111722]'
                         : 'rounded-bl-md border-white/10 bg-[#1d2330]/92 text-[#f4f7fb] backdrop-blur-xl'
@@ -724,7 +724,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           <div className="flex h-full items-center">
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
+              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/10"
               aria-label={t.start.addFile}
               title={t.start.addFile}
             >
@@ -734,7 +734,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
           <div className="flex h-full items-center gap-6 sm:gap-8">
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
+              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/10"
               aria-label={t.start.voiceInput}
               title={t.start.voiceInput}
             >
@@ -742,7 +742,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
             </button>
             <button
               type="button"
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10"
+              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/10"
               aria-label="Audio-Modus"
               title="Audio-Modus"
             >
@@ -752,7 +752,7 @@ function SmystStartPage({ onNavigate }: { onNavigate: (view: AppView) => void })
               type="button"
               disabled={!canSend}
               onClick={() => void handleSend()}
-              className="grid h-14 w-14 place-items-center rounded-full text-white transition-colors hover:bg-white/10 disabled:text-white/35"
+              className="grid h-14 w-14 place-items-center rounded-lg text-white transition-colors hover:bg-white/10 disabled:text-white disabled:opacity-100"
               aria-label={t.start.send}
               title={t.start.send}
             >
