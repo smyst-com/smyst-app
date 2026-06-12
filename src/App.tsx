@@ -133,11 +133,11 @@ type AppTheme = 'dark' | 'light'
 type NameSortMode = 'famous' | 'used' | 'popular' | 'trend' | 'manual'
 
 const nameSortOptions: Array<{ mode: NameSortMode; label: string; detail: string }> = [
-  { mode: 'famous', label: 'Berühmt zuerst', detail: 'Bekannte Profile nach oben' },
-  { mode: 'used', label: 'Mehr genutzt', detail: 'Häufige Chats zuerst' },
-  { mode: 'popular', label: 'Populär', detail: 'Starke Nachfrage zuerst' },
-  { mode: 'trend', label: 'Trend im Markt', detail: 'Aktuell viel gesprochen' },
-  { mode: 'manual', label: 'Manuell', detail: 'Eigene Reihenfolge behalten' },
+  { mode: 'famous', label: 'Freigegeben', detail: 'Bereite KI-Profile zuerst' },
+  { mode: 'used', label: 'Zuletzt genutzt', detail: 'Aktive Chats zuerst' },
+  { mode: 'popular', label: 'Relevanz', detail: 'Passende Profile zuerst' },
+  { mode: 'trend', label: 'Aktualisiert', detail: 'Neue Profile zuerst' },
+  { mode: 'manual', label: 'Manuell', detail: 'Eigene Reihenfolge' },
 ]
 
 function isNameSortMode(value: string | null): value is NameSortMode {
@@ -893,7 +893,7 @@ function SmystStartPage({
           </div>
 
           <div className="mt-5 border-t border-white/10 pt-5">
-            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Namen Ansicht</p>
+            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">KI-Profile</p>
             <div className="mt-3 space-y-2 px-2">
               {nameSortOptions.map((option) => (
                 <button
@@ -1015,7 +1015,7 @@ function SmystStartPage({
               aria-expanded={namePickerOpen}
             >
               <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
-              <span className="whitespace-nowrap">Name wählen</span>
+              <span className="whitespace-nowrap">Profil wählen</span>
             </button>
           </div>
         </header>
@@ -1027,7 +1027,7 @@ function SmystStartPage({
             <div className="smyst-glass-panel border-b border-white/[0.08]">
               <div className="flex min-h-[42px] items-center justify-between border-b border-white/[0.08] px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">
                 <span>{selectedSortOption.label}</span>
-                <span>{filteredTwins.length} Namen</span>
+                <span>{filteredTwins.length} Profile</span>
               </div>
               <div className="divide-y divide-white/[0.08]">
                 {filteredTwins.map((twin) => (
@@ -1135,8 +1135,8 @@ function SmystStartPage({
             <button
               type="button"
               className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors"
-              aria-label="Audio-Modus"
-              title="Audio-Modus"
+              aria-label="Antwort abspielen"
+              title="Antwort abspielen"
             >
               <Waveform className="h-6 w-6" />
             </button>
@@ -1779,9 +1779,9 @@ function SettingsView({
         </Card>
 
         <Card className="p-6 lg:col-span-2">
-          <h2 className="mb-4 text-xl font-bold">Namenliste</h2>
+          <h2 className="mb-4 text-xl font-bold">KI-Profile</h2>
           <p className="mb-4 text-sm text-[#555b64]">
-            Legt fest, welche Namen beim Suchen und bei Name wählen zuerst erscheinen.
+            Legt fest, welche KI-Profile beim Suchen und in der Auswahl zuerst erscheinen.
           </p>
           <div className="grid gap-3 md:grid-cols-5">
             {nameSortOptions.map((option) => (

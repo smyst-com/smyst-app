@@ -46,10 +46,10 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
   },
   start: {
     searchLabel: 'Twin suchen',
-    searchPlaceholder: 'Name oder Twin suchen',
+    searchPlaceholder: 'Profil oder Twin suchen',
     changeTwin: 'Ausgewählten Twin ändern',
     chooseTwin: 'Twin wählen',
-    emptyText: 'Wähle oben einen Namen oder schreibe direkt. Der ausgewählte Twin bleibt oben rechts fixiert.',
+    emptyText: 'Wähle oben ein KI-Profil oder schreibe direkt. Das ausgewählte Profil bleibt oben fixiert.',
     messagePlaceholder: 'Nachricht an {{name}}',
     addFile: 'Datei hinzufügen',
     voiceInput: 'Spracheingabe',
