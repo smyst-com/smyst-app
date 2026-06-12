@@ -1459,7 +1459,10 @@ function TwinProfileView({
               </div>
               <button
                 type="button"
-                onClick={() => onNavigate('twin-chat')}
+                onClick={() => {
+                  onNavigate('twin-chat')
+                  window.history.replaceState({}, '', profile.chatPath)
+                }}
                 className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#17191d] px-5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
               >
                 Mit Twin chatten
@@ -1769,7 +1772,15 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={() => onNavigate('twin-chat')}>Chat</Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    onNavigate('twin-chat')
+                    window.history.replaceState({}, '', `/twin-chat?twin=${encodeURIComponent(twin.id)}`)
+                  }}
+                >
+                  Chat
+                </Button>
                 <Button size="sm" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
               </div>
             </Card>
@@ -2591,6 +2602,32 @@ function TwinChatView() {
     content: string
     streaming?: boolean
   }
+  type ChatTwinSummary = {
+    id: string
+    name: string
+    style: TwinStyle
+    knowledgeCount: number
+    label: string
+    publicProfile: boolean
+  }
+
+  const privateTwinToChatSummary = (twin: TwinRecord): ChatTwinSummary => ({
+    id: twin.id,
+    name: twin.name,
+    style: twin.style,
+    knowledgeCount: twin.knowledgeTexts.length,
+    label: 'Eigener Twin',
+    publicProfile: false,
+  })
+
+  const publicTwinToChatSummary = (profile: PublicTwinProfile): ChatTwinSummary => ({
+    id: profile.id,
+    name: profile.name,
+    style: profile.style,
+    knowledgeCount: profile.knowledgeCount,
+    label: profile.categories.find((item) => item !== 'Historical demo') ?? 'Öffentliches Profil',
+    publicProfile: true,
+  })
 
   const [messages, setMessages] = useState<TwinChatUiMessage[]>([
     {
@@ -2601,7 +2638,8 @@ function TwinChatView() {
   ])
   const [input, setInput] = useState('')
   const [chatId, setChatId] = useState<string | null>(null)
-  const [activeTwin, setActiveTwin] = useState<TwinRecord | null>(null)
+  const [activeTwin, setActiveTwin] = useState<ChatTwinSummary | null>(null)
+  const [requestedTwinId] = useState(() => new URLSearchParams(window.location.search).get('twin')?.trim() ?? '')
   const [isReplying, setIsReplying] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -2621,8 +2659,8 @@ function TwinChatView() {
   const suggestions = [
     'Was ist mein wichtigster Lebensrat?',
     'Wie treffe ich schwierige Entscheidungen?',
-    'Was ist mir in Beziehungen wichtig?',
-    'Welche Erfahrungen prägen meine Sicht?',
+    activeTwin?.publicProfile ? `Was ist bei ${activeTwin.name} historisch gut belegt?` : 'Was ist mir in Beziehungen wichtig?',
+    activeTwin?.publicProfile ? 'Welche Quellen nutzt dieses Profil?' : 'Welche Erfahrungen prägen meine Sicht?',
   ]
 
   useEffect(() => {
@@ -2634,17 +2672,49 @@ function TwinChatView() {
 
   useEffect(() => {
     let alive = true
-    if (auth.status !== 'authenticated') return
+    if (auth.status === 'loading') return
 
-    void twinMvp.listTwins().then((twins) => {
-      if (!alive || activeTwin) return
-      setActiveTwin(twins?.[0] ?? null)
-    })
+    const loadRequestedTwin = async () => {
+      if (requestedTwinId && auth.status === 'authenticated') {
+        const twins = await twinMvp.listTwins()
+        if (!alive) return
+        const ownTwin = twins?.find((twin) => twin.id === requestedTwinId || twin.slug === requestedTwinId)
+        if (ownTwin) {
+          setActiveTwin(privateTwinToChatSummary(ownTwin))
+          return
+        }
+      }
+
+      if (requestedTwinId) {
+        const publicTwin = await twinMvp.getPublicTwin(requestedTwinId)
+        if (!alive || !publicTwin) return
+        setActiveTwin(publicTwinToChatSummary(publicTwin))
+        setMessages((current) =>
+          current.length === 1 && current[0]?.id === 'welcome'
+            ? [
+                {
+                  ...current[0],
+                  content: `${publicTwin.name} ist als quellenbasiertes öffentliches Demo-Profil bereit. Melde dich an, um den Chat mit diesem Profil zu starten.`,
+                },
+              ]
+            : current,
+        )
+        return
+      }
+
+      if (auth.status !== 'authenticated') return
+      const twins = await twinMvp.listTwins()
+      if (!alive) return
+      const firstTwin = twins?.[0]
+      setActiveTwin((current) => current ?? (firstTwin ? privateTwinToChatSummary(firstTwin) : null))
+    }
+
+    void loadRequestedTwin()
 
     return () => {
       alive = false
     }
-  }, [auth.status])
+  }, [auth.status, requestedTwinId])
 
   useEffect(() => {
     return () => {
@@ -2699,7 +2769,7 @@ function TwinChatView() {
       let nextTwin = activeTwin
       if (!nextTwin) {
         const twins = await twinMvp.listTwins()
-        nextTwin = twins?.[0] ?? null
+        nextTwin = twins?.[0] ? privateTwinToChatSummary(twins[0]) : null
         setActiveTwin(nextTwin)
       }
 
@@ -2749,10 +2819,10 @@ function TwinChatView() {
           <CardContent className="flex flex-col items-start gap-4 p-0 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-xl font-bold tracking-tight">Twin Chat</h1>
-              <p className="text-sm text-[#555b64]">Melde dich an, um deinen gespeicherten Free-only Twin-Kontext zu laden.</p>
+              <p className="text-sm text-[#555b64]">Melde dich an, um diesen Free-only Twin-Chat zu starten.</p>
             </div>
             <Suspense fallback={null}>
-              <GitHubSignInButton variant="official" returnTo="/twin-chat" />
+              <GitHubSignInButton variant="official" returnTo={window.location.pathname + window.location.search} />
             </Suspense>
           </CardContent>
         </Card>
@@ -2772,7 +2842,8 @@ function TwinChatView() {
                   Bereit
                 </span>
                 <span>{activeTwin ? `${activeTwin.style} Stil` : 'Free-only MVP'}</span>
-                <span>{activeTwin ? `${activeTwin.knowledgeTexts.length} Wissenstexte` : 'KV + IDrive e2'}</span>
+                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'KV + IDrive e2'}</span>
+                {activeTwin?.publicProfile && <span>{activeTwin.label}</span>}
               </div>
             </div>
           </div>

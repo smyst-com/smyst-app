@@ -352,6 +352,67 @@ function historicalProfileHtml(
 </html>`;
 }
 
+function historicalChatHtml(
+  profile: (typeof HISTORICAL_DEMO_PROFILES)[number],
+  canonicalHost: string,
+): string {
+  const returnTo = `/twin-chat?twin=${encodeURIComponent(profile.slug)}`;
+  const signInUrl = `/auth/github/start?return_to=${encodeURIComponent(returnTo)}`;
+  const sourceItems = profile.sources
+    .map(
+      (source) =>
+        `<li><a href="${escapeHtml(source.url)}" rel="nofollow noopener">${escapeHtml(source.publisher)}: ${escapeHtml(source.title)}</a></li>`,
+    )
+    .join('');
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Chat with ${escapeHtml(profile.name)} | smyst.com</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #111827; background: #f8fafc; }
+    body { margin: 0; }
+    main { min-height: 100vh; display: grid; place-items: center; padding: 32px 18px; box-sizing: border-box; }
+    section { width: min(820px, 100%); display: grid; gap: 22px; border: 1px solid #d8dee8; border-radius: 8px; background: #fff; padding: 34px; box-shadow: 0 18px 50px rgba(15, 23, 42, .08); }
+    .kicker { margin: 0; color: #0f766e; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    h1 { margin: 0; font-size: clamp(34px, 7vw, 64px); line-height: 1; letter-spacing: 0; }
+    p { margin: 0; font-size: 18px; line-height: 1.65; color: #273244; }
+    .notice { padding: 16px; border: 1px solid #f2c46d; border-radius: 8px; background: #fff8e6; color: #4a3410; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    a.button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #111827; color: #fff; background: #111827; text-decoration: none; font-weight: 800; }
+    a.secondary { color: #111827; background: #fff; }
+    ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+    li a { color: #0f5f8f; font-weight: 700; }
+    @media (max-width: 640px) { section { padding: 24px 20px; } p { font-size: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <p class="kicker">Free-only historical chat</p>
+      <h1>${escapeHtml(profile.name)}</h1>
+      <p>${escapeHtml(profile.description)}</p>
+      <div class="notice">
+        <p>${escapeHtml(profile.guardrail)} ${escapeHtml(profile.rightsPosture)}</p>
+      </div>
+      <p>Sign in with GitHub to start a rule-based smyst chat for this public historical demo profile. No paid AI provider is used.</p>
+      <div class="actions">
+        <a class="button" href="${escapeHtml(signInUrl)}">Continue with GitHub</a>
+        <a class="button secondary" href="${escapeHtml(`/t/${profile.slug}`)}">Back to profile</a>
+      </div>
+      <div>
+        <p class="kicker">Sources</p>
+        <ul>${sourceItems}</ul>
+      </div>
+    </section>
+  </main>
+</body>
+</html>`;
+}
+
 // ---------- Spracherkennung ----------
 
 function detectLang(request: Request, url: URL): SupportedLang {
@@ -761,6 +822,25 @@ export default {
           status: 200,
           headers,
         });
+      }
+
+      if (url.pathname === '/twin-chat') {
+        const twin = url.searchParams.get('twin') ?? '';
+        const chatProfile = HISTORICAL_DEMO_PROFILES.find((profile) => profile.slug === twin);
+        if (chatProfile) {
+          const headers = applyEdgeHeaders(new Headers({
+            'content-type': 'text/html; charset=utf-8',
+            'Content-Language': 'en',
+            'Cache-Control': 'public, max-age=120, s-maxage=300',
+            'Content-Security-Policy':
+              "default-src 'self'; script-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+            'X-Robots-Tag': 'noindex, nofollow',
+          }));
+          return new Response(historicalChatHtml(chatProfile, canonicalHost), {
+            status: 200,
+            headers,
+          });
+        }
       }
 
       // Nicht-HTML-Pfade direkt durchreichen (Assets und SEO/PWA-Dateien).

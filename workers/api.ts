@@ -747,6 +747,10 @@ function historicalDemoPayload(env: ApiEnv, slug: string) {
   };
 }
 
+function historicalDemoProfile(idOrSlug: string) {
+  return historicalDemoProfiles.find((item) => item.id === idOrSlug || item.slug === idOrSlug) ?? null;
+}
+
 function words(value: string): string[] {
   return Array.from(
     new Set(
@@ -780,6 +784,21 @@ function stylePrefix(style: TwinStyle): string {
   if (style === 'wise') return 'Bedacht formuliert:';
   if (style === 'neutral') return 'Sachlich betrachtet:';
   return 'Aus meiner Perspektive:';
+}
+
+function historicalDemoReply(input: string, profile: (typeof historicalDemoProfiles)[number]): string {
+  const trimmed = input.trim();
+  const shortQuestion = trimmed.length > 220 ? `${trimmed.slice(0, 220)}...` : trimmed;
+  const sourceLine = profile.sources.map((source) => `${source.publisher}: ${source.title}`).join('; ');
+  return [
+    `Sachlich betrachtet: Ich antworte als quellenbasiertes historisches Demo-Profil zu ${profile.name}.`,
+    profile.description,
+    `Zu deiner Frage "${shortQuestion}" kann ich nur aus allgemein bekannten, öffentlichen Quellen und dem hinterlegten Kontext antworten.`,
+    profile.contextSummary,
+    profile.guardrail,
+    `Quellenbasis: ${sourceLine}.`,
+    'Diese Antwort ist regelbasiert, nutzt keine bezahlte externe KI und behauptet nicht, die echte historische Person zu sein.',
+  ].join(' ');
 }
 
 function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
@@ -944,17 +963,20 @@ async function handleStartChat(request: Request, env: ApiEnv): Promise<Response>
   body = parsed.value;
 
   let twin: TwinRecord | null = null;
+  let historicalProfile: (typeof historicalDemoProfiles)[number] | null = null;
   if (typeof body.twinId === 'string' && body.twinId) {
     twin = await loadTwinForUser(env, session.sub, body.twinId);
-    if (!twin) return errorResponse('twin_not_found', 'Twin not found', 404);
+    historicalProfile = twin ? null : historicalDemoProfile(slugify(body.twinId));
+    if (!twin && !historicalProfile) return errorResponse('twin_not_found', 'Twin not found', 404);
   }
 
   const now = Date.now();
+  const titleName = twin?.name ?? historicalProfile?.name;
   const chat: ChatRecord = {
     id: crypto.randomUUID(),
     userSub: session.sub,
-    title: twin ? `Chat mit ${twin.name}` : 'Free-only chat',
-    twinId: twin?.id,
+    title: titleName ? `Chat mit ${titleName}` : 'Free-only chat',
+    twinId: twin?.id ?? historicalProfile?.id,
     messages: [],
     createdAt: now,
     updatedAt: now,
@@ -1249,6 +1271,7 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   const chat = (await kv.get(chatKey(session.sub, body.chatId), 'json')) as ChatRecord | null;
   if (!chat) return errorResponse('chat_not_found', 'Chat not found', 404);
   const twin = chat.twinId ? await loadTwinForUser(env, session.sub, chat.twinId) : null;
+  const historicalProfile = !twin && chat.twinId ? historicalDemoProfile(chat.twinId) : null;
 
   const now = Date.now();
   const userMessage: ChatMessage = {
@@ -1260,7 +1283,11 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   const assistantMessage: ChatMessage = {
     id: crypto.randomUUID(),
     role: 'assistant',
-    content: twin ? ruleBasedTwinReply(message, twin) : freeOnlyReply(message),
+    content: twin
+      ? ruleBasedTwinReply(message, twin)
+      : historicalProfile
+        ? historicalDemoReply(message, historicalProfile)
+        : freeOnlyReply(message),
     createdAt: now,
   };
 
@@ -1275,8 +1302,8 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   return jsonResponse({
     chatId: next.id,
     message: assistantMessage,
-    twinId: twin?.id ?? null,
-    mode: twin ? 'free-only-twin-mvp' : 'free-only-static',
+    twinId: twin?.id ?? historicalProfile?.id ?? null,
+    mode: twin ? 'free-only-twin-mvp' : historicalProfile ? 'free-only-historical-demo' : 'free-only-static',
   });
 }
 
