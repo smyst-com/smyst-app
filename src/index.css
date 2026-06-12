@@ -388,14 +388,14 @@
   }
 
   .smyst-start-shell::before {
-    z-index: 0;
+    z-index: -2;
     background:
       linear-gradient(180deg, rgba(17, 23, 33, 0.34), rgba(9, 13, 20, 0.86)),
       #090d14;
   }
 
   .smyst-start-shell::after {
-    z-index: 0;
+    z-index: -1;
     background:
       linear-gradient(90deg, rgba(4, 7, 12, 0.22), transparent 28%, transparent 72%, rgba(4, 7, 12, 0.24));
   }
@@ -428,11 +428,6 @@
     background:
       radial-gradient(circle at 50% 4%, rgba(255, 255, 255, 0.72), transparent 30%),
       linear-gradient(90deg, rgba(237, 244, 252, 0.48), transparent 24%, transparent 76%, rgba(221, 233, 247, 0.58));
-  }
-
-  .smyst-start-shell > * {
-    position: relative;
-    z-index: 1;
   }
 
   .smyst-glass-panel {
