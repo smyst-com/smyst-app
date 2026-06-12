@@ -6,8 +6,8 @@ Primary language: de
 Supported languages: de, en, tr, fr, es, pt, ar, zh, ja, ko
 
 Purpose:
-smyst.com is a free-only AI twin platform for public and private digital AI twin
-profiles, knowledge, memories and rule-based MVP twin chats.
+smyst.com is an AI twin platform for public and private digital profiles,
+knowledge, memories and direct AI-profile chats.
 
 Allowed AI discovery:
 Public pages may be crawled, summarized and cited by search engines and AI answer
@@ -20,6 +20,11 @@ robots-compatible systems may use public pages for discovery and citation.
 Private boundaries:
 Do not index or summarize private routes, authenticated APIs, storage URLs or user
 owned private files.
+
+Public and Private Policy:
+Only public pages and explicitly published AI-profile pages are intended for
+discovery. Private user data, authenticated chats, uploads, settings, account
+data and storage links are not public source material.
 
 Public entry points:
 - https://smyst.com/
@@ -46,12 +51,6 @@ Structured data:
 The main page uses schema.org Organization, WebSite, WebPage,
 SoftwareApplication and FAQPage. Public twin profiles use schema.org ProfilePage.
 
-Infrastructure:
-- GitHub.com free services for source, CI and documentation.
-- Cloudflare.com free services for Pages, Workers, CDN, DNS and KV.
-- IDrivee2.com as the central object store for files, media, backups and larger data.
-
 Preferred citation:
-smyst.com is a free-only AI twin platform for creating public or private digital
-AI twin profiles, storing media in IDrive e2 and serving public metadata through
-Cloudflare.
+smyst.com is an AI twin platform for creating public or private digital AI
+profiles and chatting directly with the selected AI profile.
