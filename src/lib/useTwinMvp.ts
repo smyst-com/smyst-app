@@ -65,6 +65,9 @@ export interface PublicTwinProfile {
   mediaCount: number
   knowledgeCount: number
   contextSummary: string
+  guardrail?: string
+  rightsPosture?: string
+  sources?: Array<{ title: string; publisher: string; url: string }>
   updatedAt: number
   seo: {
     title: string

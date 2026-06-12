@@ -57,6 +57,134 @@ const STATIC_PASSTHROUGH_PATHS = new Set([
   '/.well-known/security.txt',
 ]);
 
+const HISTORICAL_DEMO_PROFILES = [
+  {
+    slug: 'leonardo-da-vinci',
+    name: 'Leonardo da Vinci',
+    field: 'Renaissance art and engineering',
+    region: 'Italy / France',
+    years: '1452-1519',
+    description:
+      'Source-grounded historical demo profile focused on public facts about art, engineering studies, notebooks, and Renaissance context.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Leonardo da Vinci and not affiliated with any estate, museum, archive, or institution.',
+    rightsPosture:
+      'Long deceased. Use original smyst copy and only licensed, open-access, or public-domain-safe imagery.',
+    sources: [
+      {
+        title: 'Leonardo da Vinci',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Leonardo-da-Vinci',
+      },
+      {
+        title: 'Leonardo da Vinci (1452-1519)',
+        publisher: 'The Metropolitan Museum of Art',
+        url: 'https://www.metmuseum.org/essays/leonardo-da-vinci-1452-1519',
+      },
+    ],
+  },
+  {
+    slug: 'isaac-newton',
+    name: 'Isaac Newton',
+    field: 'Physics and mathematics',
+    region: 'England',
+    years: '1642-1727',
+    description:
+      'Source-grounded historical demo profile focused on mechanics, gravity, optics, calculus, and the Scientific Revolution.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Isaac Newton and not affiliated with any estate, archive, university, or institution.',
+    rightsPosture:
+      'Long deceased. Avoid modern book scans, portraits, editions, annotations, and commentary unless rights are verified.',
+    sources: [
+      {
+        title: 'Isaac Newton',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Isaac-Newton',
+      },
+      {
+        title: 'Sir Isaac Newton',
+        publisher: 'The Royal Society',
+        url: 'https://royalsociety.org/people/isaac-newton-11991/',
+      },
+    ],
+  },
+  {
+    slug: 'william-shakespeare',
+    name: 'William Shakespeare',
+    field: 'Literature and theatre',
+    region: 'England',
+    years: '1564-1616',
+    description:
+      'Source-grounded historical demo profile focused on plays, poetry, documented biography, and literary context.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not William Shakespeare and not affiliated with any estate, archive, theatre, or institution.',
+    rightsPosture:
+      'Long deceased. Public-domain works are usable, but modern annotations, introductions, performances, and editions need rights review.',
+    sources: [
+      {
+        title: 'William Shakespeare',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/William-Shakespeare',
+      },
+      {
+        title: "Shakespeare's life",
+        publisher: 'Shakespeare Birthplace Trust',
+        url: 'https://www.shakespeare.org.uk/explore-shakespeare/shakespedia/william-shakespeare/shakespeares-life/',
+      },
+    ],
+  },
+  {
+    slug: 'aristotle',
+    name: 'Aristotle',
+    field: 'Philosophy and science',
+    region: 'Ancient Greece',
+    years: '384-322 BCE',
+    description:
+      'Source-grounded historical demo profile focused on logic, ethics, politics, metaphysics, biology, and the Lyceum.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Aristotle and not affiliated with any archive, university, or institution.',
+    rightsPosture:
+      'Ancient figure. Avoid copying modern translations, introductions, or commentary without rights clearance.',
+    sources: [
+      {
+        title: 'Aristotle',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Aristotle',
+      },
+      {
+        title: 'Aristotle',
+        publisher: 'Stanford Encyclopedia of Philosophy',
+        url: 'https://plato.stanford.edu/entries/aristotle/',
+      },
+    ],
+  },
+  {
+    slug: 'sun-tzu',
+    name: 'Sun Tzu',
+    field: 'Strategy and military thought',
+    region: 'Ancient China',
+    years: 'traditional attribution, debated dates',
+    description:
+      'Source-grounded historical demo profile focused on The Art of War, strategy, later influence, and uncertainty around biography.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Sun Tzu, and it must distinguish known history from tradition and legend.',
+    rightsPosture:
+      'Ancient figure. Avoid copying modern translations of The Art of War unless their rights status is verified.',
+    sources: [
+      {
+        title: 'Sunzi',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Sunzi',
+      },
+      {
+        title: 'Sunzi',
+        publisher: 'Internet Encyclopedia of Philosophy',
+        url: 'https://iep.utm.edu/sunzi/',
+      },
+    ],
+  },
+] as const;
+
 function isStaticPassthroughPath(pathname: string): boolean {
   return (
     STATIC_PASSTHROUGH_PATHS.has(pathname) ||
@@ -66,6 +194,162 @@ function isStaticPassthroughPath(pathname: string): boolean {
     pathname.startsWith('/locales/') ||
     /\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?|map|json|xml|txt|webmanifest)$/i.test(pathname)
   );
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function findHistoricalProfile(pathname: string) {
+  const normalizedPath = stripLangFromPath(pathname);
+  const match = normalizedPath.match(/^\/t\/([^/]+)\/?$/);
+  if (!match) return null;
+  return HISTORICAL_DEMO_PROFILES.find((profile) => profile.slug === match[1]) ?? null;
+}
+
+function historicalUrl(profile: { slug: string }, canonicalHost: string): string {
+  return `${canonicalHost}/t/${profile.slug}`;
+}
+
+function historicalSitemap(canonicalHost: string): string {
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const staticUrls = [
+    { loc: `${canonicalHost}/`, priority: '1.0', changefreq: 'daily' },
+    { loc: `${canonicalHost}/de/`, priority: '0.9', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/en/`, priority: '0.9', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/tr/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/fr/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/es/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/pt/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/ar/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/zh/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/ja/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/ko/`, priority: '0.8', changefreq: 'weekly' },
+    { loc: `${canonicalHost}/t/smyst-demo-twin`, priority: '0.7', changefreq: 'weekly' },
+    ...HISTORICAL_DEMO_PROFILES.map((profile) => ({
+      loc: historicalUrl(profile, canonicalHost),
+      priority: '0.8',
+      changefreq: 'weekly',
+    })),
+  ];
+
+  const urls = staticUrls
+    .map(
+      (entry) => `  <url>
+    <loc>${escapeHtml(entry.loc)}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${entry.changefreq}</changefreq>
+    <priority>${entry.priority}</priority>
+  </url>`,
+    )
+    .join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>
+`;
+}
+
+function historicalProfileHtml(
+  profile: (typeof HISTORICAL_DEMO_PROFILES)[number],
+  canonicalHost: string,
+): string {
+  const canonical = historicalUrl(profile, canonicalHost);
+  const title = `${profile.name} | Historical Demo Twin | smyst.com`;
+  const sourceItems = profile.sources
+    .map(
+      (source) =>
+        `<li><a href="${escapeHtml(source.url)}" rel="nofollow noopener">${escapeHtml(source.publisher)}: ${escapeHtml(source.title)}</a></li>`,
+    )
+    .join('');
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    name: `${profile.name} | smyst.com`,
+    description: profile.description,
+    url: canonical,
+    about: {
+      '@type': 'Person',
+      name: profile.name,
+      description: `${profile.field}. ${profile.years}.`,
+    },
+    isBasedOn: profile.sources.map((source) => ({
+      '@type': 'CreativeWork',
+      name: source.title,
+      publisher: source.publisher,
+      url: source.url,
+    })),
+  };
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(`${profile.name} historical public-knowledge profile on smyst.com. Not official, not affiliated, sources required.`)}">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="${escapeHtml(canonical)}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(profile.description)}">
+  <meta property="og:url" content="${escapeHtml(canonical)}">
+  <meta property="og:image" content="${escapeHtml(`${canonicalHost}/og-image.png`)}">
+  <script type="application/ld+json">${JSON.stringify(schema)}</script>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #111827; background: #f8fafc; }
+    body { margin: 0; }
+    main { min-height: 100vh; display: grid; place-items: center; padding: 40px 18px; box-sizing: border-box; }
+    article { width: min(920px, 100%); background: #ffffff; border: 1px solid #d8dee8; border-radius: 8px; box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08); overflow: hidden; }
+    .hero { display: grid; gap: 18px; padding: 42px; background: linear-gradient(135deg, #f4f7fb, #ffffff 55%, #eef6f2); border-bottom: 1px solid #d8dee8; }
+    .kicker { margin: 0; color: #0f766e; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    h1 { margin: 0; font-size: clamp(34px, 6vw, 68px); line-height: 1; letter-spacing: 0; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; color: #374151; }
+    .meta span { border: 1px solid #cbd5e1; border-radius: 999px; padding: 7px 10px; background: rgba(255,255,255,.72); }
+    .content { display: grid; gap: 22px; padding: 32px 42px 42px; }
+    p { margin: 0; font-size: 18px; line-height: 1.65; color: #273244; }
+    .notice { padding: 16px; border: 1px solid #f2c46d; border-radius: 8px; background: #fff8e6; color: #4a3410; }
+    h2 { margin: 0 0 10px; font-size: 20px; }
+    ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+    a { color: #0f5f8f; font-weight: 700; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #111827; color: #fff; background: #111827; text-decoration: none; }
+    .secondary { color: #111827; background: #fff; }
+    @media (max-width: 640px) { .hero, .content { padding: 26px 20px; } p { font-size: 16px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <article>
+      <section class="hero">
+        <p class="kicker">Historical demo profile</p>
+        <h1>${escapeHtml(profile.name)}</h1>
+        <p class="meta"><span>${escapeHtml(profile.field)}</span><span>${escapeHtml(profile.region)}</span><span>${escapeHtml(profile.years)}</span></p>
+      </section>
+      <section class="content">
+        <p>${escapeHtml(profile.description)}</p>
+        <div class="notice">
+          <h2>Safety and rights note</h2>
+          <p>${escapeHtml(profile.guardrail)} ${escapeHtml(profile.rightsPosture)}</p>
+        </div>
+        <section>
+          <h2>Sources</h2>
+          <ul>${sourceItems}</ul>
+        </section>
+        <div class="actions">
+          <a class="button" href="/twin-chat?twin=${escapeHtml(profile.slug)}">Open chat</a>
+          <a class="button secondary" href="/">smyst.com</a>
+        </div>
+      </section>
+    </article>
+  </main>
+</body>
+</html>`;
 }
 
 // ---------- Spracherkennung ----------
@@ -426,7 +710,10 @@ export async function translatePage(
 // ---------- Worker Entry ----------
 
 function applyEdgeHeaders(headers: Headers): Headers {
-  headers.delete('X-Robots-Tag');
+  const robots = headers.get('X-Robots-Tag');
+  if (robots?.toLowerCase().includes('noindex')) {
+    headers.delete('X-Robots-Tag');
+  }
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
@@ -448,6 +735,34 @@ export default {
         return withSecurity(errorResponse('route_not_deployed', 'Specific API worker route is not active', 503));
       }
 
+      const canonicalHost =
+        env.CANONICAL_HOST ?? `${url.protocol}//${url.host}`;
+
+      if (url.pathname === '/sitemap.xml') {
+        const headers = applyEdgeHeaders(new Headers({
+          'content-type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=300, s-maxage=300',
+          'X-Robots-Tag': 'index, follow',
+        }));
+        return new Response(historicalSitemap(canonicalHost), { status: 200, headers });
+      }
+
+      const historicalProfile = findHistoricalProfile(url.pathname);
+      if (historicalProfile) {
+        const headers = applyEdgeHeaders(new Headers({
+          'content-type': 'text/html; charset=utf-8',
+          'Content-Language': 'en',
+          'Cache-Control': 'public, max-age=300, s-maxage=600',
+          'Content-Security-Policy':
+            "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'",
+          'X-Robots-Tag': 'index, follow',
+        }));
+        return new Response(historicalProfileHtml(historicalProfile, canonicalHost), {
+          status: 200,
+          headers,
+        });
+      }
+
       // Nicht-HTML-Pfade direkt durchreichen (Assets und SEO/PWA-Dateien).
       if (isStaticPassthroughPath(url.pathname)) {
         return fetch(env.ORIGIN_URL + url.pathname + url.search);
@@ -462,8 +777,6 @@ export default {
 
       const lang = detectLang(request, url);
       const normalizedPath = stripLangFromPath(url.pathname) || '/';
-      const canonicalHost =
-        env.CANONICAL_HOST ?? `${url.protocol}//${url.host}`;
 
       // Wenn Sprache == Default UND Pfad keine Sprach-Prefix hat → einfach Origin durchreichen
       // (Quelltext ist bereits in DEFAULT_LANG)

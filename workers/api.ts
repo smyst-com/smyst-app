@@ -129,6 +129,9 @@ interface TwinRecord {
   knowledgeTexts: TwinKnowledgeItem[];
   mediaRefs: TwinMediaRef[];
   contextSummary: string;
+  guardrail?: string;
+  rightsPosture?: string;
+  sources?: Array<{ title: string; publisher: string; url: string }>;
   status: 'draft' | 'ready';
   createdAt: number;
   updatedAt: number;
@@ -201,6 +204,149 @@ interface SupportReportRecord {
   createdAt: number;
   status: 'open';
 }
+
+const historicalDemoProfiles = [
+  {
+    id: 'leonardo-da-vinci',
+    slug: 'leonardo-da-vinci',
+    name: 'Leonardo da Vinci',
+    field: 'Renaissance art and engineering',
+    region: 'Italy / France',
+    years: '1452-1519',
+    description:
+      'Source-grounded historical demo profile focused on public facts about art, engineering studies, notebooks, and Renaissance context.',
+    contextSummary:
+      'Historical public-knowledge profile. Answers must be based on public sources, distinguish known facts from interpretation, and never claim to be the real person.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Leonardo da Vinci and not affiliated with any estate, museum, archive, or institution.',
+    rightsPosture:
+      'Long deceased. Use original smyst copy and only licensed, open-access, or public-domain-safe imagery.',
+    sources: [
+      {
+        title: 'Leonardo da Vinci',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Leonardo-da-Vinci',
+      },
+      {
+        title: 'Leonardo da Vinci (1452-1519)',
+        publisher: 'The Metropolitan Museum of Art',
+        url: 'https://www.metmuseum.org/essays/leonardo-da-vinci-1452-1519',
+      },
+    ],
+  },
+  {
+    id: 'isaac-newton',
+    slug: 'isaac-newton',
+    name: 'Isaac Newton',
+    field: 'Physics and mathematics',
+    region: 'England',
+    years: '1642-1727',
+    description:
+      'Source-grounded historical demo profile focused on mechanics, gravity, optics, calculus, and the Scientific Revolution.',
+    contextSummary:
+      'Historical public-knowledge profile. Treat priority disputes and scientific history carefully instead of presenting disputed claims as personal testimony.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Isaac Newton and not affiliated with any estate, archive, university, or institution.',
+    rightsPosture:
+      'Long deceased. Avoid modern book scans, portraits, editions, annotations, and commentary unless rights are verified.',
+    sources: [
+      {
+        title: 'Isaac Newton',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Isaac-Newton',
+      },
+      {
+        title: 'Sir Isaac Newton',
+        publisher: 'The Royal Society',
+        url: 'https://royalsociety.org/people/isaac-newton-11991/',
+      },
+    ],
+  },
+  {
+    id: 'william-shakespeare',
+    slug: 'william-shakespeare',
+    name: 'William Shakespeare',
+    field: 'Literature and theatre',
+    region: 'England',
+    years: '1564-1616',
+    description:
+      'Source-grounded historical demo profile focused on plays, poems, Elizabethan theatre, and long-term cultural influence.',
+    contextSummary:
+      'Historical public-knowledge profile. Distinguish documented biography from later traditions, adaptations, authorship theories, and modern interpretation.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not William Shakespeare and not affiliated with any trust, theatre, publisher, estate, or institution.',
+    rightsPosture:
+      'Long deceased. Public-domain works may be usable, but modern annotations, translations, performances, recordings, and editions need review.',
+    sources: [
+      {
+        title: 'William Shakespeare',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/William-Shakespeare',
+      },
+      {
+        title: "Shakespeare's life",
+        publisher: 'Shakespeare Birthplace Trust',
+        url: 'https://www.shakespeare.org.uk/explore-shakespeare/shakespedia/william-shakespeare/shakespeares-life/',
+      },
+    ],
+  },
+  {
+    id: 'aristotle',
+    slug: 'aristotle',
+    name: 'Aristotle',
+    field: 'Philosophy and science',
+    region: 'Ancient Greece',
+    years: '384-322 BCE',
+    description:
+      'Source-grounded historical demo profile focused on logic, ethics, politics, biology, rhetoric, and ancient Greek philosophy.',
+    contextSummary:
+      'Historical public-knowledge profile. Separate surviving ancient material, later school traditions, and modern scholarly interpretation.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Aristotle and not affiliated with any archive, publisher, university, or institution.',
+    rightsPosture:
+      'Ancient figure. Avoid copying modern translations, introductions, and commentary without rights clearance.',
+    sources: [
+      {
+        title: 'Aristotle',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Aristotle',
+      },
+      {
+        title: 'Aristotle',
+        publisher: 'Stanford Encyclopedia of Philosophy',
+        url: 'https://plato.stanford.edu/entries/aristotle/',
+      },
+    ],
+  },
+  {
+    id: 'sun-tzu',
+    slug: 'sun-tzu',
+    name: 'Sun Tzu',
+    field: 'Strategy and military thought',
+    region: 'Ancient China',
+    years: 'traditional attribution',
+    description:
+      'Source-grounded historical demo profile focused on the historical tradition around The Art of War and its influence on strategy.',
+    contextSummary:
+      'Historical public-knowledge profile. Distinguish historically attested information from later tradition, legend, and modern management interpretation.',
+    guardrail:
+      'This is a historically inspired public-knowledge profile, not Sun Tzu and not affiliated with any archive, publisher, university, or institution.',
+    rightsPosture:
+      'Ancient figure. Avoid copying modern translations of The Art of War unless their rights status is verified.',
+    sources: [
+      {
+        title: 'Sunzi',
+        publisher: 'Encyclopaedia Britannica',
+        url: 'https://www.britannica.com/biography/Sunzi',
+      },
+      {
+        title: 'Sunzi',
+        publisher: 'Internet Encyclopedia of Philosophy',
+        url: 'https://iep.utm.edu/sunzi/',
+      },
+    ],
+  },
+] as const;
 
 function metadataStore(env: ApiEnv): KVNamespace {
   return env.METADATA ?? env.SESSIONS;
@@ -521,6 +667,9 @@ function publicTwinPayload(env: ApiEnv, twin: TwinRecord) {
     mediaCount: (twin.mediaRefs ?? []).length,
     knowledgeCount: (twin.knowledgeTexts ?? []).length,
     contextSummary: twin.contextSummary,
+    guardrail: twin.guardrail,
+    rightsPosture: twin.rightsPosture,
+    sources: twin.sources ?? [],
     updatedAt: twin.updatedAt,
     seo: {
       title: `${twin.name} | smyst.com KI-Zwilling`,
@@ -540,6 +689,59 @@ function publicTwinPayload(env: ApiEnv, twin: TwinRecord) {
           description: twin.description,
           image: imageUrl ?? undefined,
         },
+      },
+    },
+  };
+}
+
+function historicalDemoPayload(env: ApiEnv, slug: string) {
+  const profile = historicalDemoProfiles.find((item) => item.slug === slug || item.id === slug);
+  if (!profile) return null;
+  const host = (env.CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
+  const url = `${host}/t/${profile.slug}`;
+  return {
+    id: profile.id,
+    name: profile.name,
+    slug: profile.slug,
+    description: `${profile.description} ${profile.guardrail}`,
+    imageUrl: null,
+    categories: ['Historical demo', profile.field, profile.region],
+    languages: ['de', 'en'],
+    visibility: 'public' as const,
+    style: 'neutral' as const,
+    status: 'ready' as const,
+    url,
+    chatPath: `/twin-chat?twin=${encodeURIComponent(profile.id)}`,
+    uploadedContents: [{ category: 'public-source-note', count: profile.sources.length }],
+    mediaCount: 0,
+    knowledgeCount: profile.sources.length,
+    contextSummary: profile.contextSummary,
+    guardrail: profile.guardrail,
+    rightsPosture: profile.rightsPosture,
+    sources: profile.sources,
+    updatedAt: 1781222400000,
+    seo: {
+      title: `${profile.name} | Historical Demo Twin | smyst.com`,
+      description: `${profile.name} historical public-knowledge profile on smyst.com. Not official, not affiliated, sources required.`,
+      canonical: url,
+      robots: 'index,follow',
+      schema: {
+        '@context': 'https://schema.org',
+        '@type': 'ProfilePage',
+        name: `${profile.name} | smyst.com`,
+        description: profile.description,
+        url,
+        about: {
+          '@type': 'Person',
+          name: profile.name,
+          description: `${profile.field}. ${profile.years}.`,
+        },
+        isBasedOn: profile.sources.map((source) => ({
+          '@type': 'CreativeWork',
+          name: source.title,
+          publisher: source.publisher,
+          url: source.url,
+        })),
       },
     },
   };
@@ -1008,7 +1210,10 @@ async function handlePublicTwin(request: Request, env: ApiEnv, slug: string): Pr
   const cleanSlug = slugify(slug);
   if (!cleanSlug) return errorResponse('invalid_slug', 'Invalid profile slug', 400);
   const twin = await loadPublicTwin(env, cleanSlug);
-  if (!twin || twin.visibility !== 'public') return errorResponse('public_twin_not_found', 'Public twin not found', 404);
+  const demoTwin = !twin ? historicalDemoPayload(env, cleanSlug) : null;
+  if ((!twin || twin.visibility !== 'public') && !demoTwin) {
+    return errorResponse('public_twin_not_found', 'Public twin not found', 404);
+  }
 
   const limited = await requireRateLimit(metadataStore(env), {
     key: clientKey(request, 'api:public-twin'),
@@ -1017,7 +1222,7 @@ async function handlePublicTwin(request: Request, env: ApiEnv, slug: string): Pr
   });
   if (limited) return limited;
 
-  return jsonResponse({ twin: publicTwinPayload(env, twin) }, 200, {
+  return jsonResponse({ twin: twin ? publicTwinPayload(env, twin) : demoTwin }, 200, {
     'cache-control': 'public, max-age=120, s-maxage=600',
     'X-Robots-Tag': 'index, follow',
   });

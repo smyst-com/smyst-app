@@ -1,0 +1,10 @@
+/api/*  /api/:splat  200
+/auth/*  /auth/:splat  200
+/storage/*  /storage/:splat  200
+/assets/*  /assets/:splat  200
+/icons/*  /icons/:splat  200
+/screenshots/*  /screenshots/:splat  200
+/locales/*  /locales/:splat  200
+/t/*  /index.html  200
+/private/*  /index.html  200
+/*  /index.html  200

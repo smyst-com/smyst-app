@@ -7,6 +7,7 @@ import { useLanguage } from '@/lib/i18n'
 import { useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
+import { findHistoricalDemoProfile, historicalDemoProfiles } from '@/lib/historicalDemoProfiles'
 import { useTwinMvp, type PublicTwinProfile, type SupportReportType, type TwinRecord, type TwinStyle } from '@/lib/useTwinMvp'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
@@ -450,7 +451,30 @@ export default function App() {
   )
 }
 
-const startPageTwins = [
+const historicalStartTwins = historicalDemoProfiles.map((profile, index) => ({
+  id: profile.slug,
+  name: profile.name,
+  description: profile.field,
+  role: 'Historisch',
+  signal: 'public',
+  accent: ['#71E8FF', '#A8FFCB', '#9DBBFF', '#FFFFFF', '#FFD56A'][index] ?? '#FFFFFF',
+  initials: profile.name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join(''),
+  tone: 'quellenbasiert, vorsichtig, historisch',
+  famousScore: 100 - index,
+  usedScore: 80 - index,
+  popularScore: 96 - index,
+  trendScore: 70 - index,
+  manualRank: index + 1,
+  profileSlug: profile.slug,
+  historical: true,
+}))
+
+const privateStartTwins = [
   {
     id: 'max-mueller',
     name: 'Max Müller',
@@ -512,6 +536,8 @@ const startPageTwins = [
     manualRank: 4,
   },
 ]
+
+const startPageTwins = [...historicalStartTwins, ...privateStartTwins]
 
 type StartTwin = (typeof startPageTwins)[number]
 
@@ -716,6 +742,7 @@ function SmystStartPage({
 
     const reply = [
       t.chat.replyIntro.replace('{{name}}', twin.name),
+      'Dieses Profil antwortet als quellenbasiertes historisches Demo-Profil und behauptet nicht, die echte Person zu sein.',
       t.chat.replyMvp,
       t.chat.replyQuestion.replace('{{question}}', text.length > 180 ? `${text.slice(0, 180)}...` : text),
       t.chat.replyNextStep,
@@ -1129,6 +1156,57 @@ function SmystStartPage({
 }
 
 function fallbackProfile(slug: string | null): PublicTwinProfile | null {
+  const historicalProfile = findHistoricalDemoProfile(slug)
+  if (historicalProfile) {
+    const url = `https://smyst.com/t/${historicalProfile.slug}`
+    return {
+      id: historicalProfile.id,
+      name: historicalProfile.name,
+      slug: historicalProfile.slug,
+      description: `${historicalProfile.description} ${historicalProfile.guardrail}`,
+      imageUrl: null,
+      categories: ['Historical demo', historicalProfile.field, historicalProfile.region],
+      languages: ['de', 'en'],
+      visibility: 'public',
+      style: 'neutral',
+      status: 'ready',
+      url,
+      chatPath: `/twin-chat?twin=${encodeURIComponent(historicalProfile.id)}`,
+      uploadedContents: [{ category: 'public-source-note', count: historicalProfile.sources.length }],
+      mediaCount: 0,
+      knowledgeCount: historicalProfile.sources.length,
+      contextSummary: historicalProfile.contextSummary,
+      guardrail: historicalProfile.guardrail,
+      rightsPosture: historicalProfile.rightsPosture,
+      sources: historicalProfile.sources,
+      updatedAt: Date.now(),
+      seo: {
+        title: `${historicalProfile.name} | Historical Demo Twin | smyst.com`,
+        description: `${historicalProfile.name} historical public-knowledge profile on smyst.com. Not official, not affiliated, sources required.`,
+        canonical: url,
+        robots: 'index,follow',
+        schema: {
+          '@context': 'https://schema.org',
+          '@type': 'ProfilePage',
+          name: `${historicalProfile.name} | smyst.com`,
+          description: historicalProfile.description,
+          url,
+          about: {
+            '@type': 'Person',
+            name: historicalProfile.name,
+            description: `${historicalProfile.field}. ${historicalProfile.years}.`,
+          },
+          isBasedOn: historicalProfile.sources.map((source) => ({
+            '@type': 'CreativeWork',
+            name: source.title,
+            publisher: source.publisher,
+            url: source.url,
+          })),
+        },
+      },
+    }
+  }
+
   const twin = startPageTwins.find((item) => item.id === slug || item.name.toLowerCase().replace(/\s+/g, '-') === slug)
   if (!twin) return null
   const cleanSlug = twin.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
@@ -1444,6 +1522,33 @@ function TwinProfileView({
                 <h2 className="mb-2 text-lg font-semibold">Twin-Kontext</h2>
                 <p className="text-sm leading-relaxed text-[#555b64]">{profile.contextSummary}</p>
               </section>
+
+              {(profile.guardrail || profile.rightsPosture) && (
+                <section className="mt-6 rounded-lg border border-amber-300/50 bg-amber-50/70 p-4">
+                  <h2 className="mb-2 text-lg font-semibold text-amber-950">Historisches Demo-Profil</h2>
+                  {profile.guardrail && <p className="text-sm leading-relaxed text-amber-950">{profile.guardrail}</p>}
+                  {profile.rightsPosture && <p className="mt-2 text-sm leading-relaxed text-amber-900">{profile.rightsPosture}</p>}
+                </section>
+              )}
+
+              {profile.sources?.length ? (
+                <section className="mt-6">
+                  <h2 className="mb-3 text-lg font-semibold">Quellen</h2>
+                  <div className="grid gap-2">
+                    {profile.sources.map((source) => (
+                      <a
+                        key={source.url}
+                        href={source.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-lg border border-white/32 bg-white/16 px-4 py-3 text-sm font-medium text-[#0b1c44] transition-colors hover:bg-white/28"
+                      >
+                        {source.publisher}: {source.title}
+                      </a>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
             </div>
           </div>
         </Card>

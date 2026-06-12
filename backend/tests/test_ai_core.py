@@ -3,7 +3,10 @@ from uuid import uuid4
 import pytest
 
 from app.ai.dataflow import AiDataflowProbe
-from app.ai.demo_profiles import LEONARDO_DA_VINCI_PROFILE
+from app.ai.demo_profiles import (
+    LEONARDO_DA_VINCI_PROFILE,
+    LOW_RISK_HISTORICAL_STARTER_PROFILES,
+)
 from app.ai.models import Sensitivity, UploadedAsset
 from app.ai.parsers import ParserRegistry
 from app.ai.rag import RagEngine
@@ -52,6 +55,26 @@ def test_public_historical_profile_builds_safe_demo_twin() -> None:
     assert result.persona.safety_boundaries["never_claim_to_be_the_real_person"] is True
     assert result.persona.confidence_score > 0
     assert result.twin_version.version_number == 1
+
+
+def test_low_risk_historical_starter_profiles_share_guardrails() -> None:
+    assert [profile.profile_id for profile in LOW_RISK_HISTORICAL_STARTER_PROFILES] == [
+        "leonardo-da-vinci",
+        "isaac-newton",
+        "william-shakespeare",
+        "aristotle",
+        "sun-tzu",
+    ]
+
+    for profile in LOW_RISK_HISTORICAL_STARTER_PROFILES:
+        result = UploadPipeline().process(
+            profile.to_upload(user_id=uuid4(), twin_id=uuid4())
+        )
+
+        assert profile.launch_wave == "Low-risk historical starter"
+        assert "real" in profile.guardrail
+        assert result.persona.safety_boundaries["never_claim_to_be_the_real_person"] is True
+        assert profile.sources
 
 
 def test_pdf_parser_falls_back_without_external_dependency() -> None:
