@@ -560,6 +560,11 @@
     color: #f4f7fb !important;
   }
 
+  .smyst-app-light .smyst-start-shell.smyst-start-shell-theme-dark,
+  .smyst-start-shell.smyst-start-shell-theme-dark {
+    color: #f4f7fb !important;
+  }
+
   .smyst-start-shell-theme-dark::before {
     background:
       radial-gradient(circle at 50% 0%, rgba(113, 155, 205, 0.12), transparent 34%),
@@ -631,6 +636,11 @@
 
   .smyst-start-shell-theme-light {
     background: #e5ecf5 !important;
+    color: #111722 !important;
+  }
+
+  .smyst-app-dark .smyst-start-shell.smyst-start-shell-theme-light,
+  .smyst-start-shell.smyst-start-shell-theme-light {
     color: #111722 !important;
   }
 
