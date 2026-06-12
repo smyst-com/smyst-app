@@ -374,7 +374,14 @@ export default function App() {
       </Suspense>
 
       {/* Main Content */}
-      <main id="main" className="mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-10 sm:px-6">
+      <main
+        id="main"
+        className={
+          currentView === 'twin-chat'
+            ? 'min-h-[calc(100dvh-80px)] w-full px-0 pb-0 sm:min-h-[calc(100dvh-92px)]'
+            : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-10 sm:px-6'
+        }
+      >
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
         {currentView === 'account-profile' && <AccountProfileView onNavigate={navigateTo} />}
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
@@ -667,11 +674,11 @@ function SmystStartPage({
     textarea.style.height = '0px'
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight
     const headerHeight = document.querySelector('main.fixed > header')?.getBoundingClientRect().height ?? 0
-    const iconBarHeight = textarea.parentElement?.nextElementSibling?.getBoundingClientRect().height ?? 56
+    const iconBarHeight = textarea.parentElement?.nextElementSibling?.getBoundingClientRect().height ?? 44
     const textWrapStyle = window.getComputedStyle(textarea.parentElement ?? textarea)
     const textWrapPadding =
       Number.parseFloat(textWrapStyle.paddingTop || '0') + Number.parseFloat(textWrapStyle.paddingBottom || '0')
-    const topGap = selectedTwin ? 10 : Math.max(viewportHeight * 0.12, 96)
+    const topGap = selectedTwin ? 2 : Math.max(viewportHeight * 0.08, 72)
     const availableHeight = viewportHeight - headerHeight - iconBarHeight - textWrapPadding - topGap
     const selectedMaxHeight = Math.max(120, availableHeight)
     const startMaxHeight = Math.min(Math.max(viewportHeight * 0.38, 132), 280)
@@ -928,24 +935,24 @@ function SmystStartPage({
 
       {selectedTwin ? (
         <header className="smyst-glass-panel z-20 shrink-0 border-b border-white/[0.08] pt-[env(safe-area-inset-top)]">
-          <div className="relative flex min-h-[72px] items-center justify-center px-4 sm:min-h-[82px]">
+          <div className="relative flex min-h-[54px] items-center justify-center px-1 sm:min-h-[58px]">
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
               aria-label="Menü öffnen"
               aria-expanded={menuOpen}
-              className="absolute left-0 top-0 grid h-12 w-14 shrink-0 place-items-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:h-14 sm:w-16"
+              className="absolute left-0 top-0 grid h-11 w-11 shrink-0 place-items-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
             >
-              <MenuGlyph className="h-7 w-7" />
+              <MenuGlyph className="h-6 w-6" />
             </button>
 
-            <div className="smyst-glass-control flex h-14 max-w-[min(310px,calc(100vw-100px))] items-stretch border border-white/[0.08] text-left sm:h-16 sm:max-w-[460px]">
+            <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-58px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
               <span className="grid aspect-square h-full shrink-0 place-items-center border-r border-white/[0.08] bg-white/[0.045] text-white/[0.78]">
-                <User className="h-8 w-8 sm:h-9 sm:w-9" />
+                <User className="h-6 w-6 sm:h-7 sm:w-7" />
               </span>
-              <span className="flex min-w-0 flex-1 flex-col justify-center px-3">
-                <span className="truncate text-base font-bold leading-tight text-white sm:text-lg">{selectedTwin.name}</span>
-                <span className="truncate text-xs font-medium leading-tight text-[#8e97a8] sm:text-sm">{selectedTwin.role}</span>
+              <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
+                <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{selectedTwin.name}</span>
+                <span className="truncate text-[11px] font-medium leading-tight text-[#8e97a8] sm:text-xs">{selectedTwin.role}</span>
               </span>
             </div>
           </div>
@@ -1049,14 +1056,14 @@ function SmystStartPage({
             </div>
           )}
           {messages.length > 0 && (
-            <div className="relative z-10 flex flex-col gap-4 px-4 py-6 sm:px-8">
+            <div className="relative z-10 flex flex-col gap-1 px-[3px] py-1 sm:px-2 sm:py-2">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div
-                    className={`max-w-[86%] rounded-xl border px-4 py-3 text-sm leading-relaxed shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:max-w-[72%] ${
+                    className={`max-w-[calc(100%-8px)] rounded-[10px] border px-3 py-2 text-[15px] leading-snug shadow-none sm:max-w-[94%] sm:text-base ${
                       message.role === 'user'
-                        ? 'smyst-chat-bubble-user rounded-br-md border-white/12 bg-white text-[#111722]'
-                        : 'smyst-chat-bubble-assistant rounded-bl-md border-white/[0.09] bg-white/[0.065] text-[#f4f7fb] backdrop-blur-2xl'
+                        ? 'smyst-chat-bubble-user rounded-br-[3px] border-white/[0.14] bg-white/[0.92] text-[#111722]'
+                        : 'smyst-chat-bubble-assistant rounded-bl-[3px] border-white/[0.08] bg-white/[0.07] text-[#f4f7fb] backdrop-blur-xl'
                     }`}
                   >
                     {message.streaming && !message.content ? (
@@ -1077,7 +1084,7 @@ function SmystStartPage({
       </section>
 
       <footer className={`smyst-glass-panel-strong shrink-0 border-t ${composerLine}`}>
-        <div className={`border-b ${composerLine} px-4 py-2.5 sm:px-8`}>
+        <div className={`border-b ${composerLine} px-2 py-1 sm:px-3`}>
           <textarea
             ref={textareaRef}
             value={input}
@@ -1093,59 +1100,59 @@ function SmystStartPage({
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
-            className="block min-h-[46px] w-full resize-none overflow-y-auto bg-transparent text-2xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:text-3xl"
+            className="block min-h-[34px] w-full resize-none overflow-y-auto bg-transparent text-xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:text-2xl"
             aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
           />
         </div>
-        <div className="flex h-[56px] items-center justify-between px-5 text-white sm:px-8">
+        <div className="flex h-[44px] items-center justify-between px-2 text-white sm:px-3">
           <div className="flex h-full items-center">
             <button
               type="button"
-              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors"
+              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors"
               aria-label={t.start.addFile}
               title={t.start.addFile}
             >
-              <Plus className="h-8 w-8" />
+              <Plus className="h-6 w-6" />
             </button>
           </div>
-          <div className="flex h-full items-center gap-3 sm:gap-6">
+          <div className="flex h-full items-center gap-1 sm:gap-2">
             <button
               type="button"
-              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors"
+              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors"
               aria-label={t.start.voiceInput}
               title={t.start.voiceInput}
             >
-              <Mic className="h-8 w-8" />
+              <Mic className="h-6 w-6" />
             </button>
             <button
               type="button"
-              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors"
+              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors"
               aria-label="Audio-Modus"
               title="Audio-Modus"
             >
-              <Waveform className="h-8 w-8" />
+              <Waveform className="h-6 w-6" />
             </button>
             <button
               type="button"
               disabled={!canSpeak}
               onClick={handleSpeakInput}
-              className={`smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors disabled:opacity-45 ${
+              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors disabled:opacity-45 ${
                 isSpeaking ? 'bg-white/[0.12]' : ''
               }`}
               aria-label={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
               title={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
             >
-              <Speaker className="h-8 w-8" />
+              <Speaker className="h-6 w-6" />
             </button>
             <button
               type="button"
               disabled={!canSend}
               onClick={() => void handleSend()}
-              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors disabled:text-white disabled:opacity-100"
+              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors disabled:text-white disabled:opacity-100"
               aria-label={t.start.send}
               title={t.start.send}
             >
-              <ArrowUp className="h-9 w-9" />
+              <ArrowUp className="h-7 w-7" />
             </button>
           </div>
         </div>
@@ -2726,7 +2733,7 @@ function TwinChatView() {
     const textarea = inputRef.current
     if (!textarea) return
     textarea.style.height = '0px'
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 132)}px`
+    textarea.style.height = `${Math.min(textarea.scrollHeight, 96)}px`
   }
 
   const streamAssistantMessage = async (messageId: string, content: string) => {
@@ -2812,13 +2819,13 @@ function TwinChatView() {
   }
 
   return (
-    <div className="pt-6 sm:pt-[72px]">
+    <div className="flex min-h-[calc(100dvh-80px)] flex-col px-[3px] pt-1 sm:min-h-[calc(100dvh-92px)] sm:px-2 sm:pt-2">
       {auth.status === 'anonymous' && (
-        <Card className="mb-4 p-5 sm:mb-6 sm:p-6">
-          <CardContent className="flex flex-col items-start gap-4 p-0 sm:flex-row sm:items-center sm:justify-between">
+        <Card className="mb-1 rounded-md p-2 sm:p-3">
+          <CardContent className="flex flex-col items-start gap-2 p-0 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-xl font-bold tracking-tight">Twin Chat</h1>
-              <p className="text-sm text-[#555b64]">Melde dich an, um diesen Twin-Chat zu starten.</p>
+              <h1 className="text-base font-bold tracking-tight">Twin Chat</h1>
+              <p className="text-xs text-[#555b64]">Melde dich an, um diesen Twin-Chat zu starten.</p>
             </div>
             <Suspense fallback={null}>
               <GitHubSignInButton variant="official" returnTo={window.location.pathname + window.location.search} />
@@ -2827,17 +2834,17 @@ function TwinChatView() {
         </Card>
       )}
 
-      <section className="mx-auto flex h-[calc(100dvh-132px)] min-h-[520px] max-w-[980px] flex-col overflow-hidden rounded-[28px] border border-white/42 bg-white/22 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_24px_80px_rgba(82,88,98,0.16)] backdrop-blur-[30px] sm:h-[calc(100dvh-164px)] sm:min-h-[620px]">
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/26 bg-white/18 px-4 py-3 backdrop-blur-[22px] sm:px-5 sm:py-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#59C7FF]/20 text-sm font-bold text-[#0b1c44] ring-1 ring-white/44">
+      <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-white/24 bg-white/14 shadow-none backdrop-blur-[24px]">
+        <header className="flex min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-white/18 bg-white/14 px-2 py-1 backdrop-blur-[18px] sm:min-h-[48px] sm:px-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#59C7FF]/18 text-[11px] font-bold text-[#0b1c44] ring-1 ring-white/32 sm:h-9 sm:w-9">
               {initials}
             </div>
             <div className="min-w-0">
-              <h1 className="truncate text-base font-bold tracking-tight sm:text-lg">{activeTwin?.name ?? 'Dein Twin'}</h1>
-              <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#555b64]">
+              <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? 'Dein Twin'}</h1>
+              <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] leading-none text-[#555b64] sm:text-xs">
                 <span className="inline-flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                   Bereit
                 </span>
                 <span>{activeTwin ? `${activeTwin.style} Stil` : 'Chat bereit'}</span>
@@ -2859,7 +2866,7 @@ function TwinChatView() {
               ])
               inputRef.current?.focus()
             }}
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/42 bg-white/18 text-[#16181b] transition-colors hover:bg-white/30"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/32 bg-white/16 text-[#16181b] transition-colors hover:bg-white/30 sm:h-9 sm:w-9"
             aria-label="Neuen Chat starten"
             title="Neuen Chat starten"
           >
@@ -2867,18 +2874,18 @@ function TwinChatView() {
           </button>
         </header>
 
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-4 sm:px-6 sm:py-6">
-          <div className="mx-auto flex max-w-[760px] flex-col gap-4">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-[3px] py-1 sm:px-2 sm:py-2">
+          <div className="flex flex-col gap-1">
             {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[88%] rounded-[22px] px-4 py-3 text-sm leading-relaxed shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] sm:max-w-[74%] ${
+                  className={`max-w-[calc(100%-8px)] rounded-[10px] border px-3 py-2 text-[15px] leading-snug shadow-none sm:max-w-[94%] sm:text-base ${
                     msg.role === 'user'
-                      ? 'rounded-br-md bg-[#59C7FF]/28 text-[#0b1c44]'
-                      : 'rounded-bl-md border border-white/30 bg-white/24 text-[#16181b]'
+                      ? 'rounded-br-[3px] border-[#59C7FF]/20 bg-[#59C7FF]/20 text-[#0b1c44]'
+                      : 'rounded-bl-[3px] border-white/[0.22] bg-white/20 text-[#16181b]'
                   }`}
                 >
                   {msg.streaming && !msg.content ? (
@@ -2899,9 +2906,9 @@ function TwinChatView() {
           </div>
         </div>
 
-        <footer className="shrink-0 border-t border-white/26 bg-white/18 px-3 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur-[24px] sm:px-5 sm:pb-5">
-          <div className="mx-auto max-w-[760px]">
-            <div className="mb-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none]">
+        <footer className="shrink-0 border-t border-white/18 bg-white/16 px-[3px] pb-[calc(4px+env(safe-area-inset-bottom))] pt-1 backdrop-blur-[20px] sm:px-2">
+          <div>
+            <div className="mb-1 flex gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none]">
               {suggestions.map((suggestion) => (
                 <button
                   key={suggestion}
@@ -2910,17 +2917,17 @@ function TwinChatView() {
                     resizeInput(suggestion)
                     inputRef.current?.focus()
                   }}
-                  className="shrink-0 rounded-full border border-white/36 bg-white/16 px-3 py-2 text-xs font-medium text-[#555b64] transition-colors hover:bg-white/28"
+                  className="shrink-0 rounded-full border border-white/30 bg-white/14 px-2 py-1 text-[11px] font-medium text-[#555b64] transition-colors hover:bg-white/28"
                 >
                   {suggestion}
                 </button>
               ))}
             </div>
 
-            <div className="flex items-end gap-2 rounded-[24px] border border-white/42 bg-white/28 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-[20px]">
+            <div className="flex items-end gap-1 rounded-[12px] border border-white/34 bg-white/24 p-1 shadow-none backdrop-blur-[18px]">
               <button
                 type="button"
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[#555b64] transition-colors hover:bg-white/24"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24"
                 aria-label="Medien hinzufügen"
                 title="Medien hinzufügen"
               >
@@ -2939,11 +2946,11 @@ function TwinChatView() {
                 }}
                 placeholder={auth.status === 'authenticated' ? 'Nachricht an deinen Twin...' : 'Bitte anmelden, um zu chatten'}
                 disabled={auth.status !== 'authenticated'}
-                className="max-h-[132px] min-h-[44px] flex-1 resize-none bg-transparent px-1 py-2.5 text-base leading-6 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70"
+                className="max-h-[96px] min-h-[36px] flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-5 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
               />
               <button
                 type="button"
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-[#555b64] transition-colors hover:bg-white/24"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24"
                 aria-label="Spracheingabe"
                 title="Spracheingabe"
               >
@@ -2953,7 +2960,7 @@ function TwinChatView() {
                 type="button"
                 disabled={!canSpeak}
                 onClick={handleSpeakInput}
-                className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-[#555b64] transition-colors hover:bg-white/24 disabled:opacity-45 ${
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 disabled:opacity-45 ${
                   isSpeaking ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
                 aria-label={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
@@ -2965,7 +2972,7 @@ function TwinChatView() {
                 type="button"
                 disabled={!canSend}
                 onClick={() => void handleSend()}
-                className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#59C7FF] text-[#0b1c44] shadow-[0_10px_24px_rgba(89,199,255,0.26)] transition-transform hover:-translate-y-0.5 disabled:translate-y-0 disabled:bg-white/28 disabled:text-[#767d87] disabled:shadow-none"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-[#59C7FF] text-[#0b1c44] shadow-none transition-colors hover:bg-[#7dd5ff] disabled:bg-white/28 disabled:text-[#767d87]"
                 aria-label="Nachricht senden"
                 title="Nachricht senden"
               >
