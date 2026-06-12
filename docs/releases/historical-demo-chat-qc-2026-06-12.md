@@ -11,6 +11,7 @@ End-to-end follow-up for the low-risk historical profile launch on smyst.com.
 - Anonymous users keep the selected Twin in the GitHub sign-in return URL.
 - Authenticated chats can start with historical demo profile ids such as `leonardo-da-vinci`.
 - Chat messages for historical demo profiles now return a source-grounded, rule-based response with disclaimer, source basis and free-only mode.
+- Optional local SQL demo seed data now mirrors the five historical starter profiles used by app and Workers.
 
 ## Free-Only Compliance
 
@@ -18,6 +19,7 @@ End-to-end follow-up for the low-risk historical profile launch on smyst.com.
 - No external translation, analytics, database or monitoring service was added.
 - The implementation stays inside GitHub, Cloudflare Workers/KV and IDrive e2 boundaries.
 - Historical demo chat remains rule-based and does not claim to be the real historical person.
+- SQL seeds remain optional local/demo files and are not part of the production data path.
 
 ## Verification
 
