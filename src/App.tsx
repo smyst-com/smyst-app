@@ -1213,7 +1213,7 @@ function SmystStartPage({
                   event.preventDefault()
                   selectTwin(twin)
                 }}
-                placeholder="Name suchen"
+                placeholder="Profil suchen"
                 className="smyst-glass-control min-w-0 flex-1 rounded-none border-0 px-5 pr-12 text-[20px] font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
               />
             </label>
@@ -1282,6 +1282,16 @@ function SmystStartPage({
               {renderDiscoveryRail('Beliebt', popularTwins)}
               {renderDiscoveryRail('Neu', freshTwins)}
               {renderDiscoveryRail('Kürzlich genutzt', recentTwins)}
+            </div>
+          )}
+          {!selectedTwin && !showNamePicker && profilesLoaded && realStartTwins.length === 0 && (
+            <div className="grid min-h-[220px] place-items-center px-5 py-10 text-center">
+              <div className="max-w-[28rem]">
+                <p className="text-base font-bold text-[#d5dbe5]">Noch keine echten KI-Profile sichtbar</p>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-[#8e97a8]">
+                  Sobald echte freigegebene Profile vorhanden sind, erscheinen sie hier mit Suche, Kategorien und direktem Chat.
+                </p>
+              </div>
             </div>
           )}
           {showNamePicker && (
