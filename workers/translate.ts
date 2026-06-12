@@ -376,7 +376,7 @@ function historicalChatHtml(
     :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #111827; background: #f8fafc; }
     body { margin: 0; }
     main { min-height: 100vh; display: grid; place-items: center; padding: 32px 18px; box-sizing: border-box; }
-    section { width: min(820px, 100%); display: grid; gap: 22px; border: 1px solid #d8dee8; border-radius: 8px; background: #fff; padding: 34px; box-shadow: 0 18px 50px rgba(15, 23, 42, .08); }
+    section { width: min(820px, 100%); max-width: 100%; box-sizing: border-box; display: grid; gap: 22px; border: 1px solid #d8dee8; border-radius: 8px; background: #fff; padding: 34px; box-shadow: 0 18px 50px rgba(15, 23, 42, .08); }
     .kicker { margin: 0; color: #0f766e; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
     h1 { margin: 0; font-size: clamp(34px, 7vw, 64px); line-height: 1; letter-spacing: 0; }
     p { margin: 0; font-size: 18px; line-height: 1.65; color: #273244; }
@@ -385,7 +385,7 @@ function historicalChatHtml(
     a.button { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid #111827; color: #fff; background: #111827; text-decoration: none; font-weight: 800; }
     a.secondary { color: #111827; background: #fff; }
     ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
-    li a { color: #0f5f8f; font-weight: 700; }
+    li a { color: #0f5f8f; font-weight: 700; overflow-wrap: anywhere; }
     @media (max-width: 640px) { section { padding: 24px 20px; } p { font-size: 16px; } }
   </style>
 </head>
@@ -770,9 +770,9 @@ export async function translatePage(
 
 // ---------- Worker Entry ----------
 
-function applyEdgeHeaders(headers: Headers): Headers {
+function applyEdgeHeaders(headers: Headers, options: { stripOriginNoindex?: boolean } = {}): Headers {
   const robots = headers.get('X-Robots-Tag');
-  if (robots?.toLowerCase().includes('noindex')) {
+  if (options.stripOriginNoindex && robots?.toLowerCase().includes('noindex')) {
     headers.delete('X-Robots-Tag');
   }
   headers.set('X-Content-Type-Options', 'nosniff');
@@ -862,7 +862,9 @@ export default {
       // (Quelltext ist bereits in DEFAULT_LANG)
       if (lang === DEFAULT_LANG && !SUPPORTED_LANGS.includes(url.pathname.split('/')[1] as SupportedLang)) {
         const passthrough = await fetchOrigin(env, normalizedPath, request);
-        const respHeaders = applyEdgeHeaders(new Headers(passthrough.headers));
+        const respHeaders = applyEdgeHeaders(new Headers(passthrough.headers), {
+          stripOriginNoindex: normalizedPath === '/',
+        });
         respHeaders.set(CACHE_HEADER, 'BYPASS');
         respHeaders.set('Content-Language', DEFAULT_LANG);
         // Cookie setzen, falls noch nicht gesetzt
