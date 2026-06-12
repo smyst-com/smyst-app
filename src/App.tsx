@@ -1025,8 +1025,8 @@ function SmystStartPage({
                   <div
                     className={`max-w-[86%] rounded-xl border px-4 py-3 text-sm leading-relaxed shadow-[0_20px_60px_rgba(0,0,0,0.28)] sm:max-w-[72%] ${
                       message.role === 'user'
-                        ? 'rounded-br-md border-white/12 bg-white text-[#111722]'
-                        : 'rounded-bl-md border-white/[0.09] bg-white/[0.065] text-[#f4f7fb] backdrop-blur-2xl'
+                        ? 'smyst-chat-bubble-user rounded-br-md border-white/12 bg-white text-[#111722]'
+                        : 'smyst-chat-bubble-assistant rounded-bl-md border-white/[0.09] bg-white/[0.065] text-[#f4f7fb] backdrop-blur-2xl'
                     }`}
                   >
                     {message.streaming && !message.content ? (

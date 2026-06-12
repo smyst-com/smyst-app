@@ -541,6 +541,20 @@
     border-color: rgba(17, 23, 34, 0.13) !important;
   }
 
+  .smyst-start-shell-glass-light .smyst-chat-bubble-user {
+    background: rgba(255, 255, 255, 0.72) !important;
+    border-color: rgba(17, 23, 34, 0.12) !important;
+    color: #111722 !important;
+    box-shadow: 0 18px 42px rgba(80, 98, 120, 0.14);
+  }
+
+  .smyst-start-shell-glass-light .smyst-chat-bubble-assistant {
+    background: rgba(255, 255, 255, 0.58) !important;
+    border-color: rgba(17, 23, 34, 0.1) !important;
+    color: #111722 !important;
+    box-shadow: 0 18px 42px rgba(80, 98, 120, 0.12);
+  }
+
   .smyst-icon-button {
     border: 1px solid transparent;
     color: #ffffff;
