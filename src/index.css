@@ -529,6 +529,13 @@
     border-color: rgba(17, 23, 34, 0.11);
   }
 
+  .smyst-start-shell-glass-light header .smyst-glass-control > span:first-child,
+  .smyst-start-shell-glass-light section button > span:first-child {
+    color: #111722 !important;
+    background: rgba(255, 255, 255, 0.28) !important;
+    border-color: rgba(17, 23, 34, 0.13) !important;
+  }
+
   .smyst-icon-button {
     border: 1px solid transparent;
     color: #ffffff;
