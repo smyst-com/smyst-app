@@ -580,6 +580,10 @@ function SmystStartPage({
       : glassPreviewMode === 'light'
         ? ' smyst-start-shell-glass-light'
         : ''
+  const shellTheme =
+    glassPreviewMode === 'dark' ? 'dark' : glassPreviewMode === 'light' ? 'light' : appTheme
+  const shellThemeClass =
+    shellTheme === 'light' ? ' smyst-start-shell-theme-light' : ' smyst-start-shell-theme-dark'
 
   useEffect(() => {
     const title = t.seo.title
@@ -744,7 +748,7 @@ function SmystStartPage({
   }
 
   return (
-    <main id="main" className={`smyst-start-shell${glassPreviewClass} fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden text-[#f4f7fb]`}>
+    <main id="main" className={`smyst-start-shell${shellThemeClass}${glassPreviewClass} fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden text-[#f4f7fb]`}>
       <div
         aria-hidden={!menuOpen}
         onClick={() => setMenuOpen(false)}
