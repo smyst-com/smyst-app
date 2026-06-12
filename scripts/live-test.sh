@@ -127,6 +127,7 @@ grep -F "Policy: https://smyst.com/trust" "$TMP_OUT" >/dev/null 2>&1 || {
 }
 check_body_contains "$WEB_BASE_URL/api/health" "\"ok\":true"
 check_status_content_type "GET" "$WEB_BASE_URL/auth/me" "200" "application/json"
+check_status_content_type "GET" "$WEB_BASE_URL/api/public/twins" "200" "application/json"
 check_status_content_type "GET" "$WEB_BASE_URL/api/twins" "401" "application/json"
 check_status_content_type "GET" "$WEB_BASE_URL/storage/upload-url" "405" "application/json"
 check_status_content_type "POST" "$WEB_BASE_URL/storage/upload-url" "403" "application/json"

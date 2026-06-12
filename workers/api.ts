@@ -35,6 +35,7 @@ const MAX_TWIN_MEDIA_REFS = 50;
 const MAX_PROFILE_FIELD_CHARS = 80;
 const MAX_PROFILE_ITEMS = 12;
 const MAX_INDEX_READS = 50;
+const MAX_PUBLIC_DISCOVERY_READS = 100;
 const MAX_REPORT_SUBJECT_CHARS = 160;
 const MAX_REPORT_MESSAGE_CHARS = 4000;
 const MAX_REPORT_CONTACT_CHARS = 180;
@@ -47,6 +48,7 @@ function allowedMethodsForApiPath(pathname: string): string[] | null {
   if (pathname === '/api/account/export') return ['GET'];
   if (pathname === '/api/account') return ['DELETE'];
   if (pathname === '/api/support/report') return ['POST'];
+  if (pathname === '/api/public/twins') return ['GET'];
   if (pathname.startsWith('/api/public/twins/')) return ['GET'];
   if (pathname === '/api/chat/start') return ['POST'];
   if (pathname === '/api/chat/messages') return ['POST'];
@@ -1040,6 +1042,29 @@ async function handlePublicTwin(request: Request, env: ApiEnv, slug: string): Pr
   });
 }
 
+async function handlePublicTwinList(request: Request, env: ApiEnv): Promise<Response> {
+  const limited = await requireRateLimit(metadataStore(env), {
+    key: clientKey(request, 'api:public-twins'),
+    limit: 120,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
+  const listed = await metadataStore(env).list({ prefix: 'public:twin:', limit: MAX_PUBLIC_DISCOVERY_READS });
+  const records = await Promise.all(
+    listed.keys.map((item) => metadataStore(env).get(item.name, 'json') as Promise<TwinRecord | null>),
+  );
+  const twins = records
+    .filter((record): record is TwinRecord => Boolean(record && record.visibility === 'public' && record.name))
+    .sort((a, b) => b.updatedAt - a.updatedAt || a.name.localeCompare(b.name, 'de'))
+    .map((twin) => publicTwinPayload(env, twin));
+
+  return jsonResponse({ twins }, 200, {
+    'cache-control': 'public, max-age=60, s-maxage=300',
+    'X-Robots-Tag': 'index, follow',
+  });
+}
+
 async function handleChatMessage(request: Request, env: ApiEnv): Promise<Response> {
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
@@ -1145,6 +1170,10 @@ export default {
         });
         if (limited) return limited;
         return handleSupportReport(request, env);
+      }
+
+      if (url.pathname === '/api/public/twins' && request.method === 'GET') {
+        return handlePublicTwinList(request, env);
       }
 
       if (url.pathname.startsWith('/api/public/twins/') && request.method === 'GET') {

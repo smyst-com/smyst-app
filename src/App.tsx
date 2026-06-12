@@ -4,10 +4,22 @@ import { Card, CardContent } from '@/components/ui/card'
 import LangSwitcher from '@/components/LangSwitcher'
 import type { NavItem } from '@/components/MobileNav'
 import { useLanguage } from '@/lib/i18n'
+import {
+  categoryFacets,
+  isNewProfile,
+  isPopularProfile,
+  newProfiles,
+  popularProfiles,
+  rankProfiles,
+  recentlyUsedProfiles,
+  recommendedProfiles,
+  similarProfiles,
+  type DiscoveryProfile,
+} from '@/lib/profileDiscovery'
 import { useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
-import { useTwinMvp, type PublicTwinProfile, type SupportReportType, type TwinRecord, type TwinStyle } from '@/lib/useTwinMvp'
+import { useTwinMvp, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle } from '@/lib/useTwinMvp'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
@@ -465,13 +477,23 @@ type StartTwin = {
   accent: string
   initials: string
   tone: string
-  famousScore: number
-  usedScore: number
-  popularScore: number
-  trendScore: number
   manualRank: number
   profileSlug?: string
   imageUrl?: string | null
+  categories: string[]
+  languages: string[]
+  createdAt: number
+  updatedAt: number
+  knowledgeCount: number
+  mediaCount: number
+  chatCount: number
+  lastChatAt: number
+  publicProfile: boolean
+} & DiscoveryProfile
+
+type ProfileUsage = {
+  chatCount: number
+  lastChatAt: number
 }
 
 function initialsForName(name: string): string {
@@ -483,8 +505,12 @@ function initialsForName(name: string): string {
     .join('') || 'S'
 }
 
-function realTwinToStartTwin(twin: TwinRecord, index: number): StartTwin {
+function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsage = { chatCount: 0, lastChatAt: 0 }): StartTwin {
   const publicProfile = twin.visibility === 'public'
+  const categories = (twin.categories ?? []).filter(Boolean)
+  const languages = (twin.languages ?? []).filter(Boolean)
+  const knowledgeCount = twin.knowledgeTexts?.length ?? 0
+  const mediaCount = twin.mediaRefs?.length ?? 0
   return {
     id: twin.id,
     name: twin.name,
@@ -493,14 +519,59 @@ function realTwinToStartTwin(twin: TwinRecord, index: number): StartTwin {
     accent: ['#71E8FF', '#A8FFCB', '#9DBBFF', '#FFFFFF', '#FFD56A'][index % 5] ?? '#71E8FF',
     initials: initialsForName(twin.name),
     tone: twin.style,
-    famousScore: twin.updatedAt,
-    usedScore: (twin.knowledgeTexts?.length ?? 0) + (twin.mediaRefs?.length ?? 0),
-    popularScore: publicProfile ? 1 : 0,
-    trendScore: twin.createdAt,
     manualRank: index + 1,
     profileSlug: publicProfile ? twin.slug : undefined,
     imageUrl: twin.imageUrl ?? null,
+    categories,
+    languages,
+    createdAt: twin.createdAt,
+    updatedAt: twin.updatedAt,
+    knowledgeCount,
+    mediaCount,
+    chatCount: usage.chatCount,
+    lastChatAt: usage.lastChatAt,
+    publicProfile,
   }
+}
+
+function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usage: ProfileUsage = { chatCount: 0, lastChatAt: 0 }): StartTwin {
+  const categories = (profile.categories ?? []).filter(Boolean)
+  const languages = (profile.languages ?? []).filter(Boolean)
+  return {
+    id: profile.slug,
+    name: profile.name,
+    description: profile.description || 'Öffentliches KI-Profil',
+    role: 'Öffentlich',
+    accent: ['#71E8FF', '#A8FFCB', '#9DBBFF', '#FFFFFF', '#FFD56A'][index % 5] ?? '#71E8FF',
+    initials: initialsForName(profile.name),
+    tone: profile.style,
+    manualRank: index + 1,
+    profileSlug: profile.slug,
+    imageUrl: profile.imageUrl ?? null,
+    categories,
+    languages,
+    createdAt: profile.updatedAt,
+    updatedAt: profile.updatedAt,
+    knowledgeCount: profile.knowledgeCount,
+    mediaCount: profile.mediaCount,
+    chatCount: usage.chatCount,
+    lastChatAt: usage.lastChatAt,
+    publicProfile: true,
+  }
+}
+
+function usageByTwinId(chats: TwinChatRecord[] | null | undefined): Map<string, ProfileUsage> {
+  const usage = new Map<string, ProfileUsage>()
+  for (const chat of chats ?? []) {
+    const key = chat.twinId ?? chat.publicTwinSlug ?? ''
+    if (!key) continue
+    const current = usage.get(key) ?? { chatCount: 0, lastChatAt: 0 }
+    usage.set(key, {
+      chatCount: current.chatCount + 1,
+      lastChatAt: Math.max(current.lastChatAt, chat.updatedAt ?? chat.createdAt ?? 0),
+    })
+  }
+  return usage
 }
 
 type ChatMessage = {
@@ -531,8 +602,10 @@ function SmystStartPage({
   const [selectedTwin, setSelectedTwin] = useState<StartTwin | null>(null)
   const [realStartTwins, setRealStartTwins] = useState<StartTwin[]>([])
   const [profilesLoaded, setProfilesLoaded] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [chatId, setChatId] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [namePickerOpen, setNamePickerOpen] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -540,23 +613,11 @@ function SmystStartPage({
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
   const filteredTwins = useMemo(() => {
-    const sortValue = (twin: StartTwin) => {
-      if (nameSortMode === 'used') return twin.usedScore
-      if (nameSortMode === 'popular') return twin.popularScore
-      if (nameSortMode === 'trend') return twin.trendScore
-      if (nameSortMode === 'manual') return -twin.manualRank
-      return twin.famousScore
-    }
-    const normalized = query.trim().toLowerCase()
-    return [...realStartTwins]
-      .filter((twin) => {
-        if (!normalized) return true
-        return `${twin.name} ${twin.description} ${twin.role} ${twin.tone}`
-          .toLowerCase()
-          .includes(normalized)
-      })
-      .sort((a, b) => sortValue(b) - sortValue(a) || a.name.localeCompare(b.name, 'de'))
-  }, [nameSortMode, query, realStartTwins])
+    const categoryFiltered = activeCategory
+      ? realStartTwins.filter((twin) => twin.categories.some((category) => category === activeCategory))
+      : realStartTwins
+    return rankProfiles(categoryFiltered, query, nameSortMode) as StartTwin[]
+  }, [activeCategory, nameSortMode, query, realStartTwins])
 
   const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
   const canSend = input.trim().length > 0
@@ -564,6 +625,12 @@ function SmystStartPage({
   const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
   const showNamePicker = !selectedTwin && (namePickerOpen || query.trim().length > 0)
   const selectedSortOption = nameSortOptions.find((option) => option.mode === nameSortMode) ?? nameSortOptions[0]
+  const visibleCategories = useMemo(() => categoryFacets(realStartTwins, 10), [realStartTwins])
+  const recommendedTwins = useMemo(() => recommendedProfiles(realStartTwins, 8) as StartTwin[], [realStartTwins])
+  const popularTwins = useMemo(() => popularProfiles(realStartTwins, 8) as StartTwin[], [realStartTwins])
+  const freshTwins = useMemo(() => newProfiles(realStartTwins, 8) as StartTwin[], [realStartTwins])
+  const recentTwins = useMemo(() => recentlyUsedProfiles(realStartTwins, 8) as StartTwin[], [realStartTwins])
+  const relatedTwins = useMemo(() => similarProfiles(activeTwin, realStartTwins, 6) as StartTwin[], [activeTwin, realStartTwins])
   const glassPreviewMode = new URLSearchParams(window.location.search).get('glass')
   const glassPreviewClass =
     glassPreviewMode === 'dark'
@@ -610,19 +677,34 @@ function SmystStartPage({
 
     const loadRealProfiles = async () => {
       if (auth.status === 'loading') return
+      setProfilesLoaded(false)
       if (auth.status !== 'authenticated') {
-        setRealStartTwins([])
+        const publicProfiles = await twinMvp.listPublicTwins()
+        if (!alive) return
+        const next = (publicProfiles ?? [])
+          .filter((profile) => profile.name.trim().length > 0)
+          .map(publicProfileToStartTwin)
+        setRealStartTwins(next)
         setSelectedTwin(null)
         setProfilesLoaded(true)
         return
       }
 
-      setProfilesLoaded(false)
-      const twins = await twinMvp.listTwins()
+      const [twins, publicProfiles, chats] = await Promise.all([
+        twinMvp.listTwins(),
+        twinMvp.listPublicTwins(),
+        twinMvp.listTwinChats(),
+      ])
       if (!alive) return
-      const next = (twins ?? [])
+      const usage = usageByTwinId(chats)
+      const ownProfiles = (twins ?? [])
         .filter((twin) => twin.name.trim().length > 0)
-        .map(realTwinToStartTwin)
+        .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug)))
+      const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
+      const publicStartProfiles = (publicProfiles ?? [])
+        .filter((profile) => profile.name.trim().length > 0 && !ownPublicSlugs.has(profile.slug))
+        .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
+      const next = [...ownProfiles, ...publicStartProfiles]
       setRealStartTwins(next)
       setSelectedTwin((current) => (current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null))
       setProfilesLoaded(true)
@@ -695,12 +777,104 @@ function SmystStartPage({
 
   const selectTwin = (twin: StartTwin) => {
     setSelectedTwin(twin)
+    setChatId(null)
     setQuery('')
+    setActiveCategory(null)
     setNamePickerOpen(false)
     window.requestAnimationFrame(() => {
       fitInputHeight()
       textareaRef.current?.focus()
     })
+  }
+
+  const renderProfileAvatar = (twin: StartTwin, className = 'h-12 w-12') => (
+    <span
+      className={`${className} grid shrink-0 place-items-center overflow-hidden rounded-full border border-white/18 bg-white/[0.08] text-sm font-bold text-white shadow-none`}
+      style={{ boxShadow: `inset 0 0 0 1px ${twin.accent}33` }}
+    >
+      {twin.imageUrl ? (
+        <img src={twin.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+      ) : (
+        <span>{twin.initials}</span>
+      )}
+    </span>
+  )
+
+  const renderProfileBadges = (twin: StartTwin) => (
+    <span className="flex flex-wrap gap-1">
+      {isPopularProfile(twin) && (
+        <span className="rounded-full border border-white/14 bg-white/[0.10] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#dfe8f7]">
+          Beliebt
+        </span>
+      )}
+      {isNewProfile(twin) && (
+        <span className="rounded-full border border-[#71E8FF]/30 bg-[#71E8FF]/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#dff8ff]">
+          Neu
+        </span>
+      )}
+      {twin.publicProfile && (
+        <span className="rounded-full border border-white/14 bg-white/[0.08] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#c8d2df]">
+          Öffentlich
+        </span>
+      )}
+    </span>
+  )
+
+  const renderProfileCard = (twin: StartTwin, compact = false) => (
+    <button
+      key={twin.id}
+      type="button"
+      onClick={() => selectTwin(twin)}
+      className={`group flex min-w-0 text-left transition hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 ${
+        compact
+          ? 'w-[240px] shrink-0 rounded-md border border-white/[0.08] bg-white/[0.045] p-3'
+          : 'w-full items-stretch border-b border-white/[0.08]'
+      }`}
+    >
+      <span className={compact ? 'mr-3' : 'grid w-[78px] shrink-0 place-items-center border-r border-white/[0.08] bg-white/[0.045] sm:w-[92px]'}>
+        {renderProfileAvatar(twin, compact ? 'h-11 w-11' : 'h-12 w-12 sm:h-14 sm:w-14')}
+      </span>
+      <span className={`${compact ? 'min-w-0 flex-1' : 'flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-3 sm:px-6'}`}>
+        <span className="min-w-0">
+          <span className="flex min-w-0 items-center gap-2">
+            <span className={`${compact ? 'text-sm' : 'text-lg sm:text-2xl'} block truncate font-bold text-[#edf4ff]`}>
+              {twin.name}
+            </span>
+          </span>
+          <span className={`${compact ? 'line-clamp-2 text-xs' : 'line-clamp-2 text-sm'} mt-1 block font-medium leading-snug text-[#aab4c4]`}>
+            {twin.description}
+          </span>
+          <span className="mt-2 flex flex-wrap items-center gap-1.5">
+            {renderProfileBadges(twin)}
+            {twin.categories.slice(0, compact ? 1 : 3).map((category) => (
+              <span key={category} className="rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-semibold text-[#aab4c4]">
+                {category}
+              </span>
+            ))}
+          </span>
+        </span>
+        {!compact && (
+          <span className="hidden shrink-0 text-right text-xs font-bold uppercase tracking-[0.12em] text-[#8e97a8] sm:block">
+            {twin.chatCount > 0 ? `${twin.chatCount} Chats` : twin.role}
+          </span>
+        )}
+      </span>
+    </button>
+  )
+
+  const renderDiscoveryRail = (title: string, twins: StartTwin[]) => {
+    if (!twins.length) return null
+    return (
+      <div className="border-b border-white/[0.08] px-3 py-3 sm:px-4">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{title}</h2>
+          <span className="text-[11px] font-semibold text-[#6f7a8c]">{twins.length}</span>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none]">
+          {twins.map((twin) => renderProfileCard(twin, true))}
+        </div>
+      </div>
+    )
   }
 
   const streamText = async (messageId: string, content: string) => {
@@ -743,6 +917,20 @@ function SmystStartPage({
     }
     if (!selectedTwin) selectTwin(twin)
 
+    if (auth.status !== 'authenticated') {
+      setMessages((current) => [
+        ...current,
+        { id: crypto.randomUUID(), role: 'user', content: text },
+        {
+          id: crypto.randomUUID(),
+          role: 'ai',
+          content: 'Melde dich an, um den Chat mit diesem echten KI-Profil zu starten und den Verlauf zu speichern.',
+        },
+      ])
+      resizeInput('')
+      return
+    }
+
     const assistantId = crypto.randomUUID()
     setMessages((current) => [
       ...current,
@@ -751,13 +939,31 @@ function SmystStartPage({
     ])
     resizeInput('')
 
-    const reply = [
-      t.chat.replyIntro.replace('{{name}}', twin.name),
-      t.chat.replyMvp,
-      t.chat.replyQuestion.replace('{{question}}', text.length > 180 ? `${text.slice(0, 180)}...` : text),
-      t.chat.replyNextStep,
-    ].join(' ')
-    await streamText(assistantId, reply)
+    try {
+      let nextChatId = chatId
+      if (!nextChatId) {
+        const chat = await twinMvp.startTwinChat(twin.publicProfile && twin.profileSlug ? twin.profileSlug : twin.id)
+        if (!chat) throw new Error('Chat konnte nicht gestartet werden.')
+        nextChatId = chat.id
+        setChatId(nextChatId)
+      }
+      const reply = await twinMvp.sendTwinMessage(nextChatId, text)
+      if (!reply?.message?.content) throw new Error('Keine Antwort vom Profil erhalten.')
+      await streamText(assistantId, reply.message.content)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Der Chat ist gerade nicht erreichbar.'
+      setMessages((current) =>
+        current.map((item) =>
+          item.id === assistantId
+            ? {
+                ...item,
+                content: `${message} Bitte versuche es gleich noch einmal.`,
+                streaming: false,
+              }
+            : item,
+        ),
+      )
+    }
   }
 
   const handleSpeakInput = () => {
@@ -951,8 +1157,12 @@ function SmystStartPage({
             </button>
 
             <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-58px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
-              <span className="grid aspect-square h-full shrink-0 place-items-center border-r border-white/[0.08] bg-white/[0.045] text-white/[0.78]">
-                <User className="h-6 w-6 sm:h-7 sm:w-7" />
+              <span className="grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86]">
+                {selectedTwin.imageUrl ? (
+                  <img src={selectedTwin.imageUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  selectedTwin.initials
+                )}
               </span>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
                 <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{selectedTwin.name}</span>
@@ -1018,49 +1228,87 @@ function SmystStartPage({
               <span className="whitespace-nowrap">Profil wählen</span>
             </button>
           </div>
+          {visibleCategories.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto border-b border-white/[0.08] px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveCategory(null)
+                  setNamePickerOpen(true)
+                }}
+                className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold transition ${
+                  activeCategory === null
+                    ? 'border-white/35 bg-white text-[#111722]'
+                    : 'border-white/12 bg-white/[0.06] text-[#c7d1de]'
+                }`}
+              >
+                Alle
+              </button>
+              {visibleCategories.map((category) => (
+                <button
+                  key={category.name}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(category.name)
+                    setNamePickerOpen(true)
+                    setSelectedTwin(null)
+                  }}
+                  className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold transition ${
+                    activeCategory === category.name
+                      ? 'border-white/35 bg-white text-[#111722]'
+                      : 'border-white/12 bg-white/[0.06] text-[#c7d1de]'
+                  }`}
+                >
+                  {category.name}
+                  <span className="ml-1 opacity-65">{category.count}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </header>
       )}
 
       <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
         <div className="min-h-full">
+          {!selectedTwin && !showNamePicker && realStartTwins.length > 0 && (
+            <div className="smyst-glass-panel border-b border-white/[0.08]">
+              <div className="border-b border-white/[0.08] px-4 py-3">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">Profilentdeckung</p>
+                <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
+                  {realStartTwins.length} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.
+                </p>
+              </div>
+              {renderDiscoveryRail('Empfohlen', recommendedTwins)}
+              {renderDiscoveryRail('Beliebt', popularTwins)}
+              {renderDiscoveryRail('Neu', freshTwins)}
+              {renderDiscoveryRail('Kürzlich genutzt', recentTwins)}
+            </div>
+          )}
           {showNamePicker && (
             <div className="smyst-glass-panel border-b border-white/[0.08]">
               <div className="flex min-h-[42px] items-center justify-between border-b border-white/[0.08] px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">
-                <span>{selectedSortOption.label}</span>
+                <span>{activeCategory ? `${selectedSortOption.label} · ${activeCategory}` : selectedSortOption.label}</span>
                 <span>{filteredTwins.length} Profile</span>
               </div>
-              <div className="divide-y divide-white/[0.08]">
-                {filteredTwins.map((twin) => (
-                  <button
-                    key={twin.id}
-                    type="button"
-                    onClick={() => selectTwin(twin)}
-                    className="flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.055] sm:min-h-[92px]"
-                  >
-                    <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-white/[0.045] text-white/[0.78] sm:w-[92px]">
-                      <User className="h-10 w-10 sm:h-12 sm:w-12" />
-                    </span>
-                    <span className="flex min-w-0 flex-1 items-center justify-between gap-3 px-5 sm:px-7">
-                      <span className="min-w-0">
-                        <span className="block truncate text-2xl font-bold text-[#d5dbe5] sm:text-4xl">{twin.name}</span>
-                        <span className="mt-0.5 block truncate text-sm font-semibold text-[#8e97a8] sm:text-lg">{twin.description}</span>
-                      </span>
-                      <span className="shrink-0 text-right text-xs font-bold uppercase tracking-[0.12em] text-[#8e97a8]">
-                        {twin.role}
-                      </span>
-                    </span>
-                  </button>
-                ))}
+              <div>
+                {filteredTwins.map((twin) => renderProfileCard(twin))}
                 {filteredTwins.length === 0 && (
                   <div className="px-5 py-8 text-sm font-semibold text-[#8e97a8]">
                     {profilesLoaded
                       ? auth.status === 'authenticated'
-                        ? 'Noch kein echtes Profil vorhanden. Erstelle zuerst einen Twin.'
+                        ? query.trim() || activeCategory
+                          ? 'Keine passenden echten Profile gefunden. Suche nach Name, Thema oder Kategorie.'
+                          : 'Noch kein echtes Profil vorhanden. Erstelle zuerst einen Twin.'
                         : 'Melde dich an, um echte Profile zu laden.'
                       : 'Echte Profile werden geladen...'}
                   </div>
                 )}
               </div>
+            </div>
+          )}
+          {selectedTwin && messages.length === 0 && relatedTwins.length > 0 && (
+            <div className="smyst-glass-panel border-b border-white/[0.08]">
+              {renderDiscoveryRail('Ähnliche Profile', relatedTwins)}
             </div>
           )}
           {messages.length > 0 && (

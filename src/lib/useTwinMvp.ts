@@ -179,6 +179,15 @@ export function useTwinMvp() {
     [run],
   )
 
+  const listPublicTwins = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins')
+        return body.twins
+      }),
+    [run],
+  )
+
   const createTwin = useCallback(
     (input: {
       name: string
@@ -342,6 +351,7 @@ export function useTwinMvp() {
     listTwins,
     getTwin,
     getPublicTwin,
+    listPublicTwins,
     createTwin,
     updateTwin,
     addKnowledge,
