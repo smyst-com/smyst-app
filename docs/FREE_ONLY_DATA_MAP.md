@@ -9,8 +9,8 @@ Status: verbindliche Production-Datenlandkarte.
 | Code | GitHub Free | Repository, Versionierung, CI/CD, Dokumentation | Quellcode, Markdown-Doku, Workflows, Release-Notizen |
 | Web/PWA | Cloudflare Pages Free | Vite/React Build ausliefern | statische Assets aus `dist/`, HTML, CSS, JS, Manifest, Sitemap, `robots.txt`, `llms.txt` |
 | API | Cloudflare Workers Free | Auth, Storage-Signing, kleine API-Flows, Sprache/Edge-Routing | keine grossen Dateien, keine dauerhafte grosse Datenbank |
-| Sessions | Cloudflare KV Free | Session-, User-, Rollen-/Rechte- und OAuth-State | `s:{sessionId}`, `auth:user:{sub}`, `state:{nonce}` |
-| Metadaten | Cloudflare KV Free | kleine User-/Upload-/Twin-/Profil-/Chat-/Quota-/Statusdaten | `meta:upload:{userSub}:{uploadId}`, `meta:uploads:{userSub}`, `meta:twin:{userSub}:{twinId}`, `meta:twins:{userSub}`, `public:twin:{slug}`, `meta:chat:{userSub}:{chatId}`, `meta:chats:{userSub}`, `quota:user:{userSub}:{month}`, `quota:global:{month}` |
+| Sessions | Cloudflare KV Free | Session-, User-, Rollen-/Rechte- und OAuth-State | `s:{sessionId}`, `auth:sessions:{userSub}`, `auth:user:{sub}`, `state:{nonce}` |
+| Metadaten | Cloudflare KV Free | kleine User-/Upload-/Twin-/Profil-/Chat-/Quota-/Support-/Statusdaten | `meta:upload:{userSub}:{uploadId}`, `meta:uploads:{userSub}`, `meta:upload-by-key:{userSub}:{sha256(key)}`, `meta:twin:{userSub}:{twinId}`, `meta:twins:{userSub}`, `public:twin:{slug}`, `meta:chat:{userSub}:{chatId}`, `meta:chats:{userSub}`, `meta:support-report:{createdAt}:{reportId}`, `quota:user:{userSub}:{month}`, `quota:global:{month}` |
 | Dateien | IDrive e2 | zentraler Speicher fuer Uploads, Profilbilder, Backups und Twin-Daten | `users/{userSub}/uploads/...`, `users/{userSub}/profile/images/...`, `users/{userSub}/backups/...`, `users/{userSub}/twins/{twinId}/data/...` |
 
 ## Nicht in Production speichern
@@ -28,6 +28,7 @@ Cloudflare KV:
 
 ```text
 s:{sessionId}
+auth:sessions:{userSub}
 ```
 
 Inhalt:
@@ -44,6 +45,8 @@ Inhalt:
 ```
 
 Der Browser sieht nur ein HttpOnly Secure Cookie. JavaScript liest die Session nicht direkt.
+
+`auth:sessions:{userSub}` enthaelt eine kleine Liste aktiver Session-IDs. Sie dient nur dazu, `POST /auth/logout-all` ohne externen Dienst auszufuehren und alle bekannten Sessions eines Users zu loeschen.
 
 ## Auth Rollen Und Rechte
 
@@ -93,6 +96,7 @@ Cloudflare KV:
 ```text
 meta:upload:{userSub}:{uploadId}
 meta:uploads:{userSub}
+meta:upload-by-key:{userSub}:{sha256(key)}
 quota:user:{userSub}:{YYYY-MM}
 quota:global:{YYYY-MM}
 ```
@@ -117,7 +121,14 @@ Flow:
 4. Worker gibt signed PUT URL fuer IDrive e2 zurueck.
 5. Client laedt direkt zu IDrive e2 hoch.
 6. Client ruft `POST /storage/upload-complete`.
-7. Worker setzt KV-Status auf `uploaded`.
+7. Worker prueft das Objekt per signed `HEAD`.
+8. Worker setzt KV-Status auf `uploaded`.
+9. Downloads ueber `GET /storage/file/{key}` brauchen User-Prefix, KV-Metadaten und Status `uploaded`.
+10. Der direkte `meta:upload-by-key:{userSub}:{sha256(key)}` Index verhindert Upload-Listen-Scans beim Dateiabruf.
+
+Direct-PUT ist der aktive Phase-1-Pfad. Chunk Upload und bytegenaue Wiederaufnahme
+sind noch nicht aktiviert und werden in der Upload-URL-Antwort explizit als
+`supportsChunkUpload: false` und `supportsResume: false` gemeldet.
 
 ## Backup
 
@@ -139,6 +150,16 @@ meta:chats:{userSub}
 ```
 
 In der Free-Only-Phase speichert der API-Worker nur kleine Chat-Zustaende. Es werden keine externen Modell-APIs verwendet. Twin-Chats koennen optional `twinId` enthalten und nutzen eine regelbasierte MVP-Antwortlogik.
+
+## Support, Abuse Und Privacy Reports
+
+Cloudflare KV:
+
+```text
+meta:support-report:{createdAt}:{reportId}
+```
+
+Diese Records speichern kleine In-App-Meldungen fuer Fehler, Missbrauch, Datenschutz, Sicherheit und Feedback. Erlaubt sind nur begrenzte Textfelder, optionale Kontaktangaben und ein same-origin Pfad aus der App. Es werden keine externen Ticketing-, Analytics- oder Support-Dienste genutzt.
 
 ## KI-Zwilling MVP
 
@@ -227,6 +248,9 @@ storage:global:active
 ```
 
 Sie werden nach erfolgreicher IDrive-e2-`HEAD`-Verifikation hochgezaehlt und bei Delete wieder reduziert.
+
+Dokumente, Backups und `twin_data` werden beim Abruf als Attachment ausgeliefert.
+Bilder, Videos, Audio und Avatare duerfen inline streamen.
 
 ## Skalierungsgrenze
 

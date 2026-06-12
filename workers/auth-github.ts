@@ -5,6 +5,7 @@
  *   GET  /auth/github/start
  *   GET  /auth/github/callback
  *   POST /auth/logout
+ *   POST /auth/logout-all
  *   GET  /auth/me
  *
  * GitHub is explicitly allowed by the project infrastructure rule.
@@ -14,6 +15,7 @@ import {
   clientKey,
   errorResponse,
   jsonResponse,
+  methodNotAllowed,
   requireSameOrigin,
   requireRateLimit,
   safeHandler,
@@ -52,6 +54,16 @@ const GITHUB_AUTH_URL = 'https://github.com/login/oauth/authorize';
 const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
 const GITHUB_USER_URL = 'https://api.github.com/user';
 const GITHUB_EMAILS_URL = 'https://api.github.com/user/emails';
+const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{40,96}$/;
+
+function allowedMethodsForAuthPath(pathname: string): string[] | null {
+  if (pathname === '/auth/github/start') return ['GET'];
+  if (pathname === '/auth/github/callback') return ['GET'];
+  if (pathname === '/auth/me') return ['GET'];
+  if (pathname === '/auth/logout') return ['POST'];
+  if (pathname === '/auth/logout-all') return ['POST'];
+  return null;
+}
 
 interface GitHubTokenResponse {
   access_token?: string;
@@ -200,6 +212,11 @@ function readCookie(request: Request, name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
+function readSessionCookie(request: Request): string | null {
+  const sessionId = readCookie(request, SESSION_COOKIE);
+  return sessionId && SESSION_ID_PATTERN.test(sessionId) ? sessionId : null;
+}
+
 function makeSessionCookie(sessionId: string): string {
   return [
     `${SESSION_COOKIE}=${sessionId}`,
@@ -207,13 +224,40 @@ function makeSessionCookie(sessionId: string): string {
     `Max-Age=${SESSION_TTL_SECONDS}`,
     'HttpOnly',
     'Secure',
-    'SameSite=Lax',
+    'SameSite=Strict',
     'Priority=High',
   ].join('; ');
 }
 
 function makeClearCookie(): string {
-  return `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax; Priority=High`;
+  return `${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict; Priority=High`;
+}
+
+function userSessionsKey(userSub: string): string {
+  return `auth:sessions:${userSub}`;
+}
+
+async function rememberUserSession(env: AuthEnv, userSub: string, sessionId: string): Promise<void> {
+  const key = userSessionsKey(userSub);
+  const existing = (await env.SESSIONS.get(key, 'json')) as string[] | null;
+  const next = [sessionId, ...(existing ?? []).filter((id) => id !== sessionId)].slice(0, 20);
+  await env.SESSIONS.put(key, JSON.stringify(next), { expirationTtl: SESSION_TTL_SECONDS });
+}
+
+function validateAuthConfig(env: AuthEnv): Response | null {
+  const secretBytes = new TextEncoder().encode(env.AUTH_HMAC_SECRET ?? '').byteLength;
+  if (secretBytes < 32) {
+    return errorResponse('auth_config_invalid', 'Auth configuration is invalid.', 500);
+  }
+  try {
+    const canonical = new URL(env.CANONICAL_HOST);
+    if (canonical.protocol !== 'https:') {
+      return errorResponse('auth_config_invalid', 'Auth configuration is invalid.', 500);
+    }
+  } catch {
+    return errorResponse('auth_config_invalid', 'Auth configuration is invalid.', 500);
+  }
+  return null;
 }
 
 function safeReturnTo(raw: string | null, canonicalHost: string): string {
@@ -343,6 +387,7 @@ async function exchangeCode(code: string, env: AuthEnv): Promise<string | null> 
     console.error('github token exchange failed', data.error, data.error_description ?? '');
     return null;
   }
+  if (data.token_type && data.token_type.toLowerCase() !== 'bearer') return null;
   return data.access_token ?? null;
 }
 
@@ -420,6 +465,7 @@ async function handleCallback(request: Request, env: AuthEnv): Promise<Response>
   await env.SESSIONS.put(`s:${sessionId}`, JSON.stringify(session), {
     expirationTtl: SESSION_TTL_SECONDS,
   });
+  await rememberUserSession(env, session.sub, sessionId);
 
   return withSecurity(new Response(null, {
     status: 302,
@@ -431,7 +477,11 @@ async function handleCallback(request: Request, env: AuthEnv): Promise<Response>
 }
 
 async function handleMe(request: Request, env: AuthEnv): Promise<Response> {
-  const sessionId = readCookie(request, SESSION_COOKIE);
+  const rawSessionId = readCookie(request, SESSION_COOKIE);
+  const sessionId = readSessionCookie(request);
+  if (rawSessionId && !sessionId) {
+    return jsonResponse({ authenticated: false }, 200, { 'Set-Cookie': makeClearCookie() });
+  }
   if (!sessionId) return jsonResponse({ authenticated: false });
 
   const data = await env.SESSIONS.get(`s:${sessionId}`, 'json') as SessionData | null;
@@ -454,9 +504,25 @@ async function handleMe(request: Request, env: AuthEnv): Promise<Response> {
 }
 
 async function handleLogout(request: Request, env: AuthEnv): Promise<Response> {
-  const sessionId = readCookie(request, SESSION_COOKIE);
+  const sessionId = readSessionCookie(request);
   if (sessionId) await env.SESSIONS.delete(`s:${sessionId}`);
   return jsonResponse({ ok: true }, 200, { 'Set-Cookie': makeClearCookie() });
+}
+
+async function handleLogoutAll(request: Request, env: AuthEnv): Promise<Response> {
+  const sessionId = readSessionCookie(request);
+  if (!sessionId) return jsonResponse({ ok: true, deleted: 0 }, 200, { 'Set-Cookie': makeClearCookie() });
+
+  const current = (await env.SESSIONS.get(`s:${sessionId}`, 'json')) as SessionData | null;
+  if (!current) return jsonResponse({ ok: true, deleted: 0 }, 200, { 'Set-Cookie': makeClearCookie() });
+
+  const key = userSessionsKey(current.sub);
+  const ids = (await env.SESSIONS.get(key, 'json')) as string[] | null;
+  const uniqueIds = Array.from(new Set([sessionId, ...(ids ?? [])]));
+  await Promise.all(uniqueIds.map((id) => env.SESSIONS.delete(`s:${id}`)));
+  await env.SESSIONS.delete(key);
+
+  return jsonResponse({ ok: true, deleted: uniqueIds.length }, 200, { 'Set-Cookie': makeClearCookie() });
 }
 
 export default {
@@ -467,6 +533,9 @@ export default {
       if (request.method === 'OPTIONS') {
         return strictCorsPreflight(request, env.CANONICAL_HOST, 'GET, POST');
       }
+
+      const configError = validateAuthConfig(env);
+      if (configError) return configError;
 
       const csrf = requireSameOrigin(request, env.CANONICAL_HOST);
       if (csrf) {
@@ -492,6 +561,12 @@ export default {
         return handleCallback(request, env);
       }
       if (url.pathname === '/auth/me' && request.method === 'GET') {
+        const limited = await requireRateLimit(env.SESSIONS, {
+          key: clientKey(request, 'auth:me'),
+          limit: 180,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
         return handleMe(request, env);
       }
       if (url.pathname === '/auth/logout' && request.method === 'POST') {
@@ -503,9 +578,20 @@ export default {
         if (limited) return limited;
         return handleLogout(request, env);
       }
+      if (url.pathname === '/auth/logout-all' && request.method === 'POST') {
+        const limited = await requireRateLimit(env.SESSIONS, {
+          key: clientKey(request, 'auth:logout-all'),
+          limit: 10,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleLogoutAll(request, env);
+      }
 
+      const allowed = allowedMethodsForAuthPath(url.pathname);
+      if (allowed) return methodNotAllowed(allowed);
       return errorResponse('not_found', 'Not found', 404);
-    });
+    }, request);
   },
 };
 

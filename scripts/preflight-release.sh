@@ -5,6 +5,9 @@ TARGET="${RELEASE_TARGET:-production}"
 VERSION="${RELEASE_VERSION:-}"
 APPROVAL="${RELEASE_APPROVAL:-}"
 FREEZE_CONFIRMED="${RELEASE_FREEZE_CONFIRMED:-no}"
+ROLLBACK_CONFIRMED="${ROLLBACK_PLAN_CONFIRMED:-no}"
+BACKUP_RESTORE_CONFIRMED="${BACKUP_RESTORE_CONFIRMED:-no}"
+LIVE_URL="${WEB_BASE_URL:-}"
 
 if [ "${TARGET}" = "production" ]; then
   if [ "${APPROVAL}" != "Ja OK" ]; then
@@ -29,6 +32,21 @@ if [ "${TARGET}" = "production" ]; then
     echo "production release blocked: RELEASE_FREEZE_CONFIRMED=yes is required" >&2
     exit 10
   fi
+
+  if [ "${ROLLBACK_CONFIRMED}" != "yes" ] && [ "${ROLLBACK_CONFIRMED}" != "true" ]; then
+    echo "production release blocked: ROLLBACK_PLAN_CONFIRMED=yes is required" >&2
+    exit 10
+  fi
+
+  if [ "${BACKUP_RESTORE_CONFIRMED}" != "yes" ] && [ "${BACKUP_RESTORE_CONFIRMED}" != "true" ]; then
+    echo "production release blocked: BACKUP_RESTORE_CONFIRMED=yes is required" >&2
+    exit 10
+  fi
+
+  if [ -z "${LIVE_URL}" ]; then
+    echo "production release blocked: WEB_BASE_URL must point to the approved preview or production URL" >&2
+    exit 10
+  fi
 fi
 
 if command -v git >/dev/null 2>&1; then
@@ -41,5 +59,9 @@ if command -v git >/dev/null 2>&1; then
 fi
 
 scripts/test-all.sh
+
+if [ "${TARGET}" = "production" ]; then
+  WEB_BASE_URL="${LIVE_URL}" sh scripts/live-test.sh
+fi
 
 echo "release preflight passed"

@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -9,9 +8,10 @@ import { fileURLToPath } from 'url'
 const projectRoot = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig({
-  plugins: [
-    react(),
-  ],
+  optimizeDeps: {
+    include: [],
+    noDiscovery: true,
+  },
   resolve: {
     alias: {
       '@': path.resolve(projectRoot, './src'),

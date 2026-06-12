@@ -268,7 +268,7 @@ export default {
 
       const result = await runWarmup(env);
       return jsonResponse(result);
-    });
+    }, request);
   },
 };
 

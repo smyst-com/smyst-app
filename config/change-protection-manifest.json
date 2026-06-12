@@ -1,0 +1,84 @@
+{
+  "version": "2026-06-11",
+  "policy": {
+    "productionDeployRequiresManualApproval": true,
+    "productionDeployRequiresReleaseFreeze": true,
+    "productionDeployRequiresRollbackPlan": true,
+    "productionDeployRequiresBackupRestoreDryRun": true,
+    "paidServicesAllowed": false,
+    "destructiveRequestsRequireCsrf": true,
+    "destructiveRequestsRequireDeleteConfirmHeader": true
+  },
+  "destructiveRoutes": [
+    {
+      "route": "DELETE /api/account",
+      "protections": [
+        "authenticated session",
+        "same-origin check",
+        "X-Smyst-CSRF: 1",
+        "X-Smyst-Delete-Confirm: delete-account",
+        "JSON body confirm: DELETE",
+        "rate limit"
+      ]
+    },
+    {
+      "route": "DELETE /storage/account",
+      "protections": [
+        "authenticated session",
+        "storage:delete permission",
+        "same-origin check",
+        "X-Smyst-CSRF: 1",
+        "X-Smyst-Delete-Confirm: delete-account-storage",
+        "rate limit",
+        "user-scoped object prefix"
+      ]
+    },
+    {
+      "route": "DELETE /storage/file/{key}",
+      "protections": [
+        "authenticated session",
+        "storage:delete permission",
+        "same-origin check",
+        "X-Smyst-CSRF: 1",
+        "X-Smyst-Delete-Confirm: delete-file",
+        "rate limit",
+        "user-scoped object prefix",
+        "metadata status update instead of blind metadata removal"
+      ]
+    }
+  ],
+  "deploymentProtections": [
+    "workflow_dispatch only for production deploy",
+    "release_approval must equal Ja OK",
+    "release_version required",
+    "release_freeze_confirmed required",
+    "rollback_plan_confirmed required",
+    "backup_restore_confirmed required",
+    "CI typecheck/build/artifact validation before deploy",
+    "Cloudflare Pages artifact deploy from CI output",
+    "Worker deploy waits for CI and release gate",
+    "live smoke test after deploy",
+    "concurrency group prevents overlapping deploys"
+  ],
+  "configurationProtections": [
+    "validate-foundation.py enforces free-only architecture",
+    "check-backup-recovery.py enforces backup/restore contract",
+    "check-dist-artifact.sh validates built PWA/SEO/security files",
+    "live-test.sh blocks noindex root and HTML fallbacks",
+    "preflight-release.sh blocks production without approvals"
+  ],
+  "rollbackProtections": [
+    "Git revert or cherry-pick rollback path",
+    "Cloudflare Pages deployment rollback path",
+    "Cloudflare Worker version rollback path",
+    "IDrive e2 user object restore test required before release",
+    "Cloudflare KV preview restore dry-run required before release"
+  ],
+  "dataIntegrityProtections": [
+    "IDrive e2 object keys are user-scoped",
+    "storage downloads require KV metadata status uploaded",
+    "upload-complete verifies IDrive object via signed HEAD",
+    "account storage deletion marks metadata deleted",
+    "backup manifest excludes live sessions and OAuth state from restore artifacts"
+  ]
+}

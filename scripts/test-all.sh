@@ -6,6 +6,9 @@ cd "$ROOT"
 
 echo "== Free-only production policy =="
 python3 scripts/validate-foundation.py
+python3 scripts/check-backup-recovery.py
+python3 scripts/check-change-protection.py
+python3 scripts/check-final-readiness.py
 
 echo "== Shell syntax =="
 for script in scripts/*.sh; do

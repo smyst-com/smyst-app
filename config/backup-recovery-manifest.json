@@ -1,0 +1,107 @@
+{
+  "version": "2026-06-11",
+  "policy": {
+    "services": ["GitHub Free", "Cloudflare Free", "IDrive e2"],
+    "paidServicesAllowed": false,
+    "productionDatabase": "cloudflare-kv",
+    "productionObjectStore": "idrive-e2",
+    "legacySqlProduction": false
+  },
+  "targets": [
+    {
+      "name": "code-and-config",
+      "sourceOfTruth": "GitHub repository",
+      "backupOwner": "GitHub",
+      "rpo": "latest pushed commit",
+      "rto": "30 minutes for revert or redeploy",
+      "restoreMethod": "git revert/cherry-pick plus gated Cloudflare deploy",
+      "mustNotContain": ["private user files", "IDrive e2 secrets", "OAuth secrets"]
+    },
+    {
+      "name": "cloudflare-pages-deployment",
+      "sourceOfTruth": "Cloudflare Pages deployments",
+      "backupOwner": "Cloudflare",
+      "rpo": "last successful gated deployment",
+      "rto": "15 minutes for Pages rollback",
+      "restoreMethod": "rollback to known-good Pages deployment id"
+    },
+    {
+      "name": "cloudflare-workers",
+      "sourceOfTruth": "GitHub worker source and Cloudflare worker versions",
+      "backupOwner": "GitHub and Cloudflare",
+      "rpo": "latest committed worker source plus latest deployed version id",
+      "rto": "30 minutes for worker rollback/redeploy",
+      "restoreMethod": "redeploy committed worker or rollback worker version"
+    },
+    {
+      "name": "cloudflare-kv-metadata",
+      "sourceOfTruth": "Cloudflare KV",
+      "backupOwner": "Cloudflare KV export into controlled restore artifact",
+      "rpo": "24 hours for MVP metadata after first production release",
+      "rto": "4 hours for small namespace restore dry-run",
+      "restoreMethod": "restore selected prefixes into preview KV namespace, verify counts, then promote only after approval",
+      "includePrefixes": [
+        "auth:user:",
+        "auth:sessions:",
+        "meta:twin:",
+        "meta:twins:",
+        "meta:chat:",
+        "meta:chats:",
+        "meta:upload:",
+        "meta:uploads:",
+        "meta:upload-by-key:",
+        "meta:support-report:",
+        "public:twin:",
+        "quota:user:",
+        "quota:global:",
+        "storage:user:",
+        "storage:global:"
+      ],
+      "excludePrefixes": ["s:", "state:"],
+      "sensitiveHandling": "never commit exports; never publish live sessions or OAuth state"
+    },
+    {
+      "name": "idrive-e2-user-objects",
+      "sourceOfTruth": "IDrive e2 bucket",
+      "backupOwner": "IDrive e2",
+      "rpo": "object write acknowledged by IDrive e2",
+      "rto": "4 hours for small user restore test; depends on object count",
+      "restoreMethod": "verify object list, checksums and signed GET/PUT flow; restore user-scoped objects only",
+      "includePrefixes": [
+        "users/{userSub}/uploads/",
+        "users/{userSub}/profile/images/",
+        "users/{userSub}/backups/",
+        "users/{userSub}/twins/{twinId}/data/"
+      ],
+      "requiredBucketControls": ["cors-approved-origins-only", "server-side-encryption", "lifecycle-cleanup", "private-by-default"]
+    },
+    {
+      "name": "legacy-local-sql-reference",
+      "sourceOfTruth": "non-production local files",
+      "backupOwner": "none for production",
+      "rpo": "not applicable",
+      "rto": "not applicable",
+      "restoreMethod": "blocked for production",
+      "productionAllowed": false
+    }
+  ],
+  "releaseEvidence": [
+    "git commit hash",
+    "Cloudflare Pages deployment id",
+    "Cloudflare Worker version ids",
+    "KV namespace inventory",
+    "KV restore dry-run result",
+    "IDrive e2 bucket CORS/encryption/lifecycle confirmation",
+    "signed upload/download/delete smoke result",
+    "rollback target"
+  ],
+  "blockingRisks": [
+    "no KV restore dry-run",
+    "no IDrive e2 signed object restore test",
+    "live root noindex",
+    "static files served as SPA HTML",
+    "Cloudflare Pages auto-deploy bypasses release gate",
+    "secrets missing or over-scoped",
+    "production data stored in legacy SQL or server filesystem"
+  ]
+}

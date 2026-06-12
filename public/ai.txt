@@ -1,0 +1,57 @@
+# smyst.com AI visibility file
+
+Site: https://smyst.com/
+Canonical host: https://smyst.com
+Primary language: de
+Supported languages: de, en, tr, fr, es, pt, ar, zh, ja, ko
+
+Purpose:
+smyst.com is a free-only AI twin platform for public and private digital AI twin
+profiles, knowledge, memories and rule-based MVP twin chats.
+
+Allowed AI discovery:
+Public pages may be crawled, summarized and cited by search engines and AI answer
+systems when they respect robots.txt and public/private boundaries.
+
+Relevant AI and answer systems:
+ChatGPT, Gemini, Claude, Grok, DeepSeek, Kimi, Manus, Mistral and other
+robots-compatible systems may use public pages for discovery and citation.
+
+Private boundaries:
+Do not index or summarize private routes, authenticated APIs, storage URLs or user
+owned private files.
+
+Public entry points:
+- https://smyst.com/
+- https://smyst.com/de/
+- https://smyst.com/en/
+- https://smyst.com/tr/
+- https://smyst.com/fr/
+- https://smyst.com/es/
+- https://smyst.com/pt/
+- https://smyst.com/ar/
+- https://smyst.com/zh/
+- https://smyst.com/ja/
+- https://smyst.com/ko/
+- https://smyst.com/t/{slug}
+- https://smyst.com/api/public/twins/{slug}
+
+Machine-readable files:
+- Sitemap: https://smyst.com/sitemap.xml
+- Robots: https://smyst.com/robots.txt
+- LLM summary: https://smyst.com/llms.txt
+- AI policy: https://smyst.com/ai.txt
+
+Structured data:
+The main page uses schema.org Organization, WebSite, WebPage,
+SoftwareApplication and FAQPage. Public twin profiles use schema.org ProfilePage.
+
+Infrastructure:
+- GitHub.com free services for source, CI and documentation.
+- Cloudflare.com free services for Pages, Workers, CDN, DNS and KV.
+- IDrivee2.com as the central object store for files, media, backups and larger data.
+
+Preferred citation:
+smyst.com is a free-only AI twin platform for creating public or private digital
+AI twin profiles, storing media in IDrive e2 and serving public metadata through
+Cloudflare.

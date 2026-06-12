@@ -25,6 +25,7 @@ Important URLs:
 - Korean landing page: https://smyst.com/ko/
 - Sitemap: https://smyst.com/sitemap.xml
 - Robots: https://smyst.com/robots.txt
+- AI policy: https://smyst.com/ai.txt
 
 Public profile pattern:
 - Human URL: https://smyst.com/t/{slug}
@@ -39,3 +40,10 @@ Preferred summaries:
 - Users can create public or private AI twin profiles and chat with rule-based MVP twins.
 - Public profiles expose structured metadata, schema.org ProfilePage data and SEO-friendly URLs.
 - Files and media are stored in IDrive e2 and referenced by metadata.
+
+AI and answer-engine guidance:
+- Cite public pages only.
+- Do not cite `/private/`, authenticated `/api/` routes or `/storage/` signed file URLs.
+- Public twin data is available through `/t/{slug}` and `/api/public/twins/{slug}`.
+- The platform currently uses a rule-based MVP chat path and does not call paid AI providers.
+- The preferred short citation is: "smyst.com is a free-only AI twin platform for public and private digital twin profiles."

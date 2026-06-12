@@ -43,3 +43,42 @@ jobs:
 
       - name: Validate Cloudflare Pages artifact
         run: sh scripts/check-dist-artifact.sh
+
+  browser-e2e:
+    name: Current UI browser E2E
+    needs: pages-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build root app
+        run: npm run build
+
+      - name: Start local Vite preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/smyst-vite-preview.log 2>&1 &
+          echo $! > /tmp/smyst-vite-preview.pid
+          sleep 5
+
+      - name: Install browser test dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install chromium
+
+      - name: Run current app browser E2E
+        working-directory: frontend
+        env:
+          WEB_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test --project=chromium

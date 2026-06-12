@@ -22,6 +22,16 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
+/icons/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/screenshots/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/apple-touch-icon.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
 /locales/*
   Content-Type: application/json; charset=utf-8
   Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800
@@ -42,6 +52,14 @@
   Cache-Control: public, max-age=3600
 
 /llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/ai.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600
+
+/.well-known/security.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=3600
 

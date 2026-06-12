@@ -1,0 +1,5 @@
+<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="smyst icon">
+  <rect width="120" height="120" rx="28" fill="#0B1C44"/>
+  <path d="M76 44 A16 16 0 1 0 60 60" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
+  <path d="M44 76 A16 16 0 1 0 60 60" fill="none" stroke="#59C7FF" stroke-width="9" stroke-linecap="round"/>
+</svg>

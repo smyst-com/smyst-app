@@ -26,7 +26,9 @@ import {
   clientKey,
   errorResponse,
   jsonResponse,
+  methodNotAllowed,
   readJsonBody,
+  requireDeleteConfirmation,
   requireSameOrigin,
   requireRateLimit,
   safeHandler,
@@ -70,6 +72,16 @@ const DEFAULT_USER_MONTHLY_BYTES = 50 * 1024 * 1024; // 50 MiB pro User/Monat
 const DEFAULT_GLOBAL_BYTES = 1024 * 1024 * 1024; // 1 GiB Gesamtbudget fuer Free-only-Phase
 const DEFAULT_USER_STORAGE_BYTES = 100 * 1024 * 1024; // 100 MiB aktiv pro User
 const DEFAULT_GLOBAL_STORAGE_BYTES = 1024 * 1024 * 1024; // 1 GiB aktiv global
+const MAX_UPLOAD_INDEX_READS = 100;
+
+function allowedMethodsForStoragePath(pathname: string): string[] | null {
+  if (pathname === '/storage/upload-url') return ['POST'];
+  if (pathname === '/storage/upload-complete') return ['POST'];
+  if (pathname === '/storage/uploads') return ['GET'];
+  if (pathname === '/storage/account') return ['DELETE'];
+  if (pathname.startsWith('/storage/file/')) return ['GET', 'DELETE'];
+  return null;
+}
 
 type StorageCategory = 'audio' | 'image' | 'video' | 'document' | 'profile_image' | 'backup' | 'twin_data';
 
@@ -330,6 +342,14 @@ interface UploadUrlResponse {
   expiresAt: number;
   /** Normalisierter Content-Type, der beim PUT exakt gesetzt werden muss. */
   contentType: string;
+  /** Maximal erlaubte Groesse fuer diese Kategorie. */
+  maxBytes: number;
+  /** Upload-Kategorie, die fuer Pfad, Quota und Berechtigungen gilt. */
+  category: StorageCategory;
+  /** Phase-1 Direct-PUT unterstuetzt noch kein Multipart/Chunking. */
+  supportsChunkUpload: false;
+  /** Phase-1 Direct-PUT kann abgebrochene Uploads nicht bytegenau fortsetzen. */
+  supportsResume: false;
 }
 
 interface UploadRecord {
@@ -341,7 +361,7 @@ interface UploadRecord {
   filename?: string;
   twinId?: string;
   size: number;
-  status: 'url_issued' | 'uploaded' | 'deleted';
+  status: 'url_issued' | 'uploaded' | 'deleted' | 'expired';
   createdAt: number;
   updatedAt: number;
   expiresAt?: number;
@@ -460,6 +480,10 @@ function uploadIndexKey(userSub: string): string {
   return `meta:uploads:${userSub}`;
 }
 
+async function uploadByKeyIndexKey(userSub: string, objectKey: string): Promise<string> {
+  return `meta:upload-by-key:${userSub}:${await sha256Hex(objectKey)}`;
+}
+
 function storageUserKey(userSub: string): string {
   return `storage:user:${userSub}:active`;
 }
@@ -489,6 +513,9 @@ async function putUploadRecord(env: StorageEnv, record: UploadRecord): Promise<v
   await kv.put(uploadRecordKey(record.userSub, record.id), JSON.stringify(record), {
     expirationTtl: 60 * 60 * 24 * 370,
   });
+  await kv.put(await uploadByKeyIndexKey(record.userSub, record.key), record.id, {
+    expirationTtl: 60 * 60 * 24 * 370,
+  });
 }
 
 async function addUploadToIndex(env: StorageEnv, userSub: string, uploadId: string): Promise<void> {
@@ -497,6 +524,52 @@ async function addUploadToIndex(env: StorageEnv, userSub: string, uploadId: stri
   const current = await getJson<string[]>(kv, key, []);
   const next = [uploadId, ...current.filter((id) => id !== uploadId)].slice(0, 100);
   await kv.put(key, JSON.stringify(next), { expirationTtl: 60 * 60 * 24 * 370 });
+}
+
+async function findUploadRecordByKey(env: StorageEnv, userSub: string, key: string): Promise<UploadRecord | null> {
+  const kv = metadataStore(env);
+  const directId = await kv.get(await uploadByKeyIndexKey(userSub, key));
+  if (directId) {
+    const directRecord = (await kv.get(uploadRecordKey(userSub, directId), 'json')) as UploadRecord | null;
+    if (directRecord?.key === key) return directRecord;
+  }
+  const ids = await getJson<string[]>(kv, uploadIndexKey(userSub), []);
+  for (const id of ids.slice(0, MAX_UPLOAD_INDEX_READS)) {
+    const record = (await kv.get(uploadRecordKey(userSub, id), 'json')) as UploadRecord | null;
+    if (record?.key === key) return record;
+  }
+  return null;
+}
+
+function fallbackFilenameFromKey(key: string): string {
+  return key.split('/').pop()?.slice(0, 120) || 'smyst-file';
+}
+
+function contentDisposition(record: UploadRecord): string {
+  const attachmentCategories: ReadonlySet<StorageCategory> = new Set(['document', 'backup', 'twin_data']);
+  const disposition = attachmentCategories.has(record.category) ? 'attachment' : 'inline';
+  const filename = record.filename || fallbackFilenameFromKey(record.key);
+  const ascii = filename.replace(/[^\x20-\x7E]/g, '_').replace(/["\\]/g, '_').slice(0, 120) || 'smyst-file';
+  return `${disposition}; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
+}
+
+async function cleanupExpiredUploadReservations(env: StorageEnv, userSub: string, limit = 100): Promise<number> {
+  const kv = metadataStore(env);
+  const ids = await getJson<string[]>(kv, uploadIndexKey(userSub), []);
+  const now = Date.now();
+  let expired = 0;
+
+  for (const id of ids.slice(0, limit)) {
+    const record = (await kv.get(uploadRecordKey(userSub, id), 'json')) as UploadRecord | null;
+    if (!record || record.status !== 'url_issued' || !record.expiresAt || record.expiresAt >= now) continue;
+
+    await putUploadRecord(env, { ...record, status: 'expired', updatedAt: now });
+    await addNumber(env.SESSIONS, `quota:user:${userSub}:${monthKey(new Date(record.createdAt))}`, -record.size);
+    await addNumber(env.SESSIONS, `quota:global:${monthKey(new Date(record.createdAt))}`, -record.size);
+    expired += 1;
+  }
+
+  return expired;
 }
 
 async function verifyObjectHead(
@@ -574,6 +647,7 @@ async function handleUploadUrl(request: Request, env: StorageEnv): Promise<Respo
   }
 
   const kv = metadataStore(env);
+  await cleanupExpiredUploadReservations(env, session.sub);
   const period = monthKey();
   const userQuotaKey = `quota:user:${session.sub}:${period}`;
   const globalQuotaKey = `quota:global:${period}`;
@@ -617,6 +691,10 @@ async function handleUploadUrl(request: Request, env: StorageEnv): Promise<Respo
     getUrl: `/storage/file/${encodeURIComponent(key)}`,
     expiresAt: Date.now() + PRESIGN_TTL_SECONDS * 1000,
     contentType,
+    maxBytes: maxFileBytes,
+    category: body.category,
+    supportsChunkUpload: false,
+    supportsResume: false,
   };
 
   const quotaTtl = 60 * 60 * 24 * 45;
@@ -705,6 +783,7 @@ async function handleListUploads(request: Request, env: StorageEnv): Promise<Res
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:read')) return errorResponse('forbidden', 'Missing storage read permission', 403);
 
+  await cleanupExpiredUploadReservations(env, session.sub);
   const kv = metadataStore(env);
   const ids = await getJson<string[]>(kv, uploadIndexKey(session.sub), []);
   const records = await Promise.all(
@@ -740,8 +819,18 @@ async function handleGetFile(request: Request, env: StorageEnv, key: string): Pr
     return errorResponse('forbidden', 'File does not belong to user', 403);
   }
 
+  const record = await findUploadRecordByKey(env, session.sub, key);
+  if (!record) {
+    return errorResponse('file_metadata_not_found', 'File metadata not found', 404);
+  }
+  if (record.status !== 'uploaded') {
+    return errorResponse('file_not_available', 'File is not available for download', 409, { status: record.status });
+  }
+
   // Presigned GET → 302 Redirect — Browser lädt direkt vom IDrive E2 Edge
   const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
+  url.searchParams.set('response-content-disposition', contentDisposition(record));
+  url.searchParams.set('response-content-type', record.contentType);
   const presignedGet = await presignUrl({
     method: 'GET',
     url,
@@ -761,15 +850,7 @@ async function handleGetFile(request: Request, env: StorageEnv, key: string): Pr
   }));
 }
 
-async function handleDeleteFile(request: Request, env: StorageEnv, key: string): Promise<Response> {
-  const session = await authenticate(request, env);
-  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
-  if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
-
-  if (!ownsUserKey(key, session.sub)) {
-    return errorResponse('forbidden', 'Forbidden', 403);
-  }
-
+async function deleteObjectFromIdrive(env: StorageEnv, key: string): Promise<number> {
   const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
   const presignedDelete = await presignUrl({
     method: 'DELETE',
@@ -781,18 +862,29 @@ async function handleDeleteFile(request: Request, env: StorageEnv, key: string):
     expiresIn: 60,
   });
 
-  // Worker führt das Delete server-seitig aus (User-Browser bekommt nur OK/FAIL)
   const res = await fetch(presignedDelete, { method: 'DELETE' });
-  if (!res.ok && res.status !== 404) {
-    return errorResponse('delete_failed', 'Delete failed', 502, { status: res.status });
+  return res.status;
+}
+
+async function handleDeleteFile(request: Request, env: StorageEnv, key: string): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
+  const deleteConfirmation = requireDeleteConfirmation(request, 'delete-file');
+  if (deleteConfirmation) return deleteConfirmation;
+
+  if (!ownsUserKey(key, session.sub)) {
+    return errorResponse('forbidden', 'Forbidden', 403);
+  }
+
+  // Worker führt das Delete server-seitig aus (User-Browser bekommt nur OK/FAIL)
+  const deleteStatus = await deleteObjectFromIdrive(env, key);
+  if ((deleteStatus < 200 || deleteStatus >= 300) && deleteStatus !== 404) {
+    return errorResponse('delete_failed', 'Delete failed', 502, { status: deleteStatus });
   }
 
   const kv = metadataStore(env);
-  const ids = await getJson<string[]>(kv, uploadIndexKey(session.sub), []);
-  const records = await Promise.all(
-    ids.map((id) => kv.get(uploadRecordKey(session.sub, id), 'json') as Promise<UploadRecord | null>),
-  );
-  const record = records.find((item) => item?.key === key);
+  const record = await findUploadRecordByKey(env, session.sub, key);
   if (record) {
     await putUploadRecord(env, { ...record, status: 'deleted', updatedAt: Date.now() });
     if (record.status === 'uploaded') {
@@ -802,6 +894,60 @@ async function handleDeleteFile(request: Request, env: StorageEnv, key: string):
   }
 
   return jsonResponse({ ok: true });
+}
+
+async function handleDeleteAccountStorage(request: Request, env: StorageEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
+  const deleteConfirmation = requireDeleteConfirmation(request, 'delete-account-storage');
+  if (deleteConfirmation) return deleteConfirmation;
+
+  await cleanupExpiredUploadReservations(env, session.sub);
+
+  const kv = metadataStore(env);
+  const ids = await getJson<string[]>(kv, uploadIndexKey(session.sub), []);
+  const records = (
+    await Promise.all(
+      ids.slice(0, MAX_UPLOAD_INDEX_READS).map((id) => kv.get(uploadRecordKey(session.sub, id), 'json') as Promise<UploadRecord | null>),
+    )
+  ).filter((record): record is UploadRecord => Boolean(record));
+
+  let deletedObjects = 0;
+  let failedObjects = 0;
+  let releasedBytes = 0;
+  const now = Date.now();
+
+  for (const record of records) {
+    if (!ownsUserKey(record.key, session.sub)) continue;
+
+    if (record.status === 'uploaded') {
+      const status = await deleteObjectFromIdrive(env, record.key);
+      if ((status >= 200 && status < 300) || status === 404) {
+        deletedObjects += 1;
+        releasedBytes += record.size;
+        await addNumber(kv, storageUserKey(session.sub), -record.size);
+        await addNumber(kv, storageGlobalKey(), -record.size);
+      } else {
+        failedObjects += 1;
+        continue;
+      }
+    }
+
+    await putUploadRecord(env, { ...record, status: 'deleted', updatedAt: now });
+  }
+
+  if (failedObjects === 0) {
+    await kv.delete(uploadIndexKey(session.sub));
+  }
+
+  return jsonResponse({
+    ok: failedObjects === 0,
+    deletedObjects,
+    failedObjects,
+    releasedBytes,
+    remainingMetadata: failedObjects > 0,
+  }, failedObjects === 0 ? 200 : 207);
 }
 
 // ---------- Worker Entry ----------
@@ -854,6 +1000,17 @@ export default {
         return handleListUploads(request, env);
       }
 
+      // DELETE /storage/account
+      if (url.pathname === '/storage/account' && request.method === 'DELETE') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:delete-account'),
+          limit: 5,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleDeleteAccountStorage(request, env);
+      }
+
       // GET /storage/file/:key
       if (url.pathname.startsWith('/storage/file/') && request.method === 'GET') {
         const limited = await requireRateLimit(kv, {
@@ -878,8 +1035,10 @@ export default {
         return handleDeleteFile(request, env, key);
       }
 
+      const allowed = allowedMethodsForStoragePath(url.pathname);
+      if (allowed) return methodNotAllowed(allowed);
       return errorResponse('not_found', 'Not found', 404);
-    });
+    }, request);
   },
 };
 

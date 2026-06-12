@@ -38,10 +38,14 @@ Keine E-Mail-Adressen, Klarnamen oder sensiblen Rohdaten im Key.
 
 ## Download-Flow
 
-1. Client fragt `GET /storage/download?key=...`.
-2. Worker prueft Session und User-Prefix.
+1. Client fragt `GET /storage/file/{key}`.
+2. Worker prueft Session, User-Prefix, KV-Metadaten und Status `uploaded`.
 3. Worker erstellt eine kurzlebige signed GET URL.
-4. Client wird zu IDrive e2 weitergeleitet.
+4. Dokumente, Backups und `twin_data` erhalten `Content-Disposition: attachment`.
+5. Client wird zu IDrive e2 weitergeleitet.
+
+Unbekannte Keys ohne KV-Upload-Record werden nicht ausgeliefert, auch wenn sie unter
+dem User-Prefix liegen.
 
 ## Free-Only Quotas
 
@@ -65,6 +69,23 @@ Startwerte muessen bewusst niedrig sein:
 | `profile_image` | Profilbilder/Avatare |
 | `backup` | User-scoped Backups und Exporte |
 | `twin_data` | KI-Zwilling-Daten als JSON/Text/Markdown, `twinId` Pflicht |
+
+## Chunk Upload Und Wiederaufnahme
+
+Phase 1 verwendet Direct-PUT zu IDrive e2. Chunk Upload, Multipart Upload und
+bytegenaue Wiederaufnahme sind noch nicht aktiv. Die Upload-URL-Antwort deklariert
+deshalb `supportsChunkUpload: false` und `supportsResume: false`.
+
+Begruendung:
+
+- Der aktuelle Free-only-MVP vermeidet Worker-Proxying und hohe Edge-Bandbreite.
+- Kategorie-Limits bleiben klein genug fuer einfache Direct-PUTs.
+- Abgebrochene Uploads reservieren Quota nur bis zum kurzlebigen Intent-Ablauf.
+- Der Client kann abbrechen und einen fehlgeschlagenen Direct-PUT einmal erneut senden.
+
+Ein spaeterer Multipart-Pfad muss IDrive-e2-kompatibel sein, Parts serverseitig
+validieren, unfertige Multipart-Sessions automatisch abbrechen und harte Free-only-
+Quotas behalten.
 
 ## Backups
 

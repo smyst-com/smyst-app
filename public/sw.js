@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'smyst-v1';
+const CACHE_VERSION = 'smyst-v2';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
@@ -7,9 +7,17 @@ const APP_SHELL = [
   '/offline.html',
   '/manifest.webmanifest',
   '/logo.svg',
+  '/apple-touch-icon.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/maskable-512.png',
+  '/screenshots/smyst-mobile.png',
+  '/screenshots/smyst-desktop.png',
   '/robots.txt',
   '/sitemap.xml',
   '/llms.txt',
+  '/ai.txt',
+  '/.well-known/security.txt',
   '/locales/de.json',
   '/locales/en.json',
   '/locales/tr.json',

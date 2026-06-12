@@ -7,7 +7,7 @@ import { useLanguage } from '@/lib/i18n'
 import { useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
-import { useTwinMvp, type PublicTwinProfile, type TwinRecord, type TwinStyle } from '@/lib/useTwinMvp'
+import { useTwinMvp, type PublicTwinProfile, type SupportReportType, type TwinRecord, type TwinStyle } from '@/lib/useTwinMvp'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
@@ -55,6 +55,16 @@ function Waveform(props: IconProps) {
   )
 }
 
+function Speaker(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M4 9v6h4l5 4V5L8 9H4Z" />
+      <path d="M16 9.5a4 4 0 0 1 0 5" />
+      <path d="M18.5 7a8 8 0 0 1 0 10" />
+    </svg>
+  )
+}
+
 function Plus(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
@@ -93,17 +103,12 @@ function MenuGlyph(props: IconProps) {
 
 function SmystLockup() {
   return (
-    <div className="inline-flex items-stretch gap-2 text-left sm:gap-3" aria-label="smyst.com Create Your AI Twin">
+    <div className="inline-flex flex-col items-center text-center" aria-label="smyst Create Your AI Twin">
       <span className="font-smyst-logo text-[48px] font-medium leading-none tracking-normal text-white sm:text-[70px]">
         smyst
       </span>
-      <span className="flex flex-col justify-between py-[3px] sm:py-1">
-        <span className="whitespace-nowrap text-[11px] font-semibold leading-none text-[#9aa6b7] sm:text-base">
-          Create Your AI Twin
-        </span>
-        <span className="font-smyst-logo text-[28px] font-medium leading-none tracking-normal text-white sm:text-[41px]">
-          .com
-        </span>
+      <span className="mt-1 whitespace-nowrap text-[13px] font-semibold leading-none text-[#9aa6b7] sm:text-lg">
+        Create Your AI Twin
       </span>
     </div>
   )
@@ -117,6 +122,10 @@ type AppView =
   | 'memory-upload'
   | 'twin-chat'
   | 'settings'
+  | 'trust'
+  | 'privacy'
+  | 'terms'
+  | 'imprint'
   | 'dashboard'
   | 'twin-profile'
 
@@ -135,6 +144,37 @@ function isNameSortMode(value: string | null): value is NameSortMode {
   return value === 'famous' || value === 'used' || value === 'popular' || value === 'trend' || value === 'manual'
 }
 
+function speechLangFor(lang?: string) {
+  if (!lang) return 'de-DE'
+  if (lang === 'en') return 'en-US'
+  if (lang === 'tr') return 'tr-TR'
+  if (lang === 'fr') return 'fr-FR'
+  if (lang === 'es') return 'es-ES'
+  if (lang === 'pt') return 'pt-PT'
+  if (lang === 'ar') return 'ar-SA'
+  if (lang === 'zh') return 'zh-CN'
+  if (lang === 'ja') return 'ja-JP'
+  if (lang === 'ko') return 'ko-KR'
+  return 'de-DE'
+}
+
+function speakText(text: string, lang: string, onDone: () => void) {
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return false
+
+  const cleanText = text.trim()
+  if (!cleanText) return false
+
+  window.speechSynthesis.cancel()
+  const utterance = new SpeechSynthesisUtterance(cleanText)
+  utterance.lang = speechLangFor(lang)
+  utterance.rate = 0.96
+  utterance.pitch = 1
+  utterance.onend = onDone
+  utterance.onerror = onDone
+  window.speechSynthesis.speak(utterance)
+  return true
+}
+
 const viewPaths: Record<Exclude<AppView, 'twin-profile'>, string> = {
   landing: '/',
   'account-profile': '/profile',
@@ -143,6 +183,10 @@ const viewPaths: Record<Exclude<AppView, 'twin-profile'>, string> = {
   'memory-upload': '/memory-upload',
   'twin-chat': '/twin-chat',
   settings: '/settings',
+  trust: '/trust',
+  privacy: '/privacy',
+  terms: '/terms',
+  imprint: '/imprint',
   dashboard: '/dashboard',
 }
 
@@ -160,6 +204,10 @@ function initialRoute(): { view: AppView; profileSlug: string | null; privateTwi
   if (path === '/memory-upload') return { view: 'memory-upload', profileSlug: null, privateTwinId: null }
   if (path === '/twin-chat') return { view: 'twin-chat', profileSlug: null, privateTwinId: null }
   if (path === '/settings') return { view: 'settings', profileSlug: null, privateTwinId: null }
+  if (path === '/trust') return { view: 'trust', profileSlug: null, privateTwinId: null }
+  if (path === '/privacy') return { view: 'privacy', profileSlug: null, privateTwinId: null }
+  if (path === '/terms') return { view: 'terms', profileSlug: null, privateTwinId: null }
+  if (path === '/imprint') return { view: 'imprint', profileSlug: null, privateTwinId: null }
   if (path === '/dashboard') return { view: 'dashboard', profileSlug: null, privateTwinId: null }
   return { view: 'landing', profileSlug: null, privateTwinId: null }
 }
@@ -225,6 +273,7 @@ export default function App() {
           { label: 'Twin Builder', onClick: () => navigateTo('twin-builder'), active: currentView === 'twin-builder' },
           { label: 'Daten hochladen', onClick: () => navigateTo('memory-upload'), active: currentView === 'memory-upload' },
           { label: 'Chats', onClick: () => navigateTo('twin-chat'), active: currentView === 'twin-chat' },
+          { label: 'Trust', onClick: () => navigateTo('trust'), active: currentView === 'trust' },
           { label: 'Einstellungen', onClick: () => navigateTo('settings'), active: currentView === 'settings' },
         ]
 
@@ -324,7 +373,7 @@ export default function App() {
       </Suspense>
 
       {/* Main Content */}
-      <main className="mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-10 sm:px-6">
+      <main id="main" className="mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-10 sm:px-6">
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
         {currentView === 'account-profile' && <AccountProfileView onNavigate={navigateTo} />}
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
@@ -338,6 +387,10 @@ export default function App() {
             onNameSortModeChange={setNameSortMode}
           />
         )}
+        {currentView === 'trust' && <TrustView onNavigate={navigateTo} />}
+        {currentView === 'privacy' && <LegalView kind="privacy" />}
+        {currentView === 'terms' && <LegalView kind="terms" />}
+        {currentView === 'imprint' && <LegalView kind="imprint" />}
         {currentView === 'twin-profile' && <TwinProfileView slug={profileSlug} privateTwinId={privateTwinId} onNavigate={navigateTo} />}
       </main>
 
@@ -360,15 +413,15 @@ export default function App() {
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Unternehmen</h4>
-              <a href="mailto:i@smyst.com?subject=%C3%9Cber%20smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Über uns</a>
+              <button onClick={() => navigateTo('trust')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Trust Center</button>
               <a href="mailto:i@smyst.com?subject=Karriere%20bei%20smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Karriere</a>
               <a href="mailto:b2b@smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">B2B-Anfragen</a>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Rechtliches</h4>
-              <a href="mailto:i@smyst.com?subject=Impressum" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Impressum</a>
-              <a href="mailto:i@smyst.com?subject=Datenschutz" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Datenschutz</a>
-              <a href="mailto:i@smyst.com?subject=AGB" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">AGB</a>
+              <button onClick={() => navigateTo('imprint')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Impressum</button>
+              <button onClick={() => navigateTo('privacy')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Datenschutz</button>
+              <button onClick={() => navigateTo('terms')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">AGB</button>
             </div>
           </div>
         </div>
@@ -377,6 +430,7 @@ export default function App() {
           <p className="text-sm text-[#9aa6b7]">© 2026 smyst.com. Alle Rechte vorbehalten.</p>
           <div className="flex flex-wrap gap-5">
             <a href="mailto:i@smyst.com" className="text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Kontakt</a>
+            <button onClick={() => navigateTo('trust')} className="text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Trust</button>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event('smyst:open-cookie-settings'))}
@@ -490,6 +544,7 @@ function SmystStartPage({
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [menuOpen, setMenuOpen] = useState(false)
   const [namePickerOpen, setNamePickerOpen] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
 
@@ -514,9 +569,17 @@ function SmystStartPage({
 
   const activeTwin = selectedTwin ?? startPageTwins[0]
   const canSend = input.trim().length > 0
+  const canSpeak = input.trim().length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
   const showNamePicker = !selectedTwin && (namePickerOpen || query.trim().length > 0)
   const selectedSortOption = nameSortOptions.find((option) => option.mode === nameSortMode) ?? nameSortOptions[0]
+  const glassPreviewMode = new URLSearchParams(window.location.search).get('glass')
+  const glassPreviewClass =
+    glassPreviewMode === 'dark'
+      ? ' smyst-start-shell-glass-dark'
+      : glassPreviewMode === 'light'
+        ? ' smyst-start-shell-glass-light'
+        : ''
 
   useEffect(() => {
     const title = t.seo.title
@@ -560,6 +623,12 @@ function SmystStartPage({
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [menuOpen])
+
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+    }
+  }, [])
 
   const fitInputHeight = () => {
     const textarea = textareaRef.current
@@ -650,6 +719,16 @@ function SmystStartPage({
     await streamText(assistantId, reply)
   }
 
+  const handleSpeakInput = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel()
+      setIsSpeaking(false)
+      return
+    }
+    const started = speakText(input, lang, () => setIsSpeaking(false))
+    if (started) setIsSpeaking(true)
+  }
+
   const menuItems: Array<{ label: string; view: AppView; detail: string }> = [
     { label: 'Mein Profil', view: 'account-profile', detail: 'Account, Avatar, Rolle und Session' },
     { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persoenlichkeit, Wissen und Sichtbarkeit' },
@@ -665,7 +744,7 @@ function SmystStartPage({
   }
 
   return (
-    <main className="fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden bg-[#090d14] text-[#f4f7fb]">
+    <main id="main" className={`smyst-start-shell${glassPreviewClass} fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden text-[#f4f7fb]`}>
       <div
         aria-hidden={!menuOpen}
         onClick={() => setMenuOpen(false)}
@@ -678,7 +757,7 @@ function SmystStartPage({
         aria-modal="true"
         aria-label="Startmenue"
         aria-hidden={!menuOpen}
-        className={`fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-[360px] flex-col border-r border-white/10 bg-[#141a27]/95 shadow-2xl backdrop-blur-xl transition-transform ${
+        className={`smyst-glass-panel fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-[360px] flex-col border-r border-white/10 shadow-2xl transition-transform ${
           menuOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'
         }`}
       >
@@ -818,7 +897,7 @@ function SmystStartPage({
       </aside>
 
       {selectedTwin ? (
-        <header className="z-20 shrink-0 border-b border-white/[0.08] bg-[rgba(9,13,20,0.9)] pt-[env(safe-area-inset-top)] backdrop-blur-2xl">
+        <header className="smyst-glass-panel z-20 shrink-0 border-b border-white/[0.08] pt-[env(safe-area-inset-top)]">
           <div className="relative flex min-h-[72px] items-center justify-center px-4 sm:min-h-[82px]">
             <button
               type="button"
@@ -830,8 +909,8 @@ function SmystStartPage({
               <MenuGlyph className="h-7 w-7" />
             </button>
 
-            <div className="flex h-14 max-w-[min(310px,calc(100vw-100px))] items-stretch border border-white/[0.08] bg-[#111722] text-left sm:h-16 sm:max-w-[460px]">
-              <span className="grid aspect-square h-full shrink-0 place-items-center border-r border-white/[0.08] bg-[#171f2c] text-white/[0.72]">
+            <div className="smyst-glass-control flex h-14 max-w-[min(310px,calc(100vw-100px))] items-stretch border border-white/[0.08] text-left sm:h-16 sm:max-w-[460px]">
+              <span className="grid aspect-square h-full shrink-0 place-items-center border-r border-white/[0.08] bg-white/[0.045] text-white/[0.78]">
                 <User className="h-8 w-8 sm:h-9 sm:w-9" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-3">
@@ -842,7 +921,7 @@ function SmystStartPage({
           </div>
         </header>
       ) : (
-        <header className="z-20 shrink-0 border-b border-white/10 bg-[rgba(11,16,24,0.88)] pt-[max(env(safe-area-inset-top),18px)] shadow-[0_18px_45px_rgba(0,0,0,0.2)] backdrop-blur-2xl">
+        <header className="smyst-glass-panel z-20 shrink-0 border-b border-white/10 pt-[max(env(safe-area-inset-top),18px)]">
           <div className="relative flex min-h-[96px] flex-col items-center justify-center px-4 pb-3 sm:min-h-[112px]">
             <button
               type="button"
@@ -859,7 +938,7 @@ function SmystStartPage({
             </h1>
           </div>
 
-          <div className="flex min-h-[70px] items-stretch border-y border-white/[0.08] bg-[#090d14] sm:min-h-[82px]">
+          <div className="smyst-glass-panel flex min-h-[70px] items-stretch border-y border-white/[0.08] sm:min-h-[82px]">
             <label className="relative flex min-w-0 flex-1 items-stretch">
               <Search
                 className={`pointer-events-none absolute right-5 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
@@ -884,13 +963,13 @@ function SmystStartPage({
                   selectTwin(twin)
                 }}
                 placeholder="Name suchen"
-                className="min-w-0 flex-1 rounded-none border-0 bg-[#101722] px-5 pr-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
+                className="smyst-glass-control min-w-0 flex-1 rounded-none border-0 px-5 pr-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
               />
             </label>
             <button
               type="button"
               onClick={() => setNamePickerOpen((open) => !open)}
-              className="inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] bg-[#141a25] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
+              className="smyst-glass-control inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
               aria-label={t.start.chooseTwin}
               aria-expanded={namePickerOpen}
             >
@@ -901,10 +980,10 @@ function SmystStartPage({
         </header>
       )}
 
-      <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto bg-[#090d14]">
+      <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
         <div className="min-h-full">
           {showNamePicker && (
-            <div className="border-b border-white/[0.08]">
+            <div className="smyst-glass-panel border-b border-white/[0.08]">
               <div className="flex min-h-[42px] items-center justify-between border-b border-white/[0.08] px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">
                 <span>{selectedSortOption.label}</span>
                 <span>{filteredTwins.length} Namen</span>
@@ -915,9 +994,9 @@ function SmystStartPage({
                     key={twin.id}
                     type="button"
                     onClick={() => selectTwin(twin)}
-                    className="flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.04] sm:min-h-[92px]"
+                    className="flex min-h-[82px] w-full items-stretch text-left transition hover:bg-white/[0.055] sm:min-h-[92px]"
                   >
-                    <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-[#141a25] text-white/[0.72] sm:w-[92px]">
+                    <span className="grid w-[82px] shrink-0 place-items-center border-r border-white/[0.08] bg-white/[0.045] text-white/[0.78] sm:w-[92px]">
                       <User className="h-10 w-10 sm:h-12 sm:w-12" />
                     </span>
                     <span className="flex min-w-0 flex-1 items-center justify-between gap-3 px-5 sm:px-7">
@@ -967,7 +1046,7 @@ function SmystStartPage({
         </div>
       </section>
 
-      <footer className={`shrink-0 border-t ${composerLine} bg-[rgba(17,23,33,0.88)] shadow-[0_-22px_50px_rgba(0,0,0,0.2)] backdrop-blur-2xl`}>
+      <footer className={`smyst-glass-panel-strong shrink-0 border-t ${composerLine}`}>
         <div className={`border-b ${composerLine} px-4 py-2.5 sm:px-8`}>
           <textarea
             ref={textareaRef}
@@ -992,17 +1071,17 @@ function SmystStartPage({
           <div className="flex h-full items-center">
             <button
               type="button"
-              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
+              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors"
               aria-label={t.start.addFile}
               title={t.start.addFile}
             >
               <Plus className="h-8 w-8" />
             </button>
           </div>
-          <div className="flex h-full items-center gap-6 sm:gap-8">
+          <div className="flex h-full items-center gap-3 sm:gap-6">
             <button
               type="button"
-              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
+              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors"
               aria-label={t.start.voiceInput}
               title={t.start.voiceInput}
             >
@@ -1010,7 +1089,7 @@ function SmystStartPage({
             </button>
             <button
               type="button"
-              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08]"
+              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors"
               aria-label="Audio-Modus"
               title="Audio-Modus"
             >
@@ -1018,9 +1097,21 @@ function SmystStartPage({
             </button>
             <button
               type="button"
+              disabled={!canSpeak}
+              onClick={handleSpeakInput}
+              className={`smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors disabled:opacity-45 ${
+                isSpeaking ? 'bg-white/[0.12]' : ''
+              }`}
+              aria-label={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
+              title={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
+            >
+              <Speaker className="h-8 w-8" />
+            </button>
+            <button
+              type="button"
               disabled={!canSend}
               onClick={() => void handleSend()}
-              className="grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors hover:bg-white/[0.08] disabled:text-white disabled:opacity-100"
+              className="smyst-icon-button grid h-[52px] w-[52px] place-items-center rounded-lg text-white transition-colors disabled:text-white disabled:opacity-100"
               aria-label={t.start.send}
               title={t.start.send}
             >
@@ -1377,6 +1468,32 @@ function SignInRequiredCard({ title, text, returnTo }: { title: string; text: st
 
 function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const auth = useAuth()
+  const twinMvp = useTwinMvp()
+  const [privacyStatus, setPrivacyStatus] = useState<string | null>(null)
+
+  const exportAccount = async () => {
+    const bundle = await twinMvp.exportAccount()
+    if (!bundle) return
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `smyst-account-export-${new Date().toISOString().slice(0, 10)}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+    setPrivacyStatus('Export erstellt.')
+  }
+
+  const deleteAccount = async () => {
+    const confirmed = window.confirm('Account, Chats, Twins und bekannte IDrive-e2-Objekte wirklich löschen?')
+    if (!confirmed) return
+    const result = await twinMvp.deleteAccount()
+    if (!result) return
+    setPrivacyStatus('Account-Löschung ausgeführt. Du wirst abgemeldet.')
+    window.setTimeout(() => {
+      window.location.href = '/'
+    }, 800)
+  }
 
   return (
     <div className="pt-[72px]">
@@ -1442,6 +1559,26 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
               <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
               <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('settings')}>Einstellungen</Button>
             </div>
+          </Card>
+
+          <Card className="p-6 lg:col-start-2">
+            <h3 className="mb-2 text-lg font-semibold">Datenschutz</h3>
+            <p className="mb-4 text-sm text-[#555b64]">
+              Exportiere deine KV-Metadaten oder lösche bekannte Account-, Chat-, Twin- und Upload-Daten.
+            </p>
+            <div className="space-y-3">
+              <Button className="w-full justify-center" variant="secondary" onClick={() => void exportAccount()}>
+                Daten exportieren
+              </Button>
+              <Button className="w-full justify-center border-red-200 bg-red-50 text-red-700 hover:bg-red-100" variant="secondary" onClick={() => void deleteAccount()}>
+                Account löschen
+              </Button>
+            </div>
+            {(privacyStatus || twinMvp.error) && (
+              <p className="mt-4 rounded-lg bg-white/18 p-3 text-sm text-[#555b64]">
+                {privacyStatus || twinMvp.error}
+              </p>
+            )}
           </Card>
         </div>
       )}
@@ -1545,6 +1682,26 @@ function SettingsView({
   onNameSortModeChange: (mode: NameSortMode) => void
 }) {
   const auth = useAuth()
+  const twinMvp = useTwinMvp()
+  const [reportType, setReportType] = useState<SupportReportType>('feedback')
+  const [reportSubject, setReportSubject] = useState('')
+  const [reportMessage, setReportMessage] = useState('')
+  const [reportContact, setReportContact] = useState('')
+  const [reportStatus, setReportStatus] = useState<string | null>(null)
+
+  const submitReport = async () => {
+    const result = await twinMvp.submitSupportReport({
+      type: reportType,
+      subject: reportSubject,
+      message: reportMessage,
+      contact: reportContact,
+      url: window.location.pathname + window.location.search,
+    })
+    if (!result) return
+    setReportSubject('')
+    setReportMessage('')
+    setReportStatus(`Meldung gespeichert: ${result.reportId.slice(0, 8)}`)
+  }
 
   return (
     <div className="pt-[72px]">
@@ -1562,6 +1719,7 @@ function SettingsView({
               <div className="flex flex-wrap gap-2">
                 <Button onClick={() => onNavigate('account-profile')}>Profil oeffnen</Button>
                 <Button variant="secondary" onClick={() => void auth.signOut()}>Logout</Button>
+                <Button variant="secondary" onClick={() => void auth.signOutAll()}>Alle Sessions abmelden</Button>
               </div>
             </div>
           ) : (
@@ -1621,7 +1779,167 @@ function SettingsView({
             ))}
           </div>
         </Card>
+
+        <Card className="p-6 lg:col-span-2">
+          <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-xl font-bold">Feedback, Fehler oder Missbrauch melden</h2>
+              <p className="mt-1 text-sm text-[#555b64]">
+                Meldungen werden als kleine KV-Records gespeichert und koennen von Owner/Admin geprueft werden.
+              </p>
+            </div>
+            <Button variant="secondary" onClick={() => onNavigate('trust')}>Trust Center</Button>
+          </div>
+          <div className="grid gap-3 md:grid-cols-[220px_1fr]">
+            <label className="flex flex-col gap-1 text-sm font-semibold">
+              Typ
+              <select
+                value={reportType}
+                onChange={(event) => setReportType(event.target.value as SupportReportType)}
+                className="h-12 border border-white/20 bg-white/10 px-3 text-sm"
+              >
+                <option value="feedback">Feedback</option>
+                <option value="bug">Fehler</option>
+                <option value="abuse">Missbrauch</option>
+                <option value="privacy">Datenschutz</option>
+                <option value="safety">Sicherheit</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-semibold">
+              Betreff
+              <input
+                value={reportSubject}
+                onChange={(event) => setReportSubject(event.target.value)}
+                placeholder="Kurz beschreiben"
+                className="h-12 border border-white/20 bg-white/10 px-3 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-semibold md:col-span-2">
+              Nachricht
+              <textarea
+                value={reportMessage}
+                onChange={(event) => setReportMessage(event.target.value)}
+                placeholder="Was ist passiert? Welche Seite, welcher Name, welcher Upload?"
+                className="min-h-[120px] border border-white/20 bg-white/10 p-3 text-sm"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-sm font-semibold md:col-span-2">
+              Kontakt optional
+              <input
+                value={reportContact}
+                onChange={(event) => setReportContact(event.target.value)}
+                placeholder="E-Mail oder Hinweis, falls Rueckfrage erwuenscht ist"
+                className="h-12 border border-white/20 bg-white/10 px-3 text-sm"
+              />
+            </label>
+            <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+              <Button onClick={() => void submitReport()} disabled={!reportSubject.trim() || reportMessage.trim().length < 12 || twinMvp.loading}>
+                Meldung speichern
+              </Button>
+              {(reportStatus || twinMvp.error) && (
+                <p className="text-sm text-[#667085]">{reportStatus || twinMvp.error}</p>
+              )}
+            </div>
+          </div>
+        </Card>
       </div>
+    </div>
+  )
+}
+
+function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const items = [
+    ['Free-only Infrastruktur', 'GitHub Free und Cloudflare Free fuer App/CI/Worker; IDrive e2 fuer Dateien und Medien.'],
+    ['Private Defaults', 'Private Profile und Uploads bleiben noindex und sind an die GitHub-Session gebunden.'],
+    ['Account-Kontrolle', 'Export, Account-Loeschung und Logout aller Sessions sind im Produkt vorbereitet.'],
+    ['Upload-Schutz', 'Dateityp, Kategorie, Groesse, Quota und Besitzerpfad werden serverseitig geprueft.'],
+    ['API-Vertrag', 'JSON-Fehler, Request-ID, Rate-Limit-Header und 405-Handling sind dokumentiert.'],
+    ['KI-Transparenz', 'Phase 1 nutzt regelbasierte Antworten und keine bezahlten externen KI-Provider.'],
+  ]
+
+  return (
+    <div className="pt-[72px]">
+      <div className="mb-8">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Trust Center</p>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">Sicherheit, Datenschutz und Betrieb</h1>
+        <p className="max-w-[760px] text-base text-[#9aa6b7]">
+          smyst.com startet bewusst als Free-only-MVP mit klaren Grenzen, privaten Defaults und dokumentiertem Release-Gate.
+        </p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        {items.map(([title, text]) => (
+          <Card key={title} className="p-6">
+            <h2 className="mb-2 text-xl font-bold">{title}</h2>
+            <p className="text-sm text-[#9aa6b7]">{text}</p>
+          </Card>
+        ))}
+      </div>
+      <Card className="mt-6 p-6">
+        <h2 className="mb-2 text-xl font-bold">Was noch bewusst offen ist</h2>
+        <p className="text-sm leading-relaxed text-[#9aa6b7]">
+          Echte iPhone-/Android-Abnahme, Live-IDrive-e2-E2E, Push-Benachrichtigungen, Malware-Scanning,
+          atomare Milliarden-Quotas und ein echter KI-Kern sind separate Freigaben. Diese Punkte werden nicht versteckt,
+          sondern vor Production in Release-Berichten ausgewiesen.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Button onClick={() => onNavigate('settings')}>Meldung senden</Button>
+          <Button variant="secondary" onClick={() => onNavigate('privacy')}>Datenschutz lesen</Button>
+        </div>
+      </Card>
+    </div>
+  )
+}
+
+function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
+  const content = {
+    privacy: {
+      title: 'Datenschutz',
+      intro: 'Diese MVP-Datenschutzerklaerung beschreibt die aktuelle Free-only-Architektur und ersetzt keine finale Rechtsberatung.',
+      points: [
+        'Login erfolgt ueber GitHub OAuth. Die Session liegt als HttpOnly Secure Cookie vor.',
+        'Kleine Metadaten liegen in Cloudflare KV; Dateien, Medien und grosse Datenobjekte liegen in IDrive e2.',
+        'Private Profile, private API-Routen und private Dateien sind nicht fuer Suchmaschinen bestimmt.',
+        'Account-Export und Account-Loeschung sind im Profilbereich vorbereitet.',
+        'Es werden keine Google Fonts, keine bezahlten Analytics-Tools und keine bezahlten KI-Provider als Pflichtdienst eingesetzt.',
+      ],
+    },
+    terms: {
+      title: 'Nutzungsbedingungen',
+      intro: 'Diese MVP-Bedingungen definieren die sichere Nutzung bis zur finalen juristischen Freigabe.',
+      points: [
+        'Nutzer duerfen nur Daten hochladen, fuer die sie Rechte und Einwilligungen haben.',
+        'Missbrauch, Spam, illegale Inhalte und Verletzungen von Persoenlichkeitsrechten sind verboten.',
+        'AI-Twins sind digitale Profile und duerfen nicht als echte Person ausgegeben werden.',
+        'Oeffentliche Twins koennen indexiert werden; private Twins bleiben privat und noindex.',
+        'Die Free-only-Phase hat harte Upload-, Speicher- und API-Limits.',
+      ],
+    },
+    imprint: {
+      title: 'Impressum',
+      intro: 'MVP-Impressum-Platzhalter fuer den aktuellen Projektstand. Vor Production muessen Betreiberangaben final juristisch geprueft werden.',
+      points: [
+        'Kontakt: i@smyst.com',
+        'Domain: smyst.com',
+        'Betrieb: GitHub.com, Cloudflare.com und IDrivee2.com im erlaubten Free-only-Rahmen.',
+        'Finale Betreiberadresse, Rechtsform, Vertretungsberechtigte und Pflichtangaben sind vor Production zu ergaenzen.',
+      ],
+    },
+  }[kind]
+
+  return (
+    <div className="pt-[72px]">
+      <Card className="mx-auto max-w-[860px] p-6 sm:p-8">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Rechtliches</p>
+        <h1 className="mb-3 text-4xl font-bold tracking-tight">{content.title}</h1>
+        <p className="mb-6 text-sm leading-relaxed text-[#9aa6b7]">{content.intro}</p>
+        <div className="space-y-3">
+          {content.points.map((point) => (
+            <div key={point} className="border border-white/[0.08] bg-white/[0.04] p-4">
+              <p className="text-sm leading-relaxed text-[#d5dbe5]">{point}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   )
 }
@@ -1999,6 +2317,10 @@ function MemoryUploadView() {
   const auth = useAuth()
   const memoryUpload = useMemoryUpload()
   const [uploaded, setUploaded] = useState<Array<UploadResult & { name: string; category: MemoryCategory; uploadedAt: number }>>([])
+  const uploadCategoryCounts = uploaded.reduce<Record<string, number>>((acc, file) => {
+    acc[file.category] = (acc[file.category] ?? 0) + 1
+    return acc
+  }, {})
 
   const handleFiles = async (files: FileList | File[]) => {
     if (auth.status !== 'authenticated') return
@@ -2120,16 +2442,10 @@ function MemoryUploadView() {
           <Card>
             <h3 className="mb-4 text-lg font-semibold">Memory Kategorien</h3>
             <div className="space-y-2">
-              {[
-                { name: 'Kindheit', count: 24, color: 'bg-[rgba(89,199,255,0.18)]' },
-                { name: 'Beruf', count: 18, color: 'bg-[rgba(139,124,255,0.18)]' },
-                { name: 'Familie', count: 32, color: 'bg-[rgba(89,199,255,0.18)]' },
-                { name: 'Reisen', count: 15, color: 'bg-[rgba(139,124,255,0.18)]' },
-                { name: 'Werte', count: 12, color: 'bg-[rgba(89,199,255,0.18)]' },
-              ].map((cat, idx) => (
-                <div key={idx} className={`flex cursor-pointer items-center justify-between rounded-lg ${cat.color} p-3 transition-colors hover:bg-white/24`}>
-                  <span className="text-sm font-medium">{cat.name}</span>
-                  <span className="text-xs font-semibold">{cat.count}</span>
+              {(['profile_image', 'image', 'audio', 'video', 'document', 'backup', 'twin_data'] as MemoryCategory[]).map((category) => (
+                <div key={category} className="flex items-center justify-between rounded-lg bg-white/12 p-3">
+                  <span className="text-sm font-medium">{category.replace('_', ' ')}</span>
+                  <span className="text-xs font-semibold">{uploadCategoryCounts[category] ?? 0}</span>
                 </div>
               ))}
             </div>
@@ -2178,12 +2494,15 @@ function TwinChatView() {
   const [chatId, setChatId] = useState<string | null>(null)
   const [activeTwin, setActiveTwin] = useState<TwinRecord | null>(null)
   const [isReplying, setIsReplying] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const { lang } = useLanguage({ reloadOnChange: false })
   const auth = useAuth()
   const twinMvp = useTwinMvp()
 
   const canSend = auth.status === 'authenticated' && input.trim().length > 0 && !isReplying
+  const canSpeak = input.trim().length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const initials = (activeTwin?.name ?? 'Smyst')
     .split(/\s+/)
     .filter(Boolean)
@@ -2217,6 +2536,12 @@ function TwinChatView() {
       alive = false
     }
   }, [auth.status])
+
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+    }
+  }, [])
 
   const resizeInput = (value: string) => {
     setInput(value)
@@ -2298,6 +2623,16 @@ function TwinChatView() {
     }
   }
 
+  const handleSpeakInput = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel()
+      setIsSpeaking(false)
+      return
+    }
+    const started = speakText(input, lang, () => setIsSpeaking(false))
+    if (started) setIsSpeaking(true)
+  }
+
   return (
     <div className="pt-6 sm:pt-[72px]">
       {auth.status === 'anonymous' && (
@@ -2314,7 +2649,7 @@ function TwinChatView() {
         </Card>
       )}
 
-      <section className="mx-auto flex h-[calc(100dvh-132px)] min-h-[620px] max-w-[980px] flex-col overflow-hidden rounded-[28px] border border-white/42 bg-white/22 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_24px_80px_rgba(82,88,98,0.16)] backdrop-blur-[30px] sm:h-[calc(100dvh-164px)]">
+      <section className="mx-auto flex h-[calc(100dvh-132px)] min-h-[520px] max-w-[980px] flex-col overflow-hidden rounded-[28px] border border-white/42 bg-white/22 shadow-[inset_0_1px_0_rgba(255,255,255,0.72),0_24px_80px_rgba(82,88,98,0.16)] backdrop-blur-[30px] sm:h-[calc(100dvh-164px)] sm:min-h-[620px]">
         <header className="flex shrink-0 items-center justify-between gap-3 border-b border-white/26 bg-white/18 px-4 py-3 backdrop-blur-[22px] sm:px-5 sm:py-4">
           <div className="flex min-w-0 items-center gap-3">
             <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#59C7FF]/20 text-sm font-bold text-[#0b1c44] ring-1 ring-white/44">
@@ -2434,6 +2769,18 @@ function TwinChatView() {
                 title="Spracheingabe"
               >
                 <Mic className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                disabled={!canSpeak}
+                onClick={handleSpeakInput}
+                className={`grid h-11 w-11 shrink-0 place-items-center rounded-full text-[#555b64] transition-colors hover:bg-white/24 disabled:opacity-45 ${
+                  isSpeaking ? 'bg-white/24 text-[#16181b]' : ''
+                }`}
+                aria-label={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
+                title={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
+              >
+                <Speaker className="h-4 w-4" />
               </button>
               <button
                 type="button"

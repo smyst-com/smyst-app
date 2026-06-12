@@ -22,6 +22,8 @@
     <link rel="alternate" hreflang="x-default" href="https://smyst.com/" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="author" href="/llms.txt" />
+    <link rel="help" type="text/plain" href="/ai.txt" />
+    <link rel="alternate" type="text/plain" title="LLM summary" href="/llms.txt" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="preload" href="/locales/de.json" as="fetch" type="application/json" crossorigin="anonymous" />
     <link rel="prefetch" href="/locales/en.json" as="fetch" type="application/json" crossorigin="anonymous" />
@@ -34,7 +36,9 @@
 
     <!-- App preview icon -->
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-    <link rel="apple-touch-icon" href="/logo.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Open Graph / Twitter -->
     <meta property="og:type" content="website" />
@@ -59,7 +63,12 @@
             "@id": "https://smyst.com/#organization",
             "name": "smyst.com",
             "url": "https://smyst.com/",
-            "logo": "https://smyst.com/logo.svg"
+            "logo": "https://smyst.com/logo.svg",
+            "sameAs": [
+              "https://smyst.com/",
+              "https://smyst.com/llms.txt",
+              "https://smyst.com/ai.txt"
+            ]
           },
           {
             "@type": "WebSite",
@@ -74,6 +83,23 @@
             }
           },
           {
+            "@type": "WebPage",
+            "@id": "https://smyst.com/#webpage",
+            "url": "https://smyst.com/",
+            "name": "smyst.com | KI-Zwillinge, digitale Profile und Twin Chat",
+            "isPartOf": { "@id": "https://smyst.com/#website" },
+            "about": { "@id": "https://smyst.com/#app" },
+            "inLanguage": "de",
+            "primaryImageOfPage": {
+              "@type": "ImageObject",
+              "url": "https://smyst.com/og-image.png"
+            },
+            "speakable": {
+              "@type": "SpeakableSpecification",
+              "cssSelector": ["title", "meta[name='description']"]
+            }
+          },
+          {
             "@type": "SoftwareApplication",
             "@id": "https://smyst.com/#app",
             "name": "smyst.com",
@@ -81,7 +107,36 @@
             "operatingSystem": "Web, iOS, Android, PWA",
             "url": "https://smyst.com/",
             "description": "Free-only KI-Zwilling Plattform fuer digitale Profile, Wissen, Erinnerungen und schnelle Twin-Chats.",
-            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+            "featureList": [
+              "Public AI twin profiles",
+              "Private AI twin profiles",
+              "Rule-based MVP twin chat",
+              "IDrive e2 media and backup storage",
+              "Cloudflare Workers API"
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://smyst.com/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is smyst.com?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "smyst.com is a free-only AI twin platform for public and private digital profiles, knowledge, memories and rule-based twin chats."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where are files stored?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Files, media, backups and larger twin data are stored in IDrive e2. Small metadata and public profile snapshots are stored in Cloudflare KV."
+                }
+              }
+            ]
           }
         ]
       }

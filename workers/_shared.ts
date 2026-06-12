@@ -15,6 +15,9 @@ const JSON_CONTENT_TYPE = 'application/json; charset=utf-8';
 const MAX_JSON_BODY_BYTES = 128 * 1024;
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+const CSRF_HEADER = 'X-Smyst-CSRF';
+const CSRF_HEADER_VALUE = '1';
+export const DELETE_CONFIRM_HEADER = 'X-Smyst-Delete-Confirm';
 
 export function securityHeaders(extra: Record<string, string> = {}): Headers {
   return new Headers({
@@ -58,6 +61,21 @@ export function errorResponse(code: string, message: string, status = 400, extra
   return jsonResponse({ error: { code, message, ...extra } }, status);
 }
 
+export function methodNotAllowed(methods: string[]): Response {
+  const allowMethods = Array.from(new Set([...methods, 'OPTIONS']));
+  return jsonResponse(
+    {
+      error: {
+        code: 'method_not_allowed',
+        message: 'Method not allowed.',
+        allow: allowMethods,
+      },
+    },
+    405,
+    { Allow: allowMethods.join(', ') },
+  );
+}
+
 export function corsPreflight(canonicalHost: string, methods: string): Response {
   return withSecurity(new Response(null, {
     status: 204,
@@ -65,7 +83,7 @@ export function corsPreflight(canonicalHost: string, methods: string): Response 
       'Access-Control-Allow-Origin': canonicalHost,
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': methods,
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': `Content-Type, Authorization, X-Smyst-CSRF, ${DELETE_CONFIRM_HEADER}`,
       'Access-Control-Max-Age': '600',
     },
   }));
@@ -97,7 +115,7 @@ export function strictCorsPreflight(
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': methods,
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Smyst-CSRF',
+      'Access-Control-Allow-Headers': `Content-Type, Authorization, X-Smyst-CSRF, ${DELETE_CONFIRM_HEADER}`,
       'Access-Control-Max-Age': '600',
       'Vary': 'Origin',
     },
@@ -115,6 +133,13 @@ function sameSiteUrl(raw: string | null, canonicalHost: string): boolean {
 
 export function requireSameOrigin(request: Request, canonicalHost: string): Response | null {
   if (SAFE_METHODS.has(request.method)) return null;
+  if (request.headers.get(CSRF_HEADER) !== CSRF_HEADER_VALUE) {
+    return errorResponse('csrf_header_required', 'CSRF header is required.', 403);
+  }
+  const fetchSite = request.headers.get('Sec-Fetch-Site')?.toLowerCase();
+  if (fetchSite && !['same-origin', 'same-site', 'none'].includes(fetchSite)) {
+    return errorResponse('csrf_fetch_site_rejected', 'Cross-site request is not allowed.', 403);
+  }
   const origin = request.headers.get('Origin');
   if (origin) {
     return sameSiteUrl(origin, canonicalHost)
@@ -124,6 +149,16 @@ export function requireSameOrigin(request: Request, canonicalHost: string): Resp
   const referer = request.headers.get('Referer');
   if (sameSiteUrl(referer, canonicalHost)) return null;
   return errorResponse('csrf_origin_required', 'Same-origin request header is required.', 403);
+}
+
+export function requireDeleteConfirmation(request: Request, expectedValue: string): Response | null {
+  if (request.method !== 'DELETE') return null;
+  if (request.headers.get(DELETE_CONFIRM_HEADER) === expectedValue) return null;
+  return errorResponse(
+    'delete_confirmation_header_required',
+    `Destructive requests require ${DELETE_CONFIRM_HEADER}: ${expectedValue}.`,
+    428,
+  );
 }
 
 export async function readJsonBody<T>(
@@ -172,18 +207,53 @@ export async function rateLimit(kv: KVNamespace, opts: RateLimitOptions): Promis
 export async function requireRateLimit(kv: KVNamespace, opts: RateLimitOptions): Promise<Response | null> {
   const result = await rateLimit(kv, opts);
   if (result.allowed) return null;
-  return errorResponse('rate_limited', 'Too many requests. Please slow down.', 429, {
-    limit: result.limit,
-    resetAt: result.resetAt,
-  });
+  const retryAfterSeconds = Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000));
+  return jsonResponse(
+    {
+      error: {
+        code: 'rate_limited',
+        message: 'Too many requests. Please slow down.',
+        limit: result.limit,
+        resetAt: result.resetAt,
+      },
+    },
+    429,
+    {
+      'Retry-After': String(retryAfterSeconds),
+      'X-RateLimit-Limit': String(result.limit),
+      'X-RateLimit-Remaining': '0',
+      'X-RateLimit-Reset': String(Math.ceil(result.resetAt / 1000)),
+    },
+  );
 }
 
-export async function safeHandler(handler: () => Promise<Response>): Promise<Response> {
+function requestIdFrom(request?: Request): string {
+  const cfRay = request?.headers.get('cf-ray');
+  if (cfRay) return cfRay.split('-')[0] || cfRay;
+  return crypto.randomUUID();
+}
+
+function timingHeader(startedAt: number): string {
+  return `total;dur=${Date.now() - startedAt}`;
+}
+
+export async function safeHandler(handler: () => Promise<Response>, request?: Request): Promise<Response> {
+  const startedAt = Date.now();
+  const requestId = requestIdFrom(request);
   try {
-    return withSecurity(await handler());
+    return withSecurity(await handler(), {
+      'Server-Timing': timingHeader(startedAt),
+      'X-Smyst-Request-Id': requestId,
+    });
   } catch (err) {
-    console.error('worker_unhandled_error', String(err));
-    return errorResponse('internal_error', 'Internal error', 500);
+    console.error('worker_unhandled_error', JSON.stringify({ requestId, error: String(err) }));
+    return withSecurity(
+      errorResponse('internal_error', 'Internal error', 500, { requestId }),
+      {
+        'Server-Timing': timingHeader(startedAt),
+        'X-Smyst-Request-Id': requestId,
+      },
+    );
   }
 }
 

@@ -14,7 +14,7 @@
  *  - Resumable Upload via tus.io kann später als Wrapper draufkommen
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 export type MemoryCategory = 'audio' | 'image' | 'video' | 'document' | 'profile_image' | 'backup' | 'twin_data';
 
@@ -78,6 +78,8 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   zip: 'application/zip',
 };
 
+const DIRECT_PUT_ATTEMPTS = 2;
+
 interface UploadUrlResponse {
   uploadId: string;
   uploadUrl: string;
@@ -85,6 +87,10 @@ interface UploadUrlResponse {
   getUrl: string;
   expiresAt: number;
   contentType: string;
+  maxBytes: number;
+  category: MemoryCategory;
+  supportsChunkUpload: false;
+  supportsResume: false;
 }
 
 function errorMessage(body: unknown, fallback: string): string {
@@ -110,6 +116,7 @@ export function useMemoryUpload() {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<UploadProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const activeXhr = useRef<XMLHttpRequest | null>(null);
 
   const upload = useCallback(
     async (file: File, category: MemoryCategory, opts: { twinId?: string } = {}): Promise<UploadResult | null> => {
@@ -130,7 +137,7 @@ export function useMemoryUpload() {
         const urlRes = await fetch('/storage/upload-url', {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
           body: JSON.stringify({
             contentType: inferContentType(file),
             filename: file.name,
@@ -148,34 +155,54 @@ export function useMemoryUpload() {
         const { uploadId, uploadUrl, key, getUrl, contentType } = (await urlRes.json()) as UploadUrlResponse;
 
         // Schritt 2: Direct-Upload mit Progress-Tracking via XHR
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open('PUT', uploadUrl);
-          xhr.timeout = 15 * 60 * 1000;
-          xhr.setRequestHeader('Content-Type', contentType);
+        for (let attempt = 1; attempt <= DIRECT_PUT_ATTEMPTS; attempt += 1) {
+          try {
+            await new Promise<void>((resolve, reject) => {
+              const xhr = new XMLHttpRequest();
+              activeXhr.current = xhr;
+              xhr.open('PUT', uploadUrl);
+              xhr.timeout = 15 * 60 * 1000;
+              xhr.setRequestHeader('Content-Type', contentType);
 
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-              const pct = Math.round((e.loaded / e.total) * 100);
-              setProgress({ loaded: e.loaded, total: e.total, percentage: pct });
-            }
-          };
+              xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                  const pct = Math.round((e.loaded / e.total) * 100);
+                  setProgress({ loaded: e.loaded, total: e.total, percentage: pct });
+                }
+              };
 
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) resolve();
-            else reject(new Error(`PUT failed: ${xhr.status} ${xhr.statusText}`));
-          };
-          xhr.onerror = () => reject(new Error('Network error during upload'));
-          xhr.ontimeout = () => reject(new Error('Upload timed out'));
-          xhr.onabort = () => reject(new Error('Upload aborted'));
+              xhr.onload = () => {
+                activeXhr.current = null;
+                if (xhr.status >= 200 && xhr.status < 300) resolve();
+                else reject(new Error(`PUT failed: ${xhr.status} ${xhr.statusText}`));
+              };
+              xhr.onerror = () => {
+                activeXhr.current = null;
+                reject(new Error('Network error during upload'));
+              };
+              xhr.ontimeout = () => {
+                activeXhr.current = null;
+                reject(new Error('Upload timed out'));
+              };
+              xhr.onabort = () => {
+                activeXhr.current = null;
+                reject(new Error('Upload aborted'));
+              };
 
-          xhr.send(file);
-        });
+              xhr.send(file);
+            });
+            break;
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            if (message === 'Upload aborted' || attempt === DIRECT_PUT_ATTEMPTS) throw err;
+            await new Promise((resolve) => window.setTimeout(resolve, 700 * attempt));
+          }
+        }
 
         const completeRes = await fetch('/storage/upload-complete', {
           method: 'POST',
           credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
           body: JSON.stringify({ uploadId, key, size: file.size }),
         });
         if (!completeRes.ok) {
@@ -194,6 +221,7 @@ export function useMemoryUpload() {
           size: file.size,
         };
       } catch (err) {
+        activeXhr.current = null;
         setUploading(false);
         const msg = err instanceof Error ? err.message : String(err);
         setError(msg);
@@ -205,10 +233,19 @@ export function useMemoryUpload() {
   );
 
   const reset = useCallback(() => {
+    activeXhr.current?.abort();
+    activeXhr.current = null;
     setUploading(false);
     setProgress(null);
     setError(null);
   }, []);
 
-  return { upload, uploading, progress, error, reset };
+  const cancel = useCallback(() => {
+    activeXhr.current?.abort();
+    activeXhr.current = null;
+    setUploading(false);
+    setError('Upload abgebrochen.');
+  }, []);
+
+  return { upload, uploading, progress, error, reset, cancel };
 }

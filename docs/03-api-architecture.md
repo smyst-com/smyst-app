@@ -22,6 +22,16 @@ Chat/API:
 - `POST /api/chat/start`
 - `POST /api/chat/messages`
 - `GET /api/chat/list`
+- `GET /api/account/export`
+- `DELETE /api/account`
+- `POST /api/support/report`
+- `POST /api/twins`
+- `GET /api/twins`
+- `GET /api/twins/{id}`
+- `PATCH /api/twins/{id}`
+- `POST /api/twins/knowledge`
+- `POST /api/twins/media`
+- `GET /api/public/twins/{slug}`
 
 Auth:
 
@@ -29,16 +39,18 @@ Auth:
 - `GET /auth/github/callback`
 - `GET /auth/me`
 - `POST /auth/logout`
+- `POST /auth/logout-all`
 
-Auth speichert ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen und Rechte werden in KV am User-Record und an der Session gehalten.
+Auth speichert ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen und Rechte werden in KV am User-Record und an der Session gehalten. `POST /auth/logout-all` entfernt die aktuelle bekannte User-Session-Liste aus KV und meldet alle gespeicherten Sessions ab.
 
 Storage:
 
 - `POST /storage/upload-url`
 - `POST /storage/upload-complete`
 - `GET /storage/uploads`
-- `GET /storage/download`
-- `DELETE /storage/delete`
+- `GET /storage/file/{key}`
+- `DELETE /storage/file/{key}`
+- `DELETE /storage/account`
 
 Translation/Edge:
 
@@ -51,10 +63,17 @@ Fehlerformat:
 
 ```json
 {
-  "error": "upload_too_large",
-  "details": "File exceeds the configured free-only limit."
+  "error": {
+    "code": "file_too_large",
+    "message": "File too large: 52428801 > 52428800"
+  }
 }
 ```
+
+Bekannte Route mit falscher HTTP-Methode liefert `405 method_not_allowed` und einen `Allow`-Header.
+Rate-Limit-Fehler liefern `429 rate_limited` mit `Retry-After`, `X-RateLimit-Limit`,
+`X-RateLimit-Remaining` und `X-RateLimit-Reset`.
+Jede Worker-Antwort erhaelt `X-Smyst-Request-Id` und `Server-Timing` zur Diagnose.
 
 ## Chat API Zielbild
 
@@ -85,8 +104,19 @@ Profile/Twins/Chat:
 
 - In der Free-Only-Phase nur kleine Status- und Demo-Metadaten in KV.
 - Chat-Demo-Zustaende liegen unter `meta:chat:{userSub}:{chatId}` und `meta:chats:{userSub}`.
+- Twin-Metadaten liegen unter `meta:twin:{userSub}:{twinId}` und `meta:twins:{userSub}`.
+- Oeffentliche Twin-Slugs liegen unter `public:twin:{slug}`.
+- Support-/Trust-Meldungen liegen unter `meta:support-report:{createdAt}:{reportId}`.
 - Grosse Inhalte, exportierte Memories und Backups gehoeren nach IDrive e2.
 - Kein Production-Pfad darf eine separat betriebene Datenbank voraussetzen.
+
+## Nicht vorhanden in Phase 1
+
+- Keine GraphQL-API.
+- Keine Webhooks.
+- Keine externe KI-/LLM-API.
+- Keine externe Such-API.
+- Keine bezahlten Queue-, Datenbank-, Analytics- oder Observability-Dienste.
 
 ## Skalierungsnotiz
 

@@ -107,6 +107,7 @@ npm run workers:deploy
 | `GET /auth/github/callback` | OAuth Callback, Session erzeugen | `SESSIONS` KV |
 | `GET /auth/me` | aktuelle Session lesen | `SESSIONS` KV |
 | `POST /auth/logout` | Session entfernen | `SESSIONS` KV |
+| `POST /auth/logout-all` | bekannte User-Sessions entfernen | `SESSIONS` KV |
 
 Auth verwendet ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen/Rechte werden pro User in KV gespeichert:
 
@@ -127,6 +128,7 @@ Owner/Admin-Zuordnung erfolgt ueber `SMYST_OWNER_GITHUB_IDS`, `SMYST_OWNER_EMAIL
 | `GET /storage/uploads` | kleine Upload-Liste fuer aktuellen User | `METADATA` KV |
 | `GET /storage/file/:key` | signed GET Redirect erzeugen | IDrive e2 |
 | `DELETE /storage/file/:key` | Objekt loeschen und KV-Status setzen | IDrive e2 + `METADATA` KV |
+| `DELETE /storage/account` | bekannte User-Objekte und Upload-Metadaten loeschen | IDrive e2 + `METADATA` KV |
 
 Der Worker speichert keine grossen Dateien in KV. Dateiinhalt liegt immer in IDrive e2.
 
@@ -144,13 +146,20 @@ Storage-Kategorien:
 
 `Content-Type` wird beim Presign signiert und muss beim PUT exakt verwendet werden. Nach dem PUT prueft der Worker das Objekt per signed `HEAD`, bevor KV-Status und aktive Speicherzaehler aktualisiert werden.
 
+Downloads ueber `GET /storage/file/:key` sind metadatengebunden: Der Key muss zum User gehoeren, ein KV-Upload-Record muss existieren und der Status muss `uploaded` sein. Dokumente, Backups und `twin_data` werden per `Content-Disposition: attachment` ausgeliefert; Bilder, Videos, Audio und Avatare duerfen inline streamen.
+
+Phase 1 nutzt bewusst Direct-PUT statt Worker-Proxying. Chunk Upload und bytegenaue Wiederaufnahme sind noch nicht aktiv (`supportsChunkUpload: false`, `supportsResume: false`), damit Free-only-Komplexitaet und IDrive-e2-Kostenrisiko niedrig bleiben. Der Client kann laufende Uploads abbrechen und einen fehlgeschlagenen Direct-PUT einmal erneut versuchen.
+
 ### API/Chat Worker
 
 | Endpoint | Zweck | Speicher |
 |---|---|---|
 | `GET /api/health` | API-Status | kein dauerhafter Speicher |
+| `GET /api/account/export` | eigene KV-Metadaten exportieren | `SESSIONS`/`METADATA` KV |
+| `DELETE /api/account` | eigene Chat-/Twin-/Account-Metadaten loeschen | `SESSIONS`/`METADATA` KV |
+| `POST /api/support/report` | Feedback/Abuse/Privacy/Safety-Meldung speichern | `METADATA` KV |
 | `POST /api/chat/start` | Chat-Session starten | `METADATA` KV |
-| `POST /api/chat/messages` | Free-only Demo-Antwort erzeugen | `METADATA` KV |
+| `POST /api/chat/messages` | Free-only regelbasierte Antwort erzeugen | `METADATA` KV |
 | `GET /api/chat/list` | kleine Chat-Liste | `METADATA` KV |
 
 Der Chat-Worker nutzt keine externen Modell-APIs. Antworten sind bewusst statisch/free-only, bis ein erlaubter KI-Pfad definiert ist.
@@ -162,7 +171,11 @@ Alle API-artigen Worker nutzen:
 - strukturierte JSON-Fehler,
 - Security-Headers,
 - CORS-Preflight nur fuer erlaubte Methoden,
+- `Origin`/`Referer` plus `X-Smyst-CSRF: 1` fuer mutierende Cookie-Requests,
 - KV-basierte Rate-Limits mit `rate:*` Prefix,
+- `405 method_not_allowed` mit `Allow`-Header fuer bekannte Routen mit falscher Methode,
+- `429 rate_limited` mit `Retry-After` und `X-RateLimit-*`-Headern,
+- `X-Smyst-Request-Id` und `Server-Timing` fuer Diagnose und Support,
 - `no-store` fuer private JSON-Antworten.
 
 ### Cache-Headers

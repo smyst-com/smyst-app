@@ -33,13 +33,25 @@ function landingAlternates() {
   ].join('\n');
 }
 
+function imageSitemapBlock(entry) {
+  if (entry.loc !== '/') return '';
+  return `
+    <!-- sitemap-image: primary app preview -->
+    <image:image>
+      <image:loc>${HOST}/og-image.png</image:loc>
+      <image:title>smyst.com AI Twin Platform</image:title>
+      <image:caption>smyst.com Create Your AI Twin app preview</image:caption>
+    </image:image>`;
+}
+
 function urlElement(entry, today) {
   const alternates = entry.loc === '/' ? `\n${landingAlternates()}` : '';
+  const image = imageSitemapBlock(entry);
   return `  <url>
     <loc>${HOST}${entry.loc}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>${entry.changefreq}</changefreq>
-    <priority>${entry.priority}</priority>${alternates}
+    <priority>${entry.priority}</priority>${image}${alternates}
   </url>`;
 }
 
@@ -48,7 +60,8 @@ function buildSitemap() {
   const urls = PAGES.map((page) => urlElement(page, today)).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${urls}
 </urlset>
 `;

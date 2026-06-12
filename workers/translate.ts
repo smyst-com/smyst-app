@@ -43,6 +43,31 @@ const PROVIDER_HEADER = 'X-Translation-Provider';
 // KV-TTL für Übersetzungen — lang, weil content_hash bereits Invalidation regelt.
 const KV_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 Tage
 
+const STATIC_PASSTHROUGH_PATHS = new Set([
+  '/manifest.webmanifest',
+  '/sw.js',
+  '/logo.svg',
+  '/og-image.png',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/llms.txt',
+  '/ai.txt',
+  '/apple-touch-icon.png',
+  '/offline.html',
+  '/.well-known/security.txt',
+]);
+
+function isStaticPassthroughPath(pathname: string): boolean {
+  return (
+    STATIC_PASSTHROUGH_PATHS.has(pathname) ||
+    pathname.startsWith('/assets/') ||
+    pathname.startsWith('/icons/') ||
+    pathname.startsWith('/screenshots/') ||
+    pathname.startsWith('/locales/') ||
+    /\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?|map|json|xml|txt|webmanifest)$/i.test(pathname)
+  );
+}
+
 // ---------- Spracherkennung ----------
 
 function detectLang(request: Request, url: URL): SupportedLang {
@@ -401,6 +426,7 @@ export async function translatePage(
 // ---------- Worker Entry ----------
 
 function applyEdgeHeaders(headers: Headers): Headers {
+  headers.delete('X-Robots-Tag');
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
@@ -423,10 +449,7 @@ export default {
       }
 
       // Nicht-HTML-Pfade direkt durchreichen (Assets und SEO/PWA-Dateien).
-      if (
-        url.pathname.startsWith('/assets/') ||
-        url.pathname.match(/\.(js|css|png|jpg|jpeg|webp|avif|svg|ico|woff2?|map|json|xml|txt|webmanifest)$/i)
-      ) {
+      if (isStaticPassthroughPath(url.pathname)) {
         return fetch(env.ORIGIN_URL + url.pathname + url.search);
       }
 
@@ -520,7 +543,7 @@ export default {
       );
 
       return new Response(originHtml, { status: 200, headers });
-    });
+    }, request);
   },
 };
 

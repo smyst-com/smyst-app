@@ -31,12 +31,15 @@ auth:user:{sub}
 state:{nonce}
 quota:user:{sub}:{yyyymm}
 quota:global:{yyyymm}
-upload:intent:{intentId}
-upload:status:{uploadId}
-twin:{twinId}
-twin:slug:{slug}
+meta:upload:{userSub}:{uploadId}
+meta:uploads:{userSub}
+storage:user:{userSub}:active
+storage:global:active
+meta:twin:{userSub}:{twinId}
+meta:twins:{userSub}
 public:twin:{slug}
-chat:{sessionId}
+meta:chat:{userSub}:{chatId}
+meta:chats:{userSub}
 ```
 
 KV speichert nur kleine JSON-Objekte. Private Upload-Inhalte, Rohtexte, Medien und Backups gehoeren nicht in KV.
@@ -62,6 +65,17 @@ Cloudflare KV ist eventual consistent. Deshalb gilt:
 - Upload-Status darf nur vorwaerts wechseln.
 - Clients muessen idempotente Wiederholungen verkraften.
 - Oeffentliche Snapshots werden aus privaten Daten erzeugt und duerfen keine Rohdaten enthalten.
+- Abgelaufene Upload-Intents werden als `expired` markiert und Monats-Quota-Reservierungen werden freigegeben.
+- Account-Loeschung ist zweistufig: bekannte IDrive-e2-Objekte ueber den Storage-Worker, danach KV-Metadaten ueber den API-Worker.
+
+## Legacy-SQL-Referenz
+
+`database/migrations/*.sql` beschreibt ein moegliches spaeteres relationales Domain-Modell. Diese Migrationen sind nicht Teil der aktuellen Production. Die lokale Hardening-Migration `0005_integrity_performance_hardening.sql` ergänzt fuer lokale Experimente:
+
+- CHECK-Constraints fuer Status-, Sichtbarkeits- und Score-Felder,
+- Foreign-Key- und Query-Indizes,
+- `updated_at`-Trigger fuer zentrale Tabellen,
+- Views fuer aktive Twins und indexierbare Public Pages.
 
 ## Loeschung
 

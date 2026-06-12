@@ -82,6 +82,17 @@ export interface TwinChatMessage {
   createdAt: number
 }
 
+export interface AccountExportBundle {
+  ok: boolean
+  exportedAt: string
+  storageNote: string
+  user: unknown
+  twins: TwinRecord[]
+  chats: Array<{ id: string; title: string; messages: TwinChatMessage[]; createdAt: number; updatedAt: number }>
+}
+
+export type SupportReportType = 'bug' | 'abuse' | 'privacy' | 'safety' | 'feedback'
+
 interface ApiErrorShape {
   error?: string | { message?: string }
 }
@@ -96,6 +107,9 @@ function apiError(body: unknown, fallback: string): string {
 async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
+  if ((init.method ?? 'GET').toUpperCase() !== 'GET') {
+    headers.set('X-Smyst-CSRF', '1')
+  }
   const res = await fetch(path, {
     ...init,
     credentials: 'include',
@@ -257,6 +271,48 @@ export function useTwinMvp() {
     [run],
   )
 
+  const exportAccount = useCallback(
+    () =>
+      run(async () => {
+        return apiJson<AccountExportBundle>('/api/account/export')
+      }),
+    [run],
+  )
+
+  const deleteAccount = useCallback(
+    () =>
+      run(async () => {
+        const storageRes = await fetch('/storage/account', {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: { 'X-Smyst-CSRF': '1', 'X-Smyst-Delete-Confirm': 'delete-account-storage' },
+        })
+        const storageBody = await storageRes.json().catch(() => null)
+        if (!storageRes.ok || (storageBody && typeof storageBody === 'object' && 'ok' in storageBody && !storageBody.ok)) {
+          throw new Error(apiError(storageBody, `Storage delete failed (${storageRes.status})`))
+        }
+
+        const apiBody = await apiJson<{ ok: boolean; deleted: Record<string, unknown>; storageNote: string }>('/api/account', {
+          method: 'DELETE',
+          headers: { 'X-Smyst-Delete-Confirm': 'delete-account' },
+          body: JSON.stringify({ confirm: 'DELETE' }),
+        })
+        return { storage: storageBody, account: apiBody }
+      }),
+    [run],
+  )
+
+  const submitSupportReport = useCallback(
+    (input: { type: SupportReportType; subject: string; message: string; url?: string; contact?: string }) =>
+      run(async () => {
+        return apiJson<{ ok: boolean; reportId: string; message: string }>('/api/support/report', {
+          method: 'POST',
+          body: JSON.stringify(input),
+        })
+      }),
+    [run],
+  )
+
   return {
     loading,
     error,
@@ -269,5 +325,8 @@ export function useTwinMvp() {
     addMedia,
     startTwinChat,
     sendTwinMessage,
+    exportAccount,
+    deleteAccount,
+    submitSupportReport,
   }
 }

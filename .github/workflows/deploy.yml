@@ -42,6 +42,16 @@ on:
         required: true
         default: false
         type: boolean
+      rollback_plan_confirmed:
+        description: 'Rollback-Plan für Pages, Workers und Git ist dokumentiert.'
+        required: true
+        default: false
+        type: boolean
+      backup_restore_confirmed:
+        description: 'Backup-/Restore-Dry-Run für KV und IDrive e2 ist dokumentiert.'
+        required: true
+        default: false
+        type: boolean
 
 # Vermeide parallele Deploys, queuen wenn nötig
 concurrency:
@@ -98,10 +108,14 @@ jobs:
           RELEASE_APPROVAL: ${{ inputs.release_approval }}
           RELEASE_VERSION: ${{ inputs.release_version }}
           RELEASE_FREEZE_CONFIRMED: ${{ inputs.release_freeze_confirmed }}
+          ROLLBACK_PLAN_CONFIRMED: ${{ inputs.rollback_plan_confirmed }}
+          BACKUP_RESTORE_CONFIRMED: ${{ inputs.backup_restore_confirmed }}
         run: |
           test "$RELEASE_APPROVAL" = "Ja OK"
           test -n "$RELEASE_VERSION"
           test "$RELEASE_FREEZE_CONFIRMED" = "true"
+          test "$ROLLBACK_PLAN_CONFIRMED" = "true"
+          test "$BACKUP_RESTORE_CONFIRMED" = "true"
           echo "Release gate accepted for $RELEASE_VERSION"
 
   deploy-pages:
@@ -190,3 +204,5 @@ jobs:
 
       - name: Verify live production
         run: sh scripts/live-test.sh
+        env:
+          WEB_BASE_URL: https://smyst.com

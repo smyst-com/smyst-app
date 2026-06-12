@@ -1,0 +1,245 @@
+{
+  "version": "2026-06-11",
+  "productionStatus": "NO-GO",
+  "ratingScale": "0-10; 10 requires verified production evidence, green tests, operational runbooks, and no unresolved blockers.",
+  "freeOnlyPolicy": {
+    "allowedServices": ["GitHub.com free tier", "Cloudflare.com free tier", "IDrive e2 as central storage"],
+    "paidServicesAllowed": false,
+    "productionDeployRequiresFinalWrittenApproval": true
+  },
+  "globalBlockers": [
+    "Live production is still not verified against the current repository artifact.",
+    "No final written production approval has been given.",
+    "Billion-user/day scale cannot be proven or honestly achieved on free-only GitHub and Cloudflare limits.",
+    "Real AI model orchestration is not implemented in the free-only MVP.",
+    "Legal/privacy/compliance review and abuse operations are not complete."
+  ],
+  "areas": [
+    {
+      "id": "security",
+      "label": "Sicherheit",
+      "score": 7.5,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "Auth, CSRF, strict cookies, rate limits, delete-confirm headers, security headers, and upload checks exist, but production verification and advanced abuse protection are incomplete.",
+      "automaticImprovements": [
+        "Delete confirmation headers enforced for destructive account and storage routes.",
+        "Backup, restore, and change-protection gates added to release checks.",
+        "Public security.txt and noindex checks added to artifact/live smoke tests."
+      ],
+      "blockers": [
+        "Live .well-known/security.txt and static security headers are not verified on production.",
+        "No completed penetration test or third-party security review.",
+        "No malware scanning pipeline for uploaded files in the free-only architecture."
+      ],
+      "nextActions": [
+        "Deploy only after written approval, then rerun live security smoke tests.",
+        "Add upload quarantine/scanning strategy that stays within the free-only constraint.",
+        "Run manual auth/session abuse tests before public launch."
+      ]
+    },
+    {
+      "id": "speed",
+      "label": "Geschwindigkeit",
+      "score": 6.5,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "The Vite app, Cloudflare edge delivery, static caching, and service worker are ready, but measured production performance is not green yet.",
+      "automaticImprovements": [
+        "Static artifact checks cover manifest icons, service worker assets, and cache-sensitive public files.",
+        "Live test now verifies public root/indexing and critical static endpoints."
+      ],
+      "blockers": [
+        "No current Lighthouse/WebPageTest evidence for mobile and desktop.",
+        "No production latency budget evidence for auth, API, storage, and chat flows.",
+        "Live root previously showed stale deployment behavior."
+      ],
+      "nextActions": [
+        "Run Lighthouse on preview and production after deployment approval.",
+        "Add lightweight edge timing dashboards from Cloudflare logs/analytics.",
+        "Measure upload and chat time-to-first-response with realistic payloads."
+      ]
+    },
+    {
+      "id": "stability",
+      "label": "Stabilitaet",
+      "score": 6.0,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "Release gates and runbooks exist, but full E2E, live smoke, and rollback drills are not complete.",
+      "automaticImprovements": [
+        "Production workflow requires release approval, freeze confirmation, rollback confirmation, and backup restore confirmation.",
+        "Backup and change protection validation scripts are included in test-all."
+      ],
+      "blockers": [
+        "No fresh green full browser/mobile test matrix.",
+        "No recent restore drill evidence from production-like data.",
+        "No confirmed Cloudflare rollback drill after the latest Worker changes."
+      ],
+      "nextActions": [
+        "Run Playwright desktop and mobile tests against a preview URL.",
+        "Perform one restore dry-run and attach the evidence to the release.",
+        "Run Cloudflare Worker rollback drill before production."
+      ]
+    },
+    {
+      "id": "scale",
+      "label": "Skalierung",
+      "score": 3.0,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "The system is shaped as an edge MVP, but billion-user/day scale requires paid capacity, traffic engineering, observability, regional data strategy, and model infrastructure.",
+      "automaticImprovements": [
+        "Free-only data map documents Cloudflare KV and IDrive e2 boundaries.",
+        "Legacy SQL/vector targets are blocked from production policy."
+      ],
+      "blockers": [
+        "Free Cloudflare/GitHub tiers cannot guarantee billion-user/day capacity.",
+        "Cloudflare KV is not a full relational or high-write chat database.",
+        "No load-test evidence beyond architecture review."
+      ],
+      "nextActions": [
+        "Define realistic phase targets for MVP, beta, launch, and hyperscale.",
+        "Design paid-capable future architecture while keeping current MVP free-only.",
+        "Add synthetic load tests for the free-tier-safe MVP limits."
+      ]
+    },
+    {
+      "id": "seo",
+      "label": "SEO/AIO/GEO/AEO",
+      "score": 5.0,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "Repo contains robots, sitemap, llms, ai policy, OpenGraph, and localized shells, but live production still needs verification and public profile pages are MVP-level.",
+      "automaticImprovements": [
+        "ai.txt, llms.txt, sitemap, robots, security.txt, and PWA manifest checks added.",
+        "Translate Worker now passes static AI/SEO files through instead of returning SPA HTML."
+      ],
+      "blockers": [
+        "Live root previously sent X-Robots-Tag noindex,nofollow.",
+        "Live ai.txt/security.txt previously returned HTML fallback.",
+        "No Search Console/Bing verification because external paid/third-party tooling is excluded."
+      ],
+      "nextActions": [
+        "After deployment approval, verify every static SEO/AIO endpoint on smyst.com.",
+        "Generate real public profile HTML only for user-approved public profiles.",
+        "Submit sitemap manually where free webmaster tools are allowed."
+      ]
+    },
+    {
+      "id": "ai",
+      "label": "KI",
+      "score": 2.0,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "The current MVP has rule-based chat behavior and AI policy files, but no production-grade model orchestration, memory retrieval, evaluation, safety system, or provider abstraction.",
+      "automaticImprovements": [
+        "AI policy files document what can and cannot be indexed.",
+        "Prompt-injection risks are included in the security documentation."
+      ],
+      "blockers": [
+        "No real model backend is implemented under the free-only constraint.",
+        "No evaluation harness for answer quality, safety, latency, or hallucination.",
+        "No multi-provider failover for Gemini, Claude, Grok, DeepSeek, Kimi, Manus, or Mistral."
+      ],
+      "nextActions": [
+        "Define a provider-agnostic AI gateway interface without adding paid services now.",
+        "Add local/mock evaluation tests for the chat contract.",
+        "Document which future paid or user-provided model keys would be required for real AI."
+      ]
+    },
+    {
+      "id": "infrastructure",
+      "label": "Infrastruktur",
+      "score": 6.5,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "Cloudflare Workers/Pages-style deployment, GitHub Actions gates, KV metadata, and IDrive e2 storage are defined, but live routes/secrets cannot be fully verified locally.",
+      "automaticImprovements": [
+        "Release workflow now blocks production without explicit rollback and restore confirmations.",
+        "Preflight script enforces approval, freeze, backup, restore, and rollback inputs."
+      ],
+      "blockers": [
+        "Cloudflare routes/secrets are not fully re-read and verified in this run.",
+        "Current live deployment appears stale compared with repository checks.",
+        "No production monitoring/alerting proof beyond free dashboard capabilities."
+      ],
+      "nextActions": [
+        "Verify Cloudflare routes, Workers, Pages deployment target, and GitHub secrets before release.",
+        "Run deployment to preview first, never production without written approval.",
+        "Document exact free-tier operational limits and escalation thresholds."
+      ]
+    },
+    {
+      "id": "usability",
+      "label": "Benutzerfreundlichkeit",
+      "score": 7.0,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "The requested dark, square, compact iPhone-like chat design is implemented in the app, but final multi-device visual QA and accessibility checks are not complete.",
+      "automaticImprovements": [
+        "UI has been aligned to the start-page design language with compact chat, square avatars, and bottom icon bar behavior.",
+        "Settings and profile/chat flows were consolidated around the MVP design."
+      ],
+      "blockers": [
+        "No fresh visual approval from real mobile Safari/Chrome after the latest changes.",
+        "No completed accessibility audit for focus, labels, contrast, and screen readers.",
+        "No full registration/login/profile/upload journey proof from production."
+      ],
+      "nextActions": [
+        "Run Browser/Playwright visual tests at 390x844, desktop, and tablet.",
+        "Add axe/accessibility smoke tests for the main flows.",
+        "Validate the GitHub login, profile, chat, and upload flow on a preview URL."
+      ]
+    },
+    {
+      "id": "maintainability",
+      "label": "Wartbarkeit",
+      "score": 7.0,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "Docs, manifests, runbooks, and validation scripts improved maintainability, but large UI files and legacy folders still raise maintenance cost.",
+      "automaticImprovements": [
+        "Release, backup, security, storage, API, and protection reports were added.",
+        "Policy validation catches legacy paid/local production dependencies."
+      ],
+      "blockers": [
+        "src/App.tsx is still a high-churn central UI file.",
+        "Legacy backend/database/frontend folders remain for reference and need continued separation.",
+        "No ownership map or changelog automation for every critical subsystem."
+      ],
+      "nextActions": [
+        "Split large UI flows into smaller tested components.",
+        "Add CODEOWNERS-style ownership guidance if the repo supports it.",
+        "Keep legacy folders explicitly non-production and isolated in validation."
+      ]
+    },
+    {
+      "id": "future-readiness",
+      "label": "Zukunftssicherheit",
+      "score": 5.5,
+      "targetScore": 10,
+      "status": "blocked-below-10",
+      "why": "The MVP now has stronger policy gates and roadmap documentation, but future hyperscale, AI, native apps, observability, and compliance need phased investment.",
+      "automaticImprovements": [
+        "Final scorecard makes future gaps explicit instead of hiding them.",
+        "Free-only constraints are encoded in docs and tests."
+      ],
+      "blockers": [
+        "The free-only constraint conflicts with the stated billion-user/day ambition.",
+        "Native iPhone/Android apps are scaffold-level, not app-store-ready.",
+        "No long-term data governance, model governance, or incident program is complete."
+      ],
+      "nextActions": [
+        "Define phase-based architecture: free MVP, private beta, public launch, hyperscale.",
+        "Create migration path from KV-only metadata to a durable high-write data layer.",
+        "Add incident response, privacy review, and model safety governance before major launch."
+      ]
+    }
+  ],
+  "repeatCheck": {
+    "required": true,
+    "localValidationScript": "scripts/check-final-readiness.py",
+    "mustRunBeforeProduction": true
+  }
+}

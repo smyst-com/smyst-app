@@ -11,7 +11,9 @@ import {
   clientKey,
   errorResponse,
   jsonResponse,
+  methodNotAllowed,
   readJsonBody,
+  requireDeleteConfirmation,
   requireSameOrigin,
   requireRateLimit,
   safeHandler,
@@ -32,8 +34,29 @@ const MAX_KNOWLEDGE_ITEMS = 20;
 const MAX_TWIN_MEDIA_REFS = 50;
 const MAX_PROFILE_FIELD_CHARS = 80;
 const MAX_PROFILE_ITEMS = 12;
+const MAX_INDEX_READS = 50;
+const MAX_REPORT_SUBJECT_CHARS = 160;
+const MAX_REPORT_MESSAGE_CHARS = 4000;
+const MAX_REPORT_CONTACT_CHARS = 180;
 const TWIN_TTL_SECONDS = 60 * 60 * 24 * 370;
+const REPORT_TTL_SECONDS = 60 * 60 * 24 * 370;
 const SUPPORTED_PROFILE_LANGS = new Set(['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko']);
+
+function allowedMethodsForApiPath(pathname: string): string[] | null {
+  if (pathname === '/api/health') return ['GET'];
+  if (pathname === '/api/account/export') return ['GET'];
+  if (pathname === '/api/account') return ['DELETE'];
+  if (pathname === '/api/support/report') return ['POST'];
+  if (pathname.startsWith('/api/public/twins/')) return ['GET'];
+  if (pathname === '/api/chat/start') return ['POST'];
+  if (pathname === '/api/chat/messages') return ['POST'];
+  if (pathname === '/api/chat/list') return ['GET'];
+  if (pathname === '/api/twins') return ['GET', 'POST'];
+  if (pathname === '/api/twins/knowledge') return ['POST'];
+  if (pathname === '/api/twins/media') return ['POST'];
+  if (pathname.startsWith('/api/twins/')) return ['GET', 'PATCH'];
+  return null;
+}
 
 interface SessionData {
   sub: string;
@@ -151,6 +174,34 @@ interface TwinMediaRequest {
   size?: number;
 }
 
+interface AccountDeleteRequest {
+  confirm?: string;
+}
+
+type SupportReportType = 'bug' | 'abuse' | 'privacy' | 'safety' | 'feedback';
+
+interface SupportReportRequest {
+  type?: SupportReportType;
+  subject?: string;
+  message?: string;
+  url?: string;
+  contact?: string;
+}
+
+interface SupportReportRecord {
+  id: string;
+  type: SupportReportType;
+  subject: string;
+  message: string;
+  url?: string;
+  contact?: string;
+  userSub?: string;
+  userEmail?: string;
+  clientKey: string;
+  createdAt: number;
+  status: 'open';
+}
+
 function metadataStore(env: ApiEnv): KVNamespace {
   return env.METADATA ?? env.SESSIONS;
 }
@@ -234,6 +285,24 @@ async function loadPublicTwin(env: ApiEnv, slug: string): Promise<TwinRecord | n
   return (await metadataStore(env).get(publicTwinKey(slug), 'json')) as TwinRecord | null;
 }
 
+async function loadUserChats(env: ApiEnv, userSub: string): Promise<ChatRecord[]> {
+  const kv = metadataStore(env);
+  const ids = await getJson<string[]>(kv, chatIndexKey(userSub), []);
+  const records = await Promise.all(
+    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(chatKey(userSub, id), 'json') as Promise<ChatRecord | null>),
+  );
+  return records.filter((record): record is ChatRecord => Boolean(record));
+}
+
+async function loadUserTwins(env: ApiEnv, userSub: string): Promise<TwinRecord[]> {
+  const kv = metadataStore(env);
+  const ids = await getJson<string[]>(kv, twinIndexKey(userSub), []);
+  const records = await Promise.all(
+    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(twinKey(userSub, id), 'json') as Promise<TwinRecord | null>),
+  );
+  return records.filter((record): record is TwinRecord => Boolean(record));
+}
+
 function sanitizeText(value: unknown, maxChars: number): string {
   if (typeof value !== 'string') return '';
   return value
@@ -241,6 +310,25 @@ function sanitizeText(value: unknown, maxChars: number): string {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, maxChars);
+}
+
+function sanitizeReportType(value: unknown): SupportReportType {
+  return value === 'bug' || value === 'abuse' || value === 'privacy' || value === 'safety' || value === 'feedback'
+    ? value
+    : 'feedback';
+}
+
+function sanitizeSameOriginPath(raw: unknown, env: ApiEnv): string | undefined {
+  const value = sanitizeText(raw, 800);
+  if (!value) return undefined;
+  try {
+    const canonical = new URL(env.CANONICAL_HOST || 'https://smyst.com');
+    const url = new URL(value, canonical.origin);
+    if (url.origin !== canonical.origin) return undefined;
+    return `${url.pathname}${url.search}`.slice(0, 800);
+  } catch {
+    return undefined;
+  }
 }
 
 function sanitizeList(value: unknown, maxItems = MAX_PROFILE_ITEMS): string[] {
@@ -305,6 +393,23 @@ function publicSafeImageUrl(env: ApiEnv, imageUrl: string | undefined): string |
     return url.toString();
   } catch {
     return null;
+  }
+}
+
+function privateSafeImageUrl(env: ApiEnv, raw: unknown): string | undefined {
+  const imageUrl = sanitizeText(raw, 800);
+  if (!imageUrl) return undefined;
+  const host = (env.CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
+  try {
+    const url = new URL(imageUrl, host);
+    if (url.origin !== new URL(host).origin) return undefined;
+    const allowedPath =
+      url.pathname.startsWith('/storage/file/') ||
+      url.pathname.startsWith('/assets/') ||
+      url.pathname.startsWith('/public/');
+    return allowedPath ? url.toString() : undefined;
+  } catch {
+    return undefined;
   }
 }
 
@@ -515,6 +620,117 @@ async function handleHealth(): Promise<Response> {
   });
 }
 
+async function handleAccountExport(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'profile:read')) return errorResponse('forbidden', 'Missing profile read permission', 403);
+
+  const [twins, chats, userRecord] = await Promise.all([
+    loadUserTwins(env, session.sub),
+    loadUserChats(env, session.sub),
+    env.SESSIONS.get(`auth:user:${session.sub}`, 'json'),
+  ]);
+
+  return jsonResponse({
+    ok: true,
+    exportedAt: new Date().toISOString(),
+    storageNote: 'IDrive e2 object bytes are not embedded. Use /storage/uploads and signed file URLs for object-level access.',
+    user: userRecord ?? {
+      sub: session.sub,
+      email: session.email,
+      name: session.name ?? null,
+      roles: session.roles ?? [],
+      permissions: session.permissions ?? [],
+    },
+    twins,
+    chats,
+  });
+}
+
+async function handleAccountDelete(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  const deleteConfirmation = requireDeleteConfirmation(request, 'delete-account');
+  if (deleteConfirmation) return deleteConfirmation;
+
+  const parsed = await readJsonBody<AccountDeleteRequest>(request, 4 * 1024);
+  if (!parsed.ok) return parsed.response;
+  if (parsed.value.confirm !== 'DELETE') {
+    return errorResponse('delete_confirmation_required', 'Send confirm: DELETE to delete account metadata.', 400);
+  }
+
+  const kv = metadataStore(env);
+  const [twins, chats] = await Promise.all([
+    loadUserTwins(env, session.sub),
+    loadUserChats(env, session.sub),
+  ]);
+
+  await Promise.all([
+    ...chats.map((chat) => kv.delete(chatKey(session.sub, chat.id))),
+    ...twins.map((twin) => kv.delete(twinKey(session.sub, twin.id))),
+    ...twins.filter((twin) => twin.visibility === 'public').map((twin) => kv.delete(publicTwinKey(twin.slug))),
+  ]);
+
+  const sessionId = readCookie(request, SESSION_COOKIE);
+  await Promise.all([
+    kv.delete(chatIndexKey(session.sub)),
+    kv.delete(twinIndexKey(session.sub)),
+    env.SESSIONS.delete(`auth:user:${session.sub}`),
+    sessionId ? env.SESSIONS.delete(`s:${sessionId}`) : Promise.resolve(),
+  ]);
+
+  return jsonResponse({
+    ok: true,
+    deleted: {
+      chats: chats.length,
+      twins: twins.length,
+      publicProfiles: twins.filter((twin) => twin.visibility === 'public').length,
+      session: Boolean(sessionId),
+    },
+    storageNote: 'Known IDrive e2 objects must be deleted through DELETE /storage/account before or alongside this call.',
+  });
+}
+
+async function handleSupportReport(request: Request, env: ApiEnv): Promise<Response> {
+  const parsed = await readJsonBody<SupportReportRequest>(request, 8 * 1024);
+  if (!parsed.ok) return parsed.response;
+
+  const session = await authenticate(request, env);
+  const type = sanitizeReportType(parsed.value.type);
+  const subject = sanitizeText(parsed.value.subject, MAX_REPORT_SUBJECT_CHARS);
+  const message = sanitizeText(parsed.value.message, MAX_REPORT_MESSAGE_CHARS);
+  const contact = sanitizeText(parsed.value.contact, MAX_REPORT_CONTACT_CHARS);
+  if (!subject || message.length < 12) {
+    return errorResponse('invalid_report', 'Report subject and a meaningful message are required.', 400);
+  }
+
+  const now = Date.now();
+  const id = crypto.randomUUID();
+  const record: SupportReportRecord = {
+    id,
+    type,
+    subject,
+    message,
+    url: sanitizeSameOriginPath(parsed.value.url, env),
+    contact: contact || undefined,
+    userSub: session?.sub,
+    userEmail: session?.email,
+    clientKey: clientKey(request, 'support:reporter'),
+    createdAt: now,
+    status: 'open',
+  };
+
+  await metadataStore(env).put(`meta:support-report:${now}:${id}`, JSON.stringify(record), {
+    expirationTtl: REPORT_TTL_SECONDS,
+  });
+
+  return jsonResponse({
+    ok: true,
+    reportId: id,
+    message: 'Report saved for owner/admin review in Cloudflare KV.',
+  }, 201);
+}
+
 async function handleStartChat(request: Request, env: ApiEnv): Promise<Response> {
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
@@ -555,7 +771,7 @@ async function handleListChats(request: Request, env: ApiEnv): Promise<Response>
   const kv = metadataStore(env);
   const ids = await getJson<string[]>(kv, chatIndexKey(session.sub), []);
   const records = await Promise.all(
-    ids.map((id) => kv.get(chatKey(session.sub, id), 'json') as Promise<ChatRecord | null>),
+    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(chatKey(session.sub, id), 'json') as Promise<ChatRecord | null>),
   );
 
   return jsonResponse({
@@ -606,7 +822,7 @@ async function handleCreateTwin(request: Request, env: ApiEnv): Promise<Response
     name,
     slug: await uniqueSlug(env, sanitizeText(body.slug, 80) || name),
     description: sanitizeText(body.description, MAX_TWIN_DESCRIPTION_CHARS),
-    imageUrl: sanitizeText(body.imageUrl, 800) || undefined,
+    imageUrl: privateSafeImageUrl(env, body.imageUrl),
     imageKey: imageKey || undefined,
     categories: sanitizeList(body.categories),
     languages: sanitizeLanguageList(body.languages),
@@ -635,7 +851,7 @@ async function handleListTwins(request: Request, env: ApiEnv): Promise<Response>
   const kv = metadataStore(env);
   const ids = await getJson<string[]>(kv, twinIndexKey(session.sub), []);
   const records = await Promise.all(
-    ids.map((id) => kv.get(twinKey(session.sub, id), 'json') as Promise<TwinRecord | null>),
+    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(twinKey(session.sub, id), 'json') as Promise<TwinRecord | null>),
   );
 
   return jsonResponse({
@@ -681,7 +897,7 @@ async function handleUpdateTwin(request: Request, env: ApiEnv, twinId: string): 
         : await uniqueSlug(env, sanitizeText(body.slug, 80) || twin.name, twin.id),
     description:
       body.description === undefined ? twin.description : sanitizeText(body.description, MAX_TWIN_DESCRIPTION_CHARS),
-    imageUrl: body.imageUrl === undefined ? twin.imageUrl : sanitizeText(body.imageUrl, 800) || undefined,
+    imageUrl: body.imageUrl === undefined ? twin.imageUrl : privateSafeImageUrl(env, body.imageUrl),
     imageKey: body.imageKey === undefined ? twin.imageKey : imageKey || undefined,
     categories: body.categories === undefined ? twin.categories ?? [] : sanitizeList(body.categories),
     languages: body.languages === undefined ? twin.languages ?? [] : sanitizeLanguageList(body.languages),
@@ -866,7 +1082,7 @@ export default {
       const kv = metadataStore(env);
 
       if (request.method === 'OPTIONS') {
-        return strictCorsPreflight(request, env.CANONICAL_HOST, 'GET, POST, PATCH');
+        return strictCorsPreflight(request, env.CANONICAL_HOST, 'GET, POST, PATCH, DELETE');
       }
 
       const csrf = requireSameOrigin(request, env.CANONICAL_HOST);
@@ -876,6 +1092,36 @@ export default {
 
       if (url.pathname === '/api/health' && request.method === 'GET') {
         return handleHealth();
+      }
+
+      if (url.pathname === '/api/account/export' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:account-export'),
+          limit: 20,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAccountExport(request, env);
+      }
+
+      if (url.pathname === '/api/account' && request.method === 'DELETE') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:account-delete'),
+          limit: 5,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAccountDelete(request, env);
+      }
+
+      if (url.pathname === '/api/support/report' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:support-report'),
+          limit: 8,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleSupportReport(request, env);
       }
 
       if (url.pathname.startsWith('/api/public/twins/') && request.method === 'GET') {
@@ -969,7 +1215,9 @@ export default {
         return handleUpdateTwin(request, env, twinId);
       }
 
+      const allowed = allowedMethodsForApiPath(url.pathname);
+      if (allowed) return methodNotAllowed(allowed);
       return errorResponse('not_found', 'Not found', 404);
-    });
+    }, request);
   },
 };

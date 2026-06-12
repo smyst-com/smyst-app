@@ -13,24 +13,63 @@
   "categories": ["productivity", "social", "utilities"],
   "lang": "de",
   "dir": "ltr",
+  "iarc_rating_id": "e",
   "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
     {
       "src": "/logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/smyst-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "smyst.com mobile chat start screen"
+    },
+    {
+      "src": "/screenshots/smyst-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "smyst.com desktop app shell"
     }
   ],
   "shortcuts": [
     {
       "name": "Twin Chat",
       "short_name": "Chat",
-      "url": "/?mode=chat"
+      "description": "Direkt zum Twin Chat",
+      "url": "/twin-chat",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Twin erstellen",
       "short_name": "Twin",
-      "url": "/?mode=twin"
+      "description": "Neuen KI-Zwilling erstellen",
+      "url": "/twin-builder",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

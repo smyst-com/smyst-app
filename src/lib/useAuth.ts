@@ -42,6 +42,7 @@ interface MeResponse {
 const ME_ENDPOINT = '/auth/me';
 const START_ENDPOINT = '/auth/github/start';
 const LOGOUT_ENDPOINT = '/auth/logout';
+const LOGOUT_ALL_ENDPOINT = '/auth/logout-all';
 
 export function useAuth(options: { enabled?: boolean } = {}) {
   const enabled = options.enabled ?? true;
@@ -99,6 +100,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
       await fetch(LOGOUT_ENDPOINT, {
         method: 'POST',
         credentials: 'include',
+        headers: { 'X-Smyst-CSRF': '1' },
       });
     } catch (err) {
       console.warn('[auth] logout failed', err);
@@ -108,10 +110,25 @@ export function useAuth(options: { enabled?: boolean } = {}) {
     window.location.href = '/';
   }, []);
 
+  const signOutAll = useCallback(async () => {
+    try {
+      await fetch(LOGOUT_ALL_ENDPOINT, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'X-Smyst-CSRF': '1' },
+      });
+    } catch (err) {
+      console.warn('[auth] logout-all failed', err);
+    }
+    setState({ status: 'anonymous', user: null });
+    window.location.href = '/';
+  }, []);
+
   return {
     ...state,
     signInWithGitHub,
     signOut,
+    signOutAll,
     refresh: fetchMe,
   };
 }
