@@ -945,7 +945,7 @@ function SmystStartPage({
           <div className="smyst-glass-panel flex min-h-[70px] items-stretch border-y border-white/[0.08] sm:min-h-[82px]">
             <label className="relative flex min-w-0 flex-1 items-stretch">
               <Search
-                className={`pointer-events-none absolute right-5 top-1/2 h-7 w-7 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
+                className={`pointer-events-none absolute right-4 top-1/2 h-6 w-6 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
                   query ? 'opacity-0' : 'opacity-100'
                 }`}
                 aria-hidden="true"
@@ -967,7 +967,7 @@ function SmystStartPage({
                   selectTwin(twin)
                 }}
                 placeholder="Name suchen"
-                className="smyst-glass-control min-w-0 flex-1 rounded-none border-0 px-5 pr-14 text-2xl font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
+                className="smyst-glass-control min-w-0 flex-1 rounded-none border-0 px-5 pr-12 text-[20px] font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
               />
             </label>
             <button
