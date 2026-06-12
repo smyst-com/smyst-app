@@ -469,9 +469,8 @@ export async function translatePage(
 // ---------- Worker Entry ----------
 
 function applyEdgeHeaders(headers: Headers, options: { stripOriginNoindex?: boolean } = {}): Headers {
-  const robots = headers.get('X-Robots-Tag');
-  if (options.stripOriginNoindex && robots?.toLowerCase().includes('noindex')) {
-    headers.delete('X-Robots-Tag');
+  if (options.stripOriginNoindex) {
+    headers.set('X-Robots-Tag', 'index, follow');
   }
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -561,7 +560,7 @@ export default {
           // Edge-Cache 5min, lokale Browser-Cache 60s; Stale-While-Revalidate aktiviert
           'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=86400',
           'Vary': 'Accept-Language, Cookie',
-        }));
+        }), { stripOriginNoindex: normalizedPath === '/' });
         headers.append('Set-Cookie',
           `${COOKIE_NAME}=${lang}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`);
         return new Response(cached.html, { status: 200, headers });
@@ -576,7 +575,7 @@ export default {
         // Bewusst kürzere Cache-Zeit für MISS, damit nächster Request idealerweise HIT bekommt
         'Cache-Control': 'public, max-age=10, s-maxage=10',
         'Vary': 'Accept-Language, Cookie',
-      }));
+      }), { stripOriginNoindex: normalizedPath === '/' });
       headers.append('Set-Cookie',
         `${COOKIE_NAME}=${lang}; Path=/; Max-Age=31536000; SameSite=Lax; Secure`);
 
