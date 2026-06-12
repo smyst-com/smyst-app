@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Smyst current app", () => {
-  test("start page search, name picker and composer match the current square chat UI", async ({ page }) => {
+  test("start page shows chat UI without fake profiles for signed-out users", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.getByText("smyst")).toBeVisible();
@@ -11,27 +11,23 @@ test.describe("Smyst current app", () => {
     await expect(page.getByPlaceholder("Nachricht schreiben")).toBeVisible();
 
     await page.getByRole("button", { name: "Name wählen" }).click();
-    await expect(page.getByRole("button", { name: /Max Müller/i })).toBeVisible();
-    await expect(page.getByText(/\d+ Namen/)).toBeVisible();
-
-    await page.getByPlaceholder("Name suchen").fill("Weber");
-    await expect(page.getByRole("button", { name: /Max Weber/i })).toBeVisible();
-    await page.getByRole("button", { name: /Max Weber/i }).click();
-
-    await expect(page.getByText("Max Weber").first()).toBeVisible();
+    await expect(page.getByText("Melde dich an, um echte Profile zu laden.")).toBeVisible();
+    await expect(page.getByText(/Max Müller/i)).toHaveCount(0);
+    await expect(page.getByText(/Max Weber/i)).toHaveCount(0);
     await expect(page.getByPlaceholder("Nachricht schreiben")).toBeVisible();
 
     await page.getByPlaceholder("Nachricht schreiben").fill("Hallo, das ist ein aktueller UI-Test.");
     await page.keyboard.press("Enter");
     await expect(page.getByText("Hallo, das ist ein aktueller UI-Test.")).toBeVisible();
+    await expect(page.getByText("Melde dich an und erstelle ein echtes Profil.")).toBeVisible();
   });
 
-  test("settings expose free-only infrastructure and name sorting controls", async ({ page }) => {
+  test("settings expose profile sorting controls without infrastructure marketing", async ({ page }) => {
     await page.goto("/settings");
 
-    await expect(page.getByText("Infrastruktur-Regeln")).toBeVisible();
-    await expect(page.getByText(/Cloudflare Free/i)).toBeVisible();
-    await expect(page.getByText(/IDrive e2/i)).toBeVisible();
+    await expect(page.getByText("Infrastruktur-Regeln")).toHaveCount(0);
+    await expect(page.getByText(/Cloudflare Free/i)).toHaveCount(0);
+    await expect(page.getByText(/IDrive e2/i)).toHaveCount(0);
     await expect(page.getByText("Namenliste")).toBeVisible();
     await expect(page.getByRole("button", { name: /Mehr genutzt/i })).toBeVisible();
     await expect(page.getByRole("button", { name: /Trend im Markt/i })).toBeVisible();

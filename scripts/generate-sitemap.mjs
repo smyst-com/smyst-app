@@ -15,25 +15,11 @@ const PUBLIC_DIR = resolve(ROOT, 'public');
 const HOST = process.env.VITE_CANONICAL_HOST || 'https://smyst.com';
 
 const LANGS = ['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko'];
-const HISTORICAL_PROFILE_SLUGS = [
-  'leonardo-da-vinci',
-  'isaac-newton',
-  'william-shakespeare',
-  'aristotle',
-  'sun-tzu',
-];
-
 const PAGES = [
   { loc: '/', priority: '1.0', changefreq: 'daily' },
   ...LANGS.map((lang) => ({
     loc: `/${lang}/`,
     priority: lang === 'de' || lang === 'en' ? '0.9' : '0.8',
-    changefreq: 'weekly',
-  })),
-  { loc: '/t/smyst-demo-twin', priority: '0.7', changefreq: 'weekly' },
-  ...HISTORICAL_PROFILE_SLUGS.map((slug) => ({
-    loc: `/t/${slug}`,
-    priority: '0.8',
     changefreq: 'weekly',
   })),
 ];

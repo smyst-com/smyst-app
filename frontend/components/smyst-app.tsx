@@ -17,11 +17,11 @@ type Props = {
 export function SmystApp({ locale, dictionary }: Props) {
   const router = useRouter();
   const [view, setView] = useState<View>("home");
-  const [selectedTwinId, setSelectedTwinId] = useState(twins[0].id);
+  const [selectedTwinId, setSelectedTwinId] = useState(twins[0]?.id ?? "");
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [draft, setDraft] = useState("");
   const selectedTwin = useMemo(
-    () => twins.find((twin) => twin.id === selectedTwinId) ?? twins[0],
+    () => twins.find((twin) => twin.id === selectedTwinId) ?? null,
     [selectedTwinId],
   );
 
@@ -39,7 +39,7 @@ export function SmystApp({ locale, dictionary }: Props) {
 
   function sendMessage() {
     const next = draft.trim();
-    if (!next) return;
+    if (!next || !selectedTwin) return;
     const userMessage: ChatMessage = {
       id: `u-${Date.now()}`,
       role: "user",
@@ -52,7 +52,6 @@ export function SmystApp({ locale, dictionary }: Props) {
         `${selectedTwin.name}: ${selectedTwin.summary}`,
         selectedTwin.guardrail ? `Guardrail: ${selectedTwin.guardrail}` : null,
         selectedTwin.sources?.length ? `Sources available: ${selectedTwin.sources.length}` : null,
-        "I will connect this question to approved memory once the free-only Worker chat endpoint is attached.",
       ]
         .filter(Boolean)
         .join(" "),
@@ -140,11 +139,7 @@ export function SmystApp({ locale, dictionary }: Props) {
           )}
         </section>
 
-        <p className="footer-note">
-          SEO, localized routes, PWA manifest, service worker registration, profile, creator,
-          twin selection, and chat UI are implemented as the first frontend layer. API writes remain
-          disabled until the backend feature endpoints are connected.
-        </p>
+        <p className="footer-note">smyst.com</p>
       </main>
     </div>
   );
@@ -167,17 +162,17 @@ function TwinSelection({
 }: {
   dictionary: Dictionary;
   selectedTwinId: string;
-  selectedTwin: Twin;
+  selectedTwin: Twin | null;
   onSelect: (id: string) => void;
 }) {
   return (
     <aside className="panel" id="twins">
       <div className="panel-header">
         <h2 className="panel-title">{dictionary.twins.title}</h2>
-        <span className="status-pill">{selectedTwin.status}</span>
+        <span className="status-pill">{selectedTwin?.status ?? "Keine Profile"}</span>
       </div>
       <div className="panel-body twin-list">
-        {twins.map((twin) => (
+        {twins.length ? twins.map((twin) => (
           <button
             key={twin.id}
             type="button"
@@ -194,7 +189,12 @@ function TwinSelection({
               {twin.memoryCount} memories - {twin.latency}
             </span>
           </button>
-        ))}
+        )) : (
+          <div className="twin-button" role="status">
+            <span className="twin-name">Keine echten Profile geladen</span>
+            <span className="twin-meta">Verbinde die Datenbank/API, damit nur reale Profile angezeigt werden.</span>
+          </div>
+        )}
       </div>
     </aside>
   );
@@ -209,7 +209,7 @@ function ChatPanel({
   onSend,
 }: {
   dictionary: Dictionary;
-  selectedTwin: Twin;
+  selectedTwin: Twin | null;
   messages: ChatMessage[];
   draft: string;
   onDraft: (value: string) => void;
@@ -219,7 +219,7 @@ function ChatPanel({
     <section className="panel chat-panel" id="chat">
       <div className="panel-header">
         <h2 className="panel-title">{dictionary.chat.title}</h2>
-        <span className="status-pill">{selectedTwin.name}</span>
+        <span className="status-pill">{selectedTwin?.name ?? "Kein Profil"}</span>
       </div>
       <div className="messages" aria-live="polite">
         {messages.map((message) => (
@@ -241,7 +241,7 @@ function ChatPanel({
             if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) onSend();
           }}
         />
-        <button type="button" className="primary-button" onClick={onSend}>
+        <button type="button" className="primary-button" onClick={onSend} disabled={!selectedTwin}>
           {dictionary.chat.send}
         </button>
       </div>
@@ -249,41 +249,51 @@ function ChatPanel({
   );
 }
 
-function ProfilePanel({ dictionary, selectedTwin }: { dictionary: Dictionary; selectedTwin: Twin }) {
+function ProfilePanel({ dictionary, selectedTwin }: { dictionary: Dictionary; selectedTwin: Twin | null }) {
   return (
     <aside className="panel" id="profile">
       <div className="panel-header">
         <h2 className="panel-title">{dictionary.profile.title}</h2>
       </div>
       <div className="panel-body profile-list">
-        <div>
-          <strong>{selectedTwin.name}</strong>
-          <br />
-          {selectedTwin.summary}
-        </div>
-        <div>
-          <strong>{dictionary.profile.owner}</strong>
-          <br />
-          smyst founder account
-        </div>
-        <div>
-          <strong>{dictionary.profile.region}</strong>
-          <br />
-          {selectedTwin.region}
-        </div>
-        <div>
-          <strong>{dictionary.profile.privacy}</strong>
-          <br />
-          {selectedTwin.privacy}
-        </div>
-        {selectedTwin.guardrail ? (
+        {selectedTwin ? (
+          <>
+            <div>
+              <strong>{selectedTwin.name}</strong>
+              <br />
+              {selectedTwin.summary}
+            </div>
+            <div>
+              <strong>{dictionary.profile.owner}</strong>
+              <br />
+              smyst founder account
+            </div>
+            <div>
+              <strong>{dictionary.profile.region}</strong>
+              <br />
+              {selectedTwin.region}
+            </div>
+            <div>
+              <strong>{dictionary.profile.privacy}</strong>
+              <br />
+              {selectedTwin.privacy}
+            </div>
+          </>
+        ) : (
+          <div>
+            <strong>Keine echten Profile geladen</strong>
+            <br />
+            Sobald die API echte Daten liefert, erscheinen hier Name, Profilbild und Direkt-Chat.
+          </div>
+        )}
+        {selectedTwin?.guardrail ? (
           <div>
             <strong>Guardrail</strong>
             <br />
             {selectedTwin.guardrail}
           </div>
         ) : null}
-        {selectedTwin.sources?.length ? (
+        {selectedTwin?.sources?.length ? (
           <div>
             <strong>Sources</strong>
             <ul className="source-list">
@@ -311,11 +321,11 @@ function TwinCreator({ dictionary }: { dictionary: Dictionary }) {
       <form className="panel-body field-grid">
         <div className="field">
           <label htmlFor="twin-name">{dictionary.creator.name}</label>
-          <input id="twin-name" name="name" defaultValue="New Twin" />
+          <input id="twin-name" name="name" />
         </div>
         <div className="field">
           <label htmlFor="twin-purpose">{dictionary.creator.purpose}</label>
-          <input id="twin-purpose" name="purpose" defaultValue="Private memory twin" />
+          <input id="twin-purpose" name="purpose" />
         </div>
         <div className="field">
           <label htmlFor="twin-visibility">{dictionary.creator.visibility}</label>
@@ -327,7 +337,7 @@ function TwinCreator({ dictionary }: { dictionary: Dictionary }) {
         </div>
         <div className="field">
           <label htmlFor="twin-notes">{dictionary.creator.notes}</label>
-          <textarea id="twin-notes" name="notes" rows={5} defaultValue="Add the first memory notes after API write endpoints are enabled." />
+          <textarea id="twin-notes" name="notes" rows={5} />
         </div>
         <div className="creator-actions">
           <button className="primary-button" type="button">

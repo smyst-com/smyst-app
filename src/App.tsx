@@ -7,7 +7,6 @@ import { useLanguage } from '@/lib/i18n'
 import { useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
-import { findHistoricalDemoProfile, historicalDemoProfiles } from '@/lib/historicalDemoProfiles'
 import { useTwinMvp, type PublicTwinProfile, type SupportReportType, type TwinRecord, type TwinStyle } from '@/lib/useTwinMvp'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
@@ -458,95 +457,53 @@ export default function App() {
   )
 }
 
-const historicalStartTwins = historicalDemoProfiles.map((profile, index) => ({
-  id: profile.slug,
-  name: profile.name,
-  description: profile.field,
-  role: 'Historisch',
-  signal: 'public',
-  accent: ['#71E8FF', '#A8FFCB', '#9DBBFF', '#FFFFFF', '#FFD56A'][index] ?? '#FFFFFF',
-  initials: profile.name
+type StartTwin = {
+  id: string
+  name: string
+  description: string
+  role: string
+  signal: string
+  accent: string
+  initials: string
+  tone: string
+  famousScore: number
+  usedScore: number
+  popularScore: number
+  trendScore: number
+  manualRank: number
+  profileSlug?: string
+  imageUrl?: string | null
+}
+
+function initialsForName(name: string): string {
+  return name
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
-    .join(''),
-  tone: 'quellenbasiert, vorsichtig, historisch',
-  famousScore: 100 - index,
-  usedScore: 80 - index,
-  popularScore: 96 - index,
-  trendScore: 70 - index,
-  manualRank: index + 1,
-  profileSlug: profile.slug,
-  historical: true,
-}))
+    .join('') || 'S'
+}
 
-const privateStartTwins = [
-  {
-    id: 'max-mueller',
-    name: 'Max Müller',
-    description: 'Family Memory Twin',
-    role: 'Family',
-    signal: 'online',
-    accent: '#71E8FF',
-    initials: 'MM',
-    tone: 'persönlich, ruhig, nahbar',
-    famousScore: 96,
-    usedScore: 89,
-    popularScore: 92,
-    trendScore: 84,
-    manualRank: 1,
-  },
-  {
-    id: 'max-meier',
-    name: 'Max Meier',
-    description: 'Wissens- und Werte-Twin',
-    role: 'Coach',
-    signal: 'ready',
-    accent: '#A8FFCB',
-    initials: 'MM',
-    tone: 'reflektiert, direkt, empathisch',
-    famousScore: 78,
-    usedScore: 94,
-    popularScore: 86,
-    trendScore: 72,
-    manualRank: 2,
-  },
-  {
-    id: 'maximilian-schmidt',
-    name: 'Maximilian Schmidt',
-    description: 'Entrepreneur Twin',
-    role: 'Builder',
-    signal: 'sync',
-    accent: '#9DBBFF',
-    initials: 'MS',
-    tone: 'klar, warm, fokussiert',
-    famousScore: 88,
-    usedScore: 76,
-    popularScore: 91,
-    trendScore: 95,
-    manualRank: 3,
-  },
-  {
-    id: 'max-weber',
-    name: 'Max Weber',
-    description: 'Soziologie Twin',
-    role: 'Historisch',
-    signal: 'fast',
-    accent: '#FFFFFF',
-    initials: 'MW',
-    tone: 'schnell, einfach, regelbasiert',
-    famousScore: 82,
-    usedScore: 82,
-    popularScore: 79,
-    trendScore: 90,
-    manualRank: 4,
-  },
-]
-
-const startPageTwins = [...historicalStartTwins, ...privateStartTwins]
-
-type StartTwin = (typeof startPageTwins)[number]
+function realTwinToStartTwin(twin: TwinRecord, index: number): StartTwin {
+  const publicProfile = twin.visibility === 'public'
+  return {
+    id: twin.id,
+    name: twin.name,
+    description: twin.description || 'Persoenlicher KI-Zwilling',
+    role: publicProfile ? 'Öffentlich' : 'Privat',
+    signal: twin.status === 'ready' ? 'ready' : 'draft',
+    accent: ['#71E8FF', '#A8FFCB', '#9DBBFF', '#FFFFFF', '#FFD56A'][index % 5] ?? '#71E8FF',
+    initials: initialsForName(twin.name),
+    tone: twin.style,
+    famousScore: twin.updatedAt,
+    usedScore: (twin.knowledgeTexts?.length ?? 0) + (twin.mediaRefs?.length ?? 0),
+    popularScore: publicProfile ? 1 : 0,
+    trendScore: twin.createdAt,
+    manualRank: index + 1,
+    profileSlug: publicProfile ? twin.slug : undefined,
+    imageUrl: twin.imageUrl ?? null,
+  }
+}
 
 type ChatMessage = {
   id: string
@@ -571,8 +528,11 @@ function SmystStartPage({
   const { lang } = useLanguage({ reloadOnChange: false })
   const t = useStaticTranslations(lang)
   const auth = useAuth()
+  const twinMvp = useTwinMvp()
   const [query, setQuery] = useState('')
   const [selectedTwin, setSelectedTwin] = useState<StartTwin | null>(null)
+  const [realStartTwins, setRealStartTwins] = useState<StartTwin[]>([])
+  const [profilesLoaded, setProfilesLoaded] = useState(false)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [menuOpen, setMenuOpen] = useState(false)
@@ -590,7 +550,7 @@ function SmystStartPage({
       return twin.famousScore
     }
     const normalized = query.trim().toLowerCase()
-    return [...startPageTwins]
+    return [...realStartTwins]
       .filter((twin) => {
         if (!normalized) return true
         return `${twin.name} ${twin.description} ${twin.role} ${twin.signal} ${twin.tone}`
@@ -598,9 +558,9 @@ function SmystStartPage({
           .includes(normalized)
       })
       .sort((a, b) => sortValue(b) - sortValue(a) || a.name.localeCompare(b.name, 'de'))
-  }, [nameSortMode, query])
+  }, [nameSortMode, query, realStartTwins])
 
-  const activeTwin = selectedTwin ?? startPageTwins[0]
+  const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
   const canSend = input.trim().length > 0
   const canSpeak = input.trim().length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
@@ -646,6 +606,36 @@ function SmystStartPage({
       document.getElementById('smyst-page-schema')?.remove()
     }
   }, [lang, t])
+
+  useEffect(() => {
+    let alive = true
+
+    const loadRealProfiles = async () => {
+      if (auth.status === 'loading') return
+      if (auth.status !== 'authenticated') {
+        setRealStartTwins([])
+        setSelectedTwin(null)
+        setProfilesLoaded(true)
+        return
+      }
+
+      setProfilesLoaded(false)
+      const twins = await twinMvp.listTwins()
+      if (!alive) return
+      const next = (twins ?? [])
+        .filter((twin) => twin.name.trim().length > 0)
+        .map(realTwinToStartTwin)
+      setRealStartTwins(next)
+      setSelectedTwin((current) => (current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null))
+      setProfilesLoaded(true)
+    }
+
+    void loadRealProfiles()
+
+    return () => {
+      alive = false
+    }
+  }, [auth.status])
 
   useEffect(() => {
     if (messages.length === 0) return
@@ -737,6 +727,22 @@ function SmystStartPage({
     if (!text) return
 
     const twin = selectedTwin ?? filteredTwins[0] ?? activeTwin
+    if (!twin) {
+      setMessages((current) => [
+        ...current,
+        { id: crypto.randomUUID(), role: 'user', content: text },
+        {
+          id: crypto.randomUUID(),
+          role: 'ai',
+          content:
+            auth.status === 'authenticated'
+              ? 'Erstelle zuerst ein echtes Profil. Danach kannst du diese Person direkt anschreiben.'
+              : 'Melde dich an und erstelle ein echtes Profil. Danach kannst du direkt mit diesem Profil chatten.',
+        },
+      ])
+      resizeInput('')
+      return
+    }
     if (!selectedTwin) selectTwin(twin)
 
     const assistantId = crypto.randomUUID()
@@ -1049,7 +1055,11 @@ function SmystStartPage({
                 ))}
                 {filteredTwins.length === 0 && (
                   <div className="px-5 py-8 text-sm font-semibold text-[#8e97a8]">
-                    Kein Name gefunden.
+                    {profilesLoaded
+                      ? auth.status === 'authenticated'
+                        ? 'Noch kein echtes Profil vorhanden. Erstelle zuerst einen Twin.'
+                        : 'Melde dich an, um echte Profile zu laden.'
+                      : 'Echte Profile werden geladen...'}
                   </div>
                 )}
               </div>
@@ -1101,7 +1111,7 @@ function SmystStartPage({
             autoCapitalize="off"
             autoCorrect="off"
             className="block min-h-[34px] w-full resize-none overflow-y-auto bg-transparent text-xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:text-2xl"
-            aria-label={t.start.messagePlaceholder.replace('{{name}}', activeTwin.name)}
+            aria-label={activeTwin ? t.start.messagePlaceholder.replace('{{name}}', activeTwin.name) : 'Nachricht schreiben'}
           />
         </div>
         <div className="flex h-[44px] items-center justify-between px-2 text-white sm:px-3">
@@ -1161,100 +1171,6 @@ function SmystStartPage({
   )
 }
 
-function fallbackProfile(slug: string | null): PublicTwinProfile | null {
-  const historicalProfile = findHistoricalDemoProfile(slug)
-  if (historicalProfile) {
-    const url = `https://smyst.com/t/${historicalProfile.slug}`
-    return {
-      id: historicalProfile.id,
-      name: historicalProfile.name,
-      slug: historicalProfile.slug,
-      description: `${historicalProfile.description} ${historicalProfile.guardrail}`,
-      imageUrl: null,
-      categories: ['Historical demo', historicalProfile.field, historicalProfile.region],
-      languages: ['de', 'en'],
-      visibility: 'public',
-      style: 'neutral',
-      status: 'ready',
-      url,
-      chatPath: `/twin-chat?twin=${encodeURIComponent(historicalProfile.id)}`,
-      uploadedContents: [{ category: 'public-source-note', count: historicalProfile.sources.length }],
-      mediaCount: 0,
-      knowledgeCount: historicalProfile.sources.length,
-      contextSummary: historicalProfile.contextSummary,
-      guardrail: historicalProfile.guardrail,
-      rightsPosture: historicalProfile.rightsPosture,
-      sources: historicalProfile.sources,
-      updatedAt: Date.now(),
-      seo: {
-        title: `${historicalProfile.name} | Historical Demo Twin | smyst.com`,
-        description: `${historicalProfile.name} historical public-knowledge profile on smyst.com. Not official, not affiliated, sources required.`,
-        canonical: url,
-        robots: 'index,follow',
-        schema: {
-          '@context': 'https://schema.org',
-          '@type': 'ProfilePage',
-          name: `${historicalProfile.name} | smyst.com`,
-          description: historicalProfile.description,
-          url,
-          about: {
-            '@type': 'Person',
-            name: historicalProfile.name,
-            description: `${historicalProfile.field}. ${historicalProfile.years}.`,
-          },
-          isBasedOn: historicalProfile.sources.map((source) => ({
-            '@type': 'CreativeWork',
-            name: source.title,
-            publisher: source.publisher,
-            url: source.url,
-          })),
-        },
-      },
-    }
-  }
-
-  const twin = startPageTwins.find((item) => item.id === slug || item.name.toLowerCase().replace(/\s+/g, '-') === slug)
-  if (!twin) return null
-  const cleanSlug = twin.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
-  const url = `https://smyst.com/t/${cleanSlug}`
-  return {
-    id: twin.id,
-    name: twin.name,
-    slug: cleanSlug,
-    description: `${twin.description}. ${twin.tone}.`,
-    imageUrl: null,
-    categories: ['KI-Zwilling', 'Wissen', 'Erinnerungen'],
-    languages: ['de', 'en'],
-    visibility: 'public',
-    style: 'warm',
-    status: 'ready',
-    url,
-    chatPath: `/twin-chat?twin=${encodeURIComponent(twin.id)}`,
-    uploadedContents: [
-      { category: 'document', count: 3 },
-      { category: 'image', count: 5 },
-      { category: 'audio', count: 1 },
-    ],
-    mediaCount: 9,
-    knowledgeCount: 4,
-    contextSummary: 'Öffentliches Beispielprofil mit hinterlegtem Wissen, Quellen und Medienhinweisen.',
-    updatedAt: Date.now(),
-    seo: {
-      title: `${twin.name} | smyst.com KI-Zwilling`,
-      description: `${twin.name} ist ein öffentliches KI-Zwilling-Profil auf smyst.com.`,
-      canonical: url,
-      robots: 'index,follow',
-      schema: {
-        '@context': 'https://schema.org',
-        '@type': 'ProfilePage',
-        name: `${twin.name} | smyst.com`,
-        description: `${twin.description}. ${twin.tone}.`,
-        url,
-      },
-    },
-  }
-}
-
 function setMeta(name: string, content: string) {
   let tag = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`)
   if (!tag) {
@@ -1311,7 +1227,7 @@ function TwinProfileView({
 }) {
   const auth = useAuth()
   const twinMvp = useTwinMvp()
-  const [publicProfile, setPublicProfile] = useState<PublicTwinProfile | null>(slug ? fallbackProfile(slug) : null)
+  const [publicProfile, setPublicProfile] = useState<PublicTwinProfile | null>(null)
   const [privateTwin, setPrivateTwin] = useState<TwinRecord | null>(null)
   const [loaded, setLoaded] = useState(!slug && !privateTwinId)
   const isPrivate = Boolean(privateTwinId)
@@ -2631,7 +2547,7 @@ function TwinChatView() {
     name: profile.name,
     style: profile.style,
     knowledgeCount: profile.knowledgeCount,
-    label: profile.categories.find((item) => item !== 'Historical demo') ?? 'Öffentliches Profil',
+    label: profile.categories[0] ?? 'Öffentliches Profil',
     publicProfile: true,
   })
 

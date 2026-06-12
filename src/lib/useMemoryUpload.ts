@@ -127,7 +127,7 @@ export function useMemoryUpload() {
       try {
         if (file.size <= 0) throw new Error('Datei ist leer.');
         if (file.size > CLIENT_CATEGORY_LIMITS[category]) {
-          throw new Error('Datei ist zu groß für diese Free-only-Kategorie.');
+          throw new Error('Datei ist fuer diese Kategorie zu gross.');
         }
         if (!isAllowedClientType(file, category)) {
           throw new Error('Dateityp passt nicht zur gewählten Kategorie.');
