@@ -503,6 +503,32 @@
     color: rgba(93, 103, 118, 0.76) !important;
   }
 
+  .smyst-start-shell-glass-light header button[aria-label="Menü öffnen"] {
+    color: #111722 !important;
+    filter: drop-shadow(0 4px 14px rgba(255, 255, 255, 0.58));
+  }
+
+  .smyst-start-shell-glass-light header button[aria-label="Menü öffnen"]:hover,
+  .smyst-start-shell-glass-light header button[aria-label="Menü öffnen"]:focus-visible {
+    color: #030711 !important;
+  }
+
+  .smyst-start-shell-glass-light .smyst-icon-button {
+    color: #111722;
+    filter: drop-shadow(0 5px 16px rgba(255, 255, 255, 0.42));
+  }
+
+  .smyst-start-shell-glass-light .smyst-icon-button:disabled {
+    color: #111722 !important;
+    opacity: 0.68 !important;
+  }
+
+  .smyst-start-shell-glass-light .smyst-icon-button:hover,
+  .smyst-start-shell-glass-light .smyst-icon-button:focus-visible {
+    background: rgba(17, 23, 34, 0.075);
+    border-color: rgba(17, 23, 34, 0.11);
+  }
+
   .smyst-icon-button {
     border: 1px solid transparent;
     color: #ffffff;
