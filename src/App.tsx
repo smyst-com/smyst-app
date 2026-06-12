@@ -2555,13 +2555,7 @@ function TwinChatView() {
     imageUrl: profile.imageUrl,
   })
 
-  const [messages, setMessages] = useState<TwinChatUiMessage[]>([
-    {
-      id: 'welcome',
-      role: 'ai',
-      content: 'Hallo. Ich bin dein digitaler Zwilling. Frag mich etwas zu deinem Wissen, deinen Erinnerungen oder deinen Entscheidungen.',
-    },
-  ])
+  const [messages, setMessages] = useState<TwinChatUiMessage[]>([])
   const [input, setInput] = useState('')
   const [chatId, setChatId] = useState<string | null>(null)
   const [activeTwin, setActiveTwin] = useState<ChatTwinSummary | null>(null)
@@ -2582,12 +2576,20 @@ function TwinChatView() {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join('') || 'S'
-  const suggestions = [
-    'Was ist mein wichtigster Lebensrat?',
-    'Wie treffe ich schwierige Entscheidungen?',
-    activeTwin?.publicProfile ? `Was ist bei ${activeTwin.name} historisch gut belegt?` : 'Was ist mir in Beziehungen wichtig?',
-    activeTwin?.publicProfile ? 'Welche Quellen nutzt dieses Profil?' : 'Welche Erfahrungen prägen meine Sicht?',
-  ]
+  const suggestions = activeTwin
+    ? [
+        'Was ist mein wichtigster Lebensrat?',
+        'Wie treffe ich schwierige Entscheidungen?',
+        activeTwin.publicProfile ? `Was ist bei ${activeTwin.name} gut belegt?` : 'Was ist mir in Beziehungen wichtig?',
+        activeTwin.publicProfile ? 'Welche Quellen nutzt dieses Profil?' : 'Welche Erfahrungen prägen meine Sicht?',
+      ]
+    : []
+
+  const readyMessage = (twin: ChatTwinSummary): TwinChatUiMessage => ({
+    id: crypto.randomUUID(),
+    role: 'ai',
+    content: `Chat mit ${twin.name} ist bereit. Schreib deine Frage direkt an dieses KI-Profil.`,
+  })
 
   const restoreStoredChat = async (twin: ChatTwinSummary | null) => {
     if (!twin || auth.status !== 'authenticated') return
@@ -2609,6 +2611,8 @@ function TwinChatView() {
           content: message.content,
         })),
       )
+    } else {
+      setMessages([readyMessage(twin)])
     }
   }
 
@@ -2643,10 +2647,11 @@ function TwinChatView() {
         setActiveTwin(summary)
         await restoreStoredChat(summary)
         setMessages((current) =>
-          current.length === 1 && current[0]?.id === 'welcome'
+          current.length === 0
             ? [
                 {
-                  ...current[0],
+                  id: crypto.randomUUID(),
+                  role: 'ai',
                   content: `${publicTwin.name} ist bereit. Melde dich an, um den Chat mit diesem Profil zu starten.`,
                 },
               ]
@@ -2663,6 +2668,7 @@ function TwinChatView() {
         const summary = privateTwinToChatSummary(firstTwin)
         setActiveTwin(summary)
         await restoreStoredChat(summary)
+        setMessages((current) => (current.length ? current : [readyMessage(summary)]))
       }
     }
 
@@ -2814,18 +2820,14 @@ function TwinChatView() {
           </div>
           <button
             type="button"
+            disabled={!activeTwin}
             onClick={() => {
+              if (!activeTwin) return
               setChatId(null)
-              setMessages([
-                {
-                  id: crypto.randomUUID(),
-                  role: 'ai',
-                  content: 'Neuer Chat ist bereit. Schreib einfach los.',
-                },
-              ])
+              setMessages([readyMessage(activeTwin)])
               inputRef.current?.focus()
             }}
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/32 bg-white/16 text-[#16181b] transition-colors hover:bg-white/30 sm:h-9 sm:w-9"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/32 bg-white/16 text-[#16181b] transition-colors hover:bg-white/30 disabled:cursor-not-allowed disabled:opacity-45 sm:h-9 sm:w-9"
             aria-label="Neuen Chat starten"
             title="Neuen Chat starten"
           >
@@ -2834,8 +2836,19 @@ function TwinChatView() {
         </header>
 
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-[3px] py-1 sm:px-2 sm:py-2">
-          <div className="flex flex-col gap-1">
-            {messages.map((msg) => (
+          {messages.length === 0 && (
+            <div className="grid min-h-full place-items-center px-3 py-8 text-center">
+              <div className="max-w-[28rem]">
+                <p className="text-base font-bold text-[#16181b]">Kein KI-Profil ausgewählt</p>
+                <p className="mt-1 text-sm text-[#555b64]">
+                  Erstelle oder wähle ein echtes freigegebenes KI-Profil. Danach startet der Chat direkt mit diesem Profil.
+                </p>
+              </div>
+            </div>
+          )}
+          {messages.length > 0 && (
+            <div className="flex flex-col gap-1">
+              {messages.map((msg) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -2861,14 +2874,16 @@ function TwinChatView() {
                   )}
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <footer className="shrink-0 border-t border-white/18 bg-white/16 px-[3px] pb-[calc(4px+env(safe-area-inset-bottom))] pt-1 backdrop-blur-[20px] sm:px-2">
           <div>
-            <div className="mb-1 flex gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none]">
-              {suggestions.map((suggestion) => (
+            {suggestions.length > 0 && (
+              <div className="mb-1 flex gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none]">
+                {suggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   type="button"
@@ -2880,8 +2895,9 @@ function TwinChatView() {
                 >
                   {suggestion}
                 </button>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex items-end gap-1 rounded-[12px] border border-white/34 bg-white/24 p-1 shadow-none backdrop-blur-[18px]">
               <button
@@ -2903,8 +2919,14 @@ function TwinChatView() {
                     void handleSend()
                   }
                 }}
-                placeholder={auth.status === 'authenticated' ? 'Nachricht an deinen Twin...' : 'Bitte anmelden, um zu chatten'}
-                disabled={auth.status !== 'authenticated'}
+                placeholder={
+                  auth.status !== 'authenticated'
+                    ? 'Bitte anmelden, um zu chatten'
+                    : activeTwin
+                      ? `Nachricht an ${activeTwin.name}...`
+                      : 'Zuerst KI-Profil auswählen'
+                }
+                disabled={auth.status !== 'authenticated' || !activeTwin}
                 className="max-h-[96px] min-h-[36px] flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-5 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
               />
               <button
