@@ -462,7 +462,6 @@ type StartTwin = {
   name: string
   description: string
   role: string
-  signal: string
   accent: string
   initials: string
   tone: string
@@ -491,7 +490,6 @@ function realTwinToStartTwin(twin: TwinRecord, index: number): StartTwin {
     name: twin.name,
     description: twin.description || 'Persoenlicher KI-Zwilling',
     role: publicProfile ? 'Öffentlich' : 'Privat',
-    signal: twin.status === 'ready' ? 'ready' : 'draft',
     accent: ['#71E8FF', '#A8FFCB', '#9DBBFF', '#FFFFFF', '#FFD56A'][index % 5] ?? '#71E8FF',
     initials: initialsForName(twin.name),
     tone: twin.style,
@@ -553,7 +551,7 @@ function SmystStartPage({
     return [...realStartTwins]
       .filter((twin) => {
         if (!normalized) return true
-        return `${twin.name} ${twin.description} ${twin.role} ${twin.signal} ${twin.tone}`
+        return `${twin.name} ${twin.description} ${twin.role} ${twin.tone}`
           .toLowerCase()
           .includes(normalized)
       })
@@ -2526,29 +2524,35 @@ function TwinChatView() {
   }
   type ChatTwinSummary = {
     id: string
+    slug?: string
     name: string
     style: TwinStyle
     knowledgeCount: number
     label: string
     publicProfile: boolean
+    imageUrl?: string | null
   }
 
   const privateTwinToChatSummary = (twin: TwinRecord): ChatTwinSummary => ({
     id: twin.id,
+    slug: twin.slug,
     name: twin.name,
     style: twin.style,
     knowledgeCount: twin.knowledgeTexts.length,
     label: 'Eigener Twin',
     publicProfile: false,
+    imageUrl: twin.imageUrl ?? null,
   })
 
   const publicTwinToChatSummary = (profile: PublicTwinProfile): ChatTwinSummary => ({
-    id: profile.id,
+    id: profile.slug,
+    slug: profile.slug,
     name: profile.name,
     style: profile.style,
     knowledgeCount: profile.knowledgeCount,
     label: profile.categories[0] ?? 'Öffentliches Profil',
     publicProfile: true,
+    imageUrl: profile.imageUrl,
   })
 
   const [messages, setMessages] = useState<TwinChatUiMessage[]>([
@@ -2570,7 +2574,7 @@ function TwinChatView() {
   const auth = useAuth()
   const twinMvp = useTwinMvp()
 
-  const canSend = auth.status === 'authenticated' && input.trim().length > 0 && !isReplying
+  const canSend = auth.status === 'authenticated' && Boolean(activeTwin) && input.trim().length > 0 && !isReplying
   const canSpeak = input.trim().length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const initials = (activeTwin?.name ?? 'Smyst')
     .split(/\s+/)
@@ -2584,6 +2588,29 @@ function TwinChatView() {
     activeTwin?.publicProfile ? `Was ist bei ${activeTwin.name} historisch gut belegt?` : 'Was ist mir in Beziehungen wichtig?',
     activeTwin?.publicProfile ? 'Welche Quellen nutzt dieses Profil?' : 'Welche Erfahrungen prägen meine Sicht?',
   ]
+
+  const restoreStoredChat = async (twin: ChatTwinSummary | null) => {
+    if (!twin || auth.status !== 'authenticated') return
+    const chats = await twinMvp.listTwinChats()
+    const match = chats
+      ?.filter((chat) =>
+        twin.publicProfile
+          ? chat.publicTwinSlug === twin.slug || chat.publicTwinSlug === twin.id
+          : chat.twinId === twin.id,
+      )
+      .sort((a, b) => b.updatedAt - a.updatedAt)[0]
+    if (!match) return
+    setChatId(match.id)
+    if (match.messages.length) {
+      setMessages(
+        match.messages.map((message) => ({
+          id: message.id,
+          role: message.role === 'assistant' ? 'ai' : 'user',
+          content: message.content,
+        })),
+      )
+    }
+  }
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -2602,7 +2629,9 @@ function TwinChatView() {
         if (!alive) return
         const ownTwin = twins?.find((twin) => twin.id === requestedTwinId || twin.slug === requestedTwinId)
         if (ownTwin) {
-          setActiveTwin(privateTwinToChatSummary(ownTwin))
+          const summary = privateTwinToChatSummary(ownTwin)
+          setActiveTwin(summary)
+          await restoreStoredChat(summary)
           return
         }
       }
@@ -2610,7 +2639,9 @@ function TwinChatView() {
       if (requestedTwinId) {
         const publicTwin = await twinMvp.getPublicTwin(requestedTwinId)
         if (!alive || !publicTwin) return
-        setActiveTwin(publicTwinToChatSummary(publicTwin))
+        const summary = publicTwinToChatSummary(publicTwin)
+        setActiveTwin(summary)
+        await restoreStoredChat(summary)
         setMessages((current) =>
           current.length === 1 && current[0]?.id === 'welcome'
             ? [
@@ -2628,7 +2659,11 @@ function TwinChatView() {
       const twins = await twinMvp.listTwins()
       if (!alive) return
       const firstTwin = twins?.[0]
-      setActiveTwin((current) => current ?? (firstTwin ? privateTwinToChatSummary(firstTwin) : null))
+      if (!activeTwin && firstTwin) {
+        const summary = privateTwinToChatSummary(firstTwin)
+        setActiveTwin(summary)
+        await restoreStoredChat(summary)
+      }
     }
 
     void loadRequestedTwin()
@@ -2672,6 +2707,16 @@ function TwinChatView() {
   const handleSend = async () => {
     const message = input.trim()
     if (!message || auth.status !== 'authenticated' || isReplying) return
+    if (!activeTwin) {
+      setMessages([
+        {
+          id: crypto.randomUUID(),
+          role: 'ai',
+          content: 'Wähle oder erstelle zuerst ein echtes KI-Profil. Danach kann der Chat mit diesem Profil starten.',
+        },
+      ])
+      return
+    }
 
     const userMessage: TwinChatUiMessage = {
       id: crypto.randomUUID(),
@@ -2688,16 +2733,9 @@ function TwinChatView() {
     setIsReplying(true)
 
     try {
-      let nextTwin = activeTwin
-      if (!nextTwin) {
-        const twins = await twinMvp.listTwins()
-        nextTwin = twins?.[0] ? privateTwinToChatSummary(twins[0]) : null
-        setActiveTwin(nextTwin)
-      }
-
       let nextChatId = chatId
       if (!nextChatId) {
-        const chat = await twinMvp.startTwinChat(nextTwin?.id)
+        const chat = await twinMvp.startTwinChat(activeTwin.id)
         if (!chat) throw new Error('Chat konnte nicht gestartet werden.')
         nextChatId = chat.id
         setChatId(nextChatId)
@@ -2753,18 +2791,23 @@ function TwinChatView() {
       <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-white/24 bg-white/14 shadow-none backdrop-blur-[24px]">
         <header className="flex min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-white/18 bg-white/14 px-2 py-1 backdrop-blur-[18px] sm:min-h-[48px] sm:px-3">
           <div className="flex min-w-0 items-center gap-2">
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#59C7FF]/18 text-[11px] font-bold text-[#0b1c44] ring-1 ring-white/32 sm:h-9 sm:w-9">
-              {initials}
-            </div>
+            {activeTwin?.imageUrl ? (
+              <img
+                src={activeTwin.imageUrl}
+                alt=""
+                className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-white/40 sm:h-9 sm:w-9"
+              />
+            ) : (
+              <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#59C7FF]/18 text-[11px] font-bold text-[#0b1c44] ring-1 ring-white/32 sm:h-9 sm:w-9">
+                {initials}
+              </div>
+            )}
             <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? 'Dein Twin'}</h1>
+              <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? 'Kein Profil ausgewählt'}</h1>
               <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] leading-none text-[#555b64] sm:text-xs">
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  Bereit
-                </span>
-                <span>{activeTwin ? `${activeTwin.style} Stil` : 'Chat bereit'}</span>
-                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'Profil auswaehlen'}</span>
+                <span>{activeTwin ? 'KI-Profil' : 'Profil auswählen'}</span>
+                <span>{activeTwin ? `${activeTwin.style} Stil` : 'Kein Chat gestartet'}</span>
+                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'Keine Demo-Daten'}</span>
                 {activeTwin?.publicProfile && <span>{activeTwin.label}</span>}
               </div>
             </div>

@@ -94,6 +94,17 @@ export interface AccountExportBundle {
   chats: Array<{ id: string; title: string; messages: TwinChatMessage[]; createdAt: number; updatedAt: number }>
 }
 
+export interface TwinChatRecord {
+  id: string
+  title: string
+  twinId: string | null
+  publicTwinSlug?: string | null
+  messages: TwinChatMessage[]
+  messageCount: number
+  createdAt: number
+  updatedAt: number
+}
+
 export type SupportReportType = 'bug' | 'abuse' | 'privacy' | 'safety' | 'feedback'
 
 interface ApiErrorShape {
@@ -274,6 +285,15 @@ export function useTwinMvp() {
     [run],
   )
 
+  const listTwinChats = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ chats: TwinChatRecord[] }>('/api/chat/list')
+        return body.chats
+      }),
+    [run],
+  )
+
   const exportAccount = useCallback(
     () =>
       run(async () => {
@@ -328,6 +348,7 @@ export function useTwinMvp() {
     addMedia,
     startTwinChat,
     sendTwinMessage,
+    listTwinChats,
     exportAccount,
     deleteAccount,
     submitSupportReport,

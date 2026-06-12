@@ -79,6 +79,7 @@ interface ChatRecord {
   userSub: string;
   title: string;
   twinId?: string;
+  publicTwinSlug?: string;
   messages: ChatMessage[];
   createdAt: number;
   updatedAt: number;
@@ -392,7 +393,11 @@ function publicSafeImageUrl(env: ApiEnv, imageUrl: string | undefined): string |
   try {
     const url = new URL(imageUrl, host);
     if (url.origin !== new URL(host).origin) return null;
-    if (!url.pathname.startsWith('/assets/') && !url.pathname.startsWith('/public/')) return null;
+    const allowedPath =
+      url.pathname.startsWith('/storage/file/') ||
+      url.pathname.startsWith('/assets/') ||
+      url.pathname.startsWith('/public/');
+    if (!allowedPath) return null;
     return url.toString();
   } catch {
     return null;
@@ -519,7 +524,7 @@ function publicTwinPayload(env: ApiEnv, twin: TwinRecord) {
     style: twin.style,
     status: twin.status,
     url: profileUrl(env, twin),
-    chatPath: `/twin-chat?twin=${encodeURIComponent(twin.id)}`,
+    chatPath: `/twin-chat?twin=${encodeURIComponent(twin.slug)}`,
     uploadedContents: uploadedContentSummary(twin),
     mediaCount: (twin.mediaRefs ?? []).length,
     knowledgeCount: (twin.knowledgeTexts ?? []).length,
@@ -748,18 +753,23 @@ async function handleStartChat(request: Request, env: ApiEnv): Promise<Response>
   body = parsed.value;
 
   let twin: TwinRecord | null = null;
+  let publicTwin: TwinRecord | null = null;
   if (typeof body.twinId === 'string' && body.twinId) {
     twin = await loadTwinForUser(env, session.sub, body.twinId);
-    if (!twin) return errorResponse('twin_not_found', 'Twin not found', 404);
+    if (!twin) publicTwin = await loadPublicTwin(env, slugify(body.twinId));
+    if (!twin && (!publicTwin || publicTwin.visibility !== 'public')) {
+      return errorResponse('twin_not_found', 'Twin not found', 404);
+    }
   }
 
   const now = Date.now();
-  const titleName = twin?.name;
+  const titleName = twin?.name ?? publicTwin?.name;
   const chat: ChatRecord = {
     id: crypto.randomUUID(),
     userSub: session.sub,
     title: titleName ? `Chat mit ${titleName}` : 'Twin Chat',
     twinId: twin?.id,
+    publicTwinSlug: publicTwin?.slug,
     messages: [],
     createdAt: now,
     updatedAt: now,
@@ -788,6 +798,8 @@ async function handleListChats(request: Request, env: ApiEnv): Promise<Response>
         id: record.id,
         title: record.title,
         twinId: record.twinId ?? null,
+        publicTwinSlug: record.publicTwinSlug ?? null,
+        messages: record.messages,
         messageCount: record.messages.length,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,
@@ -1051,7 +1063,11 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   const kv = metadataStore(env);
   const chat = (await kv.get(chatKey(session.sub, body.chatId), 'json')) as ChatRecord | null;
   if (!chat) return errorResponse('chat_not_found', 'Chat not found', 404);
-  const twin = chat.twinId ? await loadTwinForUser(env, session.sub, chat.twinId) : null;
+  const twin = chat.twinId
+    ? await loadTwinForUser(env, session.sub, chat.twinId)
+    : chat.publicTwinSlug
+      ? await loadPublicTwin(env, chat.publicTwinSlug)
+      : null;
 
   const now = Date.now();
   const userMessage: ChatMessage = {
@@ -1080,7 +1096,7 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   return jsonResponse({
     chatId: next.id,
     message: assistantMessage,
-    twinId: twin?.id ?? null,
+    twinId: chat.twinId ?? chat.publicTwinSlug ?? null,
     mode: twin ? 'free-only-twin-mvp' : 'free-only-static',
   });
 }
