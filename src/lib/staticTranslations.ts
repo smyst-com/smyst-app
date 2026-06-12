@@ -41,7 +41,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
   seo: {
     title: 'smyst.com | KI-Zwillinge, digitale Profile und Twin Chat',
     description:
-      'smyst.com ist eine Free-only KI-Zwilling Plattform fuer öffentliche und private Profile, Wissen, Erinnerungen und schnelle Twin-Chats.',
+      'smyst.com ist eine Plattform fuer oeffentliche und private KI-Zwillinge, Wissen, Erinnerungen und schnelle Twin-Chats.',
     keywords: 'KI-Zwilling, AI Twin, digitaler Zwilling, Wissensprofil, Erinnerungen, smyst',
   },
   start: {
@@ -55,13 +55,13 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     voiceInput: 'Spracheingabe',
     send: 'Nachricht senden',
     freeOnlyNotice:
-      'Free-only MVP: GitHub Free, Cloudflare Free, IDrive e2. Keine bezahlten KI- oder Analytics-Dienste.',
+      'Oeffentliche und private Profile bleiben klar getrennt. Du entscheidest, womit du chatten moechtest.',
   },
   chat: {
     replyIntro: 'Ich antworte als {{name}}.',
-    replyMvp: 'Für den Free-only-MVP nutze ich eine lokale, simulierte Antwortlogik ohne bezahlten KI-Dienst.',
-    replyQuestion: 'Deine Frage: "{{question}}"',
-    replyNextStep: 'Nächster Schritt: echte Twin-Daten kommen über Cloudflare Worker/KV und IDrive e2 dazu.',
+    replyMvp: 'Ich wuerde es ruhig betrachten: Die Welt ist voller Tempo, Wissen und Unruhe zugleich.',
+    replyQuestion: 'Zu deiner Frage: "{{question}}"',
+    replyNextStep: 'Wichtig ist, genauer hinzusehen, neugierig zu bleiben und Fortschritt mit Verantwortung zu verbinden.',
   },
   profile: {
     publicProfile: 'Öffentliches Twin-Profil',

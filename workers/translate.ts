@@ -392,7 +392,7 @@ function historicalChatHtml(
 <body>
   <main>
     <section>
-      <p class="kicker">Free-only historical chat</p>
+      <p class="kicker">Historical chat</p>
       <h1>${escapeHtml(profile.name)}</h1>
       <p>${escapeHtml(profile.description)}</p>
       <div class="notice">

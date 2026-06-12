@@ -3,7 +3,7 @@
   "dir": "ltr",
   "seo": {
     "title": "smyst.com | AI İkizleri, Dijital Profiller ve Twin Chat",
-    "description": "smyst.com; herkese açık ve özel profiller, bilgi, anılar ve hızlı twin sohbetleri için free-only bir AI ikiz platformudur.",
+    "description": "smyst.com; herkese açık ve özel AI ikizleri, bilgi, anılar ve hızlı twin sohbetleri için bir platformdur.",
     "keywords": "AI ikizi, dijital ikiz, bilgi profili, anılar, smyst"
   },
   "start": {
@@ -16,13 +16,13 @@
     "addFile": "Dosya ekle",
     "voiceInput": "Sesli giriş",
     "send": "Mesaj gönder",
-    "freeOnlyNotice": "Free-only MVP: GitHub Free, Cloudflare Free, IDrive e2. Ücretli AI veya analiz servisi yok."
+    "freeOnlyNotice": "Herkese açık ve özel profiller net biçimde ayrı tutulur. Kiminle sohbet edeceğini sen seçersin."
   },
   "chat": {
     "replyIntro": "{{name}} olarak yanıtlıyorum.",
-    "replyMvp": "Free-only MVP için ücretli AI servisi olmadan yerel ve simüle edilmiş bir yanıt mantığı kullanıyorum.",
-    "replyQuestion": "Sorun: \"{{question}}\"",
-    "replyNextStep": "Sonraki adım: gerçek twin verileri Cloudflare Worker/KV ve IDrive e2 üzerinden gelecek."
+    "replyMvp": "Buna sakin bakardım: dünya aynı anda hız, bilgi ve huzursuzlukla dolu.",
+    "replyQuestion": "Sorun hakkında: \"{{question}}\"",
+    "replyNextStep": "Önemli olan dikkatle gözlemlemek, merakı korumak ve ilerlemeyi sorumlulukla birleştirmektir."
   },
   "profile": {
     "publicProfile": "Herkese açık twin profili",

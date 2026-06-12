@@ -3,7 +3,7 @@
   "dir": "ltr",
   "seo": {
     "title": "smyst.com | Gemelos de IA, perfiles digitales y Twin Chat",
-    "description": "smyst.com es una plataforma free-only de gemelos de IA para perfiles públicos y privados, conocimiento, recuerdos y chats rápidos.",
+    "description": "smyst.com es una plataforma de gemelos de IA públicos y privados, conocimiento, recuerdos y chats rápidos.",
     "keywords": "gemelo de IA, gemelo digital, perfil de conocimiento, recuerdos, smyst"
   },
   "start": {
@@ -16,13 +16,13 @@
     "addFile": "Añadir archivo",
     "voiceInput": "Entrada de voz",
     "send": "Enviar mensaje",
-    "freeOnlyNotice": "MVP free-only: GitHub Free, Cloudflare Free, IDrive e2. Sin servicios de IA o analytics de pago."
+    "freeOnlyNotice": "Los perfiles públicos y privados permanecen claramente separados. Tú eliges con quién quieres chatear."
   },
   "chat": {
     "replyIntro": "Respondo como {{name}}.",
-    "replyMvp": "Para el MVP free-only uso una lógica de respuesta local y simulada sin servicio de IA de pago.",
-    "replyQuestion": "Tu pregunta: \"{{question}}\"",
-    "replyNextStep": "Siguiente paso: los datos reales del twin llegarán mediante Cloudflare Worker/KV e IDrive e2."
+    "replyMvp": "Lo miraría con calma: el mundo está lleno de velocidad, conocimiento e inquietud al mismo tiempo.",
+    "replyQuestion": "Sobre tu pregunta: \"{{question}}\"",
+    "replyNextStep": "Lo importante es observar con cuidado, mantener la curiosidad y unir el progreso con responsabilidad."
   },
   "profile": {
     "publicProfile": "Perfil twin público",

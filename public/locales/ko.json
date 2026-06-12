@@ -3,7 +3,7 @@
   "dir": "ltr",
   "seo": {
     "title": "smyst.com | AI Twin, 디지털 프로필과 Twin Chat",
-    "description": "smyst.com은 공개 및 비공개 프로필, 지식, 기억, 빠른 Twin 채팅을 위한 free-only AI Twin 플랫폼입니다.",
+    "description": "smyst.com은 공개 및 비공개 AI Twin, 지식, 기억, 빠른 Twin 채팅을 위한 플랫폼입니다.",
     "keywords": "AI Twin, 디지털 트윈, 지식 프로필, 기억, smyst"
   },
   "start": {
@@ -16,13 +16,13 @@
     "addFile": "파일 추가",
     "voiceInput": "음성 입력",
     "send": "메시지 보내기",
-    "freeOnlyNotice": "Free-only MVP: GitHub Free, Cloudflare Free, IDrive e2. 유료 AI 또는 분석 서비스 없음."
+    "freeOnlyNotice": "공개 프로필과 비공개 프로필은 명확히 분리됩니다. 누구와 대화할지는 사용자가 선택합니다."
   },
   "chat": {
     "replyIntro": "{{name}}로 답변합니다.",
-    "replyMvp": "free-only MVP에서는 유료 AI 서비스 없이 로컬 시뮬레이션 응답 로직을 사용합니다.",
-    "replyQuestion": "질문: \"{{question}}\"",
-    "replyNextStep": "다음 단계: 실제 Twin 데이터는 Cloudflare Worker/KV와 IDrive e2를 통해 제공됩니다."
+    "replyMvp": "차분히 바라보겠습니다. 세상은 속도, 지식, 불안이 동시에 가득합니다.",
+    "replyQuestion": "질문에 대해: \"{{question}}\"",
+    "replyNextStep": "중요한 것은 세심하게 관찰하고, 호기심을 유지하며, 발전을 책임과 연결하는 것입니다."
   },
   "profile": {
     "publicProfile": "공개 Twin 프로필",

@@ -3,7 +3,7 @@
   "dir": "ltr",
   "seo": {
     "title": "smyst.com | Jumeaux IA, profils numériques et Twin Chat",
-    "description": "smyst.com est une plateforme free-only de jumeaux IA pour profils publics et privés, connaissances, souvenirs et chats rapides.",
+    "description": "smyst.com est une plateforme de jumeaux IA publics et privés, de connaissances, de souvenirs et de chats rapides.",
     "keywords": "jumeau IA, jumeau numérique, profil de connaissance, souvenirs, smyst"
   },
   "start": {
@@ -16,13 +16,13 @@
     "addFile": "Ajouter un fichier",
     "voiceInput": "Saisie vocale",
     "send": "Envoyer le message",
-    "freeOnlyNotice": "MVP free-only : GitHub Free, Cloudflare Free, IDrive e2. Aucun service IA ou analytics payant."
+    "freeOnlyNotice": "Les profils publics et privés restent clairement séparés. Tu choisis avec qui tu veux discuter."
   },
   "chat": {
     "replyIntro": "Je réponds comme {{name}}.",
-    "replyMvp": "Pour le MVP free-only, j'utilise une logique de réponse locale et simulée sans service IA payant.",
-    "replyQuestion": "Ta question : \"{{question}}\"",
-    "replyNextStep": "Prochaine étape : les vraies données de twin passeront par Cloudflare Worker/KV et IDrive e2."
+    "replyMvp": "Je le regarderais calmement : le monde est plein de vitesse, de savoir et d'inquiétude à la fois.",
+    "replyQuestion": "À propos de ta question : \"{{question}}\"",
+    "replyNextStep": "L'essentiel est d'observer avec soin, de rester curieux et de relier le progrès à la responsabilité."
   },
   "profile": {
     "publicProfile": "Profil twin public",

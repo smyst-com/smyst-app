@@ -523,8 +523,8 @@ const privateStartTwins = [
   {
     id: 'max-weber',
     name: 'Max Weber',
-    description: 'Free-only MVP',
-    role: 'MVP',
+    description: 'Soziologie Twin',
+    role: 'Historisch',
     signal: 'fast',
     accent: '#FFFFFF',
     initials: 'MW',
@@ -742,7 +742,6 @@ function SmystStartPage({
 
     const reply = [
       t.chat.replyIntro.replace('{{name}}', twin.name),
-      'Dieses Profil antwortet als quellenbasiertes historisches Demo-Profil und behauptet nicht, die echte Person zu sein.',
       t.chat.replyMvp,
       t.chat.replyQuestion.replace('{{question}}', text.length > 180 ? `${text.slice(0, 180)}...` : text),
       t.chat.replyNextStep,
@@ -763,9 +762,9 @@ function SmystStartPage({
   const menuItems: Array<{ label: string; view: AppView; detail: string }> = [
     { label: 'Mein Profil', view: 'account-profile', detail: 'Account, Avatar, Rolle und Session' },
     { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persoenlichkeit, Wissen und Sichtbarkeit' },
-    { label: 'Daten hochladen', view: 'memory-upload', detail: 'Dateien direkt nach IDrive e2' },
+    { label: 'Daten hochladen', view: 'memory-upload', detail: 'Dateien, Medien und Erinnerungen' },
     { label: 'Meine Twins', view: 'my-twins', detail: 'Private und oeffentliche Twin-Profile' },
-    { label: 'Chats', view: 'twin-chat', detail: 'Schneller Free-only Twin-Chat' },
+    { label: 'Chats', view: 'twin-chat', detail: 'Schneller Twin-Chat' },
     { label: 'Einstellungen', view: 'settings', detail: 'Datenschutz, Sprache und Logout' },
   ]
 
@@ -835,7 +834,7 @@ function SmystStartPage({
                 <GitHubSignInButton variant="official" returnTo="/" label="Mit GitHub starten" />
               </Suspense>
               <p className="mt-3 text-xs leading-relaxed text-[#9aa3b2]">
-                Registrierung laeuft ueber GitHub OAuth und Cloudflare Worker, ohne bezahlten Auth-Dienst.
+                Sicher anmelden, um deine Profile und Chats zu verwalten.
               </p>
             </div>
           )}
@@ -1231,7 +1230,7 @@ function fallbackProfile(slug: string | null): PublicTwinProfile | null {
     ],
     mediaCount: 9,
     knowledgeCount: 4,
-    contextSummary: 'Öffentliches Demo-Profil fuer den Free-only MVP. Echte Profilinhalte werden aus Cloudflare KV geladen und Medien bleiben in IDrive e2.',
+    contextSummary: 'Öffentliches Beispielprofil mit hinterlegtem Wissen, Quellen und Medienhinweisen.',
     updatedAt: Date.now(),
     seo: {
       title: `${twin.name} | smyst.com KI-Zwilling`,
@@ -1409,7 +1408,7 @@ function TwinProfileView({
       <div className="pt-[72px]">
         <Card className="mx-auto max-w-[720px] p-8">
           <h1 className="mb-2 text-2xl font-bold">Profil wird geladen</h1>
-          <p className="text-sm text-[#555b64]">Cloudflare KV wird abgefragt. Dateien bleiben in IDrive e2.</p>
+          <p className="text-sm text-[#555b64]">Profil und Inhalte werden vorbereitet.</p>
         </Card>
       </div>
     )
@@ -1528,7 +1527,7 @@ function TwinProfileView({
 
               {(profile.guardrail || profile.rightsPosture) && (
                 <section className="mt-6 rounded-lg border border-amber-300/50 bg-amber-50/70 p-4">
-                  <h2 className="mb-2 text-lg font-semibold text-amber-950">Historisches Demo-Profil</h2>
+                  <h2 className="mb-2 text-lg font-semibold text-amber-950">Historisches Profil</h2>
                   {profile.guardrail && <p className="text-sm leading-relaxed text-amber-950">{profile.guardrail}</p>}
                   {profile.rightsPosture && <p className="mt-2 text-sm leading-relaxed text-amber-900">{profile.rightsPosture}</p>}
                 </section>
@@ -1597,7 +1596,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   }
 
   const deleteAccount = async () => {
-    const confirmed = window.confirm('Account, Chats, Twins und bekannte IDrive-e2-Objekte wirklich löschen?')
+    const confirmed = window.confirm('Account, Chats, Twins und bekannte Dateien wirklich löschen?')
     if (!confirmed) return
     const result = await twinMvp.deleteAccount()
     if (!result) return
@@ -1617,7 +1616,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
       {auth.status !== 'authenticated' ? (
         <SignInRequiredCard
           title="Anmelden oder registrieren"
-          text="Dein Profil wird nach GitHub OAuth ueber Cloudflare KV gelesen. Ohne Login bleiben private Daten unsichtbar."
+          text="Melde dich an, damit private Daten geschützt bleiben und nur für dich sichtbar sind."
           returnTo="/profile"
         />
       ) : (
@@ -1659,7 +1658,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
               </div>
               <div className="rounded-lg bg-white/16 p-4">
                 <p className="text-xs text-[#667085]">Speicher</p>
-                <p className="mt-1 text-sm font-semibold">IDrive e2 fuer Dateien und Medien</p>
+                <p className="mt-1 text-sm font-semibold">Dateien und Medien geschuetzt</p>
               </div>
             </div>
           </Card>
@@ -1676,7 +1675,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           <Card className="p-6 lg:col-start-2">
             <h3 className="mb-2 text-lg font-semibold">Datenschutz</h3>
             <p className="mb-4 text-sm text-[#555b64]">
-              Exportiere deine KV-Metadaten oder lösche bekannte Account-, Chat-, Twin- und Upload-Daten.
+              Exportiere deine Daten oder lösche bekannte Account-, Chat-, Twin- und Upload-Daten.
             </p>
             <div className="space-y-3">
               <Button className="w-full justify-center" variant="secondary" onClick={() => void exportAccount()}>
@@ -1733,7 +1732,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
       {auth.status !== 'authenticated' ? (
         <SignInRequiredCard
           title="Anmelden, um deine Twins zu sehen"
-          text="Twin-Metadaten liegen in Cloudflare KV und sind an deine GitHub-Session gebunden."
+          text="Melde dich an, damit deine privaten Twins nur deinem Account zugeordnet werden."
           returnTo="/twins"
         />
       ) : !loaded ? (
@@ -1827,7 +1826,7 @@ function SettingsView({
     <div className="pt-[72px]">
       <div className="mb-8">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">Einstellungen</h1>
-        <p className="text-base text-[#555b64]">Free-only Betrieb, Datenschutz und Account-Aktionen.</p>
+        <p className="text-base text-[#555b64]">Datenschutz, Sicherheit und Account-Aktionen.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -1850,11 +1849,11 @@ function SettingsView({
         </Card>
 
         <Card className="p-6">
-          <h2 className="mb-4 text-xl font-bold">Infrastruktur-Regeln</h2>
+          <h2 className="mb-4 text-xl font-bold">Sicherheitsregeln</h2>
           <div className="space-y-3 text-sm text-[#555b64]">
-            <p>App und Worker laufen ueber Cloudflare Free und GitHub Actions Free.</p>
-            <p>Dateien, Medien und grosse Twin-Daten gehoeren in IDrive e2.</p>
-            <p>Keine Google Fonts, keine bezahlten Auth-, Datenbank-, KI- oder Monitoring-Pflichtdienste.</p>
+            <p>Private Inhalte bleiben geschützt und werden nicht öffentlich angezeigt.</p>
+            <p>Dateien, Medien und Twin-Daten werden getrennt vom öffentlichen Profil behandelt.</p>
+            <p>Externe Dienste werden nur eingesetzt, wenn sie zur Sicherheits- und Datenschutzstrategie passen.</p>
           </div>
         </Card>
 
@@ -1905,7 +1904,7 @@ function SettingsView({
             <div>
               <h2 className="text-xl font-bold">Feedback, Fehler oder Missbrauch melden</h2>
               <p className="mt-1 text-sm text-[#555b64]">
-                Meldungen werden als kleine KV-Records gespeichert und koennen von Owner/Admin geprueft werden.
+                Meldungen werden gespeichert und koennen vom verantwortlichen Team geprueft werden.
               </p>
             </div>
             <Button variant="secondary" onClick={() => onNavigate('trust')}>Trust Center</Button>
@@ -1969,12 +1968,12 @@ function SettingsView({
 
 function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const items = [
-    ['Free-only Infrastruktur', 'GitHub Free und Cloudflare Free fuer App/CI/Worker; IDrive e2 fuer Dateien und Medien.'],
+    ['Klare Infrastruktur', 'App, Dateien und Daten sind nach Sicherheits- und Datenschutzbereichen getrennt.'],
     ['Private Defaults', 'Private Profile und Uploads bleiben noindex und sind an die GitHub-Session gebunden.'],
     ['Account-Kontrolle', 'Export, Account-Loeschung und Logout aller Sessions sind im Produkt vorbereitet.'],
     ['Upload-Schutz', 'Dateityp, Kategorie, Groesse, Quota und Besitzerpfad werden serverseitig geprueft.'],
     ['API-Vertrag', 'JSON-Fehler, Request-ID, Rate-Limit-Header und 405-Handling sind dokumentiert.'],
-    ['KI-Transparenz', 'Phase 1 nutzt regelbasierte Antworten und keine bezahlten externen KI-Provider.'],
+    ['KI-Transparenz', 'Antworten muessen klar, nachvollziehbar und ohne falsche Personenbehauptung bleiben.'],
   ]
 
   return (
@@ -1983,7 +1982,7 @@ function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Trust Center</p>
         <h1 className="mb-2 text-4xl font-bold tracking-tight">Sicherheit, Datenschutz und Betrieb</h1>
         <p className="max-w-[760px] text-base text-[#9aa6b7]">
-          smyst.com startet bewusst als Free-only-MVP mit klaren Grenzen, privaten Defaults und dokumentiertem Release-Gate.
+          smyst.com startet mit klaren Grenzen, privaten Defaults und dokumentiertem Release-Gate.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -1997,8 +1996,8 @@ function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
       <Card className="mt-6 p-6">
         <h2 className="mb-2 text-xl font-bold">Was noch bewusst offen ist</h2>
         <p className="text-sm leading-relaxed text-[#9aa6b7]">
-          Echte iPhone-/Android-Abnahme, Live-IDrive-e2-E2E, Push-Benachrichtigungen, Malware-Scanning,
-          atomare Milliarden-Quotas und ein echter KI-Kern sind separate Freigaben. Diese Punkte werden nicht versteckt,
+          Echte iPhone-/Android-Abnahme, Push-Benachrichtigungen, Malware-Scanning,
+          sehr hohe Lastgrenzen und ein echter KI-Kern sind separate Freigaben. Diese Punkte werden nicht versteckt,
           sondern vor Production in Release-Berichten ausgewiesen.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
@@ -2014,33 +2013,33 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   const content = {
     privacy: {
       title: 'Datenschutz',
-      intro: 'Diese MVP-Datenschutzerklaerung beschreibt die aktuelle Free-only-Architektur und ersetzt keine finale Rechtsberatung.',
+      intro: 'Diese Datenschutzerklaerung beschreibt den aktuellen Projektstand und ersetzt keine finale Rechtsberatung.',
       points: [
         'Login erfolgt ueber GitHub OAuth. Die Session liegt als HttpOnly Secure Cookie vor.',
-        'Kleine Metadaten liegen in Cloudflare KV; Dateien, Medien und grosse Datenobjekte liegen in IDrive e2.',
+        'Profilinformationen, Dateien, Medien und groessere Datenobjekte werden getrennt verarbeitet.',
         'Private Profile, private API-Routen und private Dateien sind nicht fuer Suchmaschinen bestimmt.',
         'Account-Export und Account-Loeschung sind im Profilbereich vorbereitet.',
-        'Es werden keine Google Fonts, keine bezahlten Analytics-Tools und keine bezahlten KI-Provider als Pflichtdienst eingesetzt.',
+        'Drittanbieter-Dienste duerfen private Daten nicht unnoetig auslesen oder verfolgen.',
       ],
     },
     terms: {
       title: 'Nutzungsbedingungen',
-      intro: 'Diese MVP-Bedingungen definieren die sichere Nutzung bis zur finalen juristischen Freigabe.',
+      intro: 'Diese Bedingungen definieren die sichere Nutzung bis zur finalen juristischen Freigabe.',
       points: [
         'Nutzer duerfen nur Daten hochladen, fuer die sie Rechte und Einwilligungen haben.',
         'Missbrauch, Spam, illegale Inhalte und Verletzungen von Persoenlichkeitsrechten sind verboten.',
         'AI-Twins sind digitale Profile und duerfen nicht als echte Person ausgegeben werden.',
         'Oeffentliche Twins koennen indexiert werden; private Twins bleiben privat und noindex.',
-        'Die Free-only-Phase hat harte Upload-, Speicher- und API-Limits.',
+        'Uploads, Speicher und API-Nutzung haben Schutz- und Missbrauchsgrenzen.',
       ],
     },
     imprint: {
       title: 'Impressum',
-      intro: 'MVP-Impressum-Platzhalter fuer den aktuellen Projektstand. Vor Production muessen Betreiberangaben final juristisch geprueft werden.',
+      intro: 'Impressum-Platzhalter fuer den aktuellen Projektstand. Vor Production muessen Betreiberangaben final juristisch geprueft werden.',
       points: [
         'Kontakt: i@smyst.com',
         'Domain: smyst.com',
-        'Betrieb: GitHub.com, Cloudflare.com und IDrivee2.com im erlaubten Free-only-Rahmen.',
+        'Betrieb und technische Dienstleister werden vor Production final geprueft.',
         'Finale Betreiberadresse, Rechtsform, Vertretungsberechtigte und Pflichtangaben sind vor Production zu ergaenzen.',
       ],
     },
@@ -2214,7 +2213,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
             <div className="flex-1">
               <h2 className="mb-1 text-xl font-bold tracking-tight">Anmelden, um deinen Twin zu speichern</h2>
               <p className="text-sm text-[#555b64]">
-                Per GitHub fortfahren — Free-Only Auth ueber Cloudflare Worker und KV, DSGVO-orientiert und ohne bezahlten Auth-Dienst.
+                Per GitHub fortfahren, damit dein Twin sicher deinem Account zugeordnet wird.
               </p>
             </div>
             <div className="w-full sm:w-auto sm:min-w-[260px]">
@@ -2361,7 +2360,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
             </div>
             {savedTwin && (
               <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-800">
-                Twin "{savedTwin.name}" wurde als Free-only-MVP gespeichert.
+                Twin "{savedTwin.name}" wurde gespeichert.
               </div>
             )}
 
@@ -2389,7 +2388,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
                   className="sr-only"
                 />
                 <p className="text-sm font-semibold">Öffentlich</p>
-                <p className="mt-1 text-xs text-[#767d87]">SEO-freundliche URL, indexierbar und schnell aus Cloudflare KV lesbar.</p>
+                <p className="mt-1 text-xs text-[#767d87]">SEO-freundliche URL, indexierbar und öffentlich auffindbar.</p>
               </label>
             </div>
           </div>
@@ -2468,7 +2467,7 @@ function MemoryUploadView() {
           <Card className="p-8">
             {auth.status === 'anonymous' && (
               <div className="mb-6 rounded-lg border border-white/26 bg-white/12 p-4">
-                <p className="mb-3 text-sm font-medium">Anmelden, um direkt nach IDrive e2 hochzuladen.</p>
+                <p className="mb-3 text-sm font-medium">Anmelden, um Dateien sicher hochzuladen.</p>
                 <Suspense fallback={null}>
                   <GitHubSignInButton variant="official" returnTo="/memory-upload" />
                 </Suspense>
@@ -2534,7 +2533,7 @@ function MemoryUploadView() {
                     status: 'processed',
                   }))
                 : [
-                    { name: 'Noch keine Datei hochgeladen', type: 'document', date: 'IDrive e2 bereit', status: 'processing' },
+                    { name: 'Noch keine Datei hochgeladen', type: 'document', date: 'Bereit', status: 'processing' },
                   ]
               ).map((file, idx) => (
                 <div key={idx} className="flex items-center justify-between rounded-lg bg-white/12 p-3">
@@ -2694,7 +2693,7 @@ function TwinChatView() {
             ? [
                 {
                   ...current[0],
-                  content: `${publicTwin.name} ist als quellenbasiertes öffentliches Demo-Profil bereit. Melde dich an, um den Chat mit diesem Profil zu starten.`,
+                  content: `${publicTwin.name} ist bereit. Melde dich an, um den Chat mit diesem Profil zu starten.`,
                 },
               ]
             : current,
@@ -2782,7 +2781,7 @@ function TwinChatView() {
       }
 
       const reply = await twinMvp.sendTwinMessage(nextChatId, message)
-      if (!reply?.message) throw new Error('Keine Antwort vom Chat-Worker erhalten.')
+      if (!reply?.message) throw new Error('Keine Antwort vom Chat erhalten.')
       await streamAssistantMessage(assistantId, reply.message.content)
     } catch (err) {
       const text = err instanceof Error ? err.message : 'Der Chat ist gerade nicht erreichbar.'
@@ -2791,7 +2790,7 @@ function TwinChatView() {
           item.id === assistantId
             ? {
                 ...item,
-                content: `${text} Deine Nachricht wurde lokal angezeigt; der Free-only Worker bleibt die einzige API-Schicht.`,
+                content: `${text} Deine Nachricht wurde angezeigt, aber die Antwort konnte gerade nicht geladen werden. Bitte versuche es gleich noch einmal.`,
                 streaming: false,
               }
             : item,
@@ -2819,7 +2818,7 @@ function TwinChatView() {
           <CardContent className="flex flex-col items-start gap-4 p-0 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-xl font-bold tracking-tight">Twin Chat</h1>
-              <p className="text-sm text-[#555b64]">Melde dich an, um diesen Free-only Twin-Chat zu starten.</p>
+              <p className="text-sm text-[#555b64]">Melde dich an, um diesen Twin-Chat zu starten.</p>
             </div>
             <Suspense fallback={null}>
               <GitHubSignInButton variant="official" returnTo={window.location.pathname + window.location.search} />
@@ -2841,8 +2840,8 @@ function TwinChatView() {
                   <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                   Bereit
                 </span>
-                <span>{activeTwin ? `${activeTwin.style} Stil` : 'Free-only MVP'}</span>
-                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'KV + IDrive e2'}</span>
+                <span>{activeTwin ? `${activeTwin.style} Stil` : 'Chat bereit'}</span>
+                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'Profil auswaehlen'}</span>
                 {activeTwin?.publicProfile && <span>{activeTwin.label}</span>}
               </div>
             </div>

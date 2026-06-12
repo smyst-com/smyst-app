@@ -3,7 +3,7 @@
   "dir": "rtl",
   "seo": {
     "title": "smyst.com | توائم ذكاء اصطناعي وملفات رقمية ودردشة Twin",
-    "description": "smyst.com منصة free-only لتوائم الذكاء الاصطناعي للملفات العامة والخاصة والمعرفة والذكريات والدردشة السريعة.",
+    "description": "smyst.com منصة لتوائم الذكاء الاصطناعي العامة والخاصة والمعرفة والذكريات والدردشة السريعة.",
     "keywords": "توأم ذكاء اصطناعي, توأم رقمي, ملف معرفة, ذكريات, smyst"
   },
   "start": {
@@ -16,13 +16,13 @@
     "addFile": "إضافة ملف",
     "voiceInput": "إدخال صوتي",
     "send": "إرسال الرسالة",
-    "freeOnlyNotice": "MVP free-only: GitHub Free وCloudflare Free وIDrive e2. لا توجد خدمات ذكاء اصطناعي أو تحليلات مدفوعة."
+    "freeOnlyNotice": "تبقى الملفات العامة والخاصة منفصلة بوضوح. أنت تختار من تريد محادثته."
   },
   "chat": {
     "replyIntro": "أجيب بصفتي {{name}}.",
-    "replyMvp": "في MVP free-only أستخدم منطق رد محلي ومحاكى بدون خدمة ذكاء اصطناعي مدفوعة.",
-    "replyQuestion": "سؤالك: \"{{question}}\"",
-    "replyNextStep": "الخطوة التالية: ستأتي بيانات الـ Twin الحقيقية عبر Cloudflare Worker/KV وIDrive e2."
+    "replyMvp": "سأنظر إلى الأمر بهدوء: العالم مليء بالسرعة والمعرفة والاضطراب في الوقت نفسه.",
+    "replyQuestion": "بخصوص سؤالك: \"{{question}}\"",
+    "replyNextStep": "المهم هو الملاحظة بدقة، والبقاء فضوليا، وربط التقدم بالمسؤولية."
   },
   "profile": {
     "publicProfile": "ملف Twin عام",

@@ -581,15 +581,15 @@ function buildTwinContext(twin: TwinRecord): string {
       return `${title}${item.text}`;
     })
     .join(' ');
-  const mediaKinds = Array.from(new Set(mediaRefs.map((item) => item.category))).join(', ') || 'keine Medienreferenzen';
+  const mediaKinds = Array.from(new Set(mediaRefs.map((item) => item.category))).join(', ') || 'keine Medien hinterlegt';
   const summary = [
-    `${twin.name} ist ein digitaler Free-only-KI-Zwilling.`,
+    `${twin.name} ist ein digitaler KI-Zwilling.`,
     twin.description ? `Profil: ${twin.description}` : 'Profil: noch kurz.',
     categories.length ? `Kategorien: ${categories.join(', ')}.` : '',
     languages.length ? `Sprachen: ${languages.join(', ')}.` : '',
     `Kommunikationsstil: ${twin.style}.`,
     `Wissensbasis: ${knowledge || 'noch keine Wissenstexte gespeichert.'}`,
-    `IDrive-e2-Referenzen: ${mediaKinds}.`,
+    `Medienhinweise: ${mediaKinds}.`,
   ].join(' ');
   return summary.slice(0, 4000);
 }
@@ -791,13 +791,12 @@ function historicalDemoReply(input: string, profile: (typeof historicalDemoProfi
   const shortQuestion = trimmed.length > 220 ? `${trimmed.slice(0, 220)}...` : trimmed;
   const sourceLine = profile.sources.map((source) => `${source.publisher}: ${source.title}`).join('; ');
   return [
-    `Sachlich betrachtet: Ich antworte als quellenbasiertes historisches Demo-Profil zu ${profile.name}.`,
+    `Sachlich betrachtet: Ich antworte aus dem historischen Kontext von ${profile.name}.`,
     profile.description,
-    `Zu deiner Frage "${shortQuestion}" kann ich nur aus allgemein bekannten, öffentlichen Quellen und dem hinterlegten Kontext antworten.`,
+    `Zu deiner Frage "${shortQuestion}" wuerde ich zuerst genau beobachten, welche Kraefte die Gegenwart praegen.`,
     profile.contextSummary,
     profile.guardrail,
     `Quellenbasis: ${sourceLine}.`,
-    'Diese Antwort ist regelbasiert, nutzt keine bezahlte externe KI und behauptet nicht, die echte historische Person zu sein.',
   ].join(' ');
 }
 
@@ -814,7 +813,7 @@ function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `Ich bin ${twin.name}, aktuell als Free-only-MVP-Zwilling.`,
+      `Ich bin ${twin.name}.`,
       `Zu deiner Frage "${shortQuestion}" kann ich noch nur allgemein antworten, weil noch keine Wissenstexte hinterlegt sind.`,
       'Lade Texte, Dokumente oder Medien hoch, dann kann mein Kontext gezielter werden.',
     ].join(' ');
@@ -824,7 +823,7 @@ function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
     `${stylePrefix(twin.style)} Ich antworte als ${twin.name}.`,
     twin.description ? `Mein gespeichertes Profil sagt: ${twin.description.slice(0, 260)}.` : '',
     snippets ? `Passende Erinnerungen/Wissen: ${snippets}` : `Zu "${shortQuestion}" finde ich noch keinen direkten Treffer in meiner Wissensbasis.`,
-    'Diese Antwort ist regelbasiert und nutzt nur Cloudflare KV Metadaten sowie IDrive-e2-Referenzen, keine bezahlte externe KI.',
+    'Ich stuetze mich auf das gespeicherte Profil und das hinterlegte Wissen.',
   ]
     .filter(Boolean)
     .join(' ');
@@ -975,7 +974,7 @@ async function handleStartChat(request: Request, env: ApiEnv): Promise<Response>
   const chat: ChatRecord = {
     id: crypto.randomUUID(),
     userSub: session.sub,
-    title: titleName ? `Chat mit ${titleName}` : 'Free-only chat',
+    title: titleName ? `Chat mit ${titleName}` : 'Twin Chat',
     twinId: twin?.id ?? historicalProfile?.id,
     messages: [],
     createdAt: now,
@@ -1016,10 +1015,9 @@ function freeOnlyReply(input: string): string {
   const trimmed = input.trim();
   const short = trimmed.length > 180 ? `${trimmed.slice(0, 180)}...` : trimmed;
   return [
-    'Smyst free-only Antwort:',
     `Ich habe deine Nachricht erhalten: "${short}"`,
-    'In dieser Phase nutze ich keine bezahlten KI-Provider und keine externen Modell-APIs.',
-    'Sobald echte Twin-Verarbeitung erlaubt ist, muss sie weiterhin Auth, Quotas, Datenschutz und IDrive-e2-Speicherregeln beachten.',
+    'Ich kann gerade nur allgemein antworten, aber ich bleibe beim Thema und formuliere so hilfreich wie moeglich.',
+    'Erzaehle mir etwas mehr Kontext, dann kann die Antwort gezielter werden.',
   ].join(' ');
 }
 
