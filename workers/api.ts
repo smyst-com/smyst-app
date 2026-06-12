@@ -624,10 +624,7 @@ async function handleHealth(): Promise<Response> {
   return jsonResponse({
     ok: true,
     service: 'smyst-api',
-    mode: 'free-only',
-    storage: 'idrive-e2',
-    metadata: 'cloudflare-kv',
-    twinMvp: 'rule-based',
+    status: 'ready',
   });
 }
 
