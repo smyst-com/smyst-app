@@ -495,6 +495,11 @@
 
   .smyst-start-shell-glass-light input,
   .smyst-start-shell-glass-light textarea {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    caret-color: #111722;
     color: #111722 !important;
   }
 
