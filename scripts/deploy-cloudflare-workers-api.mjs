@@ -85,30 +85,47 @@ const deployments = [
   },
 ];
 
+const deploymentFilter = (process.env.SMYST_WORKER_DEPLOY_FILTER || '')
+  .split(',')
+  .map((name) => name.trim())
+  .filter(Boolean);
+
 secrets.AUTH_HMAC_SECRET ||= randomBytes(48).toString('base64url');
 secrets.ADMIN_TOKEN ||= randomBytes(32).toString('base64url');
 await writeFile(secretsFile, `${JSON.stringify(secrets, null, 2)}\n`, { mode: 0o600 });
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 async function cf(path, init = {}) {
-  const response = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(init.headers || {}),
-    },
-  });
-  const text = await response.text();
-  let payload;
-  try {
-    payload = JSON.parse(text);
-  } catch {
-    payload = { success: false, raw: text };
-  }
-  if (!response.ok || payload.success === false) {
+  let lastError;
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const response = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+      ...init,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(init.headers || {}),
+      },
+    });
+    const text = await response.text();
+    let payload;
+    try {
+      payload = JSON.parse(text);
+    } catch {
+      payload = { success: false, raw: text };
+    }
+    if (response.ok && payload.success !== false) {
+      return payload.result;
+    }
     const errors = payload.errors || payload;
-    throw new Error(`${init.method || 'GET'} ${path} failed ${response.status}: ${JSON.stringify(errors)}`);
+    lastError = new Error(`${init.method || 'GET'} ${path} failed ${response.status}: ${JSON.stringify(errors)}`);
+    if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 4) {
+      break;
+    }
+    const delay = attempt * 1500;
+    console.warn(`Cloudflare API ${response.status} for ${path}; retrying in ${delay}ms...`);
+    await sleep(delay);
   }
-  return payload.result;
+  throw lastError;
 }
 
 async function bundleWorker(dep) {
@@ -188,14 +205,26 @@ const zones = await cf(`/zones?name=${encodeURIComponent(zoneName)}`);
 const zoneId = zones[0]?.id;
 if (!zoneId) throw new Error(`Zone not found: ${zoneName}`);
 
+const activeDeployments = deploymentFilter.length
+  ? deployments.filter((dep) => deploymentFilter.includes(dep.name))
+  : deployments;
+if (!activeDeployments.length) {
+  throw new Error(`No workers match SMYST_WORKER_DEPLOY_FILTER=${deploymentFilter.join(',')}`);
+}
+
 const summary = [];
-for (const dep of deployments) {
+for (const dep of activeDeployments) {
+  console.log(`Deploying ${dep.name} from ${dep.entry}...`);
   await uploadWorker(dep);
+  console.log(`Uploaded ${dep.name}.`);
   const secretResults = [];
   for (const secretName of dep.secrets) {
+    console.log(`Setting secret ${secretName} for ${dep.name}...`);
     secretResults.push(await setSecret(dep.name, secretName, secrets[secretName]));
   }
+  console.log(`Updating routes for ${dep.name}...`);
   const routes = await upsertRoutes(zoneId, dep);
+  console.log(`Routes updated for ${dep.name}.`);
   summary.push({ worker: dep.name, secrets: secretResults, routes });
 }
 
