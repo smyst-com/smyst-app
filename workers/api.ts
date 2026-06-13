@@ -496,12 +496,27 @@ function publicTwinSnapshot(env: ApiEnv, twin: TwinRecord): TwinRecord {
   };
 }
 
+function publicTwinQuality(env: ApiEnv, twin: TwinRecord): { ok: boolean; issues: string[] } {
+  const issues: string[] = [];
+  if (twin.status !== 'ready') issues.push('status_not_ready');
+  if (!twin.name.trim()) issues.push('name_required');
+  if (twin.description.trim().length < 40) issues.push('description_too_short');
+  if (!(twin.categories ?? []).some((item) => item.trim().length >= 2)) issues.push('category_required');
+  if (!(twin.languages ?? []).some((item) => item.trim().length >= 2)) issues.push('language_required');
+  if (!publicSafeImageUrl(env, twin.imageUrl)) issues.push('profile_image_required');
+  return { ok: issues.length === 0, issues };
+}
+
+function isPublicTwinDiscoverable(env: ApiEnv, twin: TwinRecord): boolean {
+  return twin.visibility === 'public' && publicTwinQuality(env, twin).ok;
+}
+
 async function syncPublicTwin(env: ApiEnv, next: TwinRecord, previous?: TwinRecord | null): Promise<void> {
   const kv = metadataStore(env);
-  if (previous?.slug && (previous.slug !== next.slug || next.visibility !== 'public')) {
+  if (previous?.slug && (previous.slug !== next.slug || next.visibility !== 'public' || !isPublicTwinDiscoverable(env, next))) {
     await kv.delete(publicTwinKey(previous.slug));
   }
-  if (next.visibility === 'public') {
+  if (isPublicTwinDiscoverable(env, next)) {
     await kv.put(publicTwinKey(next.slug), JSON.stringify(publicTwinSnapshot(env, next)), { expirationTtl: TWIN_TTL_SECONDS });
   }
 }
@@ -514,6 +529,7 @@ function uploadedContentSummary(twin: TwinRecord) {
 
 function publicTwinPayload(env: ApiEnv, twin: TwinRecord) {
   const imageUrl = publicSafeImageUrl(env, twin.imageUrl);
+  const quality = publicTwinQuality(env, twin);
   return {
     id: twin.id,
     name: twin.name,
@@ -534,6 +550,7 @@ function publicTwinPayload(env: ApiEnv, twin: TwinRecord) {
     guardrail: twin.guardrail,
     rightsPosture: twin.rightsPosture,
     sources: twin.sources ?? [],
+    quality,
     updatedAt: twin.updatedAt,
     seo: {
       title: `${twin.name} | smyst.com KI-Zwilling`,
@@ -1225,7 +1242,7 @@ async function handlePublicTwin(request: Request, env: ApiEnv, slug: string): Pr
   const cleanSlug = slugify(slug);
   if (!cleanSlug) return errorResponse('invalid_slug', 'Invalid profile slug', 400);
   const twin = await loadPublicTwin(env, cleanSlug);
-  if (!twin || twin.visibility !== 'public') {
+  if (!twin || !isPublicTwinDiscoverable(env, twin)) {
     return errorResponse('public_twin_not_found', 'Public twin not found', 404);
   }
 
@@ -1255,7 +1272,7 @@ async function handlePublicTwinList(request: Request, env: ApiEnv): Promise<Resp
     listed.keys.map((item) => metadataStore(env).get(item.name, 'json') as Promise<TwinRecord | null>),
   );
   const twins = records
-    .filter((record): record is TwinRecord => Boolean(record && record.visibility === 'public' && record.name))
+    .filter((record): record is TwinRecord => Boolean(record && isPublicTwinDiscoverable(env, record)))
     .sort((a, b) => b.updatedAt - a.updatedAt || a.name.localeCompare(b.name, 'de'))
     .map((twin) => publicTwinPayload(env, twin));
 

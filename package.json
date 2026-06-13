@@ -20,7 +20,8 @@
     "workers:deploy:all": "npm run workers:deploy && npm run workers:warmup:deploy && npm run workers:auth:deploy && npm run workers:storage:deploy && npm run workers:api:deploy",
     "workers:warmup:trigger": "curl -s -X GET https://smyst-warmup.workers.dev/warmup -H \"Authorization: Bearer $ADMIN_TOKEN\"",
     "kv:list": "wrangler kv:namespace list",
-    "lint:tsc": "tsc --noEmit"
+    "lint:tsc": "tsc --noEmit",
+    "profiles:quality": "node scripts/profile-answer-quality.mjs && node scripts/public-profile-quality.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
