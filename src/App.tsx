@@ -426,21 +426,21 @@ export default function App() {
           <div className="grid grid-cols-3 gap-8">
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Produkt</h4>
-              <button onClick={() => navigateTo('twin-builder')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Builder</button>
-              <button onClick={() => navigateTo('memory-upload')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Memory Upload</button>
-              <button onClick={() => navigateTo('twin-chat')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Chat</button>
+              <button onClick={() => navigateTo('twin-builder')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Builder</button>
+              <button onClick={() => navigateTo('memory-upload')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Memory Upload</button>
+              <button onClick={() => navigateTo('twin-chat')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Chat</button>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Unternehmen</h4>
-              <button onClick={() => navigateTo('trust')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Trust Center</button>
-              <a href="mailto:i@smyst.com?subject=Karriere%20bei%20smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">Karriere</a>
-              <a href="mailto:b2b@smyst.com" className="text-sm text-[#9aa6b7] transition-colors hover:text-white">B2B-Anfragen</a>
+              <button onClick={() => navigateTo('trust')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Trust Center</button>
+              <a href="mailto:i@smyst.com?subject=Karriere%20bei%20smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">Karriere</a>
+              <a href="mailto:b2b@smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">B2B-Anfragen</a>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Rechtliches</h4>
-              <button onClick={() => navigateTo('imprint')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Impressum</button>
-              <button onClick={() => navigateTo('privacy')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Datenschutz</button>
-              <button onClick={() => navigateTo('terms')} className="text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">AGB</button>
+              <button onClick={() => navigateTo('imprint')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Impressum</button>
+              <button onClick={() => navigateTo('privacy')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Datenschutz</button>
+              <button onClick={() => navigateTo('terms')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">AGB</button>
             </div>
           </div>
         </div>
@@ -448,12 +448,12 @@ export default function App() {
         <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-white/[0.08] pt-6 md:flex-row">
           <p className="text-sm text-[#9aa6b7]">© 2026 smyst.com. Alle Rechte vorbehalten.</p>
           <div className="flex flex-wrap gap-5">
-            <a href="mailto:i@smyst.com" className="text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Kontakt</a>
-            <button onClick={() => navigateTo('trust')} className="text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Trust</button>
+            <a href="mailto:i@smyst.com" className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Kontakt</a>
+            <button onClick={() => navigateTo('trust')} className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Trust</button>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event('smyst:open-cookie-settings'))}
-              className="text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white"
+              className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white"
             >
               App-Daten
             </button>
