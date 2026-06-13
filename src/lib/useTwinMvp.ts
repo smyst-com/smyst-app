@@ -68,6 +68,7 @@ export interface PublicTwinProfile {
   guardrail?: string
   rightsPosture?: string
   sources?: Array<{ title: string; publisher: string; url: string }>
+  quality?: { ok: boolean; issues: string[] }
   updatedAt: number
   seo: {
     title: string

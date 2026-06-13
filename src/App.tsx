@@ -2334,6 +2334,8 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
+  const [profileImageUrl, setProfileImageUrl] = useState('')
+  const [expertiseText, setExpertiseText] = useState('')
   const [valuesText, setValuesText] = useState('')
   const [wisdomText, setWisdomText] = useState('')
   const [decisionText, setDecisionText] = useState('')
@@ -2343,6 +2345,19 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
   const totalSteps = 4
   const auth = useAuth()
   const twinMvp = useTwinMvp()
+  const trimmedDescription = description.trim()
+  const parsedCategories = expertiseText
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 8)
+  const publicationIssues = [
+    !name.trim() && 'Name fehlt',
+    trimmedDescription.length < 40 && 'Beschreibung mindestens 40 Zeichen',
+    parsedCategories.length === 0 && 'Mindestens eine Kategorie',
+    !profileImageUrl.trim() && 'Profilbild-URL erforderlich',
+  ].filter(Boolean) as string[]
+  const canPublish = publicationIssues.length === 0
 
   const handleCreateTwin = async () => {
     const trimmedName = name.trim()
@@ -2350,10 +2365,11 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
 
     const twin = await twinMvp.createTwin({
       name: trimmedName,
-      description: description.trim(),
+      description: trimmedDescription,
       style,
-      visibility,
-      categories: ['KI-Zwilling', 'Wissen', 'Erinnerungen'],
+      visibility: visibility === 'public' && canPublish ? 'public' : 'private',
+      imageUrl: profileImageUrl.trim() || undefined,
+      categories: parsedCategories.length ? parsedCategories : ['KI-Zwilling', 'Wissen', 'Erinnerungen'],
       languages: ['de'],
     })
     if (!twin) return
@@ -2422,8 +2438,8 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h2 className="mb-2 text-2xl font-semibold">Grundlegende Informationen</h2>
-              <p className="text-sm text-[#555b64]">Erzähl uns etwas über dich.</p>
+              <h2 className="mb-2 text-2xl font-semibold">Profilgrundlage</h2>
+              <p className="text-sm text-[#555b64]">Name, Bild, Beschreibung und Themen bestimmen, ob ein KI-Profil klar erkennbar ist.</p>
             </div>
 
             <div className="space-y-4">
@@ -2439,23 +2455,39 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">Alter</label>
-                <input
-                  type="number"
-                  placeholder="Dein Alter"
-                  className="w-full rounded-lg border border-white/42 bg-white/18 px-4 py-3 text-sm backdrop-blur-[18px] focus:border-[#59C7FF] focus:outline-none focus:ring-2 focus:ring-[#59C7FF]/20"
+                <label className="mb-2 block text-sm font-medium">Kurzbeschreibung</label>
+                <textarea
+                  rows={3}
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  placeholder="Wer ist dieses KI-Profil, wofür steht es und wobei soll es helfen?"
+                  className="w-full resize-none rounded-lg border border-white/42 bg-white/18 px-4 py-3 text-sm backdrop-blur-[18px] focus:border-[#59C7FF] focus:outline-none focus:ring-2 focus:ring-[#59C7FF]/20"
                 />
+                <p className="mt-1 text-xs text-[#767d87]">{trimmedDescription.length}/40 Zeichen für öffentliche Profile</p>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm font-medium">Beruf / Tätigkeit</label>
+                <label className="mb-2 block text-sm font-medium">Expertise / Kategorien</label>
                 <input
                   type="text"
-                  value={description}
-                  onChange={(event) => setDescription(event.target.value)}
-                  placeholder="Was machst du beruflich?"
+                  value={expertiseText}
+                  onChange={(event) => setExpertiseText(event.target.value)}
+                  placeholder="z.B. Strategie, Finanzen, Marketing"
                   className="w-full rounded-lg border border-white/42 bg-white/18 px-4 py-3 text-sm backdrop-blur-[18px] focus:border-[#59C7FF] focus:outline-none focus:ring-2 focus:ring-[#59C7FF]/20"
                 />
+                <p className="mt-1 text-xs text-[#767d87]">Mehrere Kategorien mit Komma trennen.</p>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium">Profilbild-URL</label>
+                <input
+                  type="text"
+                  value={profileImageUrl}
+                  onChange={(event) => setProfileImageUrl(event.target.value)}
+                  placeholder="/storage/file/..."
+                  className="w-full rounded-lg border border-white/42 bg-white/18 px-4 py-3 text-sm backdrop-blur-[18px] focus:border-[#59C7FF] focus:outline-none focus:ring-2 focus:ring-[#59C7FF]/20"
+                />
+                <p className="mt-1 text-xs text-[#767d87]">Für öffentliche Profile ist ein eigenes Profilbild erforderlich.</p>
               </div>
             </div>
           </div>
@@ -2567,9 +2599,20 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
                   className="sr-only"
                 />
                 <p className="text-sm font-semibold">Öffentlich</p>
-                <p className="mt-1 text-xs text-[#767d87]">SEO-freundliche URL, indexierbar und öffentlich auffindbar.</p>
+                <p className="mt-1 text-xs text-[#767d87]">Sichtbar erst mit Beschreibung, Kategorie, Sprache, Profilbild und fertigem Profil.</p>
               </label>
             </div>
+
+            {visibility === 'public' && (
+              <div className={`rounded-lg border p-4 text-sm ${canPublish ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-800' : 'border-amber-400/40 bg-amber-50/70 text-amber-950'}`}>
+                <p className="font-semibold">{canPublish ? 'Bereit für öffentliche Freigabe' : 'Noch nicht bereit für öffentliche Freigabe'}</p>
+                <ul className="mt-2 grid gap-1">
+                  {(publicationIssues.length ? publicationIssues : ['Alle Mindestanforderungen erfüllt']).map((issue) => (
+                    <li key={issue}>- {issue}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
@@ -2582,7 +2625,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
             Zurück
           </Button>
           <Button
-            disabled={(step === totalSteps && (auth.status !== 'authenticated' || !name.trim())) || twinMvp.loading}
+            disabled={(step === totalSteps && (auth.status !== 'authenticated' || !name.trim() || (visibility === 'public' && !canPublish))) || twinMvp.loading}
             onClick={() => {
               if (step < totalSteps) {
                 setStep(step + 1)
