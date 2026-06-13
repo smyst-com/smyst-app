@@ -2949,13 +2949,15 @@ function TwinChatView() {
         await restoreStoredChat(summary)
         setMessages((current) =>
           current.length === 0
-            ? [
-                {
-                  id: crypto.randomUUID(),
-                  role: 'ai',
-                  content: `${publicTwin.name} ist bereit. Melde dich an, um den Chat mit diesem Profil zu starten.`,
-                },
-              ]
+            ? auth.status === 'authenticated'
+              ? [readyMessage(summary)]
+              : [
+                  {
+                    id: crypto.randomUUID(),
+                    role: 'ai',
+                    content: `${publicTwin.name} ist bereit. Melde dich an, um den Chat mit diesem Profil zu starten.`,
+                  },
+                ]
             : current,
         )
         return
