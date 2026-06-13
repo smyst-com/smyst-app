@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'smyst-v2';
+const CACHE_VERSION = 'smyst-v3';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
@@ -31,7 +31,8 @@ const APP_SHELL = [
 ];
 
 const CACHEABLE_DESTINATIONS = new Set(['script', 'style', 'font', 'image']);
-const PRIVATE_PREFIXES = ['/api/', '/auth/', '/storage/', '/private/'];
+const PRIVATE_PREFIXES = ['/auth/', '/storage/', '/private/'];
+const PUBLIC_API_PREFIXES = ['/api/public/twins'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -50,6 +51,8 @@ self.addEventListener('activate', (event) => {
 });
 
 function isPrivatePath(pathname) {
+  if (PUBLIC_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) return false;
+  if (pathname.startsWith('/api/')) return true;
   return PRIVATE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
@@ -91,6 +94,9 @@ self.addEventListener('fetch', (event) => {
 
   if (
     CACHEABLE_DESTINATIONS.has(request.destination) ||
+    url.pathname === '/api/public/twins' ||
+    url.pathname.startsWith('/api/public/twins/') ||
+    url.pathname.startsWith('/public/profile-images/') ||
     url.pathname.startsWith('/locales/') ||
     url.pathname.endsWith('.webmanifest') ||
     url.pathname.endsWith('.xml') ||

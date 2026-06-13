@@ -67,6 +67,18 @@ function Waveform(props: IconProps) {
   )
 }
 
+function Share(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.6 10.7 6.8-4.4" />
+      <path d="m8.6 13.3 6.8 4.4" />
+    </svg>
+  )
+}
+
 function Speaker(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
@@ -723,6 +735,19 @@ function SmystStartPage({
   }, [messages])
 
   useEffect(() => {
+    if (!realStartTwins.length) return
+    const timeout = window.setTimeout(() => {
+      for (const twin of realStartTwins.slice(0, 8)) {
+        if (!twin.imageUrl) continue
+        const image = new Image()
+        image.decoding = 'async'
+        image.src = twin.imageUrl
+      }
+    }, 600)
+    return () => window.clearTimeout(timeout)
+  }, [realStartTwins])
+
+  useEffect(() => {
     if (!menuOpen) return
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setMenuOpen(false)
@@ -793,7 +818,7 @@ function SmystStartPage({
       style={{ boxShadow: `inset 0 0 0 1px ${twin.accent}33` }}
     >
       {twin.imageUrl ? (
-        <img src={twin.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+        <img src={twin.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
       ) : (
         <span>{twin.initials}</span>
       )}
@@ -1173,7 +1198,7 @@ function SmystStartPage({
             <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
               <span className="grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86]">
                 {selectedTwin.imageUrl ? (
-                  <img src={selectedTwin.imageUrl} alt="" className="h-full w-full object-cover" />
+                  <img src={selectedTwin.imageUrl} alt="" className="h-full w-full object-cover" decoding="async" />
                 ) : (
                   selectedTwin.initials
                 )}
@@ -1500,6 +1525,7 @@ function TwinProfileView({
   const [publicProfile, setPublicProfile] = useState<PublicTwinProfile | null>(null)
   const [privateTwin, setPrivateTwin] = useState<TwinRecord | null>(null)
   const [loaded, setLoaded] = useState(!slug && !privateTwinId)
+  const [shareStatus, setShareStatus] = useState('')
   const isPrivate = Boolean(privateTwinId)
 
   useEffect(() => {
@@ -1625,6 +1651,40 @@ function TwinProfileView({
     .map((part) => part[0]?.toUpperCase())
     .join('')
 
+  const profileShareUrl = profile.seo.canonical || `${window.location.origin}${profile.chatPath}`
+  const shareProfile = async () => {
+    setShareStatus('')
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: profile.seo.title,
+          text: profile.description,
+          url: profileShareUrl,
+        })
+        setShareStatus('Geteilt')
+        return
+      }
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(profileShareUrl)
+      } else {
+        const textarea = document.createElement('textarea')
+        textarea.value = profileShareUrl
+        textarea.setAttribute('readonly', 'true')
+        textarea.style.position = 'fixed'
+        textarea.style.left = '-9999px'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        textarea.remove()
+      }
+      setShareStatus('Link kopiert')
+    } catch {
+      setShareStatus('Teilen nicht möglich')
+    } finally {
+      window.setTimeout(() => setShareStatus(''), 2200)
+    }
+  }
+
   return (
     <div className="pt-[72px]">
       <section className="mx-auto max-w-[980px]">
@@ -1642,7 +1702,7 @@ function TwinProfileView({
             <div className="border-b border-white/30 bg-white/18 p-6 lg:border-b-0 lg:border-r">
               <div className="aspect-square overflow-hidden rounded-[18px] border border-white/40 bg-white/28">
                 {profile.imageUrl ? (
-                  <img src={profile.imageUrl} alt={profile.name} className="h-full w-full object-cover" loading="eager" />
+                  <img src={profile.imageUrl} alt={profile.name} className="h-full w-full object-cover" loading="eager" decoding="async" />
                 ) : (
                   <div className="grid h-full w-full place-items-center bg-[#eef6ff] text-5xl font-bold text-[#0b1c44]">
                     {profileInitials}
@@ -1659,6 +1719,19 @@ function TwinProfileView({
               >
                 Mit Twin chatten
               </button>
+              <button
+                type="button"
+                onClick={() => void shareProfile()}
+                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-white/18 px-5 text-sm font-semibold text-[#17191d] transition-colors hover:bg-white/30"
+              >
+                <Share className="h-4 w-4" />
+                Profil teilen
+              </button>
+              {shareStatus && (
+                <p className="mt-2 rounded-full bg-white/26 px-3 py-2 text-center text-xs font-semibold text-[#555b64]" role="status">
+                  {shareStatus}
+                </p>
+              )}
             </div>
 
             <div className="p-6 sm:p-8">

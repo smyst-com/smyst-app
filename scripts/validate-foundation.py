@@ -141,7 +141,7 @@ REQUIRED_TEXT = {
     "public/_headers": ["/private/*", "X-Robots-Tag: noindex, nofollow", "/api/public/twins/*", "/assets/*", "/icons/*", "/screenshots/*", "/locales/*", "/.well-known/security.txt", "/sw.js"],
     "public/.well-known/security.txt": ["Contact: mailto:i@smyst.com", "Policy: https://smyst.com/trust", "Canonical: https://smyst.com/.well-known/security.txt"],
     "public/manifest.webmanifest": ["\"display\": \"standalone\"", "\"start_url\": \"/\"", "\"scope\": \"/\"", "\"orientation\": \"portrait-primary\"", "\"screenshots\"", "\"purpose\": \"maskable\""],
-    "public/sw.js": ["smyst-v2", "APP_SHELL", "PRIVATE_PREFIXES", "staleWhileRevalidate", "networkFirst", "icon-512.png", "smyst-mobile.png"],
+    "public/sw.js": ["smyst-v3", "APP_SHELL", "PRIVATE_PREFIXES", "PUBLIC_API_PREFIXES", "staleWhileRevalidate", "networkFirst", "icon-512.png", "smyst-mobile.png"],
     "docs/FREE_ONLY_SEO_AEO_GEO.md": ["robots.txt", "sitemap.xml", "llms.txt", "ai.txt", "public/locales", "ProfilePage", "FAQPage", "ChatGPT", "Gemini", "Claude", "noindex,nofollow", "externe Webmaster-Portale"],
     "docs/runbooks/release-governance.md": ["Production Go/No-Go", "Public root does not send", "static file content, not SPA HTML", "Backup and restore dry-run evidence"],
     "docs/runbooks/backup-recovery.md": ["Cloudflare KV Export And Restore", "Restore dry-run", "bucket CORS", "server-side encryption", "production release is blocked"],
