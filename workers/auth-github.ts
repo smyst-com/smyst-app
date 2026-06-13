@@ -176,6 +176,23 @@ function b64urlEncode(buf: ArrayBuffer | Uint8Array): string {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+function b64urlEncodeText(value: string): string {
+  return b64urlEncode(new TextEncoder().encode(value));
+}
+
+function b64urlDecodeText(value: string): string | null {
+  try {
+    const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
 function randomB64Url(byteLength: number): string {
   const bytes = new Uint8Array(byteLength);
   crypto.getRandomValues(bytes);
@@ -342,17 +359,24 @@ function publicUser(data: SessionData) {
 
 async function startAuth(request: Request, env: AuthEnv): Promise<Response> {
   const url = new URL(request.url);
-  const returnTo = safeReturnTo(url.searchParams.get('return_to'), env.CANONICAL_HOST);
+  const returnTo = safeReturnTo(url.searchParams.get('return_to') ?? url.searchParams.get('returnTo'), env.CANONICAL_HOST);
   const stateNonce = randomB64Url(24);
-  const stateBody = `${stateNonce}.${Date.now()}`;
+  const stateTs = Date.now();
+  let stateBody = `${stateNonce}.${stateTs}`;
+
+  try {
+    await env.OAUTH_STATE.put(
+      `state:${stateNonce}`,
+      JSON.stringify({ returnTo, createdAt: Date.now() }),
+      { expirationTtl: STATE_TTL_SECONDS },
+    );
+  } catch (err) {
+    console.warn('oauth_state_kv_unavailable', JSON.stringify({ error: String(err) }));
+    stateBody = `${stateNonce}.${stateTs}.${b64urlEncodeText(returnTo)}`;
+  }
+
   const stateSig = await hmacSign(env.AUTH_HMAC_SECRET, stateBody);
   const state = `${stateBody}.${stateSig}`;
-
-  await env.OAUTH_STATE.put(
-    `state:${stateNonce}`,
-    JSON.stringify({ returnTo, createdAt: Date.now() }),
-    { expirationTtl: STATE_TTL_SECONDS },
-  );
 
   const params = new URLSearchParams({
     client_id: env.GITHUB_OAUTH_CLIENT_ID,
@@ -422,20 +446,32 @@ async function handleCallback(request: Request, env: AuthEnv): Promise<Response>
   if (!code || !state) return errorResponse('oauth_missing_params', 'Missing code or state', 400);
 
   const stateParts = state.split('.');
-  if (stateParts.length !== 3) return errorResponse('oauth_bad_state', 'Bad state format', 400);
-  const [stateNonce, stateTs, stateSig] = stateParts;
-  const validSig = await hmacVerify(env.AUTH_HMAC_SECRET, `${stateNonce}.${stateTs}`, stateSig);
+  if (stateParts.length !== 3 && stateParts.length !== 4) return errorResponse('oauth_bad_state', 'Bad state format', 400);
+  const stateSig = stateParts[stateParts.length - 1];
+  const stateBody = stateParts.slice(0, -1).join('.');
+  const [stateNonce, stateTs, returnToEncoded] = stateParts;
+  const validSig = await hmacVerify(env.AUTH_HMAC_SECRET, stateBody, stateSig);
   if (!validSig) return errorResponse('oauth_invalid_state', 'Invalid state signature', 400);
   const issuedAt = Number(stateTs);
   if (!Number.isFinite(issuedAt) || Date.now() - issuedAt > STATE_TTL_SECONDS * 1000) {
     return errorResponse('oauth_state_expired', 'State expired', 400);
   }
 
-  const stored = await env.OAUTH_STATE.get(`state:${stateNonce}`, 'json') as
-    | { returnTo: string; createdAt: number }
-    | null;
-  if (!stored) return errorResponse('oauth_state_expired', 'State expired or unknown', 400);
-  await env.OAUTH_STATE.delete(`state:${stateNonce}`);
+  let returnTo = '/';
+  if (stateParts.length === 4) {
+    returnTo = safeReturnTo(b64urlDecodeText(returnToEncoded) ?? '/', env.CANONICAL_HOST);
+  } else {
+    const stored = await env.OAUTH_STATE.get(`state:${stateNonce}`, 'json') as
+      | { returnTo: string; createdAt: number }
+      | null;
+    if (!stored) return errorResponse('oauth_state_expired', 'State expired or unknown', 400);
+    returnTo = safeReturnTo(stored.returnTo, env.CANONICAL_HOST);
+    try {
+      await env.OAUTH_STATE.delete(`state:${stateNonce}`);
+    } catch (err) {
+      console.warn('oauth_state_delete_failed', JSON.stringify({ error: String(err) }));
+    }
+  }
 
   const token = await exchangeCode(code, env);
   if (!token) return errorResponse('oauth_token_failed', 'Token exchange failed', 502);
@@ -470,7 +506,7 @@ async function handleCallback(request: Request, env: AuthEnv): Promise<Response>
   return withSecurity(new Response(null, {
     status: 302,
     headers: {
-      Location: `${env.CANONICAL_HOST}${stored.returnTo}`,
+      Location: `${env.CANONICAL_HOST}${returnTo}`,
       'Set-Cookie': makeSessionCookie(sessionId),
     },
   }));
