@@ -3043,7 +3043,7 @@ function TwinChatView() {
           <CardContent className="flex flex-col items-start gap-2 p-0 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-base font-bold tracking-tight">Twin Chat</h1>
-              <p className="text-xs text-[#555b64]">Melde dich an, um diesen Twin-Chat zu starten.</p>
+              <p className="text-xs text-[#555b64]">Melde dich an, um KI-Profile auszuwählen und Chats zu speichern.</p>
             </div>
             <Suspense fallback={null}>
               <GitHubSignInButton variant="official" returnTo={window.location.pathname + window.location.search} />
@@ -3099,8 +3099,22 @@ function TwinChatView() {
               <div className="max-w-[28rem]">
                 <p className="text-base font-bold text-[#16181b]">Kein KI-Profil ausgewählt</p>
                 <p className="mt-1 text-sm text-[#555b64]">
-                  Erstelle oder wähle ein echtes freigegebenes KI-Profil. Danach startet der Chat direkt mit diesem Profil.
+                  Smyst ist kein Messenger: Wähle eine KI-Persönlichkeit aus, stelle deine Frage und dieses Profil antwortet.
                 </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  <a
+                    href="/twins"
+                    className="rounded-md border border-[#0b1c44]/14 bg-[#0b1c44] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#173064]"
+                  >
+                    Profile ansehen
+                  </a>
+                  <a
+                    href="/twin-builder"
+                    className="rounded-md border border-[#0b1c44]/14 bg-white/42 px-3 py-2 text-sm font-semibold text-[#0b1c44] transition-colors hover:bg-white/70"
+                  >
+                    Profil erstellen
+                  </a>
+                </div>
               </div>
             </div>
           )}
