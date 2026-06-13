@@ -1156,7 +1156,21 @@ function SmystStartPage({
               <MenuGlyph className="h-6 w-6" />
             </button>
 
-            <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-58px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedTwin(null)
+                setNamePickerOpen(true)
+                setQuery('')
+                setActiveCategory(null)
+              }}
+              aria-label="Profil wechseln"
+              className="absolute right-0 top-0 grid h-11 w-11 shrink-0 place-items-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
+            >
+              <User className="h-6 w-6" />
+            </button>
+
+            <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
               <span className="grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86]">
                 {selectedTwin.imageUrl ? (
                   <img src={selectedTwin.imageUrl} alt="" className="h-full w-full object-cover" />
