@@ -593,9 +593,144 @@ function stylePrefix(style: TwinStyle): string {
   return 'Aus meiner Perspektive:';
 }
 
-function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
+function hashText(value: string): number {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function includesAny(value: string, needles: string[]): boolean {
+  return needles.some((needle) => value.includes(needle));
+}
+
+function questionIntent(input: string): { label: string; decisionNoun: string; action: string; caution: string } {
+  const normalized = input.toLowerCase();
+  if (includesAny(normalized, ['geschäftsidee', 'business idea', 'idee', 'startup', 'produktidee'])) {
+    return {
+      label: 'Geschäftsidee',
+      decisionNoun: 'Idee',
+      action: 'klein testen, Zahlungsbereitschaft messen und erst danach skalieren',
+      caution: 'nicht in Features verlieben, bevor ein echtes Problem belegt ist',
+    };
+  }
+  if (includesAny(normalized, ['investition', 'investment', 'investieren', 'rendite', 'aktie', 'kapital'])) {
+    return {
+      label: 'Investition',
+      decisionNoun: 'Investition',
+      action: 'Risiko, Zeithorizont, Liquidität und Downside getrennt prüfen',
+      caution: 'keine Entscheidung nur wegen Tempo, Hype oder sozialem Druck treffen',
+    };
+  }
+  if (includesAny(normalized, ['mitarbeiter', 'einstellen', 'hire', 'bewerber', 'team'])) {
+    return {
+      label: 'Einstellung',
+      decisionNoun: 'Person',
+      action: 'Rolle, Arbeitsprobe, Wertefit und Lernkurve vor dem Vertrag prüfen',
+      caution: 'Sympathie nicht mit Leistungsfähigkeit verwechseln',
+    };
+  }
+  if (includesAny(normalized, ['marketing', 'kampagne', 'positionierung', 'kunden gewinnen', 'wachstum'])) {
+    return {
+      label: 'Marketingstrategie',
+      decisionNoun: 'Strategie',
+      action: 'eine klare Zielgruppe, ein Versprechen und einen messbaren Kanal fokussieren',
+      caution: 'keine laute Kampagne starten, wenn die Botschaft noch unklar ist',
+    };
+  }
+  if (includesAny(normalized, ['zukunft', 'prognose', 'trend', 'vorhersage', 'nächsten jahre'])) {
+    return {
+      label: 'Zukunftsprognose',
+      decisionNoun: 'Entwicklung',
+      action: 'Szenarien statt eine einzige Vorhersage bauen',
+      caution: 'Unsicherheit offen markieren und Frühindikatoren beobachten',
+    };
+  }
+  if (includesAny(normalized, ['meinung', 'findest du', 'persönlich', 'würdest du', 'glaubst du'])) {
+    return {
+      label: 'Persönliche Meinung',
+      decisionNoun: 'Einschätzung',
+      action: 'Position beziehen, aber Annahmen und Grenzen transparent machen',
+      caution: 'nicht so tun, als wäre eine Meinung ein Beweis',
+    };
+  }
+  return {
+    label: 'Einschätzung',
+    decisionNoun: 'Frage',
+    action: 'Ziel, Kontext, Optionen und nächsten kleinsten Test klären',
+    caution: 'nicht vorschnell entscheiden, solange die wichtigsten Annahmen offen sind',
+  };
+}
+
+function styleLens(style: TwinStyle): { voice: string; verb: string; close: string } {
+  if (style === 'direct') {
+    return { voice: 'direkt, knapp und entscheidungsorientiert', verb: 'Ich würde priorisieren', close: 'Meine klare Empfehlung' };
+  }
+  if (style === 'humorous') {
+    return { voice: 'locker, bildhaft und trotzdem nützlich', verb: 'Ich würde den Ball flach halten und prüfen', close: 'Mein augenzwinkerndes Fazit' };
+  }
+  if (style === 'wise') {
+    return { voice: 'ruhig, abwägend und langfristig', verb: 'Ich würde zuerst verstehen', close: 'Meine bedachte Empfehlung' };
+  }
+  if (style === 'neutral') {
+    return { voice: 'neutral, strukturiert und faktenorientiert', verb: 'Ich würde analysieren', close: 'Meine sachliche Empfehlung' };
+  }
+  return { voice: 'warm, persönlich und ermutigend', verb: 'Ich würde behutsam beginnen mit', close: 'Meine persönliche Empfehlung' };
+}
+
+function categoryLens(twin: TwinRecord): string {
+  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
+  if (categories.some((item) => includesAny(item, ['business', 'strategie', 'startup', 'marketing']))) {
+    return 'Markt, Positionierung, Kundennutzen und Umsetzbarkeit';
+  }
+  if (categories.some((item) => includesAny(item, ['wissenschaft', 'technik', 'ai', 'ki', 'daten']))) {
+    return 'Belege, Systemlogik, Experimente und messbare Signale';
+  }
+  if (categories.some((item) => includesAny(item, ['kunst', 'musik', 'design', 'literatur']))) {
+    return 'Originalität, Ausdruck, Resonanz und handwerkliche Qualität';
+  }
+  if (categories.some((item) => includesAny(item, ['gesundheit', 'psychologie', 'coaching', 'beziehung']))) {
+    return 'Menschen, Belastung, Vertrauen und nachhaltige Wirkung';
+  }
+  if (categories.some((item) => includesAny(item, ['geschichte', 'politik', 'philosophie', 'bildung']))) {
+    return 'Kontext, Konsequenzen, Werte und langfristige Muster';
+  }
+  return 'Profilwissen, Erfahrung, Zielklarheit und realistische nächste Schritte';
+}
+
+function signatureLens(twin: TwinRecord): string {
+  const options = [
+    'Ich achte besonders auf den kleinsten belastbaren Test.',
+    'Ich schaue zuerst auf Risiken, die man später schwer korrigieren kann.',
+    'Ich gewichte Menschen, Timing und Vertrauen stärker als reine Zahlen.',
+    'Ich suche nach dem einfachsten Modell, das die Lage ehrlich erklärt.',
+    'Ich frage, welche Entscheidung auch in sechs Monaten noch vernünftig wirkt.',
+    'Ich trenne Wunschdenken von beobachtbarem Verhalten.',
+  ];
+  const seed = `${twin.name}|${twin.description}|${(twin.categories ?? []).join(',')}|${twin.style}`;
+  return options[hashText(seed) % options.length] ?? options[0];
+}
+
+function profileBasis(twin: TwinRecord): string {
+  const cleanDescription = twin.description.trim().replace(/[.\s]+$/, '');
+  const parts = [
+    cleanDescription ? `Profil: ${cleanDescription.slice(0, 240)}` : '',
+    twin.categories?.length ? `Kategorien: ${twin.categories.slice(0, 4).join(', ')}` : '',
+    twin.languages?.length ? `Sprachen: ${twin.languages.slice(0, 3).join(', ')}` : '',
+  ].filter(Boolean);
+  return parts.join('. ');
+}
+
+function fallbackKnowledgeLine(intentLabel: string, shortQuestion: string): string {
+  return `Für diese ${intentLabel} habe ich noch keinen direkten Treffer im hinterlegten Wissen gefunden. Ich antworte daher aus Profil, Stil und Kategorien zur Frage "${shortQuestion}".`;
+}
+
+export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
   const trimmed = input.trim();
   const shortQuestion = trimmed.length > 220 ? `${trimmed.slice(0, 220)}...` : trimmed;
+  const intent = questionIntent(trimmed);
+  const style = styleLens(twin.style);
   const matches = relevantKnowledge(trimmed, twin);
   const snippets = matches
     .map((item) => {
@@ -606,17 +741,20 @@ function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `Ich bin ${twin.name}.`,
-      `Zu deiner Frage "${shortQuestion}" kann ich noch nur allgemein antworten, weil noch keine Wissenstexte hinterlegt sind.`,
-      'Lade Texte, Dokumente oder Medien hoch, dann kann mein Kontext gezielter werden.',
+      `${stylePrefix(twin.style)} Ich bin ${twin.name}; mein Antwortstil ist ${style.voice}.`,
+      `${style.verb}: ${intent.action}.`,
+      `${signatureLens(twin)} ${style.close}: ${intent.caution}.`,
+      'Sobald Beschreibung, Wissen oder Medien hinterlegt sind, wird meine Antwort deutlich profilgenauer.',
     ].join(' ');
   }
 
   return [
-    `${stylePrefix(twin.style)} Ich antworte als ${twin.name}.`,
-    twin.description ? `Mein gespeichertes Profil sagt: ${twin.description.slice(0, 260)}.` : '',
-    snippets ? `Passende Erinnerungen/Wissen: ${snippets}` : `Zu "${shortQuestion}" finde ich noch keinen direkten Treffer in meiner Wissensbasis.`,
-    'Ich stuetze mich auf das gespeicherte Profil und das hinterlegte Wissen.',
+    `${stylePrefix(twin.style)} Ich antworte als ${twin.name}; mein Ton ist ${style.voice}.`,
+    profileBasis(twin),
+    `Meine Linse: ${categoryLens(twin)}. ${signatureLens(twin)}`,
+    snippets ? `Passendes hinterlegtes Wissen: ${snippets}` : fallbackKnowledgeLine(intent.label, shortQuestion),
+    `${style.verb}: ${intent.action}.`,
+    `${style.close}: Bei dieser ${intent.decisionNoun} wäre mein nächster Schritt, eine überprüfbare Annahme festzulegen und sie klein zu testen; wichtig ist, ${intent.caution}.`,
   ]
     .filter(Boolean)
     .join(' ');
