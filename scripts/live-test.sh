@@ -2,6 +2,7 @@
 set -eu
 
 WEB_BASE_URL="${WEB_BASE_URL:-https://smyst.com}"
+API_BASE_URL="${API_BASE_URL:-$WEB_BASE_URL}"
 TMP_OUT="${TMPDIR:-/tmp}/smyst-live-test.out"
 TMP_HEADERS="${TMPDIR:-/tmp}/smyst-live-test.headers"
 
@@ -125,11 +126,11 @@ grep -F "Policy: https://smyst.com/trust" "$TMP_OUT" >/dev/null 2>&1 || {
   cat "$TMP_OUT" >&2 || true
   exit 1
 }
-check_body_contains "$WEB_BASE_URL/api/health" "\"ok\":true"
-check_status_content_type "GET" "$WEB_BASE_URL/auth/me" "200" "application/json"
-check_status_content_type "GET" "$WEB_BASE_URL/api/public/twins" "200" "application/json"
-check_status_content_type "GET" "$WEB_BASE_URL/api/twins" "401" "application/json"
-check_status_content_type "GET" "$WEB_BASE_URL/storage/upload-url" "405" "application/json"
-check_status_content_type "POST" "$WEB_BASE_URL/storage/upload-url" "403" "application/json"
+check_body_contains "$API_BASE_URL/api/health" "\"ok\":true"
+check_status_content_type "GET" "$API_BASE_URL/auth/me" "200" "application/json"
+check_status_content_type "GET" "$API_BASE_URL/api/public/twins" "200" "application/json"
+check_status_content_type "GET" "$API_BASE_URL/api/twins" "401" "application/json"
+check_status_content_type "GET" "$API_BASE_URL/storage/upload-url" "405" "application/json"
+check_status_content_type "POST" "$API_BASE_URL/storage/upload-url" "403" "application/json"
 
 echo "Cloudflare Pages live smoke tests passed"
