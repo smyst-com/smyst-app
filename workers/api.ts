@@ -712,6 +712,66 @@ function signatureLens(twin: TwinRecord): string {
   return options[hashText(seed) % options.length] ?? options[0];
 }
 
+function intentMove(twin: TwinRecord, intentLabel: string): string {
+  const moves: Record<string, string[]> = {
+    'Geschäftsidee': [
+      'Ich prüfe zuerst, ob jemand heute schon für dieses Problem zahlt.',
+      'Ich würde die Zielgruppe enger schneiden und ein klares Nutzenversprechen testen.',
+      'Ich suche nach dem riskantesten Teil der Idee und mache daraus einen Ein-Tages-Test.',
+      'Ich trenne schöne Vision von belastbarem Nachfrage-Signal.',
+      'Ich frage, welcher konkrete Schmerz stark genug ist, damit Nutzer wechseln.',
+      'Ich würde vor dem Produkt eine einfache Zusage, Warteliste oder Vorbestellung messen.',
+    ],
+    'Investition': [
+      'Ich beginne mit Verlustgrenze, Liquidität und der Frage, ob der Einsatz wirklich entbehrlich ist.',
+      'Ich prüfe, welche Annahme brechen müsste, damit diese Investition unattraktiv wird.',
+      'Ich würde Rendite nicht isoliert betrachten, sondern Risiko, Timing und Alternativen vergleichen.',
+      'Ich suche nach asymmetrischem Risiko: Was kann klein schiefgehen, was groß?',
+      'Ich würde erst entscheiden, wenn Ausstieg, Zeithorizont und Informationslage klar sind.',
+      'Ich gewichte Stabilität stärker als die lauteste Wachstumsstory.',
+    ],
+    'Einstellung': [
+      'Ich starte mit einer realen Arbeitsprobe statt nur mit Lebenslauf oder Sympathie.',
+      'Ich prüfe, ob Rolle, Verantwortung und Erwartung vor dem Gespräch sauber definiert sind.',
+      'Ich achte auf Lernkurve, Verlässlichkeit und Umgang mit Druck.',
+      'Ich würde Referenzen, Probearbeit und Teamwirkung getrennt bewerten.',
+      'Ich frage, welches konkrete Problem diese Person in den ersten 30 Tagen lösen soll.',
+      'Ich sehe zuerst auf Wertefit und klare Leistungssignale.',
+    ],
+    'Marketingstrategie': [
+      'Ich schärfe erst Positionierung und Botschaft, bevor Geld in Kanäle fließt.',
+      'Ich würde einen Kanal wählen, eine Zielgruppe benennen und eine Metrik festlegen.',
+      'Ich suche nach dem Satz, den ein Kunde weitererzählen kann.',
+      'Ich würde testen, welche Geschichte Nachfrage erzeugt, nicht welche Kampagne hübsch wirkt.',
+      'Ich beginne mit organischem Feedback, bevor bezahlte Reichweite skaliert.',
+      'Ich mache aus dem Angebot ein klares Versprechen mit Beweis.',
+    ],
+    'Zukunftsprognose': [
+      'Ich arbeite mit drei Szenarien: konservativ, wahrscheinlich und überraschend.',
+      'Ich suche Frühindikatoren, die zeigen, ob der Trend wirklich trägt.',
+      'Ich trenne robuste Entwicklung von modischer Erzählung.',
+      'Ich frage, welche Entscheidung unter mehreren Zukunftsbildern richtig bleibt.',
+      'Ich beobachte Adoption, Regulierung und Nutzerverhalten statt nur Schlagzeilen.',
+      'Ich würde die Prognose als Hypothese führen und regelmäßig aktualisieren.',
+    ],
+    'Persönliche Meinung': [
+      'Ich beziehe Position, aber ich markiere klar, welche Annahmen dahinterliegen.',
+      'Ich würde ehrlich sagen, was mich überzeugt und was mich skeptisch macht.',
+      'Ich trenne Bauchgefühl, Erfahrung und überprüfbare Fakten.',
+      'Ich gebe dir eine klare Tendenz, ohne Unsicherheit zu verstecken.',
+      'Ich frage, welche Entscheidung du morgen mit ruhigem Kopf noch vertreten kannst.',
+      'Ich würde auf das achten, was im Alltag tatsächlich trägt.',
+    ],
+  };
+  const options = moves[intentLabel] ?? [
+    'Ich kläre Ziel, Kontext, Engpass und den kleinsten nächsten Test.',
+    'Ich suche nach der Annahme, die für die Entscheidung am wichtigsten ist.',
+    'Ich trenne Wunsch, Risiko und überprüfbare Signale.',
+  ];
+  const seed = `${twin.id}|${twin.name}|${intentLabel}|${twin.style}|${(twin.categories ?? []).join('|')}`;
+  return options[hashText(seed) % options.length] ?? options[0];
+}
+
 function profileBasis(twin: TwinRecord): string {
   const cleanDescription = twin.description.trim().replace(/[.\s]+$/, '');
   const parts = [
@@ -741,7 +801,8 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `${stylePrefix(twin.style)} Ich bin ${twin.name}; mein Antwortstil ist ${style.voice}.`,
+      `${stylePrefix(twin.style)} ${intent.label}: Ich bin ${twin.name}; mein Antwortstil ist ${style.voice}.`,
+      `Mein erster Profil-Impuls: ${intentMove(twin, intent.label)}`,
       `${style.verb}: ${intent.action}.`,
       `${signatureLens(twin)} ${style.close}: ${intent.caution}.`,
       'Sobald Beschreibung, Wissen oder Medien hinterlegt sind, wird meine Antwort deutlich profilgenauer.',
@@ -749,7 +810,8 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
   }
 
   return [
-    `${stylePrefix(twin.style)} Ich antworte als ${twin.name}; mein Ton ist ${style.voice}.`,
+    `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}; mein Ton ist ${style.voice}.`,
+    `Mein erster Profil-Impuls: ${intentMove(twin, intent.label)}`,
     profileBasis(twin),
     `Meine Linse: ${categoryLens(twin)}. ${signatureLens(twin)}`,
     snippets ? `Passendes hinterlegtes Wissen: ${snippets}` : fallbackKnowledgeLine(intent.label, shortQuestion),

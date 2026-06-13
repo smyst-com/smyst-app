@@ -16,12 +16,12 @@ const { ruleBasedTwinReply } = await import(`${pathToFileURL(outfile).href}?t=${
 
 const now = Date.now();
 const prompts = [
-  'Bewerte diese Geschäftsidee: eine App, die lokale Experten als KI-Zwillinge verfügbar macht.',
-  'Soll ich 20.000 Euro in dieses neue Produkt investieren?',
-  'Wie würdest du entscheiden, ob ich diesen Mitarbeiter einstellen soll?',
-  'Welche Marketingstrategie würdest du für den Start empfehlen?',
-  'Wie sieht deine Zukunftsprognose für diese Plattform aus?',
-  'Was ist deine persönliche Meinung dazu?',
+  ['Geschäftsidee', 'Bewerte diese Geschäftsidee: eine App, die lokale Experten als KI-Zwillinge verfügbar macht.'],
+  ['Investition', 'Soll ich 20.000 Euro in dieses neue Produkt investieren?'],
+  ['Einstellung', 'Wie würdest du entscheiden, ob ich diesen Mitarbeiter einstellen soll?'],
+  ['Marketingstrategie', 'Welche Marketingstrategie würdest du für den Start empfehlen?'],
+  ['Zukunftsprognose', 'Wie sieht deine Zukunftsprognose für diese Plattform aus?'],
+  ['Persönliche Meinung', 'Was ist deine persönliche Meinung dazu?'],
 ];
 
 const profiles = [
@@ -77,18 +77,30 @@ const samples = profiles.map((profile) => ({
   profile: profile.name,
   categories: profile.categories,
   style: profile.style,
-  answers: prompts.map((prompt) => ruleBasedTwinReply(prompt, profile)),
+  answers: prompts.map(([, prompt]) => ruleBasedTwinReply(prompt, profile)),
 }));
 const generationMs = performance.now() - startedAt;
 
 const duplicatePairs = [];
+const duplicateOpeningPairs = [];
+const missingProfileOrIntent = [];
 for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
+  const [intentLabel, prompt] = prompts[promptIndex];
   const seen = new Map();
+  const seenOpenings = new Map();
   for (const sample of samples) {
-    const normalized = sample.answers[promptIndex].replace(sample.profile, '{profile}').replace(/\s+/g, ' ').trim();
+    const answer = sample.answers[promptIndex];
+    if (!answer.includes(sample.profile) || !answer.includes(intentLabel)) {
+      missingProfileOrIntent.push([prompt, sample.profile, intentLabel]);
+    }
+    const normalized = answer.split(sample.profile).join('{profile}').replace(/\s+/g, ' ').trim();
+    const opening = normalized.slice(0, 340);
     const current = seen.get(normalized);
-    if (current) duplicatePairs.push([prompts[promptIndex], current, sample.profile]);
+    const currentOpening = seenOpenings.get(opening);
+    if (current) duplicatePairs.push([prompt, current, sample.profile]);
     else seen.set(normalized, sample.profile);
+    if (currentOpening) duplicateOpeningPairs.push([prompt, currentOpening, sample.profile]);
+    else seenOpenings.set(opening, sample.profile);
   }
 }
 
@@ -97,7 +109,8 @@ const avgLength = samples.reduce(
   0,
 ) / samples.length;
 
-const examples = prompts.slice(0, 3).map((prompt, promptIndex) => ({
+const examples = prompts.slice(0, 3).map(([intentLabel, prompt], promptIndex) => ({
+  intentLabel,
   prompt,
   answers: samples.slice(0, 4).map((sample) => ({
     profile: sample.profile,
@@ -106,15 +119,17 @@ const examples = prompts.slice(0, 3).map((prompt, promptIndex) => ({
 }));
 
 console.log(JSON.stringify({
-  ok: duplicatePairs.length === 0,
+  ok: duplicatePairs.length === 0 && duplicateOpeningPairs.length === 0 && missingProfileOrIntent.length === 0,
   profileCount: profiles.length,
   promptCount: prompts.length,
   answerCount: profiles.length * prompts.length,
   generationMs: Number(generationMs.toFixed(3)),
   avgGenerationMs: Number((generationMs / (profiles.length * prompts.length)).toFixed(3)),
   duplicatePairs,
+  duplicateOpeningPairs,
+  missingProfileOrIntent,
   avgAnswerLength: Number(avgLength.toFixed(1)),
   examples,
 }, null, 2));
 
-if (duplicatePairs.length) process.exit(1);
+if (duplicatePairs.length || duplicateOpeningPairs.length || missingProfileOrIntent.length) process.exit(1);
