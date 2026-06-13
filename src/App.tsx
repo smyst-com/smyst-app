@@ -3071,7 +3071,7 @@ function TwinChatView() {
               <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] leading-none text-[#555b64] sm:text-xs">
                 <span>{activeTwin ? 'KI-Profil' : 'Profil auswählen'}</span>
                 <span>{activeTwin ? `${activeTwin.style} Stil` : 'Kein Chat gestartet'}</span>
-                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'Keine Demo-Daten'}</span>
+                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'Nur echte Profile'}</span>
                 {activeTwin?.publicProfile && <span>{activeTwin.label}</span>}
               </div>
             </div>
