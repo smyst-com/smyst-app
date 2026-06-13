@@ -21,7 +21,8 @@
     "workers:warmup:trigger": "curl -s -X GET https://smyst-warmup.workers.dev/warmup -H \"Authorization: Bearer $ADMIN_TOKEN\"",
     "kv:list": "wrangler kv:namespace list",
     "lint:tsc": "tsc --noEmit",
-    "profiles:quality": "node scripts/profile-answer-quality.mjs && node scripts/public-profile-quality.mjs"
+    "profiles:quality": "node scripts/profile-answer-quality.mjs && node scripts/public-profile-quality.mjs",
+    "profiles:seed:curated": "node scripts/seed-curated-public-profiles.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
