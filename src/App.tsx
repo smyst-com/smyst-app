@@ -501,6 +501,13 @@ type StartTwin = {
   chatCount: number
   lastChatAt: number
   publicProfile: boolean
+  mainCategory?: string
+  birthDate?: string
+  deathDate?: string
+  birthYear?: number
+  deathYear?: number
+  birthLabel?: string
+  deathLabel?: string
 } & DiscoveryProfile
 
 type ProfileUsage = {
@@ -515,6 +522,52 @@ function initialsForName(name: string): string {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join('') || 'S'
+}
+
+function formatIsoDate(value?: string): string | null {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  const [year, month, day] = value.split('-')
+  return `${day}.${month}.${year}`
+}
+
+function ageAtDeath(profile: {
+  birthDate?: string
+  deathDate?: string
+  birthYear?: number
+  deathYear?: number
+}): number | null {
+  if (profile.birthDate && profile.deathDate && /^\d{4}-\d{2}-\d{2}$/.test(profile.birthDate) && /^\d{4}-\d{2}-\d{2}$/.test(profile.deathDate)) {
+    const [birthYear, birthMonth, birthDay] = profile.birthDate.split('-').map(Number)
+    const [deathYear, deathMonth, deathDay] = profile.deathDate.split('-').map(Number)
+    let age = deathYear - birthYear
+    if (deathMonth < birthMonth || (deathMonth === birthMonth && deathDay < birthDay)) age -= 1
+    return age >= 0 ? age : null
+  }
+  if (typeof profile.birthYear === 'number' && typeof profile.deathYear === 'number') {
+    const age = profile.deathYear - profile.birthYear
+    return age >= 0 ? age : null
+  }
+  return null
+}
+
+function profileMainCategory(profile: { mainCategory?: string; categories: string[] }): string {
+  return profile.mainCategory || profile.categories.slice(0, 2).join(', ') || 'KI-Profil'
+}
+
+function profileLifeLine(profile: {
+  birthDate?: string
+  deathDate?: string
+  birthYear?: number
+  deathYear?: number
+  birthLabel?: string
+  deathLabel?: string
+}): string {
+  const age = ageAtDeath(profile)
+  const birth = profile.birthLabel || formatIsoDate(profile.birthDate)
+  const death = profile.deathLabel || formatIsoDate(profile.deathDate)
+  if (age !== null && birth && death) return `${age} Jahre • ${birth} – ${death}`
+  if (birth && death) return `${birth} – ${death}`
+  return 'Lebensdaten nicht hinterlegt'
 }
 
 function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsage = { chatCount: 0, lastChatAt: 0 }): StartTwin {
@@ -543,6 +596,13 @@ function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsag
     chatCount: usage.chatCount,
     lastChatAt: usage.lastChatAt,
     publicProfile,
+    mainCategory: twin.mainCategory,
+    birthDate: twin.birthDate,
+    deathDate: twin.deathDate,
+    birthYear: twin.birthYear,
+    deathYear: twin.deathYear,
+    birthLabel: twin.birthLabel,
+    deathLabel: twin.deathLabel,
   }
 }
 
@@ -569,6 +629,13 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
     chatCount: usage.chatCount,
     lastChatAt: usage.lastChatAt,
     publicProfile: true,
+    mainCategory: profile.mainCategory,
+    birthDate: profile.birthDate,
+    deathDate: profile.deathDate,
+    birthYear: profile.birthYear,
+    deathYear: profile.deathYear,
+    birthLabel: profile.birthLabel,
+    deathLabel: profile.deathLabel,
   }
 }
 
@@ -814,11 +881,11 @@ function SmystStartPage({
 
   const renderProfileAvatar = (twin: StartTwin, className = 'h-12 w-12') => (
     <span
-      className={`${className} grid shrink-0 place-items-center overflow-hidden rounded-full border border-white/18 bg-white/[0.08] text-sm font-bold text-white shadow-none`}
+      className={`${className} relative grid shrink-0 place-items-center overflow-hidden border border-white/18 bg-white/[0.08] text-sm font-bold text-white shadow-none`}
       style={{ boxShadow: `inset 0 0 0 1px ${twin.accent}33` }}
     >
       {twin.imageUrl ? (
-        <img src={twin.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+        <img src={twin.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
       ) : (
         <span>{twin.initials}</span>
       )}
@@ -850,39 +917,27 @@ function SmystStartPage({
       key={twin.id}
       type="button"
       onClick={() => selectTwin(twin)}
-      className={`group flex min-w-0 text-left transition hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 ${
+      className={`group flex min-w-0 overflow-hidden text-left transition hover:bg-white/[0.07] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 ${
         compact
-          ? 'w-[240px] shrink-0 rounded-md border border-white/[0.08] bg-white/[0.045] p-3'
+          ? 'w-[292px] shrink-0 rounded-md border border-white/[0.08] bg-white/[0.045]'
           : 'w-full items-stretch border-b border-white/[0.08]'
       }`}
     >
-      <span className={compact ? 'mr-3' : 'grid w-[78px] shrink-0 place-items-center border-r border-white/[0.08] bg-white/[0.045] sm:w-[92px]'}>
-        {renderProfileAvatar(twin, compact ? 'h-11 w-11' : 'h-12 w-12 sm:h-14 sm:w-14')}
+      <span className={compact ? 'grid h-[92px] w-[92px] shrink-0 place-items-center bg-white/[0.045]' : 'grid h-[104px] w-[104px] shrink-0 place-items-center bg-white/[0.045] sm:h-[118px] sm:w-[118px]'}>
+        {renderProfileAvatar(twin, compact ? 'h-full w-full' : 'h-full w-full')}
       </span>
-      <span className={`${compact ? 'min-w-0 flex-1' : 'flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-3 sm:px-6'}`}>
+      <span className={`${compact ? 'flex min-w-0 flex-1 flex-col justify-center px-3 py-2' : 'flex min-w-0 flex-1 flex-col justify-center px-4 py-3 sm:px-6'}`}>
         <span className="min-w-0">
-          <span className="flex min-w-0 items-center gap-2">
-            <span className={`${compact ? 'text-sm' : 'text-lg sm:text-2xl'} block truncate font-bold text-[#edf4ff]`}>
-              {twin.name}
-            </span>
+          <span className={`${compact ? 'text-[15px]' : 'text-lg sm:text-2xl'} block truncate font-bold leading-tight text-[#edf4ff]`}>
+            {twin.name}
           </span>
-          <span className={`${compact ? 'line-clamp-2 text-xs' : 'line-clamp-2 text-sm'} mt-1 block font-medium leading-snug text-[#aab4c4]`}>
-            {twin.description}
+          <span className={`${compact ? 'text-[13px]' : 'text-sm sm:text-base'} mt-1 block truncate font-semibold leading-tight text-[#aab4c4]`}>
+            {profileMainCategory(twin)}
           </span>
-          <span className="mt-2 flex flex-wrap items-center gap-1.5">
-            {renderProfileBadges(twin)}
-            {twin.categories.slice(0, compact ? 1 : 3).map((category) => (
-              <span key={category} className="rounded-full bg-white/[0.07] px-2 py-0.5 text-[10px] font-semibold text-[#aab4c4]">
-                {category}
-              </span>
-            ))}
+          <span className={`${compact ? 'text-[12px]' : 'text-sm'} mt-1 block truncate font-medium leading-tight text-[#8e97a8]`}>
+            {profileLifeLine(twin)}
           </span>
         </span>
-        {!compact && (
-          <span className="hidden shrink-0 text-right text-xs font-bold uppercase tracking-[0.12em] text-[#8e97a8] sm:block">
-            {twin.chatCount > 0 ? `${twin.chatCount} Chats` : twin.role}
-          </span>
-        )}
       </span>
     </button>
   )
@@ -1568,6 +1623,13 @@ function TwinProfileView({
         mediaCount: (privateTwin.mediaRefs ?? []).length,
         knowledgeCount: (privateTwin.knowledgeTexts ?? []).length,
         contextSummary: privateTwin.contextSummary,
+        mainCategory: privateTwin.mainCategory,
+        birthDate: privateTwin.birthDate,
+        deathDate: privateTwin.deathDate,
+        birthYear: privateTwin.birthYear,
+        deathYear: privateTwin.deathYear,
+        birthLabel: privateTwin.birthLabel,
+        deathLabel: privateTwin.deathLabel,
         updatedAt: privateTwin.updatedAt,
         seo: {
           title: `${privateTwin.name} | Privates smyst.com Profil`,
@@ -1736,8 +1798,10 @@ function TwinProfileView({
 
             <div className="p-6 sm:p-8">
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">KI-Zwilling Profil</p>
-              <h1 className="mb-3 text-4xl font-bold tracking-tight">{profile.name}</h1>
-              <p className="max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.'}</p>
+              <h1 className="text-4xl font-bold tracking-tight">{profile.name}</h1>
+              <p className="text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
+              <p className="mt-1 text-sm font-semibold text-[#667085]">{profileLifeLine(profile)}</p>
+              <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.'}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-lg bg-white/18 p-4">

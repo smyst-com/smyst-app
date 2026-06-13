@@ -21,6 +21,9 @@ const specs = [
     categories: ['Physik', 'Wissenschaft', 'Relativitaet', 'Forschung', 'Bildung'],
     style: 'neutral',
     answerStyle: 'analytisch, ruhig, evidenzorientiert und gedankenexperimentell',
+    mainCategory: 'Physiker, Wissenschaftler',
+    birthDate: '1879-03-14',
+    deathDate: '1955-04-18',
     description:
       'Theoretischer Physiker und Nobelpreistraeger, bekannt fuer Relativitaet, Quantenbeitraege, wissenschaftliche Neugier und klare Gedankenexperimente.',
     knowledge:
@@ -48,6 +51,9 @@ const specs = [
     categories: ['Wissenschaft', 'Kunst', 'Erfindungen', 'Renaissance', 'Anatomie', 'Mechanik'],
     style: 'wise',
     answerStyle: 'analytisch, kreativ, visionaer, beobachtend und praktisch experimentierend',
+    mainCategory: 'Künstler, Erfinder',
+    birthDate: '1452-04-15',
+    deathDate: '1519-05-02',
     description:
       'Renaissance-Universalgelehrter, Erfinder, Kuenstler und Wissenschaftler mit Fokus auf Beobachtung, Anatomie, Mechanik, Natur, Kunst und visionaere Ideen.',
     knowledge:
@@ -75,6 +81,9 @@ const specs = [
     categories: ['Physik', 'Mathematik', 'Gravitation', 'Optik', 'Wissenschaft'],
     style: 'direct',
     answerStyle: 'praezise, systematisch, mathematisch und prinzipienorientiert',
+    mainCategory: 'Physiker, Mathematiker',
+    birthDate: '1643-01-04',
+    deathDate: '1727-03-31',
     description:
       'Naturforscher und Mathematiker, bekannt fuer Bewegungsgesetze, Gravitation, Optik und eine streng systematische Sicht auf Ursache und Wirkung.',
     knowledge:
@@ -102,6 +111,9 @@ const specs = [
     categories: ['Literatur', 'Theater', 'Sprache', 'Dramaturgie', 'Kultur'],
     style: 'warm',
     answerStyle: 'bildhaft, menschlich, sprachsensibel und dramaturgisch',
+    mainCategory: 'Dramatiker, Dichter',
+    birthDate: '1564-04-23',
+    deathDate: '1616-04-23',
     description:
       'Dramatiker und Dichter, bekannt fuer Theater, Sprache, Figurenkonflikte, Macht, Liebe, Tragik, Komik und zeitlose menschliche Motive.',
     knowledge:
@@ -129,6 +141,11 @@ const specs = [
     categories: ['Philosophie', 'Logik', 'Ethik', 'Politik', 'Wissenschaft'],
     style: 'neutral',
     answerStyle: 'strukturiert, logisch, begriffsklar und klassifizierend',
+    mainCategory: 'Philosoph, Logiker',
+    birthYear: -384,
+    deathYear: -322,
+    birthLabel: 'ca. 384 v. Chr.',
+    deathLabel: '322 v. Chr.',
     description:
       'Philosoph der Antike, bekannt fuer Logik, Ethik, Politik, Naturphilosophie und die systematische Ordnung von Wissen und Begriffen.',
     knowledge:
@@ -156,6 +173,11 @@ const specs = [
     categories: ['Philosophie', 'Ethik', 'Dialog', 'Selbsterkenntnis', 'Bildung'],
     style: 'wise',
     answerStyle: 'fragend, kritisch, bescheiden und erkenntnisorientiert',
+    mainCategory: 'Philosoph, Ethiker',
+    birthYear: -470,
+    deathYear: -399,
+    birthLabel: 'ca. 470 v. Chr.',
+    deathLabel: '399 v. Chr.',
     description:
       'Antiker Philosoph, bekannt fuer dialogisches Fragen, Ethik, Selbsterkenntnis und die Pruefung von Gewissheiten durch klare Gegenfragen.',
     knowledge:
@@ -183,6 +205,11 @@ const specs = [
     categories: ['Philosophie', 'Ideenlehre', 'Politik', 'Dialog', 'Bildung'],
     style: 'wise',
     answerStyle: 'idealistisch, strukturiert, dialogisch und prinzipienbezogen',
+    mainCategory: 'Philosoph, Denker',
+    birthYear: -428,
+    deathYear: -348,
+    birthLabel: 'ca. 428 v. Chr.',
+    deathLabel: 'ca. 348 v. Chr.',
     description:
       'Antiker Philosoph, bekannt fuer Dialoge, Ideenlehre, politische Philosophie, Bildung und die Suche nach Wahrheit hinter wechselnden Erscheinungen.',
     knowledge:
@@ -210,6 +237,9 @@ const specs = [
     categories: ['Strategie', 'Fuehrung', 'Geschichte', 'Politik', 'Militaer'],
     style: 'direct',
     answerStyle: 'strategisch, knapp, entscheidungsstark und risikobewusst',
+    mainCategory: 'Stratege, Staatsmann',
+    birthDate: '1769-08-15',
+    deathDate: '1821-05-05',
     description:
       'Franzoesischer Staatsmann und Feldherr, bekannt fuer Strategie, Fuehrung, Machtpolitik, Organisation und schnelle Entscheidungen unter Druck.',
     knowledge:
@@ -237,6 +267,11 @@ const specs = [
     categories: ['Philosophie', 'Ethik', 'Bildung', 'Gesellschaft', 'Fuehrung'],
     style: 'wise',
     answerStyle: 'ruhig, pflichtbewusst, beziehungsorientiert und moralisch abwaegend',
+    mainCategory: 'Philosoph, Lehrer',
+    birthYear: -551,
+    deathYear: -479,
+    birthLabel: '551 v. Chr.',
+    deathLabel: '479 v. Chr.',
     description:
       'Chinesischer Philosoph, bekannt fuer Ethik, Bildung, soziale Harmonie, Pflichten, Vorbildverhalten und respektvolle Fuehrung.',
     knowledge:
@@ -264,6 +299,11 @@ const specs = [
     categories: ['Politik', 'Strategie', 'Geschichte', 'Rhetorik', 'Fuehrung'],
     style: 'direct',
     answerStyle: 'politisch, taktisch, knapp und konsequenzenbewusst',
+    mainCategory: 'Politiker, Feldherr',
+    birthYear: -100,
+    deathYear: -44,
+    birthLabel: '12.07.100 v. Chr.',
+    deathLabel: '15.03.44 v. Chr.',
     description:
       'Roemischer Staatsmann und Feldherr, bekannt fuer Politik, Strategie, Rhetorik, Machtaufbau, Reformen und entschlossenes Handeln.',
     knowledge:
@@ -307,6 +347,13 @@ async function toProfile(spec, index) {
     style: spec.style,
     answerStyle: spec.answerStyle,
     releaseStatus: 'live-profile',
+    mainCategory: spec.mainCategory,
+    birthDate: spec.birthDate,
+    deathDate: spec.deathDate,
+    birthYear: spec.birthYear,
+    deathYear: spec.deathYear,
+    birthLabel: spec.birthLabel,
+    deathLabel: spec.deathLabel,
     knowledgeTexts: [
       {
         id: `knowledge-${spec.slug}-core`,

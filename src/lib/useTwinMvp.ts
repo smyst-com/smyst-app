@@ -43,6 +43,13 @@ export interface TwinRecord {
   knowledgeTexts: TwinKnowledgeItem[]
   mediaRefs: TwinMediaRef[]
   contextSummary: string
+  mainCategory?: string
+  birthDate?: string
+  deathDate?: string
+  birthYear?: number
+  deathYear?: number
+  birthLabel?: string
+  deathLabel?: string
   status: 'draft' | 'ready'
   createdAt: number
   updatedAt: number
@@ -67,6 +74,13 @@ export interface PublicTwinProfile {
   contextSummary: string
   guardrail?: string
   rightsPosture?: string
+  mainCategory?: string
+  birthDate?: string
+  deathDate?: string
+  birthYear?: number
+  deathYear?: number
+  birthLabel?: string
+  deathLabel?: string
   sources?: Array<{ title: string; publisher: string; url: string }>
   quality?: { ok: boolean; issues: string[] }
   updatedAt: number
