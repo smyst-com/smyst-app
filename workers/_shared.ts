@@ -205,7 +205,13 @@ export async function rateLimit(kv: KVNamespace, opts: RateLimitOptions): Promis
 }
 
 export async function requireRateLimit(kv: KVNamespace, opts: RateLimitOptions): Promise<Response | null> {
-  const result = await rateLimit(kv, opts);
+  let result: RateLimitResult;
+  try {
+    result = await rateLimit(kv, opts);
+  } catch (err) {
+    console.warn('rate_limit_unavailable', JSON.stringify({ key: opts.key, error: String(err) }));
+    return null;
+  }
   if (result.allowed) return null;
   const retryAfterSeconds = Math.max(1, Math.ceil((result.resetAt - Date.now()) / 1000));
   return jsonResponse(
