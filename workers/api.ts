@@ -940,51 +940,36 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
   return options[hashText(seed) % options.length] ?? options[0];
 }
 
-function profileBasis(twin: TwinRecord): string {
-  const cleanDescription = twin.description.trim().replace(/[.\s]+$/, '');
-  const parts = [
-    cleanDescription ? `Profil: ${cleanDescription.slice(0, 240)}` : '',
-    twin.categories?.length ? `Kategorien: ${twin.categories.slice(0, 4).join(', ')}` : '',
-    twin.languages?.length ? `Sprachen: ${twin.languages.slice(0, 3).join(', ')}` : '',
-  ].filter(Boolean);
-  return parts.join('. ');
-}
-
 function fallbackKnowledgeLine(intentLabel: string, shortQuestion: string): string {
-  return `Für diese ${intentLabel} habe ich noch keinen direkten Treffer im hinterlegten Wissen gefunden. Ich antworte daher aus Profil, Stil und Kategorien zur Frage "${shortQuestion}".`;
+  return `Zur ${intentLabel} "${shortQuestion}" nutze ich Profil, Stil und Kategorien als historische Linse.`;
 }
 
 export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
   const trimmed = input.trim();
-  const shortQuestion = trimmed.length > 220 ? `${trimmed.slice(0, 220)}...` : trimmed;
+  const shortQuestion = trimmed.length > 150 ? `${trimmed.slice(0, 150)}...` : trimmed;
   const intent = questionIntent(trimmed);
   const style = styleLens(twin.style);
   const matches = relevantKnowledge(trimmed, twin);
-  const snippets = matches
-    .map((item) => {
-      const title = item.title ? `${item.title}: ` : '';
-      return `${title}${item.text.slice(0, 320)}`;
-    })
-    .join(' ');
+  const hasKnowledge = matches.length > 0;
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `${stylePrefix(twin.style)} ${intent.label}: Ich bin ${twin.name}; mein Antwortstil ist ${style.voice}.`,
-      `Mein erster Profil-Impuls: ${intentMove(twin, intent.label)}`,
-      `${style.verb}: ${intent.action}.`,
-      `${signatureLens(twin)} ${style.close}: ${intent.caution}.`,
+      `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${style.voice}.`,
+      `Meine erste Aussage: ${intentMove(twin, intent.label)}`,
+      `${style.close}: ${intent.action}; ${intent.caution}.`,
       'Sobald Beschreibung, Wissen oder Medien hinterlegt sind, wird meine Antwort deutlich profilgenauer.',
     ].join(' ');
   }
 
+  const role = twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
+  const knowledgeNote = hasKnowledge
+    ? `Ich nutze meine hinterlegte Profilgrundlage als ${role}.`
+    : fallbackKnowledgeLine(intent.label, shortQuestion);
   return [
-    `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}; mein Ton ist ${style.voice}.`,
-    `Mein erster Profil-Impuls: ${intentMove(twin, intent.label)}`,
-    profileBasis(twin),
-    `Meine Linse: ${categoryLens(twin)}. ${signatureLens(twin)}`,
-    snippets ? `Passendes hinterlegtes Wissen: ${snippets}` : fallbackKnowledgeLine(intent.label, shortQuestion),
-    `${style.verb}: ${intent.action}.`,
-    `${style.close}: Bei dieser ${intent.decisionNoun} wäre mein nächster Schritt, eine überprüfbare Annahme festzulegen und sie klein zu testen; wichtig ist, ${intent.caution}.`,
+    `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${role}; mein Stil ist ${twin.answerStyle ?? style.voice}.`,
+    `Meine Linse: ${categoryLens(twin)}; ${signatureLens(twin)} ${knowledgeNote}`,
+    `Mein direkter Impuls: ${intentMove(twin, intent.label)}`,
+    `${style.close}: ${intent.action}; dabei ${intent.caution}.`,
   ]
     .filter(Boolean)
     .join(' ');

@@ -39,7 +39,7 @@ const prompts = [
   ['Persönliche Meinung', 'Was ist deine persönliche Meinung dazu?'],
 ];
 
-const profiles = CURATED_PUBLIC_TWIN_SPECS.slice(0, 20).map((spec, index) => ({
+const profiles = CURATED_PUBLIC_TWIN_SPECS.map((spec, index) => ({
   id: `quality-${spec.slug}`,
   userSub: 'quality-test',
   name: spec.name,
@@ -80,6 +80,8 @@ const generationMs = performance.now() - startedAt;
 const duplicatePairs = [];
 const duplicateOpeningPairs = [];
 const missingProfileOrIntent = [];
+const tooLongAnswers = [];
+const tooShortAnswers = [];
 for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
   const [intentLabel, prompt] = prompts[promptIndex];
   const seen = new Map();
@@ -89,6 +91,8 @@ for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
     if (!answer.includes(sample.profile) || !answer.includes(intentLabel)) {
       missingProfileOrIntent.push([prompt, sample.profile, intentLabel]);
     }
+    if (answer.length > 950) tooLongAnswers.push([prompt, sample.profile, answer.length]);
+    if (answer.length < 260) tooShortAnswers.push([prompt, sample.profile, answer.length]);
     const normalized = answer.split(sample.profile).join('{profile}').replace(/\s+/g, ' ').trim();
     const opening = normalized.slice(0, 340);
     const current = seen.get(normalized);
@@ -115,7 +119,13 @@ const examples = prompts.slice(0, 3).map(([intentLabel, prompt], promptIndex) =>
 }));
 
 console.log(JSON.stringify({
-  ok: duplicatePairs.length === 0 && duplicateOpeningPairs.length === 0 && missingProfileOrIntent.length === 0,
+  ok:
+    duplicatePairs.length === 0 &&
+    duplicateOpeningPairs.length === 0 &&
+    missingProfileOrIntent.length === 0 &&
+    tooLongAnswers.length === 0 &&
+    tooShortAnswers.length === 0 &&
+    avgLength <= 760,
   profileCount: profiles.length,
   promptCount: prompts.length,
   answerCount: profiles.length * prompts.length,
@@ -124,8 +134,19 @@ console.log(JSON.stringify({
   duplicatePairs,
   duplicateOpeningPairs,
   missingProfileOrIntent,
+  tooLongAnswers,
+  tooShortAnswers,
   avgAnswerLength: Number(avgLength.toFixed(1)),
   examples,
 }, null, 2));
 
-if (duplicatePairs.length || duplicateOpeningPairs.length || missingProfileOrIntent.length) process.exit(1);
+if (
+  duplicatePairs.length ||
+  duplicateOpeningPairs.length ||
+  missingProfileOrIntent.length ||
+  tooLongAnswers.length ||
+  tooShortAnswers.length ||
+  avgLength > 760
+) {
+  process.exit(1);
+}
