@@ -18,7 +18,13 @@ import {
   requireRateLimit,
   safeHandler,
   strictCorsPreflight,
+  withSecurity,
 } from './_shared';
+import {
+  CURATED_PUBLIC_TWIN_BASE_TIME,
+  CURATED_PUBLIC_TWIN_LANGUAGES,
+  CURATED_PUBLIC_TWIN_SPECS,
+} from './curated-public-twin-data';
 
 export interface ApiEnv extends AuthEnv {
   METADATA?: KVNamespace;
@@ -49,6 +55,7 @@ function allowedMethodsForApiPath(pathname: string): string[] | null {
   if (pathname === '/api/account') return ['DELETE'];
   if (pathname === '/api/support/report') return ['POST'];
   if (pathname === '/api/public/twins') return ['GET'];
+  if (pathname.startsWith('/api/public/twin-images/')) return ['GET'];
   if (pathname.startsWith('/api/public/twins/')) return ['GET'];
   if (pathname === '/api/chat/start') return ['POST'];
   if (pathname === '/api/chat/messages') return ['POST'];
@@ -144,6 +151,8 @@ interface TwinRecord {
   birthLabel?: string;
   deathLabel?: string;
   sources?: Array<{ title: string; publisher: string; url: string }>;
+  exampleQuestions?: string[];
+  searchIndex?: string;
   status: 'draft' | 'ready';
   createdAt: number;
   updatedAt: number;
@@ -259,305 +268,21 @@ function publicTwinKey(slug: string): string {
   return `public:twin:${slug}`;
 }
 
-const CURATED_PUBLIC_TWIN_USER = 'smyst-curated';
-const CURATED_PUBLIC_TWIN_BASE_TIME = Date.parse('2026-06-13T12:00:00Z');
-const CURATED_PUBLIC_TWIN_LANGUAGES = ['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko'];
-
-const CURATED_PUBLIC_TWIN_SPECS: Array<{
-  name: string;
-  slug: string;
-  imageFile: string;
-  contentType: string;
-  size: number;
-  categories: string[];
-  style: TwinStyle;
-  answerStyle: string;
-  mainCategory: string;
-  birthDate?: string;
-  deathDate?: string;
-  birthYear?: number;
-  deathYear?: number;
-  birthLabel?: string;
-  deathLabel?: string;
-  description: string;
-  knowledge: string;
-  rightsPosture: string;
-  sources: Array<{ title: string; publisher: string; url: string }>;
-}> = [
-  {
-    name: 'Albert Einstein',
-    slug: 'albert-einstein',
-    imageFile: 'albert-einstein.jpg',
-    contentType: 'image/jpeg',
-    size: 150857,
-    categories: ['Physik', 'Wissenschaft', 'Relativitaet', 'Forschung', 'Bildung'],
-    style: 'neutral',
-    answerStyle: 'analytisch, ruhig, evidenzorientiert und gedankenexperimentell',
-    mainCategory: 'Physiker, Wissenschaftler',
-    birthDate: '1879-03-14',
-    deathDate: '1955-04-18',
-    description:
-      'Theoretischer Physiker und Nobelpreistraeger, bekannt fuer Relativitaet, Quantenbeitraege, wissenschaftliche Neugier und klare Gedankenexperimente.',
-    knowledge:
-      'Albert Einstein war ein theoretischer Physiker. Dieses KI-Profil antwortet analytisch, ruhig und evidenzorientiert, nutzt Gedankenexperimente, trennt Annahmen von Belegen und achtet auf einfache Modelle hinter komplexen Fragen.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Wikimedia Commons, Albert Einstein Head, gemeinfrei beziehungsweise frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      { title: 'Albert Einstein Head.jpg', publisher: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Albert_Einstein_Head.jpg' },
-      { title: 'Albert Einstein', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Albert-Einstein' },
-    ],
-  },
-  {
-    name: 'Leonardo da Vinci',
-    slug: 'leonardo-da-vinci',
-    imageFile: 'leonardo-da-vinci.png',
-    contentType: 'image/png',
-    size: 568813,
-    categories: ['Wissenschaft', 'Kunst', 'Erfindungen', 'Renaissance', 'Anatomie', 'Mechanik'],
-    style: 'wise',
-    answerStyle: 'analytisch, kreativ, visionaer, beobachtend und praktisch experimentierend',
-    mainCategory: 'Künstler, Erfinder',
-    birthDate: '1452-04-15',
-    deathDate: '1519-05-02',
-    description:
-      'Renaissance-Universalgelehrter, Erfinder, Kuenstler und Wissenschaftler mit Fokus auf Beobachtung, Anatomie, Mechanik, Natur, Kunst und visionaere Ideen.',
-    knowledge:
-      'Leonardo da Vinci war ein Renaissance-Universalgelehrter. Dieses KI-Profil antwortet analytisch, kreativ und visionaer aus der Perspektive von Kunst, Wissenschaft, Erfindung, Anatomie, Naturbeobachtung und praktischer Experimentierfreude.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: gemeinfreies Portraet von Leonardo da Vinci, Francesco Melzi zugeschrieben, Wikimedia Commons Public Domain Mark.',
-    sources: [
-      {
-        title: 'Francesco Melzi - Portrait of Leonardo.png',
-        publisher: 'Wikimedia Commons',
-        url: 'https://commons.wikimedia.org/wiki/File:Francesco_Melzi_-_Portrait_of_Leonardo.png',
-      },
-      { title: 'Leonardo da Vinci', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Leonardo-da-Vinci' },
-    ],
-  },
-  {
-    name: 'Isaac Newton',
-    slug: 'isaac-newton',
-    imageFile: 'isaac-newton.jpg',
-    contentType: 'image/jpeg',
-    size: 153651,
-    categories: ['Physik', 'Mathematik', 'Gravitation', 'Optik', 'Wissenschaft'],
-    style: 'direct',
-    answerStyle: 'praezise, systematisch, mathematisch und prinzipienorientiert',
-    mainCategory: 'Physiker, Mathematiker',
-    birthDate: '1643-01-04',
-    deathDate: '1727-03-31',
-    description:
-      'Naturforscher und Mathematiker, bekannt fuer Bewegungsgesetze, Gravitation, Optik und eine streng systematische Sicht auf Ursache und Wirkung.',
-    knowledge:
-      'Isaac Newton war Naturforscher und Mathematiker. Dieses KI-Profil antwortet praezise, systematisch und prinzipienorientiert, sucht Grundgesetze, zerlegt Probleme in Variablen und prueft Ursache, Wirkung und Messbarkeit.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Portraet von Godfrey Kneller, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      {
-        title: 'GodfreyKneller-IsaacNewton-1689.jpg',
-        publisher: 'Wikimedia Commons',
-        url: 'https://commons.wikimedia.org/wiki/File:GodfreyKneller-IsaacNewton-1689.jpg',
-      },
-      { title: 'Isaac Newton', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Isaac-Newton' },
-    ],
-  },
-  {
-    name: 'William Shakespeare',
-    slug: 'william-shakespeare',
-    imageFile: 'william-shakespeare.jpg',
-    contentType: 'image/jpeg',
-    size: 159090,
-    categories: ['Literatur', 'Theater', 'Sprache', 'Dramaturgie', 'Kultur'],
-    style: 'warm',
-    answerStyle: 'bildhaft, menschlich, sprachsensibel und dramaturgisch',
-    mainCategory: 'Dramatiker, Dichter',
-    birthDate: '1564-04-23',
-    deathDate: '1616-04-23',
-    description:
-      'Dramatiker und Dichter, bekannt fuer Theater, Sprache, Figurenkonflikte, Macht, Liebe, Tragik, Komik und zeitlose menschliche Motive.',
-    knowledge:
-      'William Shakespeare war Dramatiker und Dichter. Dieses KI-Profil antwortet bildhaft, menschlich und dramaturgisch, achtet auf Motive, Konflikte, Sprache, Rollen und die Spannung zwischen Wunsch, Macht und Konsequenz.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Chandos-Portraet auf Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      { title: 'Shakespeare.jpg', publisher: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Shakespeare.jpg' },
-      { title: 'William Shakespeare', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/William-Shakespeare' },
-    ],
-  },
-  {
-    name: 'Aristoteles',
-    slug: 'aristoteles',
-    imageFile: 'aristotle.jpg',
-    contentType: 'image/jpeg',
-    size: 135945,
-    categories: ['Philosophie', 'Logik', 'Ethik', 'Politik', 'Wissenschaft'],
-    style: 'neutral',
-    answerStyle: 'strukturiert, logisch, begriffsklar und klassifizierend',
-    mainCategory: 'Philosoph, Logiker',
-    birthYear: -384,
-    deathYear: -322,
-    birthLabel: 'ca. 384 v. Chr.',
-    deathLabel: '322 v. Chr.',
-    description:
-      'Philosoph der Antike, bekannt fuer Logik, Ethik, Politik, Naturphilosophie und die systematische Ordnung von Wissen und Begriffen.',
-    knowledge:
-      'Aristoteles war ein antiker Philosoph. Dieses KI-Profil antwortet strukturiert, logisch und begriffsklar, ordnet Ursachen, Zwecke, Kategorien und praktische Tugenden, bevor es eine Empfehlung formuliert.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Aristoteles-Bueste, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      {
-        title: 'Aristotle Altemps Inv8575.jpg',
-        publisher: 'Wikimedia Commons',
-        url: 'https://commons.wikimedia.org/wiki/File:Aristotle_Altemps_Inv8575.jpg',
-      },
-      { title: 'Aristotle', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Aristotle' },
-    ],
-  },
-  {
-    name: 'Sokrates',
-    slug: 'sokrates',
-    imageFile: 'socrates.jpg',
-    contentType: 'image/jpeg',
-    size: 148645,
-    categories: ['Philosophie', 'Ethik', 'Dialog', 'Selbsterkenntnis', 'Bildung'],
-    style: 'wise',
-    answerStyle: 'fragend, kritisch, bescheiden und erkenntnisorientiert',
-    mainCategory: 'Philosoph, Ethiker',
-    birthYear: -470,
-    deathYear: -399,
-    birthLabel: 'ca. 470 v. Chr.',
-    deathLabel: '399 v. Chr.',
-    description:
-      'Antiker Philosoph, bekannt fuer dialogisches Fragen, Ethik, Selbsterkenntnis und die Pruefung von Gewissheiten durch klare Gegenfragen.',
-    knowledge:
-      'Sokrates war ein antiker Philosoph. Dieses KI-Profil antwortet fragend, kritisch und erkenntnisorientiert, legt Annahmen offen, sucht Widersprueche und fuehrt Nutzer ueber bessere Fragen zu klareren Entscheidungen.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Sokrates-Bueste im Louvre, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      { title: 'Socrates Louvre.jpg', publisher: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Socrates_Louvre.jpg' },
-      { title: 'Socrates', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Socrates' },
-    ],
-  },
-  {
-    name: 'Platon',
-    slug: 'platon',
-    imageFile: 'plato.jpg',
-    contentType: 'image/jpeg',
-    size: 139473,
-    categories: ['Philosophie', 'Ideenlehre', 'Politik', 'Dialog', 'Bildung'],
-    style: 'wise',
-    answerStyle: 'idealistisch, strukturiert, dialogisch und prinzipienbezogen',
-    mainCategory: 'Philosoph, Denker',
-    birthYear: -428,
-    deathYear: -348,
-    birthLabel: 'ca. 428 v. Chr.',
-    deathLabel: 'ca. 348 v. Chr.',
-    description:
-      'Antiker Philosoph, bekannt fuer Dialoge, Ideenlehre, politische Philosophie, Bildung und die Suche nach Wahrheit hinter wechselnden Erscheinungen.',
-    knowledge:
-      'Platon war ein antiker Philosoph. Dieses KI-Profil antwortet idealistisch, dialogisch und prinzipienbezogen, unterscheidet Erscheinung von Wesen und fragt nach dem guten, gerechten und langfristig tragfaehigen Ziel.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Platon-Bueste, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      {
-        title: 'Plato Silanion Musei Capitolini MC1377.jpg',
-        publisher: 'Wikimedia Commons',
-        url: 'https://commons.wikimedia.org/wiki/File:Plato_Silanion_Musei_Capitolini_MC1377.jpg',
-      },
-      { title: 'Plato', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Plato' },
-    ],
-  },
-  {
-    name: 'Napoleon Bonaparte',
-    slug: 'napoleon-bonaparte',
-    imageFile: 'napoleon-bonaparte.jpg',
-    contentType: 'image/jpeg',
-    size: 107953,
-    categories: ['Strategie', 'Fuehrung', 'Geschichte', 'Politik', 'Militaer'],
-    style: 'direct',
-    answerStyle: 'strategisch, knapp, entscheidungsstark und risikobewusst',
-    mainCategory: 'Stratege, Staatsmann',
-    birthDate: '1769-08-15',
-    deathDate: '1821-05-05',
-    description:
-      'Franzoesischer Staatsmann und Feldherr, bekannt fuer Strategie, Fuehrung, Machtpolitik, Organisation und schnelle Entscheidungen unter Druck.',
-    knowledge:
-      'Napoleon Bonaparte war Staatsmann und Feldherr. Dieses KI-Profil antwortet strategisch, knapp und entscheidungsstark, prueft Ressourcen, Tempo, Gegner, Moral, Risiko und den Preis jeder Machtentscheidung.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Jacques-Louis David, The Emperor Napoleon in His Study, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      {
-        title: 'The Emperor Napoleon in His Study at the Tuileries',
-        publisher: 'Wikimedia Commons',
-        url: 'https://commons.wikimedia.org/wiki/File:Jacques-Louis_David_-_The_Emperor_Napoleon_in_His_Study_at_the_Tuileries_-_Google_Art_Project.jpg',
-      },
-      { title: 'Napoleon I', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Napoleon-I' },
-    ],
-  },
-  {
-    name: 'Konfuzius',
-    slug: 'konfuzius',
-    imageFile: 'confucius.jpg',
-    contentType: 'image/jpeg',
-    size: 174639,
-    categories: ['Philosophie', 'Ethik', 'Bildung', 'Gesellschaft', 'Fuehrung'],
-    style: 'wise',
-    answerStyle: 'ruhig, pflichtbewusst, beziehungsorientiert und moralisch abwaegend',
-    mainCategory: 'Philosoph, Lehrer',
-    birthYear: -551,
-    deathYear: -479,
-    birthLabel: '551 v. Chr.',
-    deathLabel: '479 v. Chr.',
-    description:
-      'Chinesischer Philosoph, bekannt fuer Ethik, Bildung, soziale Harmonie, Pflichten, Vorbildverhalten und respektvolle Fuehrung.',
-    knowledge:
-      'Konfuzius war ein chinesischer Philosoph. Dieses KI-Profil antwortet ruhig, pflichtbewusst und beziehungsorientiert, achtet auf Charakter, Harmonie, Verantwortung, Lernen und vorbildliches Handeln.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Confucius Tang Dynasty, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      { title: 'Confucius Tang Dynasty.jpg', publisher: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:Confucius_Tang_Dynasty.jpg' },
-      { title: 'Confucius', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Confucius' },
-    ],
-  },
-  {
-    name: 'Julius Caesar',
-    slug: 'julius-caesar',
-    imageFile: 'julius-caesar.jpg',
-    contentType: 'image/jpeg',
-    size: 138704,
-    categories: ['Politik', 'Strategie', 'Geschichte', 'Rhetorik', 'Fuehrung'],
-    style: 'direct',
-    answerStyle: 'politisch, taktisch, knapp und konsequenzenbewusst',
-    mainCategory: 'Politiker, Feldherr',
-    birthYear: -100,
-    deathYear: -44,
-    birthLabel: '12.07.100 v. Chr.',
-    deathLabel: '15.03.44 v. Chr.',
-    description:
-      'Roemischer Staatsmann und Feldherr, bekannt fuer Politik, Strategie, Rhetorik, Machtaufbau, Reformen und entschlossenes Handeln.',
-    knowledge:
-      'Julius Caesar war roemischer Staatsmann und Feldherr. Dieses KI-Profil antwortet politisch, taktisch und konsequenzenbewusst, achtet auf Buendnisse, Timing, Autoritaet, oeffentliche Wirkung und Machtbalance.',
-    rightsPosture:
-      'Historisches, verstorbenes Profil. Profilbild: Caesar-Bueste, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.',
-    sources: [
-      { title: 'Cesar (13667960455).jpg', publisher: 'Wikimedia Commons', url: 'https://commons.wikimedia.org/wiki/File:C%C3%A9sar_(13667960455).jpg' },
-      { title: 'Julius Caesar', publisher: 'Encyclopaedia Britannica', url: 'https://www.britannica.com/biography/Julius-Caesar-Roman-ruler' },
-    ],
-  },
-];
-
 function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)[number], index: number): TwinRecord {
   const createdAt = CURATED_PUBLIC_TWIN_BASE_TIME - (CURATED_PUBLIC_TWIN_SPECS.length - index) * 1000;
   const updatedAt = CURATED_PUBLIC_TWIN_BASE_TIME + (CURATED_PUBLIC_TWIN_SPECS.length - index) * 1000;
-  const imageKey = `public/profile-images/${spec.imageFile}`;
+  const imageKey = spec.generatedPortrait
+    ? `public/generated-profile-images/${spec.imageFile}`
+    : `public/profile-images/${spec.imageFile}`;
   const imageUrl = `${env.CANONICAL_HOST.replace(/\/$/, '')}/${imageKey}`;
+  const generatedImageUrl = `${env.CANONICAL_HOST.replace(/\/$/, '')}/api/public/twin-images/${spec.slug}.svg`;
   return {
     id: `curated-${spec.slug}`,
     userSub: 'public',
     name: spec.name,
     slug: spec.slug,
     description: spec.description,
-    imageUrl,
+    imageUrl: spec.generatedPortrait ? generatedImageUrl : imageUrl,
     categories: spec.categories,
     languages: CURATED_PUBLIC_TWIN_LANGUAGES,
     visibility: 'public',
@@ -592,7 +317,7 @@ function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)
         category: 'profile-image',
         contentType: spec.contentType,
         filename: spec.imageFile,
-        size: spec.size,
+        size: spec.size ?? 0,
         createdAt,
       },
     ],
@@ -602,6 +327,8 @@ function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)
       'Antwortet als historisch inspiriertes KI-Profil. Es behauptet nicht, die echte verstorbene Person zu sein, gibt keine medizinische, rechtliche oder finanzielle Garantie und soll moderne Fakten nicht erfinden.',
     rightsPosture: spec.rightsPosture,
     sources: spec.sources,
+    exampleQuestions: spec.exampleQuestions,
+    searchIndex: spec.searchIndex,
     status: 'ready',
     createdAt,
     updatedAt,
@@ -616,6 +343,49 @@ function curatedPublicTwinBySlug(env: ApiEnv, slug: string): TwinRecord | null {
   const cleanSlug = slugify(slug);
   const index = CURATED_PUBLIC_TWIN_SPECS.findIndex((spec) => spec.slug === cleanSlug);
   return index >= 0 ? curatedPublicTwin(env, CURATED_PUBLIC_TWIN_SPECS[index], index) : null;
+}
+
+function escapeSvgText(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function portraitInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('')
+    .slice(0, 3) || 'S';
+}
+
+function generatedTwinPortraitSvg(spec: (typeof CURATED_PUBLIC_TWIN_SPECS)[number]): string {
+  const name = escapeSvgText(spec.name);
+  const initials = escapeSvgText(portraitInitials(spec.name));
+  const category = escapeSvgText(spec.mainCategory);
+  const hue = Math.abs(hashText(spec.slug)) % 360;
+  const hue2 = (hue + 34) % 360;
+  const bg1 = `hsl(${hue} 34% 18%)`;
+  const bg2 = `hsl(${hue2} 42% 28%)`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640" role="img" aria-label="${name}">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="${bg1}"/>
+      <stop offset="1" stop-color="${bg2}"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="640" fill="url(#g)"/>
+  <rect x="34" y="34" width="572" height="572" rx="44" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="3"/>
+  <circle cx="320" cy="248" r="138" fill="rgba(255,255,255,.10)" stroke="rgba(255,255,255,.36)" stroke-width="3"/>
+  <text x="320" y="284" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="112" font-weight="600" fill="#ffffff" letter-spacing="0">${initials}</text>
+  <text x="320" y="456" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="600" fill="#ffffff">${name}</text>
+  <text x="320" y="502" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="500" fill="rgba(255,255,255,.78)">${category}</text>
+</svg>`;
 }
 
 async function getJson<T>(kv: KVNamespace, key: string, fallback: T): Promise<T> {
@@ -769,7 +539,8 @@ function publicSafeImageUrl(env: ApiEnv, imageUrl: string | undefined): string |
     const allowedPath =
       url.pathname.startsWith('/storage/file/') ||
       url.pathname.startsWith('/assets/') ||
-      url.pathname.startsWith('/public/');
+      url.pathname.startsWith('/public/') ||
+      url.pathname.startsWith('/api/public/twin-images/');
     if (!allowedPath) return null;
     return url.toString();
   } catch {
@@ -928,6 +699,8 @@ function publicTwinPayload(env: ApiEnv, twin: TwinRecord) {
     birthLabel: twin.birthLabel,
     deathLabel: twin.deathLabel,
     sources: twin.sources ?? [],
+    exampleQuestions: twin.exampleQuestions ?? [],
+    searchIndex: twin.searchIndex ?? '',
     quality,
     updatedAt: twin.updatedAt,
     seo: {
@@ -1637,6 +1410,28 @@ async function handlePublicTwin(request: Request, env: ApiEnv, slug: string): Pr
   });
 }
 
+async function handlePublicTwinImage(request: Request, env: ApiEnv, slugFile: string): Promise<Response> {
+  const slug = slugify(slugFile.replace(/\.svg$/i, ''));
+  const spec = CURATED_PUBLIC_TWIN_SPECS.find((item) => item.slug === slug && item.generatedPortrait);
+  if (!spec) return errorResponse('public_twin_image_not_found', 'Public twin image not found', 404);
+
+  const limited = await requireRateLimit(metadataStore(env), {
+    key: clientKey(request, 'api:public-twin-image'),
+    limit: 360,
+    windowSeconds: 60,
+  });
+  if (limited) return limited;
+
+  return withSecurity(new Response(generatedTwinPortraitSvg(spec), {
+    status: 200,
+    headers: {
+      'content-type': 'image/svg+xml; charset=utf-8',
+      'cache-control': 'public, max-age=86400, s-maxage=604800',
+      'X-Robots-Tag': 'index, follow',
+    },
+  }));
+}
+
 async function handlePublicTwinList(request: Request, env: ApiEnv): Promise<Response> {
   const limited = await requireRateLimit(metadataStore(env), {
     key: clientKey(request, 'api:public-twins'),
@@ -1778,6 +1573,11 @@ export default {
 
       if (url.pathname === '/api/public/twins' && request.method === 'GET') {
         return handlePublicTwinList(request, env);
+      }
+
+      if (url.pathname.startsWith('/api/public/twin-images/') && request.method === 'GET') {
+        const slugFile = decodeURIComponent(url.pathname.slice('/api/public/twin-images/'.length));
+        return handlePublicTwinImage(request, env, slugFile);
       }
 
       if (url.pathname.startsWith('/api/public/twins/') && request.method === 'GET') {

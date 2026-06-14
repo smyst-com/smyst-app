@@ -16,6 +16,7 @@ export interface DiscoveryProfile {
   chatCount: number
   lastChatAt: number
   publicProfile: boolean
+  searchIndex?: string
 }
 
 export interface DiscoveryCategory {
@@ -84,6 +85,7 @@ export function profileSearchScore(profile: DiscoveryProfile, query: string): nu
     profile.tone,
     profile.categories.join(' '),
     profile.languages.join(' '),
+    profile.searchIndex ?? '',
   ]
   const candidateTokens = tokens(candidateFields.join(' '))
   if (!candidateTokens.length) return 0

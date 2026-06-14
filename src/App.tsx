@@ -628,6 +628,7 @@ type StartTwin = {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  searchIndex?: string
 } & DiscoveryProfile
 
 type ProfileUsage = {
@@ -723,6 +724,7 @@ function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsag
     deathYear: twin.deathYear,
     birthLabel: twin.birthLabel,
     deathLabel: twin.deathLabel,
+    searchIndex: twin.searchIndex,
   }
 }
 
@@ -756,6 +758,7 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
     deathYear: profile.deathYear,
     birthLabel: profile.birthLabel,
     deathLabel: profile.deathLabel,
+    searchIndex: profile.searchIndex,
   }
 }
 

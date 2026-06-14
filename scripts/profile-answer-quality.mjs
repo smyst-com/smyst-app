@@ -14,6 +14,21 @@ await build({
 
 const { ruleBasedTwinReply } = await import(`${pathToFileURL(outfile).href}?t=${Date.now()}`);
 
+const dataOutfile = '/private/tmp/smyst-curated-answer-quality.mjs';
+await build({
+  entryPoints: ['workers/curated-public-twin-data.ts'],
+  bundle: true,
+  format: 'esm',
+  target: 'es2022',
+  platform: 'node',
+  outfile: dataOutfile,
+  logLevel: 'silent',
+});
+
+const { CURATED_PUBLIC_TWIN_LANGUAGES, CURATED_PUBLIC_TWIN_SPECS } = await import(
+  `${pathToFileURL(dataOutfile).href}?t=${Date.now()}`
+);
+
 const now = Date.now();
 const prompts = [
   ['Geschäftsidee', 'Bewerte diese Geschäftsidee: eine App, die lokale Experten als KI-Zwillinge verfügbar macht.'],
@@ -24,49 +39,30 @@ const prompts = [
   ['Persönliche Meinung', 'Was ist deine persönliche Meinung dazu?'],
 ];
 
-const profiles = [
-  ['Strategie-Coach', 'Hilft Gründern, Ideen schnell am Markt zu prüfen.', ['Business', 'Strategie'], 'direct'],
-  ['Finanz-Prüferin', 'Bewertet Chancen, Risiken, Liquidität und Downside.', ['Investition', 'Finanzen'], 'neutral'],
-  ['Team-Mentorin', 'Achtet auf Menschen, Rollen, Vertrauen und Entwicklung.', ['HR', 'Psychologie'], 'warm'],
-  ['Marken-Stratege', 'Denkt in Positionierung, Story, Zielgruppen und Kampagnen.', ['Marketing', 'Design'], 'humorous'],
-  ['Zukunftsforscher', 'Arbeitet mit Szenarien, Signalen und langfristigen Mustern.', ['Zukunft', 'Technik'], 'wise'],
-  ['Produkt-Analyst', 'Reduziert komplexe Ideen auf Tests, Daten und Nutzerfeedback.', ['Produkt', 'Daten'], 'neutral'],
-  ['Kreativdirektorin', 'Sucht Originalität, Ausdruck und kulturelle Resonanz.', ['Kunst', 'Design'], 'humorous'],
-  ['Operations-Experte', 'Optimiert Prozesse, Kosten, Qualität und Geschwindigkeit.', ['Operations', 'Business'], 'direct'],
-  ['Ethik-Berater', 'Prüft Werte, Folgen, Fairness und Verantwortung.', ['Philosophie', 'Gesellschaft'], 'wise'],
-  ['Sales-Trainerin', 'Fokussiert Kundengespräche, Einwände und Abschlussklarheit.', ['Sales', 'Kommunikation'], 'direct'],
-  ['Lern-Coach', 'Erklärt ruhig, strukturiert und mit Blick auf Fortschritt.', ['Bildung', 'Coaching'], 'warm'],
-  ['Technik-Architekt', 'Bewertet Systeme, Skalierung, Abhängigkeiten und Fehlerbilder.', ['Technik', 'Systeme'], 'neutral'],
-  ['Community-Builder', 'Denkt in Vertrauen, Beteiligung, Ritualen und Netzwerkeffekten.', ['Community', 'Marketing'], 'warm'],
-  ['Risiko-Managerin', 'Sucht blinde Flecken, Grenzfälle und robuste Gegenmaßnahmen.', ['Risiko', 'Investition'], 'direct'],
-  ['Story-Berater', 'Übersetzt Ideen in klare Erzählungen und merkbare Botschaften.', ['Literatur', 'Marketing'], 'humorous'],
-  ['Wissenschafts-Mentor', 'Fragt nach Hypothesen, Evidenz und sauberer Methodik.', ['Wissenschaft', 'Bildung'], 'neutral'],
-  ['Verhandlungscoach', 'Achtet auf Interessen, Alternativen und klare Grenzen.', ['Verhandlung', 'Business'], 'direct'],
-  ['Achtsamkeits-Coach', 'Gewichtet Energie, Beziehungen und nachhaltige Entscheidungen.', ['Gesundheit', 'Psychologie'], 'wise'],
-  ['Kultur-Scout', 'Erkennt Trends, Symbole und gesellschaftliche Stimmungen.', ['Kultur', 'Zukunft'], 'humorous'],
-  ['Kundenforscherin', 'Hört auf Verhalten, Jobs-to-be-done und echte Kaufgründe.', ['Research', 'Produkt'], 'warm'],
-].map(([name, description, categories, style], index) => ({
-  id: `quality-${index}`,
+const profiles = CURATED_PUBLIC_TWIN_SPECS.slice(0, 20).map((spec, index) => ({
+  id: `quality-${spec.slug}`,
   userSub: 'quality-test',
-  name,
-  slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-  description,
+  name: spec.name,
+  slug: spec.slug,
+  description: spec.description,
   imageUrl: undefined,
   imageKey: undefined,
-  categories,
-  languages: ['de'],
+  categories: spec.categories,
+  languages: CURATED_PUBLIC_TWIN_LANGUAGES,
   visibility: 'public',
-  style,
+  style: spec.style,
+  answerStyle: spec.answerStyle,
+  mainCategory: spec.mainCategory,
   knowledgeTexts: [
     {
       id: `knowledge-${index}`,
-      title: `${name} Arbeitsprinzip`,
-      text: `${description} Das Profil antwortet mit eigener Perspektive und legt Wert auf ${categories.join(', ')}.`,
+      title: `${spec.name} Profilgrundlage`,
+      text: spec.knowledge,
       createdAt: now,
     },
   ],
   mediaRefs: [],
-  contextSummary: description,
+  contextSummary: spec.description,
   status: 'ready',
   createdAt: now - index * 86_400_000,
   updatedAt: now,

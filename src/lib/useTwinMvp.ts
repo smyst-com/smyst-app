@@ -50,6 +50,8 @@ export interface TwinRecord {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  exampleQuestions?: string[]
+  searchIndex?: string
   status: 'draft' | 'ready'
   createdAt: number
   updatedAt: number
@@ -81,6 +83,8 @@ export interface PublicTwinProfile {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  exampleQuestions?: string[]
+  searchIndex?: string
   sources?: Array<{ title: string; publisher: string; url: string }>
   quality?: { ok: boolean; issues: string[] }
   updatedAt: number
