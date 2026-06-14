@@ -45,7 +45,7 @@ export default function GitHubSignInButton({
         className={`group inline-flex ${fullWidth ? 'w-full' : ''} min-h-[44px] items-center justify-center gap-3 rounded-full border border-[#24292f]/20 bg-white px-5 py-2.5 text-sm font-medium text-[#24292f] shadow-sm transition hover:bg-[#f6f8fa] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#24292f] disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
       >
         <Github className="h-[18px] w-[18px]" aria-hidden="true" />
-        <span className="font-['Roboto',system-ui] tracking-[0.01em]">{label}</span>
+        <span className="font-medium tracking-[0.01em]">{label}</span>
       </button>
     );
   }

@@ -157,7 +157,7 @@ export default function LangSwitcher({
         className="inline-flex min-h-[44px] min-w-[44px] items-center gap-2 rounded-full border border-white/40 bg-white/30 px-3 py-2 text-sm font-medium text-[#16181b] backdrop-blur-md hover:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
       >
         <GlobeIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
-        <span className="font-mono tabular-nums">{triggerLabel}</span>
+        <span className="tabular-nums">{triggerLabel}</span>
         <ChevronIcon
           className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`}
           aria-hidden="true"
@@ -239,7 +239,7 @@ export default function LangSwitcher({
                     <span className="flex items-center gap-3 min-w-0">
                       <span
                         aria-hidden="true"
-                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] font-mono text-gray-600"
+                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[10px] text-gray-600"
                       >
                         {meta.code.toUpperCase()}
                       </span>
