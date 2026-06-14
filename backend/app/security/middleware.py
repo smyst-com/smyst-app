@@ -23,7 +23,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(self), geolocation=(self)")
         response.headers.setdefault("Cross-Origin-Opener-Policy", "same-origin")
         response.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
         if request.url.scheme == "https":
@@ -74,4 +74,3 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         response.headers.setdefault("X-RateLimit-Remaining", str(decision.remaining))
         response.headers.setdefault("X-RateLimit-Reset", str(decision.reset_seconds))
         return response
-
