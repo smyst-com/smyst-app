@@ -155,6 +155,60 @@ type AppView =
 
 type AppTheme = 'dark' | 'light'
 type NameSortMode = 'famous' | 'used' | 'popular' | 'trend' | 'manual'
+type SpeechRecognitionState = 'idle' | 'listening' | 'paused' | 'replying'
+type ChatAttachmentKind = 'image' | 'video' | 'audio' | 'document' | 'contact' | 'location' | 'file'
+
+type ChatAttachment = {
+  id: string
+  kind: ChatAttachmentKind
+  name: string
+  status: 'ready' | 'uploading' | 'uploaded' | 'failed'
+  url?: string
+  uploadId?: string
+  key?: string
+  contentType?: string
+  size?: number
+}
+
+type BrowserSpeechRecognitionEvent = Event & {
+  results: {
+    length: number
+    [index: number]: {
+      isFinal: boolean
+      length: number
+      [index: number]: { transcript: string }
+    }
+  }
+}
+
+type BrowserSpeechRecognition = EventTarget & {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  start: () => void
+  stop: () => void
+  abort: () => void
+  onstart: (() => void) | null
+  onend: (() => void) | null
+  onerror: ((event: Event & { error?: string }) => void) | null
+  onresult: ((event: BrowserSpeechRecognitionEvent) => void) | null
+}
+
+type BrowserSpeechRecognitionConstructor = new () => BrowserSpeechRecognition
+
+type BrowserContact = {
+  name?: string[]
+  email?: string[]
+  tel?: string[]
+}
+
+type BrowserContactsManager = {
+  select?: (properties: string[], options?: { multiple?: boolean }) => Promise<BrowserContact[]>
+}
+
+type BrowserNavigatorWithContacts = Navigator & {
+  contacts?: BrowserContactsManager
+}
 
 const nameSortOptions: Array<{ mode: NameSortMode; label: string; detail: string }> = [
   { mode: 'famous', label: 'Freigegeben', detail: 'Bereite KI-Profile zuerst' },
@@ -197,6 +251,72 @@ function speakText(text: string, lang: string, onDone: () => void) {
   utterance.onerror = onDone
   window.speechSynthesis.speak(utterance)
   return true
+}
+
+function speechRecognitionConstructor(): BrowserSpeechRecognitionConstructor | null {
+  const candidate = window as Window & {
+    SpeechRecognition?: BrowserSpeechRecognitionConstructor
+    webkitSpeechRecognition?: BrowserSpeechRecognitionConstructor
+  }
+  return candidate.SpeechRecognition ?? candidate.webkitSpeechRecognition ?? null
+}
+
+function speechRecognitionSupported() {
+  return Boolean(speechRecognitionConstructor())
+}
+
+function mediaCategoryForFile(file: File): MemoryCategory {
+  const type = file.type.toLowerCase()
+  const name = file.name.toLowerCase()
+  if (type.startsWith('image/')) return 'image'
+  if (type.startsWith('video/')) return 'video'
+  if (type.startsWith('audio/')) return 'audio'
+  if (name.endsWith('.vcf') || type === 'text/vcard') return 'document'
+  return 'document'
+}
+
+function attachmentKindForFile(file: File): ChatAttachmentKind {
+  const type = file.type.toLowerCase()
+  const name = file.name.toLowerCase()
+  if (type.startsWith('image/')) return 'image'
+  if (type.startsWith('video/')) return 'video'
+  if (type.startsWith('audio/')) return 'audio'
+  if (name.endsWith('.vcf') || type === 'text/vcard') return 'contact'
+  if (type.includes('pdf') || type.includes('document') || type.startsWith('text/')) return 'document'
+  return 'file'
+}
+
+function formatBytes(bytes?: number) {
+  if (!bytes || bytes <= 0) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
+}
+
+function attachmentLine(attachment: ChatAttachment) {
+  const size = formatBytes(attachment.size)
+  const meta = [attachment.contentType, size].filter(Boolean).join(', ')
+  const target = attachment.url ?? attachment.key
+  return `- ${attachment.name}${meta ? ` (${meta})` : ''}${target ? `: ${target}` : ''}`
+}
+
+function composeMessageWithAttachments(text: string, attachments: ChatAttachment[]) {
+  const body = text.trim()
+  const uploaded = attachments.filter((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')
+  if (!uploaded.length) return body
+  const list = uploaded.map(attachmentLine).join('\n')
+  return [body, `Anhänge:\n${list}`].filter(Boolean).join('\n\n')
+}
+
+function contactsToText(contacts: BrowserContact[]) {
+  return contacts
+    .map((contact) => {
+      const name = contact.name?.join(' ') || 'Kontakt'
+      const tel = contact.tel?.join(', ')
+      const email = contact.email?.join(', ')
+      return [name, tel && `Telefon: ${tel}`, email && `E-Mail: ${email}`].filter(Boolean).join(' · ')
+    })
+    .join('\n')
 }
 
 const viewPaths: Record<Exclude<AppView, 'twin-profile'>, string> = {
@@ -677,6 +797,7 @@ function SmystStartPage({
   const t = useStaticTranslations(lang)
   const auth = useAuth()
   const twinMvp = useTwinMvp()
+  const memoryUpload = useMemoryUpload()
   const [query, setQuery] = useState('')
   const [selectedTwin, setSelectedTwin] = useState<StartTwin | null>(null)
   const [realStartTwins, setRealStartTwins] = useState<StartTwin[]>([])
@@ -688,8 +809,18 @@ function SmystStartPage({
   const [menuOpen, setMenuOpen] = useState(false)
   const [namePickerOpen, setNamePickerOpen] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
+  const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
+  const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
+  const [composerMenuOpen, setComposerMenuOpen] = useState(false)
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([])
+  const [composerNotice, setComposerNotice] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
+
+  const latestAssistantText = [...messages].reverse().find((message) => message.role === 'ai' && message.content.trim().length > 0)?.content ?? ''
+  const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
 
   const filteredTwins = useMemo(() => {
     const categoryFiltered = activeCategory
@@ -699,8 +830,8 @@ function SmystStartPage({
   }, [activeCategory, nameSortMode, query, realStartTwins])
 
   const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
-  const canSend = input.trim().length > 0
-  const canSpeak = input.trim().length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
+  const canSend = input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')
+  const canSpeak = latestAssistantText.length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
   const showNamePicker = !selectedTwin && (namePickerOpen || query.trim().length > 0)
   const selectedSortOption = nameSortOptions.find((option) => option.mode === nameSortMode) ?? nameSortOptions[0]
@@ -826,6 +957,7 @@ function SmystStartPage({
   useEffect(() => {
     return () => {
       if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+      recognitionRef.current?.abort()
     }
   }, [])
 
@@ -974,15 +1106,183 @@ function SmystStartPage({
     }
   }
 
-  const handleSend = async () => {
-    const text = input.trim()
-    if (!text) return
+  const updateAttachment = (id: string, patch: Partial<ChatAttachment>) => {
+    setAttachments((current) => current.map((attachment) => (attachment.id === id ? { ...attachment, ...patch } : attachment)))
+  }
+
+  const addNotice = (notice: string) => {
+    setComposerNotice(notice)
+    window.setTimeout(() => setComposerNotice((current) => (current === notice ? '' : current)), 4200)
+  }
+
+  const handleFilesSelected = async (files: FileList | null) => {
+    const selected = Array.from(files ?? [])
+    if (!selected.length) return
+    setComposerMenuOpen(false)
+    if (auth.status !== 'authenticated') {
+      addNotice('Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.')
+      return
+    }
+
+    for (const file of selected.slice(0, 6)) {
+      const id = crypto.randomUUID()
+      const draft: ChatAttachment = {
+        id,
+        kind: attachmentKindForFile(file),
+        name: file.name,
+        status: 'uploading',
+        contentType: file.type || undefined,
+        size: file.size,
+      }
+      setAttachments((current) => [...current, draft])
+      const uploaded = await memoryUpload.upload(file, mediaCategoryForFile(file))
+      if (!uploaded) {
+        updateAttachment(id, { status: 'failed' })
+        addNotice(memoryUpload.error || 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.')
+        continue
+      }
+      updateAttachment(id, {
+        status: 'uploaded',
+        uploadId: uploaded.uploadId,
+        key: uploaded.key,
+        url: uploaded.getUrl,
+        contentType: uploaded.contentType,
+        size: uploaded.size,
+      })
+    }
+  }
+
+  const handlePickContacts = async () => {
+    setComposerMenuOpen(false)
+    const contactsApi = (navigator as BrowserNavigatorWithContacts).contacts
+    if (!contactsApi?.select) {
+      fileInputRef.current?.click()
+      addNotice('Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.')
+      return
+    }
+    try {
+      const contacts = await contactsApi.select(['name', 'email', 'tel'], { multiple: true })
+      const text = contactsToText(contacts)
+      if (!text) return
+      setAttachments((current) => [
+        ...current,
+        { id: crypto.randomUUID(), kind: 'contact', name: 'Kontakt', status: 'ready' },
+      ])
+      resizeInput([input, `Kontakt:\n${text}`].filter(Boolean).join('\n\n'))
+    } catch {
+      addNotice('Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.')
+    }
+  }
+
+  const handleAttachLocation = () => {
+    setComposerMenuOpen(false)
+    if (!('geolocation' in navigator)) {
+      addNotice('Standort wird von diesem Browser nicht unterstützt.')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const url = `https://maps.google.com/?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`
+        setAttachments((current) => [
+          ...current,
+          {
+            id: crypto.randomUUID(),
+            kind: 'location',
+            name: 'Standort',
+            status: 'ready',
+            url,
+          },
+        ])
+        addNotice('Standort wurde angehängt.')
+      },
+      () => addNotice('Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.'),
+      { enableHighAccuracy: false, maximumAge: 60_000, timeout: 10_000 },
+    )
+  }
+
+  const startDictation = (options: { live?: boolean } = {}) => {
+    const Recognition = speechRecognitionConstructor()
+    if (!Recognition) {
+      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt.')
+      return
+    }
+    recognitionRef.current?.abort()
+    const recognition = new Recognition()
+    recognition.lang = speechLangFor(lang)
+    recognition.interimResults = true
+    recognition.continuous = Boolean(options.live)
+    recognition.onstart = () => setVoiceState('listening')
+    recognition.onerror = () => {
+      setVoiceState('idle')
+      addNotice('Spracheingabe konnte nicht gestartet werden.')
+    }
+    recognition.onend = () => {
+      if (recognitionRef.current === recognition) recognitionRef.current = null
+      setVoiceState((current) => (current === 'paused' ? 'paused' : 'idle'))
+    }
+    recognition.onresult = (event) => {
+      let finalText = ''
+      let interimText = ''
+      for (let index = 0; index < event.results.length; index += 1) {
+        const result = event.results[index]
+        const transcript = result[0]?.transcript?.trim()
+        if (!transcript) continue
+        if (result.isFinal) finalText += `${transcript} `
+        else interimText += `${transcript} `
+      }
+      const nextText = (finalText || interimText).trim()
+      if (!nextText) return
+      resizeInput(nextText)
+      if (options.live && finalText.trim()) {
+        recognition.stop()
+        setVoiceState('replying')
+        void handleSend(finalText.trim(), [], { forceSpeech: true }).finally(() => {
+          setVoiceState('idle')
+        })
+      }
+    }
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const handleToggleLiveVoice = () => {
+    if (voiceState === 'listening') {
+      recognitionRef.current?.stop()
+      setVoiceState('paused')
+      addNotice('Live-Sprachmodus pausiert.')
+      return
+    }
+    if (voiceState === 'paused' || voiceState === 'idle') {
+      setSpeechOutputEnabled(true)
+      startDictation({ live: true })
+      return
+    }
+    recognitionRef.current?.abort()
+    window.speechSynthesis.cancel()
+    setVoiceState('idle')
+    setIsSpeaking(false)
+  }
+
+  const handleSend = async (
+    overrideText?: string,
+    overrideAttachments?: ChatAttachment[],
+    options: { forceSpeech?: boolean } = {},
+  ): Promise<string | null> => {
+    const text = (overrideText ?? input).trim()
+    const sendAttachments = overrideAttachments ?? attachments
+    const fullMessage = composeMessageWithAttachments(text, sendAttachments)
+    if (!fullMessage) return null
+    if (sendAttachments.some((attachment) => attachment.status === 'uploading')) {
+      addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
+      return null
+    }
 
     const twin = selectedTwin ?? filteredTwins[0] ?? activeTwin
     if (!twin) {
       setMessages((current) => [
         ...current,
-        { id: crypto.randomUUID(), role: 'user', content: text },
+        { id: crypto.randomUUID(), role: 'user', content: fullMessage },
         {
           id: crypto.randomUUID(),
           role: 'ai',
@@ -993,14 +1293,15 @@ function SmystStartPage({
         },
       ])
       resizeInput('')
-      return
+      setAttachments([])
+      return null
     }
     if (!selectedTwin) selectTwin(twin)
 
     if (auth.status !== 'authenticated') {
       setMessages((current) => [
         ...current,
-        { id: crypto.randomUUID(), role: 'user', content: text },
+        { id: crypto.randomUUID(), role: 'user', content: fullMessage },
         {
           id: crypto.randomUUID(),
           role: 'ai',
@@ -1008,16 +1309,18 @@ function SmystStartPage({
         },
       ])
       resizeInput('')
-      return
+      setAttachments([])
+      return null
     }
 
     const assistantId = crypto.randomUUID()
     setMessages((current) => [
       ...current,
-      { id: crypto.randomUUID(), role: 'user', content: text },
+      { id: crypto.randomUUID(), role: 'user', content: fullMessage },
       { id: assistantId, role: 'ai', content: '', streaming: true },
     ])
     resizeInput('')
+    setAttachments([])
 
     try {
       let nextChatId = chatId
@@ -1027,9 +1330,13 @@ function SmystStartPage({
         nextChatId = chat.id
         setChatId(nextChatId)
       }
-      const reply = await twinMvp.sendTwinMessage(nextChatId, text)
+      const reply = await twinMvp.sendTwinMessage(nextChatId, fullMessage)
       if (!reply?.message?.content) throw new Error('Keine Antwort vom Profil erhalten.')
       await streamText(assistantId, reply.message.content)
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false))) {
+        setIsSpeaking(true)
+      }
+      return reply.message.content
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Der Chat ist gerade nicht erreichbar.'
       setMessages((current) =>
@@ -1043,16 +1350,19 @@ function SmystStartPage({
             : item,
         ),
       )
+      return null
     }
   }
 
   const handleSpeakInput = () => {
-    if (isSpeaking) {
+    if (speechOutputEnabled || isSpeaking) {
       window.speechSynthesis.cancel()
       setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
       return
     }
-    const started = speakText(input, lang, () => setIsSpeaking(false))
+    setSpeechOutputEnabled(true)
+    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
     if (started) setIsSpeaking(true)
   }
 
@@ -1444,6 +1754,17 @@ function SmystStartPage({
       </section>
 
       <footer className={`smyst-glass-panel-strong shrink-0 border-t ${composerLine}`}>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className="hidden"
+          accept="image/*,video/*,audio/*,.pdf,.txt,.md,.csv,.json,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.vcf,text/vcard"
+          onChange={(event) => {
+            void handleFilesSelected(event.target.files)
+            event.target.value = ''
+          }}
+        />
         <div className={`border-b ${composerLine} px-2 py-1 sm:px-3`}>
           <textarea
             ref={textareaRef}
@@ -1464,11 +1785,47 @@ function SmystStartPage({
             aria-label={activeTwin ? t.start.messagePlaceholder.replace('{{name}}', activeTwin.name) : 'Nachricht schreiben'}
           />
         </div>
+        {(composerMenuOpen || attachments.length > 0 || composerNotice || memoryUpload.uploading) && (
+          <div className={`border-b ${composerLine} px-2 py-1 text-xs font-semibold text-[#d5dbe5] sm:px-3`}>
+            {composerMenuOpen && (
+              <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="shrink-0 rounded-full border border-white/[0.14] bg-white/[0.08] px-3 py-1">
+                  Dateien
+                </button>
+                <button type="button" onClick={handlePickContacts} className="shrink-0 rounded-full border border-white/[0.14] bg-white/[0.08] px-3 py-1">
+                  Kontakte
+                </button>
+                <button type="button" onClick={handleAttachLocation} className="shrink-0 rounded-full border border-white/[0.14] bg-white/[0.08] px-3 py-1">
+                  Standort
+                </button>
+              </div>
+            )}
+            {attachments.length > 0 && (
+              <div className="flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
+                {attachments.map((attachment) => (
+                  <span key={attachment.id} className="shrink-0 rounded-full border border-white/[0.12] bg-white/[0.07] px-2 py-1">
+                    {attachment.name} · {attachment.status}
+                  </span>
+                ))}
+              </div>
+            )}
+            {(composerNotice || pendingAttachmentCount > 0 || memoryUpload.uploading) && (
+              <p className="mt-1 text-[#aeb6c4]">
+                {pendingAttachmentCount > 0 || memoryUpload.uploading
+                  ? `Upload läuft${memoryUpload.progress ? ` · ${memoryUpload.progress.percentage}%` : ''}`
+                  : composerNotice}
+              </p>
+            )}
+          </div>
+        )}
         <div className="flex h-[44px] items-center justify-between px-2 text-white sm:px-3">
           <div className="flex h-full items-center">
             <button
               type="button"
-              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors"
+              onClick={() => setComposerMenuOpen((open) => !open)}
+              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
+                composerMenuOpen || attachments.length > 0 ? 'bg-white/[0.12]' : ''
+              }`}
               aria-label={t.start.addFile}
               title={t.start.addFile}
             >
@@ -1478,17 +1835,23 @@ function SmystStartPage({
           <div className="flex h-full items-center gap-1 sm:gap-2">
             <button
               type="button"
-              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors"
+              onClick={() => startDictation()}
+              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
+                voiceState === 'listening' ? 'bg-white/[0.12]' : ''
+              }`}
               aria-label={t.start.voiceInput}
-              title={t.start.voiceInput}
+              title={speechRecognitionSupported() ? t.start.voiceInput : 'Spracheingabe nicht unterstützt'}
             >
               <Mic className="h-6 w-6" />
             </button>
             <button
               type="button"
-              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors"
-              aria-label="Antwort abspielen"
-              title="Antwort abspielen"
+              onClick={handleToggleLiveVoice}
+              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
+                voiceState !== 'idle' ? 'bg-white/[0.12]' : ''
+              }`}
+              aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Live-Sprachmodus pausieren' : 'Live-Sprachmodus fortsetzen'}
+              title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Pausieren' : voiceState === 'paused' ? 'Fortsetzen' : 'Beenden'}
             >
               <Waveform className="h-6 w-6" />
             </button>
@@ -1497,10 +1860,10 @@ function SmystStartPage({
               disabled={!canSpeak}
               onClick={handleSpeakInput}
               className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors disabled:opacity-45 ${
-                isSpeaking ? 'bg-white/[0.12]' : ''
+                speechOutputEnabled || isSpeaking ? 'bg-white/[0.12]' : ''
               }`}
-              aria-label={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
-              title={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
+              aria-label={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
+              title={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
             >
               <Speaker className="h-6 w-6" />
             </button>
@@ -3016,12 +3379,26 @@ function TwinChatView() {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
   const { lang } = useLanguage({ reloadOnChange: false })
   const auth = useAuth()
   const twinMvp = useTwinMvp()
+  const memoryUpload = useMemoryUpload()
+  const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
+  const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
+  const [composerMenuOpen, setComposerMenuOpen] = useState(false)
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([])
+  const [composerNotice, setComposerNotice] = useState('')
 
-  const canSend = auth.status === 'authenticated' && Boolean(activeTwin) && input.trim().length > 0 && !isReplying
-  const canSpeak = input.trim().length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
+  const latestAssistantText = [...messages].reverse().find((message) => message.role === 'ai' && message.content.trim().length > 0)?.content ?? ''
+  const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
+  const canSend =
+    auth.status === 'authenticated' &&
+    Boolean(activeTwin) &&
+    (input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) &&
+    !isReplying
+  const canSpeak = latestAssistantText.length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const initials = (activeTwin?.name ?? 'Smyst')
     .split(/\s+/)
     .filter(Boolean)
@@ -3136,6 +3513,7 @@ function TwinChatView() {
   useEffect(() => {
     return () => {
       if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+      recognitionRef.current?.abort()
     }
   }, [])
 
@@ -3164,9 +3542,176 @@ function TwinChatView() {
     }
   }
 
-  const handleSend = async () => {
-    const message = input.trim()
-    if (!message || auth.status !== 'authenticated' || isReplying) return
+  const updateAttachment = (id: string, patch: Partial<ChatAttachment>) => {
+    setAttachments((current) => current.map((attachment) => (attachment.id === id ? { ...attachment, ...patch } : attachment)))
+  }
+
+  const addNotice = (notice: string) => {
+    setComposerNotice(notice)
+    window.setTimeout(() => setComposerNotice((current) => (current === notice ? '' : current)), 4200)
+  }
+
+  const handleFilesSelected = async (files: FileList | null) => {
+    const selected = Array.from(files ?? [])
+    if (!selected.length) return
+    setComposerMenuOpen(false)
+    if (auth.status !== 'authenticated') {
+      addNotice('Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.')
+      return
+    }
+    for (const file of selected.slice(0, 6)) {
+      const id = crypto.randomUUID()
+      setAttachments((current) => [
+        ...current,
+        {
+          id,
+          kind: attachmentKindForFile(file),
+          name: file.name,
+          status: 'uploading',
+          contentType: file.type || undefined,
+          size: file.size,
+        },
+      ])
+      const uploaded = await memoryUpload.upload(file, mediaCategoryForFile(file))
+      if (!uploaded) {
+        updateAttachment(id, { status: 'failed' })
+        addNotice(memoryUpload.error || 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.')
+        continue
+      }
+      updateAttachment(id, {
+        status: 'uploaded',
+        uploadId: uploaded.uploadId,
+        key: uploaded.key,
+        url: uploaded.getUrl,
+        contentType: uploaded.contentType,
+        size: uploaded.size,
+      })
+    }
+  }
+
+  const handlePickContacts = async () => {
+    setComposerMenuOpen(false)
+    const contactsApi = (navigator as BrowserNavigatorWithContacts).contacts
+    if (!contactsApi?.select) {
+      fileInputRef.current?.click()
+      addNotice('Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.')
+      return
+    }
+    try {
+      const contacts = await contactsApi.select(['name', 'email', 'tel'], { multiple: true })
+      const text = contactsToText(contacts)
+      if (!text) return
+      setAttachments((current) => [
+        ...current,
+        { id: crypto.randomUUID(), kind: 'contact', name: 'Kontakt', status: 'ready' },
+      ])
+      resizeInput([input, `Kontakt:\n${text}`].filter(Boolean).join('\n\n'))
+    } catch {
+      addNotice('Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.')
+    }
+  }
+
+  const handleAttachLocation = () => {
+    setComposerMenuOpen(false)
+    if (!('geolocation' in navigator)) {
+      addNotice('Standort wird von diesem Browser nicht unterstützt.')
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const url = `https://maps.google.com/?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`
+        setAttachments((current) => [
+          ...current,
+          {
+            id: crypto.randomUUID(),
+            kind: 'location',
+            name: 'Standort',
+            status: 'ready',
+            url,
+          },
+        ])
+        addNotice('Standort wurde angehängt.')
+      },
+      () => addNotice('Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.'),
+      { enableHighAccuracy: false, maximumAge: 60_000, timeout: 10_000 },
+    )
+  }
+
+  const startDictation = (options: { live?: boolean } = {}) => {
+    const Recognition = speechRecognitionConstructor()
+    if (!Recognition) {
+      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt.')
+      return
+    }
+    recognitionRef.current?.abort()
+    const recognition = new Recognition()
+    recognition.lang = speechLangFor(lang)
+    recognition.interimResults = true
+    recognition.continuous = Boolean(options.live)
+    recognition.onstart = () => setVoiceState('listening')
+    recognition.onerror = () => {
+      setVoiceState('idle')
+      addNotice('Spracheingabe konnte nicht gestartet werden.')
+    }
+    recognition.onend = () => {
+      if (recognitionRef.current === recognition) recognitionRef.current = null
+      setVoiceState((current) => (current === 'paused' ? 'paused' : 'idle'))
+    }
+    recognition.onresult = (event) => {
+      let finalText = ''
+      let interimText = ''
+      for (let index = 0; index < event.results.length; index += 1) {
+        const result = event.results[index]
+        const transcript = result[0]?.transcript?.trim()
+        if (!transcript) continue
+        if (result.isFinal) finalText += `${transcript} `
+        else interimText += `${transcript} `
+      }
+      const nextText = (finalText || interimText).trim()
+      if (!nextText) return
+      resizeInput(nextText)
+      if (options.live && finalText.trim()) {
+        recognition.stop()
+        setVoiceState('replying')
+        void handleSend(finalText.trim(), [], { forceSpeech: true }).finally(() => {
+          setVoiceState('idle')
+        })
+      }
+    }
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const handleToggleLiveVoice = () => {
+    if (voiceState === 'listening') {
+      recognitionRef.current?.stop()
+      setVoiceState('paused')
+      addNotice('Live-Sprachmodus pausiert.')
+      return
+    }
+    if (voiceState === 'paused' || voiceState === 'idle') {
+      setSpeechOutputEnabled(true)
+      startDictation({ live: true })
+      return
+    }
+    recognitionRef.current?.abort()
+    window.speechSynthesis.cancel()
+    setVoiceState('idle')
+    setIsSpeaking(false)
+  }
+
+  const handleSend = async (
+    overrideText?: string,
+    overrideAttachments?: ChatAttachment[],
+    options: { forceSpeech?: boolean } = {},
+  ): Promise<string | null> => {
+    const message = composeMessageWithAttachments((overrideText ?? input).trim(), overrideAttachments ?? attachments)
+    if (!message || auth.status !== 'authenticated' || isReplying) return null
+    if ((overrideAttachments ?? attachments).some((attachment) => attachment.status === 'uploading')) {
+      addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
+      return null
+    }
     if (!activeTwin) {
       setMessages([
         {
@@ -3175,7 +3720,7 @@ function TwinChatView() {
           content: 'Wähle oder erstelle zuerst ein echtes KI-Profil. Danach kann der Chat mit diesem Profil starten.',
         },
       ])
-      return
+      return null
     }
 
     const userMessage: TwinChatUiMessage = {
@@ -3190,6 +3735,7 @@ function TwinChatView() {
       { id: assistantId, role: 'ai', content: '', streaming: true },
     ])
     resizeInput('')
+    setAttachments([])
     setIsReplying(true)
 
     try {
@@ -3204,6 +3750,10 @@ function TwinChatView() {
       const reply = await twinMvp.sendTwinMessage(nextChatId, message)
       if (!reply?.message) throw new Error('Keine Antwort vom Chat erhalten.')
       await streamAssistantMessage(assistantId, reply.message.content)
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false))) {
+        setIsSpeaking(true)
+      }
+      return reply.message.content
     } catch (err) {
       const text = err instanceof Error ? err.message : 'Der Chat ist gerade nicht erreichbar.'
       setMessages((current) =>
@@ -3217,18 +3767,21 @@ function TwinChatView() {
             : item,
         ),
       )
+      return null
     } finally {
       setIsReplying(false)
     }
   }
 
   const handleSpeakInput = () => {
-    if (isSpeaking) {
+    if (speechOutputEnabled || isSpeaking) {
       window.speechSynthesis.cancel()
       setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
       return
     }
-    const started = speakText(input, lang, () => setIsSpeaking(false))
+    setSpeechOutputEnabled(true)
+    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
     if (started) setIsSpeaking(true)
   }
 
@@ -3349,6 +3902,17 @@ function TwinChatView() {
 
         <footer className="shrink-0 border-t border-white/18 bg-white/16 px-[3px] pb-[calc(4px+env(safe-area-inset-bottom))] pt-1 backdrop-blur-[20px] sm:px-2">
           <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              accept="image/*,video/*,audio/*,.pdf,.txt,.md,.csv,.json,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.vcf,text/vcard"
+              onChange={(event) => {
+                void handleFilesSelected(event.target.files)
+                event.target.value = ''
+              }}
+            />
             {suggestions.length > 0 && (
               <div className="mb-1 flex gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none]">
                 {suggestions.map((suggestion) => (
@@ -3366,11 +3930,47 @@ function TwinChatView() {
                 ))}
               </div>
             )}
+            {(composerMenuOpen || attachments.length > 0 || composerNotice || memoryUpload.uploading) && (
+              <div className="mb-1 rounded-[10px] border border-white/20 bg-white/14 px-2 py-1 text-xs font-semibold text-[#555b64]">
+                {composerMenuOpen && (
+                  <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="shrink-0 rounded-full border border-white/30 bg-white/20 px-3 py-1">
+                      Dateien
+                    </button>
+                    <button type="button" onClick={handlePickContacts} className="shrink-0 rounded-full border border-white/30 bg-white/20 px-3 py-1">
+                      Kontakte
+                    </button>
+                    <button type="button" onClick={handleAttachLocation} className="shrink-0 rounded-full border border-white/30 bg-white/20 px-3 py-1">
+                      Standort
+                    </button>
+                  </div>
+                )}
+                {attachments.length > 0 && (
+                  <div className="flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {attachments.map((attachment) => (
+                      <span key={attachment.id} className="shrink-0 rounded-full border border-white/30 bg-white/18 px-2 py-1">
+                        {attachment.name} · {attachment.status}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {(composerNotice || pendingAttachmentCount > 0 || memoryUpload.uploading) && (
+                  <p className="mt-1 text-[#667085]">
+                    {pendingAttachmentCount > 0 || memoryUpload.uploading
+                      ? `Upload läuft${memoryUpload.progress ? ` · ${memoryUpload.progress.percentage}%` : ''}`
+                      : composerNotice}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="flex items-end gap-1 rounded-[12px] border border-white/34 bg-white/24 p-1 shadow-none backdrop-blur-[18px]">
               <button
                 type="button"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24"
+                onClick={() => setComposerMenuOpen((open) => !open)}
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
+                  composerMenuOpen || attachments.length > 0 ? 'bg-white/24 text-[#16181b]' : ''
+                }`}
                 aria-label="Medien hinzufügen"
                 title="Medien hinzufügen"
               >
@@ -3399,21 +3999,35 @@ function TwinChatView() {
               />
               <button
                 type="button"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24"
+                onClick={() => startDictation()}
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
+                  voiceState === 'listening' ? 'bg-white/24 text-[#16181b]' : ''
+                }`}
                 aria-label="Spracheingabe"
-                title="Spracheingabe"
+                title={speechRecognitionSupported() ? 'Spracheingabe' : 'Spracheingabe nicht unterstützt'}
               >
                 <Mic className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleLiveVoice}
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
+                  voiceState !== 'idle' ? 'bg-white/24 text-[#16181b]' : ''
+                }`}
+                aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Live-Sprachmodus pausieren' : 'Live-Sprachmodus fortsetzen'}
+                title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Pausieren' : voiceState === 'paused' ? 'Fortsetzen' : 'Beenden'}
+              >
+                <Waveform className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 disabled={!canSpeak}
                 onClick={handleSpeakInput}
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 disabled:opacity-45 ${
-                  isSpeaking ? 'bg-white/24 text-[#16181b]' : ''
+                  speechOutputEnabled || isSpeaking ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
-                aria-label={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
-                title={isSpeaking ? 'Vorlesen stoppen' : 'Text vorlesen'}
+                aria-label={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
+                title={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
               >
                 <Speaker className="h-4 w-4" />
               </button>
