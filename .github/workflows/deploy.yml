@@ -236,7 +236,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
       - name: Verify live production
         run: sh scripts/live-test.sh
+        env:
+          WEB_BASE_URL: https://smyst.com
+
+      - name: Verify live public profile rules
+        run: node scripts/public-profile-quality.mjs
         env:
           WEB_BASE_URL: https://smyst.com

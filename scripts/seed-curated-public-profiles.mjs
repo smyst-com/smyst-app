@@ -105,6 +105,21 @@ async function toProfile(spec, index) {
 }
 
 const profiles = await Promise.all(CURATED_PUBLIC_TWIN_SPECS.map(toProfile));
+const kvStats = {
+  written: 0,
+  unchanged: 0,
+  deferred: 0,
+};
+let kvWriteLimitReached = false;
+
+function sameJson(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function isCloudflareFreeLimit(status, payload) {
+  const errors = Array.isArray(payload?.errors) ? payload.errors : [];
+  return status === 429 && errors.some((error) => error?.code === 10048);
+}
 
 async function cf(path, init = {}) {
   const response = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
@@ -122,7 +137,11 @@ async function cf(path, init = {}) {
     payload = { success: response.ok, raw: text };
   }
   if (!response.ok || payload.success === false) {
-    throw new Error(`${init.method || 'GET'} ${path} failed ${response.status}: ${JSON.stringify(payload.errors || payload)}`);
+    const error = new Error(`${init.method || 'GET'} ${path} failed ${response.status}: ${JSON.stringify(payload.errors || payload)}`);
+    error.cloudflareStatus = response.status;
+    error.cloudflarePayload = payload;
+    error.cloudflareFreeLimit = isCloudflareFreeLimit(response.status, payload);
+    throw error;
   }
   return payload.result ?? payload;
 }
@@ -158,30 +177,69 @@ async function kvPut(key, value) {
   );
 }
 
+async function kvPutIfChanged(key, value) {
+  if (kvWriteLimitReached) {
+    kvStats.deferred += 1;
+    return false;
+  }
+
+  const current = await kvGet(key, null);
+  if (sameJson(current, value)) {
+    kvStats.unchanged += 1;
+    return true;
+  }
+
+  try {
+    await kvPut(key, value);
+    kvStats.written += 1;
+    return true;
+  } catch (error) {
+    if (error?.cloudflareFreeLimit) {
+      kvWriteLimitReached = true;
+      kvStats.deferred += 1;
+      return false;
+    }
+    throw error;
+  }
+}
+
 const indexKey = `meta:twins:${CURATED_PUBLIC_TWIN_USER}`;
 const currentIndex = await kvGet(indexKey, []);
 const curatedIds = new Set(profiles.map((profile) => profile.id));
 const retainedIndex = (Array.isArray(currentIndex) ? currentIndex : []).filter((id) => !curatedIds.has(id));
 
 for (const profile of profiles) {
-  await kvPut(`meta:twin:${profile.userSub}:${profile.id}`, profile);
-  await kvPut(`public:twin:${profile.slug}`, { ...profile, userSub: 'public' });
+  await kvPutIfChanged(`meta:twin:${profile.userSub}:${profile.id}`, profile);
+  await kvPutIfChanged(`public:twin:${profile.slug}`, { ...profile, userSub: 'public' });
 }
 
-await kvPut(indexKey, [...profiles.map((profile) => profile.id), ...retainedIndex].slice(0, profiles.length + retainedIndex.length));
+await kvPutIfChanged(indexKey, [...profiles.map((profile) => profile.id), ...retainedIndex].slice(0, profiles.length + retainedIndex.length));
 
 const publicList = await fetch(`${canonicalHost}/api/public/twins`, {
   headers: { accept: 'application/json' },
 });
 const publicBody = await publicList.json();
+const visibleTwins = Array.isArray(publicBody.twins) ? publicBody.twins : [];
+const oldRule = /Ich-Perspektive|direkt aus der historischen Rolle|Ich antworte als|Rollen-DNA|Sachlich betrachtet: Ich bin/i;
+const newRule = /Kurz, direkt und sachlich antworten\. Kein Rollenspiel, keine Selbstbeschreibung, keine Story/i;
+const liveRuleIssues = visibleTwins
+  .filter((profile) => oldRule.test(String(profile.guardrail || profile.contextSummary || '')) || !newRule.test(String(profile.guardrail || '')))
+  .map((profile) => ({ slug: profile.slug, name: profile.name, guardrail: String(profile.guardrail || '').slice(0, 160) }));
+const ok = visibleTwins.length === profiles.length && liveRuleIssues.length === 0;
 
 console.log(
   JSON.stringify(
     {
-      ok: true,
+      ok,
       seededCount: profiles.length,
+      kvSeed: {
+        status: kvWriteLimitReached ? 'deferred_cloudflare_free_limit' : 'completed',
+        ...kvStats,
+      },
       generatedPortraitCount: CURATED_PUBLIC_TWIN_SPECS.filter((spec) => spec.generatedPortrait).length,
-      visibleProfileCount: Array.isArray(publicBody.twins) ? publicBody.twins.length : 0,
+      visibleProfileCount: visibleTwins.length,
+      liveRuleIssueCount: liveRuleIssues.length,
+      liveRuleIssues,
       seeded: profiles.map((profile) => ({
         name: profile.name,
         slug: profile.slug,
@@ -191,9 +249,11 @@ console.log(
         answerStyle: profile.answerStyle,
         imageUrl: profile.imageUrl,
       })),
-      visibleProfiles: Array.isArray(publicBody.twins) ? publicBody.twins.map((profile) => profile.slug) : [],
+      visibleProfiles: visibleTwins.map((profile) => profile.slug),
     },
     null,
     2,
   ),
 );
+
+if (!ok) process.exit(1);

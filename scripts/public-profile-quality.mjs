@@ -43,6 +43,8 @@ const twins = Array.isArray(body.twins) ? body.twins : [];
 const issues = [];
 const expectedVisibleProfileCount = 100;
 const forbiddenVisibleProfilePattern = /\b(demo|fake|test|placeholder|beispiel|sample)\b/i;
+const forbiddenGuardrailPattern = /Ich-Perspektive|direkt aus der historischen Rolle|Ich antworte als|Rollen-DNA|Sachlich betrachtet: Ich bin/i;
+const requiredGuardrailPattern = /Kurz, direkt und sachlich antworten\. Kein Rollenspiel, keine Selbstbeschreibung, keine Story/i;
 
 if (twins.length !== expectedVisibleProfileCount) {
   issues.push({
@@ -72,6 +74,12 @@ for (const twin of twins) {
     profileIssues.push('language_required');
   }
   if (!Array.isArray(twin.sources) || !twin.sources.length) profileIssues.push('sources_required');
+  if (forbiddenGuardrailPattern.test(String(twin.guardrail || twin.contextSummary || ''))) {
+    profileIssues.push('legacy_profile_answer_rule_forbidden');
+  }
+  if (!requiredGuardrailPattern.test(String(twin.guardrail || ''))) {
+    profileIssues.push('direct_answer_guardrail_required');
+  }
   if (!twin.chatPath || !String(twin.chatPath).startsWith('/twin-chat?twin=')) profileIssues.push('chat_path_required');
   if (!String(twin.chatPath || '').includes(encodeURIComponent(twin.slug))) profileIssues.push('chat_path_slug_mismatch');
   if (twin.status !== 'ready') profileIssues.push('status_not_ready');
