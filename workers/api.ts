@@ -1162,6 +1162,7 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = '')
   const isWise = twin.style === 'wise' || categories.some((item) => includesAny(item, ['philosophie', 'ethik', 'religion', 'weise', 'stoiker']));
   const hint = shortProfileHint(twin);
   const seedSuffix = replySeed ? `|${replySeed}` : '';
+  const requestVariant = replySeed ? hashText(replySeed) % 3 : 0;
   const lead = pickStable(
     twin.style === 'direct'
       ? ['Heute zählt', 'Kurz gegen den Druck', 'Erster Schnitt', 'Klar sortiert', 'Jetzt praktisch']
@@ -1205,6 +1206,20 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = '')
       `Anders gesagt: ${repeatedAction}`,
       `Aus Sicht von ${twin.name}: Druck und Ruhe entstehen nicht durch mehr Denken, sondern durch kleinere Last.`,
       `${focus} Wenn es akut oder gefährlich wird, bleib nicht allein und hol dir sofort echte Hilfe.`,
+    ].join(' ');
+  }
+  if (requestVariant === 1) {
+    return [
+      `${lead}: ${twin.name} würde bei Druck zuerst Last aus dem System nehmen, nicht neue Ansprüche hinzufügen.`,
+      `Druck und Ruhe: ${action}`,
+      `${focus} Die Profilperspektive bleibt ${hint.toLowerCase()}; bei akuter Krise bitte nicht allein bleiben und echte Hilfe holen.`,
+    ].join(' ');
+  }
+  if (requestVariant === 2) {
+    return [
+      `Druck und Ruhe bei ${twin.name}: Fang nicht mit dem großen Lebensplan an, sondern mit Entlastung im nächsten Moment.`,
+      `${action} ${focus}`,
+      `Aus der Profilperspektive von ${twin.name} ist das kein Aufgeben, sondern klügeres Tragen. Wird es akut, hol dir sofort Hilfe dazu.`,
     ].join(' ');
   }
   if (isWise) {
