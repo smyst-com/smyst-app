@@ -31,6 +31,21 @@ def main() -> None:
     ]:
         require(policy.get(key) is True, f"policy must enable {key}")
     require(policy.get("paidServicesAllowed") is False, "paid services must remain disabled")
+    require(policy.get("allowedProductionServiceTiers") == ["GitHub.com Free", "Cloudflare.com Free"], "allowed production service tiers must stay GitHub.com Free and Cloudflare.com Free")
+    require(policy.get("centralStorage") == "IDrive e2", "central storage must remain IDrive e2")
+    require(policy.get("autoBillingServicesAllowed") is False, "auto-billing services must remain disabled")
+    require(policy.get("futureScaleRequiresExplicitArchitectureDecision") is True, "future scale must require an explicit architecture decision")
+
+    hard_rules = set(data.get("hardArchitectureRules", []))
+    for item in [
+        "GitHub.com may be used only on the Free tier",
+        "Cloudflare.com may be used only on the Free tier",
+        "No paid add-on service may be introduced",
+        "No service may be introduced if it can automatically create cost",
+        "IDrive e2 remains central storage for files, media, models, backups and data",
+        "If billion-user/day scale is unrealistic on free-only limits, optimize and measure free-only instead of adding paid infrastructure",
+    ]:
+        require(item in hard_rules, f"hard architecture rule missing: {item}")
 
     routes = {item.get("route"): item for item in data.get("destructiveRoutes", [])}
     for route, expected_header in {

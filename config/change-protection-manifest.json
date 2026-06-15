@@ -6,9 +6,27 @@
     "productionDeployRequiresRollbackPlan": true,
     "productionDeployRequiresBackupRestoreDryRun": true,
     "paidServicesAllowed": false,
+    "allowedProductionServiceTiers": [
+      "GitHub.com Free",
+      "Cloudflare.com Free"
+    ],
+    "centralStorage": "IDrive e2",
+    "autoBillingServicesAllowed": false,
+    "futureScaleRequiresExplicitArchitectureDecision": true,
     "destructiveRequestsRequireCsrf": true,
     "destructiveRequestsRequireDeleteConfirmHeader": true
   },
+  "hardArchitectureRules": [
+    "GitHub.com may be used only on the Free tier",
+    "Cloudflare.com may be used only on the Free tier",
+    "No paid add-on service may be introduced",
+    "No service may be introduced if it can automatically create cost",
+    "IDrive e2 remains central storage for files, media, models, backups and data",
+    "Do not delete profiles, chats, images, videos or user data without explicit destructive approval",
+    "Do not perform risky migrations without explicit approval and rollback evidence",
+    "Do not change design, CSS or product behavior without a clear task",
+    "If billion-user/day scale is unrealistic on free-only limits, optimize and measure free-only instead of adding paid infrastructure"
+  ],
   "destructiveRoutes": [
     {
       "route": "DELETE /api/account",
