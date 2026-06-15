@@ -198,9 +198,38 @@ jobs:
           wranglerVersion: "4"
           command: ${{ matrix.worker.env != '' && format('deploy --env {0}', matrix.worker.env) || 'deploy' }}
 
+  seed-curated-public-profiles:
+    name: Seed curated public profiles
+    needs: [deploy-workers]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Validate seed secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: test -n "$CLOUDFLARE_API_TOKEN"
+
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update curated public profile rules in KV
+        run: npm run profiles:seed:curated
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          SMYST_CANONICAL_HOST: https://smyst.com
+
   live-smoke:
     name: Live Smoke Test
-    needs: [deploy-pages, deploy-workers]
+    needs: [deploy-pages, deploy-workers, seed-curated-public-profiles]
     if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 3
