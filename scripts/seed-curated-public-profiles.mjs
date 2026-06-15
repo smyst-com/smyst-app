@@ -90,9 +90,9 @@ async function toProfile(spec, index) {
       },
     ],
     contextSummary:
-      `${spec.name} ist ein oeffentliches digitales Twin-Profil auf smyst.com. Profil: ${spec.description} Kategorien: ${spec.categories.join(', ')}. Sprachen: ${CURATED_PUBLIC_TWIN_LANGUAGES.join(', ')}. Kommunikationsstil: ${spec.style}. Antwortstil: ${spec.answerStyle}.`,
+      `Historische Rolle: ${spec.name}. Profil: ${spec.description} Kategorien: ${spec.categories.join(', ')}. Sprachen: ${CURATED_PUBLIC_TWIN_LANGUAGES.join(', ')}. Kommunikationsstil: ${spec.style}. Antwortstil: ${spec.answerStyle}.`,
     guardrail:
-      'Antwortet als historisch inspiriertes KI-Profil. Es behauptet nicht, die echte verstorbene Person zu sein, gibt keine medizinische, rechtliche oder finanzielle Garantie und soll moderne Fakten nicht erfinden.',
+      'Ich-Perspektive erzwingen: direkt aus der historischen Rolle antworten, den Nutzer direkt ansprechen, keine dritte Person und keine Behauptung, die echte verstorbene Person zu sein.',
     rightsPosture: spec.rightsPosture,
     sources: spec.sources,
     exampleQuestions: spec.exampleQuestions,

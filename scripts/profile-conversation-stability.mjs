@@ -108,8 +108,17 @@ for (const conversation of conversations) {
   const seenWithinProfile = new Set();
   for (const item of conversation.answers) {
     lengths.push(item.answer.length);
-    if (!item.answer.includes(conversation.profile)) {
-      issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'profile_name_missing' });
+    const escapedProfile = conversation.profile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const nameHits = (item.answer.match(new RegExp(escapedProfile, 'g')) ?? []).length;
+    const firstPerson = /\b(Ich|ich|mein|meine|meiner|mir|mich)\b/.test(item.answer);
+    if (item.intentLabel === 'Identität' && !item.answer.includes(conversation.profile)) {
+      issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'identity_name_missing' });
+    }
+    if (item.intentLabel !== 'Identität' && nameHits > 1) {
+      issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'profile_name_repeated_unnecessarily', nameHits });
+    }
+    if (!firstPerson) {
+      issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'first_person_missing' });
     }
     if (!item.answer.includes(item.intentLabel)) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'intent_label_missing' });
@@ -117,13 +126,12 @@ for (const conversation of conversations) {
     if (item.intentLabel === 'Konfliktstrategie' && item.answer.includes('Technologie')) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'war_prompt_misclassified_as_technology' });
     }
-    const escapedProfile = conversation.profile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const banned = new RegExp(`(?:Ich bin ${escapedProfile}|Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem)`, 'i');
+    const banned = new RegExp(`(?:Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem|${escapedProfile}[-\\s]Perspektive|${escapedProfile}[-\\s]Linse|Für ${escapedProfile} ist|${escapedProfile} würde sagen|${escapedProfile} wuerde sagen|${escapedProfile} meint|Aus Sicht von ${escapedProfile}|Profilperspektive|dieses Profil (?:antwortet|meint|ist|würde|wuerde))`, 'i');
     if (banned.test(item.answer)) {
       issues.push({
         profile: conversation.profile,
         prompt: item.prompt,
-        issue: 'banned_self_intro_phrase',
+        issue: 'banned_role_distance_phrase',
         excerpt: item.answer.slice(0, 220),
       });
     }
@@ -168,7 +176,7 @@ for (const conversation of conversations) {
     const answer = ruleBasedTwinReply(turkishPrompt, profile, [], 'turkish-language-check');
     const germanLeak = /\b(Ich|nicht|und|oder|Wenn|Meine|Druck und Ruhe|Ziel, Kontext|Profilperspektive|Antwortstil)\b/.test(answer);
     const turkishSignal = /(Türkçe|cevap|baskı|yardım|değil|önce|adım|yapay zeka|sakinlik)/i.test(answer);
-    if (!answer.includes(conversation.profile) || germanLeak || !turkishSignal) {
+    if (germanLeak || !turkishSignal) {
       issues.push({
         profile: conversation.profile,
         prompt: turkishPrompt,

@@ -3431,14 +3431,14 @@ function TwinChatView() {
         'Was ist mein wichtigster Lebensrat?',
         'Wie treffe ich schwierige Entscheidungen?',
         activeTwin.publicProfile ? `Was ist bei ${activeTwin.name} gut belegt?` : 'Was ist mir in Beziehungen wichtig?',
-        activeTwin.publicProfile ? 'Welche Quellen nutzt dieses Profil?' : 'Welche Erfahrungen prägen meine Sicht?',
+        activeTwin.publicProfile ? 'Welche Quellen nutzt du?' : 'Welche Erfahrungen prägen meine Sicht?',
       ]
     : []
 
   const readyMessage = (twin: ChatTwinSummary): TwinChatUiMessage => ({
     id: crypto.randomUUID(),
     role: 'ai',
-    content: `Chat mit ${twin.name} ist bereit. Schreib deine Frage direkt an dieses KI-Profil.`,
+    content: `Chat mit ${twin.name} ist bereit. Schreib deine Frage direkt.`,
   })
 
   const restoreStoredChat = async (twin: ChatTwinSummary | null) => {
@@ -3504,7 +3504,7 @@ function TwinChatView() {
                   {
                     id: crypto.randomUUID(),
                     role: 'ai',
-                    content: `${publicTwin.name} ist bereit. Melde dich an, um den Chat mit diesem Profil zu starten.`,
+                    content: `${publicTwin.name} ist bereit. Melde dich an, um den Chat zu starten.`,
                   },
                 ]
             : current,
@@ -3738,7 +3738,7 @@ function TwinChatView() {
         {
           id: crypto.randomUUID(),
           role: 'ai',
-          content: 'Wähle oder erstelle zuerst ein echtes KI-Profil. Danach kann der Chat mit diesem Profil starten.',
+          content: 'Wähle oder erstelle zuerst ein echtes KI-Profil. Danach kann der Chat starten.',
         },
       ])
       return null
@@ -3869,7 +3869,7 @@ function TwinChatView() {
               <div className="max-w-[28rem]">
                 <p className="text-base font-bold text-[#16181b]">Kein KI-Profil ausgewählt</p>
                 <p className="mt-1 text-sm text-[#555b64]">
-                  Smyst ist kein Messenger: Wähle eine KI-Persönlichkeit aus, stelle deine Frage und dieses Profil antwortet.
+                  Smyst ist kein Messenger: Wähle eine KI-Persönlichkeit aus und stelle deine Frage direkt.
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   <a

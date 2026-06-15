@@ -19,7 +19,7 @@
     "freeOnlyNotice": "公开档案和私有档案会清楚分开。你可以选择想和谁聊天。"
   },
   "chat": {
-    "replyIntro": "我将以 {{name}} 的身份回答。",
+    "replyIntro": "我会从自己的角色出发直接回答你。",
     "replyMvp": "我会冷静地看待它：世界同时充满速度、知识和不安。",
     "replyQuestion": "关于你的问题：\"{{question}}\"",
     "replyNextStep": "重要的是仔细观察，保持好奇，并把进步与责任联系起来。"

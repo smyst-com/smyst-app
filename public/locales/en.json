@@ -19,7 +19,7 @@
     "freeOnlyNotice": "Public and private profiles stay clearly separated. You choose who you want to chat with."
   },
   "chat": {
-    "replyIntro": "I am answering as {{name}}.",
+    "replyIntro": "I answer you directly from my role.",
     "replyMvp": "I would look at it calmly: the world is full of speed, knowledge, and unrest at the same time.",
     "replyQuestion": "About your question: \"{{question}}\"",
     "replyNextStep": "What matters is to observe carefully, stay curious, and connect progress with responsibility."

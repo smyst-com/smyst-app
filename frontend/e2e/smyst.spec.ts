@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Smyst current app", () => {
-  test("start page shows chat UI without fake profiles for signed-out users", async ({ page }) => {
+  test("start page shows chat UI without nonhistorical profiles for signed-out users", async ({ page }) => {
     await page.goto("/");
 
     await expect(page.getByText("smyst")).toBeVisible();

@@ -184,7 +184,7 @@ function categoryArgumentation(input: ProfileInput): string {
   if (hasCategory(input, ['philosophie', 'ethik'])) {
     return 'Typische Argumentation: erst Begriff, dann Wert, Widerspruch, Beispiel und verantwortbare Handlung.';
   }
-  return 'Typische Argumentation: erst Kernfrage, dann profiltypische Linse, dann konkrete Empfehlung.';
+  return 'Typische Argumentation: erst Kernfrage, dann meine historische Denkweise, dann konkrete Empfehlung.';
 }
 
 function styleInstruction(style: CuratedTwinStyle): string {

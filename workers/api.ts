@@ -342,9 +342,9 @@ function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)
       },
     ],
     contextSummary:
-      `${spec.name} ist ein oeffentliches digitales Twin-Profil auf smyst.com. Profil: ${spec.description} Kategorien: ${spec.categories.join(', ')}. Sprachen: ${CURATED_PUBLIC_TWIN_LANGUAGES.join(', ')}. Kommunikationsstil: ${spec.style}. Antwortstil: ${spec.answerStyle}.`,
+      `Historische Rolle: ${spec.name}. Profil: ${spec.description} Kategorien: ${spec.categories.join(', ')}. Sprachen: ${CURATED_PUBLIC_TWIN_LANGUAGES.join(', ')}. Kommunikationsstil: ${spec.style}. Antwortstil: ${spec.answerStyle}.`,
     guardrail:
-      'Antwortet als historisch inspiriertes KI-Profil. Es behauptet nicht, die echte verstorbene Person zu sein, gibt keine medizinische, rechtliche oder finanzielle Garantie und soll moderne Fakten nicht erfinden.',
+      'Ich-Perspektive erzwingen: direkt aus der historischen Rolle antworten, den Nutzer direkt ansprechen, keine dritte Person und keine Behauptung, die echte verstorbene Person zu sein.',
     rightsPosture: spec.rightsPosture,
     sources: spec.sources,
     exampleQuestions: spec.exampleQuestions,
@@ -635,11 +635,13 @@ function buildPublicContext(twin: TwinRecord): string {
   const categories = twin.categories?.length ? `Kategorien: ${twin.categories.join(', ')}.` : '';
   const languages = twin.languages?.length ? `Sprachen: ${twin.languages.join(', ')}.` : '';
   return [
-    `${twin.name} ist ein öffentliches digitales Twin-Profil auf smyst.com.`,
-    twin.description ? `Profil: ${twin.description}` : '',
+    `Historische Rolle: ${twin.name}.`,
+    twin.mainCategory ? `Branche/Rolle: ${twin.mainCategory}.` : '',
+    twin.description ? `Beschreibung: ${twin.description}` : '',
     categories,
     languages,
     `Kommunikationsstil: ${twin.style}.`,
+    'Chat-Regel: direkt in der Ich-Perspektive antworten und den Nutzer direkt ansprechen.',
   ]
     .filter(Boolean)
     .join(' ')
@@ -673,7 +675,12 @@ function publicTwinQuality(env: ApiEnv, twin: TwinRecord): { ok: boolean; issues
   const issues: string[] = [];
   if (twin.status !== 'ready') issues.push('status_not_ready');
   if (!twin.name.trim()) issues.push('name_required');
+  if (!twin.mainCategory?.trim()) issues.push('main_category_required');
   if (twin.description.trim().length < 40) issues.push('description_too_short');
+  const hasDateLife = Boolean(twin.birthDate?.trim() && twin.deathDate?.trim());
+  const hasYearLife = Number.isFinite(twin.birthYear) && Number.isFinite(twin.deathYear) &&
+    Boolean(twin.birthLabel?.trim() && twin.deathLabel?.trim());
+  if (!hasDateLife && !hasYearLife) issues.push('life_dates_required');
   if (!(twin.categories ?? []).some((item) => item.trim().length >= 2)) issues.push('category_required');
   if (!(twin.languages ?? []).some((item) => item.trim().length >= 2)) issues.push('language_required');
   if (!publicSafeImageUrl(env, twin.imageUrl)) issues.push('profile_image_required');
@@ -916,7 +923,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       label: 'Kernidee',
       decisionNoun: 'Gedanke',
       action: 'meine zentrale Idee in heutige Sprache übersetzen',
-      caution: 'keine moderne Behauptung erfinden, die nicht zur historischen Linse passt',
+      caution: 'keine moderne Behauptung erfinden, die nicht zur historischen Rolle passt',
     };
   }
   if (includesAny(normalized, ['lebensrat', 'jungen menschen', 'junger mensch', 'young person', 'jugend', 'heute raten', 'ratest du heute'])) {
@@ -1468,7 +1475,7 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
     'Identität': [
       'Ich stelle mich über Rolle, Epoche und Denkweise vor, nicht als echte wiederkehrende Person.',
       'Ich beginne mit dem, wofür ich bekannt bin, und mache die Grenze zur historischen Realität klar.',
-      'Ich erkläre zuerst meine Perspektive, damit du weißt, aus welcher Linse ich antworte.',
+      'Ich erkläre zuerst meine Haltung, damit du weißt, aus welcher Erfahrung ich antworte.',
       'Ich nenne kurz Herkunft, Arbeit und Denkstil, bevor ich Rat gebe.',
       'Ich mache sichtbar, welche Fragen ich besonders gut beleuchten kann.',
       'Ich halte die Vorstellung knapp: Name, Rolle, Haltung und ein klarer Nutzen für dein Gespräch.',
@@ -1668,7 +1675,7 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
 }
 
 function fallbackKnowledgeLine(intentLabel: string, shortQuestion: string): string {
-  return `Zur ${intentLabel} "${shortQuestion}" nutze ich Profil, Stil und Kategorien als historische Linse.`;
+  return `Zur ${intentLabel} "${shortQuestion}" nutze ich meine Rolle, meinen Stil und meine historischen Schwerpunkte.`;
 }
 
 function profileLensLine(twin: TwinRecord): string {
@@ -1685,7 +1692,8 @@ function compactProfileCore(twin: TwinRecord): string {
   if (!raw) return twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
   const cleaned = raw
     .replace(/\s+/g, ' ')
-    .replace(/^.+?ist ein oeffentliches digitales Twin-Profil auf smyst\.com\.\s*Profil:\s*/i, '');
+    .replace(/^.+?ist ein oeffentliches digitales Twin-Profil auf smyst\.com\.\s*Profil:\s*/i, '')
+    .replace(/^Historische Rolle:\s*[^.]+?\.\s*Profil:\s*/i, '');
   if (cleaned.length <= 220) return cleaned.replace(/[.,\s;:]+$/, '');
   const compact = cleaned
     .slice(0, 210)
@@ -1701,10 +1709,10 @@ function shortIdentityBoundary(twin: TwinRecord): string {
     return 'Ich spreche literarisch inspiriert, ohne zu behaupten, die echte wiederkehrende Person zu sein.';
   }
   if (categories.some((item) => includesAny(item, ['wissenschaft', 'physik', 'mathematik', 'technologie']))) {
-    return 'Ich antworte aus einer historisch-wissenschaftlichen Linse, nicht als reale Wiederkehr.';
+    return 'Ich antworte historisch-wissenschaftlich, nicht als reale Wiederkehr.';
   }
   if (categories.some((item) => includesAny(item, ['politik', 'fuehrung', 'strategie']))) {
-    return 'Ich nutze meine historische Führungsrolle als Perspektive, ohne echte Autorität zu behaupten.';
+    return 'Ich spreche aus meiner historischen Führungsrolle, ohne echte Autorität zu behaupten.';
   }
   return 'Ich antworte historisch inspiriert, ohne zu behaupten, die echte Person zu sein.';
 }

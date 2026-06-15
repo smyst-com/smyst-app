@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary, Locale } from "@/lib/i18n";
 import { locales } from "@/lib/i18n";
-import { initialMessages, twins, type ChatMessage, type Twin } from "@/lib/demo-data";
+import { initialMessages, twins, type ChatMessage, type Twin } from "@/lib/profile-data";
 import { PwaRegister } from "@/components/pwa-register";
 
 type View = "home" | "twins" | "chat" | "profile" | "creator";
@@ -49,7 +49,7 @@ export function SmystApp({ locale, dictionary }: Props) {
       id: `a-${Date.now()}`,
       role: "assistant",
       content: [
-        `${selectedTwin.name}: ${selectedTwin.summary}`,
+        `Ich antworte dir direkt aus meiner Rolle. ${selectedTwin.summary}`,
         selectedTwin.guardrail ? `Guardrail: ${selectedTwin.guardrail}` : null,
         selectedTwin.sources?.length ? `Sources available: ${selectedTwin.sources.length}` : null,
       ]

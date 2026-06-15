@@ -19,7 +19,7 @@
     "freeOnlyNotice": "Herkese açık ve özel profiller net biçimde ayrı tutulur. Kiminle sohbet edeceğini sen seçersin."
   },
   "chat": {
-    "replyIntro": "{{name}} olarak yanıtlıyorum.",
+    "replyIntro": "Rolümden doğrudan sana cevap veriyorum.",
     "replyMvp": "Buna sakin bakardım: dünya aynı anda hız, bilgi ve huzursuzlukla dolu.",
     "replyQuestion": "Sorun hakkında: \"{{question}}\"",
     "replyNextStep": "Önemli olan dikkatle gözlemlemek, merakı korumak ve ilerlemeyi sorumlulukla birleştirmektir."

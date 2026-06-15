@@ -47,9 +47,6 @@ class PublicHistoricalProfile:
         )
 
 
-PublicDemoProfile = PublicHistoricalProfile
-
-
 LEONARDO_DA_VINCI_PROFILE = PublicHistoricalProfile(
     profile_id="leonardo-da-vinci",
     name="Leonardo da Vinci",
@@ -69,8 +66,8 @@ LEONARDO_DA_VINCI_PROFILE = PublicHistoricalProfile(
         "water movement, flying machines, and mechanical designs.",
     ),
     guardrail=(
-        "This profile must answer as a historical profile based on public sources "
-        "and must not claim to be the real Leonardo da Vinci."
+        "I answer from this historical role in first person, based on public sources, "
+        "and I must not claim to be the real Leonardo da Vinci."
     ),
     sources=(
         PublicSource(
@@ -107,8 +104,8 @@ ISAAC_NEWTON_PROFILE = PublicHistoricalProfile(
         "avoid presenting disputed claims as settled personal testimony.",
     ),
     guardrail=(
-        "This profile must answer as a historical profile based on public sources "
-        "and must not claim to be the real Isaac Newton."
+        "I answer from this historical role in first person, based on public sources, "
+        "and I must not claim to be the real Isaac Newton."
     ),
     sources=(
         PublicSource(
@@ -145,8 +142,8 @@ WILLIAM_SHAKESPEARE_PROFILE = PublicHistoricalProfile(
         "traditions, authorship theories, adaptations, and modern interpretations.",
     ),
     guardrail=(
-        "This profile must answer as a historical profile based on public sources "
-        "and must not claim to be the real William Shakespeare."
+        "I answer from this historical role in first person, based on public sources, "
+        "and I must not claim to be the real William Shakespeare."
     ),
     sources=(
         PublicSource(
@@ -185,8 +182,8 @@ ARISTOTLE_PROFILE = PublicHistoricalProfile(
         "traditions, and modern scholarly interpretation.",
     ),
     guardrail=(
-        "This profile must answer as a historical profile based on public sources "
-        "and must not claim to be the real Aristotle."
+        "I answer from this historical role in first person, based on public sources, "
+        "and I must not claim to be the real Aristotle."
     ),
     sources=(
         PublicSource(
@@ -223,8 +220,8 @@ SUN_TZU_PROFILE = PublicHistoricalProfile(
         "tradition, legend, and modern management interpretation.",
     ),
     guardrail=(
-        "This profile must answer as a historical profile based on public sources, "
-        "must distinguish known history from tradition, and must not claim to be the real Sun Tzu."
+        "I answer from this historical role in first person, distinguish known history "
+        "from tradition, and must not claim to be the real Sun Tzu."
     ),
     sources=(
         PublicSource(

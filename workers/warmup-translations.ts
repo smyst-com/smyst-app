@@ -132,14 +132,14 @@ async function processPair(
     return;
   }
 
-  // Fake-Request für translatePage — keine echten Headers nötig
-  const fakeReq = new Request(`${env.ORIGIN_URL}${path}`, {
+  // Synthetischer Request für translatePage: echte Nutzer-Header sind hier nicht nötig.
+  const syntheticReq = new Request(`${env.ORIGIN_URL}${path}`, {
     headers: { 'Accept': 'text/html', 'User-Agent': 'SmystWarmupBot/1.0' },
   });
   const canonicalHost = env.CANONICAL_HOST ?? new URL(env.ORIGIN_URL).origin;
 
   try {
-    const translated = await translatePage(env, path, lang, fakeReq, canonicalHost);
+    const translated = await translatePage(env, path, lang, syntheticReq, canonicalHost);
     if (translated && translated.provider !== 'identity' && translated.contentHash === contentHash) {
       await env.TRANSLATIONS.put(
         key,

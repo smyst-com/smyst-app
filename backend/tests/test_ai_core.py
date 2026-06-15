@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 
 from app.ai.dataflow import AiDataflowProbe
-from app.ai.demo_profiles import (
+from app.ai.historical_profiles import (
     LEONARDO_DA_VINCI_PROFILE,
     LOW_RISK_HISTORICAL_STARTER_PROFILES,
 )
@@ -84,7 +84,7 @@ def test_pdf_parser_falls_back_without_external_dependency() -> None:
         twin_id=uuid4(),
         filename="memory.pdf",
         mime_type="application/pdf",
-        content=b"Plain fallback text inside fake pdf bytes",
+        content=b"Plain fallback text inside minimal pdf-like bytes",
     )
 
     parsed = parser.parse(upload.with_checksum())

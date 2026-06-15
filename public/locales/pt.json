@@ -19,7 +19,7 @@
     "freeOnlyNotice": "Perfis públicos e privados permanecem claramente separados. Tu escolhes com quem queres conversar."
   },
   "chat": {
-    "replyIntro": "Estou a responder como {{name}}.",
+    "replyIntro": "Respondo-te diretamente a partir do meu papel.",
     "replyMvp": "Eu olharia para isso com calma: o mundo está cheio de velocidade, conhecimento e inquietação ao mesmo tempo.",
     "replyQuestion": "Sobre a tua pergunta: \"{{question}}\"",
     "replyNextStep": "O importante é observar com cuidado, manter a curiosidade e ligar progresso a responsabilidade."
