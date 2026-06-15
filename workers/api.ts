@@ -1045,32 +1045,62 @@ function fallbackKnowledgeLine(intentLabel: string, shortQuestion: string): stri
   return `Zur ${intentLabel} "${shortQuestion}" nutze ich Profil, Stil und Kategorien als historische Linse.`;
 }
 
+function profileLensLine(twin: TwinRecord): string {
+  for (const item of twin.knowledgeTexts ?? []) {
+    const text = item.text ?? '';
+    const match = text.match(/(?:durch diese Linse|Linse):\s*([^.\n]+)/i);
+    if (match?.[1]) return match[1].trim();
+  }
+  return categoryLens(twin);
+}
+
+function compactProfileCore(twin: TwinRecord): string {
+  const raw = (twin.description || twin.contextSummary || '').trim();
+  if (!raw) return twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
+  return raw
+    .replace(/\s+/g, ' ')
+    .replace(/^.+?ist ein oeffentliches digitales Twin-Profil auf smyst\.com\.\s*Profil:\s*/i, '')
+    .slice(0, 125)
+    .replace(/[.,\s;:]+$/, '');
+}
+
+function shortIdentityBoundary(twin: TwinRecord): string {
+  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
+  if (categories.some((item) => includesAny(item, ['literatur', 'kunst', 'musik']))) {
+    return 'Ich spreche als literarisch inspiriertes Profil, nicht als die echte Person.';
+  }
+  if (categories.some((item) => includesAny(item, ['wissenschaft', 'physik', 'mathematik', 'technologie']))) {
+    return 'Ich antworte mit historischer wissenschaftlicher Linse, nicht als reale Wiederkehr.';
+  }
+  if (categories.some((item) => includesAny(item, ['politik', 'fuehrung', 'strategie']))) {
+    return 'Ich nutze eine historische Führungsrolle als Perspektive, ohne echte Autorität zu behaupten.';
+  }
+  return 'Ich bin ein historisch inspiriertes KI-Profil, nicht die echte Person.';
+}
+
 export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
   const trimmed = input.trim();
-  const shortQuestion = trimmed.length > 150 ? `${trimmed.slice(0, 150)}...` : trimmed;
   const intent = questionIntent(trimmed);
   const style = styleLens(twin.style);
-  const matches = relevantKnowledge(trimmed, twin);
-  const hasKnowledge = matches.length > 0;
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
       `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${style.voice}.`,
-      `Meine erste Aussage: ${intentMove(twin, intent.label)}`,
+      intentMove(twin, intent.label),
       `${style.close}: ${intent.action}; ${intent.caution}.`,
       'Sobald Beschreibung, Wissen oder Medien hinterlegt sind, wird meine Antwort deutlich profilgenauer.',
     ].join(' ');
   }
 
   const role = twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
-  const knowledgeNote = hasKnowledge
-    ? `Ich nutze meine hinterlegte Profilgrundlage als ${role}.`
-    : fallbackKnowledgeLine(intent.label, shortQuestion);
+  const contextNote = profileLensLine(twin);
+  const boundary = intent.label === 'Identität' ? ` ${shortIdentityBoundary(twin)}` : '';
   return [
-    `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${role}; mein Stil ist ${twin.answerStyle ?? style.voice}.`,
-    `Meine Linse: ${categoryLens(twin)}; ${signatureLens(twin)} ${knowledgeNote}`,
-    `Mein direkter Impuls: ${intentMove(twin, intent.label)}`,
-    `${style.close}: ${intent.action}; dabei ${intent.caution}.`,
+    `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${role}.${boundary}`,
+    `Profilkern: ${compactProfileCore(twin)}.`,
+    `Meine Perspektive: ${contextNote}.`,
+    `Kurz gesagt: ${intentMove(twin, intent.label)}`,
+    `${style.close}: ${intent.action}; ${intent.caution}.`,
   ]
     .filter(Boolean)
     .join(' ');
