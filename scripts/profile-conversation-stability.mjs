@@ -36,6 +36,7 @@ const prompts = [
   ['Druck und Ruhe', 'Was soll ich tun, wenn ich zu viel Druck im Leben habe?'],
   ['Technologie', 'Wie wuerdest du ueber KI und neue Technologie denken?'],
   ['Führung und Erfolg', 'Was ist dein Rat fuer Fuehrung und Erfolg?'],
+  ['Konfliktstrategie', 'Wenn du gerade General in einem Ukraine Russland Krieg waerst, wie wuerdest du fuehren?'],
   ['Geschäftsidee', 'Bewerte diese Geschaeftsidee: eine App, die lokale Experten als KI-Zwillinge verfuegbar macht.'],
   ['Geschäftsidee', 'Wenn du heute gelebt hast, welche Geschaeft hast du gemacht?'],
   ['Wetter und Klima', 'Was denkst du ueber Wetter in Laender ob die Regionen manipulieren unsere Wetter?'],
@@ -104,6 +105,9 @@ for (const conversation of conversations) {
     }
     if (!item.answer.includes(item.intentLabel)) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'intent_label_missing' });
+    }
+    if (item.intentLabel === 'Konfliktstrategie' && item.answer.includes('Technologie')) {
+      issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'war_prompt_misclassified_as_technology' });
     }
     if (item.answer.length > 760) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'answer_too_long', length: item.answer.length });

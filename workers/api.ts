@@ -972,6 +972,35 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     };
   }
   if (includesAny(normalized, [
+    'krieg',
+    'kriegs',
+    'ukraine',
+    'russland',
+    'general',
+    'feldherr',
+    'militär',
+    'militaer',
+    'armee',
+    'soldaten',
+    'front',
+    'schlacht',
+    'invasion',
+    'verteidigung',
+    'offensive',
+    'befehl',
+    'kommandeur',
+    'commander',
+    'war',
+    'battle',
+  ])) {
+    return {
+      label: 'Konfliktstrategie',
+      decisionNoun: 'Lage',
+      action: 'Lage, Ziel, Schutz von Menschen, Versorgung, Moral, Bündnisse und politische Folgen zusammen prüfen',
+      caution: 'keine konkreten Angriffsziele oder operative Gewaltanleitung geben',
+    };
+  }
+  if (includesAny(normalized, [
     'wetter',
     'klima',
     'climate',
@@ -1274,6 +1303,13 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = '')
 
 function repeatedReplyForTwin(twin: TwinRecord, intentLabel: string, replySeed = ''): string | null {
   if (intentLabel === 'Druck und Ruhe') return stressReplyForTwin(twin, true, replySeed);
+  if (intentLabel === 'Konfliktstrategie') {
+    return [
+      'Noch konkreter, aber ohne operative Gewaltanleitung: Erst Lagebild, Ziel und Schutz der Menschen klären.',
+      `Als ${twin.name} würde ich Versorgung, Moral, Bündnisse, Reserven und politische Folgen zusammen prüfen.`,
+      'Eine Strategie ist erst gut, wenn sie Eskalation begrenzt, Zivilisten schützt und einen realistischen Ausweg offenhält.',
+    ].join(' ');
+  }
   if (intentLabel === 'Geschäftsidee') {
     return [
       'Noch konkreter: Starte nicht mit einer großen Plattform.',
@@ -1289,6 +1325,58 @@ function repeatedReplyForTwin(twin: TwinRecord, intentLabel: string, replySeed =
     ].join(' ');
   }
   return null;
+}
+
+function conflictStrategyReplyForTwin(twin: TwinRecord, replySeed = ''): string {
+  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
+  const lens = profileLensLine(twin).toLowerCase();
+  const isStrategic = categories.some((item) => includesAny(item, ['strategie', 'fuehrung', 'führung', 'politik', 'geschichte']));
+  const isMilitary = categories.some((item) => includesAny(item, ['strategie', 'fuehrung', 'führung', 'politik'])) ||
+    includesAny(`${twin.name} ${twin.mainCategory ?? ''} ${twin.description ?? ''}`.toLowerCase(), ['feldherr', 'general', 'stratege', 'staatsmann', 'kaiser', 'sultan']);
+  const isEthical = categories.some((item) => includesAny(item, ['ethik', 'philosophie', 'religion', 'literatur']));
+  const seed = `${twin.slug}|conflict|${replySeed}`;
+  const strategicMove = pickStable(
+    [
+      'Erst ein sauberes Lagebild schaffen: Ziele, Kräfte, Versorgung, Moral, Gelände, Bündnisse und Zeitdruck getrennt bewerten.',
+      'Nicht vom Zorn führen lassen: Auftrag, Grenzen, Reserven, Nachschub und politische Endlage zuerst festlegen.',
+      'Den Gegner nicht unterschätzen, aber auch die eigene Bevölkerung nicht als Preis behandeln: Schutz, Ordnung und Durchhaltefähigkeit zählen.',
+      'Keine blinde Offensive: nur handeln, wenn Ziel, Mittel, Ausstieg und Folgen klar genug sind.',
+      'Kommunikation, Bündnisse, Logistik und Moral sind keine Nebensachen; sie entscheiden oft vor dem direkten Kampf.',
+    ],
+    `${seed}|strategic`,
+  );
+  const ethicalMove = pickStable(
+    [
+      'Zivilisten schützen, Eskalation begrenzen und Verhandlungen offenhalten wäre kein Zeichen von Schwäche, sondern von Verantwortung.',
+      'Der erste Sieg ist, unnötiges Leid zu vermeiden und trotzdem die eigene Handlungsfähigkeit zu behalten.',
+      'Macht ohne moralische Grenze zerstört langfristig genau das, was sie verteidigen will.',
+      'Jede Entscheidung muss auch den Morgen nach dem Krieg aushalten: Vertrauen, Recht, Versorgung und Wiederaufbau.',
+      'Eine Führungsperson darf Menschen nicht als Material behandeln; sie muss Risiko erklären und Leben schützen.',
+    ],
+    `${seed}|ethical`,
+  );
+  const profileNote = isMilitary
+    ? `Als ${twin.name}, mit Blick auf ${lens}, würde ich nicht romantisch über Krieg reden.`
+    : `Als ${twin.name} würde ich diese Frage durch ${lens} betrachten, nicht als bloßen Kampfplan.`;
+  if (isStrategic || isMilitary) {
+    return [
+      `Konfliktstrategie: ${profileNote}`,
+      strategicMove,
+      `${ethicalMove} Ich gebe deshalb keine konkreten Angriffsziele, sondern nur die Führungslogik: Lage klären, Menschen schützen, Versorgung sichern, Optionen offenhalten.`,
+    ].join(' ');
+  }
+  if (isEthical) {
+    return [
+      `Konfliktstrategie: ${profileNote}`,
+      ethicalMove,
+      'Praktisch heißt das: Schutz der Bevölkerung, klare Ziele, internationale Unterstützung, Deeskalation und ein Weg zurück zu politischer Ordnung.',
+    ].join(' ');
+  }
+  return [
+    `Konfliktstrategie: Als ${twin.name} würde ich zuerst prüfen, welche Entscheidung Menschen schützt und die Lage nicht weiter vergiftet.`,
+    `Die Profilperspektive ist ${lens}; daraus folgt: Fakten, Folgen, Verantwortung und langfristige Stabilität vor impulsivem Handeln.`,
+    'Konkrete Gewaltanleitung gebe ich nicht; sinnvoll sind Lagebild, Schutz, Versorgung, Kommunikation und realistische Auswege.',
+  ].join(' ');
 }
 
 function intentMove(twin: TwinRecord, intentLabel: string): string {
@@ -1340,6 +1428,14 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
       'Ich suche nach klaren Entscheidungen, die auch unter Druck menschlich vertretbar bleiben.',
       'Ich gewichte Charakter und Konsequenz stärker als bloße Selbstdarstellung.',
       'Ich würde Macht nur dann als Erfolg zählen, wenn sie Ordnung, Lernen oder Würde verbessert.',
+    ],
+    'Konfliktstrategie': [
+      'Ich würde zuerst Ziel, Lage, Versorgung, Moral, Bündnisse und Schutz der Zivilbevölkerung trennen.',
+      'Ich frage nicht zuerst nach Angriff, sondern nach Auftrag, Grenzen, Reserven und politischer Endlage.',
+      'Ich prüfe, welche Entscheidung Eskalation begrenzt und trotzdem Handlungsfähigkeit erhält.',
+      'Ich würde Logistik, Information und Moral höher gewichten als heroische Gesten.',
+      'Ich suche einen Weg, der Menschen schützt, Zeit gewinnt und Verhandlungen nicht verbrennt.',
+      'Ich unterscheide strategische Führung von operativer Gewaltanleitung.',
     ],
     'Geschäftsidee': [
       'Ich prüfe zuerst, ob jemand heute schon für dieses Problem zahlt.',
@@ -1665,6 +1761,10 @@ export function ruleBasedTwinReply(
 
   if (intent.label === 'Druck und Ruhe') {
     return stressReplyForTwin(twin, false, replySeed);
+  }
+
+  if (intent.label === 'Konfliktstrategie') {
+    return conflictStrategyReplyForTwin(twin, replySeed);
   }
 
   if (variant === 0) {

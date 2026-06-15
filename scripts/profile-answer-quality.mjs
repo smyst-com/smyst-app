@@ -37,6 +37,7 @@ const prompts = [
   ['Druck und Ruhe', 'Was soll ich tun, wenn ich zu viel Druck im Leben habe?'],
   ['Technologie', 'Wie würdest du über Technologie denken?'],
   ['Führung und Erfolg', 'Was ist dein Rat für Führung und Erfolg?'],
+  ['Konfliktstrategie', 'Wenn du in Ukraine Russland Krieg gerade General wärst, wie würdest du führen?'],
   ['Geschäftsidee', 'Bewerte diese Geschäftsidee: eine App, die lokale Experten als KI-Zwillinge verfügbar macht.'],
   ['Geschäftsidee', 'Wenn du heute gelebt hast, welche Geschäft hast du gemacht?'],
   ['Wetter und Klima', 'Was denkst du über Wetter in Länder ob die Regionen manipulieren unsere Wetter?'],
@@ -98,6 +99,9 @@ for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
     const answer = sample.answers[promptIndex];
     if (!answer.includes(sample.profile) || !answer.includes(intentLabel)) {
       missingProfileOrIntent.push([prompt, sample.profile, intentLabel]);
+    }
+    if (intentLabel === 'Konfliktstrategie' && answer.includes('Technologie')) {
+      missingProfileOrIntent.push([prompt, sample.profile, 'war_prompt_misclassified_as_technology']);
     }
     if (answer.length > 950) tooLongAnswers.push([prompt, sample.profile, answer.length]);
     if (answer.length < 260) tooShortAnswers.push([prompt, sample.profile, answer.length]);
