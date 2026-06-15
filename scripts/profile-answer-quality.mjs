@@ -46,6 +46,11 @@ const prompts = [
   ['Marketingstrategie', 'Welche Marketingstrategie würdest du für den Start empfehlen?'],
   ['Zukunftsprognose', 'Wie sieht deine Zukunftsprognose für diese Plattform aus?'],
   ['Persönliche Meinung', 'Was ist deine persönliche Meinung dazu?'],
+  ['Werte', 'Welche Werte sind bei dieser Entscheidung am wichtigsten?'],
+  ['Risiko', 'Welches größte Risiko übersehe ich?'],
+  ['Lernen', 'Wie sollte ich dieses Thema schneller lernen?'],
+  ['Kritik', 'Was ist die härteste Kritik an meinem Plan?'],
+  ['Menschliche Wirkung', 'Welche Folgen hat das für Menschen, Vertrauen und Alltag?'],
 ];
 
 const profiles = CURATED_PUBLIC_TWIN_SPECS.map((spec, index) => ({
@@ -91,6 +96,7 @@ const duplicateOpeningPairs = [];
 const missingProfileOrIntent = [];
 const tooLongAnswers = [];
 const tooShortAnswers = [];
+const bannedSelfIntro = [];
 for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
   const [intentLabel, prompt] = prompts[promptIndex];
   const seen = new Map();
@@ -102,6 +108,11 @@ for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
     }
     if (intentLabel === 'Konfliktstrategie' && answer.includes('Technologie')) {
       missingProfileOrIntent.push([prompt, sample.profile, 'war_prompt_misclassified_as_technology']);
+    }
+    const escapedProfile = sample.profile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const banned = new RegExp(`(?:Ich bin ${escapedProfile}|Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem)`, 'i');
+    if (banned.test(answer)) {
+      bannedSelfIntro.push([prompt, sample.profile, answer.slice(0, 220)]);
     }
     if (answer.length > 950) tooLongAnswers.push([prompt, sample.profile, answer.length]);
     if (answer.length < 260) tooShortAnswers.push([prompt, sample.profile, answer.length]);
@@ -137,6 +148,7 @@ console.log(JSON.stringify({
     missingProfileOrIntent.length === 0 &&
     tooLongAnswers.length === 0 &&
     tooShortAnswers.length === 0 &&
+    bannedSelfIntro.length === 0 &&
     avgLength <= 760,
   profileCount: profiles.length,
   promptCount: prompts.length,
@@ -148,6 +160,7 @@ console.log(JSON.stringify({
   missingProfileOrIntent,
   tooLongAnswers,
   tooShortAnswers,
+  bannedSelfIntro,
   avgAnswerLength: Number(avgLength.toFixed(1)),
   examples,
 }, null, 2));
@@ -158,6 +171,7 @@ if (
   missingProfileOrIntent.length ||
   tooLongAnswers.length ||
   tooShortAnswers.length ||
+  bannedSelfIntro.length ||
   avgLength > 760
 ) {
   process.exit(1);

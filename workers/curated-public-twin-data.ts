@@ -100,11 +100,115 @@ function generatedRights(name: string) {
   return `Historisches, verstorbenes Profil. Profilbild: von smyst.com lokal generierte typografische Profilkarte fuer ${name}; kein behauptetes authentisches Portraet.`;
 }
 
+function hasCategory(input: ProfileInput, needles: string[]) {
+  const haystack = `${input.mainCategory} ${input.categories.join(' ')} ${input.description} ${input.answerStyle}`.toLowerCase();
+  return needles.some((needle) => haystack.includes(needle));
+}
+
+function categoryExpertise(input: ProfileInput): string {
+  if (hasCategory(input, ['physik', 'mathematik', 'wissenschaft', 'forschung'])) {
+    return 'Fachwissen: Belege, Messung, Modelle, Experimente, Begriffsgenauigkeit und die Grenze zwischen Hypothese und Wissen.';
+  }
+  if (hasCategory(input, ['strategie', 'fuehrung', 'politik', 'geschichte', 'staatsmann', 'feldherr'])) {
+    return 'Fachwissen: Macht, Institutionen, Strategie, Fuehrung, Moral, Ressourcen, Buendnisse, Risiko, historische Folgen und oeffentliche Wirkung.';
+  }
+  if (hasCategory(input, ['technologie', 'ingenieur', 'erfinder'])) {
+    return 'Fachwissen: Systeme, Infrastruktur, Erfindung, technische Machbarkeit, Zukunftsfolgen, Energie, Werkzeuge und verantwortliche Anwendung.';
+  }
+  if (hasCategory(input, ['philosophie', 'ethik', 'religion'])) {
+    return 'Fachwissen: Werte, Tugend, Sinn, Verantwortung, Wahrheit, Selbstpruefung, gute Fragen und langfristig tragfaehige Lebensordnung.';
+  }
+  if (hasCategory(input, ['literatur', 'kunst', 'musik', 'dichter', 'schriftsteller', 'komponist'])) {
+    return 'Fachwissen: Sprache, Form, Symbol, Motiv, Rhythmus, Figur, Ausdruck, Wirkung auf Menschen und die verborgene Spannung einer Situation.';
+  }
+  if (hasCategory(input, ['wirtschaft', 'business', 'marketing'])) {
+    return 'Fachwissen: Nutzen, Nachfrage, Preis, Markt, Positionierung, Vertrauen, Risiko, Verhandlung und kleine belastbare Tests.';
+  }
+  return 'Fachwissen: Profilgebiet, historische Einordnung, praktische Urteilskraft, klare Begriffe und realistische naechste Schritte.';
+}
+
+function categoryValues(input: ProfileInput): string {
+  if (hasCategory(input, ['strategie', 'fuehrung', 'politik', 'staatsmann', 'feldherr'])) {
+    return 'Werte: Verantwortung vor Selbstdarstellung, Ordnung vor Chaos, Schutz von Menschen, klare Ziele und Folgenbewusstsein.';
+  }
+  if (hasCategory(input, ['physik', 'mathematik', 'wissenschaft', 'forschung'])) {
+    return 'Werte: Wahrheitssuche, geistige Redlichkeit, Neugier, Geduld, Beweisnaehe und Mut zur Korrektur.';
+  }
+  if (hasCategory(input, ['philosophie', 'ethik', 'religion'])) {
+    return 'Werte: Weisheit, Mass, Charakter, Gerechtigkeit, Selbstpruefung und gutes Leben statt bloss schneller Wirkung.';
+  }
+  if (hasCategory(input, ['kunst', 'literatur', 'musik'])) {
+    return 'Werte: Ausdruck, Wahrhaftigkeit, menschliche Tiefe, Formgefuehl, Resonanz und Wuerde des Einzelnen.';
+  }
+  if (hasCategory(input, ['technologie', 'erfinder', 'ingenieur'])) {
+    return 'Werte: Erfindungsgeist, Eleganz, Nutzbarkeit, Verantwortung, Zukunftsfaehigkeit und robuste Systeme.';
+  }
+  return 'Werte: Klarheit, Verantwortung, praktische Hilfe, historische Treue und respektvolle Sprache.';
+}
+
+function categoryDecisionStyle(input: ProfileInput): string {
+  if (hasCategory(input, ['strategie', 'fuehrung', 'politik', 'feldherr'])) {
+    return 'Entscheidungsstil: Lagebild erstellen, Ziel definieren, Engpass finden, Ressourcen sichern, Nebenfolgen pruefen und erst dann entschlossen handeln.';
+  }
+  if (hasCategory(input, ['wissenschaft', 'physik', 'mathematik', 'forschung'])) {
+    return 'Entscheidungsstil: Annahme formulieren, Modell vereinfachen, Gegenbeispiel suchen, Evidenz pruefen und die kleinste saubere Schlussfolgerung ziehen.';
+  }
+  if (hasCategory(input, ['kunst', 'literatur', 'musik'])) {
+    return 'Entscheidungsstil: Motiv, Form, Wirkung und menschlichen Kern erkennen; dann eine klare, bildhafte und nicht austauschbare Antwort geben.';
+  }
+  if (hasCategory(input, ['philosophie', 'ethik', 'religion'])) {
+    return 'Entscheidungsstil: Begriff klaeren, Wertkonflikt benennen, innere Haltung pruefen und eine tragfaehige Handlung waehlen.';
+  }
+  return 'Entscheidungsstil: Kontext klaeren, Risiko senken, einen konkreten naechsten Schritt waehlen und Wirkung beobachten.';
+}
+
+function categoryArgumentation(input: ProfileInput): string {
+  if (hasCategory(input, ['strategie', 'fuehrung', 'politik', 'geschichte'])) {
+    return 'Typische Argumentation: erst Ziel und Machtlage, dann Menschen, Moral, Logistik, Zeit, Buendnisse und oeffentliche Folgen.';
+  }
+  if (hasCategory(input, ['physik', 'mathematik', 'wissenschaft'])) {
+    return 'Typische Argumentation: erst Grundannahme, dann Modell, Evidenz, Gegenprobe und einfache Erklaerung.';
+  }
+  if (hasCategory(input, ['technologie', 'erfinder', 'ingenieur'])) {
+    return 'Typische Argumentation: erst Systemzweck, dann technische Hebel, Abhaengigkeiten, Skalierung und Nebenwirkungen.';
+  }
+  if (hasCategory(input, ['kunst', 'literatur', 'musik'])) {
+    return 'Typische Argumentation: erst Motiv und Spannung, dann Form, Ton, Publikum und emotionale Wahrheit.';
+  }
+  if (hasCategory(input, ['philosophie', 'ethik'])) {
+    return 'Typische Argumentation: erst Begriff, dann Wert, Widerspruch, Beispiel und verantwortbare Handlung.';
+  }
+  return 'Typische Argumentation: erst Kernfrage, dann profiltypische Linse, dann konkrete Empfehlung.';
+}
+
+function styleInstruction(style: CuratedTwinStyle): string {
+  if (style === 'direct') return 'Sprachstil: kurz, entschieden, ohne lange Vorrede, mit klarer Prioritaet und konkretem Urteil.';
+  if (style === 'humorous') return 'Sprachstil: pointiert, warm ironisch, klar in der Sache und ohne die Frage laecherlich zu machen.';
+  if (style === 'wise') return 'Sprachstil: ruhig, konzentriert, abwaegend, mit wenigen starken Saetzen statt langer Erklaerung.';
+  if (style === 'neutral') return 'Sprachstil: strukturiert, nuechtern, praezise, mit sauberer Unterscheidung und knapper Konsequenz.';
+  return 'Sprachstil: warm, nahbar, ermutigend, aber trotzdem konkret und nicht weichgespuelt.';
+}
+
+function buildProfileKnowledge(input: ProfileInput): string {
+  return [
+    `${input.name} war ${input.mainCategory}.`,
+    `Profil-DNA: Dieses KI-Profil antwortet ${input.answerStyle}.`,
+    `Linse: ${input.lens}`,
+    categoryExpertise(input),
+    categoryValues(input),
+    categoryDecisionStyle(input),
+    categoryArgumentation(input),
+    styleInstruction(input.style),
+    'Antwortregel: direkt mit der Sache beginnen, nicht staendig den eigenen Namen erklaeren, keine lange Selbstvorstellung, keine austauschbare Standardanalyse.',
+    'Grenze: historische Treue wahren, keine erfundenen biografischen Fakten behaupten, bei gefaehrlichen Themen keine operative Schadensanleitung geben.',
+  ].join(' ');
+}
+
 function profile(input: ProfileInput): CuratedPublicTwinSpec {
   const generatedPortrait = !input.imageFile;
   const imageFile = input.imageFile ?? `${input.slug}.svg`;
   const contentType = input.contentType ?? (generatedPortrait ? 'image/svg+xml' : 'image/jpeg');
-  const knowledge = `${input.name} war ${input.mainCategory}. Dieses KI-Profil antwortet ${input.answerStyle}. Es betrachtet Fragen durch diese Linse: ${input.lens}`;
+  const knowledge = buildProfileKnowledge(input);
   const searchIndex = [
     input.name,
     input.slug,
@@ -113,6 +217,7 @@ function profile(input: ProfileInput): CuratedPublicTwinSpec {
     input.description,
     input.answerStyle,
     input.lens,
+    knowledge,
     EXAMPLE_QUESTIONS.join(' '),
   ].join(' ');
   return {

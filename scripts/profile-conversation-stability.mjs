@@ -41,7 +41,15 @@ const prompts = [
   ['Geschäftsidee', 'Wenn du heute gelebt hast, welche Geschaeft hast du gemacht?'],
   ['Wetter und Klima', 'Was denkst du ueber Wetter in Laender ob die Regionen manipulieren unsere Wetter?'],
   ['Investition', 'Soll ich 20.000 Euro in dieses neue Produkt investieren?'],
+  ['Einstellung', 'Wie wuerdest du entscheiden, ob ich diesen Mitarbeiter einstellen soll?'],
   ['Marketingstrategie', 'Welche Marketingstrategie wuerdest du fuer den Start empfehlen?'],
+  ['Zukunftsprognose', 'Wie sieht deine Zukunftsprognose fuer diese Plattform aus?'],
+  ['Persönliche Meinung', 'Was ist deine persoenliche Meinung dazu?'],
+  ['Werte', 'Welche Werte sind bei dieser Entscheidung am wichtigsten?'],
+  ['Risiko', 'Welches groesste Risiko uebersehe ich?'],
+  ['Lernen', 'Wie sollte ich dieses Thema schneller lernen?'],
+  ['Kritik', 'Was ist die haerteste Kritik an meinem Plan?'],
+  ['Menschliche Wirkung', 'Welche Folgen hat das fuer Menschen, Vertrauen und Alltag?'],
 ];
 const turkishPrompts = [
   'Çok baskı altındayım, ne yapmalıyım?',
@@ -108,6 +116,16 @@ for (const conversation of conversations) {
     }
     if (item.intentLabel === 'Konfliktstrategie' && item.answer.includes('Technologie')) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'war_prompt_misclassified_as_technology' });
+    }
+    const escapedProfile = conversation.profile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const banned = new RegExp(`(?:Ich bin ${escapedProfile}|Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem)`, 'i');
+    if (banned.test(item.answer)) {
+      issues.push({
+        profile: conversation.profile,
+        prompt: item.prompt,
+        issue: 'banned_self_intro_phrase',
+        excerpt: item.answer.slice(0, 220),
+      });
     }
     if (item.answer.length > 760) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'answer_too_long', length: item.answer.length });
