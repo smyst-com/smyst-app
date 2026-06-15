@@ -62,7 +62,7 @@ workers_dev = true
 
 # Cron: sparsam halten, damit Cloudflare-Free-Limits geschont werden.
 [env.warmup.triggers]
-crons = ["0 3 * * 0"]
+crons = ["0 3 * * SUN"]
 
 [env.warmup.vars]
 ORIGIN_URL = "https://smyst-vite-app.pages.dev"
