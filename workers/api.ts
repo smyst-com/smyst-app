@@ -33,6 +33,7 @@ export interface ApiEnv extends AuthEnv {
 const SESSION_COOKIE = 'smyst_session';
 const MAX_MESSAGE_CHARS = 2000;
 const MAX_CHAT_MESSAGES = 20;
+const MAX_RECENT_PROFILE_PROMPTS = 8;
 const MAX_TWIN_NAME_CHARS = 120;
 const MAX_TWIN_DESCRIPTION_CHARS = 2000;
 const MAX_TWIN_KNOWLEDGE_CHARS = 12000;
@@ -91,6 +92,11 @@ interface ChatRecord {
   publicTwinSlug?: string;
   messages: ChatMessage[];
   createdAt: number;
+  updatedAt: number;
+}
+
+interface ChatRecentPromptMemory {
+  questions: string[];
   updatedAt: number;
 }
 
@@ -254,6 +260,10 @@ function chatKey(userSub: string, chatId: string): string {
 
 function chatIndexKey(userSub: string): string {
   return `meta:chats:${userSub}`;
+}
+
+function recentPromptKey(userSub: string, profileKey: string): string {
+  return `meta:chat-recent:${userSub}:${slugify(profileKey)}`;
 }
 
 function twinKey(userSub: string, twinId: string): string {
@@ -830,6 +840,30 @@ function repeatedUserQuestion(input: string, previousMessages: ChatMessage[] = [
   });
 }
 
+function recentPromptHistory(memory: ChatRecentPromptMemory | null, now: number): ChatMessage[] {
+  return (memory?.questions ?? [])
+    .filter((question) => typeof question === 'string' && question.trim().length > 0)
+    .slice(-MAX_RECENT_PROFILE_PROMPTS)
+    .map((question, index) => ({
+      id: `recent-${index}`,
+      role: 'user' as const,
+      content: question,
+      createdAt: now - (MAX_RECENT_PROFILE_PROMPTS - index) * 1000,
+    }));
+}
+
+function nextRecentPromptMemory(
+  memory: ChatRecentPromptMemory | null,
+  message: string,
+  now: number,
+): ChatRecentPromptMemory {
+  const questions = [
+    ...(memory?.questions ?? []),
+    message.slice(0, 280),
+  ].slice(-MAX_RECENT_PROFILE_PROMPTS);
+  return { questions, updatedAt: now };
+}
+
 function questionIntent(input: string): { label: string; decisionNoun: string; action: string; caution: string } {
   const normalized = input.toLowerCase();
   if (includesAny(normalized, ['hallo', 'hello', 'hi', 'hey', 'guten morgen', 'guten tag', 'guten abend'])) {
@@ -1123,17 +1157,18 @@ function shortProfileHint(twin: TwinRecord, maxLength = 105): string {
   return compact || core.slice(0, maxLength).replace(/[.,\s;:]+$/, '');
 }
 
-function stressReplyForTwin(twin: TwinRecord, repeated: boolean): string {
+function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = ''): string {
   const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
   const isWise = twin.style === 'wise' || categories.some((item) => includesAny(item, ['philosophie', 'ethik', 'religion', 'weise', 'stoiker']));
   const hint = shortProfileHint(twin);
+  const seedSuffix = replySeed ? `|${replySeed}` : '';
   const lead = pickStable(
     twin.style === 'direct'
       ? ['Heute zählt', 'Kurz gegen den Druck', 'Erster Schnitt', 'Klar sortiert', 'Jetzt praktisch']
       : isWise
         ? ['Mit ruhigem Blick', 'Ein kleiner Schritt', 'Weniger Erzwingen', 'Leiser werden', 'Behutsam beginnen']
         : ['Für den Alltag', 'Erst stabilisieren', 'Druck kleiner machen', 'Nah am Moment', 'Praktisch beginnen'],
-    `${twin.slug}|pressure|lead`,
+    `${twin.slug}|pressure|lead${seedSuffix}`,
   );
   const action = pickStable(
     [
@@ -1143,7 +1178,17 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean): string {
       'Reduziere die Frage auf eine einzige Sache, die du heute sauber beenden kannst.',
       'Sage eine unnötige Zusage ab und gib deinem Körper zuerst Essen, Wasser und langsamere Atmung.',
     ],
-    `${twin.slug}|pressure|action`,
+    `${twin.slug}|pressure|action${seedSuffix}`,
+  );
+  const focus = pickStable(
+    [
+      'Der nächste Schritt soll so klein sein, dass du ihn auch müde noch schaffen kannst.',
+      'Lass heute eine Sache bewusst unperfekt, damit die wichtige Sache Luft bekommt.',
+      'Sprich den Druck laut aus; oft wird er kleiner, sobald ein anderer Mensch ihn mitträgt.',
+      'Nimm zuerst Tempo heraus, denn ein erschöpfter Kopf macht Druck gern größer.',
+      'Miss Fortschritt heute nicht an allem, sondern an einem sauberen Schritt.',
+    ],
+    `${twin.slug}|pressure|focus${seedSuffix}`,
   );
   if (repeated) {
     const repeatedAction = pickStable(
@@ -1154,37 +1199,37 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean): string {
         'Wenn die gleiche Frage wiederkommt, braucht sie keinen längeren Plan, sondern Entlastung.',
         'Behandle Druck als Signal: stoppen, sortieren, Hilfe holen, dann erst weiter entscheiden.',
       ],
-      `${twin.slug}|pressure|repeated`,
+      `${twin.slug}|pressure|repeated${seedSuffix}`,
     );
     return [
       `Anders gesagt: ${repeatedAction}`,
       `Aus Sicht von ${twin.name}: Druck und Ruhe entstehen nicht durch mehr Denken, sondern durch kleinere Last.`,
-      'Wenn es akut oder gefährlich wird, bleib nicht allein und hol dir sofort echte Hilfe.',
+      `${focus} Wenn es akut oder gefährlich wird, bleib nicht allein und hol dir sofort echte Hilfe.`,
     ].join(' ');
   }
   if (isWise) {
     return [
       `${lead}: Druck und Ruhe heißt bei ${twin.name}: Nimm heute nicht dein ganzes Leben auf einmal in die Hand.`,
       `Die Profilperspektive ist ${hint.toLowerCase()}; daraus folgt: ${action}`,
-      'Wenn der Druck gefährlich wird oder du nicht mehr allein herauskommst, hol dir sofort einen echten Menschen dazu.',
+      `${focus} Wenn der Druck gefährlich wird oder du nicht mehr allein herauskommst, hol dir sofort einen echten Menschen dazu.`,
     ].join(' ');
   }
   if (twin.style === 'direct') {
     return [
       `${lead}: Druck und Ruhe heißt bei ${twin.name}: erst stoppen, dann sortieren, dann handeln.`,
       `Die Profilperspektive ist ${hint.toLowerCase()}; konkret: ${action}`,
-      'Dann nur den kleinsten nächsten Schritt machen. Bei akuter Krise: nicht allein bleiben und Hilfe holen.',
+      `${focus} Bei akuter Krise: nicht allein bleiben und Hilfe holen.`,
     ].join(' ');
   }
   return [
     `${lead}: Druck und Ruhe heißt bei ${twin.name}: den Tag auf einen machbaren Schritt reduzieren.`,
     `Die Profilperspektive ist ${hint.toLowerCase()}; darum: ${action}`,
-    'Iss etwas, atme langsamer, sprich mit jemandem, und entscheide erst danach weiter.',
+    `${focus} Iss etwas, atme langsamer, sprich mit jemandem, und entscheide erst danach weiter.`,
   ].join(' ');
 }
 
-function repeatedReplyForTwin(twin: TwinRecord, intentLabel: string): string | null {
-  if (intentLabel === 'Druck und Ruhe') return stressReplyForTwin(twin, true);
+function repeatedReplyForTwin(twin: TwinRecord, intentLabel: string, replySeed = ''): string | null {
+  if (intentLabel === 'Druck und Ruhe') return stressReplyForTwin(twin, true, replySeed);
   if (intentLabel === 'Geschäftsidee') {
     return [
       'Noch konkreter: Starte nicht mit einer großen Plattform.',
@@ -1360,13 +1405,18 @@ function shortIdentityBoundary(twin: TwinRecord): string {
   return 'Ich bin ein historisch inspiriertes KI-Profil, nicht die echte Person.';
 }
 
-export function ruleBasedTwinReply(input: string, twin: TwinRecord, previousMessages: ChatMessage[] = []): string {
+export function ruleBasedTwinReply(
+  input: string,
+  twin: TwinRecord,
+  previousMessages: ChatMessage[] = [],
+  replySeed = '',
+): string {
   const trimmed = input.trim();
   const intent = questionIntent(trimmed);
   const style = styleLens(twin.style);
   const opening = conversationalOpening(twin, intent.label, trimmed);
   const repeated = repeatedUserQuestion(trimmed, previousMessages);
-  const repeatedReply = repeated ? repeatedReplyForTwin(twin, intent.label) : null;
+  const repeatedReply = repeated ? repeatedReplyForTwin(twin, intent.label, replySeed) : null;
   if (repeatedReply) return repeatedReply;
 
   if (!twin.knowledgeTexts.length && !twin.description) {
@@ -1409,7 +1459,7 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord, previousMess
   }
 
   if (intent.label === 'Druck und Ruhe') {
-    return stressReplyForTwin(twin, false);
+    return stressReplyForTwin(twin, false, replySeed);
   }
 
   if (variant === 0) {
@@ -1975,6 +2025,15 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
       : null;
 
   const now = Date.now();
+  const profileMemoryId = chat.twinId ?? chat.publicTwinSlug ?? null;
+  const promptMemoryKey = profileMemoryId ? recentPromptKey(session.sub, profileMemoryId) : null;
+  const promptMemory = promptMemoryKey
+    ? (await kv.get(promptMemoryKey, 'json')) as ChatRecentPromptMemory | null
+    : null;
+  const replyHistory = [
+    ...recentPromptHistory(promptMemory, now),
+    ...chat.messages,
+  ].slice(-MAX_CHAT_MESSAGES);
   const userMessage: ChatMessage = {
     id: crypto.randomUUID(),
     role: 'user',
@@ -1985,7 +2044,7 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
     id: crypto.randomUUID(),
     role: 'assistant',
     content: twin
-      ? ruleBasedTwinReply(message, twin, chat.messages)
+      ? ruleBasedTwinReply(message, twin, replyHistory, `${body.chatId}|${now}|${replyHistory.length}`)
       : freeOnlyReply(message),
     createdAt: now,
   };
@@ -1998,6 +2057,9 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   try {
     await putChat(env, next);
     await addChatToIndex(env, session.sub, next.id);
+    if (promptMemoryKey) {
+      await kv.put(promptMemoryKey, JSON.stringify(nextRecentPromptMemory(promptMemory, message, now)));
+    }
   } catch (err) {
     if (!chat.publicTwinSlug) throw err;
     console.warn('public_chat_persistence_failed', JSON.stringify({

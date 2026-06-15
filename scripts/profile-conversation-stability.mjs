@@ -131,6 +131,11 @@ for (const conversation of conversations) {
   if (firstPressure === repeatedPressure || repeatedPressure.includes('Ziel, Kontext, Optionen')) {
     issues.push({ profile: conversation.profile, issue: 'repeated_pressure_prompt_not_varied' });
   }
+  const seededPressureA = ruleBasedTwinReply(pressurePrompt, profile, [], 'seed-a');
+  const seededPressureB = ruleBasedTwinReply(pressurePrompt, profile, [], 'seed-b');
+  if (seededPressureA === seededPressureB) {
+    issues.push({ profile: conversation.profile, issue: 'seeded_pressure_prompt_not_varied' });
+  }
 }
 
 const repeatedOpenings = [...openingBuckets.entries()]
