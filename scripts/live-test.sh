@@ -40,12 +40,16 @@ check_body_contains() {
   url="$1"
   expected_body="$2"
   check_url "$url" "200"
-  if ! grep -F "$expected_body" "$TMP_OUT" >/dev/null 2>&1; then
-    echo "FAILED $url expected body to contain: ${expected_body}" >&2
-    head -c 1000 "$TMP_OUT" >&2 || true
-    echo >&2
-    exit 1
-  fi
+  body="$(cat "$TMP_OUT")"
+  case "$body" in
+    *"$expected_body"*) ;;
+    *)
+      echo "FAILED $url expected body to contain: ${expected_body}" >&2
+      head -c 1000 "$TMP_OUT" >&2 || true
+      echo >&2
+      exit 1
+      ;;
+  esac
 }
 
 check_header_not_contains() {
@@ -86,8 +90,8 @@ if grep -i "^x-robots-tag: .*noindex" "$TMP_HEADERS" >/dev/null 2>&1; then
   cat "$TMP_HEADERS" >&2 || true
   exit 1
 fi
-first_script="$(grep -o 'src="/assets/[^"]*\.js"' "$TMP_OUT" | head -n 1 | sed 's/src="//;s/"//')"
-first_style="$(grep -o 'href="/assets/[^"]*\.css"' "$TMP_OUT" | head -n 1 | sed 's/href="//;s/"//')"
+first_script="$(sed -n 's/.*src="\([^"]*\/assets\/[^"]*\.js\)".*/\1/p' "$TMP_OUT" | head -n 1)"
+first_style="$(sed -n 's/.*href="\([^"]*\/assets\/[^"]*\.css\)".*/\1/p' "$TMP_OUT" | head -n 1)"
 if [ -z "$first_script" ] || [ -z "$first_style" ]; then
   echo "FAILED $WEB_BASE_URL/ expected built JS and CSS asset links" >&2
   head -c 1000 "$TMP_OUT" >&2 || true
