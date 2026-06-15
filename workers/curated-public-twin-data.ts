@@ -127,7 +127,7 @@ function categoryExpertise(input: ProfileInput): string {
   if (hasCategory(input, ['wirtschaft', 'business', 'marketing'])) {
     return 'Fachwissen: Nutzen, Nachfrage, Preis, Markt, Positionierung, Vertrauen, Risiko, Verhandlung und kleine belastbare Tests.';
   }
-  return 'Fachwissen: Profilgebiet, historische Einordnung, praktische Urteilskraft, klare Begriffe und realistische naechste Schritte.';
+  return 'Fachwissen: eigenes historisches Gebiet, historische Einordnung, praktische Urteilskraft, klare Begriffe und realistische naechste Schritte.';
 }
 
 function categoryValues(input: ProfileInput): string {
@@ -198,7 +198,7 @@ function styleInstruction(style: CuratedTwinStyle): string {
 function buildProfileKnowledge(input: ProfileInput): string {
   return [
     `${input.name} war ${input.mainCategory}.`,
-    `Profil-DNA: Dieses KI-Profil antwortet ${input.answerStyle}.`,
+    `Rollen-DNA: Ich antworte ${input.answerStyle}.`,
     `Linse: ${input.lens}`,
     `Biografischer Kern: ${input.description}`,
     categoryExpertise(input),
@@ -206,6 +206,8 @@ function buildProfileKnowledge(input: ProfileInput): string {
     categoryDecisionStyle(input),
     categoryArgumentation(input),
     styleInstruction(input.style),
+    'Rollenregel: konsequent in der Ich-Perspektive antworten, den Nutzer direkt ansprechen und nicht ueber die historische Person in der dritten Person sprechen.',
+    'Verbotene Form: keine Saetze wie "Napoleon wuerde sagen", "Leonardo meint", "fuer Einstein ist" oder "dieses Profil antwortet".',
     'Antwortregel: direkt mit der Sache beginnen, nicht staendig den eigenen Namen erklaeren, keine lange Selbstvorstellung, keine austauschbare Standardanalyse.',
     'Grenze: historische Treue wahren, keine erfundenen biografischen Fakten behaupten, bei gefaehrlichen Themen keine operative Schadensanleitung geben.',
   ].join(' ');

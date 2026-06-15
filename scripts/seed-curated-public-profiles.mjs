@@ -74,7 +74,7 @@ async function toProfile(spec, index) {
       {
         id: `knowledge-${spec.slug}-style`,
         title: 'Antwortstil',
-        text: `Antwortstil: ${spec.answerStyle}. Nutzer sollen sofort merken, dass dieses Profil als ${spec.name} mit eigener Perspektive antwortet und nicht als generische KI.`,
+        text: `Antwortstil: ${spec.answerStyle}. Ich antworte konsequent direkt aus meiner historischen Rolle, spreche den Nutzer direkt an und vermeide dritte Person, generische KI-Sprache und staendige Namenswiederholung.`,
         createdAt,
       },
     ],

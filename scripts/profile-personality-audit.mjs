@@ -175,8 +175,14 @@ function scoreProfile(profile, answersByQuestion, allProfilesNormalizedByQuestio
   const nameHits = answers.filter((answer) => answer.includes(profile.name)).length;
   const uniqueOpenings = uniqueCount(answers.map((answer) => answer.split(':')[0]));
   const uniqueVocabulary = uniqueCount(answerTokens);
-  const bannedPattern = new RegExp(`(?:Ich bin ${profile.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}|Ich antworte als ${profile.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}|Als ${profile.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\b|,))`, 'i');
-  const bannedHits = answers.filter((answer) => bannedPattern.test(answer)).length;
+  const escapedProfile = profile.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const bannedPattern = new RegExp(`(?:Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,))`, 'i');
+  const thirdPersonPattern = new RegExp(
+    `(?:${escapedProfile}[-\\s]Perspektive|${escapedProfile}[-\\s]Linse|Für ${escapedProfile} ist|${escapedProfile} würde sagen|${escapedProfile} wuerde sagen|${escapedProfile} meint|Aus Sicht von ${escapedProfile}|Profilperspektive|dieses Profil (?:antwortet|meint|ist|würde|wuerde))`,
+    'i',
+  );
+  const bannedHits = answers.filter((answer) => bannedPattern.test(answer) || thirdPersonPattern.test(answer)).length;
+  const firstPersonHits = answers.filter((answer) => /\b(Ich|ich|mein|meine|meiner|mir|mich)\b/.test(answer)).length;
   const genericHits = answers.filter((answer) => /Ziel, Kontext, Optionen|Sobald Beschreibung|allgemein antworten/i.test(answer)).length;
   const duplicateWithinProfile = answers.length - uniqueCount(answers.map((answer) => answer.replace(profile.name, '{profile}')));
 
@@ -188,9 +194,9 @@ function scoreProfile(profile, answersByQuestion, allProfilesNormalizedByQuestio
   }
 
   const fachwissen = clampScore(55 + Math.min(30, answerTermHits * 1.8) + Math.min(15, requiredHits * 4));
-  const persoenlichkeit = clampScore(50 + Math.min(20, nameHits * 2) + Math.min(15, uniqueOpenings * 2) + Math.min(15, uniqueVocabulary / 9));
-  const glaubwuerdigkeit = clampScore(96 - bannedHits * 18 - genericHits * 14 - duplicateWithinProfile * 8);
-  const konsistenz = clampScore(58 + Math.min(30, intentHits * 3) + Math.min(12, nameHits * 1.2) - genericHits * 10);
+  const persoenlichkeit = clampScore(52 + Math.min(24, firstPersonHits * 3) + Math.min(14, uniqueOpenings * 2) + Math.min(10, uniqueVocabulary / 10));
+  const glaubwuerdigkeit = clampScore(98 - bannedHits * 22 - genericHits * 14 - duplicateWithinProfile * 8);
+  const konsistenz = clampScore(62 + Math.min(30, intentHits * 3) + Math.min(8, firstPersonHits) - genericHits * 10);
   const sprachstil = clampScore(56 + Math.min(34, styleHits * 4.5) + Math.min(10, uniqueOpenings));
   const einzigartigkeit = clampScore(95 - nearDuplicateAcrossProfiles * 2.5 + Math.min(5, uniqueVocabulary / 40));
   const total = clampScore((fachwissen + persoenlichkeit + glaubwuerdigkeit + konsistenz + sprachstil + einzigartigkeit) / 6);
@@ -210,6 +216,7 @@ function scoreProfile(profile, answersByQuestion, allProfilesNormalizedByQuestio
     failedDimensions,
     evidence: {
       nameHits,
+      firstPersonHits,
       intentHits,
       styleHits,
       uniqueOpenings,

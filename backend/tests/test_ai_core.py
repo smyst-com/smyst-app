@@ -40,7 +40,7 @@ def test_text_upload_pipeline_builds_twin_version() -> None:
     assert result.twin_version.version_number == 1
 
 
-def test_public_historical_profile_builds_safe_demo_twin() -> None:
+def test_public_historical_profile_builds_safe_twin() -> None:
     user_id = uuid4()
     twin_id = uuid4()
     pipeline = UploadPipeline()
@@ -120,14 +120,14 @@ async def test_rag_returns_answer_with_citations() -> None:
 
 
 @pytest.mark.asyncio
-async def test_rag_answers_leonardo_demo_from_public_profile_context() -> None:
+async def test_rag_answers_leonardo_from_public_profile_context() -> None:
     twin_id = uuid4()
     pipeline = UploadPipeline()
     pipeline.process(LEONARDO_DA_VINCI_PROFILE.to_upload(user_id=uuid4(), twin_id=twin_id))
 
     answer = await RagEngine(vector_search=pipeline.vector_search).answer(
         twin_id=twin_id,
-        question="What is the Leonardo demo profile based on?",
+        question="What is the Leonardo historical profile based on?",
         allowed_sensitivities={Sensitivity.PRIVATE},
     )
 

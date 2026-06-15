@@ -18,7 +18,7 @@ class PublicSource:
 
 
 @dataclass(frozen=True)
-class PublicDemoProfile:
+class PublicHistoricalProfile:
     profile_id: str
     name: str
     filename: str
@@ -47,9 +47,12 @@ class PublicDemoProfile:
         )
 
 
-LEONARDO_DA_VINCI_PROFILE = PublicDemoProfile(
+PublicDemoProfile = PublicHistoricalProfile
+
+
+LEONARDO_DA_VINCI_PROFILE = PublicHistoricalProfile(
     profile_id="leonardo-da-vinci",
-    name="Leonardo da Vinci Demo Twin",
+    name="Leonardo da Vinci",
     filename="leonardo-da-vinci-public-facts.txt",
     launch_wave="Low-risk historical starter",
     rights_posture=(
@@ -66,7 +69,7 @@ LEONARDO_DA_VINCI_PROFILE = PublicDemoProfile(
         "water movement, flying machines, and mechanical designs.",
     ),
     guardrail=(
-        "This profile must answer as a historical demo profile based on public sources "
+        "This profile must answer as a historical profile based on public sources "
         "and must not claim to be the real Leonardo da Vinci."
     ),
     sources=(
@@ -85,9 +88,9 @@ LEONARDO_DA_VINCI_PROFILE = PublicDemoProfile(
     ),
 )
 
-ISAAC_NEWTON_PROFILE = PublicDemoProfile(
+ISAAC_NEWTON_PROFILE = PublicHistoricalProfile(
     profile_id="isaac-newton",
-    name="Isaac Newton Demo Twin",
+    name="Isaac Newton",
     filename="isaac-newton-public-facts.txt",
     launch_wave="Low-risk historical starter",
     rights_posture=(
@@ -100,11 +103,11 @@ ISAAC_NEWTON_PROFILE = PublicDemoProfile(
         "in physics, mathematics, astronomy, and the Scientific Revolution.",
         "His work is associated with classical mechanics, universal gravitation, optics, "
         "calculus, and the Philosophiae Naturalis Principia Mathematica.",
-        "This demo should treat historical debates and priority disputes carefully and "
+        "This profile should treat historical debates and priority disputes carefully and "
         "avoid presenting disputed claims as settled personal testimony.",
     ),
     guardrail=(
-        "This profile must answer as a historical demo profile based on public sources "
+        "This profile must answer as a historical profile based on public sources "
         "and must not claim to be the real Isaac Newton."
     ),
     sources=(
@@ -123,9 +126,9 @@ ISAAC_NEWTON_PROFILE = PublicDemoProfile(
     ),
 )
 
-WILLIAM_SHAKESPEARE_PROFILE = PublicDemoProfile(
+WILLIAM_SHAKESPEARE_PROFILE = PublicHistoricalProfile(
     profile_id="william-shakespeare",
-    name="William Shakespeare Demo Twin",
+    name="William Shakespeare",
     filename="william-shakespeare-public-facts.txt",
     launch_wave="Low-risk historical starter",
     rights_posture=(
@@ -138,11 +141,11 @@ WILLIAM_SHAKESPEARE_PROFILE = PublicDemoProfile(
         "Public literary sources describe him as an English playwright, poet, actor, "
         "and central figure in English literature.",
         "His works include tragedies, comedies, histories, sonnets, and long narrative poems.",
-        "This demo should distinguish Shakespeare's documented biography from later "
+        "This profile should distinguish Shakespeare's documented biography from later "
         "traditions, authorship theories, adaptations, and modern interpretations.",
     ),
     guardrail=(
-        "This profile must answer as a historical demo profile based on public sources "
+        "This profile must answer as a historical profile based on public sources "
         "and must not claim to be the real William Shakespeare."
     ),
     sources=(
@@ -164,9 +167,9 @@ WILLIAM_SHAKESPEARE_PROFILE = PublicDemoProfile(
     ),
 )
 
-ARISTOTLE_PROFILE = PublicDemoProfile(
+ARISTOTLE_PROFILE = PublicHistoricalProfile(
     profile_id="aristotle",
-    name="Aristotle Demo Twin",
+    name="Aristotle",
     filename="aristotle-public-facts.txt",
     launch_wave="Low-risk historical starter",
     rights_posture=(
@@ -178,11 +181,11 @@ ARISTOTLE_PROFILE = PublicDemoProfile(
         "Public philosophy sources describe him as a Greek philosopher and polymath "
         "whose work influenced logic, ethics, politics, rhetoric, biology, and metaphysics.",
         "He studied in Plato's Academy and later founded the Lyceum in Athens.",
-        "This demo should clearly separate Aristotle's surviving texts, later school "
+        "This profile should clearly separate Aristotle's surviving texts, later school "
         "traditions, and modern scholarly interpretation.",
     ),
     guardrail=(
-        "This profile must answer as a historical demo profile based on public sources "
+        "This profile must answer as a historical profile based on public sources "
         "and must not claim to be the real Aristotle."
     ),
     sources=(
@@ -201,9 +204,9 @@ ARISTOTLE_PROFILE = PublicDemoProfile(
     ),
 )
 
-SUN_TZU_PROFILE = PublicDemoProfile(
+SUN_TZU_PROFILE = PublicHistoricalProfile(
     profile_id="sun-tzu",
-    name="Sun Tzu Demo Twin",
+    name="Sun Tzu",
     filename="sun-tzu-public-facts.txt",
     launch_wave="Low-risk historical starter",
     rights_posture=(
@@ -216,11 +219,11 @@ SUN_TZU_PROFILE = PublicDemoProfile(
         "Public reference sources describe uncertainty around parts of his biography "
         "and dating.",
         "The Art of War became influential in military, political, and business strategy.",
-        "This demo should distinguish historically attested information from later "
+        "This profile should distinguish historically attested information from later "
         "tradition, legend, and modern management interpretation.",
     ),
     guardrail=(
-        "This profile must answer as a historical demo profile based on public sources, "
+        "This profile must answer as a historical profile based on public sources, "
         "must distinguish known history from tradition, and must not claim to be the real Sun Tzu."
     ),
     sources=(

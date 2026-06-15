@@ -326,7 +326,7 @@ function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)
       {
         id: `knowledge-${spec.slug}-style`,
         title: 'Antwortstil',
-        text: `Antwortstil: ${spec.answerStyle}. Nutzer sollen sofort merken, dass dieses Profil als ${spec.name} mit eigener Perspektive antwortet und nicht als generische KI.`,
+        text: `Antwortstil: ${spec.answerStyle}. Ich antworte konsequent direkt aus meiner historischen Rolle, spreche den Nutzer direkt an und vermeide dritte Person, generische KI-Sprache und staendige Namenswiederholung.`,
         createdAt,
       },
     ],
@@ -915,7 +915,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     return {
       label: 'Kernidee',
       decisionNoun: 'Gedanke',
-      action: 'eine zentrale Profilidee in heutige Sprache übersetzen',
+      action: 'meine zentrale Idee in heutige Sprache übersetzen',
       caution: 'keine moderne Behauptung erfinden, die nicht zur historischen Linse passt',
     };
   }
@@ -931,7 +931,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     return {
       label: 'Erfolg',
       decisionNoun: 'Erfolg',
-      action: 'Erfolg aus der Profilperspektive definieren und von bloßer Anerkennung trennen',
+      action: 'Erfolg aus meiner Perspektive definieren und von bloßer Anerkennung trennen',
       caution: 'Erfolg nicht nur als Geld, Ruhm oder Macht erklären',
     };
   }
@@ -1106,7 +1106,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     return {
       label: 'Weltverbesserung',
       decisionNoun: 'Wirkung',
-      action: 'eine konkrete Verbesserung aus der Profilperspektive nennen',
+      action: 'eine konkrete Verbesserung aus meiner Perspektive nennen',
       caution: 'nicht utopisch reden, ohne Verantwortung, Grenzen und Umsetzung zu zeigen',
     };
   }
@@ -1199,7 +1199,7 @@ function categoryLens(twin: TwinRecord): string {
   if (categories.some((item) => includesAny(item, ['geschichte', 'politik', 'philosophie', 'bildung']))) {
     return 'Kontext, Konsequenzen, Werte und langfristige Muster';
   }
-  return 'Profilwissen, Erfahrung, Zielklarheit und realistische nächste Schritte';
+  return 'mein Wissen, Erfahrung, Zielklarheit und realistische nächste Schritte';
 }
 
 function signatureLens(twin: TwinRecord): string {
@@ -1342,41 +1342,41 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = '')
     );
     return [
       `Anders gesagt: ${repeatedAction}`,
-      `Aus Sicht von ${twin.name}: Druck und Ruhe entstehen nicht durch mehr Denken, sondern durch kleinere Last.`,
+      'Druck und Ruhe entstehen nicht durch mehr Denken, sondern durch kleinere Last.',
       `${focus} Wenn es akut oder gefährlich wird, bleib nicht allein und hol dir sofort echte Hilfe.`,
     ].join(' ');
   }
   if (requestVariant === 1) {
     return [
-      `${lead}: ${twin.name}-Perspektive bei Druck: zuerst Last aus dem System nehmen, nicht neue Ansprüche hinzufügen.`,
+      `Druck und Ruhe: ${lead}: Ich nehme zuerst Last aus dem System, statt neue Ansprüche hinzuzufügen.`,
       `Druck und Ruhe: ${action}`,
-      `${focus} Die Profilperspektive bleibt ${hint.toLowerCase()}; bei akuter Krise bitte nicht allein bleiben und echte Hilfe holen.`,
+      `${focus} Ich bleibe bei ${hint.toLowerCase()}; bei akuter Krise bitte nicht allein bleiben und echte Hilfe holen.`,
     ].join(' ');
   }
   if (requestVariant === 2) {
     return [
-      `Druck und Ruhe bei ${twin.name}: Fang nicht mit dem großen Lebensplan an, sondern mit Entlastung im nächsten Moment.`,
+      'Druck und Ruhe: Fang nicht mit dem großen Lebensplan an, sondern mit Entlastung im nächsten Moment.',
       `${action} ${focus}`,
-      `Aus der Profilperspektive von ${twin.name} ist das kein Aufgeben, sondern klügeres Tragen. Wird es akut, hol dir sofort Hilfe dazu.`,
+      'Das ist kein Aufgeben, sondern klügeres Tragen. Wird es akut, hol dir sofort Hilfe dazu.',
     ].join(' ');
   }
   if (isWise) {
     return [
-      `${lead}: Druck und Ruhe heißt bei ${twin.name}: Nimm heute nicht dein ganzes Leben auf einmal in die Hand.`,
-      `Die Profilperspektive ist ${hint.toLowerCase()}; daraus folgt: ${action}`,
+      `Druck und Ruhe: ${lead}: Nimm heute nicht dein ganzes Leben auf einmal in die Hand.`,
+      `Ich sehe ${hint.toLowerCase()}; daraus folgt: ${action}`,
       `${focus} Wenn der Druck gefährlich wird oder du nicht mehr allein herauskommst, hol dir sofort einen echten Menschen dazu.`,
     ].join(' ');
   }
   if (twin.style === 'direct') {
     return [
-      `${lead}: Druck und Ruhe heißt bei ${twin.name}: erst stoppen, dann sortieren, dann handeln.`,
-      `Die Profilperspektive ist ${hint.toLowerCase()}; konkret: ${action}`,
+      `Druck und Ruhe: ${lead}: Erst stoppen, dann sortieren, dann handeln.`,
+      `Ich sehe ${hint.toLowerCase()}; konkret: ${action}`,
       `${focus} Bei akuter Krise: nicht allein bleiben und Hilfe holen.`,
     ].join(' ');
   }
   return [
-    `${lead}: Druck und Ruhe heißt bei ${twin.name}: den Tag auf einen machbaren Schritt reduzieren.`,
-    `Die Profilperspektive ist ${hint.toLowerCase()}; darum: ${action}`,
+    `Druck und Ruhe: ${lead}: Reduziere den Tag auf einen machbaren Schritt.`,
+    `Ich sehe ${hint.toLowerCase()}; darum: ${action}`,
     `${focus} Iss etwas, atme langsamer, sprich mit jemandem, und entscheide erst danach weiter.`,
   ].join(' ');
 }
@@ -1386,14 +1386,14 @@ function repeatedReplyForTwin(twin: TwinRecord, intentLabel: string, replySeed =
   if (intentLabel === 'Konfliktstrategie') {
     return [
       'Noch konkreter, aber ohne operative Gewaltanleitung: Erst Lagebild, Ziel und Schutz der Menschen klären.',
-      `${twin.name}-Perspektive: Versorgung, Moral, Bündnisse, Reserven und politische Folgen zusammen prüfen.`,
+      'Ich prüfe Versorgung, Moral, Bündnisse, Reserven und politische Folgen zusammen.',
       'Eine Strategie ist erst gut, wenn sie Eskalation begrenzt, Zivilisten schützt und einen realistischen Ausweg offenhält.',
     ].join(' ');
   }
   if (intentLabel === 'Geschäftsidee') {
     return [
       'Noch konkreter: Starte nicht mit einer großen Plattform.',
-      `Baue als ${twin.name} zuerst einen winzigen bezahlten Test: ein Problem, eine Zielgruppe, ein Ergebnis.`,
+      'Ich würde zuerst einen winzigen bezahlten Test bauen: ein Problem, eine Zielgruppe, ein Ergebnis.',
       'Wenn niemand dafür zahlt oder wiederkommt, ist die Idee noch nicht scharf genug.',
     ].join(' ');
   }
@@ -1436,8 +1436,8 @@ function conflictStrategyReplyForTwin(twin: TwinRecord, replySeed = ''): string 
     `${seed}|ethical`,
   );
   const profileNote = isMilitary
-    ? `${twin.name}-Perspektive: ${lens}; Krieg nicht romantisieren.`
-    : `${twin.name}-Perspektive: ${lens}; diese Frage ist mehr als ein Kampfplan.`;
+    ? `Ich prüfe ${lens}; Krieg darf nicht romantisiert werden.`
+    : `Ich prüfe ${lens}; diese Frage ist mehr als ein Kampfplan.`;
   if (isStrategic || isMilitary) {
     return [
       `Konfliktstrategie: ${profileNote}`,
@@ -1453,80 +1453,32 @@ function conflictStrategyReplyForTwin(twin: TwinRecord, replySeed = ''): string 
     ].join(' ');
   }
   return [
-    `Konfliktstrategie: ${twin.name}-Perspektive zuerst: welche Entscheidung schützt Menschen und vergiftet die Lage nicht weiter?`,
-    `Die Profilperspektive ist ${lens}; daraus folgt: Fakten, Folgen, Verantwortung und langfristige Stabilität vor impulsivem Handeln.`,
+    'Konfliktstrategie: Ich frage zuerst, welche Entscheidung Menschen schützt und die Lage nicht weiter vergiftet.',
+    `Ich sehe ${lens}; daraus folgt: Fakten, Folgen, Verantwortung und langfristige Stabilität vor impulsivem Handeln.`,
     'Keine konkrete Gewaltanleitung; sinnvoll sind Lagebild, Schutz, Versorgung, Kommunikation und realistische Auswege.',
   ].join(' ');
 }
 
 function directProfileMoveText(text: string): string {
-  const replacements: Array<[RegExp, string]> = [
-    [/^Ich stelle mich über /, 'Vorstellung über '],
-    [/^Ich beginne mit dem, /, 'Beginn mit dem, '],
-    [/^Ich beginne mit /, 'Beginn mit '],
-    [/^Ich erkläre zuerst meine /, 'Zuerst die '],
-    [/^Ich erkläre zuerst /, 'Zuerst '],
-    [/^Ich nenne kurz /, 'Kurz: '],
-    [/^Ich mache sichtbar, /, 'Sichtbar wird: '],
-    [/^Ich halte die /, 'Die '],
-    [/^Ich verdichte /, 'Verdichtet: '],
-    [/^Ich suche nach /, 'Gesucht wird: '],
-    [/^Ich suche /, 'Gesucht wird: '],
-    [/^Ich formuliere /, 'Formuliert wird: '],
-    [/^Ich trenne /, 'Trennen: '],
-    [/^Ich wähle /, 'Wählen: '],
-    [/^Ich bringe /, 'Auf den Punkt: '],
-    [/^Ich würde einem jungen Menschen raten, /, 'Rat an junge Menschen: '],
-    [/^Ich würde den Tag kleiner machen: /, 'Tag kleiner machen: '],
-    [/^Ich würde nicht gegen alles kämpfen; ich würde prüfen, wo /, 'Nicht gegen alles kämpfen; prüfen, wo '],
-    [/^Ich würde /, 'Wichtig ist: '],
-    [/^Ich rate zu /, 'Rat: '],
-    [/^Ich achte darauf, dass /, 'Achten: '],
-    [/^Ich empfehle, /, 'Empfehlung: '],
-    [/^Ich frage nicht zuerst nach /, 'Nicht zuerst nach '],
-    [/^Ich frage, /, 'Leitfrage: '],
-    [/^Ich prüfe zuerst, /, 'Zuerst prüfen: '],
-    [/^Ich prüfe, /, 'Prüfen: '],
-    [/^Ich starte mit /, 'Start mit '],
-    [/^Ich schärfe /, 'Schärfen: '],
-    [/^Ich arbeite mit /, 'Arbeiten mit '],
-    [/^Ich beobachte /, 'Beobachten: '],
-    [/^Ich beziehe Position, /, 'Position beziehen, '],
-    [/^Ich gebe dir /, 'Klare Tendenz: '],
-    [/^Ich bewerte /, 'Bewerten: '],
-    [/^Ich gewichte /, 'Gewichten: '],
-    [/^Ich unterscheide /, 'Unterscheiden: '],
-    [/^Ich halte /, 'Halten: '],
-    [/^Ich sehe zuerst auf /, 'Zuerst auf '],
-    [/^Ich mache aus /, 'Aus '],
-    [/^Ich mache /, 'Sichtbar machen: '],
-  ];
-  let cleaned = text;
-  for (const [pattern, replacement] of replacements) {
-    cleaned = cleaned.replace(pattern, replacement);
-  }
-  return cleaned
-    .replace('damit du weißt, aus welcher Linse ich antworte', 'damit klar ist, aus welcher Linse die Antwort kommt')
-    .replace('bevor ich Rat gebe', 'bevor Rat entsteht')
-    .replace('was du loslassen kannst', 'was losgelassen werden kann');
+  return text.replace('bevor ich Rat gebe', 'bevor ich dir Rat gebe');
 }
 
 function intentMove(twin: TwinRecord, intentLabel: string): string {
   const moves: Record<string, string[]> = {
     'Identität': [
       'Ich stelle mich über Rolle, Epoche und Denkweise vor, nicht als echte wiederkehrende Person.',
-      'Ich beginne mit dem, wofür dieses Profil bekannt ist, und mache die Grenze zur historischen Realität klar.',
+      'Ich beginne mit dem, wofür ich bekannt bin, und mache die Grenze zur historischen Realität klar.',
       'Ich erkläre zuerst meine Perspektive, damit du weißt, aus welcher Linse ich antworte.',
       'Ich nenne kurz Herkunft, Arbeit und Denkstil, bevor ich Rat gebe.',
-      'Ich mache sichtbar, welche Fragen dieses Profil besonders gut beleuchten kann.',
+      'Ich mache sichtbar, welche Fragen ich besonders gut beleuchten kann.',
       'Ich halte die Vorstellung knapp: Name, Rolle, Haltung und ein klarer Nutzen für dein Gespräch.',
     ],
     'Kernidee': [
       'Ich verdichte mein Denken auf eine tragende Idee, die heute noch handlungsfähig macht.',
-      'Ich suche den Grundsatz, der hinter Werk, Entscheidung und Wirkung dieses Profils steht.',
+      'Ich suche den Grundsatz, der hinter meinem Werk, meinen Entscheidungen und meiner Wirkung steht.',
       'Ich formuliere die wichtigste Idee als praktischen Prüfstein für heutige Fragen.',
       'Ich trenne den historischen Kern von moderner Übertreibung.',
-      'Ich wähle eine Idee, die zum Profil passt und dir sofort Orientierung gibt.',
+      'Ich wähle eine Idee, die zu meiner Denkweise passt und dir sofort Orientierung gibt.',
       'Ich bringe die zentrale Einsicht auf einen Satz und leite daraus eine Handlung ab.',
     ],
     'Lebensrat': [
@@ -1746,15 +1698,15 @@ function compactProfileCore(twin: TwinRecord): string {
 function shortIdentityBoundary(twin: TwinRecord): string {
   const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
   if (categories.some((item) => includesAny(item, ['literatur', 'kunst', 'musik']))) {
-    return 'Literarisch inspiriertes Profil, nicht die echte Person.';
+    return 'Ich spreche literarisch inspiriert, ohne zu behaupten, die echte wiederkehrende Person zu sein.';
   }
   if (categories.some((item) => includesAny(item, ['wissenschaft', 'physik', 'mathematik', 'technologie']))) {
-    return 'Historisch-wissenschaftliche Linse, keine reale Wiederkehr.';
+    return 'Ich antworte aus einer historisch-wissenschaftlichen Linse, nicht als reale Wiederkehr.';
   }
   if (categories.some((item) => includesAny(item, ['politik', 'fuehrung', 'strategie']))) {
-    return 'Historische Führungsrolle als Perspektive, ohne echte Autorität zu behaupten.';
+    return 'Ich nutze meine historische Führungsrolle als Perspektive, ohne echte Autorität zu behaupten.';
   }
-  return 'Historisch inspiriertes KI-Profil, nicht die echte Person.';
+  return 'Ich antworte historisch inspiriert, ohne zu behaupten, die echte Person zu sein.';
 }
 
 function turkishIntentLabel(input: string): string {
@@ -1832,14 +1784,14 @@ function turkishStressReplyForTwin(twin: TwinRecord, repeated: boolean, replySee
   if (repeated) {
     return [
       `Başka türlü söyleyeyim: ${action}`,
-      `${twin.name} bakışıyla baskı, daha çok düşünerek değil, yükü küçülterek azalır.`,
+      'Benim için baskı, daha çok düşünerek değil, yükü küçülterek azalır.',
       `${focus} Eğer durum acil ya da tehlikeliyse yalnız kalma ve hemen gerçek yardım al.`,
     ].join(' ');
   }
   return [
-    `${turkishOpening(twin, 'Baskı ve sakinlik', replySeed)} ${twin.name}-bakışı: bütün hayatı aynı anda çözmeye çalışma.`,
+    `${turkishOpening(twin, 'Baskı ve sakinlik', replySeed)} Bütün hayatı aynı anda çözmeye çalışma.`,
     `${action} ${focus}`,
-    `Bu profilin odağı ${turkishProfileFocus(twin)}. Durum acilse yalnız kalma; güvendiğin bir insandan ya da profesyonel destekten yardım al.`,
+    `Ben ${turkishProfileFocus(twin)} üzerinden bakarım. Durum acilse yalnız kalma; güvendiğin bir insandan ya da profesyonel destekten yardım al.`,
   ].join(' ');
 }
 
@@ -1858,19 +1810,19 @@ function turkishTwinReply(
 
   if (repeated) {
     return [
-      `Başka açıdan söyleyeyim: ${twin.name} profili burada ${focus} üzerinden bakar.`,
+      `Başka açıdan söyleyeyim: Ben burada ${focus} üzerinden bakarım.`,
       'Aynı soruya daha kısa cevap: varsayımı küçült, tek sonraki adımı seç, sonucu gözle.',
       'Net olmayan yerde daha büyük karar değil, daha küçük deneme gerekir.',
     ].join(' ');
   }
 
   if (intentLabel === 'Selamlama') {
-    return `Merhaba, ${twin.name} profili burada. Sorunu Türkçe sorabilirsin; kısa, doğal ve bu profilin bakışına uygun cevap gelecek.`;
+    return `Merhaba. Sorunu Türkçe sorabilirsin; kısa, doğal ve benim bakışıma uygun cevap vereceğim.`;
   }
 
   if (intentLabel === 'Dil tercihi') {
     return [
-      `Haklısın; Türkçe yazıyorsan ${twin.name} profili Türkçe cevap vermeli.`,
+      'Haklısın; Türkçe yazıyorsan Türkçe cevap vermeliyim.',
       `Bundan sonra cevabı Türkçe tutacağım: kısa, doğal ve ${focus} üzerinden.`,
       'Sorunu tekrar yazmana gerek yok; aynı konudan devam edebiliriz.',
     ].join(' ');
@@ -1878,15 +1830,15 @@ function turkishTwinReply(
 
   if (intentLabel === 'Kimlik') {
     return [
-      `${opening} ${twin.name} için hazırlanmış tarihsel esinli bir yapay zeka profili; gerçek kişinin kendisi olduğunu iddia etmez.`,
-      `Bu profilde ana bakış ${focus}.`,
+      `${opening} Ben ${twin.name}; tarihsel esinli bir yapay zeka sesi olarak konuşuyorum, gerçek kişinin kendisi olduğumu iddia etmiyorum.`,
+      `Ana bakışım ${focus}.`,
       'Bana doğrudan bir soru sor; cevabı Türkçe, kısa ve uygulanabilir tutacağım.',
     ].join(' ');
   }
 
   if (intentLabel === 'İş fikri') {
     return [
-      `${opening} ${twin.name} bakışıyla önce büyük platform değil, küçük ve ücretli bir test kurardım.`,
+      `${opening} Önce büyük platform değil, küçük ve ücretli bir test kurardım.`,
       `Odak: ${focus}. Bir hedef müşteri seç, tek acıyı çöz, bir haftada gerçek ödeme iste.`,
       'İnsanlar ödemez ya da geri dönmezse fikir kötü değil; sadece henüz yeterince keskin değildir.',
     ].join(' ');
@@ -1895,21 +1847,21 @@ function turkishTwinReply(
   if (intentLabel === 'Hava ve iklim') {
     return [
       `${opening} Yerel hava etkileri mümkün olabilir; ama küresel gizli kontrol iddiası için sert kanıt gerekir.`,
-      `${twin.name} profiliyle önce ölçüm, uydu verisi, rüzgar, yağış ve açık programlara bakardım.`,
+      'Önce ölçüm, uydu verisi, rüzgar, yağış ve açık programlara bakardım.',
       'Kanıt yoksa buna bilgi değil, şüphe demek daha dürüst olur.',
     ].join(' ');
   }
 
   if (intentLabel === 'Yatırım') {
     return [
-      `${opening} ${twin.name}-bakışıyla önce heyecanı değil, kaybedebileceğin tarafı hesaplamak gerekir.`,
-      `Profil odağı: ${focus}. Parayı, zaman ufkunu, nakit ihtiyacını ve en kötü senaryoyu ayrı ayrı yaz.`,
+      `${opening} Önce heyecanı değil, kaybedebileceğin tarafı hesaplamak gerekir.`,
+      `Odağım: ${focus}. Parayı, zaman ufkunu, nakit ihtiyacını ve en kötü senaryoyu ayrı ayrı yaz.`,
       'Karar acele, korku ya da sosyal baskıyla geliyorsa beklemek de bir karardır.',
     ].join(' ');
   }
 
   return [
-    `${opening} ${intentLabel}: ${twin.name} profiliyle önce ${focus} üzerinden bakarım.`,
+    `${opening} ${intentLabel}: Ben önce ${focus} üzerinden bakarım.`,
     'Cevabım: konuyu büyütmeden tek temel varsayımı bul, sonra küçük ve gözlenebilir bir adım dene.',
     'Böylece hem hızlı ilerlersin hem de yanlış yöne büyük enerji harcamazsın.',
   ].join(' ');
@@ -1934,7 +1886,7 @@ export function ruleBasedTwinReply(
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `${opening} ${intent.label}: ${twin.name}-Profil, ${style.voice}.`,
+      `${opening} ${intent.label}: Ich antworte ${style.voice}.`,
       intentMove(twin, intent.label),
       `${closingLabel(twin, intent.label)}: ${intent.action}. Hinweis: ${intent.caution}.`,
       'Sobald Beschreibung, Wissen oder Medien hinterlegt sind, wird meine Antwort deutlich profilgenauer.',
@@ -1951,12 +1903,12 @@ export function ruleBasedTwinReply(
   const variant = hashText(`${twin.slug}|${intent.label}|${trimmed}|${twin.style}`) % 4;
 
   if (intent.label === 'Begrüßung') {
-    return `${opening} ${twin.name}, ${role}. Stell direkt eine Frage; die Antwort bleibt kurz, konkret und aus dieser Profilperspektive.`;
+    return `${opening} Ich bin ${twin.name}, ${role}. Stell direkt deine Frage; ich antworte kurz, konkret und aus meiner Perspektive.`;
   }
 
   if (intent.label === 'Identität') {
     return [
-      `${opening} ${intent.label}: ${twin.name}, ${role}. ${boundary}`,
+      `${opening} ${intent.label}: Ich bin ${twin.name}, ${role}. ${boundary}`,
       `${core}.`,
       `${close}: Frag mich dort, wo ${contextNote.toLowerCase()} wirklich helfen.`,
     ].join(' ');
@@ -1965,7 +1917,7 @@ export function ruleBasedTwinReply(
   if (intent.label === 'Geschäftsidee') {
     const business = businessConceptForTwin(twin);
     return [
-      `${opening} Geschäftsidee: ${twin.name}-Perspektive, geprägt von ${core.toLowerCase()}: ${business.concept}.`,
+      `${opening} Geschäftsidee: Aus meiner Erfahrung mit ${core.toLowerCase()} würde ich ${business.concept}.`,
       `Zielgruppe: ${business.customer}.`,
       `${close}: ${business.firstTest}.`,
     ].join(' ');
@@ -1981,7 +1933,7 @@ export function ruleBasedTwinReply(
 
   if (variant === 0) {
     return [
-      `${opening} ${intent.label}: ${twin.name}-Linse zuerst: ${contextNote.toLowerCase()}.`,
+      `${opening} ${intent.label}: Ich beginne mit ${contextNote.toLowerCase()}.`,
       move,
       `${close}: ${intent.action}. Hinweis: ${intent.caution}.`,
     ].join(' ');
@@ -1989,7 +1941,7 @@ export function ruleBasedTwinReply(
 
   if (variant === 1) {
     return [
-      `${opening} ${intent.label}: Für ${twin.name} ist der Kern: ${core}.`,
+      `${opening} ${intent.label}: Für mich liegt der Kern hier: ${core}.`,
       `Daraus folgt für deine Frage: ${move}`,
       `${close}: ${intent.action}.`,
     ].join(' ');
@@ -1997,14 +1949,14 @@ export function ruleBasedTwinReply(
 
   if (variant === 2) {
     return [
-      `${opening} ${intent.label}: ${twin.name}-Perspektive: nicht abstrakt, sondern durch ${contextNote.toLowerCase()}.`,
+      `${opening} ${intent.label}: Ich antworte nicht abstrakt, sondern durch ${contextNote.toLowerCase()}.`,
       move,
       `${signature}`,
     ].join(' ');
   }
 
   return [
-    `${opening} ${intent.label}: ${twin.name}-Stil: ${style.voice}.`,
+    `${opening} ${intent.label}: Ich bleibe ${style.voice}.`,
     `Mit Blick auf ${contextNote}: ${move}`,
     `${close}: ${intent.action}; ${intent.caution}.`,
   ].join(' ');
