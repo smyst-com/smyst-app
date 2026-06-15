@@ -811,6 +811,11 @@ function includesAny(value: string, needles: string[]): boolean {
 function normalizedQuestion(value: string): string {
   return value
     .toLowerCase()
+    .replace(/[ç]/g, 'c')
+    .replace(/[ğ]/g, 'g')
+    .replace(/[ı]/g, 'i')
+    .replace(/[İi̇]/g, 'i')
+    .replace(/[ş]/g, 's')
     .replace(/[ä]/g, 'ae')
     .replace(/[ö]/g, 'oe')
     .replace(/[ü]/g, 'ue')
@@ -838,6 +843,30 @@ function repeatedUserQuestion(input: string, previousMessages: ChatMessage[] = [
     const exact = normalizedQuestion(message.content) === normalizedQuestion(input);
     return exact || similarQuestionScore(message.content, input) >= 0.72;
   });
+}
+
+function languageSearchText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[ç]/g, 'c')
+    .replace(/[ğ]/g, 'g')
+    .replace(/[ı]/g, 'i')
+    .replace(/[İi̇]/g, 'i')
+    .replace(/[ş]/g, 's')
+    .replace(/[ö]/g, 'o')
+    .replace(/[ü]/g, 'u')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function detectReplyLanguage(input: string): 'de' | 'tr' {
+  if (/[çğıİşÇĞŞ]/.test(input)) return 'tr';
+  const search = ` ${languageSearchText(input)} `;
+  const strongSignals = [' merhaba ', ' selam ', ' turkce ', ' cevap ', ' yapmaliyim ', ' ne yapmali ', ' cok ', ' baski '];
+  if (strongSignals.some((signal) => search.includes(signal))) return 'tr';
+  const signals = [' ben ', ' bana ', ' sen ', ' ne ', ' nasil ', ' neden ', ' hayat ', ' yardim ', ' stres ', ' para '];
+  const score = signals.reduce((sum, signal) => sum + (search.includes(signal) ? 1 : 0), 0);
+  return score >= 2 ? 'tr' : 'de';
 }
 
 function recentPromptHistory(memory: ChatRecentPromptMemory | null, now: number): ChatMessage[] {
@@ -1420,6 +1449,164 @@ function shortIdentityBoundary(twin: TwinRecord): string {
   return 'Ich bin ein historisch inspiriertes KI-Profil, nicht die echte Person.';
 }
 
+function turkishIntentLabel(input: string): string {
+  const search = languageSearchText(input);
+  if (includesAny(search, ['turkce', 'almanca', 'dil', 'cevap veriyorsun', 'cevap ver'])) return 'Dil tercihi';
+  if (includesAny(search, ['merhaba', 'selam', 'gunaydin', 'iyi aksamlar'])) return 'Selamlama';
+  if (includesAny(search, ['kimsin', 'sen kimsin', 'kendini tanit', 'nesin'])) return 'Kimlik';
+  if (includesAny(search, ['en onemli fikir', 'ana fikir', 'temel fikir', 'fikrin ne'])) return 'Ana fikir';
+  if (includesAny(search, ['hayat tavsiyesi', 'genc', 'genclere', 'ne tavsiye', 'ogut'])) return 'Hayat tavsiyesi';
+  if (includesAny(search, ['baski', 'stres', 'kaygi', 'korku', 'cok fazla', 'yoruldum', 'bunaldim', 'ne yapmaliyim'])) return 'Baskı ve sakinlik';
+  if (includesAny(search, ['is fikri', 'startup', 'sirket', 'urun', 'para kazan', 'hangi is', 'ne is'])) return 'İş fikri';
+  if (includesAny(search, ['hava', 'iklim', 'manipule', 'bulut', 'geoengineering'])) return 'Hava ve iklim';
+  if (includesAny(search, ['teknoloji', 'yapay zeka', 'ai', 'makine', 'dijital'])) return 'Teknoloji';
+  if (includesAny(search, ['liderlik', 'basari', 'yonetmek', 'ekip'])) return 'Liderlik ve başarı';
+  if (includesAny(search, ['yatirim', 'hisse', 'sermaye', 'risk', 'para'])) return 'Yatırım';
+  if (includesAny(search, ['pazarlama', 'kampanya', 'musteri', 'buyume'])) return 'Pazarlama stratejisi';
+  if (includesAny(search, ['gelecek', 'tahmin', 'trend'])) return 'Gelecek tahmini';
+  return 'Değerlendirme';
+}
+
+function turkishProfileFocus(twin: TwinRecord): string {
+  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
+  if (categories.some((item) => includesAny(item, ['physik', 'mathematik', 'wissenschaft', 'technologie']))) {
+    return 'kanıt, deney, basit model ve ölçülebilir işaretler';
+  }
+  if (categories.some((item) => includesAny(item, ['kunst', 'musik', 'design', 'literatur']))) {
+    return 'ifade, ritim, insan duygusu ve iyi işçilik';
+  }
+  if (categories.some((item) => includesAny(item, ['philosophie', 'ethik', 'religion', 'weise']))) {
+    return 'ölçü, sadeleşme, anlam ve uzun vadeli denge';
+  }
+  if (categories.some((item) => includesAny(item, ['politik', 'strategie', 'fuehrung', 'führung']))) {
+    return 'sorumluluk, yön, güç dengesi ve sonuçlar';
+  }
+  if (categories.some((item) => includesAny(item, ['business', 'marketing', 'wirtschaft']))) {
+    return 'müşteri, değer önerisi, risk ve ilk gerçek test';
+  }
+  return 'profilin bakışı, gerçekçi adımlar ve insan etkisi';
+}
+
+function turkishOpening(twin: TwinRecord, intentLabel: string, input: string): string {
+  const seed = `${twin.slug}|tr|${intentLabel}|${input}|${twin.style}`;
+  const openings: Record<TwinStyle, string[]> = {
+    direct: ['Kısa cevap:', 'Net söyleyeyim:', 'Önce şunu ayıralım:', 'Doğrudan bakarsam:'],
+    humorous: ['Hafifçe gülümseyerek:', 'Çok büyütmeden:', 'Tatlı ama net söyleyeyim:', 'Biraz espriyle:'],
+    wise: ['Sakin bakarsak:', 'Bir adım geri çekilip:', 'Daha yavaş düşünürsek:', 'Sessizce bakınca:'],
+    neutral: ['Düzenli bakarsak:', 'Somut bakarsak:', 'Analitik cevap:', 'Ölçülü cevap:'],
+    warm: ['İnsanca söyleyeyim:', 'Yanında durarak söyleyeyim:', 'Sana yakın bir yerden:', 'Önce sakinleşelim:'],
+  };
+  return pickStable(openings[twin.style] ?? openings.warm, seed);
+}
+
+function turkishStressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed: string): string {
+  const seed = `${twin.slug}|tr|stress|${replySeed}`;
+  const action = pickStable(
+    [
+      'Bugün sadece gerçekten gerekli olan bir işi seç, bir işi bilinçli olarak ertele.',
+      'Üç şey yaz: şu an şart olan, bekleyebilecek olan ve yardım isteyebileceğin kişi.',
+      'Sorunu tek küçük adıma indir; bugün temizce bitirebileceğin parçayı seç.',
+      'Önce bedenini toparla: su iç, yavaş nefes al, sonra karar ver.',
+      'Bir sözünü azalt, bir kişiden destek iste, sonra sadece ilk adımı at.',
+    ],
+    `${seed}|action`,
+  );
+  const focus = pickStable(
+    [
+      'İlerlemeyi her şeyi çözmekle değil, tek sağlam adımla ölç.',
+      'Yorgun bir zihin baskıyı büyütür; önce hızı düşür.',
+      'Baskıyı sesli söylemek bile onu biraz küçültür.',
+      'Bugün mükemmel olmak zorunda değilsin; yeterince iyi bir adım yeter.',
+      'Yükü tek başına taşımak zorunda değilsin.',
+    ],
+    `${seed}|focus`,
+  );
+  if (repeated) {
+    return [
+      `Başka türlü söyleyeyim: ${action}`,
+      `${twin.name} bakışıyla baskı, daha çok düşünerek değil, yükü küçülterek azalır.`,
+      `${focus} Eğer durum acil ya da tehlikeliyse yalnız kalma ve hemen gerçek yardım al.`,
+    ].join(' ');
+  }
+  return [
+    `${turkishOpening(twin, 'Baskı ve sakinlik', replySeed)} ${twin.name} gibi cevap verirsem: bütün hayatı aynı anda çözmeye çalışma.`,
+    `${action} ${focus}`,
+    `Bu profilin odağı ${turkishProfileFocus(twin)}. Durum acilse yalnız kalma; güvendiğin bir insandan ya da profesyonel destekten yardım al.`,
+  ].join(' ');
+}
+
+function turkishTwinReply(
+  input: string,
+  twin: TwinRecord,
+  previousMessages: ChatMessage[] = [],
+  replySeed = '',
+): string {
+  const intentLabel = turkishIntentLabel(input);
+  const repeated = repeatedUserQuestion(input, previousMessages);
+  const opening = turkishOpening(twin, intentLabel, input);
+  const focus = turkishProfileFocus(twin);
+
+  if (intentLabel === 'Baskı ve sakinlik') return turkishStressReplyForTwin(twin, repeated, replySeed);
+
+  if (repeated) {
+    return [
+      `Başka açıdan söyleyeyim: ${twin.name} profili burada ${focus} üzerinden bakar.`,
+      'Aynı soruya daha kısa cevap: varsayımı küçült, tek sonraki adımı seç, sonucu gözle.',
+      'Net olmayan yerde daha büyük karar değil, daha küçük deneme gerekir.',
+    ].join(' ');
+  }
+
+  if (intentLabel === 'Selamlama') {
+    return `Merhaba, ben ${twin.name} profili. Sorunu Türkçe sorabilirsin; kısa, doğal ve bu profilin bakışına uygun cevap vereceğim.`;
+  }
+
+  if (intentLabel === 'Dil tercihi') {
+    return [
+      `Haklısın; Türkçe yazıyorsan ${twin.name} profili Türkçe cevap vermeli.`,
+      `Bundan sonra cevabı Türkçe tutacağım: kısa, doğal ve ${focus} üzerinden.`,
+      'Sorunu tekrar yazmana gerek yok; aynı konudan devam edebiliriz.',
+    ].join(' ');
+  }
+
+  if (intentLabel === 'Kimlik') {
+    return [
+      `${opening} Ben ${twin.name} için hazırlanmış tarihsel esinli bir yapay zeka profilim; gerçek kişinin kendisi olduğumu iddia etmem.`,
+      `Bu profilde ana bakış ${focus}.`,
+      'Bana doğrudan bir soru sor; cevabı Türkçe, kısa ve uygulanabilir tutacağım.',
+    ].join(' ');
+  }
+
+  if (intentLabel === 'İş fikri') {
+    return [
+      `${opening} ${twin.name} bakışıyla önce büyük platform değil, küçük ve ücretli bir test kurardım.`,
+      `Odak: ${focus}. Bir hedef müşteri seç, tek acıyı çöz, bir haftada gerçek ödeme iste.`,
+      'İnsanlar ödemez ya da geri dönmezse fikir kötü değil; sadece henüz yeterince keskin değildir.',
+    ].join(' ');
+  }
+
+  if (intentLabel === 'Hava ve iklim') {
+    return [
+      `${opening} Yerel hava etkileri mümkün olabilir; ama küresel gizli kontrol iddiası için sert kanıt gerekir.`,
+      `${twin.name} profiliyle önce ölçüm, uydu verisi, rüzgar, yağış ve açık programlara bakardım.`,
+      'Kanıt yoksa buna bilgi değil, şüphe demek daha dürüst olur.',
+    ].join(' ');
+  }
+
+  if (intentLabel === 'Yatırım') {
+    return [
+      `${opening} ${twin.name} gibi düşünürsem önce heyecanı değil, kaybedebileceğin tarafı hesaplarım.`,
+      `Profil odağı: ${focus}. Parayı, zaman ufkunu, nakit ihtiyacını ve en kötü senaryoyu ayrı ayrı yaz.`,
+      'Karar acele, korku ya da sosyal baskıyla geliyorsa beklemek de bir karardır.',
+    ].join(' ');
+  }
+
+  return [
+    `${opening} ${intentLabel}: ${twin.name} profiliyle önce ${focus} üzerinden bakarım.`,
+    'Cevabım: konuyu büyütmeden tek temel varsayımı bul, sonra küçük ve gözlenebilir bir adım dene.',
+    'Böylece hem hızlı ilerlersin hem de yanlış yöne büyük enerji harcamazsın.',
+  ].join(' ');
+}
+
 export function ruleBasedTwinReply(
   input: string,
   twin: TwinRecord,
@@ -1427,6 +1614,9 @@ export function ruleBasedTwinReply(
   replySeed = '',
 ): string {
   const trimmed = input.trim();
+  if (detectReplyLanguage(trimmed) === 'tr') {
+    return turkishTwinReply(trimmed, twin, previousMessages, replySeed);
+  }
   const intent = questionIntent(trimmed);
   const style = styleLens(twin.style);
   const opening = conversationalOpening(twin, intent.label, trimmed);

@@ -42,6 +42,11 @@ const prompts = [
   ['Investition', 'Soll ich 20.000 Euro in dieses neue Produkt investieren?'],
   ['Marketingstrategie', 'Welche Marketingstrategie wuerdest du fuer den Start empfehlen?'],
 ];
+const turkishPrompts = [
+  'Çok baskı altındayım, ne yapmalıyım?',
+  'Sen kimsin ve bana nasıl yardım edersin?',
+  'Türkçe yazıyorum, lütfen Türkçe cevap ver.',
+];
 
 const now = Date.now();
 const profiles = CURATED_PUBLIC_TWIN_SPECS.map((spec, index) => ({
@@ -135,6 +140,20 @@ for (const conversation of conversations) {
   const seededPressureB = ruleBasedTwinReply(pressurePrompt, profile, [], 'seed-b');
   if (seededPressureA === seededPressureB) {
     issues.push({ profile: conversation.profile, issue: 'seeded_pressure_prompt_not_varied' });
+  }
+
+  for (const turkishPrompt of turkishPrompts) {
+    const answer = ruleBasedTwinReply(turkishPrompt, profile, [], 'turkish-language-check');
+    const germanLeak = /\b(Ich|nicht|und|oder|Wenn|Meine|Druck und Ruhe|Ziel, Kontext|Profilperspektive|Antwortstil)\b/.test(answer);
+    const turkishSignal = /(Türkçe|cevap|baskı|yardım|değil|önce|adım|yapay zeka|sakinlik)/i.test(answer);
+    if (!answer.includes(conversation.profile) || germanLeak || !turkishSignal) {
+      issues.push({
+        profile: conversation.profile,
+        prompt: turkishPrompt,
+        issue: 'turkish_prompt_not_answered_in_turkish',
+        excerpt: answer.slice(0, 180),
+      });
+    }
   }
 }
 
