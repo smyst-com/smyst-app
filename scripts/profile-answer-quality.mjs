@@ -99,6 +99,7 @@ const tooLongAnswers = [];
 const tooShortAnswers = [];
 const bannedSelfIntro = [];
 const bannedThirdPersonRole = [];
+const bannedRoleScaffold = [];
 const minimumAnswerLength = 250;
 for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
   const [intentLabel, prompt] = prompts[promptIndex];
@@ -126,6 +127,9 @@ for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
     );
     if (thirdPerson.test(answer)) {
       bannedThirdPersonRole.push([prompt, sample.profile, answer.slice(0, 260)]);
+    }
+    if (/\bIch bleibe\b|Mit Blick auf|meine Rolle, meinen Stil|Sobald Beschreibung|tarihsel esinli bir yapay zeka/i.test(answer)) {
+      bannedRoleScaffold.push([prompt, sample.profile, answer.slice(0, 260)]);
     }
     if (answer.length > 950) tooLongAnswers.push([prompt, sample.profile, answer.length]);
     if (answer.length < minimumAnswerLength) tooShortAnswers.push([prompt, sample.profile, answer.length]);
@@ -164,6 +168,7 @@ console.log(JSON.stringify({
     tooShortAnswers.length === 0 &&
     bannedSelfIntro.length === 0 &&
     bannedThirdPersonRole.length === 0 &&
+    bannedRoleScaffold.length === 0 &&
     avgLength <= 760,
   profileCount: profiles.length,
   promptCount: prompts.length,
@@ -179,6 +184,7 @@ console.log(JSON.stringify({
   tooShortAnswers,
   bannedSelfIntro,
   bannedThirdPersonRole,
+  bannedRoleScaffold,
   avgAnswerLength: Number(avgLength.toFixed(1)),
   examples,
 }, null, 2));
@@ -192,6 +198,7 @@ if (
   tooShortAnswers.length ||
   bannedSelfIntro.length ||
   bannedThirdPersonRole.length ||
+  bannedRoleScaffold.length ||
   avgLength > 760
 ) {
   process.exit(1);

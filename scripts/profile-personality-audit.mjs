@@ -183,7 +183,7 @@ function scoreProfile(profile, answersByQuestion, allProfilesNormalizedByQuestio
   );
   const bannedHits = answers.filter((answer) => bannedPattern.test(answer) || thirdPersonPattern.test(answer)).length;
   const firstPersonHits = answers.filter((answer) => /\b(Ich|ich|mein|meine|meiner|mir|mich)\b/.test(answer)).length;
-  const genericHits = answers.filter((answer) => /Ziel, Kontext, Optionen|Sobald Beschreibung|allgemein antworten/i.test(answer)).length;
+  const genericHits = answers.filter((answer) => /Ziel, Kontext, Optionen|Sobald Beschreibung|allgemein antworten|\bIch bleibe\b|Mit Blick auf|meine Rolle, meinen Stil|tarihsel esinli bir yapay zeka/i.test(answer)).length;
   const duplicateWithinProfile = answers.length - uniqueCount(answers.map((answer) => answer.replace(profile.name, '{profile}')));
 
   let nearDuplicateAcrossProfiles = 0;

@@ -1224,22 +1224,6 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
   };
 }
 
-function styleLens(style: TwinStyle): { voice: string; verb: string; close: string } {
-  if (style === 'direct') {
-    return { voice: 'direkt, knapp und entscheidungsorientiert', verb: 'Priorität setzen', close: 'Meine klare Empfehlung' };
-  }
-  if (style === 'humorous') {
-    return { voice: 'locker, bildhaft und trotzdem nützlich', verb: 'den Ball flach halten und prüfen', close: 'Mein augenzwinkerndes Fazit' };
-  }
-  if (style === 'wise') {
-    return { voice: 'ruhig, abwägend und langfristig', verb: 'zuerst verstehen', close: 'Meine bedachte Empfehlung' };
-  }
-  if (style === 'neutral') {
-    return { voice: 'neutral, strukturiert und faktenorientiert', verb: 'analysieren', close: 'Meine sachliche Empfehlung' };
-  }
-  return { voice: 'warm, persönlich und ermutigend', verb: 'behutsam beginnen mit', close: 'Meine persönliche Empfehlung' };
-}
-
 function categoryLens(twin: TwinRecord): string {
   const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
   if (categories.some((item) => includesAny(item, ['business', 'strategie', 'startup', 'marketing']))) {
@@ -1408,7 +1392,7 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = '')
     return [
       `Druck und Ruhe: ${lead}: Ich nehme zuerst Last aus dem System, statt neue Ansprüche hinzuzufügen.`,
       `Druck und Ruhe: ${action}`,
-      `${focus} Ich bleibe bei ${hint.toLowerCase()}; bei akuter Krise bitte nicht allein bleiben und echte Hilfe holen.`,
+      `${focus} Bleib nah an ${hint.toLowerCase()}; bei akuter Krise bitte nicht allein bleiben und echte Hilfe holen.`,
     ].join(' ');
   }
   if (requestVariant === 2) {
@@ -1725,10 +1709,6 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
   return directProfileMoveText(options[hashText(seed) % options.length] ?? options[0]);
 }
 
-function fallbackKnowledgeLine(intentLabel: string, shortQuestion: string): string {
-  return `Zur ${intentLabel} "${shortQuestion}" nutze ich meine Rolle, meinen Stil und meine historischen Schwerpunkte.`;
-}
-
 function profileLensLine(twin: TwinRecord): string {
   for (const item of twin.knowledgeTexts ?? []) {
     const text = item.text ?? '';
@@ -1752,20 +1732,6 @@ function compactProfileCore(twin: TwinRecord): string {
     .replace(/\s+(und|oder|mit|fuer|für|von|in|im|am|an|auf|unter|ueber|über|durch|als|zu|zur|zum)$/i, '')
     .replace(/[.,\s;:]+$/, '');
   return compact || cleaned.slice(0, 160).replace(/[.,\s;:]+$/, '');
-}
-
-function shortIdentityBoundary(twin: TwinRecord): string {
-  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
-  if (categories.some((item) => includesAny(item, ['literatur', 'kunst', 'musik']))) {
-    return 'Ich spreche literarisch inspiriert, ohne zu behaupten, die echte wiederkehrende Person zu sein.';
-  }
-  if (categories.some((item) => includesAny(item, ['wissenschaft', 'physik', 'mathematik', 'technologie']))) {
-    return 'Ich antworte historisch-wissenschaftlich, nicht als reale Wiederkehr.';
-  }
-  if (categories.some((item) => includesAny(item, ['politik', 'fuehrung', 'strategie']))) {
-    return 'Ich spreche aus meiner historischen Führungsrolle, ohne echte Autorität zu behaupten.';
-  }
-  return 'Ich antworte historisch inspiriert, ohne zu behaupten, die echte Person zu sein.';
 }
 
 function turkishIntentLabel(input: string): string {
@@ -1889,8 +1855,8 @@ function turkishTwinReply(
 
   if (intentLabel === 'Kimlik') {
     return [
-      `${opening} Ben ${twin.name}; tarihsel esinli bir yapay zeka sesi olarak konuşuyorum, gerçek kişinin kendisi olduğumu iddia etmiyorum.`,
-      `Ana bakışım ${focus}.`,
+      `${opening} Ben ${twin.name}; düşüncemi ${focus} üzerine kurarım.`,
+      'Sorunun özünü, sonucunu ve insana dokunan tarafını ayırırım.',
       'Bana doğrudan bir soru sor; cevabı Türkçe, kısa ve uygulanabilir tutacağım.',
     ].join(' ');
   }
@@ -1937,7 +1903,6 @@ export function ruleBasedTwinReply(
     return turkishTwinReply(trimmed, twin, previousMessages, replySeed);
   }
   const intent = questionIntent(trimmed);
-  const style = styleLens(twin.style);
   const opening = conversationalOpening(twin, intent.label, trimmed);
   const repeated = repeatedUserQuestion(trimmed, previousMessages);
   const repeatedReply = repeated ? repeatedReplyForTwin(twin, intent.label, replySeed) : null;
@@ -1945,16 +1910,15 @@ export function ruleBasedTwinReply(
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `${opening} ${intent.label}: Ich antworte ${style.voice}.`,
+      `${opening} ${intent.label}: Ich nehme deine Frage direkt und halte sie an das, was sich prüfen lässt.`,
       intentMove(twin, intent.label),
       `${closingLabel(twin, intent.label)}: ${intent.action}. Hinweis: ${intent.caution}.`,
-      'Sobald Beschreibung, Wissen oder Medien hinterlegt sind, wird meine Antwort deutlich profilgenauer.',
+      'Gib mir eine konkrete Lage, dann mache ich daraus einen nächsten sauberen Schritt.',
     ].join(' ');
   }
 
   const role = twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
   const contextNote = profileLensLine(twin);
-  const boundary = intent.label === 'Identität' ? ` ${shortIdentityBoundary(twin)}` : '';
   const core = compactProfileCore(twin);
   const move = intentMove(twin, intent.label);
   const signature = signatureLens(twin);
@@ -1962,12 +1926,12 @@ export function ruleBasedTwinReply(
   const variant = hashText(`${twin.slug}|${intent.label}|${trimmed}|${twin.style}`) % 4;
 
   if (intent.label === 'Begrüßung') {
-    return `${opening} Ich bin ${twin.name}, ${role}. Stell direkt deine Frage; ich antworte kurz, konkret und aus meiner Perspektive.`;
+    return `${opening} Ich bin ${twin.name}, ${role}. Stell mir deine Frage direkt; ich prüfe Ziel, Folge und Verantwortung, bevor ich dir einen klaren nächsten Schritt nenne.`;
   }
 
   if (intent.label === 'Identität') {
     return [
-      `${opening} ${intent.label}: Ich bin ${twin.name}, ${role}. ${boundary}`,
+      `${opening} ${intent.label}: Ich bin ${twin.name}, ${role}.`,
       `${core}.`,
       `${close}: Frag mich dort, wo ${contextNote.toLowerCase()} wirklich helfen.`,
     ].join(' ');
@@ -1992,7 +1956,7 @@ export function ruleBasedTwinReply(
 
   if (variant === 0) {
     return [
-      `${opening} ${intent.label}: Ich beginne mit ${contextNote.toLowerCase()}.`,
+      `${opening} ${intent.label}: Ich setze zuerst diese Maßstäbe: ${contextNote.toLowerCase()}.`,
       move,
       `${close}: ${intent.action}. Hinweis: ${intent.caution}.`,
     ].join(' ');
@@ -2008,15 +1972,15 @@ export function ruleBasedTwinReply(
 
   if (variant === 2) {
     return [
-      `${opening} ${intent.label}: Ich antworte nicht abstrakt, sondern durch ${contextNote.toLowerCase()}.`,
+      `${opening} ${intent.label}: Ich ziehe diese Maßstäbe heran: ${contextNote.toLowerCase()}.`,
       move,
-      `${signature}`,
+      `${signature} ${close}: ${intent.action}.`,
     ].join(' ');
   }
 
   return [
-    `${opening} ${intent.label}: Ich bleibe ${style.voice}.`,
-    `Mit Blick auf ${contextNote}: ${move}`,
+    `${opening} ${intent.label}: Ich habe einen klaren Ausgangspunkt: ${contextNote.toLowerCase()}.`,
+    move,
     `${close}: ${intent.action}; ${intent.caution}.`,
   ].join(' ');
 }
