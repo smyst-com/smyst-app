@@ -809,6 +809,7 @@ function SmystStartPage({
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatId, setChatId] = useState<string | null>(null)
+  const [chatProfileKey, setChatProfileKey] = useState<string | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [namePickerOpen, setNamePickerOpen] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
@@ -1002,9 +1003,19 @@ function SmystStartPage({
     }
   }, [input, selectedTwin])
 
-  const selectTwin = (twin: StartTwin) => {
-    setSelectedTwin(twin)
+  const resetActiveChat = () => {
     setChatId(null)
+    setChatProfileKey(null)
+    setMessages([])
+    resizeInput('')
+    setAttachments([])
+    setComposerMenuOpen(false)
+    setComposerNotice('')
+  }
+
+  const selectTwin = (twin: StartTwin) => {
+    if (selectedTwin?.id !== twin.id) resetActiveChat()
+    setSelectedTwin(twin)
     setQuery('')
     setActiveCategory(null)
     setNamePickerOpen(false)
@@ -1326,12 +1337,14 @@ function SmystStartPage({
     setAttachments([])
 
     try {
-      let nextChatId = chatId
+      const twinChatKey = twin.publicProfile && twin.profileSlug ? twin.profileSlug : twin.id
+      let nextChatId = chatProfileKey === twinChatKey ? chatId : null
       if (!nextChatId) {
-        const chat = await twinMvp.startTwinChat(twin.publicProfile && twin.profileSlug ? twin.profileSlug : twin.id)
+        const chat = await twinMvp.startTwinChat(twinChatKey)
         if (!chat) throw new Error('Chat konnte nicht gestartet werden.')
         nextChatId = chat.id
         setChatId(nextChatId)
+        setChatProfileKey(twinChatKey)
       }
       const reply = await twinMvp.sendTwinMessage(nextChatId, fullMessage)
       if (!reply?.message?.content) throw new Error('Keine Antwort vom Profil erhalten.')
@@ -1553,6 +1566,7 @@ function SmystStartPage({
               type="button"
               onClick={() => {
                 setSelectedTwin(null)
+                resetActiveChat()
                 setNamePickerOpen(true)
                 setQuery('')
                 setActiveCategory(null)
@@ -1609,6 +1623,7 @@ function SmystStartPage({
                 value={query}
                 onChange={(event) => {
                   setQuery(event.target.value)
+                  if (selectedTwin) resetActiveChat()
                   setSelectedTwin(null)
                   setNamePickerOpen(true)
                 }}
@@ -1641,6 +1656,8 @@ function SmystStartPage({
                 type="button"
                 onClick={() => {
                   setActiveCategory(null)
+                  if (selectedTwin) resetActiveChat()
+                  setSelectedTwin(null)
                   setNamePickerOpen(true)
                 }}
                 className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold transition ${
@@ -1657,6 +1674,7 @@ function SmystStartPage({
                   type="button"
                   onClick={() => {
                     setActiveCategory(category.name)
+                    if (selectedTwin) resetActiveChat()
                     setNamePickerOpen(true)
                     setSelectedTwin(null)
                   }}
