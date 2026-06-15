@@ -42,7 +42,7 @@ const deployments = [
     routes: ['smyst.com/api/*'],
     vars: commonVars,
     kv: ['SESSIONS', 'OAUTH_STATE', 'METADATA'],
-    secrets: [],
+    secrets: ['AUTH_HMAC_SECRET'],
   },
   {
     name: 'smyst-storage',

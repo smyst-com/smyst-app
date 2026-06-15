@@ -152,6 +152,7 @@ type AppView =
   | 'imprint'
   | 'dashboard'
   | 'twin-profile'
+  | 'not-found'
 
 type AppTheme = 'dark' | 'light'
 type NameSortMode = 'famous' | 'used' | 'popular' | 'trend' | 'manual'
@@ -319,7 +320,7 @@ function contactsToText(contacts: BrowserContact[]) {
     .join('\n')
 }
 
-const viewPaths: Record<Exclude<AppView, 'twin-profile'>, string> = {
+const viewPaths: Record<Exclude<AppView, 'twin-profile' | 'not-found'>, string> = {
   landing: '/',
   'account-profile': '/profile',
   'my-twins': '/twins',
@@ -336,6 +337,7 @@ const viewPaths: Record<Exclude<AppView, 'twin-profile'>, string> = {
 
 function initialRoute(): { view: AppView; profileSlug: string | null; privateTwinId: string | null } {
   const path = window.location.pathname
+  if (path === '/') return { view: 'landing', profileSlug: null, privateTwinId: null }
   if (path.startsWith('/t/')) {
     return { view: 'twin-profile', profileSlug: decodeURIComponent(path.slice(3)), privateTwinId: null }
   }
@@ -353,7 +355,7 @@ function initialRoute(): { view: AppView; profileSlug: string | null; privateTwi
   if (path === '/terms') return { view: 'terms', profileSlug: null, privateTwinId: null }
   if (path === '/imprint') return { view: 'imprint', profileSlug: null, privateTwinId: null }
   if (path === '/dashboard') return { view: 'dashboard', profileSlug: null, privateTwinId: null }
-  return { view: 'landing', profileSlug: null, privateTwinId: null }
+  return { view: 'not-found', profileSlug: null, privateTwinId: null }
 }
 
 export default function App() {
@@ -397,7 +399,7 @@ export default function App() {
     setProfileSlug(null)
     setPrivateTwinId(null)
     setCurrentView(view)
-    if (view !== 'twin-profile') window.history.pushState({}, '', viewPaths[view])
+    if (view !== 'twin-profile' && view !== 'not-found') window.history.pushState({}, '', viewPaths[view])
     window.scrollTo(0, 0)
   }
 
@@ -543,6 +545,7 @@ export default function App() {
         {currentView === 'terms' && <LegalView kind="terms" />}
         {currentView === 'imprint' && <LegalView kind="imprint" />}
         {currentView === 'twin-profile' && <TwinProfileView slug={profileSlug} privateTwinId={privateTwinId} onNavigate={navigateTo} />}
+        {currentView === 'not-found' && <NotFoundView onNavigate={navigateTo} />}
       </main>
 
       {/* Footer */}
@@ -2774,6 +2777,25 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
         </div>
       </Card>
     </div>
+  )
+}
+
+function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  return (
+    <section className="flex min-h-[calc(100dvh-220px)] items-center py-16">
+      <div className="w-full max-w-[760px]">
+        <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">404</p>
+        <h1 className="mb-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">Diese Seite gibt es nicht.</h1>
+        <p className="max-w-[620px] text-base leading-relaxed text-[#9aa6b7]">
+          Der Link ist unvollstaendig, veraltet oder zeigt auf einen Bereich, der nicht veroeffentlicht ist.
+        </p>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Button onClick={() => onNavigate('landing')}>Zur Startseite</Button>
+          <Button variant="secondary" onClick={() => onNavigate('twin-chat')}>Chats oeffnen</Button>
+          <Button variant="secondary" onClick={() => onNavigate('trust')}>Trust Center</Button>
+        </div>
+      </div>
+    </section>
   )
 }
 

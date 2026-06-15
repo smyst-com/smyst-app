@@ -286,6 +286,7 @@ interface SessionData {
 }
 
 const SESSION_COOKIE = 'smyst_session';
+const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{40,96}$/;
 
 function readLimit(raw: string | undefined, fallback: number): number {
   if (!raw) return fallback;
@@ -303,9 +304,59 @@ function readCookie(request: Request, name: string): string | null {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
+function b64urlDecodeText(value: string): string | null {
+  try {
+    const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  } catch {
+    return null;
+  }
+}
+
+function b64urlEncode(buf: ArrayBuffer | Uint8Array): string {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  let str = '';
+  for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]);
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function hmacSign(key: string, payload: string): Promise<string> {
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(key),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(payload));
+  return b64urlEncode(sig);
+}
+
+async function readSignedSession(token: string, secret: string): Promise<SessionData | null> {
+  const [version, payload, signature] = token.split('.');
+  if (version !== 'v1' || !payload || !signature) return null;
+  const expected = await hmacSign(secret, `session.${payload}`);
+  if (expected !== signature) return null;
+  const decoded = b64urlDecodeText(payload);
+  if (!decoded) return null;
+  try {
+    const session = JSON.parse(decoded) as SessionData;
+    return session.expiresAt > Date.now() ? session : null;
+  } catch {
+    return null;
+  }
+}
+
 async function authenticate(request: Request, env: StorageEnv): Promise<SessionData | null> {
   const sessionId = readCookie(request, SESSION_COOKIE);
   if (!sessionId) return null;
+  if (!SESSION_ID_PATTERN.test(sessionId)) {
+    return readSignedSession(sessionId, env.AUTH_HMAC_SECRET);
+  }
   const data = (await env.SESSIONS.get(`s:${sessionId}`, 'json')) as SessionData | null;
   if (!data || data.expiresAt < Date.now()) return null;
   return data;

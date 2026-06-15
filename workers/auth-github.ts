@@ -48,6 +48,7 @@ export interface AuthEnv {
 
 const SESSION_COOKIE = 'smyst_session';
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30;
+const STATELESS_SESSION_TTL_SECONDS = 60 * 60 * 24;
 const STATE_TTL_SECONDS = 60 * 10;
 
 const GITHUB_AUTH_URL = 'https://github.com/login/oauth/authorize';
@@ -234,11 +235,11 @@ function readSessionCookie(request: Request): string | null {
   return sessionId && SESSION_ID_PATTERN.test(sessionId) ? sessionId : null;
 }
 
-function makeSessionCookie(sessionId: string): string {
+function makeSessionCookie(sessionId: string, maxAge = SESSION_TTL_SECONDS): string {
   return [
     `${SESSION_COOKIE}=${sessionId}`,
     'Path=/',
-    `Max-Age=${SESSION_TTL_SECONDS}`,
+    `Max-Age=${maxAge}`,
     'HttpOnly',
     'Secure',
     'SameSite=Strict',
@@ -254,10 +255,49 @@ function userSessionsKey(userSub: string): string {
   return `auth:sessions:${userSub}`;
 }
 
+async function readJsonKv<T>(kv: KVNamespace, key: string): Promise<T | null> {
+  try {
+    return (await kv.get(key, 'json')) as T | null;
+  } catch (err) {
+    console.warn('auth_kv_json_read_failed', JSON.stringify({ key, error: String(err) }));
+    return null;
+  }
+}
+
+function validSessionIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((id): id is string => typeof id === 'string' && SESSION_ID_PATTERN.test(id));
+}
+
+function isKvPutLimit(err: unknown): boolean {
+  return /KV put\(\) limit exceeded/i.test(String(err));
+}
+
+async function makeStatelessSessionToken(env: AuthEnv, session: SessionData): Promise<string> {
+  const payload = b64urlEncodeText(JSON.stringify(session));
+  const signature = await hmacSign(env.AUTH_HMAC_SECRET, `session.${payload}`);
+  return `v1.${payload}.${signature}`;
+}
+
+async function readStatelessSessionToken(env: AuthEnv, token: string): Promise<SessionData | null> {
+  const [version, payload, signature] = token.split('.');
+  if (version !== 'v1' || !payload || !signature) return null;
+  const valid = await hmacVerify(env.AUTH_HMAC_SECRET, `session.${payload}`, signature);
+  if (!valid) return null;
+  const decoded = b64urlDecodeText(payload);
+  if (!decoded) return null;
+  try {
+    const session = JSON.parse(decoded) as SessionData;
+    return session.expiresAt > Date.now() ? session : null;
+  } catch {
+    return null;
+  }
+}
+
 async function rememberUserSession(env: AuthEnv, userSub: string, sessionId: string): Promise<void> {
   const key = userSessionsKey(userSub);
-  const existing = (await env.SESSIONS.get(key, 'json')) as string[] | null;
-  const next = [sessionId, ...(existing ?? []).filter((id) => id !== sessionId)].slice(0, 20);
+  const existing = validSessionIds(await readJsonKv<unknown>(env.SESSIONS, key));
+  const next = [sessionId, ...existing.filter((id) => id !== sessionId)].slice(0, 20);
   await env.SESSIONS.put(key, JSON.stringify(next), { expirationTtl: SESSION_TTL_SECONDS });
 }
 
@@ -326,7 +366,7 @@ async function upsertUserRecord(
   const sub = `github:${user.id}`;
   const key = `auth:user:${sub}`;
   const now = Date.now();
-  const existing = (await env.SESSIONS.get(key, 'json')) as UserRecord | null;
+  const existing = await readJsonKv<UserRecord>(env.SESSIONS, key);
   const record: UserRecord = {
     sub,
     provider: 'github',
@@ -341,7 +381,7 @@ async function upsertUserRecord(
     updatedAt: now,
     lastLoginAt: now,
   };
-  await env.SESSIONS.put(key, JSON.stringify(record), { expirationTtl: 60 * 60 * 24 * 370 });
+  await env.SESSIONS.put(key, JSON.stringify(record));
   return record;
 }
 
@@ -390,20 +430,26 @@ async function startAuth(request: Request, env: AuthEnv): Promise<Response> {
 }
 
 async function exchangeCode(code: string, env: AuthEnv): Promise<string | null> {
-  const res = await fetch(GITHUB_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-      'User-Agent': 'SmystAuthWorker/1.0',
-    },
-    body: JSON.stringify({
-      client_id: env.GITHUB_OAUTH_CLIENT_ID,
-      client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
-      code,
-      redirect_uri: `${env.CANONICAL_HOST}/auth/github/callback`,
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch(GITHUB_TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'SmystAuthWorker/1.0',
+      },
+      body: JSON.stringify({
+        client_id: env.GITHUB_OAUTH_CLIENT_ID,
+        client_secret: env.GITHUB_OAUTH_CLIENT_SECRET,
+        code,
+        redirect_uri: `${env.CANONICAL_HOST}/auth/github/callback`,
+      }),
+    });
+  } catch (err) {
+    console.error('github token exchange exception', JSON.stringify({ error: String(err) }));
+    return null;
+  }
 
   if (!res.ok) return null;
   const data = (await res.json()) as GitHubTokenResponse;
@@ -416,14 +462,20 @@ async function exchangeCode(code: string, env: AuthEnv): Promise<string | null> 
 }
 
 async function fetchGitHubJson<T>(url: string, token: string): Promise<T | null> {
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-      'User-Agent': 'SmystAuthWorker/1.0',
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        'User-Agent': 'SmystAuthWorker/1.0',
+      },
+    });
+  } catch (err) {
+    console.error('github json fetch exception', JSON.stringify({ url, error: String(err) }));
+    return null;
+  }
   if (!res.ok) return null;
   return (await res.json()) as T;
 }
@@ -461,9 +513,10 @@ async function handleCallback(request: Request, env: AuthEnv): Promise<Response>
   if (stateParts.length === 4) {
     returnTo = safeReturnTo(b64urlDecodeText(returnToEncoded) ?? '/', env.CANONICAL_HOST);
   } else {
-    const stored = await env.OAUTH_STATE.get(`state:${stateNonce}`, 'json') as
+    const stored = await readJsonKv<
       | { returnTo: string; createdAt: number }
-      | null;
+      | null
+    >(env.OAUTH_STATE, `state:${stateNonce}`);
     if (!stored) return errorResponse('oauth_state_expired', 'State expired or unknown', 400);
     returnTo = safeReturnTo(stored.returnTo, env.CANONICAL_HOST);
     try {
@@ -484,7 +537,22 @@ async function handleCallback(request: Request, env: AuthEnv): Promise<Response>
   if (!email) return errorResponse('oauth_email_missing', 'Verified email missing', 401);
   const roles = deriveRoles(user, email, env);
   const permissions = permissionsForRoles(roles);
-  const userRecord = await upsertUserRecord(env, user, email, roles, permissions);
+  let userRecord: Pick<UserRecord, 'sub' | 'email' | 'name' | 'picture'>;
+  try {
+    userRecord = await upsertUserRecord(env, user, email, roles, permissions);
+  } catch (err) {
+    if (isKvPutLimit(err)) {
+      userRecord = {
+        sub: `github:${user.id}`,
+        email,
+        name: user.name ?? user.login,
+        picture: user.avatar_url ?? undefined,
+      };
+    } else {
+      console.error('oauth_user_store_failed', JSON.stringify({ providerId: user.id, error: String(err) }));
+      return errorResponse('oauth_user_store_failed', 'User record could not be stored.', 500);
+    }
+  }
 
   const sessionId = randomB64Url(32);
   const session: SessionData = {
@@ -498,29 +566,65 @@ async function handleCallback(request: Request, env: AuthEnv): Promise<Response>
     expiresAt: Date.now() + SESSION_TTL_SECONDS * 1000,
   };
 
-  await env.SESSIONS.put(`s:${sessionId}`, JSON.stringify(session), {
-    expirationTtl: SESSION_TTL_SECONDS,
-  });
-  await rememberUserSession(env, session.sub, sessionId);
+  try {
+    await env.SESSIONS.put(`s:${sessionId}`, JSON.stringify(session), {
+      expirationTtl: SESSION_TTL_SECONDS,
+    });
+    await rememberUserSession(env, session.sub, sessionId);
+  } catch (err) {
+    if (isKvPutLimit(err)) {
+      const statelessSession: SessionData = {
+        ...session,
+        expiresAt: Date.now() + STATELESS_SESSION_TTL_SECONDS * 1000,
+      };
+      const token = await makeStatelessSessionToken(env, statelessSession);
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: `${env.CANONICAL_HOST}${returnTo}`,
+          'Set-Cookie': makeSessionCookie(token, STATELESS_SESSION_TTL_SECONDS),
+        },
+      });
+    }
+    console.error('oauth_session_store_failed', JSON.stringify({ sub: session.sub, error: String(err) }));
+    return errorResponse('oauth_session_store_failed', 'Session could not be stored.', 500);
+  }
 
-  return withSecurity(new Response(null, {
+  return new Response(null, {
     status: 302,
     headers: {
       Location: `${env.CANONICAL_HOST}${returnTo}`,
       'Set-Cookie': makeSessionCookie(sessionId),
     },
-  }));
+  });
 }
 
 async function handleMe(request: Request, env: AuthEnv): Promise<Response> {
   const rawSessionId = readCookie(request, SESSION_COOKIE);
   const sessionId = readSessionCookie(request);
   if (rawSessionId && !sessionId) {
+    const statelessSession = await readStatelessSessionToken(env, rawSessionId);
+    if (statelessSession) {
+      return jsonResponse({
+        authenticated: true,
+        user: publicUser({
+          ...statelessSession,
+          roles: statelessSession.roles ?? ['member'],
+          permissions: statelessSession.permissions ?? ROLE_PERMISSIONS.member,
+        }),
+        session: {
+          tokenType: 'signed-httpOnly-cookie',
+          expiresAt: statelessSession.expiresAt,
+        },
+      });
+    }
+  }
+  if (rawSessionId && !sessionId) {
     return jsonResponse({ authenticated: false }, 200, { 'Set-Cookie': makeClearCookie() });
   }
   if (!sessionId) return jsonResponse({ authenticated: false });
 
-  const data = await env.SESSIONS.get(`s:${sessionId}`, 'json') as SessionData | null;
+  const data = await readJsonKv<SessionData>(env.SESSIONS, `s:${sessionId}`);
   if (!data || data.expiresAt < Date.now()) {
     return jsonResponse({ authenticated: false }, 200, { 'Set-Cookie': makeClearCookie() });
   }
@@ -549,12 +653,12 @@ async function handleLogoutAll(request: Request, env: AuthEnv): Promise<Response
   const sessionId = readSessionCookie(request);
   if (!sessionId) return jsonResponse({ ok: true, deleted: 0 }, 200, { 'Set-Cookie': makeClearCookie() });
 
-  const current = (await env.SESSIONS.get(`s:${sessionId}`, 'json')) as SessionData | null;
+  const current = await readJsonKv<SessionData>(env.SESSIONS, `s:${sessionId}`);
   if (!current) return jsonResponse({ ok: true, deleted: 0 }, 200, { 'Set-Cookie': makeClearCookie() });
 
   const key = userSessionsKey(current.sub);
-  const ids = (await env.SESSIONS.get(key, 'json')) as string[] | null;
-  const uniqueIds = Array.from(new Set([sessionId, ...(ids ?? [])]));
+  const ids = validSessionIds(await readJsonKv<unknown>(env.SESSIONS, key));
+  const uniqueIds = Array.from(new Set([sessionId, ...ids]));
   await Promise.all(uniqueIds.map((id) => env.SESSIONS.delete(`s:${id}`)));
   await env.SESSIONS.delete(key);
 
