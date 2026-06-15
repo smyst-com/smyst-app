@@ -33,6 +33,7 @@ const prompts = [
   ['Identität', 'Wer bist du, und wobei kannst du mir helfen?'],
   ['Kernidee', 'Was ist deine wichtigste Idee fuer heutige Entscheidungen?'],
   ['Lebensrat', 'Was wuerdest du einem jungen Menschen heute raten?'],
+  ['Druck und Ruhe', 'Was soll ich tun, wenn ich zu viel Druck im Leben habe?'],
   ['Technologie', 'Wie wuerdest du ueber KI und neue Technologie denken?'],
   ['Führung und Erfolg', 'Was ist dein Rat fuer Fuehrung und Erfolg?'],
   ['Geschäftsidee', 'Bewerte diese Geschaeftsidee: eine App, die lokale Experten als KI-Zwillinge verfuegbar macht.'],

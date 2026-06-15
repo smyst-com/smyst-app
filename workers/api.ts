@@ -833,6 +833,25 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     };
   }
   if (includesAny(normalized, [
+    'druck',
+    'stress',
+    'belastung',
+    'ueberfordert',
+    'überfordert',
+    'zu viel',
+    'ruhe',
+    'angst',
+    'sorge',
+    'leben habe',
+  ])) {
+    return {
+      label: 'Druck und Ruhe',
+      decisionNoun: 'Belastung',
+      action: 'den Druck verkleinern, den nächsten Schritt wählen und Erholung ernst nehmen',
+      caution: 'nicht alles auf einmal lösen wollen und bei akuter Krise echte Hilfe holen',
+    };
+  }
+  if (includesAny(normalized, [
     'geschäftsidee',
     'geschaeftsidee',
     'geschäft',
@@ -1087,6 +1106,14 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
       'Ich würde Mut empfehlen, der von Vorbereitung und Verantwortung getragen wird.',
       'Ich achte darauf, dass Rat nicht groß klingt, sondern morgen umsetzbar ist.',
       'Ich empfehle, Talent ernst zu nehmen und es durch Gewohnheit belastbar zu machen.',
+    ],
+    'Druck und Ruhe': [
+      'Ich würde zuerst Tempo herausnehmen und nur die eine Sache anschauen, die heute wirklich dran ist.',
+      'Ich trenne äußeren Druck von dem Druck, den du innerlich selbst weiterträgst.',
+      'Ich würde den Tag kleiner machen: atmen, ordnen, eine Pflicht wählen, eine Pflicht liegen lassen.',
+      'Ich frage, was du loslassen kannst, ohne deine Verantwortung zu verraten.',
+      'Ich beginne mit Schlaf, Essen, einem Gespräch und einem nächsten Schritt, der nicht heroisch sein muss.',
+      'Ich würde nicht gegen alles kämpfen; ich würde prüfen, wo weniger Erzwingen mehr Klarheit bringt.',
     ],
     'Technologie': [
       'Ich prüfe zuerst, welche menschliche Fähigkeit Technik erweitert und welche Abhängigkeit sie erzeugt.',
