@@ -1,4 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
@@ -10,7 +11,7 @@ const canonicalHost = (process.env.SMYST_CANONICAL_HOST || 'https://smyst.com').
 const token = (process.env.CLOUDFLARE_API_TOKEN || (await readFile(tokenFile, 'utf8'))).trim();
 const ttlSeconds = 60 * 60 * 24 * 370;
 const assetRoot = join(process.cwd(), 'public', 'public', 'profile-images');
-const bundledData = '/private/tmp/smyst-curated-public-twin-data.mjs';
+const bundledData = join(tmpdir(), 'smyst-curated-public-twin-data.mjs');
 
 await build({
   entryPoints: ['workers/curated-public-twin-data.ts'],
