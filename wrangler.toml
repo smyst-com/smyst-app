@@ -57,6 +57,8 @@ head_sampling_rate = 1
 name = "smyst-warmup"
 main = "workers/warmup-translations.ts"
 account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+routes = []
+workers_dev = true
 
 # Cron: sparsam halten, damit Cloudflare-Free-Limits geschont werden.
 [env.warmup.triggers]
