@@ -31,6 +31,11 @@ const { CURATED_PUBLIC_TWIN_LANGUAGES, CURATED_PUBLIC_TWIN_SPECS } = await impor
 
 const now = Date.now();
 const prompts = [
+  ['Identität', 'Wer bist du?'],
+  ['Kernidee', 'Was ist deine wichtigste Idee?'],
+  ['Lebensrat', 'Was würdest du einem jungen Menschen heute raten?'],
+  ['Technologie', 'Wie würdest du über Technologie denken?'],
+  ['Führung und Erfolg', 'Was ist dein Rat für Führung und Erfolg?'],
   ['Geschäftsidee', 'Bewerte diese Geschäftsidee: eine App, die lokale Experten als KI-Zwillinge verfügbar macht.'],
   ['Investition', 'Soll ich 20.000 Euro in dieses neue Produkt investieren?'],
   ['Einstellung', 'Wie würdest du entscheiden, ob ich diesen Mitarbeiter einstellen soll?'],

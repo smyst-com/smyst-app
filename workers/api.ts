@@ -55,7 +55,7 @@ function allowedMethodsForApiPath(pathname: string): string[] | null {
   if (pathname === '/api/account') return ['DELETE'];
   if (pathname === '/api/support/report') return ['POST'];
   if (pathname === '/api/public/twins') return ['GET'];
-  if (pathname.startsWith('/api/public/twin-images/')) return ['GET'];
+  if (pathname.startsWith('/api/public/twin-images/')) return ['GET', 'HEAD'];
   if (pathname.startsWith('/api/public/twins/')) return ['GET'];
   if (pathname === '/api/chat/start') return ['POST'];
   if (pathname === '/api/chat/messages') return ['POST'];
@@ -775,12 +775,52 @@ function includesAny(value: string, needles: string[]): boolean {
 
 function questionIntent(input: string): { label: string; decisionNoun: string; action: string; caution: string } {
   const normalized = input.toLowerCase();
-  if (includesAny(normalized, ['geschäftsidee', 'business idea', 'idee', 'startup', 'produktidee'])) {
+  if (includesAny(normalized, ['wer bist du', 'who are you', 'stell dich vor', 'was bist du'])) {
+    return {
+      label: 'Identität',
+      decisionNoun: 'Profil',
+      action: 'Name, Rolle, Epoche und Denkweise klar nennen',
+      caution: 'nicht behaupten, die echte historische Person zu sein',
+    };
+  }
+  if (includesAny(normalized, ['wichtigste idee', 'zentrale idee', 'kernidee', 'deine idee', 'main idea', 'most important idea'])) {
+    return {
+      label: 'Kernidee',
+      decisionNoun: 'Gedanke',
+      action: 'eine zentrale Profilidee in heutige Sprache übersetzen',
+      caution: 'keine moderne Behauptung erfinden, die nicht zur historischen Linse passt',
+    };
+  }
+  if (includesAny(normalized, ['jungen menschen', 'junger mensch', 'young person', 'jugend', 'heute raten', 'ratest du heute'])) {
+    return {
+      label: 'Lebensrat',
+      decisionNoun: 'Rat',
+      action: 'einen kurzen, brauchbaren Rat für Lernen, Charakter und Mut geben',
+      caution: 'nicht predigen, sondern konkret und menschlich bleiben',
+    };
+  }
+  if (includesAny(normalized, ['geschäftsidee', 'business idea', 'startup', 'produktidee'])) {
     return {
       label: 'Geschäftsidee',
       decisionNoun: 'Idee',
       action: 'klein testen, Zahlungsbereitschaft messen und erst danach skalieren',
       caution: 'nicht in Features verlieben, bevor ein echtes Problem belegt ist',
+    };
+  }
+  if (includesAny(normalized, ['technologie', 'technology', 'technik', 'ki', 'ai', 'maschinen', 'digital'])) {
+    return {
+      label: 'Technologie',
+      decisionNoun: 'Technik',
+      action: 'Nutzen, Nebenwirkungen, Verantwortung und langfristige Folgen zusammen prüfen',
+      caution: 'Technik weder verklären noch pauschal ablehnen',
+    };
+  }
+  if (includesAny(normalized, ['führung', 'fuehrung', 'leadership', 'erfolg', 'success', 'führen', 'fuehren'])) {
+    return {
+      label: 'Führung und Erfolg',
+      decisionNoun: 'Führung',
+      action: 'Verantwortung, Fokus, Urteilskraft und Wirkung auf Menschen verbinden',
+      caution: 'Erfolg nicht mit bloßer Macht oder Sichtbarkeit verwechseln',
     };
   }
   if (includesAny(normalized, ['investition', 'investment', 'investieren', 'rendite', 'aktie', 'kapital'])) {
@@ -882,6 +922,46 @@ function signatureLens(twin: TwinRecord): string {
 
 function intentMove(twin: TwinRecord, intentLabel: string): string {
   const moves: Record<string, string[]> = {
+    'Identität': [
+      'Ich stelle mich über Rolle, Epoche und Denkweise vor, nicht als echte wiederkehrende Person.',
+      'Ich beginne mit dem, wofür dieses Profil bekannt ist, und mache die Grenze zur historischen Realität klar.',
+      'Ich erkläre zuerst meine Perspektive, damit du weißt, aus welcher Linse ich antworte.',
+      'Ich nenne kurz Herkunft, Arbeit und Denkstil, bevor ich Rat gebe.',
+      'Ich mache sichtbar, welche Fragen dieses Profil besonders gut beleuchten kann.',
+      'Ich halte die Vorstellung knapp: Name, Rolle, Haltung und ein klarer Nutzen für dein Gespräch.',
+    ],
+    'Kernidee': [
+      'Ich verdichte mein Denken auf eine tragende Idee, die heute noch handlungsfähig macht.',
+      'Ich suche den Grundsatz, der hinter Werk, Entscheidung und Wirkung dieses Profils steht.',
+      'Ich formuliere die wichtigste Idee als praktischen Prüfstein für heutige Fragen.',
+      'Ich trenne den historischen Kern von moderner Übertreibung.',
+      'Ich wähle eine Idee, die zum Profil passt und dir sofort Orientierung gibt.',
+      'Ich bringe die zentrale Einsicht auf einen Satz und leite daraus eine Handlung ab.',
+    ],
+    'Lebensrat': [
+      'Ich würde einem jungen Menschen raten, Neugier mit Disziplin und Charakter zu verbinden.',
+      'Ich beginne mit Lernen, Ausdauer und der Fähigkeit, gute Fragen zu stellen.',
+      'Ich rate zu einem eigenen Maßstab, aber auch zu sauberer Arbeit im Kleinen.',
+      'Ich würde Mut empfehlen, der von Vorbereitung und Verantwortung getragen wird.',
+      'Ich achte darauf, dass Rat nicht groß klingt, sondern morgen umsetzbar ist.',
+      'Ich empfehle, Talent ernst zu nehmen und es durch Gewohnheit belastbar zu machen.',
+    ],
+    'Technologie': [
+      'Ich prüfe zuerst, welche menschliche Fähigkeit Technik erweitert und welche Abhängigkeit sie erzeugt.',
+      'Ich würde Technik als Werkzeug betrachten, das Zweck, Maß und Verantwortung braucht.',
+      'Ich frage, ob eine Maschine Klarheit schafft oder nur Geschwindigkeit ohne Urteil liefert.',
+      'Ich suche nach dem Nutzen, aber ebenso nach Nebenwirkungen für Wissen, Macht und Alltag.',
+      'Ich würde technische Eleganz mit ethischer Vorsicht verbinden.',
+      'Ich bewerte Technologie danach, ob sie Menschen freier, klüger und verantwortlicher handeln lässt.',
+    ],
+    'Führung und Erfolg': [
+      'Ich beginne mit Urteilskraft: Wer führt, muss Richtung, Maß und Verantwortung verbinden.',
+      'Ich würde Erfolg an Wirkung, Vertrauen und langfristiger Tragfähigkeit messen.',
+      'Ich prüfe, ob Führung Menschen stärkt oder nur Gehorsam erzeugt.',
+      'Ich suche nach klaren Entscheidungen, die auch unter Druck menschlich vertretbar bleiben.',
+      'Ich gewichte Charakter und Konsequenz stärker als bloße Selbstdarstellung.',
+      'Ich würde Macht nur dann als Erfolg zählen, wenn sie Ordnung, Lernen oder Würde verbessert.',
+    ],
     'Geschäftsidee': [
       'Ich prüfe zuerst, ob jemand heute schon für dieses Problem zahlt.',
       'Ich würde die Zielgruppe enger schneiden und ein klares Nutzenversprechen testen.',
@@ -1407,7 +1487,7 @@ async function handlePublicTwinImage(request: Request, env: ApiEnv, slugFile: st
   });
   if (limited) return limited;
 
-  return withSecurity(new Response(generatedTwinPortraitSvg(spec), {
+  return withSecurity(new Response(request.method === 'HEAD' ? null : generatedTwinPortraitSvg(spec), {
     status: 200,
     headers: {
       'content-type': 'image/svg+xml; charset=utf-8',
@@ -1560,7 +1640,7 @@ export default {
         return handlePublicTwinList(request, env);
       }
 
-      if (url.pathname.startsWith('/api/public/twin-images/') && request.method === 'GET') {
+      if (url.pathname.startsWith('/api/public/twin-images/') && (request.method === 'GET' || request.method === 'HEAD')) {
         const slugFile = decodeURIComponent(url.pathname.slice('/api/public/twin-images/'.length));
         return handlePublicTwinImage(request, env, slugFile);
       }
