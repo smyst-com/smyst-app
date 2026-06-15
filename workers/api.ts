@@ -857,6 +857,28 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       caution: 'nicht abstrakt bleiben und keine Standardantwort wiederholen',
     };
   }
+  if (includesAny(normalized, [
+    'wetter',
+    'klima',
+    'climate',
+    'weather',
+    'geoengineering',
+    'cloud seeding',
+    'wolken impfen',
+    'wolkenimpfen',
+    'manipulieren',
+    'manipulation',
+    'regionen',
+    'länder',
+    'laender',
+  ])) {
+    return {
+      label: 'Wetter und Klima',
+      decisionNoun: 'Belege',
+      action: 'zwischen Wetterbeeinflussung, Klimawandel, lokaler Infrastruktur und unbelegten Behauptungen unterscheiden',
+      caution: 'keine Verschwörungsbehauptung als Tatsache darstellen und konkrete Messdaten verlangen',
+    };
+  }
   if (includesAny(normalized, ['technologie', 'technology', 'technik', 'ki', 'ai', 'maschinen', 'digital'])) {
     return {
       label: 'Technologie',
@@ -1089,6 +1111,14 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
       'Ich trenne schöne Vision von belastbarem Nachfrage-Signal.',
       'Ich frage, welcher konkrete Schmerz stark genug ist, damit Nutzer wechseln.',
       'Ich würde vor dem Produkt eine einfache Zusage, Warteliste oder Vorbestellung messen.',
+    ],
+    'Wetter und Klima': [
+      'Ich würde zuerst Messdaten, Methode und Vergleichsregion prüfen, bevor ich Absicht unterstelle.',
+      'Ich trenne kurzfristige Wetterbeeinflussung von großräumigem Klima und von unbelegten Erzählungen.',
+      'Ich frage nach Satellitendaten, Niederschlagsreihen, Windmustern und transparenten Quellen.',
+      'Ich würde prüfen, ob natürliche Schwankung, Urbanisierung oder bekannte Technik die Beobachtung erklären.',
+      'Ich halte Manipulation nur dann für eine Arbeitshypothese, wenn belastbare Daten und ein plausibler Mechanismus vorliegen.',
+      'Ich würde nüchtern bleiben: starke Behauptung, starke Belege.',
     ],
     'Investition': [
       'Ich beginne mit Verlustgrenze, Liquidität und der Frage, ob der Einsatz wirklich entbehrlich ist.',
