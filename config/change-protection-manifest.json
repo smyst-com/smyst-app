@@ -81,6 +81,7 @@
   "configurationProtections": [
     "validate-foundation.py enforces free-only architecture",
     "check-backup-recovery.py enforces backup/restore contract",
+    "check-surface-protection.py enforces design, CSS, database, API and GitHub Actions guardrails",
     "check-dist-artifact.sh validates built PWA/SEO/security files",
     "live-test.sh blocks noindex root and HTML fallbacks",
     "preflight-release.sh blocks production without approvals"

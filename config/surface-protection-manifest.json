@@ -1,0 +1,98 @@
+{
+  "version": "2026-06-15",
+  "policy": {
+    "paidServicesAllowed": false,
+    "autoBillingServicesAllowed": false,
+    "productionDatabase": "cloudflare-kv",
+    "centralObjectStorage": "idrive-e2",
+    "designChangesRequireExplicitTask": true,
+    "cssChangesRequireExplicitTask": true,
+    "apiDeleteRoutesRequireConfirmation": true,
+    "githubActionsNode20WarningsAllowed": false
+  },
+  "protectedSurfaces": {
+    "designAndCss": [
+      "src/App.tsx",
+      "src/index.css",
+      "styles.css",
+      "tailwind.config.ts",
+      "frontend/app/globals.css",
+      "frontend/components/smyst-app.tsx"
+    ],
+    "productionData": [
+      "workers/api.ts",
+      "workers/auth-github.ts",
+      "workers/storage-idrive.ts",
+      "wrangler.toml",
+      "config/backup-recovery-manifest.json"
+    ],
+    "api": [
+      "workers/api.ts",
+      "workers/storage-idrive.ts",
+      "workers/_shared.ts"
+    ],
+    "githubActions": [
+      ".github/workflows/deploy.yml",
+      ".github/workflows/e2e-deployment.yml",
+      ".github/workflows/foundation-ci.yml"
+    ]
+  },
+  "forbiddenProductionServices": [
+    "stripe",
+    "paypal",
+    "supabase",
+    "firebase",
+    "sentry",
+    "datadog",
+    "posthog",
+    "amplitude",
+    "mixpanel",
+    "vercel",
+    "netlify",
+    "railway",
+    "render.com",
+    "fly.io",
+    "amazonaws",
+    "azure",
+    "gcp",
+    "google cloud",
+    "openai_api_key",
+    "anthropic_api_key",
+    "gemini_api_key",
+    "mistral_api_key",
+    "deepseek_api_key",
+    "groq_api_key"
+  ],
+  "forbiddenCloudflarePaidOrAutoBillingProducts": [
+    "r2_buckets",
+    "d1_databases",
+    "durable_objects",
+    "queues",
+    "vectorize",
+    "ai_binding",
+    "analytics_engine_datasets",
+    "hyperdrive",
+    "browser_rendering"
+  ],
+  "requiredGithubActionsProtections": [
+    "FORCE_JAVASCRIPT_ACTIONS_TO_NODE24",
+    "actions/checkout@v6",
+    "actions/setup-node@v6"
+  ],
+  "forbiddenGithubActionsPatterns": [
+    "actions/checkout@v4",
+    "actions/setup-node@v4",
+    "actions/upload-artifact@v4",
+    "actions/download-artifact@v4",
+    "node-version: '20'",
+    "node-version: \"20\"",
+    "node-version: 20"
+  ],
+  "requiredApiProtectionTerms": [
+    "requireSameOrigin",
+    "requireRateLimit",
+    "requireDeleteConfirmation",
+    "methodNotAllowed",
+    "safeHandler"
+  ]
+}

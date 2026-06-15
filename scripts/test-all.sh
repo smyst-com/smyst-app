@@ -8,6 +8,7 @@ echo "== Free-only production policy =="
 python3 scripts/validate-foundation.py
 python3 scripts/check-backup-recovery.py
 python3 scripts/check-change-protection.py
+python3 scripts/check-surface-protection.py
 python3 scripts/check-final-readiness.py
 
 echo "== Shell syntax =="
