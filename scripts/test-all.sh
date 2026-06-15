@@ -34,4 +34,9 @@ else
   echo "npm not found; skipped root app typecheck/build"
 fi
 
+if command -v node >/dev/null 2>&1; then
+  echo "== Profile conversation stability =="
+  node scripts/profile-conversation-stability.mjs
+fi
+
 echo "test-all completed"

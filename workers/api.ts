@@ -782,6 +782,10 @@ function stylePrefix(style: TwinStyle): string {
   return 'Aus meiner Perspektive:';
 }
 
+function pickStable<T>(items: T[], seed: string): T {
+  return items[hashText(seed) % items.length] ?? items[0];
+}
+
 function hashText(value: string): number {
   let hash = 0;
   for (let index = 0; index < value.length; index += 1) {
@@ -820,7 +824,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       caution: 'nicht predigen, sondern konkret und menschlich bleiben',
     };
   }
-  if (includesAny(normalized, ['geschäftsidee', 'business idea', 'startup', 'produktidee'])) {
+  if (includesAny(normalized, ['geschäftsidee', 'geschaeftsidee', 'business idea', 'startup', 'produktidee'])) {
     return {
       label: 'Geschäftsidee',
       decisionNoun: 'Idee',
@@ -941,6 +945,30 @@ function signatureLens(twin: TwinRecord): string {
   return options[hashText(seed) % options.length] ?? options[0];
 }
 
+function conversationalOpening(twin: TwinRecord, intentLabel: string, input: string): string {
+  const seed = `${twin.slug}|${twin.name}|${twin.style}|${intentLabel}|${input}`;
+  const styleOpenings: Record<TwinStyle, string[]> = {
+    direct: ['Kurz:', 'Ich würde es so zuspitzen:', 'Mein klarer Blick darauf:', 'Ohne Umweg:', 'Entscheidend ist:', 'Wenn ich priorisiere:'],
+    humorous: ['Mit einem kleinen Seitenblick:', 'Nicht zu feierlich gesagt:', 'Charmant nüchtern:', 'Mit trockenem Lächeln:', 'Etwas spitz formuliert:', 'Praktisch und ohne Posaune:'],
+    wise: ['Ruhig betrachtet:', 'Ich würde einen Schritt zurücktreten:', 'Bedacht gesagt:', 'Langfristig gesehen:', 'Mit etwas Abstand:', 'Wenn man tiefer schaut:'],
+    neutral: ['Sachlich betrachtet:', 'Strukturiert gesagt:', 'Aus der Analyse heraus:', 'Nüchtern geprüft:', 'In klarer Ordnung:', 'Vom Befund her:'],
+    warm: ['Aus meiner Perspektive:', 'Ich würde menschlich beginnen:', 'Nah am Alltag gesagt:', 'Persönlich gesprochen:', 'Mit etwas Wärme gesagt:', 'Für den nächsten Schritt:'],
+  };
+  return pickStable(styleOpenings[twin.style] ?? styleOpenings.warm, seed);
+}
+
+function closingLabel(twin: TwinRecord, intentLabel: string): string {
+  const seed = `${twin.name}|${twin.style}|${intentLabel}|closing`;
+  const labels: Record<TwinStyle, string[]> = {
+    direct: ['Nächster Schritt', 'Konsequenz', 'Mein Rat'],
+    humorous: ['Praktisch heißt das', 'Ohne großes Theater', 'Mein Fazit'],
+    wise: ['Wichtig bleibt', 'Mein Rat', 'Tragfähig wird es so'],
+    neutral: ['Konkret', 'Prüfpunkt', 'Fazit'],
+    warm: ['Für dich heißt das', 'Mein Rat', 'Beginne damit'],
+  };
+  return pickStable(labels[twin.style] ?? labels.warm, seed);
+}
+
 function intentMove(twin: TwinRecord, intentLabel: string): string {
   const moves: Record<string, string[]> = {
     'Identität': [
@@ -1057,14 +1085,16 @@ function profileLensLine(twin: TwinRecord): string {
 function compactProfileCore(twin: TwinRecord): string {
   const raw = (twin.description || twin.contextSummary || '').trim();
   if (!raw) return twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
-  const compact = raw
+  const cleaned = raw
     .replace(/\s+/g, ' ')
-    .replace(/^.+?ist ein oeffentliches digitales Twin-Profil auf smyst\.com\.\s*Profil:\s*/i, '')
-    .slice(0, 165)
+    .replace(/^.+?ist ein oeffentliches digitales Twin-Profil auf smyst\.com\.\s*Profil:\s*/i, '');
+  if (cleaned.length <= 220) return cleaned.replace(/[.,\s;:]+$/, '');
+  const compact = cleaned
+    .slice(0, 210)
     .replace(/\s+\S*$/, '')
     .replace(/\s+(und|oder|mit|fuer|für|von|in|im|am|an|auf|unter|ueber|über|durch|als|zu|zur|zum)$/i, '')
     .replace(/[.,\s;:]+$/, '');
-  return compact || raw.slice(0, 125).replace(/[.,\s;:]+$/, '');
+  return compact || cleaned.slice(0, 160).replace(/[.,\s;:]+$/, '');
 }
 
 function shortIdentityBoundary(twin: TwinRecord): string {
@@ -1085,12 +1115,13 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
   const trimmed = input.trim();
   const intent = questionIntent(trimmed);
   const style = styleLens(twin.style);
+  const opening = conversationalOpening(twin, intent.label, trimmed);
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${style.voice}.`,
+      `${opening} ${intent.label}: Ich antworte als ${twin.name}, ${style.voice}.`,
       intentMove(twin, intent.label),
-      `${style.close}: ${intent.action}; ${intent.caution}.`,
+      `${closingLabel(twin, intent.label)}: ${intent.action}. Hinweis: ${intent.caution}.`,
       'Sobald Beschreibung, Wissen oder Medien hinterlegt sind, wird meine Antwort deutlich profilgenauer.',
     ].join(' ');
   }
@@ -1098,15 +1129,49 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
   const role = twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
   const contextNote = profileLensLine(twin);
   const boundary = intent.label === 'Identität' ? ` ${shortIdentityBoundary(twin)}` : '';
+  const core = compactProfileCore(twin);
+  const move = intentMove(twin, intent.label);
+  const signature = signatureLens(twin);
+  const close = closingLabel(twin, intent.label);
+  const variant = hashText(`${twin.slug}|${intent.label}|${trimmed}|${twin.style}`) % 4;
+
+  if (intent.label === 'Identität') {
+    return [
+      `${opening} ${intent.label}: Ich antworte als ${twin.name}, ${role}.${boundary}`,
+      `${core}.`,
+      `${close}: Frag mich dort, wo ${contextNote.toLowerCase()} wirklich helfen.`,
+    ].join(' ');
+  }
+
+  if (variant === 0) {
+    return [
+      `${opening} ${intent.label}: Als ${twin.name} schaue ich zuerst auf ${contextNote.toLowerCase()}.`,
+      move,
+      `${close}: ${intent.action}. Hinweis: ${intent.caution}.`,
+    ].join(' ');
+  }
+
+  if (variant === 1) {
+    return [
+      `${opening} ${intent.label}: Für ${twin.name} ist der Kern: ${core}.`,
+      `Daraus folgt für deine Frage: ${move}`,
+      `${close}: ${intent.action}.`,
+    ].join(' ');
+  }
+
+  if (variant === 2) {
+    return [
+      `${opening} ${intent.label}: Als ${twin.name} würde ich die Frage nicht abstrakt behandeln, sondern durch ${contextNote.toLowerCase()}.`,
+      move,
+      `${signature}`,
+    ].join(' ');
+  }
+
   return [
-    `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${role}.${boundary}`,
-    `Profilkern: ${compactProfileCore(twin)}.`,
-    `Meine Perspektive: ${contextNote}.`,
-    `Mein Rat: ${intentMove(twin, intent.label)}`,
-    `${style.close}: ${intent.action}; ${intent.caution}.`,
-  ]
-    .filter(Boolean)
-    .join(' ');
+    `${opening} ${intent.label}: Als ${twin.name} wäre ich ${style.voice}.`,
+    `Mit Blick auf ${contextNote}: ${move}`,
+    `${close}: ${intent.action}; ${intent.caution}.`,
+  ].join(' ');
 }
 
 async function handleHealth(): Promise<Response> {
