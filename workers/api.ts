@@ -800,6 +800,14 @@ function includesAny(value: string, needles: string[]): boolean {
 
 function questionIntent(input: string): { label: string; decisionNoun: string; action: string; caution: string } {
   const normalized = input.toLowerCase();
+  if (includesAny(normalized, ['hallo', 'hello', 'hi', 'hey', 'guten morgen', 'guten tag', 'guten abend'])) {
+    return {
+      label: 'Begrüßung',
+      decisionNoun: 'Start',
+      action: 'kurz begrüßen und Gespräch anbieten',
+      caution: 'nicht mit einer langen Standardanalyse antworten',
+    };
+  }
   if (includesAny(normalized, ['wer bist du', 'who are you', 'stell dich vor', 'was bist du'])) {
     return {
       label: 'Identität',
@@ -824,12 +832,29 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       caution: 'nicht predigen, sondern konkret und menschlich bleiben',
     };
   }
-  if (includesAny(normalized, ['geschäftsidee', 'geschaeftsidee', 'business idea', 'startup', 'produktidee'])) {
+  if (includesAny(normalized, [
+    'geschäftsidee',
+    'geschaeftsidee',
+    'geschäft',
+    'geschaeft',
+    'business',
+    'business idea',
+    'startup',
+    'produktidee',
+    'firma',
+    'unternehmen',
+    'gründen',
+    'gruenden',
+    'gegründet',
+    'gegruendet',
+    'welche app',
+    'welches produkt',
+  ])) {
     return {
       label: 'Geschäftsidee',
       decisionNoun: 'Idee',
-      action: 'klein testen, Zahlungsbereitschaft messen und erst danach skalieren',
-      caution: 'nicht in Features verlieben, bevor ein echtes Problem belegt ist',
+      action: 'eine konkrete Geschäftsidee nennen, Zielgruppe und ersten Test erklären',
+      caution: 'nicht abstrakt bleiben und keine Standardantwort wiederholen',
     };
   }
   if (includesAny(normalized, ['technologie', 'technology', 'technik', 'ki', 'ai', 'maschinen', 'digital'])) {
@@ -967,6 +992,52 @@ function closingLabel(twin: TwinRecord, intentLabel: string): string {
     warm: ['Für dich heißt das', 'Mein Rat', 'Beginne damit'],
   };
   return pickStable(labels[twin.style] ?? labels.warm, seed);
+}
+
+function businessConceptForTwin(twin: TwinRecord): { concept: string; customer: string; firstTest: string } {
+  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
+  const lens = `${twin.name} ${(twin.description ?? '')} ${(twin.contextSummary ?? '')} ${categories.join(' ')}`.toLowerCase();
+
+  if (includesAny(lens, ['physik', 'mathematik', 'wissenschaft', 'forscher', 'technik'])) {
+    return {
+      concept: 'ein interaktives Lern- und Simulationslabor, das schwierige Naturgesetze mit kleinen Experimenten sofort begreifbar macht',
+      customer: 'Schulen, Universitäten und neugierige Teams, die komplexe Fragen schneller verstehen wollen',
+      firstTest: 'zehn bezahlte Pilotklassen mit einem einzigen Thema starten und messen, ob Lernzeit und Verständnis wirklich besser werden',
+    };
+  }
+  if (includesAny(lens, ['kunst', 'maler', 'design', 'musik', 'literatur', 'dichter', 'theater'])) {
+    return {
+      concept: 'ein Kreativstudio, das Menschen von der ersten Skizze bis zum veröffentlichbaren Werk führt',
+      customer: 'Kreative, Marken und Lernende, die Ausdruck, Stil und handwerkliche Qualität verbinden wollen',
+      firstTest: 'eine kleine bezahlte Meisterklasse mit echten Vorher-nachher-Ergebnissen anbieten',
+    };
+  }
+  if (includesAny(lens, ['philosophie', 'ethik', 'religion', 'weise', 'dao', 'stoiker'])) {
+    return {
+      concept: 'eine Entscheidungs-App, die Nutzer vor wichtigen Schritten ruhiger, klarer und verantwortlicher fragen lässt',
+      customer: 'Gründer, Führungskräfte und Privatpersonen vor schwierigen Entscheidungen',
+      firstTest: 'einen Wochenkurs mit fünf konkreten Entscheidungsvorlagen verkaufen und echte Abschlussraten messen',
+    };
+  }
+  if (includesAny(lens, ['politik', 'führung', 'strategie', 'militär', 'staat', 'minister', 'praesident', 'president'])) {
+    return {
+      concept: 'ein Strategie- und Lagezentrum für Teams, das Entscheidungen, Risiken und Verantwortlichkeiten sichtbar macht',
+      customer: 'kleine Organisationen, Verwaltungen und Führungsteams mit hohem Abstimmungsdruck',
+      firstTest: 'einen moderierten Strategie-Sprint als bezahltes Paket anbieten, bevor Software gebaut wird',
+    };
+  }
+  if (includesAny(lens, ['unternehmer', 'investor', 'wirtschaft', 'business', 'marketing'])) {
+    return {
+      concept: 'ein fokussiertes Tool, das unklare Angebote in testbare Verkaufsseiten, Preise und Kundengespräche übersetzt',
+      customer: 'frühe Gründer und kleine Firmen, die schneller echte Nachfrage prüfen müssen',
+      firstTest: 'drei Zielgruppen mit je einer Landingpage testen und nur weiterbauen, wenn echte Zahlungsbereitschaft sichtbar wird',
+    };
+  }
+  return {
+    concept: 'eine Plattform, die persönliches Wissen in hilfreiche, überprüfbare digitale Profile verwandelt',
+    customer: 'Menschen und Teams, die Erfahrung, Rat und Erinnerungen zuverlässig nutzbar machen wollen',
+    firstTest: 'mit einer engen Zielgruppe starten, echte Gespräche messen und nur das bauen, wofür Nutzer wiederkommen',
+  };
 }
 
 function intentMove(twin: TwinRecord, intentLabel: string): string {
@@ -1135,11 +1206,24 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
   const close = closingLabel(twin, intent.label);
   const variant = hashText(`${twin.slug}|${intent.label}|${trimmed}|${twin.style}`) % 4;
 
+  if (intent.label === 'Begrüßung') {
+    return `${opening} Ich bin ${twin.name}, ${role}. Stell mir direkt eine Frage; ich antworte aus meiner Profilperspektive kurz und konkret.`;
+  }
+
   if (intent.label === 'Identität') {
     return [
       `${opening} ${intent.label}: Ich antworte als ${twin.name}, ${role}.${boundary}`,
       `${core}.`,
       `${close}: Frag mich dort, wo ${contextNote.toLowerCase()} wirklich helfen.`,
+    ].join(' ');
+  }
+
+  if (intent.label === 'Geschäftsidee') {
+    const business = businessConceptForTwin(twin);
+    return [
+      `${opening} Geschäftsidee: Als ${twin.name}, geprägt von ${core.toLowerCase()}, würde ich heute bauen: ${business.concept}.`,
+      `Zielgruppe: ${business.customer}.`,
+      `${close}: ${business.firstTest}.`,
     ].join(' ');
   }
 

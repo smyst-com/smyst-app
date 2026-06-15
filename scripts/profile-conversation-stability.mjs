@@ -36,6 +36,7 @@ const prompts = [
   ['Technologie', 'Wie wuerdest du ueber KI und neue Technologie denken?'],
   ['Führung und Erfolg', 'Was ist dein Rat fuer Fuehrung und Erfolg?'],
   ['Geschäftsidee', 'Bewerte diese Geschaeftsidee: eine App, die lokale Experten als KI-Zwillinge verfuegbar macht.'],
+  ['Geschäftsidee', 'Wenn du heute gelebt hast, welche Geschaeft hast du gemacht?'],
   ['Investition', 'Soll ich 20.000 Euro in dieses neue Produkt investieren?'],
   ['Marketingstrategie', 'Welche Marketingstrategie wuerdest du fuer den Start empfehlen?'],
 ];
