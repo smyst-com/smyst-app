@@ -389,8 +389,19 @@ function generatedTwinPortraitSvg(spec: (typeof CURATED_PUBLIC_TWIN_SPECS)[numbe
 }
 
 async function getJson<T>(kv: KVNamespace, key: string, fallback: T): Promise<T> {
-  const value = (await kv.get(key, 'json')) as T | null;
-  return value ?? fallback;
+  try {
+    const value = (await kv.get(key, 'json')) as T | null;
+    return value ?? fallback;
+  } catch (err) {
+    console.warn('kv_json_parse_failed', JSON.stringify({ key, error: String(err) }));
+    return fallback;
+  }
+}
+
+async function getStringArray(kv: KVNamespace, key: string): Promise<string[]> {
+  const value = await getJson<unknown>(kv, key, []);
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
 }
 
 async function putChat(env: ApiEnv, chat: ChatRecord): Promise<void> {
@@ -402,7 +413,7 @@ async function putChat(env: ApiEnv, chat: ChatRecord): Promise<void> {
 async function addChatToIndex(env: ApiEnv, userSub: string, chatId: string): Promise<void> {
   const kv = metadataStore(env);
   const key = chatIndexKey(userSub);
-  const current = await getJson<string[]>(kv, key, []);
+  const current = await getStringArray(kv, key);
   const next = [chatId, ...current.filter((id) => id !== chatId)].slice(0, 50);
   await kv.put(key, JSON.stringify(next), { expirationTtl: 60 * 60 * 24 * 90 });
 }
@@ -416,7 +427,7 @@ async function putTwin(env: ApiEnv, twin: TwinRecord): Promise<void> {
 async function addTwinToIndex(env: ApiEnv, userSub: string, twinId: string): Promise<void> {
   const kv = metadataStore(env);
   const key = twinIndexKey(userSub);
-  const current = await getJson<string[]>(kv, key, []);
+  const current = await getStringArray(kv, key);
   const next = [twinId, ...current.filter((id) => id !== twinId)].slice(0, 50);
   await kv.put(key, JSON.stringify(next), { expirationTtl: TWIN_TTL_SECONDS });
 }
@@ -434,7 +445,7 @@ async function loadPublicTwin(env: ApiEnv, slug: string): Promise<TwinRecord | n
 
 async function loadUserChats(env: ApiEnv, userSub: string): Promise<ChatRecord[]> {
   const kv = metadataStore(env);
-  const ids = await getJson<string[]>(kv, chatIndexKey(userSub), []);
+  const ids = await getStringArray(kv, chatIndexKey(userSub));
   const records = await Promise.all(
     ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(chatKey(userSub, id), 'json') as Promise<ChatRecord | null>),
   );
@@ -443,7 +454,7 @@ async function loadUserChats(env: ApiEnv, userSub: string): Promise<ChatRecord[]
 
 async function loadUserTwins(env: ApiEnv, userSub: string): Promise<TwinRecord[]> {
   const kv = metadataStore(env);
-  const ids = await getJson<string[]>(kv, twinIndexKey(userSub), []);
+  const ids = await getStringArray(kv, twinIndexKey(userSub));
   const records = await Promise.all(
     ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(twinKey(userSub, id), 'json') as Promise<TwinRecord | null>),
   );
@@ -1218,7 +1229,7 @@ async function handleListChats(request: Request, env: ApiEnv): Promise<Response>
   if (!hasPermission(session, 'chat:read')) return errorResponse('forbidden', 'Missing chat read permission', 403);
 
   const kv = metadataStore(env);
-  const ids = await getJson<string[]>(kv, chatIndexKey(session.sub), []);
+  const ids = await getStringArray(kv, chatIndexKey(session.sub));
   const records = await Promise.all(
     ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(chatKey(session.sub, id), 'json') as Promise<ChatRecord | null>),
   );
@@ -1299,7 +1310,7 @@ async function handleListTwins(request: Request, env: ApiEnv): Promise<Response>
   if (!hasPermission(session, 'twin:read')) return errorResponse('forbidden', 'Missing twin read permission', 403);
 
   const kv = metadataStore(env);
-  const ids = await getJson<string[]>(kv, twinIndexKey(session.sub), []);
+  const ids = await getStringArray(kv, twinIndexKey(session.sub));
   const records = await Promise.all(
     ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(twinKey(session.sub, id), 'json') as Promise<TwinRecord | null>),
   );
