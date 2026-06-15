@@ -927,6 +927,38 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       caution: 'nicht predigen, sondern konkret und menschlich bleiben',
     };
   }
+  if (includesAny(normalized, ['was ist erfolg', 'bedeutet erfolg', 'success'])) {
+    return {
+      label: 'Erfolg',
+      decisionNoun: 'Erfolg',
+      action: 'Erfolg aus der Profilperspektive definieren und von bloßer Anerkennung trennen',
+      caution: 'Erfolg nicht nur als Geld, Ruhm oder Macht erklären',
+    };
+  }
+  if (includesAny(normalized, ['was ist macht', 'bedeutet macht', 'power', 'autorität', 'autoritaet'])) {
+    return {
+      label: 'Macht',
+      decisionNoun: 'Macht',
+      action: 'Macht als Verantwortung, Wirkung und Risiko einordnen',
+      caution: 'Macht nicht romantisieren und Missbrauch klar begrenzen',
+    };
+  }
+  if (includesAny(normalized, ['was ist wissen', 'bedeutet wissen', 'knowledge', 'erkenntnis'])) {
+    return {
+      label: 'Wissen',
+      decisionNoun: 'Wissen',
+      action: 'Wissen als geprüfte Orientierung statt bloße Information erklären',
+      caution: 'Sicherheit nicht vortäuschen, wenn Annahmen offen sind',
+    };
+  }
+  if (includesAny(normalized, ['was ist liebe', 'bedeutet liebe', 'love'])) {
+    return {
+      label: 'Liebe',
+      decisionNoun: 'Liebe',
+      action: 'Liebe durch Verantwortung, Bindung, Aufmerksamkeit und Grenzen deuten',
+      caution: 'nicht kitschig werden und echte Menschen nicht instrumentalisieren',
+    };
+  }
   if (includesAny(normalized, [
     'druck',
     'stress',
@@ -1068,6 +1100,14 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       decisionNoun: 'Entwicklung',
       action: 'Szenarien statt eine einzige Vorhersage bauen',
       caution: 'Unsicherheit offen markieren und Frühindikatoren beobachten',
+    };
+  }
+  if (includesAny(normalized, ['welt verbessern', 'die welt verbessern', 'welt besser', 'verbessern wir die welt', 'improve the world'])) {
+    return {
+      label: 'Weltverbesserung',
+      decisionNoun: 'Wirkung',
+      action: 'eine konkrete Verbesserung aus der Profilperspektive nennen',
+      caution: 'nicht utopisch reden, ohne Verantwortung, Grenzen und Umsetzung zu zeigen',
     };
   }
   if (includesAny(normalized, ['werte', 'wert', 'wichtigsten', 'ethik', 'moral', 'prinzip'])) {
@@ -1497,6 +1537,38 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
       'Ich achte darauf, dass Rat nicht groß klingt, sondern morgen umsetzbar ist.',
       'Ich empfehle, Talent ernst zu nehmen und es durch Gewohnheit belastbar zu machen.',
     ],
+    'Erfolg': [
+      'Erfolg ist nicht Applaus, sondern eine Wirkung, die dem eigenen Maßstab standhält.',
+      'Erfolg beginnt dort, wo Können, Charakter und Folgen zusammenpassen.',
+      'Der stärkste Erfolg ist belastbar: Er überlebt Müdigkeit, Kritik und Zeit.',
+      'Erfolg muss an der Sache gemessen werden, nicht nur an der Bühne.',
+      'Ein Sieg zählt wenig, wenn er das zerstört, wofür er angeblich errungen wurde.',
+      'Erfolg heißt, eine Fähigkeit so zu formen, dass sie anderen wirklich nützt.',
+    ],
+    'Macht': [
+      'Macht ist die Fähigkeit, Wirklichkeit zu verändern; darum braucht sie Grenze und Verantwortung.',
+      'Macht zeigt den Charakter schneller als Worte, weil sie Widerstand schwächerer Menschen berührt.',
+      'Macht ohne Maß wird blind; Macht mit Maß kann Ordnung schaffen.',
+      'Wer Macht besitzt, muss zuerst die Folgen für jene sehen, die nicht mitentscheiden.',
+      'Macht ist nie neutral: Sie ordnet, schützt, verführt oder zerstört.',
+      'Die entscheidende Frage lautet nicht, wie viel Macht möglich ist, sondern wofür sie gebunden wird.',
+    ],
+    'Wissen': [
+      'Wissen ist geprüfte Orientierung, nicht die Anhäufung kluger Wörter.',
+      'Wissen beginnt, wenn eine Annahme dem Zweifel standhält.',
+      'Echtes Wissen macht bescheidener, weil es die Grenze des eigenen Blicks zeigt.',
+      'Wissen muss eine bessere Frage und eine sauberere Handlung ermöglichen.',
+      'Information wird erst Wissen, wenn sie geordnet, geprüft und verantwortlich genutzt wird.',
+      'Wissen ohne Urteilskraft bleibt Material; Urteilskraft macht daraus Richtung.',
+    ],
+    'Liebe': [
+      'Liebe ist Aufmerksamkeit, die den anderen nicht besitzt, sondern genauer sieht.',
+      'Liebe braucht Nähe und Grenze zugleich; sonst wird sie Bedürftigkeit oder Kontrolle.',
+      'Liebe zeigt sich weniger in großen Worten als in Treue zu kleinen Wirklichkeiten.',
+      'Wer liebt, muss die Freiheit des anderen ernst nehmen.',
+      'Liebe ist eine Form von Mut: verletzlich bleiben und trotzdem verantwortlich handeln.',
+      'Liebe wird glaubwürdig, wenn Gefühl, Handlung und Geduld zusammenkommen.',
+    ],
     'Druck und Ruhe': [
       'Ich würde zuerst Tempo herausnehmen und nur die eine Sache anschauen, die heute wirklich dran ist.',
       'Ich trenne äußeren Druck von dem Druck, den du innerlich selbst weiterträgst.',
@@ -1624,6 +1696,14 @@ function intentMove(twin: TwinRecord, intentLabel: string): string {
       'Vertrauen wächst, wenn Nutzen, Grenzen und Folgen ehrlich benannt werden.',
       'Alltag ist der Test: Was verändert sich morgen für echte Menschen?',
       'Effizienz darf nicht die einzige Sprache sein, wenn Menschen betroffen sind.',
+    ],
+    'Weltverbesserung': [
+      'Die Welt wird besser, wenn eine konkrete Last kleiner wird und Menschen handlungsfähiger werden.',
+      'Nicht mit der ganzen Welt beginnen; mit einem System beginnen, das wirklich geändert werden kann.',
+      'Eine Verbesserung zählt erst, wenn sie im Alltag ankommt und nicht nur im Ideal glänzt.',
+      'Die beste Veränderung verbindet Wahrheit, Nutzen und Verantwortung für Nebenfolgen.',
+      'Weltverbesserung braucht klare Institutionen, bessere Bildung und Menschen, die Folgen tragen.',
+      'Große Ziele müssen in kleine, überprüfbare Schritte übersetzt werden.',
     ],
   };
   const options = moves[intentLabel] ?? [

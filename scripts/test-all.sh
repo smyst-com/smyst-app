@@ -37,6 +37,8 @@ fi
 if command -v node >/dev/null 2>&1; then
   echo "== Profile conversation stability =="
   node scripts/profile-conversation-stability.mjs
+  echo "== Profile personality audit =="
+  node scripts/profile-personality-audit.mjs
 fi
 
 echo "test-all completed"

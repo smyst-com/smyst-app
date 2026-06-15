@@ -106,20 +106,23 @@ function hasCategory(input: ProfileInput, needles: string[]) {
 }
 
 function categoryExpertise(input: ProfileInput): string {
+  if (hasCategory(input, ['kunst', 'literatur', 'musik', 'dichter', 'schriftsteller', 'komponist']) && hasCategory(input, ['technologie', 'wissenschaft', 'forschung', 'mathematik'])) {
+    return 'Fachwissen: Form, Vorstellungskraft, Beobachtung, Technik, Systemdenken und die Verbindung von Kunst, Wissen und menschlicher Wirkung.';
+  }
+  if (hasCategory(input, ['technologie', 'ingenieur', 'erfinder'])) {
+    return 'Fachwissen: Systeme, Infrastruktur, Erfindung, technische Machbarkeit, Zukunftsfolgen, Energie, Werkzeuge und verantwortliche Anwendung.';
+  }
+  if (hasCategory(input, ['literatur', 'kunst', 'musik', 'dichter', 'schriftsteller', 'komponist'])) {
+    return 'Fachwissen: Sprache, Form, Symbol, Motiv, Rhythmus, Figur, Ausdruck, Wirkung auf Menschen und die verborgene Spannung einer Situation.';
+  }
   if (hasCategory(input, ['physik', 'mathematik', 'wissenschaft', 'forschung'])) {
     return 'Fachwissen: Belege, Messung, Modelle, Experimente, Begriffsgenauigkeit und die Grenze zwischen Hypothese und Wissen.';
   }
   if (hasCategory(input, ['strategie', 'fuehrung', 'politik', 'geschichte', 'staatsmann', 'feldherr'])) {
     return 'Fachwissen: Macht, Institutionen, Strategie, Fuehrung, Moral, Ressourcen, Buendnisse, Risiko, historische Folgen und oeffentliche Wirkung.';
   }
-  if (hasCategory(input, ['technologie', 'ingenieur', 'erfinder'])) {
-    return 'Fachwissen: Systeme, Infrastruktur, Erfindung, technische Machbarkeit, Zukunftsfolgen, Energie, Werkzeuge und verantwortliche Anwendung.';
-  }
   if (hasCategory(input, ['philosophie', 'ethik', 'religion'])) {
     return 'Fachwissen: Werte, Tugend, Sinn, Verantwortung, Wahrheit, Selbstpruefung, gute Fragen und langfristig tragfaehige Lebensordnung.';
-  }
-  if (hasCategory(input, ['literatur', 'kunst', 'musik', 'dichter', 'schriftsteller', 'komponist'])) {
-    return 'Fachwissen: Sprache, Form, Symbol, Motiv, Rhythmus, Figur, Ausdruck, Wirkung auf Menschen und die verborgene Spannung einer Situation.';
   }
   if (hasCategory(input, ['wirtschaft', 'business', 'marketing'])) {
     return 'Fachwissen: Nutzen, Nachfrage, Preis, Markt, Positionierung, Vertrauen, Risiko, Verhandlung und kleine belastbare Tests.';
@@ -128,6 +131,12 @@ function categoryExpertise(input: ProfileInput): string {
 }
 
 function categoryValues(input: ProfileInput): string {
+  if (hasCategory(input, ['technologie', 'erfinder', 'ingenieur'])) {
+    return 'Werte: Erfindungsgeist, Eleganz, Nutzbarkeit, Verantwortung, Zukunftsfaehigkeit und robuste Systeme.';
+  }
+  if (hasCategory(input, ['kunst', 'literatur', 'musik'])) {
+    return 'Werte: Ausdruck, Wahrhaftigkeit, menschliche Tiefe, Formgefuehl, Resonanz und Wuerde des Einzelnen.';
+  }
   if (hasCategory(input, ['strategie', 'fuehrung', 'politik', 'staatsmann', 'feldherr'])) {
     return 'Werte: Verantwortung vor Selbstdarstellung, Ordnung vor Chaos, Schutz von Menschen, klare Ziele und Folgenbewusstsein.';
   }
@@ -137,24 +146,21 @@ function categoryValues(input: ProfileInput): string {
   if (hasCategory(input, ['philosophie', 'ethik', 'religion'])) {
     return 'Werte: Weisheit, Mass, Charakter, Gerechtigkeit, Selbstpruefung und gutes Leben statt bloss schneller Wirkung.';
   }
-  if (hasCategory(input, ['kunst', 'literatur', 'musik'])) {
-    return 'Werte: Ausdruck, Wahrhaftigkeit, menschliche Tiefe, Formgefuehl, Resonanz und Wuerde des Einzelnen.';
-  }
-  if (hasCategory(input, ['technologie', 'erfinder', 'ingenieur'])) {
-    return 'Werte: Erfindungsgeist, Eleganz, Nutzbarkeit, Verantwortung, Zukunftsfaehigkeit und robuste Systeme.';
-  }
   return 'Werte: Klarheit, Verantwortung, praktische Hilfe, historische Treue und respektvolle Sprache.';
 }
 
 function categoryDecisionStyle(input: ProfileInput): string {
+  if (hasCategory(input, ['technologie', 'erfinder', 'ingenieur'])) {
+    return 'Entscheidungsstil: Zweck klaeren, Systemgrenzen sehen, Prototyp bauen, Nebenwirkungen pruefen und robuste Anwendung suchen.';
+  }
+  if (hasCategory(input, ['kunst', 'literatur', 'musik'])) {
+    return 'Entscheidungsstil: Motiv, Form, Wirkung und menschlichen Kern erkennen; dann eine klare, bildhafte und nicht austauschbare Antwort geben.';
+  }
   if (hasCategory(input, ['strategie', 'fuehrung', 'politik', 'feldherr'])) {
     return 'Entscheidungsstil: Lagebild erstellen, Ziel definieren, Engpass finden, Ressourcen sichern, Nebenfolgen pruefen und erst dann entschlossen handeln.';
   }
   if (hasCategory(input, ['wissenschaft', 'physik', 'mathematik', 'forschung'])) {
     return 'Entscheidungsstil: Annahme formulieren, Modell vereinfachen, Gegenbeispiel suchen, Evidenz pruefen und die kleinste saubere Schlussfolgerung ziehen.';
-  }
-  if (hasCategory(input, ['kunst', 'literatur', 'musik'])) {
-    return 'Entscheidungsstil: Motiv, Form, Wirkung und menschlichen Kern erkennen; dann eine klare, bildhafte und nicht austauschbare Antwort geben.';
   }
   if (hasCategory(input, ['philosophie', 'ethik', 'religion'])) {
     return 'Entscheidungsstil: Begriff klaeren, Wertkonflikt benennen, innere Haltung pruefen und eine tragfaehige Handlung waehlen.';
@@ -194,6 +200,7 @@ function buildProfileKnowledge(input: ProfileInput): string {
     `${input.name} war ${input.mainCategory}.`,
     `Profil-DNA: Dieses KI-Profil antwortet ${input.answerStyle}.`,
     `Linse: ${input.lens}`,
+    `Biografischer Kern: ${input.description}`,
     categoryExpertise(input),
     categoryValues(input),
     categoryDecisionStyle(input),

@@ -157,6 +157,7 @@ REQUIRED_TEXT = {
     "scripts/check-surface-protection.py": ["surface protection validation passed", "GitHub Actions Node 20 warnings must remain blocked", "API DELETE routes must require confirmation", "central object storage must remain idrive-e2"],
     "scripts/check-final-readiness.py": ["required_areas", "score below 10 must include blockers", "final readiness scorecard validation passed"],
     "scripts/profile-conversation-stability.mjs": ["promptsPerProfile", "duplicate_answer_within_profile", "opening_repetition_too_high", "avgGenerationMs", "avgAnswerLength"],
+    "scripts/profile-personality-audit.mjs": ["minimumTotalScore", "weakest20", "improvementSuggestions", "fachwissen", "glaubwuerdigkeit"],
     "src/lib/i18n.ts": ["'de'", "'en'", "'tr'", "'fr'", "'es'", "'pt'", "'ar'", "'zh'", "'ja'", "'ko'"],
     "src/lib/staticTranslations.ts": ["useStaticTranslations", "/locales/${lang}.json", "DEFAULT_TRANSLATIONS"],
     "capacitor.config.ts": ["appId: 'com.smyst.app'", "appName: 'smyst.com'", "webDir: 'dist'"],
