@@ -1060,8 +1060,9 @@ function compactProfileCore(twin: TwinRecord): string {
   const compact = raw
     .replace(/\s+/g, ' ')
     .replace(/^.+?ist ein oeffentliches digitales Twin-Profil auf smyst\.com\.\s*Profil:\s*/i, '')
-    .slice(0, 135)
+    .slice(0, 165)
     .replace(/\s+\S*$/, '')
+    .replace(/\s+(und|oder|mit|fuer|für|von|in|im|am|an|auf|unter|ueber|über|durch|als|zu|zur|zum)$/i, '')
     .replace(/[.,\s;:]+$/, '');
   return compact || raw.slice(0, 125).replace(/[.,\s;:]+$/, '');
 }
