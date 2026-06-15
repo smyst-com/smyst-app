@@ -89,6 +89,7 @@ const generationMs = performance.now() - startedAt;
 const issues = [];
 const lengths = [];
 const openingBuckets = new Map();
+const repeatedPromptChecks = [];
 for (const conversation of conversations) {
   const seenWithinProfile = new Set();
   for (const item of conversation.answers) {
@@ -117,6 +118,18 @@ for (const conversation of conversations) {
     const opening = normalized.split(':')[0] ?? '';
     const bucketKey = `${conversation.style}:${opening}`;
     openingBuckets.set(bucketKey, (openingBuckets.get(bucketKey) ?? 0) + 1);
+  }
+
+  const pressurePrompt = 'Was soll ich tun, wenn ich zu viel Druck im Leben habe?';
+  const profile = profiles.find((item) => item.slug === conversation.slug);
+  const firstPressure = ruleBasedTwinReply(pressurePrompt, profile);
+  const repeatedPressure = ruleBasedTwinReply(pressurePrompt, profile, [
+    { id: 'u1', role: 'user', content: pressurePrompt, createdAt: 1 },
+    { id: 'a1', role: 'assistant', content: firstPressure, createdAt: 2 },
+  ]);
+  repeatedPromptChecks.push({ profile: conversation.profile, firstPressure, repeatedPressure });
+  if (firstPressure === repeatedPressure || repeatedPressure.includes('Ziel, Kontext, Optionen')) {
+    issues.push({ profile: conversation.profile, issue: 'repeated_pressure_prompt_not_varied' });
   }
 }
 

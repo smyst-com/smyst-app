@@ -798,6 +798,38 @@ function includesAny(value: string, needles: string[]): boolean {
   return needles.some((needle) => value.includes(needle));
 }
 
+function normalizedQuestion(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[ä]/g, 'ae')
+    .replace(/[ö]/g, 'oe')
+    .replace(/[ü]/g, 'ue')
+    .replace(/[ß]/g, 'ss')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function similarQuestionScore(a: string, b: string): number {
+  const aWords = new Set(normalizedQuestion(a).split(/\s+/).filter((word) => word.length > 2));
+  const bWords = new Set(normalizedQuestion(b).split(/\s+/).filter((word) => word.length > 2));
+  if (!aWords.size || !bWords.size) return 0;
+  let shared = 0;
+  for (const word of aWords) {
+    if (bWords.has(word)) shared += 1;
+  }
+  return shared / Math.max(aWords.size, bWords.size);
+}
+
+function repeatedUserQuestion(input: string, previousMessages: ChatMessage[] = []): boolean {
+  const recentUsers = previousMessages
+    .filter((message) => message.role === 'user')
+    .slice(-6);
+  return recentUsers.some((message) => {
+    const exact = normalizedQuestion(message.content) === normalizedQuestion(input);
+    return exact || similarQuestionScore(message.content, input) >= 0.72;
+  });
+}
+
 function questionIntent(input: string): { label: string; decisionNoun: string; action: string; caution: string } {
   const normalized = input.toLowerCase();
   if (includesAny(normalized, ['hallo', 'hello', 'hi', 'hey', 'guten morgen', 'guten tag', 'guten abend'])) {
@@ -1081,6 +1113,95 @@ function businessConceptForTwin(twin: TwinRecord): { concept: string; customer: 
   };
 }
 
+function shortProfileHint(twin: TwinRecord, maxLength = 105): string {
+  const core = compactProfileCore(twin);
+  if (core.length <= maxLength) return core;
+  const compact = core
+    .slice(0, maxLength)
+    .replace(/\s+\S*$/, '')
+    .replace(/[.,\s;:]+$/, '');
+  return compact || core.slice(0, maxLength).replace(/[.,\s;:]+$/, '');
+}
+
+function stressReplyForTwin(twin: TwinRecord, repeated: boolean): string {
+  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
+  const isWise = twin.style === 'wise' || categories.some((item) => includesAny(item, ['philosophie', 'ethik', 'religion', 'weise', 'stoiker']));
+  const hint = shortProfileHint(twin);
+  const lead = pickStable(
+    twin.style === 'direct'
+      ? ['Heute zählt', 'Kurz gegen den Druck', 'Erster Schnitt', 'Klar sortiert', 'Jetzt praktisch']
+      : isWise
+        ? ['Mit ruhigem Blick', 'Ein kleiner Schritt', 'Weniger Erzwingen', 'Leiser werden', 'Behutsam beginnen']
+        : ['Für den Alltag', 'Erst stabilisieren', 'Druck kleiner machen', 'Nah am Moment', 'Praktisch beginnen'],
+    `${twin.slug}|pressure|lead`,
+  );
+  const action = pickStable(
+    [
+      'Wähle eine Pflicht, die heute wirklich nötig ist, und verschiebe eine andere bewusst.',
+      'Schreibe drei Dinge auf: was jetzt zählt, was warten darf, und wen du ansprechen kannst.',
+      'Mache zehn Minuten Ordnung im Außen, dann entscheide nur über den nächsten kleinen Schritt.',
+      'Reduziere die Frage auf eine einzige Sache, die du heute sauber beenden kannst.',
+      'Sage eine unnötige Zusage ab und gib deinem Körper zuerst Essen, Wasser und langsamere Atmung.',
+    ],
+    `${twin.slug}|pressure|action`,
+  );
+  if (repeated) {
+    const repeatedAction = pickStable(
+      [
+        'Mach die Frage jetzt kleiner: eine Aufgabe, eine Pause, eine echte Person.',
+        'Nimm nicht noch einmal den ganzen Berg. Nimm nur den nächsten Stein.',
+        'Setz für heute eine Grenze: weniger Input, eine klare Bitte um Hilfe, ein machbarer Schritt.',
+        'Wenn die gleiche Frage wiederkommt, braucht sie keinen längeren Plan, sondern Entlastung.',
+        'Behandle Druck als Signal: stoppen, sortieren, Hilfe holen, dann erst weiter entscheiden.',
+      ],
+      `${twin.slug}|pressure|repeated`,
+    );
+    return [
+      `Anders gesagt: ${repeatedAction}`,
+      `Aus Sicht von ${twin.name}: Druck und Ruhe entstehen nicht durch mehr Denken, sondern durch kleinere Last.`,
+      'Wenn es akut oder gefährlich wird, bleib nicht allein und hol dir sofort echte Hilfe.',
+    ].join(' ');
+  }
+  if (isWise) {
+    return [
+      `${lead}: Druck und Ruhe heißt bei ${twin.name}: Nimm heute nicht dein ganzes Leben auf einmal in die Hand.`,
+      `Die Profilperspektive ist ${hint.toLowerCase()}; daraus folgt: ${action}`,
+      'Wenn der Druck gefährlich wird oder du nicht mehr allein herauskommst, hol dir sofort einen echten Menschen dazu.',
+    ].join(' ');
+  }
+  if (twin.style === 'direct') {
+    return [
+      `${lead}: Druck und Ruhe heißt bei ${twin.name}: erst stoppen, dann sortieren, dann handeln.`,
+      `Die Profilperspektive ist ${hint.toLowerCase()}; konkret: ${action}`,
+      'Dann nur den kleinsten nächsten Schritt machen. Bei akuter Krise: nicht allein bleiben und Hilfe holen.',
+    ].join(' ');
+  }
+  return [
+    `${lead}: Druck und Ruhe heißt bei ${twin.name}: den Tag auf einen machbaren Schritt reduzieren.`,
+    `Die Profilperspektive ist ${hint.toLowerCase()}; darum: ${action}`,
+    'Iss etwas, atme langsamer, sprich mit jemandem, und entscheide erst danach weiter.',
+  ].join(' ');
+}
+
+function repeatedReplyForTwin(twin: TwinRecord, intentLabel: string): string | null {
+  if (intentLabel === 'Druck und Ruhe') return stressReplyForTwin(twin, true);
+  if (intentLabel === 'Geschäftsidee') {
+    return [
+      'Noch konkreter: Starte nicht mit einer großen Plattform.',
+      `Baue als ${twin.name} zuerst einen winzigen bezahlten Test: ein Problem, eine Zielgruppe, ein Ergebnis.`,
+      'Wenn niemand dafür zahlt oder wiederkommt, ist die Idee noch nicht scharf genug.',
+    ].join(' ');
+  }
+  if (intentLabel === 'Wetter und Klima') {
+    return [
+      'Noch kürzer: Möglich ist lokale Wetterbeeinflussung, etwa Cloud Seeding; eine geheime globale Steuerung darf man ohne harte Daten nicht behaupten.',
+      'Prüfe Messreihen, Satellitendaten, Wind, Niederschlag und veröffentlichte Programme.',
+      'Ohne solche Belege bleibt es Verdacht, nicht Wissen.',
+    ].join(' ');
+  }
+  return null;
+}
+
 function intentMove(twin: TwinRecord, intentLabel: string): string {
   const moves: Record<string, string[]> = {
     'Identität': [
@@ -1239,11 +1360,14 @@ function shortIdentityBoundary(twin: TwinRecord): string {
   return 'Ich bin ein historisch inspiriertes KI-Profil, nicht die echte Person.';
 }
 
-export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
+export function ruleBasedTwinReply(input: string, twin: TwinRecord, previousMessages: ChatMessage[] = []): string {
   const trimmed = input.trim();
   const intent = questionIntent(trimmed);
   const style = styleLens(twin.style);
   const opening = conversationalOpening(twin, intent.label, trimmed);
+  const repeated = repeatedUserQuestion(trimmed, previousMessages);
+  const repeatedReply = repeated ? repeatedReplyForTwin(twin, intent.label) : null;
+  if (repeatedReply) return repeatedReply;
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
@@ -1282,6 +1406,10 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
       `Zielgruppe: ${business.customer}.`,
       `${close}: ${business.firstTest}.`,
     ].join(' ');
+  }
+
+  if (intent.label === 'Druck und Ruhe') {
+    return stressReplyForTwin(twin, false);
   }
 
   if (variant === 0) {
@@ -1857,7 +1985,7 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
     id: crypto.randomUUID(),
     role: 'assistant',
     content: twin
-      ? ruleBasedTwinReply(message, twin)
+      ? ruleBasedTwinReply(message, twin, chat.messages)
       : freeOnlyReply(message),
     createdAt: now,
   };
