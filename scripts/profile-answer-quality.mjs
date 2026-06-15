@@ -94,13 +94,13 @@ const generationMs = performance.now() - startedAt;
 const duplicatePairs = [];
 const duplicateOpeningPairs = [];
 const missingIntent = [];
-const missingIdentityName = [];
 const tooLongAnswers = [];
 const tooShortAnswers = [];
 const bannedSelfIntro = [];
 const bannedThirdPersonRole = [];
 const bannedRoleScaffold = [];
-const minimumAnswerLength = 250;
+const bannedProfileOpening = [];
+const minimumAnswerLength = 80;
 for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
   const [intentLabel, prompt] = prompts[promptIndex];
   const seen = new Map();
@@ -110,16 +110,17 @@ for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
     if (!answer.includes(intentLabel)) {
       missingIntent.push([prompt, sample.profile, intentLabel]);
     }
-    if (intentLabel === 'Identität' && !answer.includes(sample.profile)) {
-      missingIdentityName.push([prompt, sample.profile, intentLabel]);
-    }
     if (intentLabel === 'Konfliktstrategie' && answer.includes('Technologie')) {
       missingIntent.push([prompt, sample.profile, 'war_prompt_misclassified_as_technology']);
     }
     const escapedProfile = sample.profile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const banned = new RegExp(`(?:Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem)`, 'i');
+    const banned = new RegExp(`(?:Ich bin ${escapedProfile}|Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem)`, 'i');
     if (banned.test(answer)) {
       bannedSelfIntro.push([prompt, sample.profile, answer.slice(0, 220)]);
+    }
+    const profileOpening = new RegExp(`^(?:[A-Za-zÄÖÜäöüß ]{2,32}:\\s*)?${escapedProfile}(?:\\b|,)`, 'i');
+    if (profileOpening.test(answer)) {
+      bannedProfileOpening.push([prompt, sample.profile, answer.slice(0, 220)]);
     }
     const thirdPerson = new RegExp(
       `(?:${escapedProfile}[-\\s]Perspektive|${escapedProfile}[-\\s]Linse|Für ${escapedProfile} ist|${escapedProfile} würde sagen|${escapedProfile} wuerde sagen|${escapedProfile} meint|Aus Sicht von ${escapedProfile}|Profilperspektive|dieses Profil (?:antwortet|meint|ist|würde|wuerde))`,
@@ -128,10 +129,10 @@ for (let promptIndex = 0; promptIndex < prompts.length; promptIndex += 1) {
     if (thirdPerson.test(answer)) {
       bannedThirdPersonRole.push([prompt, sample.profile, answer.slice(0, 260)]);
     }
-    if (/\bIch bleibe\b|Mit Blick auf|meine Rolle, meinen Stil|Sobald Beschreibung|tarihsel esinli bir yapay zeka/i.test(answer)) {
+    if (/\bIch bleibe\b|Mit Blick auf|meine Rolle, meinen Stil|Sobald Beschreibung|Sachlich betrachtet|Aus der Analyse heraus|tarihsel esinli bir yapay zeka/i.test(answer)) {
       bannedRoleScaffold.push([prompt, sample.profile, answer.slice(0, 260)]);
     }
-    if (answer.length > 950) tooLongAnswers.push([prompt, sample.profile, answer.length]);
+    if (answer.length > 620) tooLongAnswers.push([prompt, sample.profile, answer.length]);
     if (answer.length < minimumAnswerLength) tooShortAnswers.push([prompt, sample.profile, answer.length]);
     const normalized = answer.split(sample.profile).join('{profile}').replace(/\s+/g, ' ').trim();
     const opening = normalized.slice(0, 340);
@@ -163,13 +164,13 @@ console.log(JSON.stringify({
     duplicatePairs.length === 0 &&
     duplicateOpeningPairs.length === 0 &&
     missingIntent.length === 0 &&
-    missingIdentityName.length === 0 &&
     tooLongAnswers.length === 0 &&
     tooShortAnswers.length === 0 &&
     bannedSelfIntro.length === 0 &&
+    bannedProfileOpening.length === 0 &&
     bannedThirdPersonRole.length === 0 &&
     bannedRoleScaffold.length === 0 &&
-    avgLength <= 760,
+    avgLength <= 430,
   profileCount: profiles.length,
   promptCount: prompts.length,
   answerCount: profiles.length * prompts.length,
@@ -179,10 +180,10 @@ console.log(JSON.stringify({
   duplicatePairs,
   duplicateOpeningPairs,
   missingIntent,
-  missingIdentityName,
   tooLongAnswers,
   tooShortAnswers,
   bannedSelfIntro,
+  bannedProfileOpening,
   bannedThirdPersonRole,
   bannedRoleScaffold,
   avgAnswerLength: Number(avgLength.toFixed(1)),
@@ -193,13 +194,13 @@ if (
   duplicatePairs.length ||
   duplicateOpeningPairs.length ||
   missingIntent.length ||
-  missingIdentityName.length ||
   tooLongAnswers.length ||
   tooShortAnswers.length ||
   bannedSelfIntro.length ||
+  bannedProfileOpening.length ||
   bannedThirdPersonRole.length ||
   bannedRoleScaffold.length ||
-  avgLength > 760
+  avgLength > 430
 ) {
   process.exit(1);
 }

@@ -198,7 +198,7 @@ function styleInstruction(style: CuratedTwinStyle): string {
 function buildProfileKnowledge(input: ProfileInput): string {
   return [
     `${input.name} war ${input.mainCategory}.`,
-    `Rollen-DNA: Ich antworte ${input.answerStyle}.`,
+    `Antwortstil: ${input.answerStyle}.`,
     `Linse: ${input.lens}`,
     `Biografischer Kern: ${input.description}`,
     categoryExpertise(input),
@@ -206,9 +206,9 @@ function buildProfileKnowledge(input: ProfileInput): string {
     categoryDecisionStyle(input),
     categoryArgumentation(input),
     styleInstruction(input.style),
-    'Rollenregel: konsequent in der Ich-Perspektive antworten, den Nutzer direkt ansprechen und nicht ueber die historische Person in der dritten Person sprechen.',
+    'Profilregel: das Profilwissen nur als fachliche Perspektive nutzen, nicht als Rollenspiel auffuehren und nicht behaupten, die echte historische Person zu sein.',
     'Verbotene Form: keine Saetze wie "Napoleon wuerde sagen", "Leonardo meint", "fuer Einstein ist" oder "dieses Profil antwortet".',
-    'Antwortregel: direkt mit der Sache beginnen, nicht staendig den eigenen Namen erklaeren, keine lange Selbstvorstellung, keine austauschbare Standardanalyse.',
+    'Antwortregel: kurz, direkt und sachlich antworten. Kein Rollenspiel. Keine Selbstbeschreibung. Keine Story. Nur die konkrete Anfrage beantworten.',
     'Grenze: historische Treue wahren, keine erfundenen biografischen Fakten behaupten, bei gefaehrlichen Themen keine operative Schadensanleitung geben.',
   ].join(' ');
 }

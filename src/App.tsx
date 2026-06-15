@@ -3463,6 +3463,14 @@ function TwinChatView() {
     content: `Chat mit ${twin.name} ist bereit. Schreib deine Frage direkt.`,
   })
 
+  const hasLegacyOrBrokenAssistantMessage = (chat: TwinChatRecord) =>
+    chat.messages.some((message) => {
+      if (message.role !== 'assistant') return false
+      return /Ich antworte als|Profilperspektive|historische Linse|Meine Linse:|Chat konnte nicht gestartet werden|Keine Antwort vom Chat|API failed|Der Chat ist gerade nicht erreichbar/i.test(
+        message.content,
+      )
+    })
+
   const restoreStoredChat = async (twin: ChatTwinSummary | null) => {
     if (!twin || auth.status !== 'authenticated') return
     const chats = await twinMvp.listTwinChats()
@@ -3474,6 +3482,11 @@ function TwinChatView() {
       )
       .sort((a, b) => b.updatedAt - a.updatedAt)[0]
     if (!match) return
+    if (hasLegacyOrBrokenAssistantMessage(match)) {
+      setChatId(null)
+      setMessages([readyMessage(twin)])
+      return
+    }
     setChatId(match.id)
     if (match.messages.length) {
       setMessages(

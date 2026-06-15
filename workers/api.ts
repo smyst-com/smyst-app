@@ -377,7 +377,7 @@ function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)
       {
         id: `knowledge-${spec.slug}-style`,
         title: 'Antwortstil',
-        text: `Antwortstil: ${spec.answerStyle}. Ich antworte konsequent direkt aus meiner historischen Rolle, spreche den Nutzer direkt an und vermeide dritte Person, generische KI-Sprache und staendige Namenswiederholung.`,
+        text: `Antwortstil: ${spec.answerStyle}. Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story. Nur die konkrete Anfrage beantworten.`,
         createdAt,
       },
     ],
@@ -395,7 +395,7 @@ function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)
     contextSummary:
       `Historische Rolle: ${spec.name}. Profil: ${spec.description} Kategorien: ${spec.categories.join(', ')}. Sprachen: ${CURATED_PUBLIC_TWIN_LANGUAGES.join(', ')}. Kommunikationsstil: ${spec.style}. Antwortstil: ${spec.answerStyle}.`,
     guardrail:
-      'Ich-Perspektive erzwingen: direkt aus der historischen Rolle antworten, den Nutzer direkt ansprechen, keine dritte Person und keine Behauptung, die echte verstorbene Person zu sein.',
+      'Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story. Nicht behaupten, die echte verstorbene Person zu sein.',
     rightsPosture: spec.rightsPosture,
     sources: spec.sources,
     exampleQuestions: spec.exampleQuestions,
@@ -692,7 +692,7 @@ function buildPublicContext(twin: TwinRecord): string {
     categories,
     languages,
     `Kommunikationsstil: ${twin.style}.`,
-    'Chat-Regel: direkt in der Ich-Perspektive antworten und den Nutzer direkt ansprechen.',
+    'Chat-Regel: kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story.',
   ]
     .filter(Boolean)
     .join(' ')
@@ -843,11 +843,11 @@ function relevantKnowledge(message: string, twin: TwinRecord): TwinKnowledgeItem
 }
 
 function stylePrefix(style: TwinStyle): string {
-  if (style === 'direct') return 'Kurz und direkt gesagt:';
-  if (style === 'humorous') return 'Mit einem lockeren Blick darauf:';
-  if (style === 'wise') return 'Bedacht formuliert:';
-  if (style === 'neutral') return 'Sachlich betrachtet:';
-  return 'Aus meiner Perspektive:';
+  if (style === 'direct') return 'Kurz:';
+  if (style === 'humorous') return 'Praktisch gesagt:';
+  if (style === 'wise') return 'Bedacht:';
+  if (style === 'neutral') return 'Konkret:';
+  return 'Direkt:';
 }
 
 function pickStable<T>(items: T[], seed: string): T {
@@ -973,7 +973,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     return {
       label: 'Kernidee',
       decisionNoun: 'Gedanke',
-      action: 'meine zentrale Idee in heutige Sprache übersetzen',
+      action: 'die zentrale Idee in heutige Sprache übersetzen',
       caution: 'keine moderne Behauptung erfinden, die nicht zur historischen Rolle passt',
     };
   }
@@ -989,7 +989,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     return {
       label: 'Erfolg',
       decisionNoun: 'Erfolg',
-      action: 'Erfolg aus meiner Perspektive definieren und von bloßer Anerkennung trennen',
+      action: 'Erfolg aus der passenden Perspektive definieren und von bloßer Anerkennung trennen',
       caution: 'Erfolg nicht nur als Geld, Ruhm oder Macht erklären',
     };
   }
@@ -1164,7 +1164,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
     return {
       label: 'Weltverbesserung',
       decisionNoun: 'Wirkung',
-      action: 'eine konkrete Verbesserung aus meiner Perspektive nennen',
+      action: 'eine konkrete Verbesserung mit klarer Verantwortung nennen',
       caution: 'nicht utopisch reden, ohne Verantwortung, Grenzen und Umsetzung zu zeigen',
     };
   }
@@ -1263,8 +1263,8 @@ function conversationalOpening(twin: TwinRecord, intentLabel: string, input: str
     direct: ['Kurz:', 'Zugespitzt:', 'Klarer Blick:', 'Ohne Umweg:', 'Entscheidend ist:', 'Priorität:'],
     humorous: ['Mit einem kleinen Seitenblick:', 'Nicht zu feierlich gesagt:', 'Charmant nüchtern:', 'Mit trockenem Lächeln:', 'Etwas spitz formuliert:', 'Praktisch und ohne Posaune:'],
     wise: ['Ruhig betrachtet:', 'Ein Schritt zurück:', 'Bedacht gesagt:', 'Langfristig gesehen:', 'Mit etwas Abstand:', 'Wenn man tiefer schaut:'],
-    neutral: ['Sachlich betrachtet:', 'Strukturiert gesagt:', 'Aus der Analyse heraus:', 'Nüchtern geprüft:', 'In klarer Ordnung:', 'Vom Befund her:'],
-    warm: ['Menschlich gesagt:', 'Nah am Alltag:', 'Persönlich gesprochen:', 'Mit etwas Wärme:', 'Für den nächsten Schritt:', 'Praktisch und zugewandt:'],
+    neutral: ['Konkret:', 'Strukturiert:', 'Nüchtern geprüft:', 'In klarer Ordnung:', 'Vom Befund her:', 'Direkt:'],
+    warm: ['Menschlich gesagt:', 'Nah am Alltag:', 'Zugewandt:', 'Mit etwas Wärme:', 'Für den nächsten Schritt:', 'Praktisch und zugewandt:'],
   };
   return pickStable(styleOpenings[twin.style] ?? styleOpenings.warm, seed);
 }
@@ -1272,11 +1272,11 @@ function conversationalOpening(twin: TwinRecord, intentLabel: string, input: str
 function closingLabel(twin: TwinRecord, intentLabel: string): string {
   const seed = `${twin.name}|${twin.style}|${intentLabel}|closing`;
   const labels: Record<TwinStyle, string[]> = {
-    direct: ['Nächster Schritt', 'Konsequenz', 'Mein Rat'],
-    humorous: ['Praktisch heißt das', 'Ohne großes Theater', 'Mein Fazit'],
-    wise: ['Wichtig bleibt', 'Mein Rat', 'Tragfähig wird es so'],
+    direct: ['Nächster Schritt', 'Konsequenz', 'Rat'],
+    humorous: ['Praktisch heißt das', 'Ohne großes Theater', 'Fazit'],
+    wise: ['Wichtig bleibt', 'Rat', 'Tragfähig wird es so'],
     neutral: ['Konkret', 'Prüfpunkt', 'Fazit'],
-    warm: ['Für dich heißt das', 'Mein Rat', 'Beginne damit'],
+    warm: ['Für dich heißt das', 'Rat', 'Beginne damit'],
   };
   return pickStable(labels[twin.style] ?? labels.warm, seed);
 }
@@ -1337,6 +1337,15 @@ function shortProfileHint(twin: TwinRecord, maxLength = 105): string {
   return compact || core.slice(0, maxLength).replace(/[.,\s;:]+$/, '');
 }
 
+function shortLensText(text: string, maxLength = 120): string {
+  const clean = text.replace(/\s+/g, ' ').trim().replace(/[.,\s;:]+$/, '');
+  if (clean.length <= maxLength) return clean;
+  return clean
+    .slice(0, maxLength)
+    .replace(/\s+\S*$/, '')
+    .replace(/[.,\s;:]+$/, '');
+}
+
 function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = ''): string {
   const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
   const isWise = twin.style === 'wise' || categories.some((item) => includesAny(item, ['philosophie', 'ethik', 'religion', 'weise', 'stoiker']));
@@ -1390,36 +1399,36 @@ function stressReplyForTwin(twin: TwinRecord, repeated: boolean, replySeed = '')
   }
   if (requestVariant === 1) {
     return [
-      `Druck und Ruhe: ${lead}: Ich nehme zuerst Last aus dem System, statt neue Ansprüche hinzuzufügen.`,
+      `Druck und Ruhe: ${lead}: Erst Last senken, dann entscheiden.`,
       `Druck und Ruhe: ${action}`,
-      `${focus} Bleib nah an ${hint.toLowerCase()}; bei akuter Krise bitte nicht allein bleiben und echte Hilfe holen.`,
+      `${focus} Bei akuter Krise bitte nicht allein bleiben und echte Hilfe holen.`,
     ].join(' ');
   }
   if (requestVariant === 2) {
     return [
       'Druck und Ruhe: Fang nicht mit dem großen Lebensplan an, sondern mit Entlastung im nächsten Moment.',
       `${action} ${focus}`,
-      'Das ist kein Aufgeben, sondern klügeres Tragen. Wird es akut, hol dir sofort Hilfe dazu.',
+      `Schwerpunkt: ${hint.toLowerCase()}. Wird es akut, hol dir sofort Hilfe dazu.`,
     ].join(' ');
   }
   if (isWise) {
     return [
       `Druck und Ruhe: ${lead}: Nimm heute nicht dein ganzes Leben auf einmal in die Hand.`,
-      `Ich sehe ${hint.toLowerCase()}; daraus folgt: ${action}`,
+      `Maßstab: ${hint.toLowerCase()}. ${action}`,
       `${focus} Wenn der Druck gefährlich wird oder du nicht mehr allein herauskommst, hol dir sofort einen echten Menschen dazu.`,
     ].join(' ');
   }
   if (twin.style === 'direct') {
     return [
       `Druck und Ruhe: ${lead}: Erst stoppen, dann sortieren, dann handeln.`,
-      `Ich sehe ${hint.toLowerCase()}; konkret: ${action}`,
+      `Konkret: ${action}`,
       `${focus} Bei akuter Krise: nicht allein bleiben und Hilfe holen.`,
     ].join(' ');
   }
   return [
     `Druck und Ruhe: ${lead}: Reduziere den Tag auf einen machbaren Schritt.`,
-    `Ich sehe ${hint.toLowerCase()}; darum: ${action}`,
-    `${focus} Iss etwas, atme langsamer, sprich mit jemandem, und entscheide erst danach weiter.`,
+    `Konkret: ${action}`,
+    `${focus} Schwerpunkt: ${hint.toLowerCase()}. Iss etwas, atme langsamer, sprich mit jemandem, und entscheide erst danach weiter.`,
   ].join(' ');
 }
 
@@ -1478,13 +1487,13 @@ function conflictStrategyReplyForTwin(twin: TwinRecord, replySeed = ''): string 
     `${seed}|ethical`,
   );
   const profileNote = isMilitary
-    ? `Ich prüfe ${lens}; Krieg darf nicht romantisiert werden.`
-    : `Ich prüfe ${lens}; diese Frage ist mehr als ein Kampfplan.`;
+    ? `Maßstab sind ${lens}; Krieg darf nicht romantisiert werden.`
+    : `Maßstab sind ${lens}; diese Frage ist mehr als ein Kampfplan.`;
   if (isStrategic || isMilitary) {
     return [
       `Konfliktstrategie: ${profileNote}`,
       strategicMove,
-      `${ethicalMove} Deshalb keine konkreten Angriffsziele, sondern nur die Führungslogik: Lage klären, Menschen schützen, Versorgung sichern, Optionen offenhalten.`,
+      `${ethicalMove} Keine konkreten Angriffsziele; sinnvoll sind Lagebild, Schutz, Versorgung und Auswege.`,
     ].join(' ');
   }
   if (isEthical) {
@@ -1495,14 +1504,58 @@ function conflictStrategyReplyForTwin(twin: TwinRecord, replySeed = ''): string 
     ].join(' ');
   }
   return [
-    'Konfliktstrategie: Ich frage zuerst, welche Entscheidung Menschen schützt und die Lage nicht weiter vergiftet.',
-    `Ich sehe ${lens}; daraus folgt: Fakten, Folgen, Verantwortung und langfristige Stabilität vor impulsivem Handeln.`,
+    'Konfliktstrategie: Entscheidend ist, welche Wahl Menschen schützt und die Lage nicht weiter vergiftet.',
+    `Maßstab sind ${lens}: Fakten, Folgen, Verantwortung und Stabilität vor impulsivem Handeln.`,
     'Keine konkrete Gewaltanleitung; sinnvoll sind Lagebild, Schutz, Versorgung, Kommunikation und realistische Auswege.',
   ].join(' ');
 }
 
 function directProfileMoveText(text: string): string {
-  return text.replace('bevor ich Rat gebe', 'bevor ich dir Rat gebe');
+  return text
+    .replace(/^Ich würde einem jungen Menschen raten,\s*/i, 'Rate einem jungen Menschen: ')
+    .replace(/^Ich würde Mut empfehlen,\s*/i, 'Empfehlung: Mut, ')
+    .replace(/^Ich würde\s+(.+?)\s+empfehlen/i, 'Empfehlung: $1')
+    .replace(/^Ich würde\s+/i, '')
+    .replace(/^Ich beginne mit\s+/i, 'Beginne mit ')
+    .replace(/^Ich rate zu\s+/i, 'Setze auf ')
+    .replace(/^Ich empfehle\s+/i, 'Empfehlung: ')
+    .replace(/^Ich achte darauf,\s*/i, 'Achte darauf, ')
+    .replace(/^Ich arbeite mit\s+/i, 'Arbeite mit ')
+    .replace(/^Ich beobachte\s+/i, 'Beobachte ')
+    .replace(/^Ich beziehe\s+/i, 'Beziehe ')
+    .replace(/^Ich gebe dir\s+/i, 'Nutze ')
+    .replace(/^Ich schärfe\s+/i, 'Schärfe ')
+    .replace(/^Ich starte mit\s+/i, 'Starte mit ')
+    .replace(/^Ich sehe zuerst auf\s+/i, 'Prüfe zuerst ')
+    .replace(/^Ich bewerte\s+/i, 'Bewerte ')
+    .replace(/^Ich unterscheide\s+/i, 'Unterscheide ')
+    .replace(/^Ich gewichte\s+/i, 'Gewichte ')
+    .replace(/^Ich nenne\s+/i, 'Nenne ')
+    .replace(/^Ich erkläre\s+/i, 'Erkläre ')
+    .replace(/^Ich stelle mich\s+/i, 'Stelle das Profil ')
+    .replace(/^Ich prüfe\s+/i, 'Prüfe ')
+    .replace(/^Ich frage\s+/i, 'Frage ')
+    .replace(/^Ich suche\s+/i, 'Suche ')
+    .replace(/^Ich trenne\s+/i, 'Trenne ')
+    .replace(/^Ich formuliere\s+/i, 'Formuliere ')
+    .replace(/^Ich verdichte\s+/i, 'Verdichte ')
+    .replace(/^Ich wähle\s+/i, 'Wähle ')
+    .replace(/^Ich bringe\s+/i, 'Bringe ')
+    .replace(/^Ich halte\s+/i, 'Halte ')
+    .replace(/^Ich mache\s+/i, 'Mache ')
+    .replace(/^Ich\s+/i, '')
+    .replace(/\bmein Denken\b/gi, 'den Denkstil')
+    .replace(/\bmeinem Werk, meinen Entscheidungen und meiner Wirkung\b/gi, 'Werk, Entscheidungen und Wirkung')
+    .replace(/\bmeiner Denkweise\b/gi, 'dieser Denkweise')
+    .replace(/\bmeine zentrale Idee\b/gi, 'die zentrale Idee')
+    .replace(/\baus meiner Perspektive\b/gi, 'aus dieser Perspektive')
+    .replace(/\bmeine Haltung\b/gi, 'die Haltung')
+    .replace(/\bmeiner Haltung\b/gi, 'dieser Haltung')
+    .replace(/\bdeine Verantwortung\b/gi, 'Verantwortung')
+    .replace('bevor ich Rat gebe', 'bevor Rat folgt')
+    .replace('Setze auf einem eigenen Maßstab', 'Setze auf einen eigenen Maßstab')
+    .replace('Setze auf einen eigenen Maßstab, aber auch zu sauberer Arbeit', 'Setze auf einen eigenen Maßstab und auf saubere Arbeit')
+    .replace('Rolle, Epoche und Denkweise vor,', 'Rolle, Epoche und Denkweise knapp vor,');
 }
 
 function intentMove(twin: TwinRecord, intentLabel: string): string {
@@ -1903,44 +1956,55 @@ export function ruleBasedTwinReply(
     return turkishTwinReply(trimmed, twin, previousMessages, replySeed);
   }
   const intent = questionIntent(trimmed);
-  const opening = conversationalOpening(twin, intent.label, trimmed);
   const repeated = repeatedUserQuestion(trimmed, previousMessages);
   const repeatedReply = repeated ? repeatedReplyForTwin(twin, intent.label, replySeed) : null;
   if (repeatedReply) return repeatedReply;
 
   if (!twin.knowledgeTexts.length && !twin.description) {
     return [
-      `${opening} ${intent.label}: Ich nehme deine Frage direkt und halte sie an das, was sich prüfen lässt.`,
+      `${intent.label}: Die Frage wird direkt an dem geprüft, was sich belegen lässt.`,
       intentMove(twin, intent.label),
       `${closingLabel(twin, intent.label)}: ${intent.action}. Hinweis: ${intent.caution}.`,
       'Gib mir eine konkrete Lage, dann mache ich daraus einen nächsten sauberen Schritt.',
     ].join(' ');
   }
 
-  const role = twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
   const contextNote = profileLensLine(twin);
-  const core = compactProfileCore(twin);
   const move = intentMove(twin, intent.label);
   const signature = signatureLens(twin);
   const close = closingLabel(twin, intent.label);
   const variant = hashText(`${twin.slug}|${intent.label}|${trimmed}|${twin.style}`) % 4;
+  const lens = shortLensText(contextNote);
 
   if (intent.label === 'Begrüßung') {
-    return `${opening} Ich bin ${twin.name}, ${role}. Stell mir deine Frage direkt; ich prüfe Ziel, Folge und Verantwortung, bevor ich dir einen klaren nächsten Schritt nenne.`;
+    return 'Begrüßung: Hallo. Stell deine Frage direkt; die Antwort kommt kurz, sachlich und konkret.';
   }
 
   if (intent.label === 'Identität') {
     return [
-      `${opening} ${intent.label}: Ich bin ${twin.name}, ${role}.`,
-      `${core}.`,
-      `${close}: Frag mich dort, wo ${contextNote.toLowerCase()} wirklich helfen.`,
+      'Identität: Dieses Profil nutzt hinterlegte Quellen und Denkstil, ohne die echte Person zu simulieren.',
+      `Schwerpunkt: ${lens}. ${close}: Stelle eine konkrete Frage; die Antwort bleibt kurz und prüfbar.`,
     ].join(' ');
   }
 
   if (intent.label === 'Geschäftsidee') {
     const business = businessConceptForTwin(twin);
+    const asksForOwnBusiness = includesAny(trimmed.toLowerCase(), [
+      'heute gelebt',
+      'welche geschaeft',
+      'welche geschäft',
+      'welches geschaeft',
+      'welches geschäft',
+    ]);
+    if (asksForOwnBusiness) {
+      return [
+        `Geschäftsidee: Gemessen an ${lens.toLowerCase()} wäre ${business.concept} naheliegend.`,
+        `Zielgruppe: ${business.customer}.`,
+        `${close}: ${business.firstTest}.`,
+      ].join(' ');
+    }
     return [
-      `${opening} Geschäftsidee: Aus meiner Erfahrung mit ${core.toLowerCase()} würde ich ${business.concept}.`,
+      `Geschäftsidee: Gemessen an ${lens.toLowerCase()} passt die Idee nur, wenn Nutzer für den konkreten Nutzen zahlen.`,
       `Zielgruppe: ${business.customer}.`,
       `${close}: ${business.firstTest}.`,
     ].join(' ');
@@ -1956,32 +2020,32 @@ export function ruleBasedTwinReply(
 
   if (variant === 0) {
     return [
-      `${opening} ${intent.label}: Ich setze zuerst diese Maßstäbe: ${contextNote.toLowerCase()}.`,
+      `${intent.label}: Maßstab sind ${lens.toLowerCase()}.`,
       move,
-      `${close}: ${intent.action}. Hinweis: ${intent.caution}.`,
+      `${close}: ${intent.action}.`,
     ].join(' ');
   }
 
   if (variant === 1) {
     return [
-      `${opening} ${intent.label}: Für mich liegt der Kern hier: ${core}.`,
-      `Daraus folgt für deine Frage: ${move}`,
+      `${intent.label}: ${move}`,
+      `Prüfpunkt: ${lens}.`,
       `${close}: ${intent.action}.`,
     ].join(' ');
   }
 
   if (variant === 2) {
     return [
-      `${opening} ${intent.label}: Ich ziehe diese Maßstäbe heran: ${contextNote.toLowerCase()}.`,
+      `${intent.label}: Maßstab sind ${lens.toLowerCase()}.`,
       move,
       `${signature} ${close}: ${intent.action}.`,
     ].join(' ');
   }
 
   return [
-    `${opening} ${intent.label}: Ich habe einen klaren Ausgangspunkt: ${contextNote.toLowerCase()}.`,
+    `${intent.label}: Ausgangspunkt sind ${lens.toLowerCase()}.`,
     move,
-    `${close}: ${intent.action}; ${intent.caution}.`,
+    `${close}: ${intent.action}.`,
   ].join(' ');
 }
 

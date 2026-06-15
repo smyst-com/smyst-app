@@ -110,15 +110,17 @@ for (const conversation of conversations) {
     lengths.push(item.answer.length);
     const escapedProfile = conversation.profile.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const nameHits = (item.answer.match(new RegExp(escapedProfile, 'g')) ?? []).length;
-    const firstPerson = /\b(Ich|ich|mein|meine|meiner|mir|mich)\b/.test(item.answer);
-    if (item.intentLabel === 'Identität' && !item.answer.includes(conversation.profile)) {
-      issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'identity_name_missing' });
-    }
     if (item.intentLabel !== 'Identität' && nameHits > 1) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'profile_name_repeated_unnecessarily', nameHits });
     }
-    if (!firstPerson) {
-      issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'first_person_missing' });
+    const profileOpening = new RegExp(`^(?:[A-Za-zÄÖÜäöüß ]{2,32}:\\s*)?${escapedProfile}(?:\\b|,)`, 'i');
+    if (profileOpening.test(item.answer)) {
+      issues.push({
+        profile: conversation.profile,
+        prompt: item.prompt,
+        issue: 'profile_name_or_role_at_answer_start',
+        excerpt: item.answer.slice(0, 220),
+      });
     }
     if (!item.answer.includes(item.intentLabel)) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'intent_label_missing' });
@@ -126,7 +128,7 @@ for (const conversation of conversations) {
     if (item.intentLabel === 'Konfliktstrategie' && item.answer.includes('Technologie')) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'war_prompt_misclassified_as_technology' });
     }
-    const banned = new RegExp(`(?:Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem|${escapedProfile}[-\\s]Perspektive|${escapedProfile}[-\\s]Linse|Für ${escapedProfile} ist|${escapedProfile} würde sagen|${escapedProfile} wuerde sagen|${escapedProfile} meint|Aus Sicht von ${escapedProfile}|Profilperspektive|dieses Profil (?:antwortet|meint|ist|würde|wuerde))`, 'i');
+    const banned = new RegExp(`(?:Ich bin ${escapedProfile}|Ich antworte als ${escapedProfile}|Als ${escapedProfile}(?:\\b|,)|${escapedProfile} wie cevap verirsem|${escapedProfile}[-\\s]Perspektive|${escapedProfile}[-\\s]Linse|Für ${escapedProfile} ist|${escapedProfile} würde sagen|${escapedProfile} wuerde sagen|${escapedProfile} meint|Aus Sicht von ${escapedProfile}|Profilperspektive|dieses Profil (?:antwortet|meint|ist|würde|wuerde)|Sachlich betrachtet|Aus der Analyse heraus)`, 'i');
     if (banned.test(item.answer)) {
       issues.push({
         profile: conversation.profile,
@@ -135,10 +137,10 @@ for (const conversation of conversations) {
         excerpt: item.answer.slice(0, 220),
       });
     }
-    if (item.answer.length > 760) {
+    if (item.answer.length > 620) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'answer_too_long', length: item.answer.length });
     }
-    if (item.answer.length < 180) {
+    if (item.answer.length < 80) {
       issues.push({ profile: conversation.profile, prompt: item.prompt, issue: 'answer_too_short', length: item.answer.length });
     }
     const normalized = item.answer

@@ -74,7 +74,7 @@ async function toProfile(spec, index) {
       {
         id: `knowledge-${spec.slug}-style`,
         title: 'Antwortstil',
-        text: `Antwortstil: ${spec.answerStyle}. Ich antworte konsequent direkt aus meiner historischen Rolle, spreche den Nutzer direkt an und vermeide dritte Person, generische KI-Sprache und staendige Namenswiederholung.`,
+        text: `Antwortstil: ${spec.answerStyle}. Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story. Nur die konkrete Anfrage beantworten.`,
         createdAt,
       },
     ],
@@ -92,7 +92,7 @@ async function toProfile(spec, index) {
     contextSummary:
       `Historische Rolle: ${spec.name}. Profil: ${spec.description} Kategorien: ${spec.categories.join(', ')}. Sprachen: ${CURATED_PUBLIC_TWIN_LANGUAGES.join(', ')}. Kommunikationsstil: ${spec.style}. Antwortstil: ${spec.answerStyle}.`,
     guardrail:
-      'Ich-Perspektive erzwingen: direkt aus der historischen Rolle antworten, den Nutzer direkt ansprechen, keine dritte Person und keine Behauptung, die echte verstorbene Person zu sein.',
+      'Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story. Nicht behaupten, die echte verstorbene Person zu sein.',
     rightsPosture: spec.rightsPosture,
     sources: spec.sources,
     exampleQuestions: spec.exampleQuestions,

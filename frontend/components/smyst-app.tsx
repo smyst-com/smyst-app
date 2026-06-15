@@ -49,7 +49,7 @@ export function SmystApp({ locale, dictionary }: Props) {
       id: `a-${Date.now()}`,
       role: "assistant",
       content: [
-        `Ich antworte dir direkt aus meiner Rolle. ${selectedTwin.summary}`,
+        `Antworte kurz, direkt und sachlich. ${selectedTwin.summary}`,
         selectedTwin.guardrail ? `Guardrail: ${selectedTwin.guardrail}` : null,
         selectedTwin.sources?.length ? `Sources available: ${selectedTwin.sources.length}` : null,
       ]

@@ -50,7 +50,7 @@ for (const spec of CURATED_PUBLIC_TWIN_SPECS) {
   if (!hasDateLife && !hasYearLife) specIssues.push('life_dates_required');
   if (!Array.isArray(spec.categories) || !spec.categories.length) specIssues.push('categories_required');
   if (!spec.answerStyle?.trim()) specIssues.push('answer_style_required');
-  if (!spec.knowledge?.includes('Ich-Perspektive')) specIssues.push('first_person_rule_missing');
+  if (!spec.knowledge?.includes('kurz, direkt und sachlich')) specIssues.push('direct_answer_rule_missing');
   if (!Array.isArray(spec.sources) || !spec.sources.length) specIssues.push('sources_required');
   if (specIssues.length) issues.push({ scope: 'curated_source', slug: spec.slug, name: spec.name, issues: specIssues });
 }

@@ -58,7 +58,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
       'Oeffentliche und private Profile bleiben klar getrennt. Du entscheidest, womit du chatten moechtest.',
   },
   chat: {
-    replyIntro: 'Ich antworte dir direkt aus meiner Rolle.',
+    replyIntro: 'Antworte kurz, direkt und sachlich.',
     replyMvp: 'Ich wuerde es ruhig betrachten: Die Welt ist voller Tempo, Wissen und Unruhe zugleich.',
     replyQuestion: 'Zu deiner Frage: "{{question}}"',
     replyNextStep: 'Wichtig ist, genauer hinzusehen, neugierig zu bleiben und Fortschritt mit Verantwortung zu verbinden.',
