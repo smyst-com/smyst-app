@@ -268,6 +268,16 @@ function publicTwinKey(slug: string): string {
   return `public:twin:${slug}`;
 }
 
+function publicChatId(slug: string): string {
+  return `public:${slug}:${crypto.randomUUID()}`;
+}
+
+function publicSlugFromChatId(chatId: string): string | null {
+  if (!chatId.startsWith('public:')) return null;
+  const [, slug] = chatId.split(':');
+  return slugify(slug || '') || null;
+}
+
 function curatedPublicTwin(env: ApiEnv, spec: (typeof CURATED_PUBLIC_TWIN_SPECS)[number], index: number): TwinRecord {
   const createdAt = CURATED_PUBLIC_TWIN_BASE_TIME - (CURATED_PUBLIC_TWIN_SPECS.length - index) * 1000;
   const updatedAt = CURATED_PUBLIC_TWIN_BASE_TIME + (CURATED_PUBLIC_TWIN_SPECS.length - index) * 1000;
@@ -1217,8 +1227,27 @@ async function handleStartChat(request: Request, env: ApiEnv): Promise<Response>
     createdAt: now,
     updatedAt: now,
   };
-  await putChat(env, chat);
-  await addChatToIndex(env, session.sub, chat.id);
+  try {
+    await putChat(env, chat);
+  } catch (err) {
+    if (publicTwin && !twin) {
+      console.warn('public_chat_storage_unavailable', JSON.stringify({ slug: publicTwin.slug, error: String(err) }));
+      return jsonResponse({
+        chat: {
+          ...chat,
+          id: publicChatId(publicTwin.slug),
+          transient: true,
+        },
+      });
+    }
+    throw err;
+  }
+
+  try {
+    await addChatToIndex(env, session.sub, chat.id);
+  } catch (err) {
+    console.warn('chat_index_update_failed', JSON.stringify({ userSub: session.sub, chatId: chat.id, error: String(err) }));
+  }
 
   return jsonResponse({ chat });
 }
@@ -1558,7 +1587,19 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   }
 
   const kv = metadataStore(env);
-  const chat = (await kv.get(chatKey(session.sub, body.chatId), 'json')) as ChatRecord | null;
+  let chat = (await kv.get(chatKey(session.sub, body.chatId), 'json')) as ChatRecord | null;
+  const transientPublicSlug = publicSlugFromChatId(body.chatId);
+  if (!chat && transientPublicSlug) {
+    chat = {
+      id: body.chatId,
+      userSub: session.sub,
+      title: 'Public Twin Chat',
+      publicTwinSlug: transientPublicSlug,
+      messages: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+  }
   if (!chat) return errorResponse('chat_not_found', 'Chat not found', 404);
   const twin = chat.twinId
     ? await loadTwinForUser(env, session.sub, chat.twinId)
@@ -1587,8 +1628,18 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
     messages: [...chat.messages, userMessage, assistantMessage].slice(-MAX_CHAT_MESSAGES),
     updatedAt: now,
   };
-  await putChat(env, next);
-  await addChatToIndex(env, session.sub, next.id);
+  try {
+    await putChat(env, next);
+    await addChatToIndex(env, session.sub, next.id);
+  } catch (err) {
+    if (!chat.publicTwinSlug) throw err;
+    console.warn('public_chat_persistence_failed', JSON.stringify({
+      userSub: session.sub,
+      chatId: next.id,
+      publicTwinSlug: chat.publicTwinSlug,
+      error: String(err),
+    }));
+  }
 
   return jsonResponse({
     chatId: next.id,
