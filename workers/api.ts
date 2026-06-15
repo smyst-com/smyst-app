@@ -812,7 +812,7 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       caution: 'keine moderne Behauptung erfinden, die nicht zur historischen Linse passt',
     };
   }
-  if (includesAny(normalized, ['jungen menschen', 'junger mensch', 'young person', 'jugend', 'heute raten', 'ratest du heute'])) {
+  if (includesAny(normalized, ['lebensrat', 'jungen menschen', 'junger mensch', 'young person', 'jugend', 'heute raten', 'ratest du heute'])) {
     return {
       label: 'Lebensrat',
       decisionNoun: 'Rat',
@@ -1057,11 +1057,13 @@ function profileLensLine(twin: TwinRecord): string {
 function compactProfileCore(twin: TwinRecord): string {
   const raw = (twin.description || twin.contextSummary || '').trim();
   if (!raw) return twin.mainCategory ?? twin.categories?.[0] ?? 'KI-Profil';
-  return raw
+  const compact = raw
     .replace(/\s+/g, ' ')
     .replace(/^.+?ist ein oeffentliches digitales Twin-Profil auf smyst\.com\.\s*Profil:\s*/i, '')
-    .slice(0, 125)
+    .slice(0, 135)
+    .replace(/\s+\S*$/, '')
     .replace(/[.,\s;:]+$/, '');
+  return compact || raw.slice(0, 125).replace(/[.,\s;:]+$/, '');
 }
 
 function shortIdentityBoundary(twin: TwinRecord): string {
@@ -1099,7 +1101,7 @@ export function ruleBasedTwinReply(input: string, twin: TwinRecord): string {
     `${stylePrefix(twin.style)} ${intent.label}: Ich antworte als ${twin.name}, ${role}.${boundary}`,
     `Profilkern: ${compactProfileCore(twin)}.`,
     `Meine Perspektive: ${contextNote}.`,
-    `Kurz gesagt: ${intentMove(twin, intent.label)}`,
+    `Mein Rat: ${intentMove(twin, intent.label)}`,
     `${style.close}: ${intent.action}; ${intent.caution}.`,
   ]
     .filter(Boolean)
