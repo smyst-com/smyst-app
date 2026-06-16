@@ -977,7 +977,20 @@ function questionIntent(input: string): { label: string; decisionNoun: string; a
       caution: 'keine moderne Behauptung erfinden, die nicht zur historischen Rolle passt',
     };
   }
-  if (includesAny(normalized, ['lebensrat', 'jungen menschen', 'junger mensch', 'young person', 'jugend', 'heute raten', 'ratest du heute'])) {
+  if (includesAny(normalized, [
+    'lebensrat',
+    'jungen menschen',
+    'junger mensch',
+    'junge leute',
+    'junge leuten',
+    'young person',
+    'young people',
+    'jugend',
+    'heute raten',
+    'ratest du heute',
+    'empfehlung fuer junge',
+    'empfehlung für junge',
+  ])) {
     return {
       label: 'Lebensrat',
       decisionNoun: 'Rat',
@@ -1325,6 +1338,104 @@ function businessConceptForTwin(twin: TwinRecord): { concept: string; customer: 
     customer: 'Menschen und Teams, die Erfahrung, Rat und Erinnerungen zuverlässig nutzbar machen wollen',
     firstTest: 'mit einer engen Zielgruppe starten, echte Gespräche messen und nur das bauen, wofür Nutzer wiederkommen',
   };
+}
+
+function youthAdviceForTwin(twin: TwinRecord, input = ''): string {
+  const categories = (twin.categories ?? []).map((item) => item.toLowerCase());
+  const lens = shortLensText(profileLensLine(twin), 118).toLowerCase();
+  const firstLens = lens
+    .split(',')
+    .map((part) => part.trim())
+    .find(Boolean) ?? (twin.mainCategory ?? 'Urteilskraft').toLowerCase();
+  const move = intentMove(twin, 'Lebensrat');
+  const seed = `${twin.slug}|youth-advice|${input}|${twin.answerStyle ?? ''}`;
+  const specificAdvice: Record<string, string> = {
+    'albert-einstein': 'Halte deine Fantasie wach, aber zwinge jede schöne Idee durch einfache Fragen und ehrliche Belege.',
+    'leonardo-da-vinci': 'Zeichne, beobachte, zerlege Dinge mit den Händen; Wissen wächst, wenn Auge, Neugier und Werkstatt zusammenarbeiten.',
+    'isaac-newton': 'Suche Ursachen geduldig, rechne sauber und lass Gewohnheit stärker werden als der Wunsch nach schnellem Ruhm.',
+    'william-shakespeare': 'Lerne Menschen lesen: ihre Rollen, Wünsche, Schwächen und den Preis ihrer Entscheidungen.',
+    aristoteles: 'Baue Tugend durch Wiederholung: Man wird gerecht, mutig und klug, indem man kleine richtige Handlungen übt.',
+    sokrates: 'Schäme dich nicht für gute Fragen; schäme dich eher für ein ungeprüftes Leben voller fertiger Antworten.',
+    platon: 'Verwechsle Schatten nicht mit Wahrheit; suche Lehrer, Freunde und Ideen, die deinen Blick nach oben ziehen.',
+    'napoleon-bonaparte': 'Disziplin, Tempo und Mut zählen, aber ohne Maß und Versorgung wird Ehrgeiz zur Niederlage.',
+    konfuzius: 'Beginne mit Respekt, Lernen und Vorbild: Ordnung im Kleinen formt Charakter im Großen.',
+    'marie-curie': 'Arbeite still, genau und ausdauernd; echte Entdeckung braucht mehr Geduld als Applaus.',
+  };
+  const emphasis = (() => {
+    if (specificAdvice[twin.slug]) return specificAdvice[twin.slug];
+    const haystack = `${twin.name} ${twin.mainCategory ?? ''} ${twin.description} ${twin.answerStyle ?? ''} ${categories.join(' ')}`.toLowerCase();
+    if (
+      includesAny(haystack, ['kunst', 'literatur', 'musik', 'dichter', 'schriftsteller', 'komponist']) &&
+      includesAny(haystack, ['technologie', 'wissenschaft', 'forschung', 'mathematik'])
+    ) {
+      return pickStable([
+        'Verbinde Vorstellungskraft mit Prüfung: erst sehen, dann bauen, dann verbessern.',
+        'Lerne mit Kopf und Hand zugleich; die beste Idee muss eine Form bekommen.',
+        'Halte Neugier breit, aber Ausführung genau.',
+        'Suche Übergänge zwischen Kunst, Technik und Natur, denn dort entstehen neue Wege.',
+      ], `${seed}|art-science`);
+    }
+    if (includesAny(haystack, ['sokrates', 'philosophie', 'ethik', 'dao', 'stoiker'])) {
+      return pickStable([
+        'Lerne zuerst, bessere Fragen zu stellen als schnelle Antworten zu sammeln.',
+        'Prüfe deine Wünsche, bevor du ihnen dein Leben übergibst.',
+        'Baue Charakter durch kleine ehrliche Entscheidungen, nicht durch große Selbstdarstellung.',
+        'Suche Wahrheit, aber bleib lernfähig, wenn ein guter Einwand kommt.',
+      ], `${seed}|philosophy`);
+    }
+    if (includesAny(haystack, ['physik', 'mathematik', 'wissenschaft', 'forschung', 'astronomie', 'geometrie'])) {
+      return pickStable([
+        'Trainiere Neugier wie ein Handwerk: beobachten, messen, irren, verbessern.',
+        'Verliebe dich nicht in die erste Erklärung; teste sie gegen Wirklichkeit.',
+        'Lerne Grundlagen so sauber, dass du später mutig vereinfachen kannst.',
+        'Schreibe deine Annahmen auf und lass Beweise stärker sein als Stolz.',
+      ], `${seed}|science`);
+    }
+    if (includesAny(haystack, ['kunst', 'literatur', 'musik', 'dichter', 'schriftsteller', 'komponist', 'maler'])) {
+      return pickStable([
+        'Schütze deine eigene Stimme, aber bezahle sie täglich mit Übung.',
+        'Beobachte Menschen genauer; dort beginnt jede starke Form, Szene oder Melodie.',
+        'Werde nicht nur auffällig, werde wahrhaftig und handwerklich gut.',
+        'Halte Empfindsamkeit und Disziplin zusammen; nur eines von beiden trägt nicht weit.',
+      ], `${seed}|art`);
+    }
+    if (includesAny(haystack, ['strategie', 'führung', 'fuehrung', 'politik', 'staat', 'feldherr', 'kaiser', 'minister'])) {
+      return pickStable([
+        'Lerne Verantwortung vor Ehrgeiz: Jede Entscheidung hat Menschen als Preis oder Gewinn.',
+        'Übe Urteilskraft unter Druck, aber verwechsle Tempo nie mit Klugheit.',
+        'Baue Verbündete, Charakter und klare Ziele, bevor du nach Macht greifst.',
+        'Denke an Folgen, Versorgung und Vertrauen; Ruhm allein ist eine schlechte Strategie.',
+      ], `${seed}|strategy`);
+    }
+    if (includesAny(haystack, ['wirtschaft', 'business', 'marketing', 'ökonomie', 'oekonomie'])) {
+      return pickStable([
+        'Suche echten Nutzen, nicht nur eine schöne Idee; Menschen zeigen Wahrheit durch Verhalten.',
+        'Teste klein, rechne ehrlich und behandle Vertrauen als Kapital.',
+        'Lerne verkaufen, zuhören und verbessern, bevor du groß skalierst.',
+        'Baue etwas, wofür jemand wiederkommt, nicht nur etwas, das kurz glänzt.',
+      ], `${seed}|business`);
+    }
+    return pickStable([
+      'Wähle eine Richtung, übe ernsthaft und korrigiere dich ohne Drama.',
+      'Verbinde Neugier mit Verlässlichkeit; beides zusammen öffnet Türen.',
+      'Mach den nächsten Schritt klein genug, aber mache ihn wirklich.',
+      'Lerne, wem du dienst, was du kannst und welchen Preis deine Ziele verlangen.',
+    ], `${seed}|general`);
+  })();
+  const practice = pickStable([
+    'Eine Stunde täglich saubere Übung ist mehr wert als zehn laute Vorsätze.',
+    'Such dir Menschen, die dich nicht nur bestätigen, sondern besser machen.',
+    'Halte ein kleines Notizbuch: Frage, Beobachtung, Fehler, nächster Versuch.',
+    'Vergleiche dich weniger mit fremdem Glanz und mehr mit deiner Arbeit von gestern.',
+    'Wähle ein Problem, an dem du wachsen kannst, ohne deine Würde zu verkaufen.',
+  ], `${seed}|practice`);
+  const opening = conversationalOpening(twin, 'Lebensrat', input);
+  const close = closingLabel(twin, 'Lebensrat');
+  return [
+    `Lebensrat: ${opening} Beginne bei ${firstLens}; ${emphasis}`,
+    `Der harte Kern hier: ${lens}.`,
+    `${close}: ${move} ${practice}`,
+  ].join(' ');
 }
 
 function shortProfileHint(twin: TwinRecord, maxLength = 105): string {
@@ -2008,6 +2119,10 @@ export function ruleBasedTwinReply(
       `Zielgruppe: ${business.customer}.`,
       `${close}: ${business.firstTest}.`,
     ].join(' ');
+  }
+
+  if (intent.label === 'Lebensrat') {
+    return youthAdviceForTwin(twin, trimmed);
   }
 
   if (intent.label === 'Druck und Ruhe') {

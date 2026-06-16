@@ -38,6 +38,7 @@ const auditQuestions = [
   ['Risiko', 'Was ist Risiko?'],
   ['Technologie', 'Was ist Technologie?'],
   ['Lebensrat', 'Was würdest du jungen Menschen raten?'],
+  ['Lebensrat', 'Was ist deine Empfehlung fuer junge Leute?'],
   ['Technologie', 'Was hältst du von KI?'],
   ['Weltverbesserung', 'Wie würdest du heute die Welt verbessern?'],
 ];
