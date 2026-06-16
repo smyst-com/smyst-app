@@ -694,6 +694,50 @@ function profileLifeLine(profile: {
   return 'Lebensdaten nicht hinterlegt'
 }
 
+function hasLifeDates(profile: {
+  birthDate?: string
+  deathDate?: string
+  birthYear?: number
+  deathYear?: number
+  birthLabel?: string
+  deathLabel?: string
+}): boolean {
+  const hasDateLife = Boolean(profile.birthDate?.trim() && profile.deathDate?.trim())
+  const hasYearLife = Number.isFinite(profile.birthYear) && Number.isFinite(profile.deathYear) &&
+    Boolean(profile.birthLabel?.trim() && profile.deathLabel?.trim())
+  return hasDateLife || hasYearLife
+}
+
+function hasRequiredProfileImage(profile: { imageUrl?: string | null }): boolean {
+  return Boolean(profile.imageUrl?.trim())
+}
+
+function isCompleteTwinRecord(twin: TwinRecord): boolean {
+  return (
+    twin.status === 'ready' &&
+    Boolean(twin.name.trim()) &&
+    twin.description.trim().length >= 40 &&
+    hasRequiredProfileImage(twin) &&
+    (twin.categories ?? []).some((item) => item.trim().length >= 2) &&
+    (twin.languages ?? []).some((item) => item.trim().length >= 2)
+  )
+}
+
+function isCompletePublicProfile(profile: PublicTwinProfile): boolean {
+  return (
+    profile.status === 'ready' &&
+    profile.visibility === 'public' &&
+    profile.quality?.ok !== false &&
+    Boolean(profile.name.trim()) &&
+    Boolean(profile.mainCategory?.trim()) &&
+    profile.description.trim().length >= 40 &&
+    hasRequiredProfileImage(profile) &&
+    hasLifeDates(profile) &&
+    (profile.categories ?? []).some((item) => item.trim().length >= 2) &&
+    (profile.languages ?? []).some((item) => item.trim().length >= 2)
+  )
+}
+
 function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsage = { chatCount: 0, lastChatAt: 0 }): StartTwin {
   const publicProfile = twin.visibility === 'public'
   const categories = (twin.categories ?? []).filter(Boolean)
@@ -899,7 +943,7 @@ function SmystStartPage({
         const publicProfiles = await twinMvp.listPublicTwins()
         if (!alive) return
         const next = (publicProfiles ?? [])
-          .filter((profile) => profile.name.trim().length > 0)
+          .filter(isCompletePublicProfile)
           .map(publicProfileToStartTwin)
         setRealStartTwins(next)
         setSelectedTwin(null)
@@ -915,11 +959,11 @@ function SmystStartPage({
       if (!alive) return
       const usage = usageByTwinId(chats)
       const ownProfiles = (twins ?? [])
-        .filter((twin) => twin.name.trim().length > 0)
+        .filter(isCompleteTwinRecord)
         .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug)))
       const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
       const publicStartProfiles = (publicProfiles ?? [])
-        .filter((profile) => profile.name.trim().length > 0 && !ownPublicSlugs.has(profile.slug))
+        .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug))
         .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
       const next = [...ownProfiles, ...publicStartProfiles]
       setRealStartTwins(next)
@@ -1028,16 +1072,27 @@ function SmystStartPage({
     })
   }
 
+  const removeProfileWithBrokenImage = (imageUrl: string) => {
+    setRealStartTwins((current) => current.filter((twin) => twin.imageUrl !== imageUrl))
+    setSelectedTwin((current) => (current?.imageUrl === imageUrl ? null : current))
+  }
+
   const renderProfileAvatar = (twin: StartTwin, className = 'h-12 w-12') => (
     <span
       className={`${className} relative grid shrink-0 place-items-center overflow-hidden border border-white/18 bg-white/[0.08] text-sm font-bold text-white shadow-none`}
       style={{ boxShadow: `inset 0 0 0 1px ${twin.accent}33` }}
     >
+      <span>{twin.initials}</span>
       {twin.imageUrl ? (
-        <img src={twin.imageUrl} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" />
-      ) : (
-        <span>{twin.initials}</span>
-      )}
+        <img
+          src={twin.imageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+          decoding="async"
+          onError={() => removeProfileWithBrokenImage(twin.imageUrl as string)}
+        />
+      ) : null}
     </span>
   )
 
@@ -1315,7 +1370,7 @@ function SmystStartPage({
     }
     if (!selectedTwin) selectTwin(twin)
 
-    if (auth.status !== 'authenticated') {
+    if (auth.status !== 'authenticated' && !twin.publicProfile) {
       setMessages((current) => [
         ...current,
         { id: crypto.randomUUID(), role: 'user', content: fullMessage },
@@ -1583,7 +1638,13 @@ function SmystStartPage({
             <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
               <span className="grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86]">
                 {selectedTwin.imageUrl ? (
-                  <img src={selectedTwin.imageUrl} alt="" className="h-full w-full object-cover" decoding="async" />
+                  <img
+                    src={selectedTwin.imageUrl}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    decoding="async"
+                    onError={() => removeProfileWithBrokenImage(selectedTwin.imageUrl as string)}
+                  />
                 ) : (
                   selectedTwin.initials
                 )}
@@ -1968,6 +2029,7 @@ function TwinProfileView({
   const [privateTwin, setPrivateTwin] = useState<TwinRecord | null>(null)
   const [loaded, setLoaded] = useState(!slug && !privateTwinId)
   const [shareStatus, setShareStatus] = useState('')
+  const [profileImageBroken, setProfileImageBroken] = useState(false)
   const isPrivate = Boolean(privateTwinId)
 
   useEffect(() => {
@@ -2027,6 +2089,10 @@ function TwinProfileView({
         },
       }
     : publicProfile
+
+  useEffect(() => {
+    setProfileImageBroken(false)
+  }, [profile?.imageUrl])
 
   useEffect(() => {
     const noindex = isPrivate || profile?.visibility !== 'public'
@@ -2093,12 +2159,16 @@ function TwinProfileView({
     )
   }
 
-  const profileInitials = profile.name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('')
+  if (!profile.imageUrl || profileImageBroken) {
+    return (
+      <div className="pt-[72px]">
+        <Card className="mx-auto max-w-[720px] p-8">
+          <h1 className="mb-2 text-2xl font-bold">Twin-Profil nicht vollständig</h1>
+          <p className="text-sm text-[#555b64]">Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.</p>
+        </Card>
+      </div>
+    )
+  }
 
   const profileShareUrl = profile.seo.canonical || `${window.location.origin}${profile.chatPath}`
   const shareProfile = async () => {
@@ -2150,13 +2220,14 @@ function TwinProfileView({
           <div className="grid gap-0 lg:grid-cols-[340px_1fr]">
             <div className="border-b border-white/30 bg-white/18 p-6 lg:border-b-0 lg:border-r">
               <div className="aspect-square overflow-hidden rounded-[18px] border border-white/40 bg-white/28">
-                {profile.imageUrl ? (
-                  <img src={profile.imageUrl} alt={profile.name} className="h-full w-full object-cover" loading="eager" decoding="async" />
-                ) : (
-                  <div className="grid h-full w-full place-items-center bg-[#eef6ff] text-5xl font-bold text-[#0b1c44]">
-                    {profileInitials}
-                  </div>
-                )}
+                <img
+                  src={profile.imageUrl}
+                  alt={profile.name}
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                  decoding="async"
+                  onError={() => setProfileImageBroken(true)}
+                />
               </div>
               <button
                 type="button"
@@ -3437,8 +3508,8 @@ function TwinChatView() {
   const latestAssistantText = [...messages].reverse().find((message) => message.role === 'ai' && message.content.trim().length > 0)?.content ?? ''
   const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
   const canSend =
-    auth.status === 'authenticated' &&
     Boolean(activeTwin) &&
+    (auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)) &&
     (input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) &&
     !isReplying
   const canSpeak = latestAssistantText.length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
@@ -3539,7 +3610,7 @@ function TwinChatView() {
                   {
                     id: crypto.randomUUID(),
                     role: 'ai',
-                    content: `${publicTwin.name} ist bereit. Melde dich an, um den Chat zu starten.`,
+                    content: `${publicTwin.name} ist bereit. Schreib deine Frage direkt. Melde dich an, um den Verlauf zu speichern.`,
                   },
                 ]
             : current,
@@ -3763,7 +3834,8 @@ function TwinChatView() {
     options: { forceSpeech?: boolean } = {},
   ): Promise<string | null> => {
     const message = composeMessageWithAttachments((overrideText ?? input).trim(), overrideAttachments ?? attachments)
-    if (!message || auth.status !== 'authenticated' || isReplying) return null
+    const canChatWithActiveTwin = auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)
+    if (!message || !canChatWithActiveTwin || isReplying) return null
     if ((overrideAttachments ?? attachments).some((attachment) => attachment.status === 'uploading')) {
       addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
       return null
@@ -3861,11 +3933,17 @@ function TwinChatView() {
         <header className="flex min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-white/18 bg-white/14 px-2 py-1 backdrop-blur-[18px] sm:min-h-[48px] sm:px-3">
           <div className="flex min-w-0 items-center gap-2">
             {activeTwin?.imageUrl ? (
-              <img
-                src={activeTwin.imageUrl}
-                alt=""
-                className="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-white/40 sm:h-9 sm:w-9"
-              />
+              <span className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-[#59C7FF]/18 text-[11px] font-bold text-[#0b1c44] ring-1 ring-white/40 sm:h-9 sm:w-9">
+                {initials}
+                <img
+                  src={activeTwin.imageUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.style.display = 'none'
+                  }}
+                />
+              </span>
             ) : (
               <div className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#59C7FF]/18 text-[11px] font-bold text-[#0b1c44] ring-1 ring-white/32 sm:h-9 sm:w-9">
                 {initials}
@@ -4044,13 +4122,13 @@ function TwinChatView() {
                   }
                 }}
                 placeholder={
-                  auth.status !== 'authenticated'
-                    ? 'Bitte anmelden, um zu chatten'
-                    : activeTwin
+                  activeTwin
                       ? `Nachricht an ${activeTwin.name}...`
-                      : 'Zuerst KI-Profil auswählen'
+                      : auth.status !== 'authenticated'
+                        ? 'Öffentliches Profil auswählen'
+                        : 'Zuerst KI-Profil auswählen'
                 }
-                disabled={auth.status !== 'authenticated' || !activeTwin}
+                disabled={!activeTwin || (auth.status !== 'authenticated' && !activeTwin.publicProfile)}
                 className="max-h-[96px] min-h-[36px] flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-5 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
               />
               <button

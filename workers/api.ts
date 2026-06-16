@@ -2169,23 +2169,40 @@ async function handleSupportReport(request: Request, env: ApiEnv): Promise<Respo
 }
 
 async function handleStartChat(request: Request, env: ApiEnv): Promise<Response> {
-  const session = await authenticate(request, env);
-  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
-  if (!hasPermission(session, 'chat:write')) return errorResponse('forbidden', 'Missing chat write permission', 403);
-
   let body: ChatStartRequest = {};
   const parsed = await readJsonBody<ChatStartRequest>(request, 8 * 1024);
   if (!parsed.ok) return parsed.response;
   body = parsed.value;
 
+  const session = await authenticate(request, env);
+  if (session && !hasPermission(session, 'chat:write')) return errorResponse('forbidden', 'Missing chat write permission', 403);
+
   let twin: TwinRecord | null = null;
   let publicTwin: TwinRecord | null = null;
   if (typeof body.twinId === 'string' && body.twinId) {
-    twin = await loadTwinForUser(env, session.sub, body.twinId);
+    if (session) twin = await loadTwinForUser(env, session.sub, body.twinId);
     if (!twin) publicTwin = await loadPublicTwin(env, slugify(body.twinId));
     if (!twin && (!publicTwin || publicTwin.visibility !== 'public')) {
       return errorResponse('twin_not_found', 'Twin not found', 404);
     }
+  }
+  if (!session) {
+    if (!publicTwin || publicTwin.visibility !== 'public') {
+      return errorResponse('unauthorized', 'Sign in is required for private chats.', 401);
+    }
+    const now = Date.now();
+    return jsonResponse({
+      chat: {
+        id: publicChatId(publicTwin.slug),
+        userSub: 'public',
+        title: `Chat mit ${publicTwin.name}`,
+        publicTwinSlug: publicTwin.slug,
+        messages: [],
+        createdAt: now,
+        updatedAt: now,
+        transient: true,
+      },
+    });
   }
 
   const now = Date.now();
@@ -2543,10 +2560,6 @@ async function handlePublicTwinList(request: Request, env: ApiEnv): Promise<Resp
 }
 
 async function handleChatMessage(request: Request, env: ApiEnv): Promise<Response> {
-  const session = await authenticate(request, env);
-  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
-  if (!hasPermission(session, 'chat:write')) return errorResponse('forbidden', 'Missing chat write permission', 403);
-
   const parsed = await readJsonBody<ChatMessageRequest>(request, 16 * 1024);
   if (!parsed.ok) return parsed.response;
   const body = parsed.value;
@@ -2559,13 +2572,17 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
     return errorResponse('message_too_large', 'Message is too large', 413);
   }
 
-  const kv = metadataStore(env);
-  let chat = (await kv.get(chatKey(session.sub, body.chatId), 'json')) as ChatRecord | null;
   const transientPublicSlug = publicSlugFromChatId(body.chatId);
+  const session = await authenticate(request, env);
+  if (!session && !transientPublicSlug) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (session && !hasPermission(session, 'chat:write')) return errorResponse('forbidden', 'Missing chat write permission', 403);
+
+  const kv = metadataStore(env);
+  let chat = session ? (await kv.get(chatKey(session.sub, body.chatId), 'json')) as ChatRecord | null : null;
   if (!chat && transientPublicSlug) {
     chat = {
       id: body.chatId,
-      userSub: session.sub,
+      userSub: session?.sub ?? 'public',
       title: 'Public Twin Chat',
       publicTwinSlug: transientPublicSlug,
       messages: [],
@@ -2575,14 +2592,15 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   }
   if (!chat) return errorResponse('chat_not_found', 'Chat not found', 404);
   const twin = chat.twinId
-    ? await loadTwinForUser(env, session.sub, chat.twinId)
+    ? session ? await loadTwinForUser(env, session.sub, chat.twinId) : null
     : chat.publicTwinSlug
       ? await loadPublicTwin(env, chat.publicTwinSlug)
       : null;
+  if (!twin && chat.publicTwinSlug) return errorResponse('public_twin_not_found', 'Public twin not found', 404);
 
   const now = Date.now();
   const profileMemoryId = chat.twinId ?? chat.publicTwinSlug ?? null;
-  const promptMemoryKey = profileMemoryId ? recentPromptKey(session.sub, profileMemoryId) : null;
+  const promptMemoryKey = session && profileMemoryId ? recentPromptKey(session.sub, profileMemoryId) : null;
   const promptMemory = promptMemoryKey
     ? (await kv.get(promptMemoryKey, 'json')) as ChatRecentPromptMemory | null
     : null;
@@ -2610,20 +2628,22 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
     messages: [...chat.messages, userMessage, assistantMessage].slice(-MAX_CHAT_MESSAGES),
     updatedAt: now,
   };
-  try {
-    await putChat(env, next);
-    await addChatToIndex(env, session.sub, next.id);
-    if (promptMemoryKey) {
-      await kv.put(promptMemoryKey, JSON.stringify(nextRecentPromptMemory(promptMemory, message, now)));
+  if (session) {
+    try {
+      await putChat(env, next);
+      await addChatToIndex(env, session.sub, next.id);
+      if (promptMemoryKey) {
+        await kv.put(promptMemoryKey, JSON.stringify(nextRecentPromptMemory(promptMemory, message, now)));
+      }
+    } catch (err) {
+      if (!chat.publicTwinSlug) throw err;
+      console.warn('public_chat_persistence_failed', JSON.stringify({
+        userSub: session.sub,
+        chatId: next.id,
+        publicTwinSlug: chat.publicTwinSlug,
+        error: String(err),
+      }));
     }
-  } catch (err) {
-    if (!chat.publicTwinSlug) throw err;
-    console.warn('public_chat_persistence_failed', JSON.stringify({
-      userSub: session.sub,
-      chatId: next.id,
-      publicTwinSlug: chat.publicTwinSlug,
-      error: String(err),
-    }));
   }
 
   return jsonResponse({
