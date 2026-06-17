@@ -109,8 +109,15 @@ export interface AccountExportBundle {
   exportedAt: string
   storageNote: string
   user: unknown
+  profile?: UserProfileRecord
+  memories?: MemoryRecord[]
   twins: TwinRecord[]
   chats: Array<{ id: string; title: string; messages: TwinChatMessage[]; createdAt: number; updatedAt: number }>
+  objectLayout?: {
+    profile: string
+    chatArchives: string[]
+    memories: string[]
+  }
 }
 
 export interface TwinChatRecord {
@@ -119,12 +126,77 @@ export interface TwinChatRecord {
   twinId: string | null
   publicTwinSlug?: string | null
   messages: TwinChatMessage[]
+  summary?: string
+  archiveObjectKey?: string
+  visibility?: ProfileVisibility
+  sensitivity?: SensitivityLevel
   messageCount: number
   createdAt: number
   updatedAt: number
 }
 
 export type SupportReportType = 'bug' | 'abuse' | 'privacy' | 'safety' | 'feedback'
+export type ProfileVisibility = 'private' | 'shared' | 'public_snapshot' | 'deleted'
+export type SensitivityLevel = 'normal' | 'personal' | 'sensitive'
+export type MemoryStatus = 'pending' | 'confirmed' | 'edited' | 'rejected'
+export type MemoryType = 'fact' | 'preference' | 'goal' | 'relationship' | 'project' | 'style' | 'decision' | 'warning' | 'sensitive'
+
+export interface UserProfileRecord {
+  id: 'default'
+  userSub: string
+  displayName: string
+  headline?: string
+  privateBio?: string
+  publicBio?: string
+  roles: string[]
+  expertise: string[]
+  goals: string[]
+  languages: string[]
+  tone: string
+  visibility: ProfileVisibility
+  qualityScore: number
+  memoryCount: number
+  chatCount: number
+  objectPrefix: string
+  createdAt: number
+  updatedAt: number
+}
+
+export interface MemoryRecord {
+  id: string
+  userSub: string
+  profileId: 'default'
+  type: MemoryType
+  text: string
+  source: {
+    type: 'chat' | 'upload' | 'profile' | 'manual'
+    chatId?: string
+    uploadId?: string
+    label?: string
+  }
+  visibility: ProfileVisibility
+  sensitivity: SensitivityLevel
+  confidence: number
+  status: MemoryStatus
+  twinIds: string[]
+  reviewAt?: number
+  objectKey: string
+  createdAt: number
+  updatedAt: number
+}
+
+export interface ChatSearchResult {
+  id: string
+  title: string
+  twinId: string | null
+  publicTwinSlug: string | null
+  summary: string
+  messageCount: number
+  archiveObjectKey: string
+  score: number
+  createdAt: number
+  updatedAt: number
+}
 
 interface ApiErrorShape {
   error?: string | { message?: string }
@@ -322,6 +394,113 @@ export function useTwinMvp() {
     [run],
   )
 
+  const searchTwinChats = useCallback(
+    (query: string, twinId?: string) =>
+      run(async () => {
+        const params = new URLSearchParams()
+        if (query) params.set('q', query)
+        if (twinId) params.set('twinId', twinId)
+        const body = await apiJson<{ query: string; results: ChatSearchResult[] }>(
+          `/api/chat/search${params.toString() ? `?${params}` : ''}`,
+        )
+        return body
+      }),
+    [run],
+  )
+
+  const getProfile = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ profile: UserProfileRecord; limits: Record<string, unknown> }>('/api/profile')
+        return body
+      }),
+    [run],
+  )
+
+  const updateProfile = useCallback(
+    (input: Partial<Pick<UserProfileRecord, 'displayName' | 'headline' | 'privateBio' | 'publicBio' | 'roles' | 'expertise' | 'goals' | 'languages' | 'tone' | 'visibility'>>) =>
+      run(async () => {
+        const body = await apiJson<{ profile: UserProfileRecord; storagePlan: Record<string, unknown> }>('/api/profile', {
+          method: 'PATCH',
+          body: JSON.stringify(input),
+        })
+        return body
+      }),
+    [run],
+  )
+
+  const listMemories = useCallback(
+    (filters: { status?: MemoryStatus; twinId?: string } = {}) =>
+      run(async () => {
+        const params = new URLSearchParams()
+        if (filters.status) params.set('status', filters.status)
+        if (filters.twinId) params.set('twinId', filters.twinId)
+        const body = await apiJson<{ memories: MemoryRecord[]; limits: Record<string, unknown> }>(
+          `/api/memories${params.toString() ? `?${params}` : ''}`,
+        )
+        return body
+      }),
+    [run],
+  )
+
+  const createMemory = useCallback(
+    (input: {
+      type?: MemoryType
+      text: string
+      sourceType?: 'chat' | 'upload' | 'profile' | 'manual'
+      chatId?: string
+      uploadId?: string
+      sourceLabel?: string
+      visibility?: ProfileVisibility
+      sensitivity?: SensitivityLevel
+      confidence?: number
+      status?: MemoryStatus
+      twinIds?: string[]
+      reviewAt?: number
+    }) =>
+      run(async () => {
+        const body = await apiJson<{ memory: MemoryRecord }>('/api/memories', {
+          method: 'POST',
+          body: JSON.stringify(input),
+        })
+        return body.memory
+      }),
+    [run],
+  )
+
+  const updateMemory = useCallback(
+    (memoryId: string, input: Partial<{
+      type: MemoryType
+      text: string
+      visibility: ProfileVisibility
+      sensitivity: SensitivityLevel
+      confidence: number
+      status: MemoryStatus
+      twinIds: string[]
+      reviewAt: number
+    }>) =>
+      run(async () => {
+        const body = await apiJson<{ memory: MemoryRecord }>(`/api/memories/${encodeURIComponent(memoryId)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(input),
+        })
+        return body.memory
+      }),
+    [run],
+  )
+
+  const deleteMemory = useCallback(
+    (memoryId: string) =>
+      run(async () => {
+        return apiJson<{ ok: boolean; deleted: string; storageNote: string }>(`/api/memories/${encodeURIComponent(memoryId)}`, {
+          method: 'DELETE',
+          headers: { 'X-Smyst-Delete-Confirm': 'delete-memory' },
+          body: JSON.stringify({ confirm: 'DELETE' }),
+        })
+      }),
+    [run],
+  )
+
   const exportAccount = useCallback(
     () =>
       run(async () => {
@@ -378,6 +557,13 @@ export function useTwinMvp() {
     startTwinChat,
     sendTwinMessage,
     listTwinChats,
+    searchTwinChats,
+    getProfile,
+    updateProfile,
+    listMemories,
+    createMemory,
+    updateMemory,
+    deleteMemory,
     exportAccount,
     deleteAccount,
     submitSupportReport,

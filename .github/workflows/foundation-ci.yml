@@ -28,6 +28,9 @@ jobs:
       - name: Validate free-only production surface
         run: python3 scripts/validate-foundation.py
 
+      - name: Validate profile memory contract
+        run: python3 scripts/check-profile-memory-contract.py
+
   root-app:
     name: Root app type-check and build
     runs-on: ubuntu-latest

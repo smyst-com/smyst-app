@@ -106,6 +106,7 @@ type AuthRole = 'owner' | 'admin' | 'member';
 type AuthPermission =
   | 'auth:read'
   | 'profile:read'
+  | 'profile:write'
   | 'storage:read'
   | 'storage:write'
   | 'storage:delete'
@@ -135,6 +136,7 @@ const ROLE_PERMISSIONS: Record<AuthRole, AuthPermission[]> = {
   member: [
     'auth:read',
     'profile:read',
+    'profile:write',
     'storage:read',
     'storage:write',
     'storage:delete',
@@ -146,6 +148,7 @@ const ROLE_PERMISSIONS: Record<AuthRole, AuthPermission[]> = {
   admin: [
     'auth:read',
     'profile:read',
+    'profile:write',
     'storage:read',
     'storage:write',
     'storage:delete',
@@ -158,6 +161,7 @@ const ROLE_PERMISSIONS: Record<AuthRole, AuthPermission[]> = {
   owner: [
     'auth:read',
     'profile:read',
+    'profile:write',
     'storage:read',
     'storage:write',
     'storage:delete',

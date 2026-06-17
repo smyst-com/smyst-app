@@ -23,6 +23,9 @@ jobs:
       - name: Validate active production files
         run: python3 scripts/validate-foundation.py
 
+      - name: Validate profile memory contract
+        run: python3 scripts/check-profile-memory-contract.py
+
   pages-build:
     name: Cloudflare Pages build
     runs-on: ubuntu-latest

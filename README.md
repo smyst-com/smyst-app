@@ -32,6 +32,7 @@ Phase 1 ist ein Free-Only-MVP. Die Milliarden-Nutzer-Skalierung ist die Langfris
 - `docs/FREE_ONLY_INFRASTRUCTURE.md`
 - `docs/FREE_ONLY_DATA_MAP.md`
 - `docs/FREE_ONLY_SECURITY_PRIVACY.md`
+- `docs/FREE_ONLY_PROFILE_MEMORY_AI_PLAN.md`
 - `docs/FREE_ONLY_PERFORMANCE_MOBILE.md`
 - `docs/FREE_ONLY_NATIVE_APPS.md`
 - `docs/LEGACY_LOCAL_REFERENCES.md`

@@ -8,6 +8,9 @@
  *   GET  /storage/uploads       → kleine KV-Liste eigener Uploads
  *   GET  /storage/file/<key>    → signed GET redirect mit Auth-Check
  *   DELETE /storage/file/<key>  → Objektloeschung + KV-Status
+ *   PUT  /storage/object        → schreibt kleine Profil-/Chat-/Memory-JSON-Objekte serverseitig nach IDrive e2
+ *   GET  /storage/object/<key>  → liest eigene Profil-/Chat-/Memory-JSON-Objekte serverseitig
+ *   DELETE /storage/object/<key> → loescht eigene Profil-/Chat-/Memory-JSON-Objekte serverseitig
  *
  * Sicherheit:
  *   - Alle Endpoints prüfen Session-Cookie (smyst_session) gegen SESSIONS KV
@@ -73,11 +76,14 @@ const DEFAULT_GLOBAL_BYTES = 1024 * 1024 * 1024; // 1 GiB Gesamtbudget fuer Free
 const DEFAULT_USER_STORAGE_BYTES = 100 * 1024 * 1024; // 100 MiB aktiv pro User
 const DEFAULT_GLOBAL_STORAGE_BYTES = 1024 * 1024 * 1024; // 1 GiB aktiv global
 const MAX_UPLOAD_INDEX_READS = 100;
+const MAX_OBJECT_JSON_BYTES = 128 * 1024;
 
 function allowedMethodsForStoragePath(pathname: string): string[] | null {
   if (pathname === '/storage/upload-url') return ['POST'];
   if (pathname === '/storage/upload-complete') return ['POST'];
   if (pathname === '/storage/uploads') return ['GET'];
+  if (pathname === '/storage/object') return ['PUT'];
+  if (pathname.startsWith('/storage/object/')) return ['GET', 'DELETE'];
   if (pathname === '/storage/account') return ['DELETE'];
   if (pathname.startsWith('/storage/file/')) return ['GET', 'DELETE'];
   return null;
@@ -428,6 +434,12 @@ interface UploadListResponse {
   uploads: Array<Pick<UploadRecord, 'id' | 'key' | 'category' | 'contentType' | 'filename' | 'size' | 'status' | 'createdAt' | 'updatedAt'>>;
 }
 
+interface ObjectWriteRequest {
+  key: string;
+  value: unknown;
+  contentType?: 'application/json' | 'text/plain';
+}
+
 function safePathSegment(raw: string): string {
   return raw.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80) || 'unknown';
 }
@@ -438,6 +450,21 @@ function userRoot(userSub: string): string {
 
 function ownsUserKey(key: string, userSub: string): boolean {
   return key.startsWith(`users/${userRoot(userSub)}/`) || key.startsWith(`users/${userSub}/`);
+}
+
+function isManagedObjectKey(key: string, userSub: string): boolean {
+  if (!ownsUserKey(key, userSub)) return false;
+  const root = `users/${userRoot(userSub)}/`;
+  return (
+    key.startsWith(`${root}profiles/default/profile.json`) ||
+    key.startsWith(`${root}profiles/default/persona.json`) ||
+    key.startsWith(`${root}profiles/default/memory/`) ||
+    key.startsWith(`${root}profiles/default/chats/`) ||
+    key.startsWith(`${root}profiles/default/chat-summaries/`) ||
+    key.startsWith(`${root}twins/`) ||
+    key.startsWith(`${root}exports/`) ||
+    key.startsWith(`${root}backups/`)
+  );
 }
 
 function generateKey(category: StorageCategory, userSub: string, contentType: string, filename?: string, twinId?: string): string {
@@ -917,6 +944,116 @@ async function deleteObjectFromIdrive(env: StorageEnv, key: string): Promise<num
   return res.status;
 }
 
+async function putObjectToIdrive(env: StorageEnv, key: string, body: Uint8Array, contentType: string): Promise<number> {
+  const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
+  const presignedPut = await presignUrl({
+    method: 'PUT',
+    url,
+    region: env.IDRIVE_E2_REGION,
+    service: 's3',
+    accessKey: env.IDRIVE_E2_ACCESS_KEY,
+    secretKey: env.IDRIVE_E2_SECRET_KEY,
+    headers: { 'content-type': contentType },
+    expiresIn: 60,
+  });
+  const res = await fetch(presignedPut, {
+    method: 'PUT',
+    headers: { 'content-type': contentType },
+    body,
+  });
+  return res.status;
+}
+
+async function getObjectFromIdrive(env: StorageEnv, key: string): Promise<Response> {
+  const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
+  const presignedGet = await presignUrl({
+    method: 'GET',
+    url,
+    region: env.IDRIVE_E2_REGION,
+    service: 's3',
+    accessKey: env.IDRIVE_E2_ACCESS_KEY,
+    secretKey: env.IDRIVE_E2_SECRET_KEY,
+    expiresIn: 60,
+  });
+  return fetch(presignedGet, { method: 'GET' });
+}
+
+async function handlePutManagedObject(request: Request, env: StorageEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:write')) return errorResponse('forbidden', 'Missing storage write permission', 403);
+
+  const parsed = await readJsonBody<ObjectWriteRequest>(request, MAX_OBJECT_JSON_BYTES);
+  if (!parsed.ok) return parsed.response;
+  const key = typeof parsed.value.key === 'string' ? parsed.value.key.trim() : '';
+  if (!key || !isManagedObjectKey(key, session.sub)) {
+    return errorResponse('invalid_object_key', 'Managed object key must belong to the authenticated user profile, twin, export or backup namespace.', 403);
+  }
+
+  const contentType = parsed.value.contentType === 'text/plain' ? 'text/plain' : 'application/json';
+  const raw = contentType === 'application/json'
+    ? JSON.stringify(parsed.value.value)
+    : String(parsed.value.value ?? '');
+  const bytes = new TextEncoder().encode(raw);
+  if (bytes.byteLength > MAX_OBJECT_JSON_BYTES) {
+    return errorResponse('object_too_large', 'Managed object is too large for the free-only JSON object path.', 413, {
+      limit: MAX_OBJECT_JSON_BYTES,
+    });
+  }
+
+  const status = await putObjectToIdrive(env, key, bytes, contentType);
+  if (status < 200 || status >= 300) {
+    return errorResponse('object_write_failed', 'IDrive e2 object write failed.', 502, { status });
+  }
+
+  return jsonResponse({
+    ok: true,
+    key,
+    bytes: bytes.byteLength,
+    contentType,
+    storage: 'idrive-e2',
+  });
+}
+
+async function handleGetManagedObject(request: Request, env: StorageEnv, key: string): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:read')) return errorResponse('forbidden', 'Missing storage read permission', 403);
+  if (!isManagedObjectKey(key, session.sub)) return errorResponse('forbidden', 'Object does not belong to user', 403);
+
+  const res = await getObjectFromIdrive(env, key);
+  if (!res.ok) {
+    return errorResponse('object_not_found', 'Managed object not found in IDrive e2.', res.status === 404 ? 404 : 502, {
+      status: res.status,
+    });
+  }
+  const contentType = res.headers.get('content-type')?.split(';')[0].trim().toLowerCase() ?? 'application/json';
+  const text = await res.text();
+  if (contentType === 'application/json') {
+    try {
+      return jsonResponse({ ok: true, key, value: JSON.parse(text) });
+    } catch {
+      return errorResponse('object_json_invalid', 'Managed object is not valid JSON.', 502);
+    }
+  }
+  return jsonResponse({ ok: true, key, value: text });
+}
+
+async function handleDeleteManagedObject(request: Request, env: StorageEnv, key: string): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
+  const deleteConfirmation = requireDeleteConfirmation(request, 'delete-object');
+  if (deleteConfirmation) return deleteConfirmation;
+  if (!isManagedObjectKey(key, session.sub)) return errorResponse('forbidden', 'Object does not belong to user', 403);
+
+  const status = await deleteObjectFromIdrive(env, key);
+  if ((status < 200 || status >= 300) && status !== 404) {
+    return errorResponse('object_delete_failed', 'IDrive e2 object delete failed.', 502, { status });
+  }
+  return jsonResponse({ ok: true, key, deleted: status !== 404 });
+}
+
 async function handleDeleteFile(request: Request, env: StorageEnv, key: string): Promise<Response> {
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
@@ -1010,7 +1147,7 @@ export default {
       const kv = metadataStore(env);
 
       if (request.method === 'OPTIONS') {
-        return strictCorsPreflight(request, env.CANONICAL_HOST, 'GET, POST, DELETE');
+        return strictCorsPreflight(request, env.CANONICAL_HOST, 'GET, POST, PUT, DELETE');
       }
 
       const csrf = requireSameOrigin(request, env.CANONICAL_HOST);
@@ -1049,6 +1186,41 @@ export default {
         });
         if (limited) return limited;
         return handleListUploads(request, env);
+      }
+
+      // PUT /storage/object
+      if (url.pathname === '/storage/object' && request.method === 'PUT') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:put-object'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handlePutManagedObject(request, env);
+      }
+
+      // GET /storage/object/:key
+      if (url.pathname.startsWith('/storage/object/') && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:get-object'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        const key = decodeURIComponent(url.pathname.slice('/storage/object/'.length));
+        return handleGetManagedObject(request, env, key);
+      }
+
+      // DELETE /storage/object/:key
+      if (url.pathname.startsWith('/storage/object/') && request.method === 'DELETE') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:delete-object'),
+          limit: 30,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        const key = decodeURIComponent(url.pathname.slice('/storage/object/'.length));
+        return handleDeleteManagedObject(request, env, key);
       }
 
       // DELETE /storage/account

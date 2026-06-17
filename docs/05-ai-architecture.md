@@ -8,10 +8,14 @@ Smyst baut aus Profilen, Wissenstexten, Dokumenten und Medien einen digitalen Tw
 
 Gemini, Claude, Grok, DeepSeek, Kimi, Manus und Mistral bleiben Vergleichsmarken fuer die Langfristvision. Sie sind keine Production-Abhaengigkeit im Free-Only-MVP.
 
+Der verbindliche Free-Only-Plan fuer Profile, Chatverlaeufe, Memory und spaetere AI-Erweiterung steht in `docs/FREE_ONLY_PROFILE_MEMORY_AI_PLAN.md`.
+
 ## Phase-1-Komponenten
 
 - Twin-Profil: Name, Beschreibung, Sprache, Kategorien und Sichtbarkeit.
 - Wissensdaten: manuell erfasste Texte und Upload-Metadaten.
+- Chat-Archive: private Chatverlaeufe und Chat-Summaries in IDrive e2.
+- Memory-Layer: bestaetigte, quellengebundene Erinnerungen mit Sichtbarkeit und Sensitivity.
 - Dateiablage: IDrive e2.
 - Kleine Metadaten: Cloudflare KV.
 - Chat-API: Cloudflare Worker.
@@ -49,6 +53,8 @@ Spaetere echte AI-Funktionen muessen ueber Adapter kommen:
 - Streaming-Antworten.
 
 Jeder Adapter braucht Timeout, Kostenbremse, Datenschutzfilter und eine neue Freigabe, wenn er nicht innerhalb der Free-Only-Regel funktioniert.
+
+Nicht erlaubt als Phase-1-Production-Pflicht sind Training auf rohen privaten Chats, bezahlte AI-Provider, Cloudflare AI, Cloudflare Vectorize, Cloudflare Queues, D1 Paid, R2 Paid, GitHub Codespaces oder kostenpflichtige GitHub-Actions-Minuten.
 
 ## Skalierungsrealitaet
 

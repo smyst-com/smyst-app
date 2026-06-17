@@ -83,6 +83,9 @@ jobs:
         run: npm run lint:tsc
         continue-on-error: false
 
+      - name: Validate profile memory contract
+        run: python3 scripts/check-profile-memory-contract.py
+
       - name: Build frontend
         run: npm run build
         env:

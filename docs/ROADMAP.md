@@ -8,6 +8,14 @@ production backend, PostgreSQL, Redis, pgvector, Caddy, DeepL, Google
 Translate, Google OAuth, GA4 and Google Search Console are not production
 dependencies.
 
+GitHub and Cloudflare must remain permanently free. Do not plan GitHub Pro,
+Team, Enterprise, paid Actions minutes, paid storage, Codespaces, Cloudflare
+Pro, Business, Enterprise, Workers Paid, R2 Paid, Images, Stream, Queues,
+D1 Paid, KV Paid, Vectorize, Cloudflare AI or any service that can silently
+turn into paid usage after a limit. IDrive e2 is the central S3-compatible
+storage for files, media, models, backups, chat archives, profile objects and
+twin data, with hard quotas and stop-before-cost behavior.
+
 All phases after Phase 2 are product vision. They are not approved production
 architecture until a new written Free-Only review confirms that they still work
 without paid services.
@@ -57,47 +65,54 @@ Success criteria:
 - Uploaded files are private by default
 - App can run as web, iOS shell and Android shell
 
-## Phase 3: Queue And AI Processing
+## Phase 3: Free-Only Background Status And Memory Preparation
 
-Goal: Move slow work out of the request path.
+Goal: Move slow work out of the request path without adding a paid queue,
+database, vector service or AI provider.
 
-- Add queue/event system
-- Process upload events asynchronously
-- Transcribe audio/video
-- Extract text from documents
-- Create embeddings
-- Extract memory candidates
+- Add lightweight status objects in KV and IDrive e2
+- Process small user-triggered rebuild steps inside Worker limits
+- Use manual or rule-based extraction for MVP memory candidates
+- Store chat archives and chat summaries in IDrive e2
 - Save memory source links
 - Show processing status to user
+- Degrade safely when quotas or free limits are reached
 
 Success criteria:
 
-- Upload does not block on AI processing
+- Upload does not block on parsing or memory preparation
 - User sees pending/processing/ready states
-- Memories become searchable after processing
+- Confirmed memories become searchable through metadata and summaries
+- No paid queue, embedding, model, database or monitoring dependency is added
 
 Free-only gate:
 
 - No paid AI, queue, database, vector, translation or monitoring service may be
   introduced by this phase without a new approval.
+- If a feature cannot be implemented safely on GitHub Free, Cloudflare Free and
+  IDrive e2 with hard quotas, reduce it to manual, local, static or deferred
+  behavior.
 
 ## Phase 4: Persona And Memory Engine
 
 Goal: Make the twin feel meaningfully personal.
 
 - Persona Engine v1
-- Memory Graph v1
-- Emotional Weighting v1
+- Confirmed Memory Layer v1
+- Memory source links and confidence
 - Timeline v1
-- Retrieval Engine v1
+- Metadata/summary retrieval v1
 - Memory confidence scoring
 - Sensitive-memory permissions
+- Per-twin memory access rules
 
 Success criteria:
 
 - Twin answers with personal context
 - Important memories influence answers more than weak facts
 - Sensitive memories respect access rules
+- Chat history remains available in the profile without becoming raw model
+  training data
 
 ## Phase 5: Global Discovery
 

@@ -19,7 +19,9 @@ Relationale Schemas und SQL-Dateien im Repository bleiben nur lokale Modellierun
 | Twin-Kontext | IDrive e2 | Wissenstexte, Dokument-Auszug, strukturierte Kontextobjekte |
 | Upload-Intent | Cloudflare KV | Dateityp, Groesse, Kategorie, Ablaufzeit |
 | Upload-Dateien | IDrive e2 | Bilder, Videos, Audio, Dokumente, Profilbilder |
-| Chat-MVP | Cloudflare KV | kurze Demo-/MVP-Sessiondaten mit TTL |
+| Chat-MVP-Metadaten | Cloudflare KV | kleine Chat-Indizes, Status, Sprache, Sichtbarkeit und TTL-Daten |
+| Chat-Archiv | IDrive e2 | private Chatverlaeufe, Chat-Summaries und Exportobjekte |
+| Memory | Cloudflare KV + IDrive e2 | kleine Memory-Indizes in KV, bestaetigte Memory-Objekte in IDrive e2 |
 | Backups | IDrive e2 | Nutzerexporte, Konfigurationssnapshots, Wiederherstellungsdaten |
 | SEO-Index | Cloudflare KV + statische Dateien | oeffentliche, gefilterte Profil-Snapshots und Sitemap-Basis |
 
@@ -40,6 +42,8 @@ meta:twins:{userSub}
 public:twin:{slug}
 meta:chat:{userSub}:{chatId}
 meta:chats:{userSub}
+meta:memory:{userSub}:{memoryId}
+meta:memories:{userSub}
 ```
 
 KV speichert nur kleine JSON-Objekte. Private Upload-Inhalte, Rohtexte, Medien und Backups gehoeren nicht in KV.
@@ -48,9 +52,12 @@ KV speichert nur kleine JSON-Objekte. Private Upload-Inhalte, Rohtexte, Medien u
 
 ```text
 users/{userSub}/profiles/{profileId}/profile.json
-users/{userSub}/profiles/{profileId}/avatar/{fileId}-{filename}
+users/{userSub}/profiles/{profileId}/avatar/{fileId}
+users/{userSub}/profiles/{profileId}/memory/{memoryId}.json
+users/{userSub}/profiles/{profileId}/chats/{yyyy-mm}/{chatId}.json
+users/{userSub}/profiles/{profileId}/chat-summaries/{yyyy-mm}/{chatId}.json
 users/{userSub}/twins/{twinId}/context/{contextId}.json
-users/{userSub}/twins/{twinId}/uploads/{category}/{fileId}-{filename}
+users/{userSub}/twins/{twinId}/uploads/{category}/{fileId}
 users/{userSub}/backups/{yyyy-mm}/{backupId}.json
 public/twins/{slug}/card.json
 ```
@@ -92,3 +99,5 @@ Loeschlogik muss beide Ebenen beruecksichtigen:
 KV plus IDrive e2 reicht fuer ein kontrolliertes MVP und einfache globale Edge-Auslieferung. Es ersetzt keine echte relationale, vektorbasierte oder transaktionale globale Datenplattform fuer Milliarden Nutzer pro Tag.
 
 Langfristige Datenbanken, Vektorindizes und Event-Systeme brauchen eine neue Freigabe, weil sie nicht Teil der Free-Only-Regel sind.
+
+Der verbindliche Profil-, Chat-, Memory- und AI-Plan steht in `docs/FREE_ONLY_PROFILE_MEMORY_AI_PLAN.md`.

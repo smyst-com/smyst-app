@@ -39,20 +39,29 @@ const MAX_TWIN_DESCRIPTION_CHARS = 2000;
 const MAX_TWIN_KNOWLEDGE_CHARS = 12000;
 const MAX_KNOWLEDGE_ITEMS = 20;
 const MAX_TWIN_MEDIA_REFS = 50;
+const MAX_PROFILE_BIO_CHARS = 2400;
+const MAX_PROFILE_PUBLIC_BIO_CHARS = 700;
 const MAX_PROFILE_FIELD_CHARS = 80;
 const MAX_PROFILE_ITEMS = 12;
+const MAX_MEMORY_TEXT_CHARS = 1200;
+const MAX_MEMORY_SOURCE_CHARS = 280;
+const MAX_MEMORY_ITEMS = 100;
+const MAX_CHAT_SEARCH_QUERY_CHARS = 120;
 const MAX_INDEX_READS = 50;
 const MAX_PUBLIC_DISCOVERY_READS = 100;
 const MAX_REPORT_SUBJECT_CHARS = 160;
 const MAX_REPORT_MESSAGE_CHARS = 4000;
 const MAX_REPORT_CONTACT_CHARS = 180;
 const TWIN_TTL_SECONDS = 60 * 60 * 24 * 370;
+const PROFILE_TTL_SECONDS = 60 * 60 * 24 * 370;
+const MEMORY_TTL_SECONDS = 60 * 60 * 24 * 370;
 const REPORT_TTL_SECONDS = 60 * 60 * 24 * 370;
 const SUPPORTED_PROFILE_LANGS = new Set(['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko']);
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{40,96}$/;
 
 function allowedMethodsForApiPath(pathname: string): string[] | null {
   if (pathname === '/api/health') return ['GET'];
+  if (pathname === '/api/profile') return ['GET', 'PATCH'];
   if (pathname === '/api/account/export') return ['GET'];
   if (pathname === '/api/account') return ['DELETE'];
   if (pathname === '/api/support/report') return ['POST'];
@@ -62,6 +71,9 @@ function allowedMethodsForApiPath(pathname: string): string[] | null {
   if (pathname === '/api/chat/start') return ['POST'];
   if (pathname === '/api/chat/messages') return ['POST'];
   if (pathname === '/api/chat/list') return ['GET'];
+  if (pathname === '/api/chat/search') return ['GET'];
+  if (pathname === '/api/memories') return ['GET', 'POST'];
+  if (pathname.startsWith('/api/memories/')) return ['GET', 'PATCH', 'DELETE'];
   if (pathname === '/api/twins') return ['GET', 'POST'];
   if (pathname === '/api/twins/knowledge') return ['POST'];
   if (pathname === '/api/twins/media') return ['POST'];
@@ -92,6 +104,10 @@ interface ChatRecord {
   twinId?: string;
   publicTwinSlug?: string;
   messages: ChatMessage[];
+  summary?: string;
+  archiveObjectKey?: string;
+  sensitivity?: SensitivityLevel;
+  visibility?: ProfileVisibility;
   createdAt: number;
   updatedAt: number;
 }
@@ -108,6 +124,83 @@ interface ChatStartRequest {
 interface ChatMessageRequest {
   chatId: string;
   message: string;
+}
+
+type ProfileVisibility = 'private' | 'shared' | 'public_snapshot' | 'deleted';
+type SensitivityLevel = 'normal' | 'personal' | 'sensitive';
+type MemoryStatus = 'pending' | 'confirmed' | 'edited' | 'rejected';
+type MemoryType = 'fact' | 'preference' | 'goal' | 'relationship' | 'project' | 'style' | 'decision' | 'warning' | 'sensitive';
+
+interface ProfileRecord {
+  id: 'default';
+  userSub: string;
+  displayName: string;
+  headline?: string;
+  privateBio?: string;
+  publicBio?: string;
+  roles: string[];
+  expertise: string[];
+  goals: string[];
+  languages: string[];
+  tone: string;
+  visibility: ProfileVisibility;
+  qualityScore: number;
+  memoryCount: number;
+  chatCount: number;
+  objectPrefix: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface ProfileUpdateRequest {
+  displayName?: string;
+  headline?: string;
+  privateBio?: string;
+  publicBio?: string;
+  roles?: string[];
+  expertise?: string[];
+  goals?: string[];
+  languages?: string[];
+  tone?: string;
+  visibility?: ProfileVisibility;
+}
+
+interface MemoryRecord {
+  id: string;
+  userSub: string;
+  profileId: 'default';
+  type: MemoryType;
+  text: string;
+  source: {
+    type: 'chat' | 'upload' | 'profile' | 'manual';
+    chatId?: string;
+    uploadId?: string;
+    label?: string;
+  };
+  visibility: ProfileVisibility;
+  sensitivity: SensitivityLevel;
+  confidence: number;
+  status: MemoryStatus;
+  twinIds: string[];
+  reviewAt?: number;
+  objectKey: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface MemoryWriteRequest {
+  type?: MemoryType;
+  text?: string;
+  sourceType?: 'chat' | 'upload' | 'profile' | 'manual';
+  chatId?: string;
+  uploadId?: string;
+  sourceLabel?: string;
+  visibility?: ProfileVisibility;
+  sensitivity?: SensitivityLevel;
+  confidence?: number;
+  status?: MemoryStatus;
+  twinIds?: string[];
+  reviewAt?: number;
 }
 
 type TwinVisibility = 'private' | 'public';
@@ -305,12 +398,112 @@ function hasPermission(session: SessionData, permission: string): boolean {
   return session.permissions?.includes(permission) ?? false;
 }
 
+function hasProfileWritePermission(session: SessionData): boolean {
+  return hasPermission(session, 'profile:write') ||
+    (hasPermission(session, 'profile:read') && hasPermission(session, 'storage:write'));
+}
+
 function chatKey(userSub: string, chatId: string): string {
   return `meta:chat:${userSub}:${chatId}`;
 }
 
 function chatIndexKey(userSub: string): string {
   return `meta:chats:${userSub}`;
+}
+
+function profileKey(userSub: string): string {
+  return `meta:profile:${userSub}:default`;
+}
+
+function memoryKey(userSub: string, memoryId: string): string {
+  return `meta:memory:${userSub}:${memoryId}`;
+}
+
+function memoryIndexKey(userSub: string): string {
+  return `meta:memories:${userSub}`;
+}
+
+function userObjectPrefix(userSub: string): string {
+  return `users/${safePathSegment(userSub)}`;
+}
+
+function profileObjectKey(userSub: string): string {
+  return `${userObjectPrefix(userSub)}/profiles/default/profile.json`;
+}
+
+function memoryObjectKey(userSub: string, memoryId: string): string {
+  return `${userObjectPrefix(userSub)}/profiles/default/memory/${safePathSegment(memoryId)}.json`;
+}
+
+function chatArchiveObjectKey(userSub: string, chatId: string, createdAt: number): string {
+  const date = new Date(createdAt);
+  const month = Number.isFinite(date.getTime())
+    ? `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`
+    : 'unknown';
+  return `${userObjectPrefix(userSub)}/profiles/default/chats/${month}/${safePathSegment(chatId)}.json`;
+}
+
+async function persistManagedObject(
+  request: Request,
+  env: ApiEnv,
+  key: string,
+  value: unknown,
+): Promise<void> {
+  const cookie = request.headers.get('Cookie') ?? '';
+  if (!cookie) return;
+  const host = (env.CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
+  const res = await fetch(`${host}/storage/object`, {
+    method: 'PUT',
+    headers: {
+      'content-type': 'application/json',
+      'cookie': cookie,
+      'origin': host,
+      'X-Smyst-CSRF': '1',
+    },
+    body: JSON.stringify({
+      key,
+      value,
+      contentType: 'application/json',
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`managed_object_persist_failed:${res.status}:${body.slice(0, 240)}`);
+  }
+}
+
+async function deleteManagedObject(request: Request, env: ApiEnv, key: string): Promise<void> {
+  const cookie = request.headers.get('Cookie') ?? '';
+  if (!cookie) return;
+  const host = (env.CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
+  const res = await fetch(`${host}/storage/object/${encodeURIComponent(key)}`, {
+    method: 'DELETE',
+    headers: {
+      'cookie': cookie,
+      'origin': host,
+      'X-Smyst-CSRF': '1',
+      'X-Smyst-Delete-Confirm': 'delete-object',
+    },
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`managed_object_delete_failed:${res.status}:${body.slice(0, 240)}`);
+  }
+}
+
+function persistManagedObjectLater(
+  ctx: ExecutionContext | undefined,
+  request: Request,
+  env: ApiEnv,
+  key: string,
+  value: unknown,
+): void {
+  const task = persistManagedObject(request, env, key, value).catch((err) => {
+    console.warn('managed_object_persist_failed', JSON.stringify({ key, error: String(err) }));
+  });
+  if (ctx) {
+    ctx.waitUntil(task);
+  }
 }
 
 function recentPromptKey(userSub: string, profileKey: string): string {
@@ -475,6 +668,101 @@ async function getStringArray(kv: KVNamespace, key: string): Promise<string[]> {
   return value.filter((item): item is string => typeof item === 'string' && item.length > 0);
 }
 
+function normalizeProfileVisibility(value: unknown): ProfileVisibility {
+  return value === 'shared' || value === 'public_snapshot' || value === 'deleted' ? value : 'private';
+}
+
+function normalizeSensitivity(value: unknown): SensitivityLevel {
+  return value === 'sensitive' || value === 'personal' ? value : 'normal';
+}
+
+function normalizeMemoryType(value: unknown): MemoryType {
+  return value === 'preference' ||
+    value === 'goal' ||
+    value === 'relationship' ||
+    value === 'project' ||
+    value === 'style' ||
+    value === 'decision' ||
+    value === 'warning' ||
+    value === 'sensitive'
+    ? value
+    : 'fact';
+}
+
+function normalizeMemoryStatus(value: unknown): MemoryStatus {
+  return value === 'confirmed' || value === 'edited' || value === 'rejected' ? value : 'pending';
+}
+
+function normalizeConfidence(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 0.5;
+  return Math.max(0, Math.min(1, Math.round(value * 100) / 100));
+}
+
+function normalizeReviewAt(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= Date.now()) return undefined;
+  return Math.round(value);
+}
+
+function summarizeChat(messages: ChatMessage[]): string {
+  const lastUserMessages = messages
+    .filter((message) => message.role === 'user')
+    .slice(-4)
+    .map((message) => message.content)
+    .join(' | ');
+  return sanitizeText(lastUserMessages || 'Neuer Chat ohne gespeicherte Nutzerfrage.', 700);
+}
+
+function defaultProfile(session: SessionData, now = Date.now()): ProfileRecord {
+  return {
+    id: 'default',
+    userSub: session.sub,
+    displayName: sanitizeText(session.name, MAX_TWIN_NAME_CHARS) || sanitizeText(session.email, MAX_TWIN_NAME_CHARS) || 'Smyst Nutzer',
+    roles: [],
+    expertise: [],
+    goals: [],
+    languages: [],
+    tone: 'professional',
+    visibility: 'private',
+    qualityScore: 0,
+    memoryCount: 0,
+    chatCount: 0,
+    objectPrefix: `${userObjectPrefix(session.sub)}/profiles/default`,
+    createdAt: now,
+    updatedAt: now,
+  };
+}
+
+function profileQualityScore(profile: ProfileRecord): number {
+  let score = 0;
+  if (profile.displayName.trim().length >= 2) score += 15;
+  if ((profile.headline ?? '').trim().length >= 8) score += 15;
+  if ((profile.privateBio ?? '').trim().length >= 40) score += 15;
+  if ((profile.publicBio ?? '').trim().length >= 40) score += 10;
+  if (profile.roles.length) score += 10;
+  if (profile.expertise.length) score += 10;
+  if (profile.goals.length) score += 10;
+  if (profile.languages.length) score += 5;
+  if (profile.memoryCount > 0) score += 5;
+  if (profile.chatCount > 0) score += 5;
+  return Math.min(100, score);
+}
+
+async function loadProfile(env: ApiEnv, session: SessionData): Promise<ProfileRecord> {
+  const kv = metadataStore(env);
+  const stored = (await kv.get(profileKey(session.sub), 'json')) as ProfileRecord | null;
+  if (stored) return stored;
+  const profile = defaultProfile(session);
+  profile.qualityScore = profileQualityScore(profile);
+  await kv.put(profileKey(session.sub), JSON.stringify(profile), { expirationTtl: PROFILE_TTL_SECONDS });
+  return profile;
+}
+
+async function putProfile(env: ApiEnv, profile: ProfileRecord): Promise<void> {
+  await metadataStore(env).put(profileKey(profile.userSub), JSON.stringify(profile), {
+    expirationTtl: PROFILE_TTL_SECONDS,
+  });
+}
+
 async function putChat(env: ApiEnv, chat: ChatRecord): Promise<void> {
   await metadataStore(env).put(chatKey(chat.userSub, chat.id), JSON.stringify(chat), {
     expirationTtl: 60 * 60 * 24 * 90,
@@ -485,8 +773,31 @@ async function addChatToIndex(env: ApiEnv, userSub: string, chatId: string): Pro
   const kv = metadataStore(env);
   const key = chatIndexKey(userSub);
   const current = await getStringArray(kv, key);
-  const next = [chatId, ...current.filter((id) => id !== chatId)].slice(0, 50);
+  const next = [chatId, ...current.filter((id) => id !== chatId)].slice(0, 100);
   await kv.put(key, JSON.stringify(next), { expirationTtl: 60 * 60 * 24 * 90 });
+}
+
+async function putMemory(env: ApiEnv, memory: MemoryRecord): Promise<void> {
+  await metadataStore(env).put(memoryKey(memory.userSub, memory.id), JSON.stringify(memory), {
+    expirationTtl: MEMORY_TTL_SECONDS,
+  });
+}
+
+async function addMemoryToIndex(env: ApiEnv, userSub: string, memoryId: string): Promise<void> {
+  const kv = metadataStore(env);
+  const key = memoryIndexKey(userSub);
+  const current = await getStringArray(kv, key);
+  const next = [memoryId, ...current.filter((id) => id !== memoryId)].slice(0, MAX_MEMORY_ITEMS);
+  await kv.put(key, JSON.stringify(next), { expirationTtl: MEMORY_TTL_SECONDS });
+}
+
+async function loadUserMemories(env: ApiEnv, userSub: string): Promise<MemoryRecord[]> {
+  const kv = metadataStore(env);
+  const ids = await getStringArray(kv, memoryIndexKey(userSub));
+  const records = await Promise.all(
+    ids.slice(0, MAX_MEMORY_ITEMS).map((id) => kv.get(memoryKey(userSub, id), 'json') as Promise<MemoryRecord | null>),
+  );
+  return records.filter((record): record is MemoryRecord => Boolean(record));
 }
 
 async function putTwin(env: ApiEnv, twin: TwinRecord): Promise<void> {
@@ -2172,12 +2483,95 @@ async function handleHealth(): Promise<Response> {
   });
 }
 
+async function handleGetProfile(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'profile:read')) return errorResponse('forbidden', 'Missing profile read permission', 403);
+
+  const [profile, chats, memories] = await Promise.all([
+    loadProfile(env, session),
+    loadUserChats(env, session.sub),
+    loadUserMemories(env, session.sub),
+  ]);
+  const next: ProfileRecord = {
+    ...profile,
+    chatCount: chats.length,
+    memoryCount: memories.filter((memory) => memory.status !== 'rejected').length,
+    qualityScore: profileQualityScore({
+      ...profile,
+      chatCount: chats.length,
+      memoryCount: memories.filter((memory) => memory.status !== 'rejected').length,
+    }),
+    objectPrefix: `${userObjectPrefix(session.sub)}/profiles/default`,
+  };
+  if (
+    next.chatCount !== profile.chatCount ||
+    next.memoryCount !== profile.memoryCount ||
+    next.qualityScore !== profile.qualityScore ||
+    next.objectPrefix !== profile.objectPrefix
+  ) {
+    await putProfile(env, next);
+  }
+
+  return jsonResponse({
+    profile: next,
+    limits: {
+      maxMemories: MAX_MEMORY_ITEMS,
+      maxChatIndex: 100,
+      maxMessageChars: MAX_MESSAGE_CHARS,
+      mode: 'free-only-kv-idrive-e2',
+    },
+  });
+}
+
+async function handleUpdateProfile(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasProfileWritePermission(session)) return errorResponse('forbidden', 'Missing profile write permission', 403);
+
+  const parsed = await readJsonBody<ProfileUpdateRequest>(request, 16 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.value;
+  const current = await loadProfile(env, session);
+  const next: ProfileRecord = {
+    ...current,
+    displayName: body.displayName === undefined
+      ? current.displayName
+      : sanitizeText(body.displayName, MAX_TWIN_NAME_CHARS) || current.displayName,
+    headline: body.headline === undefined ? current.headline : sanitizeText(body.headline, 180) || undefined,
+    privateBio: body.privateBio === undefined ? current.privateBio : sanitizeText(body.privateBio, MAX_PROFILE_BIO_CHARS) || undefined,
+    publicBio: body.publicBio === undefined ? current.publicBio : sanitizeText(body.publicBio, MAX_PROFILE_PUBLIC_BIO_CHARS) || undefined,
+    roles: body.roles === undefined ? current.roles : sanitizeList(body.roles),
+    expertise: body.expertise === undefined ? current.expertise : sanitizeList(body.expertise),
+    goals: body.goals === undefined ? current.goals : sanitizeList(body.goals),
+    languages: body.languages === undefined ? current.languages : sanitizeLanguageList(body.languages),
+    tone: body.tone === undefined ? current.tone : sanitizeText(body.tone, MAX_PROFILE_FIELD_CHARS) || 'professional',
+    visibility: body.visibility === undefined ? current.visibility : normalizeProfileVisibility(body.visibility),
+    objectPrefix: `${userObjectPrefix(session.sub)}/profiles/default`,
+    updatedAt: Date.now(),
+  };
+  next.qualityScore = profileQualityScore(next);
+  await persistManagedObject(request, env, profileObjectKey(session.sub), next);
+  await putProfile(env, next);
+
+  return jsonResponse({
+    profile: next,
+    storagePlan: {
+      metadata: 'Cloudflare KV Free',
+      durableObjects: 'IDrive e2 object layout',
+      profileObjectKey: profileObjectKey(session.sub),
+    },
+  });
+}
+
 async function handleAccountExport(request: Request, env: ApiEnv): Promise<Response> {
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'profile:read')) return errorResponse('forbidden', 'Missing profile read permission', 403);
 
-  const [twins, chats, userRecord] = await Promise.all([
+  const [profile, memories, twins, chats, userRecord] = await Promise.all([
+    loadProfile(env, session),
+    loadUserMemories(env, session.sub),
     loadUserTwins(env, session.sub),
     loadUserChats(env, session.sub),
     env.SESSIONS.get(`auth:user:${session.sub}`, 'json'),
@@ -2194,8 +2588,15 @@ async function handleAccountExport(request: Request, env: ApiEnv): Promise<Respo
       roles: session.roles ?? [],
       permissions: session.permissions ?? [],
     },
+    profile,
+    memories,
     twins,
     chats,
+    objectLayout: {
+      profile: profileObjectKey(session.sub),
+      chatArchives: chats.map((chat) => chat.archiveObjectKey ?? chatArchiveObjectKey(session.sub, chat.id, chat.createdAt)),
+      memories: memories.map((memory) => memory.objectKey),
+    },
   });
 }
 
@@ -2212,13 +2613,24 @@ async function handleAccountDelete(request: Request, env: ApiEnv): Promise<Respo
   }
 
   const kv = metadataStore(env);
-  const [twins, chats] = await Promise.all([
+  const [memories, twins, chats] = await Promise.all([
+    loadUserMemories(env, session.sub),
     loadUserTwins(env, session.sub),
     loadUserChats(env, session.sub),
   ]);
+  const managedObjectKeys = [
+    profileObjectKey(session.sub),
+    ...memories.map((memory) => memory.objectKey),
+    ...chats.map((chat) => chat.archiveObjectKey ?? chatArchiveObjectKey(session.sub, chat.id, chat.createdAt)),
+  ];
+  const managedDeletes = await Promise.allSettled(
+    managedObjectKeys.map((key) => deleteManagedObject(request, env, key)),
+  );
+  const failedManagedDeletes = managedDeletes.filter((result) => result.status === 'rejected').length;
 
   await Promise.all([
     ...chats.map((chat) => kv.delete(chatKey(session.sub, chat.id))),
+    ...memories.map((memory) => kv.delete(memoryKey(session.sub, memory.id))),
     ...twins.map((twin) => kv.delete(twinKey(session.sub, twin.id))),
     ...twins.filter((twin) => twin.visibility === 'public').map((twin) => kv.delete(publicTwinKey(twin.slug))),
   ]);
@@ -2226,6 +2638,8 @@ async function handleAccountDelete(request: Request, env: ApiEnv): Promise<Respo
   const sessionId = readCookie(request, SESSION_COOKIE);
   await Promise.all([
     kv.delete(chatIndexKey(session.sub)),
+    kv.delete(memoryIndexKey(session.sub)),
+    kv.delete(profileKey(session.sub)),
     kv.delete(twinIndexKey(session.sub)),
     env.SESSIONS.delete(`auth:user:${session.sub}`),
     sessionId ? env.SESSIONS.delete(`s:${sessionId}`) : Promise.resolve(),
@@ -2235,6 +2649,10 @@ async function handleAccountDelete(request: Request, env: ApiEnv): Promise<Respo
     ok: true,
     deleted: {
       chats: chats.length,
+      memories: memories.length,
+      profile: true,
+      managedObjects: managedObjectKeys.length - failedManagedDeletes,
+      failedManagedObjects: failedManagedDeletes,
       twins: twins.length,
       publicProfiles: twins.filter((twin) => twin.visibility === 'public').length,
       session: Boolean(sessionId),
@@ -2283,7 +2701,206 @@ async function handleSupportReport(request: Request, env: ApiEnv): Promise<Respo
   }, 201);
 }
 
-async function handleStartChat(request: Request, env: ApiEnv): Promise<Response> {
+async function handleListMemories(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'profile:read')) return errorResponse('forbidden', 'Missing profile read permission', 403);
+
+  const url = new URL(request.url);
+  const status = url.searchParams.get('status');
+  const twinId = sanitizeText(url.searchParams.get('twinId'), 120);
+  const memories = (await loadUserMemories(env, session.sub))
+    .filter((memory) => !status || memory.status === status)
+    .filter((memory) => !twinId || memory.twinIds.includes(twinId))
+    .sort((a, b) => b.updatedAt - a.updatedAt);
+
+  return jsonResponse({
+    memories,
+    limits: {
+      maxMemories: MAX_MEMORY_ITEMS,
+      remaining: Math.max(0, MAX_MEMORY_ITEMS - memories.length),
+    },
+  });
+}
+
+async function handleCreateMemory(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasProfileWritePermission(session)) return errorResponse('forbidden', 'Missing profile write permission', 403);
+
+  const parsed = await readJsonBody<MemoryWriteRequest>(request, 16 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const body = parsed.value;
+  const existing = await loadUserMemories(env, session.sub);
+  if (existing.length >= MAX_MEMORY_ITEMS) {
+    return errorResponse('memory_limit_reached', 'Memory limit reached in the free-only MVP.', 413, {
+      limit: MAX_MEMORY_ITEMS,
+      mode: 'stop-before-cost',
+    });
+  }
+
+  const text = sanitizeText(body.text, MAX_MEMORY_TEXT_CHARS);
+  if (!text) return errorResponse('invalid_memory', 'Memory text is required.', 400);
+  const now = Date.now();
+  const id = crypto.randomUUID();
+  const sourceType = body.sourceType === 'chat' || body.sourceType === 'upload' || body.sourceType === 'profile'
+    ? body.sourceType
+    : 'manual';
+  if (sourceType === 'chat') {
+    const chatId = sanitizeText(body.chatId, 120);
+    if (!chatId || !(await metadataStore(env).get(chatKey(session.sub, chatId), 'json'))) {
+      return errorResponse('memory_source_chat_not_found', 'Source chat was not found for this user.', 404);
+    }
+  }
+
+  const memory: MemoryRecord = {
+    id,
+    userSub: session.sub,
+    profileId: 'default',
+    type: normalizeMemoryType(body.type),
+    text,
+    source: {
+      type: sourceType,
+      chatId: sourceType === 'chat' ? sanitizeText(body.chatId, 120) : undefined,
+      uploadId: sourceType === 'upload' ? sanitizeText(body.uploadId, 120) : undefined,
+      label: sanitizeText(body.sourceLabel, MAX_MEMORY_SOURCE_CHARS) || undefined,
+    },
+    visibility: normalizeProfileVisibility(body.visibility),
+    sensitivity: body.type === 'sensitive' ? 'sensitive' : normalizeSensitivity(body.sensitivity),
+    confidence: normalizeConfidence(body.confidence),
+    status: normalizeMemoryStatus(body.status),
+    twinIds: sanitizeList(body.twinIds, MAX_PROFILE_ITEMS),
+    reviewAt: normalizeReviewAt(body.reviewAt),
+    objectKey: memoryObjectKey(session.sub, id),
+    createdAt: now,
+    updatedAt: now,
+  };
+  await persistManagedObject(request, env, memory.objectKey, memory);
+  await putMemory(env, memory);
+  await addMemoryToIndex(env, session.sub, id);
+
+  const profile = await loadProfile(env, session);
+  const nextProfile = {
+    ...profile,
+    memoryCount: existing.filter((item) => item.status !== 'rejected').length + (memory.status === 'rejected' ? 0 : 1),
+    updatedAt: now,
+  };
+  nextProfile.qualityScore = profileQualityScore(nextProfile);
+  await putProfile(env, nextProfile);
+
+  return jsonResponse({ memory }, 201);
+}
+
+async function handleGetMemory(request: Request, env: ApiEnv, memoryId: string): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'profile:read')) return errorResponse('forbidden', 'Missing profile read permission', 403);
+
+  const memory = (await metadataStore(env).get(memoryKey(session.sub, memoryId), 'json')) as MemoryRecord | null;
+  if (!memory) return errorResponse('memory_not_found', 'Memory not found.', 404);
+  return jsonResponse({ memory });
+}
+
+async function handleUpdateMemory(request: Request, env: ApiEnv, memoryId: string): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasProfileWritePermission(session)) return errorResponse('forbidden', 'Missing profile write permission', 403);
+
+  const parsed = await readJsonBody<MemoryWriteRequest>(request, 16 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const current = (await metadataStore(env).get(memoryKey(session.sub, memoryId), 'json')) as MemoryRecord | null;
+  if (!current) return errorResponse('memory_not_found', 'Memory not found.', 404);
+  const body = parsed.value;
+  const next: MemoryRecord = {
+    ...current,
+    type: body.type === undefined ? current.type : normalizeMemoryType(body.type),
+    text: body.text === undefined ? current.text : sanitizeText(body.text, MAX_MEMORY_TEXT_CHARS) || current.text,
+    visibility: body.visibility === undefined ? current.visibility : normalizeProfileVisibility(body.visibility),
+    sensitivity: body.sensitivity === undefined ? current.sensitivity : normalizeSensitivity(body.sensitivity),
+    confidence: body.confidence === undefined ? current.confidence : normalizeConfidence(body.confidence),
+    status: body.status === undefined ? current.status : normalizeMemoryStatus(body.status),
+    twinIds: body.twinIds === undefined ? current.twinIds : sanitizeList(body.twinIds, MAX_PROFILE_ITEMS),
+    reviewAt: body.reviewAt === undefined ? current.reviewAt : normalizeReviewAt(body.reviewAt),
+    updatedAt: Date.now(),
+  };
+  if (next.type === 'sensitive') next.sensitivity = 'sensitive';
+  await persistManagedObject(request, env, next.objectKey, next);
+  await putMemory(env, next);
+  await addMemoryToIndex(env, session.sub, next.id);
+  return jsonResponse({ memory: next });
+}
+
+async function handleDeleteMemory(request: Request, env: ApiEnv, memoryId: string): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasProfileWritePermission(session)) return errorResponse('forbidden', 'Missing profile write permission', 403);
+  const deleteConfirmation = requireDeleteConfirmation(request, 'delete-memory');
+  if (deleteConfirmation) return deleteConfirmation;
+
+  const kv = metadataStore(env);
+  const current = (await kv.get(memoryKey(session.sub, memoryId), 'json')) as MemoryRecord | null;
+  if (!current) return errorResponse('memory_not_found', 'Memory not found.', 404);
+  const tombstone: MemoryRecord = {
+    ...current,
+    text: '',
+    visibility: 'deleted',
+    status: 'rejected',
+    twinIds: [],
+    updatedAt: Date.now(),
+  };
+  await deleteManagedObject(request, env, current.objectKey);
+  await putMemory(env, tombstone);
+  return jsonResponse({
+    ok: true,
+    deleted: memoryId,
+    storageNote: 'Memory metadata was tombstoned. Matching IDrive e2 object keys are covered by account/storage deletion and orphan audits.',
+  });
+}
+
+async function handleSearchChats(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, 'chat:read')) return errorResponse('forbidden', 'Missing chat read permission', 403);
+
+  const url = new URL(request.url);
+  const query = sanitizeText(url.searchParams.get('q'), MAX_CHAT_SEARCH_QUERY_CHARS);
+  const twinId = sanitizeText(url.searchParams.get('twinId'), 120);
+  const chats = await loadUserChats(env, session.sub);
+  const normalizedQuery = normalizedQuestion(query);
+  const terms = normalizedQuery.split(/\s+/).filter((word) => word.length > 2);
+  const results = chats
+    .filter((chat) => !twinId || chat.twinId === twinId || chat.publicTwinSlug === twinId)
+    .map((chat) => {
+      const haystack = normalizedQuestion([
+        chat.title,
+        chat.summary ?? '',
+        ...chat.messages.map((message) => message.content),
+      ].join(' '));
+      const score = terms.length
+        ? terms.reduce((sum, term) => sum + (haystack.includes(term) ? 1 : 0), 0)
+        : 1;
+      return { chat, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || b.chat.updatedAt - a.chat.updatedAt)
+    .slice(0, 25)
+    .map(({ chat, score }) => ({
+      id: chat.id,
+      title: chat.title,
+      twinId: chat.twinId ?? null,
+      publicTwinSlug: chat.publicTwinSlug ?? null,
+      summary: chat.summary ?? summarizeChat(chat.messages),
+      messageCount: chat.messages.length,
+      archiveObjectKey: chat.archiveObjectKey ?? chatArchiveObjectKey(session.sub, chat.id, chat.createdAt),
+      score,
+      createdAt: chat.createdAt,
+      updatedAt: chat.updatedAt,
+    }));
+
+  return jsonResponse({ query, results });
+}
+
+async function handleStartChat(request: Request, env: ApiEnv, ctx?: ExecutionContext): Promise<Response> {
   let body: ChatStartRequest = {};
   const parsed = await readJsonBody<ChatStartRequest>(request, 8 * 1024);
   if (!parsed.ok) return parsed.response;
@@ -2329,11 +2946,17 @@ async function handleStartChat(request: Request, env: ApiEnv): Promise<Response>
     twinId: twin?.id,
     publicTwinSlug: publicTwin?.slug,
     messages: [],
+    summary: 'Neuer Chat.',
+    archiveObjectKey: '',
+    sensitivity: 'normal',
+    visibility: 'private',
     createdAt: now,
     updatedAt: now,
   };
+  chat.archiveObjectKey = chatArchiveObjectKey(session.sub, chat.id, chat.createdAt);
   try {
     await putChat(env, chat);
+    persistManagedObjectLater(ctx, request, env, chat.archiveObjectKey, chat);
   } catch (err) {
     if (publicTwin && !twin) {
       console.warn('public_chat_storage_unavailable', JSON.stringify({ slug: publicTwin.slug, error: String(err) }));
@@ -2377,6 +3000,10 @@ async function handleListChats(request: Request, env: ApiEnv): Promise<Response>
         twinId: record.twinId ?? null,
         publicTwinSlug: record.publicTwinSlug ?? null,
         messages: record.messages,
+        summary: record.summary ?? summarizeChat(record.messages),
+        archiveObjectKey: record.archiveObjectKey ?? chatArchiveObjectKey(session.sub, record.id, record.createdAt),
+        visibility: record.visibility ?? 'private',
+        sensitivity: record.sensitivity ?? 'normal',
         messageCount: record.messages.length,
         createdAt: record.createdAt,
         updatedAt: record.updatedAt,
@@ -2674,7 +3301,7 @@ async function handlePublicTwinList(request: Request, env: ApiEnv): Promise<Resp
   });
 }
 
-async function handleChatMessage(request: Request, env: ApiEnv): Promise<Response> {
+async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionContext): Promise<Response> {
   const parsed = await readJsonBody<ChatMessageRequest>(request, 16 * 1024);
   if (!parsed.ok) return parsed.response;
   const body = parsed.value;
@@ -2741,11 +3368,20 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
   const next: ChatRecord = {
     ...chat,
     messages: [...chat.messages, userMessage, assistantMessage].slice(-MAX_CHAT_MESSAGES),
+    summary: summarizeChat([...chat.messages, userMessage, assistantMessage].slice(-MAX_CHAT_MESSAGES)),
+    archiveObjectKey: session
+      ? chat.archiveObjectKey ?? chatArchiveObjectKey(session.sub, chat.id, chat.createdAt)
+      : chat.archiveObjectKey,
+    sensitivity: chat.sensitivity ?? 'normal',
+    visibility: chat.visibility ?? 'private',
     updatedAt: now,
   };
   if (session) {
     try {
       await putChat(env, next);
+      if (next.archiveObjectKey) {
+        persistManagedObjectLater(ctx, request, env, next.archiveObjectKey, next);
+      }
       await addChatToIndex(env, session.sub, next.id);
       if (promptMemoryKey) {
         await kv.put(promptMemoryKey, JSON.stringify(nextRecentPromptMemory(promptMemory, message, now)));
@@ -2770,7 +3406,7 @@ async function handleChatMessage(request: Request, env: ApiEnv): Promise<Respons
 }
 
 export default {
-  async fetch(request: Request, env: ApiEnv): Promise<Response> {
+  async fetch(request: Request, env: ApiEnv, ctx?: ExecutionContext): Promise<Response> {
     return safeHandler(async () => {
       const url = new URL(request.url);
       const kv = metadataStore(env);
@@ -2786,6 +3422,26 @@ export default {
 
       if (url.pathname === '/api/health' && request.method === 'GET') {
         return handleHealth();
+      }
+
+      if (url.pathname === '/api/profile' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:profile-get'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleGetProfile(request, env);
+      }
+
+      if (url.pathname === '/api/profile' && request.method === 'PATCH') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:profile-update'),
+          limit: 30,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleUpdateProfile(request, env);
       }
 
       if (url.pathname === '/api/account/export' && request.method === 'GET') {
@@ -2818,6 +3474,53 @@ export default {
         return handleSupportReport(request, env);
       }
 
+      if (url.pathname === '/api/memories' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:memory-list'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleListMemories(request, env);
+      }
+
+      if (url.pathname === '/api/memories' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:memory-create'),
+          limit: 30,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleCreateMemory(request, env);
+      }
+
+      if (url.pathname.startsWith('/api/memories/') && request.method === 'GET') {
+        const memoryId = decodeURIComponent(url.pathname.slice('/api/memories/'.length));
+        return handleGetMemory(request, env, memoryId);
+      }
+
+      if (url.pathname.startsWith('/api/memories/') && request.method === 'PATCH') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:memory-update'),
+          limit: 40,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        const memoryId = decodeURIComponent(url.pathname.slice('/api/memories/'.length));
+        return handleUpdateMemory(request, env, memoryId);
+      }
+
+      if (url.pathname.startsWith('/api/memories/') && request.method === 'DELETE') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:memory-delete'),
+          limit: 20,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        const memoryId = decodeURIComponent(url.pathname.slice('/api/memories/'.length));
+        return handleDeleteMemory(request, env, memoryId);
+      }
+
       if (url.pathname === '/api/public/twins' && request.method === 'GET') {
         return handlePublicTwinList(request, env);
       }
@@ -2839,7 +3542,7 @@ export default {
           windowSeconds: 60,
         });
         if (limited) return limited;
-        return handleStartChat(request, env);
+        return handleStartChat(request, env, ctx);
       }
 
       if (url.pathname === '/api/chat/messages' && request.method === 'POST') {
@@ -2849,7 +3552,7 @@ export default {
           windowSeconds: 60,
         });
         if (limited) return limited;
-        return handleChatMessage(request, env);
+        return handleChatMessage(request, env, ctx);
       }
 
       if (url.pathname === '/api/chat/list' && request.method === 'GET') {
@@ -2860,6 +3563,16 @@ export default {
         });
         if (limited) return limited;
         return handleListChats(request, env);
+      }
+
+      if (url.pathname === '/api/chat/search' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:chat-search'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleSearchChats(request, env);
       }
 
       if (url.pathname === '/api/twins' && request.method === 'POST') {

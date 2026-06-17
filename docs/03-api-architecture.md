@@ -19,9 +19,17 @@ System:
 
 Chat/API:
 
+- `GET /api/profile`
+- `PATCH /api/profile`
 - `POST /api/chat/start`
 - `POST /api/chat/messages`
 - `GET /api/chat/list`
+- `GET /api/chat/search`
+- `GET /api/memories`
+- `POST /api/memories`
+- `GET /api/memories/{id}`
+- `PATCH /api/memories/{id}`
+- `DELETE /api/memories/{id}`
 - `GET /api/account/export`
 - `DELETE /api/account`
 - `POST /api/support/report`
@@ -50,6 +58,9 @@ Storage:
 - `GET /storage/uploads`
 - `GET /storage/file/{key}`
 - `DELETE /storage/file/{key}`
+- `PUT /storage/object`
+- `GET /storage/object/{key}`
+- `DELETE /storage/object/{key}`
 - `DELETE /storage/account`
 
 Translation/Edge:
@@ -104,11 +115,48 @@ Profile/Twins/Chat:
 
 - In der Free-Only-Phase nur kleine Status- und Demo-Metadaten in KV.
 - Chat-Demo-Zustaende liegen unter `meta:chat:{userSub}:{chatId}` und `meta:chats:{userSub}`.
+- Private Chatverlaeufe bleiben im Nutzerprofil sichtbar; jeder Chat fuehrt eine Summary und einen IDrive-e2-Archivpfad.
+- Chat-Suche nutzt nur KV-Metadaten, gespeicherte Chat-Summaries und die im MVP gehaltenen Nachrichten.
+- Profil-Metadaten liegen unter `meta:profile:{userSub}:default`.
+- Memory-Metadaten liegen unter `meta:memory:{userSub}:{memoryId}` und `meta:memories:{userSub}`.
+- Memory-Objekte tragen Quelle, Sensitivity, Sichtbarkeit, Confidence, Status und erlaubte Twin-IDs.
 - Twin-Metadaten liegen unter `meta:twin:{userSub}:{twinId}` und `meta:twins:{userSub}`.
 - Oeffentliche Twin-Slugs liegen unter `public:twin:{slug}`.
 - Support-/Trust-Meldungen liegen unter `meta:support-report:{createdAt}:{reportId}`.
 - Grosse Inhalte, exportierte Memories und Backups gehoeren nach IDrive e2.
 - Kein Production-Pfad darf eine separat betriebene Datenbank voraussetzen.
+
+## Profil-, Chat- und Memory-API
+
+Die Phase-1-API hat einen Free-Only-Pfad fuer professionelle Profile,
+Chatverlaeufe und bestaetigte Memories. Sie nutzt Cloudflare KV fuer kleine
+Metadaten und IDrive-e2-Objektschluessel als dauerhafte Speicherstruktur.
+
+| Route | Methode | Zweck | Speicher |
+| --- | --- | --- | --- |
+| `/api/profile` | `GET` | privates Nutzerprofil, Qualitaet, Limits | Cloudflare KV |
+| `/api/profile` | `PATCH` | Profilfelder, Rollen, Expertise, Ziele, Sprache, Sichtbarkeit | Cloudflare KV |
+| `/api/chat/start` | `POST` | Chat sofort starten | Cloudflare KV + IDrive-e2-Archivpfad |
+| `/api/chat/messages` | `POST` | Nachricht speichern, Antwort erzeugen, Summary aktualisieren | Cloudflare KV |
+| `/api/chat/list` | `GET` | Chatverlauf im Profil listen | Cloudflare KV |
+| `/api/chat/search` | `GET` | Chat-Summaries und gespeicherte Nachrichten durchsuchen | Cloudflare KV |
+| `/api/memories` | `GET` | bestaetigte, pending oder gefilterte Memories listen | Cloudflare KV |
+| `/api/memories` | `POST` | Memory mit Quelle, Sensitivity und Twin-Zugriff erstellen | Cloudflare KV + IDrive-e2-Objektschluessel |
+| `/api/memories/{id}` | `GET` | einzelne Memory lesen | Cloudflare KV |
+| `/api/memories/{id}` | `PATCH` | Memory bestaetigen, bearbeiten, sperren oder Twins zuweisen | Cloudflare KV |
+| `/api/memories/{id}` | `DELETE` | Memory tombstonen, nicht blind entfernen | Cloudflare KV |
+| `/api/account/export` | `GET` | Profil, Chatmetadaten, Memories, Twins und Objektlayout exportieren | Cloudflare KV + IDrive-e2-Referenzen |
+
+Destruktive Memory-Aktionen brauchen `X-Smyst-Delete-Confirm:
+delete-memory`. Account-Loeschung loescht Profil-, Chat-, Memory- und
+Twin-Metadaten und verweist auf den Storage-Worker fuer bekannte IDrive-e2-
+Objekte.
+
+Der Storage-Worker stellt `PUT /storage/object` fuer kleine verwaltete JSON-
+Objekte bereit. Damit schreibt der API-Worker Profil-, Memory- und Chat-
+Archivobjekte serverseitig nach IDrive e2, ohne IDrive-e2-Secrets an den
+Browser zu geben. `GET /storage/object/{key}` und `DELETE /storage/object/{key}`
+sind auf eigene User-Prefixe beschraenkt.
 
 ## Nicht vorhanden in Phase 1
 

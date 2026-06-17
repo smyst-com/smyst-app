@@ -19,7 +19,7 @@ import {
 import { useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
-import { useTwinMvp, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle } from '@/lib/useTwinMvp'
+import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
@@ -2369,6 +2369,117 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   const auth = useAuth()
   const twinMvp = useTwinMvp()
   const [privacyStatus, setPrivacyStatus] = useState<string | null>(null)
+  const [profile, setProfile] = useState<UserProfileRecord | null>(null)
+  const [memories, setMemories] = useState<MemoryRecord[]>([])
+  const [chatResults, setChatResults] = useState<ChatSearchResult[]>([])
+  const [profileDraft, setProfileDraft] = useState({
+    displayName: '',
+    headline: '',
+    privateBio: '',
+    publicBio: '',
+    roles: '',
+    expertise: '',
+    goals: '',
+    languages: '',
+    tone: 'professional',
+  })
+  const [memoryDraft, setMemoryDraft] = useState('')
+  const [chatQuery, setChatQuery] = useState('')
+
+  const splitDraftList = (value: string) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean)
+
+  const hydrateProfileDraft = (next: UserProfileRecord) => {
+    setProfileDraft({
+      displayName: next.displayName,
+      headline: next.headline ?? '',
+      privateBio: next.privateBio ?? '',
+      publicBio: next.publicBio ?? '',
+      roles: next.roles.join(', '),
+      expertise: next.expertise.join(', '),
+      goals: next.goals.join(', '),
+      languages: next.languages.join(', '),
+      tone: next.tone,
+    })
+  }
+
+  const refreshProfileData = async () => {
+    const [profileResponse, memoryResponse] = await Promise.all([
+      twinMvp.getProfile(),
+      twinMvp.listMemories(),
+    ])
+    if (profileResponse?.profile) {
+      setProfile(profileResponse.profile)
+      hydrateProfileDraft(profileResponse.profile)
+    }
+    if (memoryResponse?.memories) setMemories(memoryResponse.memories)
+  }
+
+  useEffect(() => {
+    if (auth.status !== 'authenticated') return
+    void refreshProfileData()
+  }, [auth.status])
+
+  const saveProfile = async () => {
+    const result = await twinMvp.updateProfile({
+      displayName: profileDraft.displayName,
+      headline: profileDraft.headline,
+      privateBio: profileDraft.privateBio,
+      publicBio: profileDraft.publicBio,
+      roles: splitDraftList(profileDraft.roles),
+      expertise: splitDraftList(profileDraft.expertise),
+      goals: splitDraftList(profileDraft.goals),
+      languages: splitDraftList(profileDraft.languages),
+      tone: profileDraft.tone,
+      visibility: 'private',
+    })
+    if (!result?.profile) return
+    setProfile(result.profile)
+    hydrateProfileDraft(result.profile)
+    setPrivacyStatus('Profil gespeichert und fuer IDrive-e2-Objektpersistenz vorgemerkt.')
+  }
+
+  const createManualMemory = async () => {
+    if (!memoryDraft.trim()) return
+    const memory = await twinMvp.createMemory({
+      type: 'fact',
+      text: memoryDraft,
+      sourceType: 'manual',
+      sourceLabel: 'Profilseite',
+      status: 'confirmed',
+      visibility: 'private',
+      sensitivity: 'personal',
+      confidence: 0.85,
+    })
+    if (!memory) return
+    setMemoryDraft('')
+    await refreshProfileData()
+    setPrivacyStatus('Memory gespeichert.')
+  }
+
+  const confirmMemory = async (memory: MemoryRecord) => {
+    const next = await twinMvp.updateMemory(memory.id, { status: 'confirmed', confidence: Math.max(memory.confidence, 0.85) })
+    if (!next) return
+    setMemories((current) => current.map((item) => (item.id === next.id ? next : item)))
+  }
+
+  const deleteMemory = async (memory: MemoryRecord) => {
+    const confirmed = window.confirm('Diese Memory wirklich loeschen?')
+    if (!confirmed) return
+    const result = await twinMvp.deleteMemory(memory.id)
+    if (!result) return
+    setMemories((current) => current.filter((item) => item.id !== memory.id))
+    setPrivacyStatus('Memory geloescht.')
+  }
+
+  const searchChats = async () => {
+    const result = await twinMvp.searchTwinChats(chatQuery)
+    if (!result) return
+    setChatResults(result.results)
+  }
 
   const exportAccount = async () => {
     const bundle = await twinMvp.exportAccount()
@@ -2408,7 +2519,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           returnTo="/profile"
         />
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
           <Card className="p-6 sm:p-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
               <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e7f6ff] text-2xl font-bold text-[#0b1c44] ring-1 ring-white/50">
@@ -2449,6 +2560,70 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 <p className="mt-1 text-sm font-semibold">Dateien und Medien geschuetzt</p>
               </div>
             </div>
+
+            <div className="mt-8 grid gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-sm font-semibold">
+                  Anzeigename
+                  <input
+                    value={profileDraft.displayName}
+                    onChange={(event) => setProfileDraft((current) => ({ ...current, displayName: event.target.value }))}
+                    className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+                  />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  Headline
+                  <input
+                    value={profileDraft.headline}
+                    onChange={(event) => setProfileDraft((current) => ({ ...current, headline: event.target.value }))}
+                    className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+                  />
+                </label>
+              </div>
+              <label className="grid gap-1 text-sm font-semibold">
+                Private Bio
+                <textarea
+                  value={profileDraft.privateBio}
+                  onChange={(event) => setProfileDraft((current) => ({ ...current, privateBio: event.target.value }))}
+                  rows={4}
+                  className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+                />
+              </label>
+              <label className="grid gap-1 text-sm font-semibold">
+                Oeffentliche Bio
+                <textarea
+                  value={profileDraft.publicBio}
+                  onChange={(event) => setProfileDraft((current) => ({ ...current, publicBio: event.target.value }))}
+                  rows={3}
+                  className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+                />
+              </label>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="grid gap-1 text-sm font-semibold">
+                  Rollen
+                  <input value={profileDraft.roles} onChange={(event) => setProfileDraft((current) => ({ ...current, roles: event.target.value }))} className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]" />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  Expertise
+                  <input value={profileDraft.expertise} onChange={(event) => setProfileDraft((current) => ({ ...current, expertise: event.target.value }))} className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]" />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  Ziele
+                  <input value={profileDraft.goals} onChange={(event) => setProfileDraft((current) => ({ ...current, goals: event.target.value }))} className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]" />
+                </label>
+                <label className="grid gap-1 text-sm font-semibold">
+                  Sprachen
+                  <input value={profileDraft.languages} onChange={(event) => setProfileDraft((current) => ({ ...current, languages: event.target.value }))} className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]" />
+                </label>
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white/14 p-4">
+                <div>
+                  <p className="text-sm font-semibold">Profilqualitaet {profile?.qualityScore ?? 0}/100</p>
+                  <p className="text-xs text-[#667085]">{profile?.chatCount ?? 0} Chats · {profile?.memoryCount ?? 0} Memories</p>
+                </div>
+                <Button onClick={() => void saveProfile()}>Profil speichern</Button>
+              </div>
+            </div>
           </Card>
 
           <Card className="p-6">
@@ -2478,6 +2653,78 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 {privacyStatus || twinMvp.error}
               </p>
             )}
+          </Card>
+
+          <Card className="p-6 lg:col-span-2">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Memory</h3>
+                <p className="text-sm text-[#555b64]">Bestaetigte Informationen bleiben privat im Profil und koennen spaeter pro Twin genutzt werden.</p>
+              </div>
+              <Button variant="secondary" onClick={() => void refreshProfileData()}>Aktualisieren</Button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+              <input
+                value={memoryDraft}
+                onChange={(event) => setMemoryDraft(event.target.value)}
+                placeholder="Neue Memory als Fakt speichern..."
+                className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+              />
+              <Button onClick={() => void createManualMemory()}>Memory speichern</Button>
+            </div>
+            <div className="mt-5 grid gap-3">
+              {(memories.length ? memories : []).map((memory) => (
+                <div key={memory.id} className="rounded-lg border border-white/20 bg-white/12 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">{memory.text || 'Geloeschte Memory'}</p>
+                      <p className="mt-1 text-xs text-[#667085]">
+                        {memory.type} · {memory.status} · {memory.sensitivity} · Confidence {Math.round(memory.confidence * 100)}%
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      {memory.status !== 'confirmed' && (
+                        <Button size="sm" variant="secondary" onClick={() => void confirmMemory(memory)}>Bestaetigen</Button>
+                      )}
+                      <Button size="sm" variant="secondary" onClick={() => void deleteMemory(memory)}>Loeschen</Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {!memories.length && (
+                <div className="rounded-lg bg-white/12 p-4 text-sm text-[#555b64]">Noch keine Memories gespeichert.</div>
+              )}
+            </div>
+          </Card>
+
+          <Card className="p-6 lg:col-span-2">
+            <h3 className="mb-2 text-lg font-semibold">Chatverlauf suchen</h3>
+            <p className="mb-4 text-sm text-[#555b64]">Suche in deinen privaten Chat-Summaries und gespeicherten MVP-Nachrichten.</p>
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+              <input
+                value={chatQuery}
+                onChange={(event) => setChatQuery(event.target.value)}
+                placeholder="Wonach suchst du?"
+                className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+              />
+              <Button onClick={() => void searchChats()}>Suchen</Button>
+            </div>
+            <div className="mt-5 grid gap-3">
+              {chatResults.map((chat) => (
+                <button
+                  key={chat.id}
+                  onClick={() => onNavigate('twin-chat')}
+                  className="rounded-lg border border-white/20 bg-white/12 p-4 text-left transition-colors hover:bg-white/18"
+                >
+                  <p className="text-sm font-semibold">{chat.title}</p>
+                  <p className="mt-1 text-sm text-[#555b64]">{chat.summary}</p>
+                  <p className="mt-2 break-all text-xs text-[#667085]">{chat.archiveObjectKey}</p>
+                </button>
+              ))}
+              {!chatResults.length && chatQuery && (
+                <div className="rounded-lg bg-white/12 p-4 text-sm text-[#555b64]">Keine Treffer.</div>
+              )}
+            </div>
           </Card>
         </div>
       )}
