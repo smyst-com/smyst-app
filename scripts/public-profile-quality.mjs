@@ -1,6 +1,13 @@
 const baseUrl = process.env.WEB_BASE_URL || 'https://smyst.com';
 const host = baseUrl.replace(/\/$/, '');
 const requestTimeoutMs = Number(process.env.PUBLIC_PROFILE_AUDIT_TIMEOUT_MS || 15000);
+const retryCount = Number(process.env.PUBLIC_PROFILE_AUDIT_RETRIES || 6);
+const retryDelayMs = Number(process.env.PUBLIC_PROFILE_AUDIT_RETRY_DELAY_MS || 3000);
+const endpointConcurrency = Number(process.env.PUBLIC_PROFILE_AUDIT_CONCURRENCY || 12);
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 async function fetchWithTimeout(url, init = {}) {
   const controller = new AbortController();
@@ -10,6 +17,34 @@ async function fetchWithTimeout(url, init = {}) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function retryResult(check) {
+  let last = { ok: false, status: 0, error: 'not_run' };
+  for (let attempt = 0; attempt < retryCount; attempt += 1) {
+    try {
+      last = await check();
+      if (last.ok) return last;
+    } catch (err) {
+      last = { ok: false, status: 0, error: String(err) };
+    }
+    if (attempt < retryCount - 1) await delay(retryDelayMs);
+  }
+  return last;
+}
+
+async function mapLimit(items, limit, worker) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (nextIndex < items.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await worker(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 async function profileEndpointOk(slug) {
@@ -29,16 +64,19 @@ async function imageEndpointOk(imageUrl) {
   return { ok, status: response.status, contentType };
 }
 
-const response = await fetchWithTimeout(`${host}/api/public/twins`, {
-  headers: { accept: 'application/json' },
+const response = await retryResult(async () => {
+  const res = await fetchWithTimeout(`${host}/api/public/twins`, {
+    headers: { accept: 'application/json' },
+  });
+  return { ok: res.ok, status: res.status, response: res };
 });
 
-if (!response.ok) {
+if (!response.ok || !response.response) {
   console.error(JSON.stringify({ ok: false, status: response.status, error: 'public_profiles_unreachable' }, null, 2));
   process.exit(1);
 }
 
-const body = await response.json();
+const body = await response.response.json();
 const twins = Array.isArray(body.twins) ? body.twins : [];
 const issues = [];
 const expectedVisibleProfileCount = 100;
@@ -90,31 +128,27 @@ for (const twin of twins) {
 }
 
 const liveEndpointIssues = [];
-for (const twin of twins) {
-  try {
-    const endpoint = await profileEndpointOk(twin.slug);
-    if (!endpoint.ok) {
-      liveEndpointIssues.push({ slug: twin.slug, issue: 'profile_endpoint_failed', status: endpoint.status });
-    }
-  } catch (err) {
-    liveEndpointIssues.push({ slug: twin.slug, issue: 'profile_endpoint_error', error: String(err) });
+const liveResults = await mapLimit(twins, endpointConcurrency, async (twin) => {
+  const resultIssues = [];
+  const endpoint = await retryResult(() => profileEndpointOk(twin.slug));
+  if (!endpoint.ok) {
+    resultIssues.push({ slug: twin.slug, issue: 'profile_endpoint_failed', status: endpoint.status, error: endpoint.error });
   }
 
-  try {
-    const image = await imageEndpointOk(twin.imageUrl);
-    if (!image.ok) {
-      liveEndpointIssues.push({
-        slug: twin.slug,
-        issue: 'profile_image_endpoint_failed',
-        status: image.status,
-        contentType: image.contentType,
-        imageUrl: twin.imageUrl,
-      });
-    }
-  } catch (err) {
-    liveEndpointIssues.push({ slug: twin.slug, issue: 'profile_image_endpoint_error', error: String(err), imageUrl: twin.imageUrl });
+  const image = await retryResult(() => imageEndpointOk(twin.imageUrl));
+  if (!image.ok) {
+    resultIssues.push({
+      slug: twin.slug,
+      issue: 'profile_image_endpoint_failed',
+      status: image.status,
+      contentType: image.contentType,
+      error: image.error,
+      imageUrl: twin.imageUrl,
+    });
   }
-}
+  return resultIssues;
+});
+liveEndpointIssues.push(...liveResults.flat());
 
 issues.push(...liveEndpointIssues);
 

@@ -235,7 +235,7 @@ jobs:
     needs: [deploy-pages, deploy-workers, seed-curated-public-profiles]
     if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
 
