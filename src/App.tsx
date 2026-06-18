@@ -3893,6 +3893,7 @@ function TwinChatView() {
                     id: crypto.randomUUID(),
                     role: 'ai',
                     content: `${publicTwin.name} ist bereit. Schreib deine Frage direkt. Melde dich an, um den Verlauf zu speichern.`,
+                    speakable: false,
                   },
                 ]
             : current,

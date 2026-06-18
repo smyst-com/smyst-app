@@ -47,7 +47,7 @@ requireIncludes('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Na
 requireIncludes('Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.', 'microphone permission feedback');
 requireIncludes('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.', 'voice start fallback feedback');
 requireIncludes('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.', 'voice unsupported fallback feedback');
-requireIncludes('speakable: false', 'twin-chat ready message is not treated as a speakable answer');
+requireAtLeast(/speakable: false/g, 2, 'twin-chat ready messages are not treated as speakable answers');
 requireIncludes('Wähle zuerst ein KI-Profil aus.', 'twin-chat missing profile feedback');
 requireIncludes('Antwort läuft gerade. Bitte kurz warten.', 'twin-chat pending reply feedback');
 
