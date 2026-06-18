@@ -35,6 +35,8 @@ else
 fi
 
 if command -v node >/dev/null 2>&1; then
+  echo "== Bottom icon regression protection =="
+  node scripts/check-bottom-icon-regression.mjs
   echo "== Profile conversation stability =="
   node scripts/profile-conversation-stability.mjs
   echo "== Profile personality audit =="

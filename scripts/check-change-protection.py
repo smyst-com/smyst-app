@@ -78,6 +78,7 @@ def main() -> None:
         "docs/runbooks/release-governance.md",
         "scripts/preflight-release.sh",
         "scripts/test-all.sh",
+        "scripts/check-bottom-icon-regression.mjs",
         "workers/storage-idrive.ts",
         "workers/api.ts",
         "src/App.tsx",

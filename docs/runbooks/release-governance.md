@@ -82,6 +82,12 @@ approval and restore evidence.
 Working design, routing, chat, upload, profile and security behavior must not be
 rebuilt unless the task explicitly asks for that behavior change.
 
+The bottom chat icon actions are protected by
+`scripts/check-bottom-icon-regression.mjs`. `Senden`, `Vorlesen`,
+`Spracheingabe`, `Live-Sprachmodus` and `Datei hinzufügen` must stay visibly
+interactive on the start chat and `/twin-chat` surfaces. Empty or unavailable
+states must show a user-facing notice instead of silently disabling the icon.
+
 ## Preflight Environment
 
 Production preflight requires:
