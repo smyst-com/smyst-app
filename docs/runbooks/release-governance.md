@@ -50,6 +50,38 @@ Production status can only be `GO` when all required evidence is present. If any
 item is missing, the release status is `NO-GO` and only a preview/test deploy may
 be used.
 
+## Protected Production Mode
+
+Protected Production Mode is enabled through
+`config/change-protection-manifest.json` and enforced by
+`scripts/check-change-protection.py`, which is part of `scripts/test-all.sh`.
+
+This mode does not promise that smyst.com can never fail. It prevents unsafe
+changes from being treated as releasable.
+
+Protected mode blocks production release unless all of these are true:
+
+- `npm ci` can install the committed dependency graph.
+- `npm audit --audit-level=low` is green.
+- TypeScript, build, artifact checks and profile checks are green.
+- `scripts/preflight-release.sh` is green with the release gate variables.
+- `scripts/live-test.sh` is green against the approved production URL.
+- Backup/restore and rollback evidence have been reviewed.
+- The deploy goes through the official GitHub Actions workflow and Cloudflare.
+
+Critical production files listed in the change-protection manifest require
+written approval, diff review and a rollback plan before they are changed. This
+includes workflow files, Worker routes, storage/auth logic, PWA/SEO/security
+files, release scripts, dependency manifests and the main app shell.
+
+Data-shape changes require a backup and rollback plan before execution. Do not
+delete or overwrite users, profiles, profile images, uploads, chats, API
+structures, KV metadata or IDrive e2 objects without explicit destructive
+approval and restore evidence.
+
+Working design, routing, chat, upload, profile and security behavior must not be
+rebuilt unless the task explicitly asks for that behavior change.
+
 ## Preflight Environment
 
 Production preflight requires:

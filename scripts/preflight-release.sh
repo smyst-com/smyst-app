@@ -58,7 +58,7 @@ if command -v git >/dev/null 2>&1; then
   echo "release commit: ${CURRENT_COMMIT:-unknown}"
 fi
 
-scripts/test-all.sh
+sh scripts/test-all.sh
 
 if [ "${TARGET}" = "production" ]; then
   WEB_BASE_URL="${LIVE_URL}" sh scripts/live-test.sh

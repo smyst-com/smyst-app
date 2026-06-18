@@ -45,6 +45,12 @@ for (const spec of CURATED_PUBLIC_TWIN_SPECS) {
   if (!spec.description?.trim() || spec.description.trim().length < 40) specIssues.push('description_too_short');
   if (!spec.imageFile?.trim()) specIssues.push('image_file_required');
   if (!spec.contentType?.startsWith('image/')) specIssues.push('image_content_type_required');
+  if (spec.generatedPortrait) {
+    if (spec.contentType !== 'image/svg+xml') specIssues.push('generated_profile_image_must_be_svg');
+    if (!spec.imageFile.endsWith('.svg')) specIssues.push('generated_profile_image_file_must_be_svg');
+  } else if (spec.imageFile && !existsSync(`public/public/profile-images/${spec.imageFile}`)) {
+    specIssues.push('profile_image_file_missing');
+  }
   const hasDateLife = Boolean(spec.birthDate && spec.deathDate);
   const hasYearLife = Number.isFinite(spec.birthYear) && Number.isFinite(spec.deathYear) && Boolean(spec.birthLabel && spec.deathLabel);
   if (!hasDateLife && !hasYearLife) specIssues.push('life_dates_required');

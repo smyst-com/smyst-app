@@ -63,6 +63,16 @@ check_header_not_contains() {
   fi
 }
 
+check_current_header_contains() {
+  header_name="$1"
+  expected_header_text="$2"
+  if ! grep -i "^${header_name}: .*${expected_header_text}" "$TMP_HEADERS" >/dev/null 2>&1; then
+    echo "FAILED expected response header ${header_name} to contain: ${expected_header_text}" >&2
+    cat "$TMP_HEADERS" >&2 || true
+    exit 1
+  fi
+}
+
 check_status_content_type() {
   method="$1"
   url="$2"
@@ -90,6 +100,13 @@ if grep -i "^x-robots-tag: .*noindex" "$TMP_HEADERS" >/dev/null 2>&1; then
   cat "$TMP_HEADERS" >&2 || true
   exit 1
 fi
+check_current_header_contains "content-security-policy" "frame-ancestors 'none'"
+check_current_header_contains "permissions-policy" "payment=()"
+check_current_header_contains "referrer-policy" "strict-origin-when-cross-origin"
+check_current_header_contains "x-content-type-options" "nosniff"
+check_current_header_contains "x-frame-options" "DENY"
+check_current_header_contains "cross-origin-opener-policy" "same-origin"
+check_current_header_contains "cross-origin-resource-policy" "same-site"
 first_script="$(sed -n 's/.*src="\([^"]*\/assets\/[^"]*\.js\)".*/\1/p' "$TMP_OUT" | head -n 1)"
 first_style="$(sed -n 's/.*href="\([^"]*\/assets\/[^"]*\.css\)".*/\1/p' "$TMP_OUT" | head -n 1)"
 if [ -z "$first_script" ] || [ -z "$first_style" ]; then
@@ -98,6 +115,8 @@ if [ -z "$first_script" ] || [ -z "$first_style" ]; then
   echo >&2
   exit 1
 fi
+check_body_contains "$WEB_BASE_URL/__smyst_missing_route_probe_404" "id=\"root\""
+check_current_header_contains "x-robots-tag" "noindex"
 check_content_type "$WEB_BASE_URL$first_script" "application/javascript"
 check_content_type "$WEB_BASE_URL$first_style" "text/css"
 check_content_type "$WEB_BASE_URL/manifest.webmanifest" "application/manifest+json"

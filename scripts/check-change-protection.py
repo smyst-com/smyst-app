@@ -22,12 +22,20 @@ def main() -> None:
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
     policy = data.get("policy", {})
     for key in [
+        "protectedProductionMode",
         "productionDeployRequiresManualApproval",
         "productionDeployRequiresReleaseFreeze",
         "productionDeployRequiresRollbackPlan",
         "productionDeployRequiresBackupRestoreDryRun",
+        "productionDeployRequiresGreenBuild",
+        "productionDeployRequiresGreenAudit",
+        "productionDeployRequiresGreenPreflight",
+        "productionDeployRequiresGreenLiveSmoke",
         "destructiveRequestsRequireCsrf",
         "destructiveRequestsRequireDeleteConfirmHeader",
+        "criticalFileChangesRequireWrittenApproval",
+        "dataShapeChangesRequireBackupAndRollbackPlan",
+        "workingFeatureChangesRequireExplicitTask",
     ]:
         require(policy.get(key) is True, f"policy must enable {key}")
     require(policy.get("paidServicesAllowed") is False, "paid services must remain disabled")
@@ -35,6 +43,19 @@ def main() -> None:
     require(policy.get("centralStorage") == "IDrive e2", "central storage must remain IDrive e2")
     require(policy.get("autoBillingServicesAllowed") is False, "auto-billing services must remain disabled")
     require(policy.get("futureScaleRequiresExplicitArchitectureDecision") is True, "future scale must require an explicit architecture decision")
+
+    protected_mode = data.get("protectedProductionMode", {})
+    require(protected_mode.get("status") == "enabled", "protected production mode must stay enabled")
+    for key in [
+        "releaseDecision",
+        "criticalFileChangeRule",
+        "dataChangeRule",
+        "featureChangeRule",
+        "costRule",
+        "fallbackRule",
+    ]:
+        require(bool(protected_mode.get(key)), f"protected production mode missing {key}")
+    require("NO-GO" in protected_mode.get("fallbackRule", ""), "fallback rule must block unsafe releases with NO-GO")
 
     hard_rules = set(data.get("hardArchitectureRules", []))
     for item in [
@@ -46,6 +67,22 @@ def main() -> None:
         "If billion-user/day scale is unrealistic on free-only limits, optimize and measure free-only instead of adding paid infrastructure",
     ]:
         require(item in hard_rules, f"hard architecture rule missing: {item}")
+
+    critical_files = data.get("criticalProductionFiles", [])
+    require(len(critical_files) >= 30, "critical production file list is too small")
+    for rel_path in critical_files:
+        require((ROOT / rel_path).exists(), f"critical production file missing: {rel_path}")
+    for rel_path in [
+        ".github/workflows/deploy.yml",
+        "config/change-protection-manifest.json",
+        "docs/runbooks/release-governance.md",
+        "scripts/preflight-release.sh",
+        "scripts/test-all.sh",
+        "workers/storage-idrive.ts",
+        "workers/api.ts",
+        "src/App.tsx",
+    ]:
+        require(rel_path in critical_files, f"critical production file not protected: {rel_path}")
 
     routes = {item.get("route"): item for item in data.get("destructiveRoutes", [])}
     for route, expected_header in {

@@ -1,17 +1,22 @@
-import { readFile, stat } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { promisify } from 'node:util';
 import { build } from 'esbuild';
 
 const accountId = '477794df69f0b6a0b9e4c59e36883c1f';
 const metadataNamespaceId = '24a718c1c31248779add893b93fd4152';
 const tokenFile = process.env.SMYST_CF_TOKEN_FILE || '/private/tmp/smyst_cf_token';
 const canonicalHost = (process.env.SMYST_CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
-const token = (process.env.CLOUDFLARE_API_TOKEN || (await readFile(tokenFile, 'utf8'))).trim();
+const tokenFromFile = await readFile(tokenFile, 'utf8').catch(() => '');
+const token = (process.env.CLOUDFLARE_API_TOKEN || tokenFromFile).trim();
+const useCloudflareApi = Boolean(token);
 const ttlSeconds = 60 * 60 * 24 * 370;
 const assetRoot = join(process.cwd(), 'public', 'public', 'profile-images');
 const bundledData = join(tmpdir(), 'smyst-curated-public-twin-data.mjs');
+const execFileAsync = promisify(execFile);
 
 await build({
   entryPoints: ['workers/curated-public-twin-data.ts'],
@@ -146,7 +151,65 @@ async function cf(path, init = {}) {
   return payload.result ?? payload;
 }
 
+async function wranglerKvGet(key, fallback = null) {
+  const { stdout } = await execFileAsync(
+    'npx',
+    ['wrangler', 'kv', 'key', 'get', key, '--namespace-id', metadataNamespaceId, '--text', '--remote'],
+    { maxBuffer: 10 * 1024 * 1024 },
+  );
+  const text = stdout.trim();
+  if (text === 'Value not found') return fallback;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+async function wranglerKvPut(key, value) {
+  const valueFile = join(tmpdir(), `smyst-kv-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.json`);
+  await writeFile(valueFile, JSON.stringify(value), 'utf8');
+  try {
+    await execFileAsync(
+      'npx',
+      [
+        'wrangler',
+        'kv',
+        'key',
+        'put',
+        key,
+        '--namespace-id',
+        metadataNamespaceId,
+        '--path',
+        valueFile,
+        '--ttl',
+        String(ttlSeconds),
+        '--remote',
+      ],
+      { maxBuffer: 10 * 1024 * 1024 },
+    );
+  } finally {
+    await rm(valueFile, { force: true });
+  }
+}
+
+async function wranglerKvBulkPut(entries) {
+  const valueFile = join(tmpdir(), `smyst-kv-bulk-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.json`);
+  await writeFile(valueFile, JSON.stringify(entries), 'utf8');
+  try {
+    await execFileAsync(
+      'npx',
+      ['wrangler', 'kv', 'bulk', 'put', valueFile, '--namespace-id', metadataNamespaceId, '--remote'],
+      { maxBuffer: 10 * 1024 * 1024 },
+    );
+  } finally {
+    await rm(valueFile, { force: true });
+  }
+}
+
 async function kvGet(key, fallback = null) {
+  if (!useCloudflareApi) return wranglerKvGet(key, fallback);
+
   const encodedKey = encodeURIComponent(key);
   const response = await fetch(
     `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${metadataNamespaceId}/values/${encodedKey}`,
@@ -166,6 +229,11 @@ async function kvGet(key, fallback = null) {
 }
 
 async function kvPut(key, value) {
+  if (!useCloudflareApi) {
+    await wranglerKvPut(key, value);
+    return;
+  }
+
   const encodedKey = encodeURIComponent(key);
   await cf(
     `/accounts/${accountId}/storage/kv/namespaces/${metadataNamespaceId}/values/${encodedKey}?expiration_ttl=${ttlSeconds}`,
@@ -207,13 +275,37 @@ const indexKey = `meta:twins:${CURATED_PUBLIC_TWIN_USER}`;
 const currentIndex = await kvGet(indexKey, []);
 const curatedIds = new Set(profiles.map((profile) => profile.id));
 const retainedIndex = (Array.isArray(currentIndex) ? currentIndex : []).filter((id) => !curatedIds.has(id));
+const nextIndex = [...profiles.map((profile) => profile.id), ...retainedIndex].slice(0, profiles.length + retainedIndex.length);
 
-for (const profile of profiles) {
-  await kvPutIfChanged(`meta:twin:${profile.userSub}:${profile.id}`, profile);
-  await kvPutIfChanged(`public:twin:${profile.slug}`, { ...profile, userSub: 'public' });
+if (useCloudflareApi) {
+  for (const profile of profiles) {
+    await kvPutIfChanged(`meta:twin:${profile.userSub}:${profile.id}`, profile);
+    await kvPutIfChanged(`public:twin:${profile.slug}`, { ...profile, userSub: 'public' });
+  }
+
+  await kvPutIfChanged(indexKey, nextIndex);
+} else {
+  const bulkEntries = [];
+  for (const profile of profiles) {
+    bulkEntries.push({
+      key: `meta:twin:${profile.userSub}:${profile.id}`,
+      value: JSON.stringify(profile),
+      expiration_ttl: ttlSeconds,
+    });
+    bulkEntries.push({
+      key: `public:twin:${profile.slug}`,
+      value: JSON.stringify({ ...profile, userSub: 'public' }),
+      expiration_ttl: ttlSeconds,
+    });
+  }
+  bulkEntries.push({
+    key: indexKey,
+    value: JSON.stringify(nextIndex),
+    expiration_ttl: ttlSeconds,
+  });
+  await wranglerKvBulkPut(bulkEntries);
+  kvStats.written = bulkEntries.length;
 }
-
-await kvPutIfChanged(indexKey, [...profiles.map((profile) => profile.id), ...retainedIndex].slice(0, profiles.length + retainedIndex.length));
 
 const publicList = await fetch(`${canonicalHost}/api/public/twins`, {
   headers: { accept: 'application/json' },
