@@ -5,6 +5,8 @@ WEB_BASE_URL="${WEB_BASE_URL:-https://smyst.com}"
 API_BASE_URL="${API_BASE_URL:-$WEB_BASE_URL}"
 TMP_OUT="${TMPDIR:-/tmp}/smyst-live-test.out"
 TMP_HEADERS="${TMPDIR:-/tmp}/smyst-live-test.headers"
+LIVE_TEST_RETRIES="${SMYST_LIVE_TEST_RETRIES:-6}"
+LIVE_TEST_RETRY_DELAY_SECONDS="${SMYST_LIVE_TEST_RETRY_DELAY_SECONDS:-3}"
 
 need_curl() {
   if ! command -v curl >/dev/null 2>&1; then
@@ -39,17 +41,28 @@ check_content_type() {
 check_body_contains() {
   url="$1"
   expected_body="$2"
-  check_url "$url" "200"
-  body="$(cat "$TMP_OUT")"
-  case "$body" in
-    *"$expected_body"*) ;;
-    *)
-      echo "FAILED $url expected body to contain: ${expected_body}" >&2
-      head -c 1000 "$TMP_OUT" >&2 || true
-      echo >&2
-      exit 1
-      ;;
-  esac
+  attempt=1
+  while [ "$attempt" -le "$LIVE_TEST_RETRIES" ]; do
+    code="$(curl -sS -D "$TMP_HEADERS" -o "$TMP_OUT" -w "%{http_code}" "$url")"
+    body="$(cat "$TMP_OUT")"
+    if [ "$code" = "200" ]; then
+      case "$body" in
+        *"$expected_body"*)
+          echo "OK $url $code"
+          return
+          ;;
+      esac
+    fi
+    if [ "$attempt" -lt "$LIVE_TEST_RETRIES" ]; then
+      sleep "$LIVE_TEST_RETRY_DELAY_SECONDS"
+    fi
+    attempt=$((attempt + 1))
+  done
+  echo "FAILED $url expected 200 body to contain: ${expected_body}" >&2
+  cat "$TMP_HEADERS" >&2 || true
+  head -c 1000 "$TMP_OUT" >&2 || true
+  echo >&2
+  exit 1
 }
 
 check_header_not_contains() {
