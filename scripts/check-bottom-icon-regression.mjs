@@ -34,6 +34,8 @@ requireAtLeast(/onClick=\{handleSendButtonClick\}/g, 2, 'send button handler');
 requireAtLeast(/onClick=\{handleSpeakInput\}/g, 2, 'speaker button handler');
 requireAtLeast(/onClick=\{\(\) => startDictation\(\)\}/g, 2, 'voice input handler');
 requireAtLeast(/onClick=\{handleToggleLiveVoice\}/g, 2, 'live voice handler');
+requireAtLeast(/speakable\?: boolean/g, 2, 'speakable message contract');
+requireAtLeast(/message\.speakable !== false/g, 2, 'speaker ignores non-speakable assistant messages');
 
 requireAbsent(/disabled=\{!canSend\}/, 'send button disabled guard');
 requireAbsent(/disabled=\{!canSpeak\}/, 'speaker button disabled guard');
@@ -45,6 +47,7 @@ requireIncludes('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Na
 requireIncludes('Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.', 'microphone permission feedback');
 requireIncludes('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.', 'voice start fallback feedback');
 requireIncludes('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.', 'voice unsupported fallback feedback');
+requireIncludes('speakable: false', 'twin-chat ready message is not treated as a speakable answer');
 requireIncludes('Wähle zuerst ein KI-Profil aus.', 'twin-chat missing profile feedback');
 requireIncludes('Antwort läuft gerade. Bitte kurz warten.', 'twin-chat pending reply feedback');
 

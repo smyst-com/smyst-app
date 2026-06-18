@@ -828,6 +828,7 @@ type ChatMessage = {
   role: 'ai' | 'user'
   content: string
   streaming?: boolean
+  speakable?: boolean
 }
 
 function SmystStartPage({
@@ -870,7 +871,8 @@ function SmystStartPage({
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
 
-  const latestAssistantText = [...messages].reverse().find((message) => message.role === 'ai' && message.content.trim().length > 0)?.content ?? ''
+  const latestAssistantText =
+    [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
   const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
 
   const filteredTwins = useMemo(() => {
@@ -3727,6 +3729,7 @@ function TwinChatView() {
     role: 'ai' | 'user'
     content: string
     streaming?: boolean
+    speakable?: boolean
   }
   type ChatTwinSummary = {
     id: string
@@ -3782,7 +3785,8 @@ function TwinChatView() {
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
 
-  const latestAssistantText = [...messages].reverse().find((message) => message.role === 'ai' && message.content.trim().length > 0)?.content ?? ''
+  const latestAssistantText =
+    [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
   const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
   const canSend =
     Boolean(activeTwin) &&
@@ -3809,6 +3813,7 @@ function TwinChatView() {
     id: crypto.randomUUID(),
     role: 'ai',
     content: `Chat mit ${twin.name} ist bereit. Schreib deine Frage direkt.`,
+    speakable: false,
   })
 
   const hasLegacyOrBrokenAssistantMessage = (chat: TwinChatRecord) =>
