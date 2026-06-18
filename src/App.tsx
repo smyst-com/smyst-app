@@ -1276,7 +1276,7 @@ function SmystStartPage({
   const startDictation = (options: { live?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
-      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt.')
+      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
     }
     recognitionRef.current?.abort()
@@ -1285,9 +1285,14 @@ function SmystStartPage({
     recognition.interimResults = true
     recognition.continuous = Boolean(options.live)
     recognition.onstart = () => setVoiceState('listening')
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       setVoiceState('idle')
-      addNotice('Spracheingabe konnte nicht gestartet werden.')
+      const error = event.error ?? ''
+      addNotice(
+        error === 'not-allowed' || error === 'service-not-allowed'
+          ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
+          : 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.',
+      )
     }
     recognition.onend = () => {
       if (recognitionRef.current === recognition) recognitionRef.current = null
@@ -1315,7 +1320,13 @@ function SmystStartPage({
       }
     }
     recognitionRef.current = recognition
-    recognition.start()
+    try {
+      recognition.start()
+    } catch {
+      recognitionRef.current = null
+      setVoiceState('idle')
+      addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
+    }
   }
 
   const handleToggleLiveVoice = () => {
@@ -1435,9 +1446,26 @@ function SmystStartPage({
       setSpeechOutputEnabled(false)
       return
     }
+    if (!latestAssistantText) {
+      addNotice('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.')
+      return
+    }
+    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+      addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
+      return
+    }
     setSpeechOutputEnabled(true)
     const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
     if (started) setIsSpeaking(true)
+  }
+
+  const handleSendButtonClick = () => {
+    if (!canSend) {
+      addNotice('Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.')
+      textareaRef.current?.focus()
+      return
+    }
+    void handleSend()
   }
 
   const menuItems: Array<{ label: string; view: AppView; detail: string }> = [
@@ -1942,11 +1970,11 @@ function SmystStartPage({
             </button>
             <button
               type="button"
-              disabled={!canSpeak}
               onClick={handleSpeakInput}
-              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors disabled:opacity-45 ${
+              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
                 speechOutputEnabled || isSpeaking ? 'bg-white/[0.12]' : ''
               }`}
+              data-ready={canSpeak ? 'true' : 'false'}
               aria-label={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
               title={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
             >
@@ -1954,9 +1982,11 @@ function SmystStartPage({
             </button>
             <button
               type="button"
-              disabled={!canSend}
-              onClick={() => void handleSend()}
-              className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors disabled:text-white disabled:opacity-100"
+              onClick={handleSendButtonClick}
+              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
+                canSend ? 'bg-white/[0.12]' : 'opacity-70'
+              }`}
+              data-ready={canSend ? 'true' : 'false'}
               aria-label={t.start.send}
               title={t.start.send}
             >
@@ -4015,7 +4045,7 @@ function TwinChatView() {
   const startDictation = (options: { live?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
-      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt.')
+      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
     }
     recognitionRef.current?.abort()
@@ -4024,9 +4054,14 @@ function TwinChatView() {
     recognition.interimResults = true
     recognition.continuous = Boolean(options.live)
     recognition.onstart = () => setVoiceState('listening')
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       setVoiceState('idle')
-      addNotice('Spracheingabe konnte nicht gestartet werden.')
+      const error = event.error ?? ''
+      addNotice(
+        error === 'not-allowed' || error === 'service-not-allowed'
+          ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
+          : 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.',
+      )
     }
     recognition.onend = () => {
       if (recognitionRef.current === recognition) recognitionRef.current = null
@@ -4054,7 +4089,13 @@ function TwinChatView() {
       }
     }
     recognitionRef.current = recognition
-    recognition.start()
+    try {
+      recognition.start()
+    } catch {
+      recognitionRef.current = null
+      setVoiceState('idle')
+      addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
+    }
   }
 
   const handleToggleLiveVoice = () => {
@@ -4155,9 +4196,38 @@ function TwinChatView() {
       setSpeechOutputEnabled(false)
       return
     }
+    if (!latestAssistantText) {
+      addNotice('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.')
+      return
+    }
+    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+      addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
+      return
+    }
     setSpeechOutputEnabled(true)
     const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
     if (started) setIsSpeaking(true)
+  }
+
+  const handleSendButtonClick = () => {
+    if (!activeTwin) {
+      addNotice('Wähle zuerst ein KI-Profil aus.')
+      return
+    }
+    if (auth.status !== 'authenticated' && !activeTwin.publicProfile) {
+      addNotice('Melde dich an, um mit diesem privaten Profil zu chatten.')
+      return
+    }
+    if (isReplying) {
+      addNotice('Antwort läuft gerade. Bitte kurz warten.')
+      return
+    }
+    if (!input.trim() && !attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) {
+      addNotice('Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.')
+      inputRef.current?.focus()
+      return
+    }
+    void handleSend()
   }
 
   return (
@@ -4402,11 +4472,11 @@ function TwinChatView() {
               </button>
               <button
                 type="button"
-                disabled={!canSpeak}
                 onClick={handleSpeakInput}
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 disabled:opacity-45 ${
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
                   speechOutputEnabled || isSpeaking ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
+                data-ready={canSpeak ? 'true' : 'false'}
                 aria-label={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
                 title={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
               >
@@ -4414,9 +4484,11 @@ function TwinChatView() {
               </button>
               <button
                 type="button"
-                disabled={!canSend}
-                onClick={() => void handleSend()}
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-[#59C7FF] text-[#0b1c44] shadow-none transition-colors hover:bg-[#7dd5ff] disabled:bg-white/28 disabled:text-[#767d87]"
+                onClick={handleSendButtonClick}
+                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md shadow-none transition-colors ${
+                  canSend ? 'bg-[#59C7FF] text-[#0b1c44] hover:bg-[#7dd5ff]' : 'bg-white/28 text-[#767d87]'
+                }`}
+                data-ready={canSend ? 'true' : 'false'}
                 aria-label="Nachricht senden"
                 title="Nachricht senden"
               >
