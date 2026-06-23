@@ -39,6 +39,11 @@ const COOKIE_NAME = 'smyst_lang';
 const CACHE_HEADER = 'X-Translation-Cache';
 const HASH_HEADER = 'X-Content-Hash';
 const PROVIDER_HEADER = 'X-Translation-Provider';
+const CACHE_SCHEMA_VERSION = 'v3';
+const HTML_CONTENT_SECURITY_POLICY =
+  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.idrivee2.com https://avatars.githubusercontent.com; connect-src 'self' https://*.idrivee2.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests";
+const PERMISSIONS_POLICY =
+  'camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), interest-cohort=()';
 
 // KV-TTL für Übersetzungen — lang, weil content_hash bereits Invalidation regelt.
 const KV_TTL_SECONDS = 60 * 60 * 24 * 90; // 90 Tage
@@ -173,7 +178,7 @@ async function sha256Hex(text: string): Promise<string> {
 }
 
 function cacheKey(pathPath: string, lang: SupportedLang, contentHash: string): string {
-  return `t:${pathPath}:${lang}:${contentHash}`;
+  return `t:${CACHE_SCHEMA_VERSION}:${pathPath}:${lang}:${contentHash}`;
 }
 
 // ---------- Origin-Fetch ----------
@@ -326,6 +331,11 @@ function applyTranslations(response: Response, opts: RewriteOptions): Response {
         el.append(linkTags.join('\n'), { html: true });
       },
     })
+    .on('link[rel="canonical"], link[rel="alternate"][hreflang]', {
+      element(el) {
+        el.remove();
+      },
+    })
     // Skip-Tag-Handling
     .on('script, style, code, pre, kbd, samp, var, noscript, template, svg, math', {
       element(el) {
@@ -468,13 +478,33 @@ export async function translatePage(
 
 // ---------- Worker Entry ----------
 
+async function localizeHtmlShell(
+  html: string,
+  lang: SupportedLang,
+  normalizedPath: string,
+  canonicalHost: string,
+): Promise<string> {
+  const rewritten = applyTranslations(new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8' } }), {
+    lang,
+    translations: new Map(),
+    canonicalPath: normalizedPath,
+    canonicalHost,
+  });
+  return rewritten.text();
+}
+
 function applyEdgeHeaders(headers: Headers, options: { stripOriginNoindex?: boolean } = {}): Headers {
   if (options.stripOriginNoindex) {
     headers.set('X-Robots-Tag', 'index, follow');
   }
+  headers.set('Content-Security-Policy', HTML_CONTENT_SECURITY_POLICY);
   headers.set('X-Content-Type-Options', 'nosniff');
   headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  headers.set('Cross-Origin-Resource-Policy', 'same-site');
+  headers.set('Permissions-Policy', PERMISSIONS_POLICY);
+  headers.set('X-Frame-Options', 'DENY');
+  headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   return headers;
 }
 
@@ -600,7 +630,8 @@ export default {
         })(),
       );
 
-      return new Response(originHtml, { status: 200, headers });
+      const localizedOriginHtml = await localizeHtmlShell(originHtml, lang, normalizedPath, canonicalHost);
+      return new Response(localizedOriginHtml, { status: 200, headers });
     }, request);
   },
 };

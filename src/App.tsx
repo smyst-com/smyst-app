@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import LangSwitcher from '@/components/LangSwitcher'
 import type { NavItem } from '@/components/MobileNav'
-import { useLanguage } from '@/lib/i18n'
+import { DEFAULT_LANG, SUPPORTED_LANGS, useLanguage, type SupportedLang } from '@/lib/i18n'
 import {
   categoryFacets,
   isNewProfile,
@@ -335,8 +335,25 @@ const viewPaths: Record<Exclude<AppView, 'twin-profile' | 'not-found'>, string> 
   dashboard: '/dashboard',
 }
 
+function splitLocalizedPath(pathname: string): { langPrefix: SupportedLang | null; appPath: string } {
+  const parts = pathname.split('/').filter(Boolean)
+  const maybeLang = parts[0] as SupportedLang | undefined
+  if (maybeLang && SUPPORTED_LANGS.includes(maybeLang)) {
+    const rest = parts.slice(1).join('/')
+    return { langPrefix: maybeLang, appPath: rest ? `/${rest}` : '/' }
+  }
+  return { langPrefix: null, appPath: pathname || '/' }
+}
+
+function localizedPath(path: string): string {
+  const { langPrefix } = splitLocalizedPath(window.location.pathname)
+  if (!langPrefix || langPrefix === DEFAULT_LANG) return path
+  if (path === '/') return `/${langPrefix}`
+  return `/${langPrefix}${path}`
+}
+
 function initialRoute(): { view: AppView; profileSlug: string | null; privateTwinId: string | null } {
-  const path = window.location.pathname
+  const { appPath: path } = splitLocalizedPath(window.location.pathname)
   if (path === '/') return { view: 'landing', profileSlug: null, privateTwinId: null }
   if (path.startsWith('/t/')) {
     return { view: 'twin-profile', profileSlug: decodeURIComponent(path.slice(3)), privateTwinId: null }
@@ -399,7 +416,7 @@ export default function App() {
     setProfileSlug(null)
     setPrivateTwinId(null)
     setCurrentView(view)
-    if (view !== 'twin-profile' && view !== 'not-found') window.history.pushState({}, '', viewPaths[view])
+    if (view !== 'twin-profile' && view !== 'not-found') window.history.pushState({}, '', localizedPath(viewPaths[view]))
     window.scrollTo(0, 0)
   }
 
@@ -853,6 +870,7 @@ function SmystStartPage({
   const [selectedTwin, setSelectedTwin] = useState<StartTwin | null>(null)
   const [realStartTwins, setRealStartTwins] = useState<StartTwin[]>([])
   const [profilesLoaded, setProfilesLoaded] = useState(false)
+  const [profilesLoadError, setProfilesLoadError] = useState('')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -941,36 +959,46 @@ function SmystStartPage({
     const loadRealProfiles = async () => {
       if (auth.status === 'loading') return
       setProfilesLoaded(false)
-      if (auth.status !== 'authenticated') {
-        const publicProfiles = await twinMvp.listPublicTwins()
+      setProfilesLoadError('')
+      try {
+        if (auth.status !== 'authenticated') {
+          const publicProfiles = await twinMvp.listPublicTwins()
+          if (!alive) return
+          const next = (publicProfiles ?? [])
+            .filter(isCompletePublicProfile)
+            .map(publicProfileToStartTwin)
+          setRealStartTwins(next)
+          setSelectedTwin(null)
+          setProfilesLoaded(true)
+          return
+        }
+
+        const [twins, publicProfiles, chats] = await Promise.all([
+          twinMvp.listTwins(),
+          twinMvp.listPublicTwins(),
+          twinMvp.listTwinChats(),
+        ])
         if (!alive) return
-        const next = (publicProfiles ?? [])
-          .filter(isCompletePublicProfile)
-          .map(publicProfileToStartTwin)
+        const usage = usageByTwinId(chats)
+        const ownProfiles = (twins ?? [])
+          .filter(isCompleteTwinRecord)
+          .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug)))
+        const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
+        const publicStartProfiles = (publicProfiles ?? [])
+          .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug))
+          .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
+        const next = [...ownProfiles, ...publicStartProfiles]
         setRealStartTwins(next)
+        setSelectedTwin((current) => (current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null))
+        setProfilesLoaded(true)
+      } catch (err) {
+        if (!alive) return
+        const message = err instanceof Error ? err.message : 'Profile konnten nicht geladen werden.'
+        setProfilesLoadError(message)
+        setRealStartTwins([])
         setSelectedTwin(null)
         setProfilesLoaded(true)
-        return
       }
-
-      const [twins, publicProfiles, chats] = await Promise.all([
-        twinMvp.listTwins(),
-        twinMvp.listPublicTwins(),
-        twinMvp.listTwinChats(),
-      ])
-      if (!alive) return
-      const usage = usageByTwinId(chats)
-      const ownProfiles = (twins ?? [])
-        .filter(isCompleteTwinRecord)
-        .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug)))
-      const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
-      const publicStartProfiles = (publicProfiles ?? [])
-        .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug))
-        .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
-      const next = [...ownProfiles, ...publicStartProfiles]
-      setRealStartTwins(next)
-      setSelectedTwin((current) => (current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null))
-      setProfilesLoaded(true)
     }
 
     void loadRealProfiles()
@@ -1162,6 +1190,29 @@ function SmystStartPage({
       </div>
     )
   }
+
+  const renderProfileLoadingState = () => (
+    <div className="smyst-glass-panel min-h-[260px] border-b border-white/[0.08] px-4 py-5 sm:min-h-[320px] sm:px-6">
+      <div className="mb-4">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">Profilentdeckung</p>
+        <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
+          Echte KI-Profile werden geladen...
+        </p>
+      </div>
+      <div className="grid gap-3">
+        {[0, 1, 2].map((item) => (
+          <div key={item} className="flex min-h-[92px] animate-pulse overflow-hidden border border-white/[0.08] bg-white/[0.035]">
+            <div className="h-[92px] w-[92px] shrink-0 bg-white/[0.06]" />
+            <div className="flex flex-1 flex-col justify-center gap-2 px-4">
+              <div className="h-4 w-3/5 rounded-sm bg-white/[0.08]" />
+              <div className="h-3 w-2/5 rounded-sm bg-white/[0.06]" />
+              <div className="h-3 w-1/2 rounded-sm bg-white/[0.05]" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   const streamText = async (messageId: string, content: string) => {
     const chars = Array.from(content)
@@ -1789,8 +1840,9 @@ function SmystStartPage({
 
       <section ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto">
         <div className="min-h-full">
+          {!selectedTwin && !showNamePicker && !profilesLoaded && renderProfileLoadingState()}
           {!selectedTwin && !showNamePicker && realStartTwins.length > 0 && (
-            <div className="smyst-glass-panel border-b border-white/[0.08]">
+            <div className="smyst-glass-panel min-h-[260px] border-b border-white/[0.08] sm:min-h-[320px]">
               <div className="border-b border-white/[0.08] px-4 py-3">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">Profilentdeckung</p>
                 <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
@@ -1803,8 +1855,18 @@ function SmystStartPage({
               {renderDiscoveryRail('Kürzlich genutzt', recentTwins)}
             </div>
           )}
-          {!selectedTwin && !showNamePicker && profilesLoaded && realStartTwins.length === 0 && (
-            <div className="grid min-h-[220px] place-items-center px-5 py-10 text-center">
+          {!selectedTwin && !showNamePicker && profilesLoaded && profilesLoadError && (
+            <div className="grid min-h-[260px] place-items-center px-5 py-10 text-center sm:min-h-[320px]">
+              <div className="max-w-[30rem]">
+                <p className="text-base font-bold text-[#d5dbe5]">Profile konnten gerade nicht geladen werden</p>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-[#8e97a8]">
+                  Bitte Verbindung prüfen oder gleich eine Nachricht schreiben. Die App bleibt bedienbar.
+                </p>
+              </div>
+            </div>
+          )}
+          {!selectedTwin && !showNamePicker && profilesLoaded && realStartTwins.length === 0 && !profilesLoadError && (
+            <div className="grid min-h-[260px] place-items-center px-5 py-10 text-center sm:min-h-[320px]">
               <div className="max-w-[28rem]">
                 <p className="text-base font-bold text-[#d5dbe5]">Noch keine echten KI-Profile sichtbar</p>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-[#8e97a8]">
