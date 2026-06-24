@@ -93,8 +93,8 @@ zone_name = "smyst.com"
 [env.auth.vars]
 CANONICAL_HOST = "https://smyst.com"
 ORIGIN_URL = "https://smyst-vite-app.pages.dev"
-SMYST_OWNER_GITHUB_IDS = ""
-SMYST_OWNER_EMAILS = ""
+SMYST_OWNER_GITHUB_IDS = "284471437"
+SMYST_OWNER_EMAILS = "smyst247@gmail.com"
 SMYST_ADMIN_GITHUB_IDS = ""
 SMYST_ADMIN_EMAILS = ""
 
