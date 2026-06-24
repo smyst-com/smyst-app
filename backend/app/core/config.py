@@ -23,11 +23,11 @@ class Settings(BaseSettings):
     redis_url: str = Field(default="redis://redis:6379/0", validation_alias="REDIS_URL")
 
     idrive_e2_endpoint: str = Field(
-        default="https://s3.eu-central-1.idrivee2.com",
+        default="https://s3.us-west-2.idrivee2.com",
         validation_alias="IDRIVE_E2_ENDPOINT",
     )
-    idrive_e2_bucket: str = Field(default="smyst-private", validation_alias="IDRIVE_E2_BUCKET")
-    idrive_e2_region: str = Field(default="eu-central-1", validation_alias="IDRIVE_E2_REGION")
+    idrive_e2_bucket: str = Field(default="smyst-memories", validation_alias="IDRIVE_E2_BUCKET")
+    idrive_e2_region: str = Field(default="us-west-2", validation_alias="IDRIVE_E2_REGION")
     idrive_e2_access_key: str | None = Field(default=None, validation_alias="IDRIVE_E2_ACCESS_KEY")
     idrive_e2_secret_key: str | None = Field(default=None, validation_alias="IDRIVE_E2_SECRET_KEY")
 

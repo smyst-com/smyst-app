@@ -50,9 +50,9 @@ const deployments = [
     routes: ['smyst.com/storage/*'],
     vars: {
       ...commonVars,
-      IDRIVE_E2_ENDPOINT: 'https://s3.eu-central-1.idrivee2.com',
-      IDRIVE_E2_BUCKET: 'twynt-memories',
-      IDRIVE_E2_REGION: 'eu-central-1',
+      IDRIVE_E2_ENDPOINT: 'https://s3.us-west-2.idrivee2.com',
+      IDRIVE_E2_BUCKET: 'smyst-memories',
+      IDRIVE_E2_REGION: 'us-west-2',
       IDRIVE_E2_MAX_FILE_BYTES: '52428800',
       IDRIVE_E2_USER_MONTHLY_BYTES: '52428800',
       IDRIVE_E2_GLOBAL_BYTES: '1073741824',

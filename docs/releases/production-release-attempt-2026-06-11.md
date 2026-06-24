@@ -51,10 +51,10 @@ Observed Cloudflare state:
 - `smyst-app` shows `No Git connection`.
 - `https://smyst-app.pages.dev/` also serves the old inline HTML app.
 - The dashboard `Create deployment` flow is a manual asset upload flow.
-- Existing Workers visible in the account still use legacy `twynt-*` names:
-  - `twynt-storage`
-  - `twynt-auth`
-  - `twynt-translate`
+- Target Worker names now use the `smyst-*` prefix:
+  - `smyst-storage`
+  - `smyst-auth`
+  - `smyst-translate`
 - No `smyst-auth`, `smyst-api`, or `smyst-storage` Worker deployment was visible in the Workers & Pages overview.
 
 Conclusion: the current production problem is not only a custom-domain routing issue. The active `smyst-app` Pages deployment itself is stale and must be replaced by a fresh artifact from the current app source.

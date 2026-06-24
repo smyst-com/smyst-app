@@ -112,8 +112,9 @@ http://localhost:8787/auth/github/callback
 Bucket:
 
 ```text
-Bucket name: twynt-memories
-Region: EU region preferred
+Bucket name: smyst-memories
+Region: Los Angeles
+Region code: us-west-2
 ```
 
 Cloudflare Storage-Worker Secrets:

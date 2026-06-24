@@ -54,7 +54,9 @@ npx wrangler secret put AUTH_HMAC_SECRET --env auth
 IDrive e2 ist der zentrale S3-kompatible Speicher.
 
 ```text
-Bucket name: twynt-memories
+Bucket name: smyst-memories
+Region: Los Angeles
+Region code: us-west-2
 Object layout:
 users/{userId}/uploads/{category}/{fileId}-{filename}
 ```
