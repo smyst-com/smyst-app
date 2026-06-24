@@ -1540,11 +1540,16 @@ function SmystStartPage({
 
   const loginOptions = [
     {
-      provider: 'GH',
-      title: 'Mit GitHub fortfahren',
-      detail: 'Aktiver sicherer Login',
-      status: 'Aktiv',
-      onClick: () => auth.signInWithGitHub('/'),
+      provider: 'ID',
+      title: 'Normaler Login',
+      detail: 'E-Mail und Passwort',
+      status: 'Bald',
+    },
+    {
+      provider: 'GO',
+      title: 'Mit Google fortfahren',
+      detail: 'Vorbereitet fuer breite Nutzung',
+      status: 'Bald',
     },
     {
       provider: 'AP',
@@ -1553,10 +1558,11 @@ function SmystStartPage({
       status: 'Bald',
     },
     {
-      provider: 'GO',
-      title: 'Mit Google fortfahren',
-      detail: 'Vorbereitet fuer breite Nutzung',
-      status: 'Bald',
+      provider: 'GH',
+      title: 'Mit GitHub fortfahren',
+      detail: 'Aktiver sicherer Login',
+      status: 'Aktiv',
+      onClick: () => auth.signInWithGitHub('/'),
     },
     {
       provider: '@',
