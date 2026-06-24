@@ -497,6 +497,9 @@
 
   .smyst-start-shell-glass-light .text-white,
   .smyst-start-shell-glass-light .text-\[\#f4f7fb\],
+  .smyst-start-shell-glass-light .text-\[\#edf4ff\],
+  .smyst-start-shell-glass-light .text-\[\#dfe8f7\],
+  .smyst-start-shell-glass-light .text-\[\#dff8ff\],
   .smyst-start-shell-glass-light .text-\[\#d5dbe5\] {
     color: #111722 !important;
   }
@@ -504,6 +507,8 @@
   .smyst-start-shell-glass-light .text-\[\#8e97a8\],
   .smyst-start-shell-glass-light .text-\[\#9aa3b2\],
   .smyst-start-shell-glass-light .text-\[\#9aa6b7\],
+  .smyst-start-shell-glass-light .text-\[\#aab4c4\],
+  .smyst-start-shell-glass-light .text-\[\#c8d2df\],
   .smyst-start-shell-glass-light .text-\[\#aeb6c4\] {
     color: #5d6776 !important;
   }
@@ -700,6 +705,9 @@
 
   .smyst-start-shell-theme-light .text-white,
   .smyst-start-shell-theme-light .text-\[\#f4f7fb\],
+  .smyst-start-shell-theme-light .text-\[\#edf4ff\],
+  .smyst-start-shell-theme-light .text-\[\#dfe8f7\],
+  .smyst-start-shell-theme-light .text-\[\#dff8ff\],
   .smyst-start-shell-theme-light .text-\[\#d5dbe5\] {
     color: #111722 !important;
   }
@@ -707,6 +715,8 @@
   .smyst-start-shell-theme-light .text-\[\#8e97a8\],
   .smyst-start-shell-theme-light .text-\[\#9aa3b2\],
   .smyst-start-shell-theme-light .text-\[\#9aa6b7\],
+  .smyst-start-shell-theme-light .text-\[\#aab4c4\],
+  .smyst-start-shell-theme-light .text-\[\#c8d2df\],
   .smyst-start-shell-theme-light .text-\[\#aeb6c4\] {
     color: #5d6776 !important;
   }

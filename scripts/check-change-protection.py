@@ -64,6 +64,8 @@ def main() -> None:
         "No paid add-on service may be introduced",
         "No service may be introduced if it can automatically create cost",
         "IDrive e2 remains central storage for files, media, models, backups and data",
+        "Do not remove curated profile image files, imageFile metadata or public profile visibility without written approval",
+        "Do not weaken light theme profile text contrast without written approval and visual verification",
         "If billion-user/day scale is unrealistic on free-only limits, optimize and measure free-only instead of adding paid infrastructure",
     ]:
         require(item in hard_rules, f"hard architecture rule missing: {item}")
@@ -79,9 +81,12 @@ def main() -> None:
         "scripts/preflight-release.sh",
         "scripts/test-all.sh",
         "scripts/check-bottom-icon-regression.mjs",
+        "scripts/check-profile-image-design-guard.py",
         "workers/storage-idrive.ts",
         "workers/api.ts",
+        "workers/curated-public-twin-data.ts",
         "src/App.tsx",
+        "src/index.css",
     ]:
         require(rel_path in critical_files, f"critical production file not protected: {rel_path}")
 
@@ -121,8 +126,16 @@ def main() -> None:
         "IDrive e2 object keys are user-scoped",
         "storage downloads require KV metadata status uploaded",
         "upload-complete verifies IDrive object via signed HEAD",
+        "curated public profiles require local raster profile images with matching size metadata",
+        "light theme profile names and subtitles require protected contrast overrides",
     ]:
         require(item in integrity, f"data integrity protection missing: {item}")
+
+    configuration = set(data.get("configurationProtections", []))
+    require(
+        "check-profile-image-design-guard.py blocks missing curated profile images and light theme contrast regressions" in configuration,
+        "configuration protection missing profile image/design guard",
+    )
 
     print("change protection manifest validation passed")
 

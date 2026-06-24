@@ -41,6 +41,8 @@
     "No service may be introduced if it can automatically create cost",
     "IDrive e2 remains central storage for files, media, models, backups and data",
     "Do not delete profiles, chats, images, videos or user data without explicit destructive approval",
+    "Do not remove curated profile image files, imageFile metadata or public profile visibility without written approval",
+    "Do not weaken light theme profile text contrast without written approval and visual verification",
     "Do not perform risky migrations without explicit approval and rollback evidence",
     "Do not change design, CSS or product behavior without a clear task",
     "If billion-user/day scale is unrealistic on free-only limits, optimize and measure free-only instead of adding paid infrastructure"
@@ -70,6 +72,7 @@
     "scripts/check-change-protection.py",
     "scripts/check-dist-artifact.sh",
     "scripts/check-final-readiness.py",
+    "scripts/check-profile-image-design-guard.py",
     "scripts/check-surface-protection.py",
     "scripts/live-test.sh",
     "scripts/preflight-release.sh",
@@ -140,6 +143,7 @@
   ],
   "configurationProtections": [
     "validate-foundation.py enforces free-only architecture",
+    "check-profile-image-design-guard.py blocks missing curated profile images and light theme contrast regressions",
     "check-backup-recovery.py enforces backup/restore contract",
     "check-bottom-icon-regression.mjs protects bottom chat icon actions and fallbacks",
     "check-surface-protection.py enforces design, CSS, database, API and GitHub Actions guardrails",
@@ -158,6 +162,8 @@
     "IDrive e2 object keys are user-scoped",
     "storage downloads require KV metadata status uploaded",
     "upload-complete verifies IDrive object via signed HEAD",
+    "curated public profiles require local raster profile images with matching size metadata",
+    "light theme profile names and subtitles require protected contrast overrides",
     "account storage deletion marks metadata deleted",
     "backup manifest excludes live sessions and OAuth state from restore artifacts"
   ]

@@ -10,6 +10,7 @@ python3 scripts/check-backup-recovery.py
 python3 scripts/check-change-protection.py
 python3 scripts/check-surface-protection.py
 python3 scripts/check-final-readiness.py
+python3 scripts/check-profile-image-design-guard.py
 
 echo "== Shell syntax =="
 for script in scripts/*.sh; do
