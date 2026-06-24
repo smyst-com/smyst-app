@@ -86,6 +86,9 @@ jobs:
       - name: Validate profile memory contract
         run: python3 scripts/check-profile-memory-contract.py
 
+      - name: Validate curated profile images and light theme contrast
+        run: python3 scripts/check-profile-image-design-guard.py
+
       - name: Build frontend
         run: npm run build
         env:

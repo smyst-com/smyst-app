@@ -1,5 +1,7 @@
 {
-  "version": "2026-06-11",
+  "version": "2026-06-24",
+  "lastVerifiedDate": "2026-06-24",
+  "lastVerifiedScope": "curated public profile images, light theme profile contrast, CI release guard and live smyst.com profile image API",
   "policy": {
     "protectedProductionMode": true,
     "productionDeployRequiresManualApproval": true,
@@ -151,6 +153,26 @@
     "live-test.sh blocks noindex root and HTML fallbacks",
     "preflight-release.sh blocks production without approvals"
   ],
+  "profileImageDesignGuard": {
+    "status": "enabled",
+    "lastVerifiedDate": "2026-06-24",
+    "requiredLocalCheck": "python3 scripts/check-profile-image-design-guard.py",
+    "requiredCiWorkflow": ".github/workflows/deploy.yml",
+    "requiredCiStep": "Validate curated profile images and light theme contrast",
+    "protectedProfileCount": 100,
+    "rules": [
+      "Every curated public profile must have imageFile metadata.",
+      "Every curated public profile image must be a local raster image.",
+      "No curated public profile may use /api/public/twin-images SVG fallback.",
+      "Image size metadata must match the committed local file.",
+      "Light theme profile names and subtitles must keep readable contrast overrides."
+    ],
+    "liveValidation": [
+      "https://smyst.com/api/public/twins must return 100 profiles.",
+      "Every live public twin must include an imageUrl.",
+      "No live imageUrl may contain /api/public/twin-images/."
+    ]
+  },
   "rollbackProtections": [
     "Git revert or cherry-pick rollback path",
     "Cloudflare Pages deployment rollback path",

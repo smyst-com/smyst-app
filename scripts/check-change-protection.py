@@ -20,6 +20,14 @@ def require(value: bool, message: str) -> None:
 
 def main() -> None:
     data = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    require(data.get("version") >= "2026-06-24", "manifest version must include the 2026-06-24 profile image/design guard update")
+    require(data.get("lastVerifiedDate") >= "2026-06-24", "manifest must store lastVerifiedDate for the profile image/design guard")
+    require(
+        "profile image" in data.get("lastVerifiedScope", "").lower()
+        and "light theme" in data.get("lastVerifiedScope", "").lower(),
+        "manifest lastVerifiedScope must mention profile images and light theme protection",
+    )
+
     policy = data.get("policy", {})
     for key in [
         "protectedProductionMode",
@@ -136,6 +144,30 @@ def main() -> None:
         "check-profile-image-design-guard.py blocks missing curated profile images and light theme contrast regressions" in configuration,
         "configuration protection missing profile image/design guard",
     )
+
+    guard = data.get("profileImageDesignGuard", {})
+    require(guard.get("status") == "enabled", "profileImageDesignGuard must stay enabled")
+    require(guard.get("lastVerifiedDate") >= "2026-06-24", "profileImageDesignGuard must store verification date")
+    require(guard.get("requiredLocalCheck") == "python3 scripts/check-profile-image-design-guard.py", "profileImageDesignGuard must point to local check")
+    require(guard.get("requiredCiWorkflow") == ".github/workflows/deploy.yml", "profileImageDesignGuard must point to CI workflow")
+    require(guard.get("requiredCiStep") == "Validate curated profile images and light theme contrast", "profileImageDesignGuard must point to CI step")
+    require(guard.get("protectedProfileCount") == 100, "profileImageDesignGuard must protect exactly 100 curated public profiles")
+    guard_rules = set(guard.get("rules", []))
+    for item in [
+        "Every curated public profile must have imageFile metadata.",
+        "Every curated public profile image must be a local raster image.",
+        "No curated public profile may use /api/public/twin-images SVG fallback.",
+        "Image size metadata must match the committed local file.",
+        "Light theme profile names and subtitles must keep readable contrast overrides.",
+    ]:
+        require(item in guard_rules, f"profileImageDesignGuard missing rule: {item}")
+    live_validation = set(guard.get("liveValidation", []))
+    for item in [
+        "https://smyst.com/api/public/twins must return 100 profiles.",
+        "Every live public twin must include an imageUrl.",
+        "No live imageUrl may contain /api/public/twin-images/.",
+    ]:
+        require(item in live_validation, f"profileImageDesignGuard missing live validation: {item}")
 
     print("change protection manifest validation passed")
 
