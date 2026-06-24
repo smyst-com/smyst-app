@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-sitemap.mjs && tsc --noEmit && vite build",
+    "deploy:idrive": "node scripts/deploy-idrive-static.mjs",
+    "deploy:idrive:dry-run": "node scripts/deploy-idrive-static.mjs --dry-run",
     "preview": "vite preview",
     "app:assets": "node scripts/generate-app-assets.mjs",
     "app:sync": "npm run build && npm run app:assets && cap sync",

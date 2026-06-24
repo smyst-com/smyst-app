@@ -1,120 +1,116 @@
 # Smyst Infrastructure Setup
 
-Production folgt ausschliesslich der Free-Only-Regel:
+## Verbindliches Konzept
 
-- GitHub.com Free fuer Code, CI/CD, Dokumentation und Deployment-Pipelines
-- Cloudflare.com Free fuer DNS, SSL, CDN, Pages, Workers, KV, WAF-Basis und Edge
-- IDrive e2 als zentraler Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten
+Die Infrastruktur fuer `smyst.com` folgt diesem Aufbau:
 
-Alle anderen Dienste sind in Production optional/verboten und duerfen nicht als Start- oder Betriebsbedingung auftauchen.
+- Spaceship: Domain, DNS und Subdomains.
+- GitHub Free: Code, Releases und Actions.
+- IDrive e2: 99 % aller Speicheraufgaben, Hauptspeicher und statisches Hosting.
+- Salad.com: nur bei Bedarf fuer Rechenarbeit.
+- PWA zuerst, native Apps spaeter.
 
-## 1. GitHub
-
-```text
-Owner: smyst-com
-Repository: smyst-app
-Visibility: Private
-```
-
-GitHub Actions fuehrt nur Free-Only-kompatible Checks, Builds und Cloudflare-Deploys aus.
-
-## 2. Cloudflare
-
-Cloudflare-Ressourcen:
+## Subdomains
 
 ```text
-Pages project: smyst-app
-Domain: smyst.com
-Workers: smyst-translate, smyst-warmup, smyst-auth, smyst-storage, smyst-api
-KV namespaces: TRANSLATIONS, TRANSLATIONS_PREVIEW, WARMUP_CONFIG, SESSIONS, OAUTH_STATE, METADATA
+smyst.com        -> Website/PWA
+app.smyst.com    -> Web-App
+api.smyst.com    -> API nur bei Bedarf, bevorzugt Salad oder kleiner API-Dienst
+cdn.smyst.com    -> IDrive e2 Assets und oeffentliche Dateien
+backup.smyst.com -> private IDrive e2 Backups
 ```
 
-Pages build:
+## IDrive e2 Buckets
+
+Empfohlene Buckets:
 
 ```text
-Framework preset: Vite
-Build command: npm run build
-Build output directory: dist
+smyst.com
+app.smyst.com
+cdn.smyst.com
+backup.smyst.com
+smyst-memories
 ```
 
-## 3. Auth
+Aktueller Stand:
 
-Production-Login nutzt GitHub OAuth. Google OAuth ist deaktiviert.
+- Die Buckets `smyst.com`, `app.smyst.com`, `cdn.smyst.com`, `backup.smyst.com` und `smyst-memories` sind in der Region Los Angeles (`us-west-2`) angelegt.
+- Die PWA-Dateien sind nach `smyst.com` und `app.smyst.com` hochgeladen.
+- Die CDN-Dateien sind nach `cdn.smyst.com` hochgeladen.
+- `smyst.com` zeigt den IDrive-Endpunkt `smyst.com.s3.us-west-2.idrivee2.com`.
+- Der bestehende Bucket `smyst.com` ist aktuell privat; die IDrive-Konsole deaktiviert den Umschalter auf `Oeffentlich`.
 
-Secrets:
+Oeffentlich:
 
-```bash
-npx wrangler secret put GITHUB_OAUTH_CLIENT_ID --env auth
-npx wrangler secret put GITHUB_OAUTH_CLIENT_SECRET --env auth
-npx wrangler secret put AUTH_HMAC_SECRET --env auth
-```
+- `smyst.com`
+- `app.smyst.com`
+- `cdn.smyst.com`
 
-## 4. IDrive e2
+Privat:
 
-IDrive e2 ist der zentrale S3-kompatible Speicher.
+- `backup.smyst.com`
+- `smyst-memories`
+
+## IDrive e2 Speicherumfang
+
+IDrive e2 ist der Primaerspeicher fuer:
+
+- Bilder, Videos, Audio, PDFs und Profilbilder.
+- Nutzer-Uploads, temporaere Uploads und grosse Mediendateien.
+- App-/PWA-Dateien, statische Website-Dateien, Downloads und Release-Dateien.
+- Backups, Exporte, Admin-Exporte, Versionen und verschluesselte Sicherungen.
+- Logs, Fehlerberichte und Audit-Logs.
+- KI-Profilwissen, Prompt-Dateien, Chat-Archive und Wissensdaten.
+- Modell-Dateien, Trainingsdaten und Medien-Archiv.
+
+GitHub Free ist nur fuer Code, Versionierung, Releases und Actions. Spaceship ist nur fuer Domain/DNS. Salad.com ist nur fuer echte Rechenarbeit wie API, KI, Verarbeitung und Cronjobs.
+
+## Spaceship DNS
+
+Spaceship soll die DNS-Zone verwalten.
+
+Empfohlene Records:
 
 ```text
-Bucket name: smyst-memories
-Region: Los Angeles
-Region code: us-west-2
-Object layout:
-users/{userId}/uploads/{category}/{fileId}-{filename}
+@      ALIAS  <IDrive e2 website/custom-domain target>
+app    CNAME  <IDrive e2 website/custom-domain target>
+cdn    CNAME  <IDrive e2 public/custom-domain target>
+api    CNAME  <Salad/API target, nur wenn API aktiv ist>
+backup CNAME  <IDrive e2 target, nur wenn wirklich benoetigt>
 ```
 
-Secrets:
+DNS darf erst auf IDrive e2 umgestellt werden, wenn die oeffentlichen Buckets wirklich per Browser erreichbar sind. Bis dahin bleibt die bisherige Auslieferung als Uebergang aktiv, damit `smyst.com` nicht ausfaellt.
 
-```bash
-npx wrangler secret put IDRIVE_E2_ACCESS_KEY --env storage
-npx wrangler secret put IDRIVE_E2_SECRET_KEY --env storage
-```
+## GitHub Actions
 
-Vars:
+GitHub Actions baut die PWA und synchronisiert das Build-Artefakt nach IDrive e2.
+
+Minimaler Ablauf:
 
 ```text
-IDRIVE_E2_ENDPOINT
-IDRIVE_E2_BUCKET
-IDRIVE_E2_REGION
-IDRIVE_E2_MAX_FILE_BYTES
-IDRIVE_E2_USER_MONTHLY_BYTES
-IDRIVE_E2_GLOBAL_BYTES
+1. npm build
+2. dist/ pruefen
+3. dist/ nach IDrive e2 Website-Bucket synchronisieren
+4. optional: cdn assets nach cdn.smyst.com synchronisieren
 ```
 
-## 5. Nicht erlaubte Production-Abhaengigkeiten
+## Salad
 
-Diese Bausteine duerfen nicht als Production-Pflicht verwendet werden:
+Salad bleibt ohne laufende Container, bis echte Rechenarbeit benoetigt wird.
 
-```text
-VPS / RackNerd
-Docker-Production
-FastAPI-Backend
-PostgreSQL / Redis / pgvector
-Caddy
-DeepL / Google Translate
-Google OAuth
-GA4
-Google Search Console als Pflichtbestandteil
-```
+Erlaubte Nutzung:
 
-## 6. Deploy Order
+- Batch-Jobs
+- AI-Jobs
+- Medienverarbeitung
+- temporaere API
 
-```text
-1. Code nach GitHub pushen
-2. GitHub Actions Free-Only Checks bestehen lassen
-3. Cloudflare Pages Artifact bauen
-4. Cloudflare Pages deployen
-5. Cloudflare Workers deployen
-6. Storage/Auth/Translation smoke testen
-```
+Nicht erlaubt als Startzustand:
 
-## 7. Skalierung
+- dauerhaft laufende Container ohne Nutzen
+- monatliche Grundgebuehr
+- sensible Daten dauerhaft in Salad speichern
 
-Die Free-Only-Architektur ist eine Kosten- und Abhaengigkeitsregel fuer den aktuellen Stand. Die langfristige Milliarden-Nutzer-Vision bleibt ein Architekturziel, ist aber mit kostenlosen Kontingenten allein nicht erreichbar.
+## Cloudflare Legacy
 
-## 8. Datenablage
-
-Siehe `docs/FREE_ONLY_DATA_MAP.md`.
-
-- Cloudflare KV: Sessions, OAuth-State, Quotas, Upload-Intent, Upload-Status, kleine Indizes.
-- IDrive e2: Dateien, Medien, Dokumente, Profilbilder, Uploads, Backups, KI-Zwilling-Daten, Archivobjekte.
-- GitHub: Code und Dokumentation.
-- Cloudflare Pages: statische Web-/PWA-Artefakte.
+Cloudflare Pages/Workers/KV koennen als Uebergang existieren. Ziel ist aber, dass die Startversion mit Spaceship DNS und IDrive e2 als Hauptsystem arbeitet.

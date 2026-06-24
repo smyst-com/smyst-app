@@ -1,0 +1,61 @@
+name: IDrive e2 Static Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_approval:
+        description: 'IDrive e2 deploy freigeben. Exakt "Ja OK" eintragen.'
+        required: true
+        type: string
+      set_public_policy:
+        description: "Public read policy setzen. Erst aktivieren, wenn IDrive Public Bucket Access freigeschaltet hat."
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: idrive-static-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy PWA to IDrive e2
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Validate written approval
+        env:
+          RELEASE_APPROVAL: ${{ inputs.release_approval }}
+        run: test "$RELEASE_APPROVAL" = "Ja OK"
+
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_CANONICAL_HOST: https://smyst.com
+
+      - name: Validate dist artifact
+        run: sh scripts/check-dist-artifact.sh
+
+      - name: Deploy dist to IDrive e2
+        run: node scripts/deploy-idrive-static.mjs
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          IDRIVE_E2_ENDPOINT: ${{ vars.IDRIVE_E2_ENDPOINT || 'https://s3.us-west-2.idrivee2.com' }}
+          IDRIVE_E2_REGION: ${{ vars.IDRIVE_E2_REGION || 'us-west-2' }}
+          IDRIVE_E2_SITE_BUCKET: ${{ vars.IDRIVE_E2_SITE_BUCKET || 'smyst.com' }}
+          IDRIVE_E2_APP_BUCKET: ${{ vars.IDRIVE_E2_APP_BUCKET || 'app.smyst.com' }}
+          IDRIVE_E2_CDN_BUCKET: ${{ vars.IDRIVE_E2_CDN_BUCKET || 'cdn.smyst.com' }}
+          IDRIVE_E2_SET_PUBLIC_POLICY: ${{ inputs.set_public_policy }}

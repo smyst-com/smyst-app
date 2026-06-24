@@ -1,53 +1,50 @@
 # smyst.com
 
-smyst.com ist eine Free-Only-MVP-Plattform fuer digitale KI-Zwillinge.
+smyst.com ist eine guenstige PWA-first Plattform fuer digitale AI Twins.
 
-## Production-Regel
+## Zielarchitektur
 
-Production verwendet ausschliesslich:
+- Spaceship: Domain `smyst.com`, DNS und Subdomains.
+- GitHub Free: Quellcode, Versionierung, Releases und GitHub Actions.
+- IDrive e2: 99 % aller Speicheraufgaben fuer Dateien, Medien, App-/PWA-Dateien, statische Website-Dateien, Uploads, Backups, Logs, Exporte, AI-Datenartefakte und Archive.
+- Salad.com: nur bei Bedarf fuer API/Worker/AI/Batch-Jobs oder temporaere Rechenleistung.
+- PWA: Web-App ueber `smyst.com`, installierbar auf Desktop, Android und iOS.
+- iOS/Android/Huawei Apps: spaeter als Wrapper oder native Apps, die Inhalte/API von `smyst.com` laden.
 
-- GitHub.com Free fuer Code, Pull Requests, Dokumentation und GitHub Actions.
-- Cloudflare.com Free fuer DNS, TLS, CDN, Pages, Workers, KV, Caching und Edge-Auslieferung.
-- IDrive e2 als zentralen S3-kompatiblen Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und Twin-Daten, nur mit harten Quotas und Kostenbremse.
+## Domainstruktur
 
-Keine Production-Funktion darf einen kostenpflichtigen Zusatzdienst voraussetzen.
+- `smyst.com` -> Website/PWA.
+- `app.smyst.com` -> Web-App.
+- `api.smyst.com` -> nur wenn noetig ueber Salad oder einen kleinen API-Dienst.
+- `cdn.smyst.com` -> IDrive e2 fuer Dateien und Assets.
+- `backup.smyst.com` -> private Backups in IDrive e2.
 
-## Phase 1
+## IDrive e2 99%-Speicherregel
 
-Phase 1 ist ein Free-Only-MVP. Die Milliarden-Nutzer-Skalierung ist die Langfristvision und kein Leistungsversprechen der kostenlosen Infrastruktur.
+IDrive e2 uebernimmt 99 % aller Speicheraufgaben. Alles, was Datei, Medienobjekt, Archiv, Export, Log oder AI-Datenartefakt ist, gehoert zuerst nach IDrive e2:
 
-## Aktiver Stack
+- Bilder, Videos, Audio, PDFs und Profilbilder
+- Nutzer-Uploads, temporaere Uploads und grosse Mediendateien
+- App-/PWA-Dateien, statische Website-Dateien, Downloads und Release-Dateien
+- Backups, Exporte, Admin-Exporte, Versionen und verschluesselte Sicherungen
+- Logs, Fehlerberichte und Audit-Logs
+- KI-Profilwissen, Prompt-Dateien, Chat-Archive und Wissensdaten
+- Modell-Dateien, Trainingsdaten und Medien-Archiv
 
-- Frontend: Vite, React, TypeScript, PWA, Capacitor.
-- Hosting: Cloudflare Pages Free.
-- API: Cloudflare Workers Free.
-- Kleine Daten: Cloudflare KV Free.
-- Dateien und Backups: IDrive e2.
-- Mehrsprachigkeit: statische Dateien im Repository.
-- Chat: regelbasierter oder simulierter Twin-MVP ohne externe AI-Pflicht.
+IDrive e2 ist nicht der richtige Ort fuer Login, Datenbank, Zahlungen, Echtzeit-Chat, Suche, Live-Admin-Dashboards oder serverseitige API-Logik.
 
-## Wichtige Dokumente
+GitHub Free bleibt nur fuer Code, Versionierung, Releases und GitHub Actions. Spaceship verwaltet Domain und DNS. Salad.com bleibt nur fuer echte Rechenarbeit wie API, KI, Verarbeitung und Cronjobs.
 
-- `docs/ARCHITECTURE.md`
-- `docs/FREE_ONLY_INFRASTRUCTURE.md`
-- `docs/FREE_ONLY_DATA_MAP.md`
-- `docs/FREE_ONLY_SECURITY_PRIVACY.md`
-- `docs/FREE_ONLY_PROFILE_MEMORY_AI_PLAN.md`
-- `docs/FREE_ONLY_PERFORMANCE_MOBILE.md`
-- `docs/FREE_ONLY_NATIVE_APPS.md`
-- `docs/LEGACY_LOCAL_REFERENCES.md`
-- `SETUP.md`
+## Startregel
 
-## Production-Datenablage
+Die guenstigste Start-Version ist:
 
-- GitHub: Code und Dokumentation.
-- Cloudflare Pages: statisches Web/PWA-Artefakt.
-- Cloudflare Workers: API, Auth, Upload-Signing, Chat-MVP und Security.
-- Cloudflare KV: Sessions, Rollen, Quotas, Upload-Status und kleine Metadaten.
-- IDrive e2: Bilder, Videos, Audio, Dokumente, Profilbilder, Backups und Twin-Kontextdaten.
+1. Domain bei Spaceship.
+2. DNS und Subdomains bei Spaceship.
+3. Code auf GitHub.
+4. Statische Web-/PWA-Dateien in IDrive e2.
+5. Medien und Uploads in IDrive e2.
+6. Kleine API nur bauen, wenn Login oder dynamische Funktionen noetig werden.
+7. Salad erst aktivieren, wenn echte Rechenleistung gebraucht wird.
 
-## Lokale Referenzen
-
-Einige Ordner enthalten historische oder experimentelle Arbeit. Sie duerfen lokal nuetzlich bleiben, sind aber keine Production-Pflicht.
-
-Production-Workflows muessen immer gegen die Free-Only-Regel validiert werden.
+Cloudflare ist nicht die Ziel-Hauptarchitektur. Falls Cloudflare noch aktiv ist, gilt es nur als Uebergang/Legacy, bis Spaceship-DNS und IDrive-e2-Hosting fertig umgestellt sind.
