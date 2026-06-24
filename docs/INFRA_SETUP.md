@@ -7,7 +7,7 @@ Die Infrastruktur fuer `smyst.com` folgt diesem Aufbau:
 - Spaceship: Domain, DNS und Subdomains.
 - GitHub Free: Code, Releases und Actions.
 - IDrive e2: 99 % aller Speicheraufgaben, Hauptspeicher und statisches Hosting.
-- Salad.com: nur bei Bedarf fuer Rechenarbeit.
+- Salad.com: nur bei Bedarf fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
 - PWA zuerst, native Apps spaeter.
 
 ## Subdomains
@@ -61,9 +61,9 @@ IDrive e2 ist der Primaerspeicher fuer:
 - Backups, Exporte, Admin-Exporte, Versionen und verschluesselte Sicherungen.
 - Logs, Fehlerberichte und Audit-Logs.
 - KI-Profilwissen, Prompt-Dateien, Chat-Archive und Wissensdaten.
-- Modell-Dateien, Trainingsdaten und Medien-Archiv.
+- Modell-Dateien, Trainingsdaten, Medien-Archiv, App-Builds, APK/AAB/IPA-Dateien, Update-Pakete, Rollback-Dateien, Thumbnails, Video-Vorschauen, Untertitel, Uebersetzungen, statische JSON-Daten, Profil-Datensaetze, Kategorien, Sitemap/SEO-Dateien, Hilfedateien, rechtliche Dokumente, Testberichte, Screenshots, QA-Videos, Datenbank-Backups, Suchindex-Backups, RAG-Dokumente, Embedding-Dateien, Import-/Export-Pakete, Design-Assets, Feature-Config-Dateien, Wartungsseiten, Offline-Dateien, Cache-Dateien, oeffentliche CDN-Dateien und private signierte Dateien.
 
-GitHub Free ist nur fuer Code, Versionierung, Releases und Actions. Spaceship ist nur fuer Domain/DNS. Salad.com ist nur fuer echte Rechenarbeit wie API, KI, Verarbeitung und Cronjobs.
+GitHub Free ist nur fuer Code, Versionierung, Releases und Actions. Spaceship ist nur fuer Domain/DNS. Salad.com ist nur fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
 
 ## Spaceship DNS
 
@@ -103,6 +103,7 @@ Erlaubte Nutzung:
 - Batch-Jobs
 - AI-Jobs
 - Medienverarbeitung
+- Suche und Indexierung
 - temporaere API
 
 Nicht erlaubt als Startzustand:

@@ -11,7 +11,7 @@ Erlaubte Start-Bausteine:
 - Spaceship fuer Domain, DNS und Subdomains.
 - GitHub Free fuer Code, Versionierung, Releases und GitHub Actions.
 - IDrive e2 fuer 99 % aller Speicheraufgaben.
-- Salad.com nur bei Bedarf fuer API/Worker/AI/Batch-Jobs.
+- Salad.com nur bei Bedarf fuer API/Worker/AI/Batch-Jobs, Suche, Indexierung und Cronjobs.
 
 ## Setup-Reihenfolge
 
@@ -49,7 +49,7 @@ Wichtige Regeln:
 - Private Dateien nur ueber signierte URLs ausgeben.
 - API-Keys nur in GitHub Secrets oder Server-/Worker-Umgebung speichern.
 - Backups verschluesseln.
-- IDrive e2 speichert Bilder, Videos, Audio, PDFs, Profilbilder, Nutzer-Uploads, App-/PWA-Dateien, statische Website-Dateien, Downloads, Backups, Exporte, Logs, KI-Profilwissen, Prompt-Dateien, Chat-Archive, Wissensdaten, Modell-Dateien, Trainingsdaten, Versionen, Release-Dateien, Medien-Archiv, Admin-Exporte, Fehlerberichte, Audit-Logs, temporaere Uploads und verschluesselte Sicherungen.
+- IDrive e2 speichert Bilder, Videos, Audio, PDFs, Profilbilder, Nutzer-Uploads, App-/PWA-Dateien, statische Website-Dateien, Downloads, Backups, Exporte, Logs, KI-Profilwissen, Prompt-Dateien, Chat-Archive, Wissensdaten, Modell-Dateien, Trainingsdaten, Versionen, Release-Dateien, Medien-Archiv, Admin-Exporte, Fehlerberichte, Audit-Logs, temporaere Uploads, verschluesselte Sicherungen, App-Builds, APK/AAB/IPA-Dateien, Update-Pakete, Rollback-Dateien, Thumbnails, Video-Vorschauen, Untertitel, Uebersetzungen, statische JSON-Daten, Profil-Datensaetze, Kategorien, Sitemap/SEO-Dateien, Hilfedateien, rechtliche Dokumente, Testberichte, Screenshots, QA-Videos, Datenbank-Backups, Suchindex-Backups, RAG-Dokumente, Embedding-Dateien, Import-/Export-Pakete, Design-Assets, Feature-Config-Dateien, Wartungsseiten, Offline-Dateien, Cache-Dateien, oeffentliche CDN-Dateien und private signierte Dateien.
 
 ## GitHub
 
@@ -75,6 +75,7 @@ Nutzung nur bei Bedarf:
 - Bild-/Videoverarbeitung
 - AI-Funktionen
 - API-Server bei Bedarf
+- Suche und Indexierung
 - Cronjobs/Batch-Verarbeitung
 - Generierung von App-Inhalten
 - temporaere Rechenleistung

@@ -32,6 +32,35 @@ IDrive e2 uebernimmt fuer `smyst.com` 99 % aller Speicheraufgaben. Jeder neue Sp
 - Audit-Logs
 - temporaere Uploads
 - verschluesselte Sicherungen
+- App-Builds
+- APK/AAB/IPA-Dateien
+- Update-Pakete
+- Rollback-Dateien
+- Thumbnails
+- Video-Vorschauen
+- Untertitel
+- Uebersetzungen
+- statische JSON-Daten
+- Profil-Datensaetze
+- Kategorien
+- Sitemap/SEO-Dateien
+- Hilfedateien
+- rechtliche Dokumente
+- Testberichte
+- Screenshots
+- QA-Videos
+- Datenbank-Backups
+- Suchindex-Backups
+- RAG-Dokumente
+- Embedding-Dateien
+- Import-/Export-Pakete
+- Design-Assets
+- Feature-Config-Dateien
+- Wartungsseiten
+- Offline-Dateien
+- Cache-Dateien
+- oeffentliche CDN-Dateien
+- private signierte Dateien
 
 ## Macht IDrive e2 nicht
 
@@ -42,13 +71,14 @@ IDrive e2 uebernimmt fuer `smyst.com` 99 % aller Speicheraufgaben. Jeder neue Sp
 - serverseitige API-Logik
 - AI-Inferenz
 - Video-/Bildverarbeitung
+- aktive Suche und Indexierung
 - Cronjobs
 
 ## Rollen der anderen Dienste
 
 - GitHub Free: nur Code, Versionierung, Releases und GitHub Actions.
 - Spaceship: Domain `smyst.com`, DNS und Subdomains.
-- Salad.com: nur echte Rechenarbeit wie API, KI, Verarbeitung und Cronjobs.
+- Salad.com: nur echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
 - Cloudflare: nur Uebergang/Legacy, bis Spaceship DNS und IDrive e2 Static Hosting produktiv sind.
 
 ## Aktueller Blocker

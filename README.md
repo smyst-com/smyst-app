@@ -2,12 +2,18 @@
 
 smyst.com ist eine guenstige PWA-first Plattform fuer digitale AI Twins.
 
+## Skalierungsziel
+
+Das langfristige Ziel ist ein globales AI-System fuer Web, PWA, iPhone, Android und zukuenftige Plattformen, das Gemini, Claude, Grok, DeepSeek, Kimi, Manus und Mistral in Geschwindigkeit, Stabilitaet, Sicherheit, Intelligenz, Skalierbarkeit, Zuverlaessigkeit, Datenschutz, Verfuegbarkeit und Benutzerfreundlichkeit uebertrifft.
+
+Chats sollen sofort starten, Antworten nahezu verzogerungsfrei erscheinen und jede Interaktion durchgehend fluessig wirken. Die Nutzererfahrung soll nahtlos, natuerlich und hochwertig sein, ohne Wartezeiten, Ausfaelle oder Unterbrechungen. Die langfristige Architektur muss auf Milliarden Nutzer pro Tag und weltweite parallele Nutzung ausgerichtet werden. Die guenstige Startarchitektur ist der erste Schritt, nicht die finale Milliarden-Infrastruktur.
+
 ## Zielarchitektur
 
 - Spaceship: Domain `smyst.com`, DNS und Subdomains.
 - GitHub Free: Quellcode, Versionierung, Releases und GitHub Actions.
-- IDrive e2: 99 % aller Speicheraufgaben fuer Dateien, Medien, App-/PWA-Dateien, statische Website-Dateien, Uploads, Backups, Logs, Exporte, AI-Datenartefakte und Archive.
-- Salad.com: nur bei Bedarf fuer API/Worker/AI/Batch-Jobs oder temporaere Rechenleistung.
+- IDrive e2: 99 % aller Speicheraufgaben fuer Dateien, Medien, App-/PWA-Dateien, statische Website-Dateien, Uploads, Backups, Logs, Exporte, AI-Datenartefakte, App-Builds, Suchindex-Backups, RAG-Dokumente, Embedding-Dateien und Archive.
+- Salad.com: nur bei Bedarf fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung, Cronjobs oder temporaere Rechenleistung.
 - PWA: Web-App ueber `smyst.com`, installierbar auf Desktop, Android und iOS.
 - iOS/Android/Huawei Apps: spaeter als Wrapper oder native Apps, die Inhalte/API von `smyst.com` laden.
 
@@ -29,11 +35,11 @@ IDrive e2 uebernimmt 99 % aller Speicheraufgaben. Alles, was Datei, Medienobjekt
 - Backups, Exporte, Admin-Exporte, Versionen und verschluesselte Sicherungen
 - Logs, Fehlerberichte und Audit-Logs
 - KI-Profilwissen, Prompt-Dateien, Chat-Archive und Wissensdaten
-- Modell-Dateien, Trainingsdaten und Medien-Archiv
+- Modell-Dateien, Trainingsdaten, Medien-Archiv, App-Builds, APK/AAB/IPA-Dateien, Update-Pakete, Rollback-Dateien, Thumbnails, Video-Vorschauen, Untertitel, Uebersetzungen, statische JSON-Daten, Profil-Datensaetze, Kategorien, Sitemap/SEO-Dateien, Hilfedateien, rechtliche Dokumente, Testberichte, Screenshots, QA-Videos, Datenbank-Backups, Suchindex-Backups, RAG-Dokumente, Embedding-Dateien, Import-/Export-Pakete, Design-Assets, Feature-Config-Dateien, Wartungsseiten, Offline-Dateien, Cache-Dateien, oeffentliche CDN-Dateien und private signierte Dateien
 
-IDrive e2 ist nicht der richtige Ort fuer Login, Datenbank, Zahlungen, Echtzeit-Chat, Suche, Live-Admin-Dashboards oder serverseitige API-Logik.
+IDrive e2 ist nicht der richtige Ort fuer Login, aktive Datenbank-Abfragen, Zahlungen, Echtzeit-Chat, Live-Admin-Dashboards, AI-Inferenz, aktive Suche/Indexierung oder serverseitige API-Logik.
 
-GitHub Free bleibt nur fuer Code, Versionierung, Releases und GitHub Actions. Spaceship verwaltet Domain und DNS. Salad.com bleibt nur fuer echte Rechenarbeit wie API, KI, Verarbeitung und Cronjobs.
+GitHub Free bleibt nur fuer Code, Versionierung, Releases und GitHub Actions. Spaceship verwaltet Domain und DNS. Salad.com bleibt nur fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
 
 ## Startregel
 
