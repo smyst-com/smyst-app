@@ -462,9 +462,21 @@ export default function App() {
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[rgba(11,16,24,0.9)] px-4 py-3 backdrop-blur-2xl sm:px-6">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-5">
-          <button onClick={() => navigateTo('landing')} className="font-smyst-logo inline-flex items-center gap-3 text-2xl text-white transition-opacity hover:opacity-80">
-            <span>smyst<span className="text-[0.78em]">.com</span></span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(true)}
+              aria-label="Menü öffnen"
+              aria-expanded={mobileNavOpen}
+              className="inline-flex h-11 w-11 items-center justify-center border border-white/[0.1] bg-white/[0.04] text-white backdrop-blur-md transition hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
+            >
+              <MenuGlyph className="h-5 w-5" />
+            </button>
+            <button onClick={() => navigateTo('landing')} className="font-smyst-logo inline-flex flex-col items-start text-left text-white transition-opacity hover:opacity-80">
+              <span className="text-2xl leading-none">smyst<span className="text-[0.78em]">.com</span></span>
+              <span className="mt-0.5 text-[11px] font-semibold leading-none text-[#59C7FF]">Create Your AI Twin</span>
+            </button>
+          </div>
 
           <nav className="hidden items-center gap-5 md:flex" aria-label="Hauptnavigation">
             <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Dashboard</button>
@@ -507,16 +519,6 @@ export default function App() {
                 Zurück zum Start
               </Button>
             )}
-            {/* Hamburger: Mobile */}
-            <button
-              type="button"
-              onClick={() => setMobileNavOpen(true)}
-              aria-label="Menü öffnen"
-              aria-expanded={mobileNavOpen}
-              className="inline-flex h-11 w-11 items-center justify-center border border-white/[0.1] bg-white/[0.04] text-white backdrop-blur-md hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 md:hidden"
-            >
-              <MenuGlyph className="h-5 w-5" />
-            </button>
           </div>
         </div>
       </header>
@@ -1522,18 +1524,60 @@ function SmystStartPage({
   }
 
   const menuItems: Array<{ label: string; view: AppView; detail: string }> = [
-    { label: 'Mein Profil', view: 'account-profile', detail: 'Account, Avatar, Rolle und Session' },
+    { label: 'Mein Profil', view: 'account-profile', detail: 'Identitaet, Bio, Rollen und Profilqualitaet' },
     { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persoenlichkeit, Wissen und Sichtbarkeit' },
-    { label: 'Daten hochladen', view: 'memory-upload', detail: 'Dateien, Medien und Erinnerungen' },
-    { label: 'Meine Twins', view: 'my-twins', detail: 'Private und oeffentliche Twin-Profile' },
-    { label: 'Chats', view: 'twin-chat', detail: 'Schneller Twin-Chat' },
-    { label: 'Einstellungen', view: 'settings', detail: 'Datenschutz, Sprache und Logout' },
+    { label: 'Meine Twins', view: 'my-twins', detail: 'Private und oeffentliche AI Twins' },
+    { label: 'Memories', view: 'memory-upload', detail: 'Dateien, Wissen und Erinnerungen hochladen' },
+    { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespraeche und Twin-Auswahl' },
+    { label: 'Datenschutz', view: 'trust', detail: 'Private Defaults, noindex, Export und Loeschung' },
+    { label: 'Einstellungen', view: 'settings', detail: 'Sprache, Theme, Account und Logout' },
   ]
 
   const goFromMenu = (view: AppView) => {
     setMenuOpen(false)
     onNavigate(view)
   }
+
+  const loginOptions = [
+    {
+      provider: 'GH',
+      title: 'Mit GitHub fortfahren',
+      detail: 'Aktiver sicherer Login',
+      status: 'Aktiv',
+      onClick: () => auth.signInWithGitHub('/'),
+    },
+    {
+      provider: 'AP',
+      title: 'Mit Apple fortfahren',
+      detail: 'Vorbereitet fuer App-Login',
+      status: 'Bald',
+    },
+    {
+      provider: 'GO',
+      title: 'Mit Google fortfahren',
+      detail: 'Vorbereitet fuer breite Nutzung',
+      status: 'Bald',
+    },
+    {
+      provider: '@',
+      title: 'E-Mail Magic Link',
+      detail: 'Passwortloser Zugang',
+      status: 'Bald',
+    },
+  ]
+
+  const profileQuickActions = [
+    { label: 'Profil oeffnen', view: 'account-profile' as const },
+    { label: 'Twin erstellen', view: 'twin-builder' as const },
+    { label: 'Daten hochladen', view: 'memory-upload' as const },
+  ]
+
+  const profileControlCards = [
+    ['Identitaet', 'Name, Rollen, Expertise und Bio sauber pflegen.'],
+    ['AI Twin', 'Persoenlichkeit, Wissen und Sichtbarkeit steuern.'],
+    ['Memories', 'Uploads, Quellen und Erinnerungen als Kontext verwalten.'],
+    ['Datenschutz', 'Export, Loeschung, noindex und private Defaults.'],
+  ]
 
   return (
     <main id="main" className={`smyst-start-shell${shellThemeClass}${glassPreviewClass} fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden text-[#f4f7fb]`}>
@@ -1549,7 +1593,7 @@ function SmystStartPage({
         aria-modal="true"
         aria-label="Startmenue"
         aria-hidden={!menuOpen}
-        className={`smyst-glass-panel fixed inset-y-0 left-0 z-50 flex w-[88vw] max-w-[360px] flex-col border-r border-white/10 shadow-2xl transition-transform ${
+        className={`smyst-glass-panel fixed inset-y-0 left-0 z-50 flex w-[90vw] max-w-[390px] flex-col border-r border-white/10 shadow-2xl transition-transform ${
           menuOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'
         }`}
       >
@@ -1565,7 +1609,7 @@ function SmystStartPage({
               type="button"
               onClick={() => setMenuOpen(false)}
               aria-label="Menü schließen"
-              className="grid h-11 w-11 place-items-center rounded-2xl border border-white/10 bg-white/5 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              className="grid h-11 w-11 place-items-center rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6 6 18M6 6l12 12" />
@@ -1574,9 +1618,9 @@ function SmystStartPage({
           </div>
 
           {auth.status === 'authenticated' ? (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
               <div className="flex items-center gap-3">
-                <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-2xl border border-white/10 bg-[#242b37] text-sm font-bold text-white">
+                <div className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg border border-white/10 bg-[#242b37] text-sm font-bold text-white">
                   {auth.user?.picture ? (
                     <img src={auth.user.picture} alt="" className="h-full w-full object-cover" />
                   ) : (
@@ -1588,28 +1632,110 @@ function SmystStartPage({
                   <p className="truncate text-xs text-[#9aa3b2]">{auth.user?.email}</p>
                 </div>
               </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {[
+                  ['72', 'Profil'],
+                  [String(messages.length), 'Chats'],
+                  [String(attachments.length), 'Uploads'],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
+                    <p className="text-lg font-bold leading-none text-white">{value}</p>
+                    <p className="mt-1 text-[11px] font-semibold text-[#8e97a8]">{label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 grid gap-2">
+                {profileQuickActions.map((action) => (
+                  <button
+                    key={action.label}
+                    type="button"
+                    onClick={() => goFromMenu(action.view)}
+                    className="flex min-h-[42px] items-center justify-between rounded-lg border border-white/10 bg-white/[0.04] px-3 text-left text-sm font-bold text-white transition hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  >
+                    <span>{action.label}</span>
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#8e97a8]" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="m9 18 6-6-6-6" />
+                    </svg>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <p className="mb-3 text-sm font-semibold">Anmelden oder registrieren</p>
-              <Suspense fallback={null}>
-                <GitHubSignInButton variant="official" returnTo="/" label="Mit GitHub starten" />
-              </Suspense>
-              <p className="mt-3 text-xs leading-relaxed text-[#9aa3b2]">
-                Sicher anmelden, um deine Profile und Chats zu verwalten.
-              </p>
+            <div className="rounded-lg border border-white/10 bg-white/5 p-4">
+              <div className="mb-3">
+                <p className="text-sm font-bold text-white">Anmelden oder registrieren</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#9aa3b2]">
+                  Dein Profil, Twins, Memories und Chats bleiben an einem sicheren Account.
+                </p>
+              </div>
+              <div className="grid gap-2">
+                {loginOptions.map((option) => {
+                  const disabled = !option.onClick
+                  return (
+                    <button
+                      key={option.title}
+                      type="button"
+                      onClick={option.onClick}
+                      disabled={disabled}
+                      className={`flex min-h-[50px] w-full items-center gap-3 rounded-lg border px-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
+                        disabled
+                          ? 'cursor-not-allowed border-white/10 bg-white/[0.025] text-[#7f8998]'
+                          : 'border-white/20 bg-white text-[#111722] hover:bg-[#eef6ff]'
+                      }`}
+                    >
+                      <span
+                        className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg text-xs font-black ${
+                          disabled ? 'bg-white/[0.06] text-[#9aa3b2]' : 'bg-[#111722] text-white'
+                        }`}
+                      >
+                        {option.provider}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-bold">{option.title}</span>
+                        <span className={`block truncate text-xs ${disabled ? 'text-[#8e97a8]' : 'text-[#4f5866]'}`}>
+                          {option.detail}
+                        </span>
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-[0.08em] ${
+                          disabled ? 'bg-white/[0.06] text-[#9aa3b2]' : 'bg-[#59C7FF]/18 text-[#0b2635]'
+                        }`}
+                      >
+                        {option.status}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {['HttpOnly', 'Noindex', 'Export'].map((label) => (
+                  <span key={label} className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-center text-[11px] font-bold text-[#d5dbe5]">
+                    {label}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Startmenü Navigation">
+          <div className="mb-4 grid gap-2 px-2">
+            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Profilbereich</p>
+            {profileControlCards.map(([title, text]) => (
+              <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
+                <p className="text-xs font-bold text-white">{title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#8e97a8]">{text}</p>
+              </div>
+            ))}
+          </div>
+
           <ul className="space-y-1">
             {menuItems.map((item) => (
               <li key={item.label}>
                 <button
                   type="button"
                   onClick={() => goFromMenu(item.view)}
-                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                 >
                   <span className="min-w-0">
                     <span className="block text-sm font-bold text-white">{item.label}</span>
@@ -1622,6 +1748,19 @@ function SmystStartPage({
               </li>
             ))}
           </ul>
+
+          <div className="mt-5 grid gap-2 border-t border-white/10 px-2 pt-5">
+            {[
+              ['HttpOnly Session', 'Login bleibt serverseitig geschuetzt.'],
+              ['Private Inhalte noindex', 'Private Profile werden nicht indexiert.'],
+              ['Export & Loeschung', 'Datenkontrolle bleibt im Profilbereich.'],
+            ].map(([title, text]) => (
+              <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
+                <p className="text-xs font-bold text-white">{title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-[#8e97a8]">{text}</p>
+              </div>
+            ))}
+          </div>
 
           <div className="mt-5 border-t border-white/10 pt-5">
             <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Design</p>
@@ -1672,7 +1811,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => void auth.signOut()}
-              className="flex min-h-[48px] w-full items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-5 text-sm font-semibold text-white hover:bg-white/10"
+              className="flex min-h-[48px] w-full items-center justify-center rounded-lg border border-white/10 bg-white/5 px-5 text-sm font-semibold text-white hover:bg-white/10"
             >
               Logout
             </button>
@@ -1680,7 +1819,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => goFromMenu('twin-builder')}
-              className="flex min-h-[48px] w-full items-center justify-center rounded-2xl bg-white px-5 text-sm font-semibold text-[#111722] hover:opacity-90"
+              className="flex min-h-[48px] w-full items-center justify-center rounded-lg bg-white px-5 text-sm font-semibold text-[#111722] hover:opacity-90"
             >
               Twin vorbereiten
             </button>
