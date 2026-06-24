@@ -228,6 +228,17 @@ async function deriveSigningKey(
   return await hmacSha256Bytes(kService, 'aws4_request');
 }
 
+function awsPercentEncode(value: string): string {
+  return encodeURIComponent(value).replace(/[!'()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
+function canonicalQueryString(params: URLSearchParams): string {
+  return [...params.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${awsPercentEncode(key)}=${awsPercentEncode(value)}`)
+    .join('&');
+}
+
 /**
  * Erzeugt eine Presigned URL für PUT/GET.
  * Dokumentation: https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-query-string-auth.html
@@ -249,10 +260,7 @@ async function presignUrl(opts: SigV4Options & { expiresIn: number }): Promise<s
   url.searchParams.set('X-Amz-SignedHeaders', signedHeaders);
 
   // Canonical Request
-  const canonicalQuery = [...url.searchParams.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
-    .join('&');
+  const canonicalQuery = canonicalQueryString(url.searchParams);
   const canonicalHeaders = headers.map(([key, value]) => `${key}:${value}\n`).join('');
   const payloadHash = 'UNSIGNED-PAYLOAD';
 
@@ -277,7 +285,7 @@ async function presignUrl(opts: SigV4Options & { expiresIn: number }): Promise<s
   const signature = bytesToHex(await hmacSha256Bytes(signingKey, stringToSign));
 
   url.searchParams.set('X-Amz-Signature', signature);
-  return url.toString();
+  return `${url.origin}${url.pathname}?${canonicalQueryString(url.searchParams)}`;
 }
 
 // ---------- Session-Auth ----------
@@ -907,8 +915,6 @@ async function handleGetFile(request: Request, env: StorageEnv, key: string): Pr
 
   // Presigned GET → 302 Redirect — Browser lädt direkt vom IDrive E2 Edge
   const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
-  url.searchParams.set('response-content-disposition', contentDisposition(record));
-  url.searchParams.set('response-content-type', record.contentType);
   const presignedGet = await presignUrl({
     method: 'GET',
     url,
