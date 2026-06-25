@@ -1,9 +1,8 @@
-const CACHE_VERSION = 'smyst-v3';
+const CACHE_VERSION = 'smyst-v4';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
 const APP_SHELL = [
-  '/',
   '/offline.html',
   '/manifest.webmanifest',
   '/logo.svg',
@@ -60,10 +59,13 @@ async function networkFirst(request) {
   const cache = await caches.open(RUNTIME_CACHE);
   try {
     const response = await fetch(request);
-    if (response.ok) await cache.put(request, response.clone());
+    if (response.ok) {
+      await cache.put(request, response.clone());
+      if (request.mode === 'navigate') await cache.put('/', response.clone());
+    }
     return response;
   } catch {
-    return (await cache.match(request)) || (await caches.match('/offline.html'));
+    return (await cache.match(request)) || (await cache.match('/')) || (await caches.match('/offline.html'));
   }
 }
 
