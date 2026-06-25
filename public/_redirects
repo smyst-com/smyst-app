@@ -1,3 +1,5 @@
+https://www.smyst.com/*  https://smyst.com/:splat  301!
+
 /api/*  /api/:splat  200
 /auth/*  /auth/:splat  200
 /storage/*  /storage/:splat  200

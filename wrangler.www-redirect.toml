@@ -1,0 +1,8 @@
+name = "smyst-www-redirect"
+main = "workers/www-redirect.ts"
+compatibility_date = "2025-04-01"
+account_id = "186363805f9fc571fd16528a1ed7c52d"
+
+[[routes]]
+pattern = "www.smyst.com/*"
+zone_name = "smyst.com"
