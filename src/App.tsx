@@ -398,7 +398,7 @@ export default function App() {
     const stored = window.localStorage.getItem('smyst-name-sort')
     return isNameSortMode(stored) ? stored : 'famous'
   })
-  const auth = useAuth({ enabled: currentView !== 'landing' })
+  const auth = useAuth()
 
   useEffect(() => {
     window.localStorage.setItem('smyst-theme', appTheme)

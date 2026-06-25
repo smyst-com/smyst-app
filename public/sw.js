@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'smyst-v4';
+const CACHE_VERSION = 'smyst-v6';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
@@ -65,7 +65,10 @@ async function networkFirst(request) {
     }
     return response;
   } catch {
-    return (await cache.match(request)) || (await cache.match('/')) || (await caches.match('/offline.html'));
+    if (request.mode === 'navigate') {
+      return (await cache.match(request)) || (await caches.match('/offline.html'));
+    }
+    return (await cache.match(request)) || (await caches.match('/offline.html'));
   }
 }
 

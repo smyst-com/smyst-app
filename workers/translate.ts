@@ -41,7 +41,7 @@ const HASH_HEADER = 'X-Content-Hash';
 const PROVIDER_HEADER = 'X-Translation-Provider';
 const CACHE_SCHEMA_VERSION = 'v3';
 const HTML_CONTENT_SECURITY_POLICY =
-  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.idrivee2.com https://avatars.githubusercontent.com; connect-src 'self' https://*.idrivee2.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests";
+  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.idrivee2.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com; connect-src 'self' https://api.smyst.com https://parmesan-onion-pw08cg2t1ge4jnk6.salad.cloud https://*.idrivee2.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://api.smyst.com https://parmesan-onion-pw08cg2t1ge4jnk6.salad.cloud; upgrade-insecure-requests";
 const PERMISSIONS_POLICY =
   'camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), interest-cohort=()';
 
@@ -207,6 +207,40 @@ async function fetchOrigin(env: Env, normalizedPath: string, request: Request): 
       cacheTtl: 0,
       cacheEverything: false,
     },
+  });
+}
+
+async function fetchStaticPassthrough(env: Env, pathname: string, search: string): Promise<Response> {
+  const originUrl = new URL(env.ORIGIN_URL);
+  originUrl.pathname = pathname;
+  originUrl.search = search;
+
+  const response = await fetch(originUrl.toString(), {
+    method: 'GET',
+    headers: {
+      Accept: pathname.endsWith('.js') ? 'application/javascript,*/*;q=0.8' : '*/*',
+      'Cache-Control': 'no-cache',
+      Pragma: 'no-cache',
+    },
+    redirect: 'follow',
+    cf: {
+      cacheTtl: 0,
+      cacheEverything: false,
+    },
+  });
+
+  const headers = applyEdgeHeaders(new Headers(response.headers));
+  if (pathname === '/sw.js') {
+    headers.set('Content-Type', 'application/javascript; charset=utf-8');
+    headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    headers.set('Pragma', 'no-cache');
+    headers.set('Expires', '0');
+    headers.delete('ETag');
+  }
+
+  return new Response(response.body, {
+    status: response.status,
+    headers,
   });
 }
 
@@ -537,7 +571,7 @@ export default {
 
       // Nicht-HTML-Pfade direkt durchreichen (Assets und SEO/PWA-Dateien).
       if (isStaticPassthroughPath(url.pathname)) {
-        return fetch(env.ORIGIN_URL + url.pathname + url.search);
+        return fetchStaticPassthrough(env, url.pathname, url.search);
       }
 
       const limited = await requireRateLimit(env.TRANSLATIONS, {
