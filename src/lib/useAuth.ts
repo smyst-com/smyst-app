@@ -4,7 +4,8 @@
  * Strategie:
  *  - Beim Mount: GET /auth/me → liefert { authenticated, user? }
  *  - Wir caches NICHT in localStorage; Cookie ist authoritative
- *  - signInWithGitHub() = window.location → /auth/github/start
+ *  - signInWithGoogle() = window.location -> /auth/google/start
+ *  - signInWithGitHub() = window.location -> /auth/github/start
  *  - signOut() = POST /auth/logout, dann reload
  *
  * Sicherheit:
@@ -34,15 +35,17 @@ interface MeResponse {
   authenticated: boolean;
   user?: AuthUser;
   session?: {
-    tokenType: 'httpOnly-cookie';
+    tokenType: 'httpOnly-cookie' | 'signed-httpOnly-cookie';
     expiresAt: number;
   };
 }
 
-const ME_ENDPOINT = '/auth/me';
-const START_ENDPOINT = '/auth/github/start';
-const LOGOUT_ENDPOINT = '/auth/logout';
-const LOGOUT_ALL_ENDPOINT = '/auth/logout-all';
+const AUTH_BASE_URL = (import.meta.env.VITE_AUTH_BASE_URL || '/auth').replace(/\/$/, '');
+const ME_ENDPOINT = `${AUTH_BASE_URL}/me`;
+const GOOGLE_START_ENDPOINT = `${AUTH_BASE_URL}/google/start`;
+const GITHUB_START_ENDPOINT = `${AUTH_BASE_URL}/github/start`;
+const LOGOUT_ENDPOINT = `${AUTH_BASE_URL}/logout`;
+const LOGOUT_ALL_ENDPOINT = `${AUTH_BASE_URL}/logout-all`;
 
 export function useAuth(options: { enabled?: boolean } = {}) {
   const enabled = options.enabled ?? true;
@@ -89,9 +92,15 @@ export function useAuth(options: { enabled?: boolean } = {}) {
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, [enabled, fetchMe]);
 
+  const signInWithGoogle = useCallback((returnTo?: string) => {
+    const target = returnTo ?? window.location.pathname + window.location.search;
+    const url = `${GOOGLE_START_ENDPOINT}?return_to=${encodeURIComponent(target)}`;
+    window.location.href = url;
+  }, []);
+
   const signInWithGitHub = useCallback((returnTo?: string) => {
     const target = returnTo ?? window.location.pathname + window.location.search;
-    const url = `${START_ENDPOINT}?return_to=${encodeURIComponent(target)}`;
+    const url = `${GITHUB_START_ENDPOINT}?return_to=${encodeURIComponent(target)}`;
     window.location.href = url;
   }, []);
 
@@ -126,6 +135,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
 
   return {
     ...state,
+    signInWithGoogle,
     signInWithGitHub,
     signOut,
     signOutAll,

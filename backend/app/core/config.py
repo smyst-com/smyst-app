@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     app_env: str = "local"
     api_version: str = "v1"
     public_base_url: str = "http://localhost:3000"
+    auth_public_base_url: str = Field(
+        default="http://localhost:8000",
+        validation_alias="AUTH_PUBLIC_BASE_URL",
+    )
 
     database_url: str = Field(
         default="postgresql+asyncpg://smyst:smyst_dev_password@postgres:5432/smyst",
@@ -35,6 +39,11 @@ class Settings(BaseSettings):
         default="replace-with-48-byte-random-secret",
         validation_alias="AUTH_SESSION_SECRET",
     )
+    google_oauth_client_id: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_ID")
+    google_oauth_client_secret: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_SECRET")
+    google_oauth_redirect_uri: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_REDIRECT_URI")
+    smyst_owner_emails_raw: str = Field(default="", validation_alias="SMYST_OWNER_EMAILS")
+    smyst_admin_emails_raw: str = Field(default="", validation_alias="SMYST_ADMIN_EMAILS")
 
     cors_origin_raw: str = Field(default="http://localhost:3000", validation_alias="CORS_ORIGINS")
     csp_report_only: bool = Field(default=False, validation_alias="CSP_REPORT_ONLY")
@@ -45,6 +54,18 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origin_raw.split(",") if origin.strip()]
+
+    @property
+    def google_redirect_uri(self) -> str:
+        return self.google_oauth_redirect_uri or f"{self.auth_public_base_url.rstrip('/')}/auth/google/callback"
+
+    @property
+    def smyst_owner_emails(self) -> set[str]:
+        return {email.strip().lower() for email in self.smyst_owner_emails_raw.split(",") if email.strip()}
+
+    @property
+    def smyst_admin_emails(self) -> set[str]:
+        return {email.strip().lower() for email in self.smyst_admin_emails_raw.split(",") if email.strip()}
 
     @property
     def content_security_policy(self) -> str:

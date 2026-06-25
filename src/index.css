@@ -238,6 +238,29 @@
     color: #111722;
   }
 
+  .smyst-app-dark .smyst-admin-shell {
+    color: #111722;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .bg-white {
+    background-color: #ffffff !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .bg-\[\#f7fafd\] {
+    background-color: #f7fafd !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .text-\[\#111722\],
+  .smyst-app-dark .smyst-admin-shell .text-\[\#172033\] {
+    color: #111722 !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .text-\[\#5d6776\],
+  .smyst-app-dark .smyst-admin-shell .text-\[\#667085\],
+  .smyst-app-dark .smyst-admin-shell .text-\[\#7b8493\] {
+    color: #5d6776 !important;
+  }
+
   .glass-button-primary {
     @apply backdrop-blur-[18px];
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(235, 238, 242, 0.62));

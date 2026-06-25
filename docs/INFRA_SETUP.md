@@ -15,7 +15,7 @@ Die Infrastruktur fuer `smyst.com` folgt diesem Aufbau:
 ```text
 smyst.com        -> Website/PWA
 app.smyst.com    -> Web-App
-api.smyst.com    -> API nur bei Bedarf, bevorzugt Salad oder kleiner API-Dienst
+api.smyst.com    -> Auth/API auf Salad, sobald Google Login live geht
 cdn.smyst.com    -> IDrive e2 Assets und oeffentliche Dateien
 backup.smyst.com -> private IDrive e2 Backups
 ```
@@ -75,7 +75,7 @@ Empfohlene Records:
 @      ALIAS  <IDrive e2 website/custom-domain target>
 app    CNAME  <IDrive e2 website/custom-domain target>
 cdn    CNAME  <IDrive e2 public/custom-domain target>
-api    CNAME  <Salad/API target, nur wenn API aktiv ist>
+api    CNAME  <Salad/API target>
 backup CNAME  <IDrive e2 target, nur wenn wirklich benoetigt>
 ```
 
@@ -96,7 +96,7 @@ Minimaler Ablauf:
 
 ## Salad
 
-Salad bleibt ohne laufende Container, bis echte Rechenarbeit benoetigt wird.
+Salad bleibt ohne laufende Container, bis echte Rechenarbeit benoetigt wird. Google Login zaehlt als echte Auth/API-Rechenarbeit, sobald `api.smyst.com` produktiv genutzt wird.
 
 Erlaubte Nutzung:
 
@@ -105,6 +105,7 @@ Erlaubte Nutzung:
 - Medienverarbeitung
 - Suche und Indexierung
 - temporaere API
+- Google OAuth Auth/API fuer `api.smyst.com`
 
 Nicht erlaubt als Startzustand:
 
@@ -115,3 +116,7 @@ Nicht erlaubt als Startzustand:
 ## Cloudflare Legacy
 
 Cloudflare Pages/Workers/KV koennen als Uebergang existieren. Ziel ist aber, dass die Startversion mit Spaceship DNS und IDrive e2 als Hauptsystem arbeitet.
+
+## Google Login ohne Cloudflare
+
+Das verbindliche Runbook liegt unter `docs/runbooks/google-salad-auth.md`.

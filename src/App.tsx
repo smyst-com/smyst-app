@@ -20,6 +20,12 @@ import { useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
+import {
+  CURATED_PUBLIC_TWIN_BASE_TIME,
+  CURATED_PUBLIC_TWIN_LANGUAGES,
+  CURATED_PUBLIC_TWIN_SPECS,
+  type CuratedPublicTwinSpec,
+} from '../workers/curated-public-twin-data'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
@@ -151,6 +157,7 @@ type AppView =
   | 'terms'
   | 'imprint'
   | 'dashboard'
+  | 'admin'
   | 'twin-profile'
   | 'not-found'
 
@@ -333,6 +340,7 @@ const viewPaths: Record<Exclude<AppView, 'twin-profile' | 'not-found'>, string> 
   terms: '/terms',
   imprint: '/imprint',
   dashboard: '/dashboard',
+  admin: '/admin',
 }
 
 function splitLocalizedPath(pathname: string): { langPrefix: SupportedLang | null; appPath: string } {
@@ -372,6 +380,7 @@ function initialRoute(): { view: AppView; profileSlug: string | null; privateTwi
   if (path === '/terms') return { view: 'terms', profileSlug: null, privateTwinId: null }
   if (path === '/imprint') return { view: 'imprint', profileSlug: null, privateTwinId: null }
   if (path === '/dashboard') return { view: 'dashboard', profileSlug: null, privateTwinId: null }
+  if (path === '/admin') return { view: 'admin', profileSlug: null, privateTwinId: null }
   return { view: 'not-found', profileSlug: null, privateTwinId: null }
 }
 
@@ -431,6 +440,7 @@ export default function App() {
         ]
       : [
           { label: 'Dashboard', onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
+          { label: 'Admin', onClick: () => navigateTo('admin'), active: currentView === 'admin' },
           { label: 'Mein Profil', onClick: () => navigateTo('account-profile'), active: currentView === 'account-profile' },
           { label: 'Meine Twins', onClick: () => navigateTo('my-twins'), active: currentView === 'my-twins' },
           { label: 'Twin Builder', onClick: () => navigateTo('twin-builder'), active: currentView === 'twin-builder' },
@@ -480,6 +490,7 @@ export default function App() {
 
           <nav className="hidden items-center gap-5 md:flex" aria-label="Hauptnavigation">
             <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Dashboard</button>
+            <button onClick={() => navigateTo('admin')} className={`text-sm ${currentView === 'admin' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Admin</button>
             <button onClick={() => navigateTo('account-profile')} className={`text-sm ${currentView === 'account-profile' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Profil</button>
             <button onClick={() => navigateTo('my-twins')} className={`text-sm ${currentView === 'my-twins' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Twins</button>
             <button onClick={() => navigateTo('twin-builder')} className={`text-sm ${currentView === 'twin-builder' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Erstellen</button>
@@ -543,10 +554,13 @@ export default function App() {
         className={
           currentView === 'twin-chat'
             ? 'min-h-[calc(100dvh-80px)] w-full px-0 pb-0 sm:min-h-[calc(100dvh-92px)]'
+            : currentView === 'admin'
+              ? 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1520px] px-3 pb-10 sm:px-5'
             : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-10 sm:px-6'
         }
       >
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
+        {currentView === 'admin' && <AdminControlCenterView />}
         {currentView === 'account-profile' && <AccountProfileView onNavigate={navigateTo} />}
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
@@ -583,6 +597,7 @@ export default function App() {
               <button onClick={() => navigateTo('twin-builder')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Builder</button>
               <button onClick={() => navigateTo('memory-upload')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Memory Upload</button>
               <button onClick={() => navigateTo('twin-chat')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Chat</button>
+              <button onClick={() => navigateTo('admin')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Admin</button>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Unternehmen</h4>
@@ -828,6 +843,72 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
   }
 }
 
+function curatedPublicProfileToPublicTwinProfile(spec: CuratedPublicTwinSpec, index: number): PublicTwinProfile {
+  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://smyst.com'
+  const updatedAt = CURATED_PUBLIC_TWIN_BASE_TIME + (CURATED_PUBLIC_TWIN_SPECS.length - index) * 1000
+  const imageUrl = spec.imageFile ? `/public/profile-images/${spec.imageFile}` : null
+  return {
+    id: `curated-${spec.slug}`,
+    name: spec.name,
+    slug: spec.slug,
+    description: spec.description,
+    imageUrl,
+    categories: spec.categories,
+    languages: CURATED_PUBLIC_TWIN_LANGUAGES,
+    visibility: 'public',
+    style: spec.style,
+    status: 'ready',
+    url: `${origin}/t/${spec.slug}`,
+    chatPath: `/twin-chat?twin=${encodeURIComponent(spec.slug)}`,
+    uploadedContents: [
+      { category: 'Profilbild', count: imageUrl ? 1 : 0 },
+      { category: 'Wissensprofil', count: 1 },
+    ],
+    mediaCount: imageUrl ? 1 : 0,
+    knowledgeCount: 1,
+    contextSummary: `${spec.name}: ${spec.knowledge}`,
+    guardrail: 'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.',
+    rightsPosture: spec.rightsPosture,
+    mainCategory: spec.mainCategory,
+    birthDate: spec.birthDate,
+    deathDate: spec.deathDate,
+    birthYear: spec.birthYear,
+    deathYear: spec.deathYear,
+    birthLabel: spec.birthLabel,
+    deathLabel: spec.deathLabel,
+    exampleQuestions: spec.exampleQuestions,
+    searchIndex: spec.searchIndex,
+    sources: spec.sources,
+    quality: { ok: Boolean(imageUrl), issues: imageUrl ? [] : ['missing_profile_image'] },
+    updatedAt,
+    seo: {
+      title: `${spec.name} KI-Profil | smyst.com`,
+      description: spec.description,
+      canonical: `${origin}/t/${spec.slug}`,
+      robots: 'index,follow',
+      schema: {
+        '@context': 'https://schema.org',
+        '@type': 'ProfilePage',
+        name: `${spec.name} KI-Profil`,
+        url: `${origin}/t/${spec.slug}`,
+        description: spec.description,
+        inLanguage: CURATED_PUBLIC_TWIN_LANGUAGES,
+        isPartOf: { '@type': 'WebSite', name: 'smyst.com', url: origin },
+      },
+    },
+  }
+}
+
+function curatedPublicProfiles(): PublicTwinProfile[] {
+  return CURATED_PUBLIC_TWIN_SPECS.map(curatedPublicProfileToPublicTwinProfile)
+}
+
+function curatedPublicProfileBySlug(slug: string): PublicTwinProfile | null {
+  const normalized = slug.trim().toLowerCase()
+  const index = CURATED_PUBLIC_TWIN_SPECS.findIndex((spec) => spec.slug === normalized)
+  return index >= 0 ? curatedPublicProfileToPublicTwinProfile(CURATED_PUBLIC_TWIN_SPECS[index], index) : null
+}
+
 function usageByTwinId(chats: TwinChatRecord[] | null | undefined): Map<string, ProfileUsage> {
   const usage = new Map<string, ProfileUsage>()
   for (const chat of chats ?? []) {
@@ -966,7 +1047,7 @@ function SmystStartPage({
         if (auth.status !== 'authenticated') {
           const publicProfiles = await twinMvp.listPublicTwins()
           if (!alive) return
-          const next = (publicProfiles ?? [])
+          const next = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
             .filter(isCompletePublicProfile)
             .map(publicProfileToStartTwin)
           setRealStartTwins(next)
@@ -986,7 +1067,7 @@ function SmystStartPage({
           .filter(isCompleteTwinRecord)
           .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug)))
         const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
-        const publicStartProfiles = (publicProfiles ?? [])
+        const publicStartProfiles = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
           .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug))
           .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
         const next = [...ownProfiles, ...publicStartProfiles]
@@ -1529,6 +1610,7 @@ function SmystStartPage({
     { label: 'Meine Twins', view: 'my-twins', detail: 'Private und oeffentliche AI Twins' },
     { label: 'Memories', view: 'memory-upload', detail: 'Dateien, Wissen und Erinnerungen hochladen' },
     { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespraeche und Twin-Auswahl' },
+    { label: 'Admin', view: 'admin', detail: 'User, Werbung, Umsatz, Sicherheit und Betrieb' },
     { label: 'Datenschutz', view: 'trust', detail: 'Private Defaults, noindex, Export und Loeschung' },
     { label: 'Einstellungen', view: 'settings', detail: 'Sprache, Theme, Account und Logout' },
   ]
@@ -1548,8 +1630,9 @@ function SmystStartPage({
     {
       provider: 'GO',
       title: 'Mit Google fortfahren',
-      detail: 'Vorbereitet fuer breite Nutzung',
-      status: 'Bald',
+      detail: 'Aktiver sicherer Login',
+      status: 'Aktiv',
+      onClick: () => auth.signInWithGoogle('/'),
     },
     {
       provider: 'AP',
@@ -1560,9 +1643,8 @@ function SmystStartPage({
     {
       provider: 'GH',
       title: 'Mit GitHub fortfahren',
-      detail: 'Aktiver sicherer Login',
-      status: 'Aktiv',
-      onClick: () => auth.signInWithGitHub('/'),
+      detail: 'Sicherer Fallback-Login',
+      status: 'Bald',
     },
     {
       provider: '@',
@@ -2275,7 +2357,7 @@ function TwinProfileView({
     let alive = true
     if (slug) {
       void twinMvp.getPublicTwin(slug).then((profile) => {
-        if (alive && profile) setPublicProfile(profile)
+        if (alive) setPublicProfile(profile ?? curatedPublicProfileBySlug(slug))
         if (alive) setLoaded(true)
       })
     }
@@ -3353,6 +3435,551 @@ function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
         </div>
       </div>
     </section>
+  )
+}
+
+type AdminSection =
+  | 'overview'
+  | 'users'
+  | 'registrations'
+  | 'profiles'
+  | 'ads'
+  | 'revenue'
+  | 'moderation'
+  | 'security'
+  | 'storage'
+  | 'support'
+  | 'releases'
+
+type AdminMetric = {
+  label: string
+  value: string
+  detail: string
+  tone: 'green' | 'cyan' | 'amber' | 'red' | 'navy'
+}
+
+type AdminRow = Record<string, string>
+
+type AdminOverviewApi = {
+  ok: boolean
+  mode?: string
+  metrics?: {
+    usersSeen?: number
+    blockedUsers?: number
+    revenueProfiles?: number
+    heldProfiles?: number
+    validRevenueCents?: number
+    userShareCents?: number
+    userSharePercent?: number
+    auditEvents?: number
+  }
+  storagePlan?: {
+    metadata?: string
+    objects?: string
+    compute?: string
+  }
+}
+
+const adminSections: Array<{ id: AdminSection; label: string; detail: string }> = [
+  { id: 'overview', label: 'Overview', detail: 'Live Status' },
+  { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export' },
+  { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots' },
+  { id: 'profiles', label: 'Profiles', detail: 'AI Twins und Qualität' },
+  { id: 'ads', label: 'Ads', detail: 'AdSense Slots' },
+  { id: 'revenue', label: 'Revenue', detail: '25 % User-Anteil' },
+  { id: 'moderation', label: 'Moderation', detail: 'Abuse Queue' },
+  { id: 'security', label: 'Security', detail: 'Audit und Privacy' },
+  { id: 'storage', label: 'Storage', detail: 'IDrive E2, Salad' },
+  { id: 'support', label: 'Support', detail: 'Tickets und Rollen' },
+  { id: 'releases', label: 'Releases', detail: 'Apps, PWA, Rollback' },
+]
+
+const adminMetricTone: Record<AdminMetric['tone'], string> = {
+  green: 'bg-emerald-500',
+  cyan: 'bg-sky-400',
+  amber: 'bg-amber-400',
+  red: 'bg-red-500',
+  navy: 'bg-[#111722]',
+}
+
+function AdminStatusChip({ children, tone = 'green' }: { children: string; tone?: AdminMetric['tone'] }) {
+  return (
+    <span className="inline-flex min-h-0 items-center gap-2 rounded-md border border-[#d9e2ec] bg-white px-2.5 py-1 text-xs font-bold text-[#172033]">
+      <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${adminMetricTone[tone]}`} />
+      {children}
+    </span>
+  )
+}
+
+function AdminMetricCard({ metric }: { metric: AdminMetric }) {
+  return (
+    <div className="rounded-lg border border-[#d9e2ec] bg-white p-4 shadow-sm">
+      <div className="flex items-start gap-3">
+        <span className={`mt-1 h-4 w-4 shrink-0 rounded-sm ${adminMetricTone[metric.tone]}`} />
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-[#5d6776]">{metric.label}</p>
+          <p className="mt-2 text-3xl font-bold leading-none text-[#111722]">{metric.value}</p>
+          <p className="mt-3 text-sm leading-snug text-[#5d6776]">{metric.detail}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AdminTable({ columns, rows }: { columns: string[]; rows: AdminRow[] }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-[#d9e2ec] bg-white">
+      <table className="min-w-full table-fixed text-left text-sm">
+        <thead className="border-b border-[#d9e2ec] bg-[#f7fafd] text-xs font-bold uppercase tracking-[0.08em] text-[#5d6776]">
+          <tr>
+            {columns.map((column) => (
+              <th key={column} className="px-4 py-3">
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[#edf2f7]">
+          {rows.map((row, index) => (
+            <tr key={`${row[columns[0]]}-${index}`} className="text-[#5d6776]">
+              {columns.map((column, columnIndex) => (
+                <td key={column} className={`px-4 py-3 ${columnIndex === 0 ? 'font-bold text-[#111722]' : ''}`}>
+                  {row[column]}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function AdminControlCenterView() {
+  const [activeSection, setActiveSection] = useState<AdminSection>('overview')
+  const [adminOverview, setAdminOverview] = useState<AdminOverviewApi | null>(null)
+  const [adminBackendStatus, setAdminBackendStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
+
+  useEffect(() => {
+    let alive = true
+    setAdminBackendStatus('loading')
+    fetch('/api/admin/overview', { credentials: 'same-origin' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        if (response.ok && payload?.ok) {
+          setAdminOverview(payload as AdminOverviewApi)
+          setAdminBackendStatus('live')
+        } else {
+          setAdminOverview(null)
+          setAdminBackendStatus(response.status === 401 || response.status === 403 ? 'denied' : 'offline')
+        }
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminOverview(null)
+        setAdminBackendStatus('offline')
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const formatCents = (value?: number) => {
+    const amount = (value ?? 0) / 100
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount)
+  }
+
+  const overviewMetrics: AdminMetric[] = [
+    {
+      label: 'Live Nutzer',
+      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : '18.4M',
+      detail: adminOverview ? `${adminOverview.metrics?.blockedUsers ?? 0} blockiert, KV-User sichtbar.` : 'Web, PWA, iPhone, Android und API zusammen.',
+      tone: 'green',
+    },
+    { label: 'Chat Start', value: '142 ms', detail: 'Ziel: Chat sofort offen, Streaming sofort sichtbar.', tone: 'cyan' },
+    {
+      label: 'Ad Revenue',
+      value: adminOverview ? formatCents(adminOverview.metrics?.validRevenueCents) : '$248K',
+      detail: 'Nur gültige Anzeigenumsätze nach Policy-Filter.',
+      tone: 'amber',
+    },
+    {
+      label: 'User Share',
+      value: adminOverview ? formatCents(adminOverview.metrics?.userShareCents) : '$62K',
+      detail: `${adminOverview?.metrics?.userSharePercent ?? 25} % Pool für genutzte AI-Profile.`,
+      tone: 'green',
+    },
+  ]
+
+  const users: AdminRow[] = [
+    { User: 'amina@smyst', Status: 'aktiv', Risiko: 'niedrig', Registriert: 'Web / DE', 'AI-Profile': '12 Twins', Umsatz: '$842', Aktion: 'Details' },
+    { User: 'leo@smyst', Status: 'review', Risiko: 'mittel', Registriert: 'PWA / US', 'AI-Profile': '3 Twins', Umsatz: '$128', Aktion: 'Prüfen' },
+    { User: 'botnet-44', Status: 'hold', Risiko: 'hoch', Registriert: 'API / unknown', 'AI-Profile': '0 Twins', Umsatz: '$0', Aktion: 'Block' },
+    { User: 'sara@smyst', Status: 'aktiv', Risiko: 'niedrig', Registriert: 'iPhone / FR', 'AI-Profile': '1 Twin', Umsatz: '$2,405', Aktion: 'Pay' },
+    { User: 'max@smyst', Status: 'gesperrt', Risiko: 'hoch', Registriert: 'Android / DE', 'AI-Profile': '6 Twins', Umsatz: '$0', Aktion: 'Appeal' },
+  ]
+
+  const profileRevenue: AdminRow[] = [
+    { Profil: 'Einstein', Chats: '12.8M', Qualität: '94', 'Ad RPM': '$3.20', 'gültiger Umsatz': '$40,960', '25 % Anteil': '$10,240', Status: 'payable' },
+    { Profil: 'Fitness Coach', Chats: '8.1M', Qualität: '88', 'Ad RPM': '$2.70', 'gültiger Umsatz': '$21,870', '25 % Anteil': '$5,467', Status: 'review' },
+    { Profil: 'Deutsch Tutor', Chats: '6.4M', Qualität: '91', 'Ad RPM': '$3.90', 'gültiger Umsatz': '$24,960', '25 % Anteil': '$6,240', Status: 'payable' },
+    { Profil: 'Crypto Guru', Chats: '3.9M', Qualität: '62', 'Ad RPM': '$5.10', 'gültiger Umsatz': '$19,890', '25 % Anteil': 'hold', Status: 'policy' },
+    { Profil: 'Recipe Helper', Chats: '2.2M', Qualität: '85', 'Ad RPM': '$2.10', 'gültiger Umsatz': '$4,620', '25 % Anteil': '$1,155', Status: 'payable' },
+  ]
+
+  const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
+
+  const renderOverview = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {overviewMetrics.map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
+      </div>
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-2xl font-bold text-[#111722]">Heute wichtig</h2>
+          <div className="mt-5 grid gap-3">
+            {[
+              ['AdSense Policy', 'Mobile-Abstand prüfen', 'amber'],
+              ['Invalid Traffic', '0.18 % verdächtig, Auto-Hold aktiv', 'green'],
+              ['Registrierungen', '+42 % durch Creator-Profile', 'cyan'],
+              ['Salad Queue', 'Suche und Embeddings normal', 'green'],
+            ].map(([label, detail, tone]) => (
+              <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[190px_1fr]">
+                <AdminStatusChip tone={tone as AdminMetric['tone']}>{label}</AdminStatusChip>
+                <p className="text-sm font-semibold text-[#5d6776]">{detail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-2xl font-bold text-[#111722]">A-Z Abdeckung</h2>
+          <div className="mt-5 grid gap-3">
+            {[
+              'Users sperren, prüfen, Rollen ändern',
+              'Profile/Twins messen und monetarisieren',
+              'AdSense Slots, Consent, Invalid-Traffic',
+              'Auszahlungen, KYC, Steuerstatus',
+              'IDrive E2, Salad, DNS, Releases, Logs',
+            ].map((item) => (
+              <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
+                <AdminStatusChip>integriert</AdminStatusChip>
+                <p className="text-sm font-bold text-[#172033]">{item}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+
+  const renderUsers = () => (
+    <div className="grid gap-5">
+      <div className="flex flex-wrap gap-2">
+        {['Alle', 'Neu', 'Creator', 'Verdächtig', 'Gesperrt', 'VIP', 'Auszahlung offen'].map((filter, index) => (
+          <button key={filter} type="button" className={`min-h-10 rounded-md border px-4 text-sm font-bold ${index === 0 ? 'border-[#111722] bg-[#111722] text-white' : 'border-[#d9e2ec] bg-white text-[#172033]'}`}>
+            {filter}
+          </button>
+        ))}
+      </div>
+      <AdminTable columns={['User', 'Status', 'Risiko', 'Registriert', 'AI-Profile', 'Umsatz', 'Aktion']} rows={users} />
+      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <h2 className="text-xl font-bold text-[#111722]">User-Aktionen</h2>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {['Soft Warnung', 'Login sperren', 'Chat sperren', 'Upload sperren', 'Payout halten', 'Daten exportieren', 'DSGVO löschen', 'Appeal prüfen'].map((action) => (
+            <button key={action} type="button" className="min-h-11 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 text-sm font-bold text-[#172033]">
+              {action}
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+
+  const renderRegistrations = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {[
+          { label: 'Neue Nutzer', value: '482K', detail: 'Heute, nach Bot-Filter.', tone: 'green' },
+          { label: 'Aktivierung', value: '71 %', detail: 'Erster Chat in 60 Sekunden.', tone: 'cyan' },
+          { label: 'Bot-Block', value: '38K', detail: 'Rate-limit, Device-Fingerprint, CAPTCHA.', tone: 'amber' },
+          { label: 'Kosten/User', value: '$0.013', detail: 'Compute, Storage und Index.', tone: 'green' },
+        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+      </div>
+      <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Funnel</h2>
+          {[
+            ['Landing', '100 %', 'w-full'],
+            ['Signup', '74 %', 'w-[74%]'],
+            ['Verify', '69 %', 'w-[69%]'],
+            ['First chat', '61 %', 'w-[61%]'],
+            ['Profile created', '34 %', 'w-[34%]'],
+          ].map(([label, value, width]) => (
+            <div key={label} className="mt-4">
+              <div className="mb-1 flex items-center justify-between text-sm font-bold text-[#172033]"><span>{label}</span><span>{value}</span></div>
+              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md bg-[#59c7ff] ${width}`} /></div>
+            </div>
+          ))}
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Onboarding muss idiotensicher sein</h2>
+          <div className="mt-4 grid gap-3">
+            {['1 Klick: Chat sofort starten', 'Später registrieren, wenn Nutzer Wert sieht', 'Profil-Erstellung in 3 Schritten', 'Upload/Memory mit klarer Datenschutz-Frage', 'Jede Fehlermeldung hat eine Lösungsschaltfläche'].map((item) => (
+              <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
+                <AdminStatusChip tone="cyan">Pflicht</AdminStatusChip>
+                <span className="text-sm font-bold text-[#172033]">{item}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+
+  const renderProfiles = () => (
+    <div className="grid gap-5">
+      <AdminTable columns={['Profil', 'Chats', 'Qualität', 'Ad RPM', 'gültiger Umsatz', '25 % Anteil', 'Status']} rows={profileRevenue} />
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Ranking-Logik</h2>
+          <p className="mt-3 text-sm leading-relaxed text-[#5d6776]">Nutzung zählt nur, wenn Session echt ist, Ad-Impression gültig ist, Profil nicht gegen Policy verstößt und der Nutzer dem Revenue-Share zugestimmt hat.</p>
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Profil-Qualität</h2>
+          {[
+            ['Antwortqualität', 'w-[92%]', 'bg-emerald-500'],
+            ['Sicherheitsrisiko', 'w-[28%]', 'bg-amber-400'],
+            ['Quellenqualität', 'w-[88%]', 'bg-sky-400'],
+            ['Nutzerzufriedenheit', 'w-[91%]', 'bg-emerald-500'],
+          ].map(([label, width, color]) => (
+            <div key={label} className="mt-4">
+              <p className="mb-1 text-sm font-bold text-[#172033]">{label}</p>
+              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md ${color} ${width}`} /></div>
+            </div>
+          ))}
+        </section>
+      </div>
+    </div>
+  )
+
+  const renderAds = () => (
+    <div className="grid gap-5 xl:grid-cols-[1fr_1.05fr]">
+      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <h2 className="text-xl font-bold text-[#111722]">Web Layout mit Werbeplätzen</h2>
+        <div className="mt-5 rounded-lg border border-[#d9e2ec] bg-[#f7fafd] p-5">
+          <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-700">Anzeige oben / native</div>
+          <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_160px]">
+            <div className="rounded-md border border-[#d9e2ec] bg-white p-5">
+              <p className="text-lg font-bold text-[#111722]">Chat Antwort</p>
+              <p className="mt-2 text-sm font-semibold text-[#5d6776]">Keine Anzeige im Schreibbereich</p>
+            </div>
+            <div className="grid min-h-[128px] place-items-center rounded-md border border-amber-300 bg-amber-50 text-2xl font-bold text-amber-600">Ad</div>
+          </div>
+          <div className="mt-5 rounded-md border border-[#d9e2ec] bg-white px-4 py-3 text-sm font-semibold text-[#7b8493]">Nachricht schreiben</div>
+        </div>
+      </section>
+      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <h2 className="text-xl font-bold text-[#111722]">AdSense Schutzregeln</h2>
+        <div className="mt-5 grid gap-3">
+          {[
+            ['Label', 'Anzeige klar kennzeichnen', 'green'],
+            ['Distance', 'Abstand zu Buttons und Composer', 'green'],
+            ['Consent', 'EU/UK Datenschutz vor Laden', 'green'],
+            ['Invalid Traffic', 'Klick-Muster, Bots, Freunde-Klicks filtern', 'amber'],
+            ['Performance', 'Lazy-load, keine Layoutsprünge', 'green'],
+            ['Hold', 'Verdächtige Einnahmen nicht auszahlen', 'green'],
+          ].map(([label, detail, tone]) => (
+            <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
+              <AdminStatusChip tone={tone as AdminMetric['tone']}>{label}</AdminStatusChip>
+              <p className="text-sm font-bold text-[#172033]">{detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+
+  const renderRevenue = () => (
+    <div className="grid gap-5">
+      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <p className="text-xl font-bold text-[#111722]">Formel</p>
+        <p className="mt-3 text-2xl font-bold text-emerald-600 md:text-3xl">User-Anteil = gültiger AdSense-Umsatz eines Profils x 25 %</p>
+        <p className="mt-2 text-sm font-semibold text-[#5d6776]">Beispiel: $40,960 gültiger Profil-Umsatz x 0.25 = $10,240 Auszahlung an Profilinhaber.</p>
+      </section>
+      <AdminTable columns={['Profil', 'Chats', 'Qualität', 'Ad RPM', 'gültiger Umsatz', '25 % Anteil', 'Status']} rows={profileRevenue} />
+      <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-[#172033]">Auszahlung erst nach Finalisierung, Invalid-Traffic-Abzug, Mindestbetrag, KYC/Steuerprüfung und Admin-Freigabe.</div>
+    </div>
+  )
+
+  const renderModerationSecurity = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {[
+          { label: 'Abuse Queue', value: '1,284', detail: 'Spam, Prompt Injection, gefährliche Inhalte.', tone: 'amber' },
+          { label: 'Invalid Ads', value: '0.18 %', detail: 'Verdächtige Klicks und Trafficquellen.', tone: 'green' },
+          { label: 'Audit Events', value: '9.2M', detail: 'Jede Änderung revisionssicher.', tone: 'cyan' },
+          { label: 'Privacy Requests', value: '742', detail: 'Export, Löschung, Korrektur.', tone: 'green' },
+        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+      </div>
+      <AdminTable columns={['Fall', 'Risiko', 'Quelle', 'Grund', 'Owner', 'Aktion']} rows={[
+        { Fall: 'A-30941', Risiko: 'hoch', Quelle: 'Chat', Grund: 'Policy / Selbstschaden', Owner: 'Trust', Aktion: 'Escalate' },
+        { Fall: 'AD-8821', Risiko: 'mittel', Quelle: 'Ad Click', Grund: 'Invalid pattern', Owner: 'Ads', Aktion: 'Hold' },
+        { Fall: 'U-1180', Risiko: 'hoch', Quelle: 'Signup', Grund: 'Bot cluster', Owner: 'Security', Aktion: 'Block' },
+        { Fall: 'P-7754', Risiko: 'mittel', Quelle: 'Twin', Grund: 'Copyright claim', Owner: 'Legal', Aktion: 'Review' },
+        { Fall: 'D-204', Risiko: 'niedrig', Quelle: 'DSGVO', Grund: 'Data export', Owner: 'Privacy', Aktion: 'Send' },
+      ]} />
+    </div>
+  )
+
+  const renderStorage = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {[
+          { label: 'IDrive E2', value: '14.8 PB', detail: '99 % Storage, Backups, Uploads, Medien.', tone: 'green' },
+          { label: 'Salad', value: '62K Jobs', detail: 'Compute, API, KI, Suche, Cronjobs.', tone: 'cyan' },
+          { label: 'GitHub', value: '42 repos', detail: 'Code und Versionierung only.', tone: 'navy' },
+          { label: 'Spaceship', value: 'healthy', detail: 'Domain und DNS.', tone: 'amber' },
+        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+      </div>
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Workloads + Jobs</h2>
+          {[
+            ['API inference', 'w-[72%]', 'bg-sky-400'],
+            ['Search indexing', 'w-[44%]', 'bg-emerald-500'],
+            ['Embedding builds', 'w-[61%]', 'bg-amber-400'],
+            ['Media processing', 'w-[37%]', 'bg-emerald-500'],
+            ['Backups', 'w-[29%]', 'bg-emerald-500'],
+          ].map(([label, width, color]) => (
+            <div key={label} className="mt-4">
+              <p className="mb-1 text-sm font-bold text-[#172033]">{label}</p>
+              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md ${color} ${width}`} /></div>
+            </div>
+          ))}
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Release Safety</h2>
+          <div className="mt-4 grid gap-3">
+            {['Canary 1 %', 'Crash-free 99.98 %', 'Rollback-Paket auf IDrive E2', 'App/PWA Offline-Dateien', 'Audit + Fehlerberichte'].map((item) => (
+              <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
+                <AdminStatusChip>OK</AdminStatusChip>
+                <span className="text-sm font-bold text-[#172033]">{item}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+
+  const renderSupport = () => (
+    <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
+      <AdminTable columns={['Queue', 'Count', 'Owner', 'SLA', 'Aktion']} rows={[
+        { Queue: 'Offene Tickets', Count: '4,280', Owner: 'Support', SLA: '92 %', Aktion: 'Priorisieren' },
+        { Queue: 'VIP Eskalationen', Count: '48', Owner: 'Support Lead', SLA: '99 %', Aktion: 'Sofort' },
+        { Queue: 'Payout Fragen', Count: '382', Owner: 'Finance', SLA: '88 %', Aktion: 'Prüfen' },
+        { Queue: 'Bug Reports', Count: '1,204', Owner: 'QA', SLA: '91 %', Aktion: 'Triagieren' },
+      ]} />
+      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <h2 className="text-xl font-bold text-[#111722]">Admin Rollen</h2>
+        <div className="mt-4 grid gap-2">
+          {['Super Admin', 'Trust & Safety', 'Finance', 'Support', 'Release Manager', 'Read-only Auditor'].map((role) => (
+            <button key={role} type="button" className="min-h-11 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 text-left text-sm font-bold text-[#172033]">
+              {role}
+            </button>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+
+  const renderActiveSection = () => {
+    if (activeSection === 'overview') return renderOverview()
+    if (activeSection === 'users') return renderUsers()
+    if (activeSection === 'registrations') return renderRegistrations()
+    if (activeSection === 'profiles') return renderProfiles()
+    if (activeSection === 'ads') return renderAds()
+    if (activeSection === 'revenue') return renderRevenue()
+    if (activeSection === 'moderation' || activeSection === 'security') return renderModerationSecurity()
+    if (activeSection === 'storage' || activeSection === 'releases') return renderStorage()
+    return renderSupport()
+  }
+
+  return (
+    <div className="smyst-admin-shell py-5 text-[#111722]">
+      <div className="grid gap-5 lg:grid-cols-[272px_1fr]">
+        <aside className="rounded-lg bg-[#111722] p-5 text-white lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
+          <div className="mb-6">
+            <p className="font-smyst-logo text-3xl leading-none">SMYST Admin</p>
+            <p className="mt-2 text-sm font-semibold text-[#aeb6c4]">Global control</p>
+          </div>
+          <nav className="grid gap-2" aria-label="Admin Navigation">
+            {adminSections.map((section) => {
+              const selected = section.id === activeSection
+              return (
+                <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[52px] items-center gap-3 rounded-md border px-3 text-left transition ${selected ? 'border-[#314158] bg-[#223044] text-white' : 'border-transparent bg-transparent text-[#c7cfda] hover:bg-white/[0.06]'}`}>
+                  <span className={`h-3 w-3 shrink-0 rounded-sm ${selected ? 'bg-[#59c7ff]' : 'bg-[#66758a]'}`} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-bold">{section.label}</span>
+                    <span className="block truncate text-xs font-semibold text-[#8996a8]">{section.detail}</span>
+                  </span>
+                </button>
+              )
+            })}
+          </nav>
+        </aside>
+        <section className="rounded-lg border border-[#d9e2ec] bg-[#f7fafd] p-4 shadow-sm sm:p-6">
+          <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#5d6776]">Admin Command Center</p>
+              <h1 className="mt-2 text-3xl font-bold tracking-normal text-[#111722] sm:text-4xl">{sectionTitle}</h1>
+              <p className="mt-3 max-w-4xl text-base leading-relaxed text-[#5d6776]">
+                Ein Kontrollzentrum für Milliarden-Nutzer-Betrieb: User, AI-Profile, AdSense, 25 % Revenue Share, Sicherheit, IDrive E2, Salad, Support und Releases an einem Ort.
+              </p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-3">
+              <AdminStatusChip tone={adminBackendStatus === 'live' ? 'green' : adminBackendStatus === 'denied' ? 'amber' : adminBackendStatus === 'loading' ? 'cyan' : 'red'}>
+                {adminBackendStatus === 'live' ? 'Backend live' : adminBackendStatus === 'denied' ? 'Login/Rechte' : adminBackendStatus === 'loading' ? 'Backend check' : 'Backend offline'}
+              </AdminStatusChip>
+              <AdminStatusChip tone="amber">Policy watch</AdminStatusChip>
+              <AdminStatusChip tone="cyan">Live data</AdminStatusChip>
+            </div>
+          </div>
+          <section className="mb-6 grid gap-3 rounded-lg border border-[#d9e2ec] bg-white p-4 lg:grid-cols-3">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Admin API</p>
+              <p className="mt-1 text-sm font-bold text-[#111722]">
+                {adminBackendStatus === 'live'
+                  ? adminOverview?.mode ?? 'cloudflare-kv-admin-control'
+                  : adminBackendStatus === 'denied'
+                    ? 'Admin-Session oder Rechte fehlen'
+                    : adminBackendStatus === 'loading'
+                      ? 'Prüfung läuft'
+                      : 'API nicht erreichbar'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">KV Ledger</p>
+              <p className="mt-1 text-sm font-bold text-[#111722]">
+                {adminOverview
+                  ? `${adminOverview.metrics?.revenueProfiles ?? 0} Profile, ${adminOverview.metrics?.heldProfiles ?? 0} Holds`
+                  : 'Wartet auf Live-Daten'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Speicherplan</p>
+              <p className="mt-1 text-sm font-bold text-[#111722]">
+                {adminOverview?.storagePlan
+                  ? `${adminOverview.storagePlan.metadata} + ${adminOverview.storagePlan.objects}`
+                  : 'Cloudflare KV + IDrive E2'}
+              </p>
+            </div>
+          </section>
+          {renderActiveSection()}
+        </section>
+      </div>
+    </div>
   )
 }
 
