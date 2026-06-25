@@ -21,8 +21,8 @@ if (missing.length) {
 
 const expected = {
   PUBLIC_BASE_URL: 'https://smyst.com',
-  AUTH_PUBLIC_BASE_URL: 'https://api.smyst.com',
-  GOOGLE_OAUTH_REDIRECT_URI: 'https://api.smyst.com/auth/google/callback',
+  AUTH_PUBLIC_BASE_URL: 'https://parmesan-onion-pw08cg2t1ge4jnk6.salad.cloud',
+  GOOGLE_OAUTH_REDIRECT_URI: 'https://parmesan-onion-pw08cg2t1ge4jnk6.salad.cloud/auth/google/callback',
 };
 
 const mismatches = Object.entries(expected).filter(([key, value]) => process.env[key] !== value);
