@@ -1243,6 +1243,32 @@ function defaultProfile(session: SessionData, now = Date.now()): ProfileRecord {
   };
 }
 
+function normalizeStoredProfile(raw: Partial<ProfileRecord>, fallback: ProfileRecord): ProfileRecord {
+  const createdAt = typeof raw.createdAt === 'number' && Number.isFinite(raw.createdAt) ? raw.createdAt : fallback.createdAt;
+  const updatedAt = typeof raw.updatedAt === 'number' && Number.isFinite(raw.updatedAt) ? raw.updatedAt : fallback.updatedAt;
+  return {
+    ...fallback,
+    id: 'default',
+    userSub: fallback.userSub,
+    displayName: sanitizeText(raw.displayName, MAX_TWIN_NAME_CHARS) || fallback.displayName,
+    headline: sanitizeText(raw.headline, 180) || undefined,
+    privateBio: sanitizeText(raw.privateBio, MAX_PROFILE_BIO_CHARS) || undefined,
+    publicBio: sanitizeText(raw.publicBio, MAX_PROFILE_PUBLIC_BIO_CHARS) || undefined,
+    roles: sanitizeList(raw.roles),
+    expertise: sanitizeList(raw.expertise),
+    goals: sanitizeList(raw.goals),
+    languages: sanitizeLanguageList(raw.languages),
+    tone: sanitizeText(raw.tone, MAX_PROFILE_FIELD_CHARS) || fallback.tone,
+    visibility: normalizeProfileVisibility(raw.visibility),
+    memoryCount: count(raw.memoryCount, MAX_MEMORY_ITEMS),
+    chatCount: count(raw.chatCount, 100),
+    objectPrefix: sanitizeText(raw.objectPrefix, 240) || fallback.objectPrefix,
+    createdAt,
+    updatedAt,
+    qualityScore: 0,
+  };
+}
+
 function profileQualityScore(profile: ProfileRecord): number {
   let score = 0;
   if (profile.displayName.trim().length >= 2) score += 15;
@@ -1260,9 +1286,13 @@ function profileQualityScore(profile: ProfileRecord): number {
 
 async function loadProfile(env: ApiEnv, session: SessionData): Promise<ProfileRecord> {
   const kv = metadataStore(env);
-  const stored = await getJson<ProfileRecord | null>(kv, profileKey(session.sub), null);
-  if (stored) return stored;
   const profile = defaultProfile(session);
+  const stored = await getJson<Partial<ProfileRecord> | null>(kv, profileKey(session.sub), null);
+  if (stored) {
+    const normalized = normalizeStoredProfile(stored, profile);
+    normalized.qualityScore = profileQualityScore(normalized);
+    return normalized;
+  }
   profile.qualityScore = profileQualityScore(profile);
   await kv.put(profileKey(session.sub), JSON.stringify(profile), { expirationTtl: PROFILE_TTL_SECONDS });
   return profile;
