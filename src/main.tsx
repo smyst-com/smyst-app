@@ -8,9 +8,24 @@ import './index.css'
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return
   window.addEventListener('load', () => {
-    void navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch((err) => {
-      console.warn('[pwa] service worker registration failed', err)
+    let refreshing = false
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return
+      refreshing = true
+      window.location.reload()
     })
+
+    void navigator.serviceWorker
+      .register('/sw.js', { scope: '/', updateViaCache: 'none' })
+      .then((registration) => {
+        void registration.update()
+        window.setInterval(() => {
+          void registration.update()
+        }, 60 * 60 * 1000)
+      })
+      .catch((err) => {
+        console.warn('[pwa] service worker registration failed', err)
+      })
   })
 }
 

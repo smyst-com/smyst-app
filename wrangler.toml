@@ -17,7 +17,7 @@ name = "smyst-translate"
 main = "workers/translate.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
-account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+account_id = "186363805f9fc571fd16528a1ed7c52d"
 
 # Routes: Worker greift auf alle HTML-Anfragen zu, die durch /<lang>/ kommen.
 # In Produktion auf custom domain mounten:
@@ -31,14 +31,14 @@ zone_name = "smyst.com"
 
 # Variables (kein Secret) — Origin URL der Vite-PWA auf Cloudflare Pages
 [vars]
-ORIGIN_URL = "https://smyst-vite-app.pages.dev"
+ORIGIN_URL = "https://smyst-app-67m.pages.dev"
 CANONICAL_HOST = "https://smyst.com"
 
 # KV Namespaces — IDs nach `wrangler kv:namespace create` ersetzen
 [[kv_namespaces]]
 binding = "TRANSLATIONS"
-id = "d759942d22f64ae5ab9af0801bba78d9"
-preview_id = "83c5d8584f2f45f5a217d7d72b7327a1"
+id = "9790a73572ff4308aed92cb45879f81e"
+preview_id = "eef0904c0e404ac3b1171aa4aa9be96d"
 
 # Observability
 [observability]
@@ -56,7 +56,7 @@ head_sampling_rate = 1
 [env.warmup]
 name = "smyst-warmup"
 main = "workers/warmup-translations.ts"
-account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+account_id = "186363805f9fc571fd16528a1ed7c52d"
 routes = []
 workers_dev = true
 
@@ -65,16 +65,16 @@ workers_dev = true
 crons = ["0 3 * * SUN"]
 
 [env.warmup.vars]
-ORIGIN_URL = "https://smyst-vite-app.pages.dev"
+ORIGIN_URL = "https://smyst-app-67m.pages.dev"
 CANONICAL_HOST = "https://smyst.com"
 
 [[env.warmup.kv_namespaces]]
 binding = "TRANSLATIONS"
-id = "d759942d22f64ae5ab9af0801bba78d9"
+id = "9790a73572ff4308aed92cb45879f81e"
 
 [[env.warmup.kv_namespaces]]
 binding = "WARMUP_CONFIG"
-id = "334c6dca50634263b9d7f9aa8273388f"
+id = "08b7e5bf71b040e0843ed113b5f727f4"
 
 # ---------------------------------------------------------------------------
 # Auth-Worker — GitHub OAuth + Sessions
@@ -84,7 +84,7 @@ id = "334c6dca50634263b9d7f9aa8273388f"
 [env.auth]
 name = "smyst-auth"
 main = "workers/auth-github.ts"
-account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+account_id = "186363805f9fc571fd16528a1ed7c52d"
 
 [[env.auth.routes]]
 pattern = "smyst.com/auth/*"
@@ -92,7 +92,7 @@ zone_name = "smyst.com"
 
 [env.auth.vars]
 CANONICAL_HOST = "https://smyst.com"
-ORIGIN_URL = "https://smyst-vite-app.pages.dev"
+ORIGIN_URL = "https://smyst-app-67m.pages.dev"
 SMYST_OWNER_GITHUB_IDS = "284471437"
 SMYST_OWNER_EMAILS = "smyst247@gmail.com"
 SMYST_ADMIN_GITHUB_IDS = ""
@@ -100,15 +100,15 @@ SMYST_ADMIN_EMAILS = ""
 
 [[env.auth.kv_namespaces]]
 binding = "TRANSLATIONS"
-id = "d759942d22f64ae5ab9af0801bba78d9"
+id = "9790a73572ff4308aed92cb45879f81e"
 
 [[env.auth.kv_namespaces]]
 binding = "SESSIONS"
-id = "d74ab18d7859464b92fc730bd453fcc6"
+id = "925ca987abb04ef0915bc8e24aea0588"
 
 [[env.auth.kv_namespaces]]
 binding = "OAUTH_STATE"
-id = "bafc5fc93a504c9abf33af69601e31dc"
+id = "f8daec3641d04c51a4d3a441e5febd12"
 
 # ---------------------------------------------------------------------------
 # Storage-Worker — IDrive E2 (Memory-Files)
@@ -118,7 +118,7 @@ id = "bafc5fc93a504c9abf33af69601e31dc"
 [env.storage]
 name = "smyst-storage"
 main = "workers/storage-idrive.ts"
-account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+account_id = "186363805f9fc571fd16528a1ed7c52d"
 
 [[env.storage.routes]]
 pattern = "smyst.com/storage/*"
@@ -126,7 +126,7 @@ zone_name = "smyst.com"
 
 [env.storage.vars]
 CANONICAL_HOST = "https://smyst.com"
-ORIGIN_URL = "https://smyst-vite-app.pages.dev"
+ORIGIN_URL = "https://smyst-app-67m.pages.dev"
 IDRIVE_E2_ENDPOINT = "https://s3.us-west-2.idrivee2.com"
 IDRIVE_E2_BUCKET = "smyst-memories"
 IDRIVE_E2_REGION = "us-west-2"
@@ -145,19 +145,19 @@ IDRIVE_E2_MAX_TWIN_DATA_BYTES = "10485760"
 
 [[env.storage.kv_namespaces]]
 binding = "TRANSLATIONS"
-id = "d759942d22f64ae5ab9af0801bba78d9"
+id = "9790a73572ff4308aed92cb45879f81e"
 
 [[env.storage.kv_namespaces]]
 binding = "SESSIONS"
-id = "d74ab18d7859464b92fc730bd453fcc6"
+id = "925ca987abb04ef0915bc8e24aea0588"
 
 [[env.storage.kv_namespaces]]
 binding = "METADATA"
-id = "24a718c1c31248779add893b93fd4152"
+id = "e85f2a9237b84cb2be1cb3518e56217c"
 
 [[env.storage.kv_namespaces]]
 binding = "OAUTH_STATE"
-id = "bafc5fc93a504c9abf33af69601e31dc"
+id = "f8daec3641d04c51a4d3a441e5febd12"
 
 # ---------------------------------------------------------------------------
 # API-Worker — Free-only Chat/API
@@ -167,27 +167,54 @@ id = "bafc5fc93a504c9abf33af69601e31dc"
 [env.api]
 name = "smyst-api"
 main = "workers/api.ts"
-account_id = "477794df69f0b6a0b9e4c59e36883c1f"
+account_id = "186363805f9fc571fd16528a1ed7c52d"
 
 [[env.api.routes]]
 pattern = "smyst.com/api/*"
 zone_name = "smyst.com"
 
+[[env.api.routes]]
+pattern = "www.smyst.com/api/*"
+zone_name = "smyst.com"
+
+[[env.api.routes]]
+pattern = "app.smyst.com/api/*"
+zone_name = "smyst.com"
+
+[[env.api.routes]]
+pattern = "api.smyst.com/*"
+zone_name = "smyst.com"
+
 [env.api.vars]
 CANONICAL_HOST = "https://smyst.com"
-ORIGIN_URL = "https://smyst-vite-app.pages.dev"
+ORIGIN_URL = "https://smyst-app-67m.pages.dev"
+SMYST_AI_ROUTER_MODE = "salad-production"
+SMYST_AI_PRIMARY_PROVIDER = "salad"
+SMYST_AI_MODEL_FAST = "free-only-rule-based-fast"
+SMYST_AI_MODEL_REASONING = "pending-salad-reasoning"
+SMYST_AI_MODEL_RAG = "pending-salad-rag"
+SMYST_AI_STREAMING_ENABLED = "false"
+SALAD_API_BASE_URL = "https://api.salad.com/api/public"
+SALAD_ORGANIZATION_NAME = "smyst-com"
+SALAD_PROJECT_NAME = "default"
+SALAD_CONTAINER_GROUP = "smyst-compute-worker"
+SALAD_CONTAINER_HEALTH_URL = "https://juniper-habanero-4boc33ingp3ltvsm.salad.cloud/health"
+
+[[env.api.kv_namespaces]]
+binding = "TRANSLATIONS"
+id = "9790a73572ff4308aed92cb45879f81e"
 
 [[env.api.kv_namespaces]]
 binding = "SESSIONS"
-id = "d74ab18d7859464b92fc730bd453fcc6"
+id = "925ca987abb04ef0915bc8e24aea0588"
 
 [[env.api.kv_namespaces]]
 binding = "OAUTH_STATE"
-id = "bafc5fc93a504c9abf33af69601e31dc"
+id = "f8daec3641d04c51a4d3a441e5febd12"
 
 [[env.api.kv_namespaces]]
 binding = "METADATA"
-id = "24a718c1c31248779add893b93fd4152"
+id = "e85f2a9237b84cb2be1cb3518e56217c"
 
 # ---------------------------------------------------------------------------
 # Secrets (per `wrangler secret put`):
@@ -200,8 +227,19 @@ id = "24a718c1c31248779add893b93fd4152"
 #   GITHUB_OAUTH_CLIENT_ID        → aus GitHub OAuth App
 #   GITHUB_OAUTH_CLIENT_SECRET    → aus GitHub OAuth App
 #   AUTH_HMAC_SECRET              → openssl rand -base64 48
+#   SMYST_ADMIN_TOTP_SECRETS      → per-admin TOTP map, z. B. email@example.com=BASE32
+#   SMYST_ADMIN_TOTP_SECRET       → optionaler Single-Admin-Fallback, besser vermeiden
 #
 # Storage:
 #   IDRIVE_E2_ACCESS_KEY          → aus IDrive E2 Console
 #   IDRIVE_E2_SECRET_KEY          → aus IDrive E2 Console
+#
+# Salad Compute / AI:
+#   SALAD_API_BASE_URL            → Salad API base URL
+#   SALAD_ORGANIZATION_NAME       → Salad organization name
+#   SALAD_PROJECT_NAME            → Salad project name
+#   SALAD_CONTAINER_GROUP         → Salad container group for Smyst jobs
+#   SALAD_CONTAINER_HEALTH_URL    → public health URL of the Salad runtime
+#   SALAD_API_KEY                 → Salad API key
+#   SMYST_COMPUTE_CALLBACK_SECRET → internal bearer secret for Salad job callbacks
 # ---------------------------------------------------------------------------

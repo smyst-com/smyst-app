@@ -42,7 +42,7 @@
 
 /sw.js
   Content-Type: application/javascript; charset=utf-8
-  Cache-Control: no-cache
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
 /offline.html
   Cache-Control: public, max-age=3600

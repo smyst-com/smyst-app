@@ -58,6 +58,10 @@ pnpm-debug.log*
 coverage
 .nyc_output
 
+# --- Generated audit/mockup artifacts ---
+output
+tmp
+
 # --- OS ---
 Thumbs.db
 desktop.ini

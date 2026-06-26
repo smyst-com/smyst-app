@@ -79,6 +79,7 @@ const MAX_UPLOAD_INDEX_READS = 100;
 const MAX_OBJECT_JSON_BYTES = 128 * 1024;
 
 function allowedMethodsForStoragePath(pathname: string): string[] | null {
+  if (pathname === '/storage/capabilities') return ['GET'];
   if (pathname === '/storage/upload-url') return ['POST'];
   if (pathname === '/storage/upload-complete') return ['POST'];
   if (pathname === '/storage/uploads') return ['GET'];
@@ -89,7 +90,35 @@ function allowedMethodsForStoragePath(pathname: string): string[] | null {
   return null;
 }
 
-type StorageCategory = 'audio' | 'image' | 'video' | 'document' | 'profile_image' | 'backup' | 'twin_data';
+type StorageCategory =
+  | 'audio'
+  | 'image'
+  | 'video'
+  | 'document'
+  | 'profile_image'
+  | 'backup'
+  | 'twin_data'
+  | 'static_asset'
+  | 'app_build'
+  | 'release_file'
+  | 'audit_log'
+  | 'error_report'
+  | 'admin_export'
+  | 'rag_document'
+  | 'embedding_file'
+  | 'search_index_backup'
+  | 'prompt_file'
+  | 'model_file'
+  | 'training_data'
+  | 'thumbnail'
+  | 'subtitle'
+  | 'translation_file'
+  | 'legal_document'
+  | 'qa_artifact'
+  | 'maintenance_asset'
+  | 'cache_file'
+  | 'public_cdn_file'
+  | 'private_signed_file';
 
 const STORAGE_CATEGORIES: ReadonlySet<StorageCategory> = new Set([
   'audio',
@@ -99,6 +128,27 @@ const STORAGE_CATEGORIES: ReadonlySet<StorageCategory> = new Set([
   'profile_image',
   'backup',
   'twin_data',
+  'static_asset',
+  'app_build',
+  'release_file',
+  'audit_log',
+  'error_report',
+  'admin_export',
+  'rag_document',
+  'embedding_file',
+  'search_index_backup',
+  'prompt_file',
+  'model_file',
+  'training_data',
+  'thumbnail',
+  'subtitle',
+  'translation_file',
+  'legal_document',
+  'qa_artifact',
+  'maintenance_asset',
+  'cache_file',
+  'public_cdn_file',
+  'private_signed_file',
 ]);
 
 const CONTENT_TYPE_EXTENSIONS: Record<string, string[]> = {
@@ -117,6 +167,7 @@ const CONTENT_TYPE_EXTENSIONS: Record<string, string[]> = {
   'image/avif': ['.avif'],
   'image/heic': ['.heic'],
   'image/heif': ['.heif'],
+  'image/svg+xml': ['.svg'],
   'video/mp4': ['.mp4'],
   'video/quicktime': ['.mov'],
   'video/webm': ['.webm'],
@@ -128,6 +179,18 @@ const CONTENT_TYPE_EXTENSIONS: Record<string, string[]> = {
   'application/zip': ['.zip'],
   'application/gzip': ['.gz'],
   'application/x-tar': ['.tar'],
+  'application/octet-stream': ['.bin'],
+  'application/x-apple-diskimage': ['.dmg'],
+  'application/vnd.android.package-archive': ['.apk'],
+  'application/x-apple-ios-app': ['.ipa'],
+  'application/javascript': ['.js'],
+  'text/javascript': ['.js'],
+  'text/css': ['.css'],
+  'text/html': ['.html', '.htm'],
+  'application/xml': ['.xml'],
+  'text/vtt': ['.vtt'],
+  'application/x-subrip': ['.srt'],
+  'application/wasm': ['.wasm'],
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
   'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
@@ -157,6 +220,58 @@ const ALLOWED_CONTENT_TYPES_BY_CATEGORY: Record<StorageCategory, ReadonlySet<str
   profile_image: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
   backup: new Set(['application/json', 'application/zip', 'application/gzip', 'application/x-tar', 'text/plain']),
   twin_data: new Set(['application/json', 'text/plain', 'text/markdown']),
+  static_asset: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/svg+xml', 'text/css', 'text/html', 'application/javascript', 'text/javascript', 'application/json', 'application/wasm']),
+  app_build: new Set(['application/zip', 'application/gzip', 'application/x-tar', 'application/octet-stream', 'application/vnd.android.package-archive', 'application/x-apple-ios-app']),
+  release_file: new Set(['application/json', 'application/zip', 'application/gzip', 'application/x-tar', 'application/octet-stream', 'text/plain']),
+  audit_log: new Set(['application/json', 'text/plain', 'text/csv', 'application/gzip']),
+  error_report: new Set(['application/json', 'text/plain', 'text/markdown', 'application/zip']),
+  admin_export: new Set(['application/json', 'text/csv', 'application/zip', 'application/gzip', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']),
+  rag_document: new Set(['application/pdf', 'text/plain', 'text/markdown', 'text/csv', 'application/json', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']),
+  embedding_file: new Set(['application/json', 'application/octet-stream', 'application/gzip', 'application/zip']),
+  search_index_backup: new Set(['application/json', 'application/octet-stream', 'application/gzip', 'application/zip']),
+  prompt_file: new Set(['application/json', 'text/plain', 'text/markdown']),
+  model_file: new Set(['application/octet-stream', 'application/zip', 'application/gzip', 'application/x-tar', 'application/json']),
+  training_data: new Set(['application/json', 'text/plain', 'text/markdown', 'text/csv', 'application/zip', 'application/gzip']),
+  thumbnail: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']),
+  subtitle: new Set(['text/vtt', 'application/x-subrip', 'text/plain']),
+  translation_file: new Set(['application/json', 'text/plain', 'text/markdown', 'text/csv']),
+  legal_document: new Set(['application/pdf', 'text/plain', 'text/markdown', 'text/html', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']),
+  qa_artifact: new Set(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'application/pdf', 'application/json', 'text/plain', 'application/zip']),
+  maintenance_asset: new Set(['text/html', 'text/css', 'application/javascript', 'text/javascript', 'application/json', 'image/svg+xml', 'image/png', 'image/webp']),
+  cache_file: new Set(['application/json', 'text/plain', 'text/html', 'text/css', 'application/javascript', 'text/javascript']),
+  public_cdn_file: new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/svg+xml', 'text/css', 'text/html', 'application/javascript', 'text/javascript', 'application/json', 'application/wasm', 'application/pdf']),
+  private_signed_file: new Set(['application/pdf', 'application/json', 'text/plain', 'text/markdown', 'text/csv', 'application/zip', 'application/gzip', 'image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'audio/mpeg']),
+};
+
+const STORAGE_CATEGORY_PURPOSE: Record<StorageCategory, string> = {
+  audio: 'User audio memories and recordings',
+  image: 'User image uploads and memory photos',
+  video: 'User video uploads and previews',
+  document: 'PDF, text, markdown, CSV and office documents',
+  profile_image: 'Profile pictures and avatars',
+  backup: 'User-scoped backups and exports',
+  twin_data: 'AI twin JSON, text and markdown data',
+  static_asset: 'Static app and website assets staged in IDrive e2',
+  app_build: 'APK, AAB, IPA and packaged app build artifacts',
+  release_file: 'Release packages, rollback files and update bundles',
+  audit_log: 'Audit logs and immutable security/event records',
+  error_report: 'Error reports and diagnostic bundles',
+  admin_export: 'Admin exports, finance exports and operational reports',
+  rag_document: 'RAG source documents and knowledge files',
+  embedding_file: 'Embedding vectors and generated retrieval artifacts',
+  search_index_backup: 'Search index snapshots and restore bundles',
+  prompt_file: 'Prompt files, profile DNA and model-routing config',
+  model_file: 'Model files and model metadata stored as objects',
+  training_data: 'Training, eval and quality datasets',
+  thumbnail: 'Image thumbnails and video preview frames',
+  subtitle: 'Subtitles, captions and transcript sidecar files',
+  translation_file: 'Translations and static locale data',
+  legal_document: 'Legal documents, policies, imprint and consent records',
+  qa_artifact: 'Screenshots, QA videos, PDFs and test evidence',
+  maintenance_asset: 'Maintenance pages and outage assets',
+  cache_file: 'Offline files and generated cache artifacts',
+  public_cdn_file: 'Public CDN candidate files; publication is controlled outside this private upload worker',
+  private_signed_file: 'Private signed-download files that do not fit a narrower category',
 };
 
 // ---------- Hex/Base64 Helpers ----------
@@ -494,6 +609,48 @@ function generateKey(category: StorageCategory, userSub: string, contentType: st
       return `${root}/backups/${monthKey()}/${uuid}${ext}`;
     case 'twin_data':
       return `${root}/twins/${safePathSegment(twinId ?? 'unassigned')}/data/${uuid}${ext}`;
+    case 'static_asset':
+      return `${root}/assets/static/${monthKey()}/${uuid}${ext}`;
+    case 'app_build':
+      return `${root}/apps/builds/${monthKey()}/${uuid}${ext}`;
+    case 'release_file':
+      return `${root}/releases/${monthKey()}/${uuid}${ext}`;
+    case 'audit_log':
+      return `${root}/audit/logs/${monthKey()}/${uuid}${ext}`;
+    case 'error_report':
+      return `${root}/reports/errors/${monthKey()}/${uuid}${ext}`;
+    case 'admin_export':
+      return `${root}/admin/exports/${monthKey()}/${uuid}${ext}`;
+    case 'rag_document':
+      return `${root}/ai/rag/documents/${monthKey()}/${uuid}${ext}`;
+    case 'embedding_file':
+      return `${root}/ai/embeddings/${monthKey()}/${uuid}${ext}`;
+    case 'search_index_backup':
+      return `${root}/search/index-backups/${monthKey()}/${uuid}${ext}`;
+    case 'prompt_file':
+      return `${root}/ai/prompts/${monthKey()}/${uuid}${ext}`;
+    case 'model_file':
+      return `${root}/ai/models/${monthKey()}/${uuid}${ext}`;
+    case 'training_data':
+      return `${root}/ai/training-data/${monthKey()}/${uuid}${ext}`;
+    case 'thumbnail':
+      return `${root}/media/thumbnails/${monthKey()}/${uuid}${ext}`;
+    case 'subtitle':
+      return `${root}/media/subtitles/${monthKey()}/${uuid}${ext}`;
+    case 'translation_file':
+      return `${root}/i18n/translations/${monthKey()}/${uuid}${ext}`;
+    case 'legal_document':
+      return `${root}/legal/documents/${monthKey()}/${uuid}${ext}`;
+    case 'qa_artifact':
+      return `${root}/qa/artifacts/${monthKey()}/${uuid}${ext}`;
+    case 'maintenance_asset':
+      return `${root}/ops/maintenance/${monthKey()}/${uuid}${ext}`;
+    case 'cache_file':
+      return `${root}/cache/files/${monthKey()}/${uuid}${ext}`;
+    case 'public_cdn_file':
+      return `${root}/cdn/public-candidates/${monthKey()}/${uuid}${ext}`;
+    case 'private_signed_file':
+      return `${root}/private/signed/${monthKey()}/${uuid}${ext}`;
   }
 }
 
@@ -538,6 +695,27 @@ function categoryLimit(env: StorageEnv, category: StorageCategory): number {
     profile_image: 2 * 1024 * 1024,
     backup: 25 * 1024 * 1024,
     twin_data: 10 * 1024 * 1024,
+    static_asset: 10 * 1024 * 1024,
+    app_build: 50 * 1024 * 1024,
+    release_file: 50 * 1024 * 1024,
+    audit_log: 10 * 1024 * 1024,
+    error_report: 20 * 1024 * 1024,
+    admin_export: 25 * 1024 * 1024,
+    rag_document: 20 * 1024 * 1024,
+    embedding_file: 50 * 1024 * 1024,
+    search_index_backup: 50 * 1024 * 1024,
+    prompt_file: 5 * 1024 * 1024,
+    model_file: 50 * 1024 * 1024,
+    training_data: 50 * 1024 * 1024,
+    thumbnail: 2 * 1024 * 1024,
+    subtitle: 2 * 1024 * 1024,
+    translation_file: 5 * 1024 * 1024,
+    legal_document: 10 * 1024 * 1024,
+    qa_artifact: 50 * 1024 * 1024,
+    maintenance_asset: 10 * 1024 * 1024,
+    cache_file: 10 * 1024 * 1024,
+    public_cdn_file: 20 * 1024 * 1024,
+    private_signed_file: 50 * 1024 * 1024,
   };
   const envByCategory: Record<StorageCategory, string | undefined> = {
     audio: env.IDRIVE_E2_MAX_AUDIO_BYTES,
@@ -547,11 +725,139 @@ function categoryLimit(env: StorageEnv, category: StorageCategory): number {
     profile_image: env.IDRIVE_E2_MAX_PROFILE_IMAGE_BYTES,
     backup: env.IDRIVE_E2_MAX_BACKUP_BYTES,
     twin_data: env.IDRIVE_E2_MAX_TWIN_DATA_BYTES,
+    static_asset: undefined,
+    app_build: undefined,
+    release_file: undefined,
+    audit_log: undefined,
+    error_report: undefined,
+    admin_export: undefined,
+    rag_document: undefined,
+    embedding_file: undefined,
+    search_index_backup: undefined,
+    prompt_file: undefined,
+    model_file: undefined,
+    training_data: undefined,
+    thumbnail: undefined,
+    subtitle: undefined,
+    translation_file: undefined,
+    legal_document: undefined,
+    qa_artifact: undefined,
+    maintenance_asset: undefined,
+    cache_file: undefined,
+    public_cdn_file: undefined,
+    private_signed_file: undefined,
   };
   return Math.min(
     readLimit(env.IDRIVE_E2_MAX_FILE_BYTES, DEFAULT_MAX_FILE_SIZE_BYTES),
     readLimit(envByCategory[category], fallbackByCategory[category]),
   );
+}
+
+function categoryPathTemplate(category: StorageCategory): string {
+  const root = 'users/{userId}';
+  switch (category) {
+    case 'audio': return `${root}/uploads/audio/{fileId}.{ext}`;
+    case 'image': return `${root}/uploads/images/{fileId}.{ext}`;
+    case 'video': return `${root}/uploads/videos/{fileId}.{ext}`;
+    case 'document': return `${root}/uploads/documents/{fileId}.{ext}`;
+    case 'profile_image': return `${root}/profile/images/{fileId}.{ext}`;
+    case 'backup': return `${root}/backups/{YYYY-MM}/{fileId}.{ext}`;
+    case 'twin_data': return `${root}/twins/{twinId}/data/{fileId}.{ext}`;
+    case 'static_asset': return `${root}/assets/static/{YYYY-MM}/{fileId}.{ext}`;
+    case 'app_build': return `${root}/apps/builds/{YYYY-MM}/{fileId}.{ext}`;
+    case 'release_file': return `${root}/releases/{YYYY-MM}/{fileId}.{ext}`;
+    case 'audit_log': return `${root}/audit/logs/{YYYY-MM}/{fileId}.{ext}`;
+    case 'error_report': return `${root}/reports/errors/{YYYY-MM}/{fileId}.{ext}`;
+    case 'admin_export': return `${root}/admin/exports/{YYYY-MM}/{fileId}.{ext}`;
+    case 'rag_document': return `${root}/ai/rag/documents/{YYYY-MM}/{fileId}.{ext}`;
+    case 'embedding_file': return `${root}/ai/embeddings/{YYYY-MM}/{fileId}.{ext}`;
+    case 'search_index_backup': return `${root}/search/index-backups/{YYYY-MM}/{fileId}.{ext}`;
+    case 'prompt_file': return `${root}/ai/prompts/{YYYY-MM}/{fileId}.{ext}`;
+    case 'model_file': return `${root}/ai/models/{YYYY-MM}/{fileId}.{ext}`;
+    case 'training_data': return `${root}/ai/training-data/{YYYY-MM}/{fileId}.{ext}`;
+    case 'thumbnail': return `${root}/media/thumbnails/{YYYY-MM}/{fileId}.{ext}`;
+    case 'subtitle': return `${root}/media/subtitles/{YYYY-MM}/{fileId}.{ext}`;
+    case 'translation_file': return `${root}/i18n/translations/{YYYY-MM}/{fileId}.{ext}`;
+    case 'legal_document': return `${root}/legal/documents/{YYYY-MM}/{fileId}.{ext}`;
+    case 'qa_artifact': return `${root}/qa/artifacts/{YYYY-MM}/{fileId}.{ext}`;
+    case 'maintenance_asset': return `${root}/ops/maintenance/{YYYY-MM}/{fileId}.{ext}`;
+    case 'cache_file': return `${root}/cache/files/{YYYY-MM}/{fileId}.{ext}`;
+    case 'public_cdn_file': return `${root}/cdn/public-candidates/{YYYY-MM}/{fileId}.{ext}`;
+    case 'private_signed_file': return `${root}/private/signed/{YYYY-MM}/{fileId}.{ext}`;
+  }
+}
+
+function categoryAccess(category: StorageCategory): 'private-signed' | 'candidate-public' {
+  return category === 'public_cdn_file' ? 'candidate-public' : 'private-signed';
+}
+
+function storageConfiguration(env: StorageEnv): { ready: boolean; missing: string[] } {
+  const missing = [
+    !env.IDRIVE_E2_ENDPOINT?.trim() && 'IDRIVE_E2_ENDPOINT',
+    !env.IDRIVE_E2_BUCKET?.trim() && 'IDRIVE_E2_BUCKET',
+    !env.IDRIVE_E2_REGION?.trim() && 'IDRIVE_E2_REGION',
+    !env.IDRIVE_E2_ACCESS_KEY?.trim() && 'IDRIVE_E2_ACCESS_KEY',
+    !env.IDRIVE_E2_SECRET_KEY?.trim() && 'IDRIVE_E2_SECRET_KEY',
+  ].filter(Boolean) as string[];
+  return { ready: missing.length === 0, missing };
+}
+
+function requireStorageConfigured(env: StorageEnv): Response | null {
+  const config = storageConfiguration(env);
+  if (config.ready) return null;
+  return errorResponse(
+    'storage_config_missing',
+    'IDrive e2 storage is not fully configured. Set the missing Cloudflare Worker secrets/vars before using object operations.',
+    503,
+    {
+      provider: 'IDrive e2',
+      missing: config.missing,
+      requiredSecrets: ['IDRIVE_E2_ACCESS_KEY', 'IDRIVE_E2_SECRET_KEY'],
+    },
+  );
+}
+
+function handleCapabilities(env: StorageEnv): Response {
+  const config = storageConfiguration(env);
+  const categories = Array.from(STORAGE_CATEGORIES).map((category) => ({
+    category,
+    purpose: STORAGE_CATEGORY_PURPOSE[category],
+    access: categoryAccess(category),
+    maxBytes: categoryLimit(env, category),
+    allowedContentTypes: Array.from(ALLOWED_CONTENT_TYPES_BY_CATEGORY[category]).sort(),
+    pathTemplate: categoryPathTemplate(category),
+    requiresTwinId: category === 'twin_data',
+  }));
+  return jsonResponse({
+    ok: true,
+    service: 'smyst-storage',
+    phase: 'phase-1-production-foundation',
+    provider: 'IDrive e2',
+    configuration: {
+      ready: config.ready,
+      status: config.ready ? 'ready' : 'blocked',
+      missing: config.missing,
+      requiredSecrets: ['IDRIVE_E2_ACCESS_KEY', 'IDRIVE_E2_SECRET_KEY'],
+      note: config.ready
+        ? 'IDrive e2 object operations can issue signed URLs.'
+        : 'Set missing Cloudflare Worker secrets before uploads, downloads, deletes and server-side objects can run.',
+    },
+    metadata: env.METADATA ? 'Cloudflare KV METADATA' : 'Cloudflare KV SESSIONS fallback',
+    directUpload: {
+      method: 'presigned-put',
+      ttlSeconds: PRESIGN_TTL_SECONDS,
+      supportsChunkUpload: false,
+      supportsResume: false,
+    },
+    routingRules: {
+      github: 'code-and-versioning-only',
+      idriveE2: 'object-storage-for-files-assets-backups-rag-archives-and-build-artifacts',
+      salad: 'compute-only-for-ai-api-search-indexing-cron-and-batch-jobs',
+      spaceshipsDns: 'domain-and-dns-only',
+    },
+    publicDeliveryNote: 'Uploads are session-bound in this worker. Public CDN publication requires a separate reviewed release flow.',
+    categories,
+  });
 }
 
 function metadataStore(env: StorageEnv): KVNamespace {
@@ -699,6 +1005,8 @@ async function handleUploadUrl(request: Request, env: StorageEnv): Promise<Respo
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:write')) return errorResponse('forbidden', 'Missing storage write permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
 
   const parsed = await readJsonBody<UploadUrlRequest>(request, 16 * 1024);
   if (!parsed.ok) return parsed.response;
@@ -811,6 +1119,8 @@ async function handleUploadComplete(request: Request, env: StorageEnv): Promise<
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:write')) return errorResponse('forbidden', 'Missing storage write permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
 
   const parsed = await readJsonBody<UploadCompleteRequest>(request, 8 * 1024);
   if (!parsed.ok) return parsed.response;
@@ -899,6 +1209,8 @@ async function handleGetFile(request: Request, env: StorageEnv, key: string): Pr
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:read')) return errorResponse('forbidden', 'Missing storage read permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
 
   // Authorisierung: Nutzer darf nur eigene Files (Pfad-Prefix muss "users/<sub>/" sein)
   if (!ownsUserKey(key, session.sub)) {
@@ -915,6 +1227,7 @@ async function handleGetFile(request: Request, env: StorageEnv, key: string): Pr
 
   // Presigned GET → 302 Redirect — Browser lädt direkt vom IDrive E2 Edge
   const url = new URL(`${env.IDRIVE_E2_ENDPOINT}/${env.IDRIVE_E2_BUCKET}/${key}`);
+  url.searchParams.set('response-content-disposition', contentDisposition(record));
   const presignedGet = await presignUrl({
     method: 'GET',
     url,
@@ -988,6 +1301,8 @@ async function handlePutManagedObject(request: Request, env: StorageEnv): Promis
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:write')) return errorResponse('forbidden', 'Missing storage write permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
 
   const parsed = await readJsonBody<ObjectWriteRequest>(request, MAX_OBJECT_JSON_BYTES);
   if (!parsed.ok) return parsed.response;
@@ -1025,6 +1340,8 @@ async function handleGetManagedObject(request: Request, env: StorageEnv, key: st
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:read')) return errorResponse('forbidden', 'Missing storage read permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
   if (!isManagedObjectKey(key, session.sub)) return errorResponse('forbidden', 'Object does not belong to user', 403);
 
   const res = await getObjectFromIdrive(env, key);
@@ -1049,6 +1366,8 @@ async function handleDeleteManagedObject(request: Request, env: StorageEnv, key:
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
   const deleteConfirmation = requireDeleteConfirmation(request, 'delete-object');
   if (deleteConfirmation) return deleteConfirmation;
   if (!isManagedObjectKey(key, session.sub)) return errorResponse('forbidden', 'Object does not belong to user', 403);
@@ -1064,6 +1383,8 @@ async function handleDeleteFile(request: Request, env: StorageEnv, key: string):
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
   const deleteConfirmation = requireDeleteConfirmation(request, 'delete-file');
   if (deleteConfirmation) return deleteConfirmation;
 
@@ -1094,6 +1415,8 @@ async function handleDeleteAccountStorage(request: Request, env: StorageEnv): Pr
   const session = await authenticate(request, env);
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'storage:delete')) return errorResponse('forbidden', 'Missing storage delete permission', 403);
+  const storageConfigError = requireStorageConfigured(env);
+  if (storageConfigError) return storageConfigError;
   const deleteConfirmation = requireDeleteConfirmation(request, 'delete-account-storage');
   if (deleteConfirmation) return deleteConfirmation;
 
@@ -1159,6 +1482,17 @@ export default {
       const csrf = requireSameOrigin(request, env.CANONICAL_HOST);
       if (csrf) {
         return csrf;
+      }
+
+      // GET /storage/capabilities
+      if (url.pathname === '/storage/capabilities' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'storage:capabilities'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleCapabilities(env);
       }
 
       // POST /storage/upload-url

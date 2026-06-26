@@ -16,7 +16,35 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-export type MemoryCategory = 'audio' | 'image' | 'video' | 'document' | 'profile_image' | 'backup' | 'twin_data';
+export type MemoryCategory =
+  | 'audio'
+  | 'image'
+  | 'video'
+  | 'document'
+  | 'profile_image'
+  | 'backup'
+  | 'twin_data'
+  | 'static_asset'
+  | 'app_build'
+  | 'release_file'
+  | 'audit_log'
+  | 'error_report'
+  | 'admin_export'
+  | 'rag_document'
+  | 'embedding_file'
+  | 'search_index_backup'
+  | 'prompt_file'
+  | 'model_file'
+  | 'training_data'
+  | 'thumbnail'
+  | 'subtitle'
+  | 'translation_file'
+  | 'legal_document'
+  | 'qa_artifact'
+  | 'maintenance_asset'
+  | 'cache_file'
+  | 'public_cdn_file'
+  | 'private_signed_file';
 
 export interface UploadProgress {
   loaded: number;
@@ -40,6 +68,27 @@ const CLIENT_CATEGORY_LIMITS: Record<MemoryCategory, number> = {
   profile_image: 2 * 1024 * 1024,
   backup: 25 * 1024 * 1024,
   twin_data: 10 * 1024 * 1024,
+  static_asset: 10 * 1024 * 1024,
+  app_build: 50 * 1024 * 1024,
+  release_file: 50 * 1024 * 1024,
+  audit_log: 10 * 1024 * 1024,
+  error_report: 20 * 1024 * 1024,
+  admin_export: 25 * 1024 * 1024,
+  rag_document: 20 * 1024 * 1024,
+  embedding_file: 50 * 1024 * 1024,
+  search_index_backup: 50 * 1024 * 1024,
+  prompt_file: 5 * 1024 * 1024,
+  model_file: 50 * 1024 * 1024,
+  training_data: 50 * 1024 * 1024,
+  thumbnail: 2 * 1024 * 1024,
+  subtitle: 2 * 1024 * 1024,
+  translation_file: 5 * 1024 * 1024,
+  legal_document: 10 * 1024 * 1024,
+  qa_artifact: 50 * 1024 * 1024,
+  maintenance_asset: 10 * 1024 * 1024,
+  cache_file: 10 * 1024 * 1024,
+  public_cdn_file: 20 * 1024 * 1024,
+  private_signed_file: 50 * 1024 * 1024,
 };
 
 const CLIENT_ALLOWED_PREFIXES: Record<MemoryCategory, string[]> = {
@@ -56,6 +105,27 @@ const CLIENT_ALLOWED_PREFIXES: Record<MemoryCategory, string[]> = {
   profile_image: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
   backup: ['application/json', 'application/zip', 'application/gzip', 'application/x-tar', 'text/plain'],
   twin_data: ['application/json', 'text/plain', 'text/markdown'],
+  static_asset: ['image/', 'text/css', 'text/html', 'application/javascript', 'text/javascript', 'application/json', 'application/wasm'],
+  app_build: ['application/zip', 'application/gzip', 'application/x-tar', 'application/octet-stream', 'application/vnd.android.package-archive', 'application/x-apple-ios-app'],
+  release_file: ['application/json', 'application/zip', 'application/gzip', 'application/x-tar', 'application/octet-stream', 'text/plain'],
+  audit_log: ['application/json', 'text/plain', 'text/csv', 'application/gzip'],
+  error_report: ['application/json', 'text/plain', 'text/markdown', 'application/zip'],
+  admin_export: ['application/json', 'text/csv', 'application/zip', 'application/gzip', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  rag_document: ['application/pdf', 'text/plain', 'text/markdown', 'text/csv', 'application/json', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  embedding_file: ['application/json', 'application/octet-stream', 'application/gzip', 'application/zip'],
+  search_index_backup: ['application/json', 'application/octet-stream', 'application/gzip', 'application/zip'],
+  prompt_file: ['application/json', 'text/plain', 'text/markdown'],
+  model_file: ['application/octet-stream', 'application/zip', 'application/gzip', 'application/x-tar', 'application/json'],
+  training_data: ['application/json', 'text/plain', 'text/markdown', 'text/csv', 'application/zip', 'application/gzip'],
+  thumbnail: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
+  subtitle: ['text/vtt', 'application/x-subrip', 'text/plain'],
+  translation_file: ['application/json', 'text/plain', 'text/markdown', 'text/csv'],
+  legal_document: ['application/pdf', 'text/plain', 'text/markdown', 'text/html', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  qa_artifact: ['image/', 'video/mp4', 'video/webm', 'application/pdf', 'application/json', 'text/plain', 'application/zip'],
+  maintenance_asset: ['text/html', 'text/css', 'application/javascript', 'text/javascript', 'application/json', 'image/svg+xml', 'image/png', 'image/webp'],
+  cache_file: ['application/json', 'text/plain', 'text/html', 'text/css', 'application/javascript', 'text/javascript'],
+  public_cdn_file: ['image/', 'text/css', 'text/html', 'application/javascript', 'text/javascript', 'application/json', 'application/wasm', 'application/pdf'],
+  private_signed_file: ['application/pdf', 'application/json', 'text/plain', 'text/markdown', 'text/csv', 'application/zip', 'application/gzip', 'image/', 'video/mp4', 'audio/mpeg'],
 };
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -76,6 +146,18 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   csv: 'text/csv',
   json: 'application/json',
   zip: 'application/zip',
+  gz: 'application/gzip',
+  tar: 'application/x-tar',
+  apk: 'application/vnd.android.package-archive',
+  ipa: 'application/x-apple-ios-app',
+  css: 'text/css',
+  html: 'text/html',
+  htm: 'text/html',
+  js: 'application/javascript',
+  wasm: 'application/wasm',
+  vtt: 'text/vtt',
+  srt: 'application/x-subrip',
+  bin: 'application/octet-stream',
 };
 
 const DIRECT_PUT_ATTEMPTS = 2;

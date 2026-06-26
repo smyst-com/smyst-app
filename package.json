@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-sitemap.mjs && tsc --noEmit && vite build",
+    "deploy:pages": "node scripts/deploy-cloudflare-pages.mjs",
+    "deploy:pages:legacy": "wrangler pages deploy dist --project-name=smyst-vite-app --branch=main",
+    "domains:activate": "node scripts/activate-cloudflare-subdomains.mjs",
     "deploy:idrive": "node scripts/deploy-idrive-static.mjs",
     "deploy:idrive:dry-run": "node scripts/deploy-idrive-static.mjs --dry-run",
     "preview": "vite preview",
@@ -24,7 +27,8 @@
     "kv:list": "wrangler kv:namespace list",
     "lint:tsc": "tsc --noEmit",
     "profiles:quality": "node scripts/profile-answer-quality.mjs && node scripts/public-profile-quality.mjs && node scripts/curated-profile-database-audit.mjs",
-    "profiles:seed:curated": "node scripts/seed-curated-public-profiles.mjs"
+    "profiles:seed:curated": "node scripts/seed-curated-public-profiles.mjs",
+    "salad:compute:deploy": "node scripts/deploy-salad-compute-worker.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
@@ -46,6 +50,7 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "esbuild": "^0.28.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.6.2",

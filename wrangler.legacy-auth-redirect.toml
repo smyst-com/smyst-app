@@ -3,8 +3,4 @@ main = "workers/legacy-auth-redirect.ts"
 compatibility_date = "2025-04-01"
 account_id = "186363805f9fc571fd16528a1ed7c52d"
 
-routes = [
-  { pattern = "smyst.com/auth/google/start*", zone_name = "smyst.com" },
-  { pattern = "smyst.com/auth/github/start*", zone_name = "smyst.com" },
-  { pattern = "smyst.com/auth/me", zone_name = "smyst.com" },
-]
+routes = []

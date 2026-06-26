@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type SVGProps } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type SVGProps } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import LangSwitcher from '@/components/LangSwitcher'
@@ -366,14 +366,20 @@ function initialRoute(): { view: AppView; profileSlug: string | null; privateTwi
   if (path.startsWith('/t/')) {
     return { view: 'twin-profile', profileSlug: decodeURIComponent(path.slice(3)), privateTwinId: null }
   }
+  if (path.startsWith('/twins/')) {
+    return { view: 'twin-profile', profileSlug: decodeURIComponent(path.slice('/twins/'.length)), privateTwinId: null }
+  }
   if (path.startsWith('/private/twins/')) {
     return { view: 'twin-profile', profileSlug: null, privateTwinId: decodeURIComponent(path.slice('/private/twins/'.length)) }
   }
   if (path === '/profile') return { view: 'account-profile', profileSlug: null, privateTwinId: null }
   if (path === '/twins') return { view: 'my-twins', profileSlug: null, privateTwinId: null }
-  if (path === '/twin-builder') return { view: 'twin-builder', profileSlug: null, privateTwinId: null }
-  if (path === '/memory-upload') return { view: 'memory-upload', profileSlug: null, privateTwinId: null }
-  if (path === '/twin-chat') return { view: 'twin-chat', profileSlug: null, privateTwinId: null }
+  if (path === '/twin-builder' || path === '/builder') return { view: 'twin-builder', profileSlug: null, privateTwinId: null }
+  if (path === '/memory-upload' || path === '/upload') return { view: 'memory-upload', profileSlug: null, privateTwinId: null }
+  if (path.startsWith('/chat/')) {
+    return { view: 'twin-chat', profileSlug: decodeURIComponent(path.slice('/chat/'.length)), privateTwinId: null }
+  }
+  if (path === '/twin-chat' || path === '/chat' || path === '/chats') return { view: 'twin-chat', profileSlug: null, privateTwinId: null }
   if (path === '/settings') return { view: 'settings', profileSlug: null, privateTwinId: null }
   if (path === '/trust') return { view: 'trust', profileSlug: null, privateTwinId: null }
   if (path === '/privacy') return { view: 'privacy', profileSlug: null, privateTwinId: null }
@@ -565,7 +571,7 @@ export default function App() {
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
         {currentView === 'memory-upload' && <MemoryUploadView />}
-        {currentView === 'twin-chat' && <TwinChatView />}
+        {currentView === 'twin-chat' && <TwinChatView initialTwinId={profileSlug} />}
         {currentView === 'settings' && (
           <SettingsView
             onNavigate={navigateTo}
@@ -1630,9 +1636,8 @@ function SmystStartPage({
     {
       provider: 'GO',
       title: 'Mit Google fortfahren',
-      detail: 'Aktiver sicherer Login',
-      status: 'Aktiv',
-      onClick: () => auth.signInWithGoogle('/'),
+      detail: 'Geplant fuer Multi-Provider-Login',
+      status: 'Bald',
     },
     {
       provider: 'AP',
@@ -1643,8 +1648,9 @@ function SmystStartPage({
     {
       provider: 'GH',
       title: 'Mit GitHub fortfahren',
-      detail: 'Sicherer Fallback-Login',
-      status: 'Bald',
+      detail: 'Aktiver Phase-1-Produktionslogin',
+      status: 'Aktiv',
+      onClick: () => auth.signInWithGitHub('/'),
     },
     {
       provider: '@',
@@ -3440,16 +3446,23 @@ function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
 
 type AdminSection =
   | 'overview'
+  | 'look'
   | 'users'
   | 'registrations'
   | 'profiles'
+  | 'aiQuality'
   | 'ads'
   | 'revenue'
+  | 'finance'
   | 'moderation'
   | 'security'
   | 'storage'
+  | 'idrive'
+  | 'salad'
   | 'support'
   | 'releases'
+  | 'apps'
+  | 'checklist'
 
 type AdminMetric = {
   label: string
@@ -3478,20 +3491,153 @@ type AdminOverviewApi = {
     objects?: string
     compute?: string
   }
+  computePlan?: {
+    ready?: boolean
+    status?: 'ready' | 'blocked'
+    missing?: string[]
+    mode?: string
+    primaryProvider?: string
+    streamingEnabled?: boolean
+    note?: string
+  }
+  computeQueue?: ComputeJobSummary
+}
+
+type ComputeJobSummary = {
+  total: number
+  queued: number
+  running: number
+  succeeded: number
+  failed: number
+  retryable: number
+  staleRunning: number
+}
+
+type ComputeRuntimeApi = {
+  ok: boolean
+  runtime?: {
+    checkedAt: number
+    configurationReady: boolean
+    operational: boolean
+    provider: 'salad'
+    container: {
+      status: string
+      description: string
+      counts: {
+        allocating: number
+        creating: number
+        running: number
+        stopping: number
+      }
+      replicas: number
+      priority: string | null
+      pendingChange: boolean
+      dns: string | null
+      port: number
+      auth: boolean
+    }
+    health: {
+      ok: boolean
+      status: number
+      service: string | null
+      error: string | null
+    }
+    wake: {
+      attempted: boolean
+      ok: boolean
+      status: number
+      body?: unknown
+    } | null
+  }
+}
+
+type AdminMfaStatusApi = {
+  ok: boolean
+  required: boolean
+  configured: boolean
+  verified: boolean
+  method: 'totp' | null
+  expiresAt: number | null
+  canVerify: boolean
+  note?: string | null
+}
+
+type StorageCapabilitiesApi = {
+  ok: boolean
+  provider?: string
+  configuration?: {
+    ready: boolean
+    status: 'ready' | 'blocked'
+    missing?: string[]
+    note?: string
+  }
+}
+
+type ComputeCapabilitiesApi = {
+  ok: boolean
+  provider?: string
+  configuration?: {
+    ready: boolean
+    status: 'ready' | 'blocked'
+    missing?: string[]
+    mode?: string
+    primaryProvider?: string
+    streamingEnabled?: boolean
+    note?: string
+  }
+  latencyBudgetMs?: {
+    chatStart?: number
+    firstToken?: number
+    fallbackReply?: number
+    heavyJobQueueAck?: number
+  }
+  saladRuntime?: {
+    apiBaseUrl?: string | null
+    organizationName?: string | null
+    projectName?: string | null
+    containerGroup?: string | null
+    healthUrl?: string | null
+  }
+}
+
+type ComputeJobsApi = {
+  ok: boolean
+  summary: ComputeJobSummary
+  jobs: Array<{
+    id: string
+    type: string
+    status: string
+    priority: number
+    target: string
+    provider: string
+    attempts: number
+    maxAttempts: number
+    lastError?: string | null
+    resultObjectKey?: string | null
+    createdAt: number
+    updatedAt: number
+  }>
 }
 
 const adminSections: Array<{ id: AdminSection; label: string; detail: string }> = [
   { id: 'overview', label: 'Overview', detail: 'Live Status' },
+  { id: 'look', label: 'Look', detail: 'Design System' },
   { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export' },
   { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots' },
   { id: 'profiles', label: 'Profiles', detail: 'AI Twins und Qualität' },
+  { id: 'aiQuality', label: 'AI Quality', detail: 'Modelle, RAG, Tests' },
   { id: 'ads', label: 'Ads', detail: 'AdSense Slots' },
   { id: 'revenue', label: 'Revenue', detail: '25 % User-Anteil' },
+  { id: 'finance', label: 'Finance', detail: 'Payouts, KYC, Tax' },
   { id: 'moderation', label: 'Moderation', detail: 'Abuse Queue' },
   { id: 'security', label: 'Security', detail: 'Audit und Privacy' },
   { id: 'storage', label: 'Storage', detail: 'IDrive E2, Salad' },
+  { id: 'idrive', label: 'IDrive e2', detail: 'Object Map, Signed URLs' },
+  { id: 'salad', label: 'Salad', detail: 'Compute, Job-Pipeline, Jobs' },
   { id: 'support', label: 'Support', detail: 'Tickets und Rollen' },
   { id: 'releases', label: 'Releases', detail: 'Apps, PWA, Rollback' },
+  { id: 'apps', label: 'Apps', detail: 'PWA, iPhone, Android' },
+  { id: 'checklist', label: 'A-Z', detail: 'Launch Kontrolle' },
 ]
 
 const adminMetricTone: Record<AdminMetric['tone'], string> = {
@@ -3559,8 +3705,17 @@ function AdminControlCenterView() {
   const [activeSection, setActiveSection] = useState<AdminSection>('overview')
   const [adminOverview, setAdminOverview] = useState<AdminOverviewApi | null>(null)
   const [adminBackendStatus, setAdminBackendStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
+  const [adminMfaStatus, setAdminMfaStatus] = useState<AdminMfaStatusApi | null>(null)
+  const [adminMfaCode, setAdminMfaCode] = useState('')
+  const [adminMfaMessage, setAdminMfaMessage] = useState<string | null>(null)
+  const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
+  const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
+  const [computeCapabilities, setComputeCapabilities] = useState<ComputeCapabilitiesApi | null>(null)
+  const [computeJobs, setComputeJobs] = useState<ComputeJobsApi | null>(null)
+  const [computeRuntime, setComputeRuntime] = useState<ComputeRuntimeApi | null>(null)
+  const [computeWakeBusy, setComputeWakeBusy] = useState(false)
 
-  useEffect(() => {
+  const refreshAdminOverview = useCallback(() => {
     let alive = true
     setAdminBackendStatus('loading')
     fetch('/api/admin/overview', { credentials: 'same-origin' })
@@ -3584,6 +3739,150 @@ function AdminControlCenterView() {
       alive = false
     }
   }, [])
+
+  useEffect(() => {
+    return refreshAdminOverview()
+  }, [refreshAdminOverview])
+
+  useEffect(() => {
+    let alive = true
+    fetch('/auth/admin-2fa/status', { credentials: 'same-origin' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminMfaStatus(response.ok && payload?.ok ? payload as AdminMfaStatusApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminMfaStatus(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    fetch('/storage/capabilities', { credentials: 'same-origin' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setStorageCapabilities(response.ok && payload?.ok ? payload as StorageCapabilitiesApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setStorageCapabilities(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/compute/capabilities', { credentials: 'same-origin' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setComputeCapabilities(response.ok && payload?.ok ? payload as ComputeCapabilitiesApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setComputeCapabilities(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/admin/compute/jobs', { credentials: 'same-origin' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setComputeJobs(response.ok && payload?.ok ? payload as ComputeJobsApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setComputeJobs(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [adminOverview?.mode])
+
+  const refreshComputeRuntime = useCallback(() => {
+    let alive = true
+    fetch('/api/admin/compute/runtime', { credentials: 'same-origin' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setComputeRuntime(response.ok && payload?.ok ? payload as ComputeRuntimeApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setComputeRuntime(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    return refreshComputeRuntime()
+  }, [refreshComputeRuntime, adminOverview?.mode])
+
+  const wakeComputeRuntime = async () => {
+    setComputeWakeBusy(true)
+    try {
+      const response = await fetch('/api/admin/compute/runtime', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'x-smyst-csrf': '1' },
+      })
+      const payload = await response.json().catch(() => ({}))
+      setComputeRuntime(response.ok && payload?.ok ? payload as ComputeRuntimeApi : null)
+      refreshAdminOverview()
+    } catch {
+      setComputeRuntime(null)
+    } finally {
+      setComputeWakeBusy(false)
+    }
+  }
+
+  const verifyAdminMfa = async () => {
+    const code = adminMfaCode.replace(/\s+/g, '')
+    if (!/^\d{6}$/.test(code)) {
+      setAdminMfaMessage('Bitte gib einen 6-stelligen Authenticator-Code ein.')
+      return
+    }
+    setAdminMfaSubmitting(true)
+    setAdminMfaMessage(null)
+    try {
+      const response = await fetch('/auth/admin-2fa/verify', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ code }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok || !payload?.ok) {
+        const message = typeof payload?.error?.message === 'string'
+          ? payload.error.message
+          : 'Admin-2FA konnte nicht verifiziert werden.'
+        throw new Error(message)
+      }
+      setAdminMfaStatus((current) => current ? { ...current, verified: true, expiresAt: payload.expiresAt ?? current.expiresAt } : current)
+      setAdminMfaCode('')
+      setAdminMfaMessage('Admin-2FA aktiv. Admin-Daten werden neu geladen.')
+      refreshAdminOverview()
+    } catch (err) {
+      setAdminMfaMessage(err instanceof Error ? err.message : 'Admin-2FA konnte nicht verifiziert werden.')
+    } finally {
+      setAdminMfaSubmitting(false)
+    }
+  }
 
   const formatCents = (value?: number) => {
     const amount = (value ?? 0) / 100
@@ -3629,6 +3928,64 @@ function AdminControlCenterView() {
   ]
 
   const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
+
+  const renderLook = () => {
+    const colors = [
+      ['Ink', '#111722', 'Primary text, sidebar, premium contrast'],
+      ['Sky', '#59c7ff', 'Primary action, live state, streaming'],
+      ['Mint', '#43d17a', 'Success, safe status, payouts ready'],
+      ['Amber', '#f7b733', 'Policy watch, review, warning'],
+      ['Canvas', '#f7fafd', 'Admin surfaces and calm backgrounds'],
+      ['Line', '#d9e2ec', 'Borders, tables, separators'],
+    ]
+
+    return (
+      <div className="grid gap-5">
+        <div className="grid gap-4 lg:grid-cols-4">
+          {[
+            { label: 'Composer', value: 'locked', detail: 'Schreibbereich bleibt exakt im bisherigen Design mit bestehenden Icons.', tone: 'green' },
+            { label: 'Layout', value: 'A-Z', detail: 'Ein konsistentes System fuer Web, PWA, iPhone und Android.', tone: 'cyan' },
+            { label: 'A11y', value: 'AA+', detail: 'Kontrast, Fokus, Touch-Ziele und klare Zustände.', tone: 'green' },
+            { label: 'Motion', value: 'subtle', detail: 'Streaming fuehlt sich schnell an, ohne unruhig zu werden.', tone: 'amber' },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+        </div>
+        <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">Design Tokens</h2>
+            <div className="mt-5 grid gap-3">
+              {colors.map(([name, color, detail]) => (
+                <div key={name} className="grid gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[88px_1fr]">
+                  <span className="h-12 rounded-md border border-[#d9e2ec]" style={{ backgroundColor: color }} />
+                  <div>
+                    <p className="text-sm font-black text-[#111722]">{name} <span className="font-mono text-xs text-[#667085]">{color}</span></p>
+                    <p className="mt-1 text-sm font-semibold text-[#5d6776]">{detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">UI Regeln</h2>
+            <div className="mt-5 grid gap-3">
+              {[
+                ['Chat Composer', 'Nicht veraendern: gleiche Position, gleiche Icons, gleiche Bedienlogik.'],
+                ['Kinderleicht', 'Jede Hauptaktion braucht einen klaren Primaerbutton und sofortige Rueckmeldung.'],
+                ['Dichte', 'Admin bleibt dicht, scanbar und arbeitsorientiert statt Marketing-Layout.'],
+                ['Fehler', 'Jede Fehlermeldung sagt Ursache, Status und naechste Aktion.'],
+                ['Mobile', 'Keine ueberlappenden Texte, keine Layoutspruenge, Touch-Ziele mindestens 44px.'],
+                ['Future Platforms', 'Tokens und Komponenten muessen auf neue Oberflaechen uebertragbar bleiben.'],
+              ].map(([label, detail]) => (
+                <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
+                  <AdminStatusChip tone="cyan">{label}</AdminStatusChip>
+                  <p className="text-sm font-bold text-[#172033]">{detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    )
+  }
 
   const renderOverview = () => (
     <div className="grid gap-5">
@@ -3894,15 +4251,265 @@ function AdminControlCenterView() {
     </div>
   )
 
+  const renderFinance = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {[
+          { label: 'Payable', value: '$62K', detail: '25 % User-Anteil nach Validierung.', tone: 'green' },
+          { label: 'On Hold', value: '$8.4K', detail: 'Policy, KYC oder Invalid-Traffic offen.', tone: 'amber' },
+          { label: 'KYC Ready', value: '91 %', detail: 'Auszahlbare Creator mit vollstaendigem Profil.', tone: 'cyan' },
+          { label: 'Tax Queue', value: '318', detail: 'Steuerdaten, Rechnungen und Export.', tone: 'navy' },
+        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+      </div>
+      <AdminTable columns={['User', 'Profil', 'gültiger Umsatz', '25 % Anteil', 'KYC', 'Tax', 'Aktion']} rows={[
+        { User: 'sara@smyst', Profil: 'Deutsch Tutor', 'gültiger Umsatz': '$24,960', '25 % Anteil': '$6,240', KYC: 'ready', Tax: 'ready', Aktion: 'Pay batch' },
+        { User: 'amina@smyst', Profil: 'Einstein', 'gültiger Umsatz': '$40,960', '25 % Anteil': '$10,240', KYC: 'ready', Tax: 'pending', Aktion: 'Tax check' },
+        { User: 'team@smyst', Profil: 'Fitness Coach', 'gültiger Umsatz': '$21,870', '25 % Anteil': '$5,467', KYC: 'review', Tax: 'ready', Aktion: 'Review' },
+        { User: 'hold@smyst', Profil: 'Crypto Guru', 'gültiger Umsatz': '$19,890', '25 % Anteil': 'hold', KYC: 'blocked', Tax: 'missing', Aktion: 'Policy hold' },
+      ]} />
+      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <h2 className="text-xl font-bold text-[#111722]">Auszahlungsregeln</h2>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {[
+            'Nur finaler, gueltiger AdSense-Umsatz wird geteilt.',
+            'Profilinhaber erhalten 25 % pro genutztem AI-Profil.',
+            'Invalid Traffic, Policy Claims und Refunds gehen vor Auszahlung ab.',
+            'KYC, Steuerstatus, Mindestbetrag und Admin-Freigabe sind Pflicht.',
+            'Jede Auszahlung erzeugt Audit-Log, Export und IDrive-e2-Beleg.',
+            'User sieht transparent: Impressionen, Abzuege, Anteil und Status.',
+          ].map((item) => (
+            <div key={item} className="rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 text-sm font-bold text-[#172033]">{item}</div>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+
+  const renderAiQuality = () => {
+    const routerRows = [
+      ['Fast Chat', '89 %', '#43d17a', 'Sofortantwort, niedrige Kosten'],
+      ['Deep Reasoning', '41 %', '#59c7ff', 'Komplexe Aufgaben, laengere Kontexte'],
+      ['RAG Verified', '68 %', '#f7b733', 'Quellengebundene Antworten'],
+      ['Safety Rewrite', '12 %', '#ef4444', 'Policy, Risiko, sensible Inhalte'],
+    ]
+
+    return (
+      <div className="grid gap-5">
+        <div className="grid gap-4 lg:grid-cols-4">
+          {[
+            { label: 'Answer p95', value: '1.2 s', detail: 'Streaming sofort sichtbar, Antwort bleibt flüssig.', tone: 'green' },
+            { label: 'Quality Score', value: '93', detail: 'Eval, Nutzerfeedback, Quellenabgleich.', tone: 'cyan' },
+            { label: 'RAG Freshness', value: '11 m', detail: 'Index und Embeddings frisch gehalten.', tone: 'green' },
+            { label: 'Safety Holds', value: '0.7 %', detail: 'Unsichere Antworten werden gestoppt oder umgeschrieben.', tone: 'amber' },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+        </div>
+        <div className="grid gap-5 xl:grid-cols-2">
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">Model Router</h2>
+            {routerRows.map(([label, value, color, detail]) => (
+              <div key={label} className="mt-4">
+                <div className="mb-1 flex items-center justify-between gap-3 text-sm font-bold text-[#172033]">
+                  <span>{label}</span>
+                  <span>{detail}</span>
+                </div>
+                <div className="h-3 rounded-md bg-[#e8eef5]">
+                  <div className="h-3 rounded-md" style={{ width: value, backgroundColor: color }} />
+                </div>
+              </div>
+            ))}
+          </section>
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">Qualitaets-Pruefungen</h2>
+            <div className="mt-5 grid gap-3">
+              {[
+                ['Eval Suites', 'Regression gegen ChatGPT, Gemini, Claude, Grok und Open-Model Benchmarks.'],
+                ['Prompt Library', 'Versionierte Systemprompts in IDrive e2, Code in GitHub.'],
+                ['RAG Guardrails', 'Quellenpflicht, Halluzinationsscore, Zitierbarkeit.'],
+                ['Memory Safety', 'Profilwissen getrennt, verschluesselt und exportierbar.'],
+                ['Latency Budget', 'Vorberechnung, Cache, Queue und Fallback pro Intent.'],
+              ].map(([label, detail]) => (
+                <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
+                  <AdminStatusChip tone="green">{label}</AdminStatusChip>
+                  <p className="text-sm font-bold text-[#172033]">{detail}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    )
+  }
+
+  const renderIdrive = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {[
+          { label: 'Public CDN', value: 'cdn.', detail: 'Assets, PWA, Downloads, SEO-Dateien.', tone: 'green' },
+          { label: 'Private', value: 'signed', detail: 'Uploads, Archive, Profilwissen, Backups.', tone: 'cyan' },
+          { label: 'Immutable', value: 'releases', detail: 'Builds, APK/AAB/IPA, Rollbacks.', tone: 'navy' },
+          { label: 'Encrypted', value: 'backups', detail: 'DB, Audit, RAG, Suchindex, Fehlerberichte.', tone: 'amber' },
+        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+      </div>
+      <AdminTable columns={['Bucket/Pfad', 'Inhalt', 'Zugriff', 'Retention', 'Owner']} rows={[
+        { 'Bucket/Pfad': 'public/assets/', Inhalt: 'statische App-Dateien, Bilder, CSS, JSON', Zugriff: 'public/CDN', Retention: 'versioniert', Owner: 'Release' },
+        { 'Bucket/Pfad': 'media/profiles/', Inhalt: 'Profilbilder, Thumbnails, Vorschauen', Zugriff: 'signed/public mix', Retention: 'lifecycle', Owner: 'Product' },
+        { 'Bucket/Pfad': 'private/uploads/', Inhalt: 'User Uploads, PDFs, Audio, Videos', Zugriff: 'signed URL', Retention: 'policy', Owner: 'Storage' },
+        { 'Bucket/Pfad': 'ai/rag/', Inhalt: 'RAG docs, embeddings, prompt files', Zugriff: 'private', Retention: 'versioniert', Owner: 'AI' },
+        { 'Bucket/Pfad': 'audit/backups/', Inhalt: 'Logs, Exporte, Fehlerberichte, Rollbacks', Zugriff: 'private encrypted', Retention: 'compliance', Owner: 'Security' },
+      ]} />
+      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <h2 className="text-xl font-bold text-[#111722]">Nicht in IDrive e2</h2>
+        <p className="mt-3 text-sm font-semibold leading-relaxed text-[#5d6776]">
+          Login, Live-Datenbank, Sessions, Zahlungen, Rechtepruefung, Echtzeit-Chat, KI-Antworten und serverseitige Logik laufen nicht direkt in IDrive e2. Diese Aufgaben gehen ueber API/Compute, waehrend Ergebnisse wieder nach IDrive e2 gespeichert werden.
+        </p>
+      </section>
+    </div>
+  )
+
+  const renderSalad = () => {
+    const config = computeCapabilities?.configuration ?? adminOverview?.computePlan
+    const missing = config?.missing ?? []
+    const ready = Boolean(config?.ready)
+    const latency = computeCapabilities?.latencyBudgetMs
+    const status = ready ? 'ready' : 'blocked'
+    const queue = computeJobs?.summary ?? adminOverview?.computeQueue
+    const runtime = computeRuntime?.runtime
+    const runtimeStatus = runtime?.container.status ?? 'checking'
+    const runtimeOperational = Boolean(runtime?.operational)
+    const runtimeCounts = runtime?.container.counts
+    const healthStatus = runtime?.health.status ? String(runtime.health.status) : 'pending'
+    const jobRows: AdminRow[] = computeJobs?.jobs.length
+      ? computeJobs.jobs.slice(0, 10).map((job) => ({
+          Job: job.type,
+          Ziel: job.target,
+          Status: job.status,
+          Provider: job.provider,
+          Versuche: `${job.attempts}/${job.maxAttempts}`,
+          Fehler: job.lastError ?? '-',
+        }))
+      : [
+          { Job: 'KI Antwort', Ziel: 'chat/archive/', Status: ready ? 'salad-ready' : 'fallback', Provider: ready ? 'salad' : 'cloudflare', Versuche: '0/3', Fehler: '-' },
+          { Job: 'Embedding Build', Ziel: 'ai/embeddings/', Status: ready ? 'salad-ready' : 'blocked', Provider: 'salad', Versuche: '0/3', Fehler: missing.length ? 'compute_not_configured' : '-' },
+          { Job: 'Upload Scan', Ziel: 'private/uploads/', Status: ready ? 'salad-ready' : 'blocked', Provider: 'salad', Versuche: '0/3', Fehler: missing.length ? 'compute_not_configured' : '-' },
+        ]
+
+    return (
+      <div className="grid gap-5">
+        <div className="grid gap-4 lg:grid-cols-4">
+          {[
+            { label: 'Compute Status', value: status, detail: ready ? 'Salad kann schwere Jobs uebernehmen.' : 'Cloudflare-Fallback bleibt aktiv.', tone: ready ? 'green' : 'amber' },
+            { label: 'Runtime', value: runtimeOperational ? 'running' : runtimeStatus, detail: runtimeCounts ? `${runtimeCounts.running} running, ${runtimeCounts.allocating} allocating, ${runtimeCounts.creating} creating` : 'Salad Runtime wird geprueft.', tone: runtimeOperational ? 'green' : runtimeStatus === 'deploying' ? 'amber' : ready ? 'cyan' : 'red' },
+            { label: 'Queue', value: queue ? String(queue.queued + queue.running) : '0', detail: queue ? `${queue.running} running, ${queue.failed} failed, ${queue.retryable} retry` : 'Noch keine Jobs im Ledger.', tone: queue?.failed ? 'red' : 'cyan' },
+            { label: 'Missing', value: missing.length ? String(missing.length) : '0', detail: missing.length ? missing.join(', ') : 'Keine Compute-Blocker.', tone: missing.length ? 'red' : 'green' },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+        </div>
+        <div className="grid gap-4 lg:grid-cols-4">
+          {[
+            { label: 'Health', value: healthStatus, detail: runtime?.health.ok ? runtime.health.service ?? 'Worker antwortet.' : runtime?.health.error ?? 'Health noch nicht bestaetigt.', tone: runtime?.health.ok ? 'green' : 'amber' },
+            { label: 'First Token', value: latency?.firstToken ? `${latency.firstToken} ms` : 'pending', detail: config?.streamingEnabled ? 'Streaming ist konfiguriert.' : 'Streaming wartet auf Compute.', tone: config?.streamingEnabled ? 'green' : 'amber' },
+            { label: 'Leases', value: queue ? String(queue.running) : '0', detail: 'Aktive Compute-Worker-Leases.', tone: queue?.running ? 'cyan' : 'navy' },
+            { label: 'Succeeded', value: queue ? String(queue.succeeded) : '0', detail: 'Erfolgreich abgeschlossene Jobs.', tone: 'green' },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+        </div>
+        <div className="grid gap-5 xl:grid-cols-3">
+          {[
+            ['Queue', 'Prioritaet pro Aufgabe: Chat zuerst, danach Suche, Medien, Batch.'],
+            ['Compute', ready ? 'Salad ist fuer stateless Rechenarbeit vorbereitet.' : 'Salad bleibt blockiert, bis API, Organisation, Projekt, Container Group und Secret gesetzt sind.'],
+            ['Persist', 'Ergebnisse, Logs und Artefakte gehen nach IDrive e2 zurueck.'],
+          ].map(([title, detail]) => (
+            <section key={title} className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+              <AdminStatusChip tone={title === 'Compute' && !ready ? 'amber' : title === 'Compute' ? 'cyan' : 'green'}>{title}</AdminStatusChip>
+              <p className="mt-4 text-sm font-semibold leading-relaxed text-[#5d6776]">{detail}</p>
+              {title === 'Compute' && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button size="sm" onClick={() => void wakeComputeRuntime()} disabled={computeWakeBusy || !ready}>
+                    {computeWakeBusy ? 'Starte...' : 'Worker starten'}
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => refreshComputeRuntime()}>
+                    Aktualisieren
+                  </Button>
+                  <span className="min-w-0 self-center text-xs font-bold text-[#5d6776]">
+                    {runtime?.container.dns ? `${runtime.container.dns}:${runtime.container.port}` : 'DNS wird von Salad gemeldet.'}
+                  </span>
+                </div>
+              )}
+            </section>
+          ))}
+        </div>
+        <AdminTable columns={['Job', 'Ziel', 'Status', 'Provider', 'Versuche', 'Fehler']} rows={jobRows} />
+      </div>
+    )
+  }
+
+  const renderApps = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {[
+          { label: 'Web', value: 'ready', detail: 'smyst.com und app.smyst.com als Hauptoberflaeche.', tone: 'green' },
+          { label: 'PWA', value: 'first', detail: 'Installierbar, offline faehig, schnelle Updates.', tone: 'cyan' },
+          { label: 'iPhone', value: 'wrap', detail: 'Spaeter Wrapper/native Shell mit gleicher API.', tone: 'amber' },
+          { label: 'Android', value: 'wrap', detail: 'Spaeter Play Store, Huawei und weitere Stores.', tone: 'amber' },
+        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+      </div>
+      <AdminTable columns={['Plattform', 'Status', 'Pflicht vor Launch', 'Updatequelle', 'Risiko']} rows={[
+        { Plattform: 'Web', Status: 'laufend', 'Pflicht vor Launch': 'DNS, SSL, Cache, Monitoring', Updatequelle: 'GitHub release + IDrive assets', Risiko: 'niedrig' },
+        { Plattform: 'PWA', Status: 'naechster Fokus', 'Pflicht vor Launch': 'Manifest, Service Worker, Offline UI', Updatequelle: 'assets.smyst.com', Risiko: 'mittel' },
+        { Plattform: 'iPhone', Status: 'spaeter', 'Pflicht vor Launch': 'App Review, Privacy Nutrition, Login', Updatequelle: 'IPA/TestFlight + IDrive build archive', Risiko: 'mittel' },
+        { Plattform: 'Android', Status: 'spaeter', 'Pflicht vor Launch': 'APK/AAB, Play Policy, Push', Updatequelle: 'AAB/APK + IDrive build archive', Risiko: 'mittel' },
+        { Plattform: 'Future', Status: 'geplant', 'Pflicht vor Launch': 'Design tokens, API compatibility', Updatequelle: 'versionierte configs', Risiko: 'niedrig' },
+      ]} />
+    </div>
+  )
+
+  const renderChecklist = () => (
+    <div className="grid gap-5">
+      <div className="grid gap-4 lg:grid-cols-4">
+        {[
+          { label: 'Mockup', value: '24 pages', detail: 'Start bis Ende als PDF und Long Image.', tone: 'green' },
+          { label: 'Admin A-Z', value: '17 tabs', detail: 'Look, User, Ads, Finance, Storage, Apps.', tone: 'green' },
+          { label: 'Live Checks', value: 'needed', detail: 'DNS, IDrive, Salad, Secrets, API.', tone: 'amber' },
+          { label: 'Scale Plan', value: 'staged', detail: 'PWA zuerst, Compute nur bei Bedarf.', tone: 'cyan' },
+        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+      </div>
+      <div className="grid gap-5 xl:grid-cols-2">
+        {[
+          ['Produkt', ['Sofort-Chat', 'Composer unveraendert', 'Profil/Twin Flow', 'Upload/Memory', 'Support/Privacy']],
+          ['Admin', ['User sperren', 'Registrierungen pruefen', 'AdSense Regeln', '25 % Revenue Share', 'KYC/Tax/Payout']],
+          ['Infrastruktur', ['Spaceship DNS', 'GitHub Code only', 'IDrive 99 % Storage', 'Salad Compute', 'Secrets getrennt']],
+          ['Qualitaet', ['Mobile QA', 'Performance Budget', 'Security Audit', 'Rollback', 'Monitoring']],
+        ].map(([group, items]) => (
+          <section key={group as string} className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">{group}</h2>
+            <div className="mt-4 grid gap-3">
+              {(items as string[]).map((item, index) => (
+                <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
+                  <AdminStatusChip tone={index < 2 ? 'green' : 'amber'}>{index < 2 ? 'done' : 'verify'}</AdminStatusChip>
+                  <span className="text-sm font-bold text-[#172033]">{item}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  )
+
   const renderActiveSection = () => {
     if (activeSection === 'overview') return renderOverview()
+    if (activeSection === 'look') return renderLook()
     if (activeSection === 'users') return renderUsers()
     if (activeSection === 'registrations') return renderRegistrations()
     if (activeSection === 'profiles') return renderProfiles()
+    if (activeSection === 'aiQuality') return renderAiQuality()
     if (activeSection === 'ads') return renderAds()
     if (activeSection === 'revenue') return renderRevenue()
+    if (activeSection === 'finance') return renderFinance()
     if (activeSection === 'moderation' || activeSection === 'security') return renderModerationSecurity()
     if (activeSection === 'storage' || activeSection === 'releases') return renderStorage()
+    if (activeSection === 'idrive') return renderIdrive()
+    if (activeSection === 'salad') return renderSalad()
+    if (activeSection === 'apps') return renderApps()
+    if (activeSection === 'checklist') return renderChecklist()
     return renderSupport()
   }
 
@@ -3935,7 +4542,7 @@ function AdminControlCenterView() {
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#5d6776]">Admin Command Center</p>
               <h1 className="mt-2 text-3xl font-bold tracking-normal text-[#111722] sm:text-4xl">{sectionTitle}</h1>
               <p className="mt-3 max-w-4xl text-base leading-relaxed text-[#5d6776]">
-                Ein Kontrollzentrum für Milliarden-Nutzer-Betrieb: User, AI-Profile, AdSense, 25 % Revenue Share, Sicherheit, IDrive E2, Salad, Support und Releases an einem Ort.
+                Ein Kontrollzentrum für Milliarden-Nutzer-Betrieb: Look, User, AI-Profile, AdSense, 25 % Revenue Share, Finance, Sicherheit, IDrive e2, Salad, Apps, Support und Releases an einem Ort.
               </p>
             </div>
             <div className="grid gap-2 sm:grid-cols-3">
@@ -3946,7 +4553,44 @@ function AdminControlCenterView() {
               <AdminStatusChip tone="cyan">Live data</AdminStatusChip>
             </div>
           </div>
-          <section className="mb-6 grid gap-3 rounded-lg border border-[#d9e2ec] bg-white p-4 lg:grid-cols-3">
+          {adminMfaStatus?.required && !adminMfaStatus.verified && (
+            <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+              <div className="grid gap-4 lg:grid-cols-[1fr_320px] lg:items-end">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Admin 2FA</p>
+                  <h2 className="mt-1 text-xl font-bold text-[#111722]">Zweiter Faktor erforderlich</h2>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+                    Admin-Daten bleiben gesperrt, bis ein frischer Authenticator-Code verifiziert wurde.
+                    {!adminMfaStatus.configured && ' Fuer diesen Admin ist noch kein TOTP-Secret in Cloudflare konfiguriert.'}
+                    {adminMfaStatus.note ? ` ${adminMfaStatus.note}` : ''}
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+                  <input
+                    value={adminMfaCode}
+                    onChange={(event) => setAdminMfaCode(event.target.value.replace(/[^\d\s]/g, '').slice(0, 7))}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="123456"
+                    disabled={!adminMfaStatus.canVerify || adminMfaSubmitting}
+                    className="min-h-11 rounded-md border border-amber-300 bg-white px-3 text-center text-lg font-black tracking-[0.18em] text-[#111722] outline-none focus:border-[#111722]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void verifyAdminMfa()}
+                    disabled={!adminMfaStatus.canVerify || adminMfaSubmitting}
+                    className="min-h-11 rounded-md bg-[#111722] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-[#8892a0]"
+                  >
+                    {adminMfaSubmitting ? 'Pruefen' : 'Verifizieren'}
+                  </button>
+                  {adminMfaMessage && (
+                    <p className="text-sm font-bold text-amber-800 sm:col-span-2">{adminMfaMessage}</p>
+                  )}
+                </div>
+              </div>
+            </section>
+          )}
+          <section className="mb-6 grid gap-3 rounded-lg border border-[#d9e2ec] bg-white p-4 lg:grid-cols-4">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Admin API</p>
               <p className="mt-1 text-sm font-bold text-[#111722]">
@@ -3970,12 +4614,46 @@ function AdminControlCenterView() {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Speicherplan</p>
               <p className="mt-1 text-sm font-bold text-[#111722]">
-                {adminOverview?.storagePlan
-                  ? `${adminOverview.storagePlan.metadata} + ${adminOverview.storagePlan.objects}`
-                  : 'Cloudflare KV + IDrive E2'}
+                {storageCapabilities?.configuration
+                  ? storageCapabilities.configuration.ready
+                    ? `${storageCapabilities.provider ?? 'IDrive e2'} bereit`
+                    : `IDrive e2 blockiert: ${(storageCapabilities.configuration.missing ?? []).join(', ')}`
+                  : adminOverview?.storagePlan
+                    ? `${adminOverview.storagePlan.metadata} + ${adminOverview.storagePlan.objects}`
+                    : 'IDrive e2 + Salad API (Cloudflare Übergang)'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Compute</p>
+              <p className="mt-1 text-sm font-bold text-[#111722]">
+                {computeCapabilities?.configuration
+                  ? computeCapabilities.configuration.ready
+                    ? `${computeCapabilities.provider ?? 'Salad'} bereit`
+                    : `Salad blockiert: ${(computeCapabilities.configuration.missing ?? []).join(', ')}`
+                  : adminOverview?.computePlan
+                    ? `${adminOverview.computePlan.mode ?? 'cloudflare-fallback'}`
+                    : 'Prüfung läuft'}
               </p>
             </div>
           </section>
+          {storageCapabilities?.configuration && !storageCapabilities.configuration.ready && (
+            <section className="mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-bold text-red-900">
+              IDrive e2 ist noch nicht produktiv nutzbar. Fehlend in Cloudflare Storage Worker:
+              {' '}
+              {(storageCapabilities.configuration.missing ?? []).join(', ')}.
+              {' '}
+              Uploads, Downloads, Backups, RAG-Dateien und Release-Objekte bleiben blockiert, bis diese Secrets gesetzt sind.
+            </section>
+          )}
+          {computeCapabilities?.configuration && !computeCapabilities.configuration.ready && (
+            <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">
+              Salad Compute ist noch nicht produktiv aktiv. Fehlend:
+              {' '}
+              {(computeCapabilities.configuration.missing ?? []).join(', ')}.
+              {' '}
+              Chats laufen kontrolliert im Cloudflare-Fallback, bis Salad API, Container Group und Secret gesetzt sind.
+            </section>
+          )}
           {renderActiveSection()}
         </section>
       </div>
@@ -4557,7 +5235,7 @@ function MemoryUploadView() {
 }
 
 // Twin Chat View
-function TwinChatView() {
+function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null }) {
   type TwinChatUiMessage = {
     id: string
     role: 'ai' | 'user'
@@ -4602,7 +5280,10 @@ function TwinChatView() {
   const [input, setInput] = useState('')
   const [chatId, setChatId] = useState<string | null>(null)
   const [activeTwin, setActiveTwin] = useState<ChatTwinSummary | null>(null)
-  const [requestedTwinId] = useState(() => new URLSearchParams(window.location.search).get('twin')?.trim() ?? '')
+  const [requestedTwinId] = useState(() => {
+    const queryTwin = new URLSearchParams(window.location.search).get('twin')?.trim()
+    return queryTwin || initialTwinId?.trim() || ''
+  })
   const [isReplying, setIsReplying] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -4713,7 +5394,7 @@ function TwinChatView() {
       }
 
       if (requestedTwinId) {
-        const publicTwin = await twinMvp.getPublicTwin(requestedTwinId)
+        const publicTwin = await twinMvp.getPublicTwin(requestedTwinId) ?? curatedPublicProfileBySlug(requestedTwinId)
         if (!alive || !publicTwin) return
         const summary = publicTwinToChatSummary(publicTwin)
         setActiveTwin(summary)

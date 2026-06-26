@@ -4,7 +4,7 @@ import { pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 
 const accountId = '477794df69f0b6a0b9e4c59e36883c1f';
-const metadataNamespaceId = '24a718c1c31248779add893b93fd4152';
+const metadataNamespaceId = 'e85f2a9237b84cb2be1cb3518e56217c';
 const tokenFile = process.env.SMYST_CF_TOKEN_FILE || '/private/tmp/smyst_cf_token';
 const canonicalHost = (process.env.SMYST_CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
 const bundledData = '/private/tmp/smyst-curated-public-twin-data-audit.mjs';

@@ -43,16 +43,23 @@ Chat/API:
 
 Auth:
 
+- `GET /auth/providers`
+- `GET /auth/admin-2fa/status`
+- `POST /auth/admin-2fa/verify`
 - `GET /auth/github/start`
 - `GET /auth/github/callback`
+- `GET /auth/google/start` -> `501 auth_provider_not_active`
+- `GET /auth/apple/start` -> `501 auth_provider_not_active`
+- `POST /auth/magic/start` -> `501 auth_provider_not_active`
 - `GET /auth/me`
 - `POST /auth/logout`
 - `POST /auth/logout-all`
 
-Auth speichert ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen und Rechte werden in KV am User-Record und an der Session gehalten. `POST /auth/logout-all` entfernt die aktuelle bekannte User-Session-Liste aus KV und meldet alle gespeicherten Sessions ab.
+Auth speichert ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen und Rechte werden in KV am User-Record und an der Session gehalten. `POST /auth/logout-all` entfernt die aktuelle bekannte User-Session-Liste aus KV und meldet alle gespeicherten Sessions ab. In Phase 1 ist GitHub OAuth der aktive Production-Provider; Google, Apple und Magic-Link sind im Vertrag sichtbar, aber bis zur Provider-, Abuse- und Legal-Freigabe nicht aktiv. Admin-API-Routen verlangen nach Login zusaetzlich eine frische TOTP-Verifikation ueber `/auth/admin-2fa/verify`; TOTP-Secrets werden ausschliesslich als Cloudflare Secrets/Umgebungsvariablen gesetzt.
 
 Storage:
 
+- `GET /storage/capabilities`
 - `POST /storage/upload-url`
 - `POST /storage/upload-complete`
 - `GET /storage/uploads`
@@ -100,10 +107,11 @@ Der Chat-Pfad muss spaeter als Worker-first API entstehen:
 
 Auth:
 
-- Session-Cookie im Browser: HttpOnly, Secure, SameSite=Lax.
+- Session-Cookie im Browser: HttpOnly, Secure, SameSite=Strict. Der OAuth-Callback nutzt eine same-origin Session-Ready-Antwort, damit der anschliessende App-Aufruf die Strict-Session zuverlaessig sendet.
 - Session-Daten in Cloudflare KV.
 - User-Rollen und Rechte in Cloudflare KV.
 - OAuth-State in Cloudflare KV.
+- Admin-2FA ist fuer Admin-API-Routen serverseitig erzwungen.
 
 Storage:
 

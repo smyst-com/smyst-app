@@ -15,10 +15,10 @@ const commonVars = {
 };
 
 const kv = {
-  TRANSLATIONS: 'd759942d22f64ae5ab9af0801bba78d9',
-  SESSIONS: 'd74ab18d7859464b92fc730bd453fcc6',
-  OAUTH_STATE: 'bafc5fc93a504c9abf33af69601e31dc',
-  METADATA: '24a718c1c31248779add893b93fd4152',
+  TRANSLATIONS: '9790a73572ff4308aed92cb45879f81e',
+  SESSIONS: '925ca987abb04ef0915bc8e24aea0588',
+  OAUTH_STATE: 'f8daec3641d04c51a4d3a441e5febd12',
+  METADATA: 'e85f2a9237b84cb2be1cb3518e56217c',
 };
 
 const deployments = [
@@ -28,21 +28,48 @@ const deployments = [
     routes: ['smyst.com/auth/*'],
     vars: {
       ...commonVars,
-      SMYST_OWNER_GITHUB_IDS: '',
-      SMYST_OWNER_EMAILS: '',
+      SMYST_OWNER_GITHUB_IDS: '284471437',
+      SMYST_OWNER_EMAILS: 'smyst247@gmail.com',
       SMYST_ADMIN_GITHUB_IDS: '',
       SMYST_ADMIN_EMAILS: '',
     },
     kv: ['TRANSLATIONS', 'SESSIONS', 'OAUTH_STATE'],
-    secrets: ['GITHUB_OAUTH_CLIENT_ID', 'GITHUB_OAUTH_CLIENT_SECRET', 'AUTH_HMAC_SECRET'],
+    secrets: [
+      'GITHUB_OAUTH_CLIENT_ID',
+      'GITHUB_OAUTH_CLIENT_SECRET',
+      'AUTH_HMAC_SECRET',
+      'SMYST_ADMIN_TOTP_SECRETS',
+      'SMYST_ADMIN_TOTP_SECRET',
+    ],
   },
   {
     name: 'smyst-api',
     entry: 'workers/api.ts',
     routes: ['smyst.com/api/*'],
-    vars: commonVars,
+    vars: {
+      ...commonVars,
+      SMYST_AI_ROUTER_MODE: 'salad-production',
+      SMYST_AI_PRIMARY_PROVIDER: 'salad',
+      SMYST_AI_MODEL_FAST: 'free-only-rule-based-fast',
+      SMYST_AI_MODEL_REASONING: 'pending-salad-reasoning',
+      SMYST_AI_MODEL_RAG: 'pending-salad-rag',
+      SMYST_AI_STREAMING_ENABLED: 'false',
+      SALAD_API_BASE_URL: 'https://api.salad.com/api/public',
+      SALAD_ORGANIZATION_NAME: 'smyst-com',
+      SALAD_PROJECT_NAME: 'default',
+      SALAD_CONTAINER_GROUP: 'smyst-compute-worker',
+      SALAD_CONTAINER_HEALTH_URL: 'https://juniper-habanero-4boc33ingp3ltvsm.salad.cloud/health',
+    },
     kv: ['SESSIONS', 'OAUTH_STATE', 'METADATA'],
-    secrets: ['AUTH_HMAC_SECRET'],
+    secrets: [
+      'AUTH_HMAC_SECRET',
+      'SALAD_API_BASE_URL',
+      'SALAD_ORGANIZATION_NAME',
+      'SALAD_PROJECT_NAME',
+      'SALAD_CONTAINER_GROUP',
+      'SALAD_API_KEY',
+      'SMYST_COMPUTE_CALLBACK_SECRET',
+    ],
   },
   {
     name: 'smyst-storage',

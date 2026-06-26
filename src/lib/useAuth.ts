@@ -4,8 +4,8 @@
  * Strategie:
  *  - Beim Mount: GET /auth/me → liefert { authenticated, user? }
  *  - Wir caches NICHT in localStorage; Cookie ist authoritative
- *  - signInWithGoogle() = window.location -> /auth/google/start
- *  - signInWithGitHub() = window.location -> /auth/github/start
+ *  - signInWithGitHub() = window.location -> /auth/github/start (Phase 1 aktiv)
+ *  - weitere Provider bleiben serverseitig vorbereitet und melden ihren Status ueber /auth/providers
  *  - signOut() = POST /auth/logout, dann reload
  *
  * Sicherheit:
@@ -24,6 +24,12 @@ export interface AuthUser {
   locale: string | null;
   roles: string[];
   permissions: string[];
+  adminMfa?: {
+    required: boolean;
+    verified: boolean;
+    method: 'totp' | null;
+    expiresAt: number | null;
+  };
 }
 
 export interface AuthState {

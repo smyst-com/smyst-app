@@ -28,6 +28,19 @@ import {
 
 export interface ApiEnv extends AuthEnv {
   METADATA?: KVNamespace;
+  SALAD_API_BASE_URL?: string;
+  SALAD_ORGANIZATION_NAME?: string;
+  SALAD_PROJECT_NAME?: string;
+  SALAD_CONTAINER_GROUP?: string;
+  SALAD_CONTAINER_HEALTH_URL?: string;
+  SALAD_API_KEY?: string;
+  SMYST_COMPUTE_CALLBACK_SECRET?: string;
+  SMYST_AI_ROUTER_MODE?: string;
+  SMYST_AI_PRIMARY_PROVIDER?: string;
+  SMYST_AI_MODEL_FAST?: string;
+  SMYST_AI_MODEL_REASONING?: string;
+  SMYST_AI_MODEL_RAG?: string;
+  SMYST_AI_STREAMING_ENABLED?: string;
 }
 
 const SESSION_COOKIE = 'smyst_session';
@@ -56,11 +69,33 @@ const TWIN_TTL_SECONDS = 60 * 60 * 24 * 370;
 const PROFILE_TTL_SECONDS = 60 * 60 * 24 * 370;
 const MEMORY_TTL_SECONDS = 60 * 60 * 24 * 370;
 const REPORT_TTL_SECONDS = 60 * 60 * 24 * 370;
+const ADMIN_STATE_TTL_SECONDS = 60 * 60 * 24 * 370;
+const ADMIN_AUDIT_TTL_SECONDS = 60 * 60 * 24 * 370;
+const MAX_ADMIN_LIST = 100;
+const MAX_ADMIN_AUDIT = 200;
+const MAX_REVENUE_SLUG_CHARS = 80;
+const MAX_COMPUTE_JOBS = 200;
+const COMPUTE_JOB_TTL_SECONDS = 60 * 60 * 24 * 30;
+const COMPUTE_LEASE_SECONDS = 120;
+const MAX_COMPUTE_PAYLOAD_CHARS = 20000;
 const SUPPORTED_PROFILE_LANGS = new Set(['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko']);
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{40,96}$/;
 
 function allowedMethodsForApiPath(pathname: string): string[] | null {
   if (pathname === '/api/health') return ['GET'];
+  if (pathname === '/api/compute/capabilities') return ['GET'];
+  if (pathname === '/api/compute/jobs/lease') return ['POST'];
+  if (pathname === '/api/compute/jobs/complete') return ['POST'];
+  if (pathname === '/api/admin/overview') return ['GET'];
+  if (pathname === '/api/admin/compute/jobs') return ['GET', 'POST'];
+  if (pathname === '/api/admin/compute/runtime') return ['GET', 'POST'];
+  if (pathname === '/api/admin/users') return ['GET'];
+  if (pathname === '/api/admin/users/block') return ['POST'];
+  if (pathname === '/api/admin/users/unblock') return ['POST'];
+  if (pathname === '/api/admin/revenue/summary') return ['GET'];
+  if (pathname === '/api/admin/revenue/events') return ['POST'];
+  if (pathname === '/api/admin/revenue/hold') return ['POST'];
+  if (pathname === '/api/admin/audit') return ['GET'];
   if (pathname === '/api/profile') return ['GET', 'PATCH'];
   if (pathname === '/api/account/export') return ['GET'];
   if (pathname === '/api/account') return ['DELETE'];
@@ -87,6 +122,9 @@ interface SessionData {
   name?: string;
   roles?: string[];
   permissions?: string[];
+  adminMfaVerifiedAt?: number;
+  adminMfaExpiresAt?: number;
+  adminMfaMethod?: 'totp';
   expiresAt: number;
 }
 
@@ -326,8 +364,476 @@ interface SupportReportRecord {
   status: 'open';
 }
 
+type AdminUserStatus = 'active' | 'review' | 'blocked';
+type AdminRiskLevel = 'low' | 'medium' | 'high';
+type RevenueStatus = 'payable' | 'review' | 'hold' | 'policy';
+
+interface AdminUserState {
+  userSub: string;
+  email?: string;
+  status: AdminUserStatus;
+  risk: AdminRiskLevel;
+  blockedAt?: number;
+  blockedBy?: string;
+  blockReason?: string;
+  payoutHold?: boolean;
+  payoutHoldReason?: string;
+  updatedAt: number;
+}
+
+interface AdminUserActionRequest {
+  userSub?: string;
+  email?: string;
+  reason?: string;
+  risk?: AdminRiskLevel;
+}
+
+interface AdminAuditRecord {
+  id: string;
+  actorSub: string;
+  actorEmail: string;
+  action: string;
+  target?: string;
+  detail?: string;
+  createdAt: number;
+}
+
+interface RevenueAggregate {
+  slug: string;
+  ownerSub?: string;
+  ownerEmail?: string;
+  profileName?: string;
+  impressions: number;
+  clicks: number;
+  validRevenueCents: number;
+  invalidRevenueCents: number;
+  userShareCents: number;
+  heldCents: number;
+  payableCents: number;
+  status: RevenueStatus;
+  updatedAt: number;
+}
+
+interface RevenueEventRequest {
+  slug?: string;
+  profileName?: string;
+  ownerSub?: string;
+  ownerEmail?: string;
+  impressions?: number;
+  clicks?: number;
+  validRevenueCents?: number;
+  invalidRevenueCents?: number;
+  source?: string;
+}
+
+interface RevenueHoldRequest {
+  slug?: string;
+  hold?: boolean;
+  reason?: string;
+}
+
+type ComputeJobType =
+  | 'chat_inference'
+  | 'rag_index'
+  | 'embedding_build'
+  | 'upload_scan'
+  | 'media_preview'
+  | 'search_index'
+  | 'payout_batch'
+  | 'backup_verify';
+type ComputeJobStatus = 'queued' | 'running' | 'succeeded' | 'failed';
+
+interface ComputeJobRecord {
+  id: string;
+  type: ComputeJobType;
+  status: ComputeJobStatus;
+  priority: number;
+  target: string;
+  payload?: unknown;
+  idempotencyKey?: string;
+  userSub?: string;
+  provider: 'salad' | 'cloudflare-fallback';
+  attempts: number;
+  maxAttempts: number;
+  leaseUntil?: number;
+  nextRunAt?: number;
+  resultObjectKey?: string;
+  lastError?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+interface ComputeJobCreateRequest {
+  type?: string;
+  priority?: number;
+  target?: string;
+  payload?: unknown;
+  idempotencyKey?: string;
+  maxAttempts?: number;
+}
+
+interface ComputeJobCompleteRequest {
+  jobId?: string;
+  ok?: boolean;
+  resultObjectKey?: string;
+  error?: string;
+  retry?: boolean;
+}
+
+interface ComputeJobInput {
+  type: ComputeJobType;
+  priority?: number;
+  target: string;
+  payload?: unknown;
+  idempotencyKey?: string;
+  maxAttempts?: number;
+  userSub?: string;
+}
+
+const COMPUTE_JOB_TYPES = new Set<ComputeJobType>([
+  'chat_inference',
+  'rag_index',
+  'embedding_build',
+  'upload_scan',
+  'media_preview',
+  'search_index',
+  'payout_batch',
+  'backup_verify',
+]);
+
 function metadataStore(env: ApiEnv): KVNamespace {
   return env.METADATA ?? env.SESSIONS;
+}
+
+function adminUserStateKey(userSub: string): string {
+  return `admin:user:${safePathSegment(userSub)}`;
+}
+
+function adminAuditKey(createdAt: number, id: string): string {
+  return `admin:audit:${createdAt}:${id}`;
+}
+
+function adminAuditIndexKey(): string {
+  return 'admin:audit:index';
+}
+
+function revenueProfileKey(slug: string): string {
+  return `admin:revenue:profile:${slugify(slug).slice(0, MAX_REVENUE_SLUG_CHARS)}`;
+}
+
+function revenueIndexKey(): string {
+  return 'admin:revenue:index';
+}
+
+function computeJobKey(jobId: string): string {
+  return `compute:job:${safePathSegment(jobId)}`;
+}
+
+function computeJobIndexKey(): string {
+  return 'compute:jobs:index';
+}
+
+function normalizeComputeJobType(value: unknown): ComputeJobType | null {
+  const type = typeof value === 'string' ? value.trim() : '';
+  return COMPUTE_JOB_TYPES.has(type as ComputeJobType) ? type as ComputeJobType : null;
+}
+
+function safeComputePayload(value: unknown): unknown {
+  if (value === undefined) return undefined;
+  const encoded = JSON.stringify(value);
+  if (encoded.length > MAX_COMPUTE_PAYLOAD_CHARS) {
+    return { truncated: true, bytes: encoded.length };
+  }
+  return JSON.parse(encoded);
+}
+
+async function loadComputeJobs(env: ApiEnv, limit = MAX_COMPUTE_JOBS): Promise<ComputeJobRecord[]> {
+  const kv = metadataStore(env);
+  const ids = (await getStringArray(kv, computeJobIndexKey())).slice(0, Math.min(limit, MAX_COMPUTE_JOBS));
+  const records = await Promise.all(ids.map((id) => kv.get(computeJobKey(id), 'json') as Promise<ComputeJobRecord | null>));
+  return records.filter((record): record is ComputeJobRecord => Boolean(record));
+}
+
+async function putComputeJob(env: ApiEnv, job: ComputeJobRecord): Promise<void> {
+  await metadataStore(env).put(computeJobKey(job.id), JSON.stringify(job), {
+    expirationTtl: COMPUTE_JOB_TTL_SECONDS,
+  });
+}
+
+async function addComputeJobToIndex(env: ApiEnv, jobId: string): Promise<void> {
+  const kv = metadataStore(env);
+  const current = await getStringArray(kv, computeJobIndexKey());
+  const next = [jobId, ...current.filter((id) => id !== jobId)].slice(0, MAX_COMPUTE_JOBS);
+  await kv.put(computeJobIndexKey(), JSON.stringify(next), { expirationTtl: COMPUTE_JOB_TTL_SECONDS });
+}
+
+function summarizeComputeJobs(jobs: ComputeJobRecord[]) {
+  const summary = {
+    total: jobs.length,
+    queued: 0,
+    running: 0,
+    succeeded: 0,
+    failed: 0,
+    retryable: 0,
+    staleRunning: 0,
+  };
+  const now = Date.now();
+  for (const job of jobs) {
+    summary[job.status] += 1;
+    if (job.status === 'queued' && job.nextRunAt && job.nextRunAt > now) summary.retryable += 1;
+    if (job.status === 'running' && job.leaseUntil && job.leaseUntil <= now) summary.staleRunning += 1;
+  }
+  return summary;
+}
+
+async function enqueueComputeJob(env: ApiEnv, input: ComputeJobInput): Promise<{ job: ComputeJobRecord; reused: boolean }> {
+  const idempotencyKey = sanitizeText(input.idempotencyKey, 160) || undefined;
+  const existing = idempotencyKey
+    ? (await loadComputeJobs(env, MAX_COMPUTE_JOBS)).find((job) => job.idempotencyKey === idempotencyKey)
+    : null;
+  if (existing) return { job: existing, reused: true };
+
+  const now = Date.now();
+  const compute = computeConfiguration(env);
+  const job: ComputeJobRecord = {
+    id: crypto.randomUUID(),
+    type: input.type,
+    status: 'queued',
+    priority: count(input.priority, 100),
+    target: sanitizeText(input.target, 240) || input.type,
+    payload: safeComputePayload(input.payload),
+    idempotencyKey,
+    userSub: input.userSub,
+    provider: compute.ready ? 'salad' : 'cloudflare-fallback',
+    attempts: 0,
+    maxAttempts: Math.max(1, Math.min(8, count(input.maxAttempts, 3) || 3)),
+    createdAt: now,
+    updatedAt: now,
+  };
+  await Promise.all([putComputeJob(env, job), addComputeJobToIndex(env, job.id)]);
+  return { job, reused: false };
+}
+
+function requireComputeCallback(request: Request, env: ApiEnv): Response | null {
+  const secret = envText(env.SMYST_COMPUTE_CALLBACK_SECRET);
+  if (!secret) return errorResponse('compute_callback_secret_missing', 'Compute callback secret is not configured.', 503);
+  const expected = `Bearer ${secret}`;
+  if (request.headers.get('Authorization') !== expected) {
+    return errorResponse('unauthorized_compute_worker', 'Compute worker authorization failed.', 401);
+  }
+  return null;
+}
+
+function envText(value: string | undefined): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function envFlag(value: string | undefined): boolean {
+  return ['1', 'true', 'yes', 'on'].includes(envText(value).toLowerCase());
+}
+
+function computeConfiguration(env: ApiEnv) {
+  const missing = [
+    !envText(env.SALAD_API_BASE_URL) && 'SALAD_API_BASE_URL',
+    !envText(env.SALAD_ORGANIZATION_NAME) && 'SALAD_ORGANIZATION_NAME',
+    !envText(env.SALAD_PROJECT_NAME) && 'SALAD_PROJECT_NAME',
+    !envText(env.SALAD_CONTAINER_GROUP) && 'SALAD_CONTAINER_GROUP',
+    !envText(env.SALAD_API_KEY) && 'SALAD_API_KEY',
+    !envText(env.SMYST_COMPUTE_CALLBACK_SECRET) && 'SMYST_COMPUTE_CALLBACK_SECRET',
+  ].filter((item): item is string => Boolean(item));
+  const ready = missing.length === 0;
+  return {
+    ready,
+    status: ready ? 'ready' : 'blocked',
+    missing,
+    requiredSecrets: ['SALAD_API_KEY', 'SMYST_COMPUTE_CALLBACK_SECRET'],
+    requiredVars: ['SALAD_API_BASE_URL', 'SALAD_ORGANIZATION_NAME', 'SALAD_PROJECT_NAME', 'SALAD_CONTAINER_GROUP'],
+    mode: ready ? envText(env.SMYST_AI_ROUTER_MODE) || 'salad-production' : 'cloudflare-fallback',
+    primaryProvider: ready ? envText(env.SMYST_AI_PRIMARY_PROVIDER) || 'salad' : 'rule-based-mvp',
+    streamingEnabled: ready && envFlag(env.SMYST_AI_STREAMING_ENABLED),
+    note: ready
+      ? 'Compute worker can route heavy AI, RAG, embeddings, search and cron jobs through Salad.'
+      : 'Cloudflare API stays in deterministic fallback mode until Salad vars and secret are configured.',
+  };
+}
+
+function computeCapabilities(env: ApiEnv) {
+  const configuration = computeConfiguration(env);
+  return {
+    ok: true,
+    service: 'smyst-api',
+    phase: 'phase-1-production-foundation',
+    provider: configuration.ready ? 'Salad Compute' : 'Cloudflare Workers fallback',
+    configuration,
+    modelRouting: {
+      fast: envText(env.SMYST_AI_MODEL_FAST) || 'free-only-rule-based-fast',
+      reasoning: envText(env.SMYST_AI_MODEL_REASONING) || 'pending-salad-reasoning',
+      rag: envText(env.SMYST_AI_MODEL_RAG) || 'pending-salad-rag',
+      supportedTargets: ['fast-chat', 'deep-reasoning', 'rag-verified', 'safety-rewrite', 'embeddings', 'search-indexing', 'cron-batch'],
+    },
+    routingRules: {
+      cloudflareWorkers: 'session, auth, lightweight API and deterministic fallback replies',
+      idriveE2: 'persistent objects, uploads, RAG documents, embeddings, archives and release artifacts',
+      salad: 'stateless compute for AI responses, RAG processing, embeddings, search, media jobs and cron batches',
+      github: 'code and versioning only',
+    },
+    saladRuntime: {
+      apiBaseUrl: envText(env.SALAD_API_BASE_URL) || null,
+      organizationName: envText(env.SALAD_ORGANIZATION_NAME) || null,
+      projectName: envText(env.SALAD_PROJECT_NAME) || null,
+      containerGroup: envText(env.SALAD_CONTAINER_GROUP) || null,
+      healthUrl: envText(env.SALAD_CONTAINER_HEALTH_URL) || null,
+    },
+    latencyBudgetMs: {
+      chatStart: 150,
+      firstToken: configuration.streamingEnabled ? 350 : 1200,
+      fallbackReply: 900,
+      heavyJobQueueAck: 500,
+    },
+    safety: {
+      noSecretEcho: true,
+      noLongTermStorageOnSalad: true,
+      retryPolicy: 'idempotency-key + timeout + retry queue before durable persist to IDrive e2',
+      fallbackPolicy: 'serve deterministic Cloudflare response if compute is missing, timed out or unhealthy',
+    },
+    queueApi: {
+      adminJobs: '/api/admin/compute/jobs',
+      lease: '/api/compute/jobs/lease',
+      complete: '/api/compute/jobs/complete',
+      leaseSeconds: COMPUTE_LEASE_SECONDS,
+      maxJobsTracked: MAX_COMPUTE_JOBS,
+    },
+  };
+}
+
+function saladContainerApiUrl(env: ApiEnv, suffix = ''): string | null {
+  const base = envText(env.SALAD_API_BASE_URL).replace(/\/+$/, '');
+  const organization = envText(env.SALAD_ORGANIZATION_NAME);
+  const project = envText(env.SALAD_PROJECT_NAME);
+  const container = envText(env.SALAD_CONTAINER_GROUP);
+  if (!base || !organization || !project || !container) return null;
+  return `${base}/organizations/${encodeURIComponent(organization)}/projects/${encodeURIComponent(project)}/containers/${encodeURIComponent(container)}${suffix}`;
+}
+
+function countFromRecord(value: unknown, key: string): number {
+  if (!value || typeof value !== 'object') return 0;
+  const raw = (value as Record<string, unknown>)[key];
+  return typeof raw === 'number' && Number.isFinite(raw) ? raw : 0;
+}
+
+async function readLimitedResponse(response: Response, maxChars = 1200): Promise<unknown> {
+  const contentType = response.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+  const text = (await response.text()).slice(0, maxChars);
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return sanitizeText(text, maxChars);
+  }
+}
+
+async function saladApiRequest(env: ApiEnv, suffix = '', init: RequestInit = {}): Promise<{ ok: boolean; status: number; body: unknown }> {
+  const apiKey = envText(env.SALAD_API_KEY);
+  const url = saladContainerApiUrl(env, suffix);
+  if (!apiKey || !url) return { ok: false, status: 0, body: { code: 'salad_runtime_not_configured' } };
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      'Salad-Api-Key': apiKey,
+      ...(init.headers || {}),
+    },
+  });
+  return { ok: response.ok, status: response.status, body: await readLimitedResponse(response) };
+}
+
+async function computeRuntimeSnapshot(env: ApiEnv, wake = false) {
+  const configuration = computeConfiguration(env);
+  const healthUrl = envText(env.SALAD_CONTAINER_HEALTH_URL);
+  let wakeResult: { attempted: boolean; ok: boolean; status: number; body?: unknown } | null = null;
+  if (wake && configuration.ready) {
+    const start = await saladApiRequest(env, '/start', { method: 'POST' });
+    wakeResult = { attempted: true, ok: start.ok || start.status === 202, status: start.status, body: start.body };
+  }
+
+  const containerResponse = configuration.ready
+    ? await saladApiRequest(env)
+    : { ok: false, status: 0, body: null as unknown };
+  const containerBody = containerResponse.body && typeof containerResponse.body === 'object'
+    ? containerResponse.body as Record<string, unknown>
+    : {};
+  const currentState = containerBody.current_state && typeof containerBody.current_state === 'object'
+    ? containerBody.current_state as Record<string, unknown>
+    : {};
+  const counts = currentState.instance_status_counts && typeof currentState.instance_status_counts === 'object'
+    ? currentState.instance_status_counts
+    : {};
+  const networking = containerBody.networking && typeof containerBody.networking === 'object'
+    ? containerBody.networking as Record<string, unknown>
+    : {};
+
+  let health = {
+    ok: false,
+    status: 0,
+    service: null as string | null,
+    error: healthUrl ? null as string | null : 'health_url_missing',
+  };
+  if (healthUrl) {
+    try {
+      const response = await fetch(healthUrl, { headers: { accept: 'application/json' } });
+      const body = await readLimitedResponse(response, 1000);
+      const objectBody = body && typeof body === 'object' ? body as Record<string, unknown> : {};
+      health = {
+        ok: response.ok,
+        status: response.status,
+        service: typeof objectBody.service === 'string' ? objectBody.service : null,
+        error: response.ok ? null : sanitizeText(typeof body === 'string' ? body : JSON.stringify(body), 280),
+      };
+    } catch (err) {
+      health = {
+        ok: false,
+        status: 0,
+        service: null,
+        error: sanitizeText(String(err), 280) || 'health_check_failed',
+      };
+    }
+  }
+
+  const status = typeof currentState.status === 'string' ? currentState.status : 'unknown';
+  const running = countFromRecord(counts, 'running_count');
+  return {
+    ok: true,
+    runtime: {
+      checkedAt: Date.now(),
+      configurationReady: configuration.ready,
+      operational: configuration.ready && status === 'running' && running > 0 && health.ok,
+      provider: 'salad',
+      container: {
+        status,
+        description: typeof currentState.description === 'string' ? currentState.description : '',
+        counts: {
+          allocating: countFromRecord(counts, 'allocating_count'),
+          creating: countFromRecord(counts, 'creating_count'),
+          running,
+          stopping: countFromRecord(counts, 'stopping_count'),
+        },
+        replicas: count(containerBody.replicas, 1000),
+        priority: typeof containerBody.priority === 'string' ? containerBody.priority : null,
+        pendingChange: containerBody.pending_change === true,
+        dns: typeof networking.dns === 'string' ? networking.dns : null,
+        port: count(networking.port, 65535),
+        auth: networking.auth === true,
+      },
+      health,
+      wake: wakeResult,
+    },
+  };
 }
 
 function readCookie(request: Request, name: string): string | null {
@@ -386,12 +892,17 @@ async function readSignedSession(token: string, secret: string): Promise<Session
 async function authenticate(request: Request, env: ApiEnv): Promise<SessionData | null> {
   const sessionId = readCookie(request, SESSION_COOKIE);
   if (!sessionId) return null;
+  let session: SessionData | null = null;
   if (!SESSION_ID_PATTERN.test(sessionId)) {
-    return readSignedSession(sessionId, env.AUTH_HMAC_SECRET);
+    session = await readSignedSession(sessionId, env.AUTH_HMAC_SECRET);
+  } else {
+    const data = (await env.SESSIONS.get(`s:${sessionId}`, 'json')) as SessionData | null;
+    session = !data || data.expiresAt < Date.now() ? null : data;
   }
-  const data = (await env.SESSIONS.get(`s:${sessionId}`, 'json')) as SessionData | null;
-  if (!data || data.expiresAt < Date.now()) return null;
-  return data;
+  if (!session) return null;
+  const state = (await metadataStore(env).get(adminUserStateKey(session.sub), 'json')) as AdminUserState | null;
+  if (state?.status === 'blocked' && !hasPermission(session, 'admin:write')) return null;
+  return session;
 }
 
 function hasPermission(session: SessionData, permission: string): boolean {
@@ -2475,12 +2986,149 @@ export function ruleBasedTwinReply(
   ].join(' ');
 }
 
-async function handleHealth(): Promise<Response> {
+async function handleHealth(env: ApiEnv): Promise<Response> {
+  const compute = computeConfiguration(env);
   return jsonResponse({
     ok: true,
     service: 'smyst-api',
     status: 'ready',
+    phase: 'phase-1-production-foundation',
+    auth: {
+      activeProvider: 'github',
+      providersPath: '/auth/providers',
+      sessionStorage: 'Cloudflare KV + HttpOnly Secure SameSite=Strict cookie',
+      admin2fa: 'enforced-for-admin-api-routes',
+    },
+    storagePlan: {
+      metadata: env.METADATA ? 'Cloudflare KV METADATA' : 'Cloudflare KV SESSIONS fallback',
+      objects: 'IDrive e2 signed object storage',
+      compute: compute.ready ? 'Salad Compute configured for heavy AI/search/batch compute' : 'Cloudflare Workers fallback; Salad blocked until configured',
+    },
+    compute,
   });
+}
+
+async function handleComputeCapabilities(env: ApiEnv): Promise<Response> {
+  return jsonResponse(computeCapabilities(env));
+}
+
+async function handleAdminComputeRuntime(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, request.method === 'POST' ? 'admin:write' : 'admin:read');
+  if (adminError) return adminError;
+  return jsonResponse(await computeRuntimeSnapshot(env, request.method === 'POST'));
+}
+
+async function handleAdminComputeJobs(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, request.method === 'POST' ? 'admin:write' : 'admin:read');
+  if (adminError) return adminError;
+
+  if (request.method === 'GET') {
+    const jobs = await loadComputeJobs(env, 50);
+    return jsonResponse({
+      ok: true,
+      summary: summarizeComputeJobs(jobs),
+      jobs: jobs.map((job) => ({
+        id: job.id,
+        type: job.type,
+        status: job.status,
+        priority: job.priority,
+        target: job.target,
+        provider: job.provider,
+        attempts: job.attempts,
+        maxAttempts: job.maxAttempts,
+        leaseUntil: job.leaseUntil ?? null,
+        nextRunAt: job.nextRunAt ?? null,
+        resultObjectKey: job.resultObjectKey ?? null,
+        lastError: job.lastError ?? null,
+        createdAt: job.createdAt,
+        updatedAt: job.updatedAt,
+      })),
+    });
+  }
+
+  const parsed = await readJsonBody<ComputeJobCreateRequest>(request, 32 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const type = normalizeComputeJobType(parsed.value.type);
+  if (!type) {
+    return errorResponse('invalid_compute_job_type', 'Unsupported compute job type.', 400, {
+      supported: Array.from(COMPUTE_JOB_TYPES),
+    });
+  }
+
+  const { job, reused } = await enqueueComputeJob(env, {
+    type,
+    priority: parsed.value.priority,
+    target: sanitizeText(parsed.value.target, 240) || type,
+    payload: parsed.value.payload,
+    userSub: session!.sub,
+    idempotencyKey: parsed.value.idempotencyKey,
+    maxAttempts: parsed.value.maxAttempts,
+  });
+  if (!reused) {
+    await recordAdminAudit(env, session!, 'compute.job.create', job.id, `${job.type}:${job.target}`);
+  }
+  return jsonResponse({ ok: true, job, reused }, reused ? 200 : 201);
+}
+
+async function handleComputeLease(request: Request, env: ApiEnv): Promise<Response> {
+  const authError = requireComputeCallback(request, env);
+  if (authError) return authError;
+  const jobs = await loadComputeJobs(env, MAX_COMPUTE_JOBS);
+  const now = Date.now();
+  const eligible = jobs
+    .filter((job) =>
+      (job.status === 'queued' && (!job.nextRunAt || job.nextRunAt <= now)) ||
+      (job.status === 'running' && Boolean(job.leaseUntil && job.leaseUntil <= now)),
+    )
+    .sort((a, b) => b.priority - a.priority || a.createdAt - b.createdAt);
+  const job = eligible[0];
+  if (!job) return jsonResponse({ ok: true, job: null, summary: summarizeComputeJobs(jobs) });
+
+  const leased: ComputeJobRecord = {
+    ...job,
+    status: 'running',
+    attempts: job.attempts + 1,
+    leaseUntil: now + COMPUTE_LEASE_SECONDS * 1000,
+    updatedAt: now,
+  };
+  await putComputeJob(env, leased);
+  return jsonResponse({ ok: true, job: leased, leaseSeconds: COMPUTE_LEASE_SECONDS });
+}
+
+async function handleComputeComplete(request: Request, env: ApiEnv): Promise<Response> {
+  const authError = requireComputeCallback(request, env);
+  if (authError) return authError;
+  const parsed = await readJsonBody<ComputeJobCompleteRequest>(request, 16 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const jobId = sanitizeText(parsed.value.jobId, 120);
+  if (!jobId) return errorResponse('invalid_compute_job', 'jobId is required.', 400);
+
+  const job = await metadataStore(env).get(computeJobKey(jobId), 'json') as ComputeJobRecord | null;
+  if (!job) return errorResponse('compute_job_not_found', 'Compute job was not found.', 404);
+  const now = Date.now();
+  const ok = parsed.value.ok === true;
+  const retry = parsed.value.retry !== false && job.attempts < job.maxAttempts;
+  const next: ComputeJobRecord = ok
+    ? {
+        ...job,
+        status: 'succeeded',
+        leaseUntil: undefined,
+        resultObjectKey: sanitizeText(parsed.value.resultObjectKey, 360) || job.resultObjectKey,
+        lastError: undefined,
+        updatedAt: now,
+      }
+    : {
+        ...job,
+        status: retry ? 'queued' : 'failed',
+        leaseUntil: undefined,
+        nextRunAt: retry ? now + Math.min(60_000, 2 ** Math.max(0, job.attempts - 1) * 5000) : undefined,
+        lastError: sanitizeText(parsed.value.error, 800) || 'compute_job_failed',
+        updatedAt: now,
+      };
+  await putComputeJob(env, next);
+  return jsonResponse({ ok: true, job: next });
 }
 
 async function handleGetProfile(request: Request, env: ApiEnv): Promise<Response> {
@@ -2699,6 +3347,324 @@ async function handleSupportReport(request: Request, env: ApiEnv): Promise<Respo
     reportId: id,
     message: 'Report saved for owner/admin review in Cloudflare KV.',
   }, 201);
+}
+
+function requireAdmin(session: SessionData | null, permission: 'admin:read' | 'admin:write'): Response | null {
+  if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
+  if (!hasPermission(session, permission)) return errorResponse('forbidden', `Missing ${permission} permission`, 403);
+  if (session.adminMfaMethod !== 'totp' || !session.adminMfaExpiresAt || session.adminMfaExpiresAt <= Date.now()) {
+    return errorResponse(
+      'admin_2fa_required',
+      'Fresh admin 2FA verification is required for this action.',
+      403,
+      {
+        statusPath: '/auth/admin-2fa/status',
+        verifyPath: '/auth/admin-2fa/verify',
+      },
+    );
+  }
+  return null;
+}
+
+function cents(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
+  return Math.max(0, Math.round(value));
+}
+
+function count(value: unknown, max = 1_000_000_000): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(max, Math.round(value)));
+}
+
+async function recordAdminAudit(
+  env: ApiEnv,
+  session: SessionData,
+  action: string,
+  target?: string,
+  detail?: string,
+): Promise<AdminAuditRecord> {
+  const kv = metadataStore(env);
+  const createdAt = Date.now();
+  const id = crypto.randomUUID();
+  const record: AdminAuditRecord = {
+    id,
+    actorSub: session.sub,
+    actorEmail: session.email,
+    action,
+    target,
+    detail: sanitizeText(detail, 800) || undefined,
+    createdAt,
+  };
+  const index = await getStringArray(kv, adminAuditIndexKey());
+  const key = adminAuditKey(createdAt, id);
+  await Promise.all([
+    kv.put(key, JSON.stringify(record), { expirationTtl: ADMIN_AUDIT_TTL_SECONDS }),
+    kv.put(adminAuditIndexKey(), JSON.stringify([key, ...index.filter((item) => item !== key)].slice(0, MAX_ADMIN_AUDIT)), {
+      expirationTtl: ADMIN_AUDIT_TTL_SECONDS,
+    }),
+  ]);
+  return record;
+}
+
+async function loadAdminAudit(env: ApiEnv, limit = 50): Promise<AdminAuditRecord[]> {
+  const kv = metadataStore(env);
+  const keys = (await getStringArray(kv, adminAuditIndexKey())).slice(0, Math.min(limit, MAX_ADMIN_AUDIT));
+  const records = await Promise.all(keys.map((key) => kv.get(key, 'json') as Promise<AdminAuditRecord | null>));
+  return records.filter((record): record is AdminAuditRecord => Boolean(record));
+}
+
+async function listAuthUsers(env: ApiEnv, limit = MAX_ADMIN_LIST) {
+  const listed = await env.SESSIONS.list({ prefix: 'auth:user:', limit });
+  const records = await Promise.all(
+    listed.keys.map((key) => env.SESSIONS.get(key.name, 'json') as Promise<Record<string, unknown> | null>),
+  );
+  return records.filter((record): record is Record<string, unknown> => Boolean(record));
+}
+
+async function summarizeRevenue(env: ApiEnv): Promise<RevenueAggregate[]> {
+  const kv = metadataStore(env);
+  const slugs = await getStringArray(kv, revenueIndexKey());
+  const records = await Promise.all(
+    slugs.slice(0, MAX_ADMIN_LIST).map((slug) => kv.get(revenueProfileKey(slug), 'json') as Promise<RevenueAggregate | null>),
+  );
+  return records.filter((record): record is RevenueAggregate => Boolean(record));
+}
+
+async function handleAdminOverview(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:read');
+  if (adminError) return adminError;
+  const compute = computeConfiguration(env);
+
+  const [users, audit, revenue, computeJobs] = await Promise.all([
+    listAuthUsers(env, 100),
+    loadAdminAudit(env, 20),
+    summarizeRevenue(env),
+    loadComputeJobs(env, 50),
+  ]);
+  const userStates = await Promise.all(
+    users.map((user) => metadataStore(env).get(adminUserStateKey(String(user.sub || '')), 'json') as Promise<AdminUserState | null>),
+  );
+  const blockedUsers = userStates.filter((state) => state?.status === 'blocked').length;
+  const heldProfiles = revenue.filter((item) => item.status === 'hold' || item.status === 'policy').length;
+  const validRevenueCents = revenue.reduce((sum, item) => sum + item.validRevenueCents, 0);
+  const userShareCents = revenue.reduce((sum, item) => sum + item.userShareCents, 0);
+
+  return jsonResponse({
+    ok: true,
+    mode: 'cloudflare-kv-admin-control',
+    metrics: {
+      usersSeen: users.length,
+      blockedUsers,
+      revenueProfiles: revenue.length,
+      heldProfiles,
+      validRevenueCents,
+      userShareCents,
+      userSharePercent: 25,
+      auditEvents: audit.length,
+    },
+    storagePlan: {
+      metadata: 'Cloudflare KV',
+      objects: 'IDrive e2',
+      compute: compute.ready ? 'Salad Compute' : 'Cloudflare fallback',
+    },
+    computePlan: compute,
+    computeQueue: summarizeComputeJobs(computeJobs),
+    authPlan: {
+      activeProvider: 'GitHub OAuth',
+      providerStatusEndpoint: '/auth/providers',
+      admin2fa: 'enforced-for-admin-api-routes',
+    },
+    lastAudit: audit.slice(0, 5),
+  });
+}
+
+async function handleAdminUsers(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:read');
+  if (adminError) return adminError;
+
+  const users = await listAuthUsers(env, MAX_ADMIN_LIST);
+  const states = await Promise.all(
+    users.map((user) => metadataStore(env).get(adminUserStateKey(String(user.sub || '')), 'json') as Promise<AdminUserState | null>),
+  );
+  return jsonResponse({
+    ok: true,
+    users: users.map((user, index) => {
+      const state = states[index];
+      return {
+        sub: user.sub,
+        email: user.email,
+        name: user.name,
+        roles: user.roles ?? [],
+        permissions: user.permissions ?? [],
+        lastLoginAt: user.lastLoginAt ?? null,
+        status: state?.status ?? 'active',
+        risk: state?.risk ?? 'low',
+        blockedAt: state?.blockedAt ?? null,
+        blockReason: state?.blockReason ?? null,
+        payoutHold: state?.payoutHold ?? false,
+      };
+    }),
+  });
+}
+
+async function handleAdminBlockUser(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:write');
+  if (adminError) return adminError;
+
+  const parsed = await readJsonBody<AdminUserActionRequest>(request, 8 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const userSub = sanitizeText(parsed.value.userSub, 160);
+  if (!userSub) return errorResponse('invalid_user', 'userSub is required.', 400);
+  if (userSub === session!.sub) return errorResponse('self_block_forbidden', 'Owner/admin cannot block own active session.', 400);
+  const now = Date.now();
+  const state: AdminUserState = {
+    userSub,
+    email: sanitizeText(parsed.value.email, 180) || undefined,
+    status: 'blocked',
+    risk: parsed.value.risk === 'low' || parsed.value.risk === 'medium' || parsed.value.risk === 'high' ? parsed.value.risk : 'high',
+    blockedAt: now,
+    blockedBy: session!.sub,
+    blockReason: sanitizeText(parsed.value.reason, 800) || 'admin_block',
+    payoutHold: true,
+    payoutHoldReason: 'account_blocked',
+    updatedAt: now,
+  };
+  await metadataStore(env).put(adminUserStateKey(userSub), JSON.stringify(state), { expirationTtl: ADMIN_STATE_TTL_SECONDS });
+  await recordAdminAudit(env, session!, 'user.block', userSub, state.blockReason);
+  return jsonResponse({ ok: true, user: state });
+}
+
+async function handleAdminUnblockUser(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:write');
+  if (adminError) return adminError;
+
+  const parsed = await readJsonBody<AdminUserActionRequest>(request, 8 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const userSub = sanitizeText(parsed.value.userSub, 160);
+  if (!userSub) return errorResponse('invalid_user', 'userSub is required.', 400);
+  const now = Date.now();
+  const state: AdminUserState = {
+    userSub,
+    email: sanitizeText(parsed.value.email, 180) || undefined,
+    status: 'active',
+    risk: parsed.value.risk === 'low' || parsed.value.risk === 'medium' || parsed.value.risk === 'high' ? parsed.value.risk : 'low',
+    blockReason: sanitizeText(parsed.value.reason, 800) || undefined,
+    payoutHold: false,
+    updatedAt: now,
+  };
+  await metadataStore(env).put(adminUserStateKey(userSub), JSON.stringify(state), { expirationTtl: ADMIN_STATE_TTL_SECONDS });
+  await recordAdminAudit(env, session!, 'user.unblock', userSub, state.blockReason);
+  return jsonResponse({ ok: true, user: state });
+}
+
+async function handleAdminRevenueSummary(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:read');
+  if (adminError) return adminError;
+
+  const profiles = await summarizeRevenue(env);
+  return jsonResponse({
+    ok: true,
+    userSharePercent: 25,
+    profiles,
+    totals: {
+      impressions: profiles.reduce((sum, item) => sum + item.impressions, 0),
+      clicks: profiles.reduce((sum, item) => sum + item.clicks, 0),
+      validRevenueCents: profiles.reduce((sum, item) => sum + item.validRevenueCents, 0),
+      invalidRevenueCents: profiles.reduce((sum, item) => sum + item.invalidRevenueCents, 0),
+      userShareCents: profiles.reduce((sum, item) => sum + item.userShareCents, 0),
+      heldCents: profiles.reduce((sum, item) => sum + item.heldCents, 0),
+      payableCents: profiles.reduce((sum, item) => sum + item.payableCents, 0),
+    },
+  });
+}
+
+async function handleAdminRevenueEvent(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:write');
+  if (adminError) return adminError;
+
+  const parsed = await readJsonBody<RevenueEventRequest>(request, 8 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const slug = slugify(sanitizeText(parsed.value.slug, MAX_REVENUE_SLUG_CHARS));
+  if (!slug) return errorResponse('invalid_profile_slug', 'slug is required.', 400);
+  const kv = metadataStore(env);
+  const current = (await kv.get(revenueProfileKey(slug), 'json')) as RevenueAggregate | null;
+  const validRevenueCents = cents(parsed.value.validRevenueCents);
+  const invalidRevenueCents = cents(parsed.value.invalidRevenueCents);
+  const nextValidRevenue = (current?.validRevenueCents ?? 0) + validRevenueCents;
+  const nextInvalidRevenue = (current?.invalidRevenueCents ?? 0) + invalidRevenueCents;
+  const nextUserShare = Math.floor(nextValidRevenue * 0.25);
+  const existingHeld = current?.heldCents ?? 0;
+  const status: RevenueStatus = existingHeld > 0 || current?.status === 'hold' || current?.status === 'policy'
+    ? current?.status ?? 'hold'
+    : invalidRevenueCents > validRevenueCents
+      ? 'review'
+      : 'payable';
+  const heldCents = status === 'payable' ? 0 : Math.max(existingHeld, nextUserShare);
+  const next: RevenueAggregate = {
+    slug,
+    ownerSub: sanitizeText(parsed.value.ownerSub, 160) || current?.ownerSub,
+    ownerEmail: sanitizeText(parsed.value.ownerEmail, 180) || current?.ownerEmail,
+    profileName: sanitizeText(parsed.value.profileName, 160) || current?.profileName || slug,
+    impressions: (current?.impressions ?? 0) + count(parsed.value.impressions),
+    clicks: (current?.clicks ?? 0) + count(parsed.value.clicks),
+    validRevenueCents: nextValidRevenue,
+    invalidRevenueCents: nextInvalidRevenue,
+    userShareCents: nextUserShare,
+    heldCents,
+    payableCents: Math.max(0, nextUserShare - heldCents),
+    status,
+    updatedAt: Date.now(),
+  };
+  const index = await getStringArray(kv, revenueIndexKey());
+  await Promise.all([
+    kv.put(revenueProfileKey(slug), JSON.stringify(next), { expirationTtl: ADMIN_STATE_TTL_SECONDS }),
+    kv.put(revenueIndexKey(), JSON.stringify([slug, ...index.filter((item) => item !== slug)].slice(0, MAX_ADMIN_LIST)), {
+      expirationTtl: ADMIN_STATE_TTL_SECONDS,
+    }),
+    recordAdminAudit(env, session!, 'revenue.event', slug, sanitizeText(parsed.value.source, 120) || 'manual'),
+  ]);
+  return jsonResponse({ ok: true, profile: next }, 201);
+}
+
+async function handleAdminRevenueHold(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:write');
+  if (adminError) return adminError;
+
+  const parsed = await readJsonBody<RevenueHoldRequest>(request, 8 * 1024);
+  if (!parsed.ok) return parsed.response;
+  const slug = slugify(sanitizeText(parsed.value.slug, MAX_REVENUE_SLUG_CHARS));
+  if (!slug) return errorResponse('invalid_profile_slug', 'slug is required.', 400);
+  const kv = metadataStore(env);
+  const current = (await kv.get(revenueProfileKey(slug), 'json')) as RevenueAggregate | null;
+  if (!current) return errorResponse('revenue_profile_not_found', 'Revenue profile not found.', 404);
+  const hold = parsed.value.hold !== false;
+  const next: RevenueAggregate = {
+    ...current,
+    status: hold ? 'hold' : 'payable',
+    heldCents: hold ? current.userShareCents : 0,
+    payableCents: hold ? 0 : current.userShareCents,
+    updatedAt: Date.now(),
+  };
+  await kv.put(revenueProfileKey(slug), JSON.stringify(next), { expirationTtl: ADMIN_STATE_TTL_SECONDS });
+  await recordAdminAudit(env, session!, hold ? 'revenue.hold' : 'revenue.release', slug, sanitizeText(parsed.value.reason, 800));
+  return jsonResponse({ ok: true, profile: next });
+}
+
+async function handleAdminAudit(request: Request, env: ApiEnv): Promise<Response> {
+  const session = await authenticate(request, env);
+  const adminError = requireAdmin(session, 'admin:read');
+  if (adminError) return adminError;
+
+  const url = new URL(request.url);
+  const limit = Math.min(MAX_ADMIN_AUDIT, Math.max(1, Number(url.searchParams.get('limit') || 50)));
+  return jsonResponse({ ok: true, audit: await loadAdminAudit(env, limit) });
 }
 
 async function handleListMemories(request: Request, env: ApiEnv): Promise<Response> {
@@ -3397,11 +4363,48 @@ async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionC
     }
   }
 
+  const compute = computeConfiguration(env);
+  const computeQueued = compute.ready && Boolean(session);
+  if (computeQueued) {
+    const enqueue = enqueueComputeJob(env, {
+      type: 'chat_inference',
+      priority: 90,
+      target: `chats/${safePathSegment(next.id)}`,
+      idempotencyKey: `chat:${session!.sub}:${next.id}:${userMessage.id}`,
+      userSub: session!.sub,
+      maxAttempts: 3,
+      payload: {
+        chatId: next.id,
+        twinId: chat.twinId ?? null,
+        publicTwinSlug: chat.publicTwinSlug ?? null,
+        userMessageId: userMessage.id,
+        assistantMessageId: assistantMessage.id,
+        userMessage: userMessage.content,
+        fallbackReply: assistantMessage.content,
+        recentMessages: next.messages.slice(-8),
+        archiveObjectKey: next.archiveObjectKey ?? null,
+        requestedAt: now,
+      },
+    }).catch((err) => {
+      console.warn('compute_chat_enqueue_failed', JSON.stringify({
+        chatId: next.id,
+        error: String(err),
+      }));
+    });
+    if (ctx) ctx.waitUntil(enqueue);
+    else await enqueue;
+  }
   return jsonResponse({
     chatId: next.id,
     message: assistantMessage,
     twinId: chat.twinId ?? chat.publicTwinSlug ?? null,
     mode: twin ? 'free-only-twin-mvp' : 'free-only-static',
+    compute: {
+      mode: compute.mode,
+      provider: compute.ready ? 'salad' : 'cloudflare-fallback',
+      streaming: compute.streamingEnabled,
+      queued: computeQueued,
+    },
   });
 }
 
@@ -3415,13 +4418,144 @@ export default {
         return strictCorsPreflight(request, env.CANONICAL_HOST, 'GET, POST, PATCH, DELETE');
       }
 
-      const csrf = requireSameOrigin(request, env.CANONICAL_HOST);
+      if (url.pathname === '/api/compute/jobs/lease' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:compute-lease'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleComputeLease(request, env);
+      }
+
+      if (url.pathname === '/api/compute/jobs/complete' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:compute-complete'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleComputeComplete(request, env);
+      }
+
+      const computeCallbackRoute = url.pathname === '/api/compute/jobs/lease' || url.pathname === '/api/compute/jobs/complete';
+      const csrf = computeCallbackRoute ? null : requireSameOrigin(request, env.CANONICAL_HOST);
       if (csrf) {
         return csrf;
       }
 
       if (url.pathname === '/api/health' && request.method === 'GET') {
-        return handleHealth();
+        return handleHealth(env);
+      }
+
+      if (url.pathname === '/api/compute/capabilities' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:compute-capabilities'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleComputeCapabilities(env);
+      }
+
+      if (url.pathname === '/api/admin/overview' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-overview'),
+          limit: 60,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminOverview(request, env);
+      }
+
+      if (url.pathname === '/api/admin/compute/jobs' && (request.method === 'GET' || request.method === 'POST')) {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-compute-jobs'),
+          limit: request.method === 'POST' ? 30 : 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminComputeJobs(request, env);
+      }
+
+      if (url.pathname === '/api/admin/compute/runtime' && (request.method === 'GET' || request.method === 'POST')) {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-compute-runtime'),
+          limit: request.method === 'POST' ? 10 : 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminComputeRuntime(request, env);
+      }
+
+      if (url.pathname === '/api/admin/users' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-users'),
+          limit: 60,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminUsers(request, env);
+      }
+
+      if (url.pathname === '/api/admin/users/block' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-user-block'),
+          limit: 20,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminBlockUser(request, env);
+      }
+
+      if (url.pathname === '/api/admin/users/unblock' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-user-unblock'),
+          limit: 20,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminUnblockUser(request, env);
+      }
+
+      if (url.pathname === '/api/admin/revenue/summary' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-revenue-summary'),
+          limit: 60,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminRevenueSummary(request, env);
+      }
+
+      if (url.pathname === '/api/admin/revenue/events' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-revenue-event'),
+          limit: 120,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminRevenueEvent(request, env);
+      }
+
+      if (url.pathname === '/api/admin/revenue/hold' && request.method === 'POST') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-revenue-hold'),
+          limit: 30,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminRevenueHold(request, env);
+      }
+
+      if (url.pathname === '/api/admin/audit' && request.method === 'GET') {
+        const limited = await requireRateLimit(kv, {
+          key: clientKey(request, 'api:admin-audit'),
+          limit: 60,
+          windowSeconds: 60,
+        });
+        if (limited) return limited;
+        return handleAdminAudit(request, env);
       }
 
       if (url.pathname === '/api/profile' && request.method === 'GET') {

@@ -19,7 +19,7 @@ Production darf keine kostenpflichtigen Zusatzdienste voraussetzen. Sensible Dat
 - Cookie-basierte Schreib-Endpunkte verlangen zusätzlich den absichtlich gesetzten Header `X-Smyst-CSRF: 1`.
 - Cookie-basierte Schreib-Endpunkte werten zusaetzlich `Sec-Fetch-Site` aus und blockieren Cross-Site-Requests.
 - CORS-Preflights erlauben nur den kanonischen smyst.com-Origin.
-- Session-Cookies sind `HttpOnly`, `Secure`, `SameSite=Strict` und `Priority=High`.
+- Session-Cookies sind `HttpOnly`, `Secure`, `SameSite=Strict` und `Priority=High`. Der OAuth-Callback nutzt eine same-origin Session-Ready-Antwort, damit der anschliessende App-Aufruf die Strict-Session zuverlaessig sendet.
 - Ungueltig formatierte Session-Cookies werden verworfen und geloescht.
 - OAuth-State ist HMAC-signiert, kurzlebig und wird nach Nutzung gelöscht.
 - Die Auth-Konfiguration verlangt HTTPS fuer `CANONICAL_HOST` und ein starkes HMAC-Secret.

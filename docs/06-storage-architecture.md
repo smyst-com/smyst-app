@@ -27,6 +27,10 @@ Keine E-Mail-Adressen, Klarnamen oder sensiblen Rohdaten im Key.
 
 ## Upload-Flow
 
+`GET /storage/capabilities` gibt Kategorien, Content-Type-Regeln, Limits,
+IDrive-e2-Pfadvorlagen und Rollen von GitHub, IDrive e2, Salad und Spaceship
+maschinenlesbar aus.
+
 1. Client fragt `POST /storage/upload-url`.
 2. Worker prueft Session, Dateityp, Dateigroesse, User-Quota und Global-Quota.
 3. Worker reserviert Quota in Cloudflare KV und schreibt einen Upload-Intent.
@@ -69,6 +73,31 @@ Startwerte muessen bewusst niedrig sein:
 | `profile_image` | Profilbilder/Avatare |
 | `backup` | User-scoped Backups und Exporte |
 | `twin_data` | KI-Zwilling-Daten als JSON/Text/Markdown, `twinId` Pflicht |
+| `static_asset` | Statische App-/Website-Dateien als IDrive-e2-Artefakte |
+| `app_build` | APK/AAB/IPA und App-Build-Pakete |
+| `release_file` | Update-Pakete, Rollbacks und Release-Dateien |
+| `audit_log` | Audit-Logs und Security/Event-Records |
+| `error_report` | Fehlerberichte und Diagnosepakete |
+| `admin_export` | Admin-, Finance- und Operational-Exporte |
+| `rag_document` | RAG-Quellen, Wissensdokumente und Importdateien |
+| `embedding_file` | Embedding-Dateien und Retrieval-Artefakte |
+| `search_index_backup` | Suchindex-Backups und Restore-Pakete |
+| `prompt_file` | Prompt-Dateien, Profil-DNA und Routing-Konfig |
+| `model_file` | Modell-Dateien und Modell-Metadaten |
+| `training_data` | Trainings-, Eval- und Qualitaetsdaten |
+| `thumbnail` | Thumbnails und Video-Vorschauen |
+| `subtitle` | Untertitel, Captions und Transkript-Sidecars |
+| `translation_file` | Uebersetzungen und statische Locale-Daten |
+| `legal_document` | Impressum, Datenschutz, Policies und Consent-Belege |
+| `qa_artifact` | Screenshots, QA-Videos, Testberichte |
+| `maintenance_asset` | Wartungsseiten und Ausfall-Assets |
+| `cache_file` | Offline-Dateien und generierte Cache-Artefakte |
+| `public_cdn_file` | Public-CDN-Kandidaten; Veroeffentlichung braucht separaten Release-Flow |
+| `private_signed_file` | Private signierte Dateien ausserhalb engerer Kategorien |
+
+Der Upload-Worker bleibt auch fuer `public_cdn_file` sessiongebunden. Echte
+anonyme CDN-Veroeffentlichung braucht einen separaten, review-pflichtigen
+Release-Pfad.
 
 ## Chunk Upload Und Wiederaufnahme
 

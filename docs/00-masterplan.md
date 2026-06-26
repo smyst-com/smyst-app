@@ -2,20 +2,23 @@
 
 Status: Architektur- und Fundamentplanung vor Feature-Entwicklung.
 
+Verbindliches Zielkonzept: siehe `docs/SMYST_TARGET_CONCEPT.md`.
+
 ## 1. Ausgangsanalyse
 
 Das Repository enthält aktuell eine Vite/React-Anwendung mit Capacitor-Shells für iOS/Android, Cloudflare Worker für Auth, Storage und Übersetzung sowie bestehende Setup- und Architekturhinweise. Das ist eine brauchbare frühe Produktbasis, entspricht aber nicht vollständig der neuen Zielarchitektur.
 
 Neue Zielvorgabe:
 
-- Frontend: Web/PWA auf Cloudflare Pages Free, bestehende Capacitor-Shells fuer mobile Tests.
-- Backend/API: Cloudflare Workers Free als einziger erlaubter Server-Layer.
-- Daten: Cloudflare Workers KV Free fuer kleine Sessions, Metadaten und einfache Indexe.
-- Storage: IDrive e2 als zentraler S3-kompatibler Objekt-Speicher, nur solange keine kostenpflichtige Nutzung entsteht.
-- Betrieb: GitHub Free fuer Repository/CI/CD, Cloudflare Free fuer DNS/CDN/TLS/Pages/Workers/KV.
-- KI: In der Free-only-Phase nur Demo-, statische, manuell vorbereitete oder lokal erzeugte Inhalte. Keine kostenpflichtigen AI-Provider.
+- Frontend: zuerst eine sehr starke Web/PWA, danach native oder Wrapper-Apps fuer iPhone, Android, Huawei und spaetere Plattformen.
+- Domain: Spaceship als Registrar, Domain-Sicherheitsanker und Nameserver-Verwaltung.
+- DNS aktuell: Cloudflare DNS aktiv fuer `smyst.com`, weil Cloudflare Pages Apex-Domain und Worker-Routes Cloudflare-Nameserver benoetigen.
+- Code: GitHub Free nur fuer Quellcode, Versionierung, Releases, Issues und Dokumentation.
+- Storage: IDrive e2 als zentraler S3-kompatibler Hauptspeicher fuer 99 % aller Dateien, Medien, App-Dateien, Backups, Archive, KI-Daten und Wissensdaten.
+- Compute: Salad nur fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung, Embeddings, RAG, Cronjobs und Batch-Jobs.
+- Cloudflare: aktueller Uebergang fuer DNS, Pages, TLS, Proxy und Workers, aber nicht als langfristiger Hauptspeicher oder dauerhafte Rechenplattform.
 
-Wichtige technische Realität: GitHub Free, Cloudflare Free und IDrive e2 innerhalb kostenloser Nutzung können keine Milliarden gleichzeitigen Nutzer bedienen. Diese Vorgaben eignen sich als disziplinierte Free-only-MVP-Plattform. Das Milliarden-Ziel bleibt eine Langfristvision, aber kein Leistungsversprechen der aktuellen Infrastruktur.
+Wichtige technische Realitaet: GitHub Free, IDrive e2, Spaceship und Salad in einer guenstigen Startarchitektur koennen keine Milliarden gleichzeitigen Nutzer garantieren. Diese Vorgaben eignen sich als disziplinierte MVP-Plattform und als klare Wachstumsbasis. Das Milliarden-Ziel bleibt eine Langfristvision, aber kein Leistungsversprechen der aktuellen Infrastruktur.
 
 ## 2. Fehlende Komponenten
 
@@ -48,7 +51,7 @@ Dieser Anspruch bedeutet fuer die Architektur:
 - Web, PWA, iPhone, Android und zukuenftige Plattformen muessen denselben API- und Identitaetskern nutzen.
 - Jede Architekturentscheidung muss spaeter horizontal skalierbar, beobachtbar und austauschbar sein.
 
-Die Startplattform mit GitHub Free, Cloudflare Free, Cloudflare Pages/Workers/KV und IDrive e2 ist deshalb bewusst als Free-only-Stufe definiert. Sie muss professionell gebaut werden, aber darf nicht als echte globale Hochlast-Infrastruktur beschrieben werden.
+Die Startplattform mit GitHub Free, Spaceship, IDrive e2, Salad und aktuell Cloudflare ist deshalb bewusst als guenstige MVP-Stufe definiert. Cloudflare dient als aktiver Uebergang fuer DNS/Pages/Workers, solange IDrive-e2-Auslieferung und Salad-API noch nicht vollstaendig produktionsreif verbunden sind. Diese Stufe muss professionell gebaut werden, darf aber nicht als echte globale Hochlast-Infrastruktur beschrieben werden.
 
 ## 4. Architekturprinzipien
 
@@ -130,12 +133,11 @@ Kein Feature-Code vor Abschluss dieses Gates.
 
 Startarchitektur:
 
-- Cloudflare Free fuer DNS, TLS, CDN, einfache WAF-Regeln.
-- Cloudflare Pages Free fuer Web/PWA.
-- Cloudflare Workers Free fuer API/Auth/Upload-Signing.
-- Cloudflare Workers KV Free fuer Sessions und kleine Metadaten.
-- IDrive e2 fuer Objekt-Speicher.
-- GitHub Actions fuer CI/CD.
+- Spaceship fuer Domain und als Ziel-DNS.
+- GitHub Free fuer Code, Versionierung, Releases und dokumentierte Automatisierung.
+- IDrive e2 fuer Objekt-Speicher, statische App-Dateien, Medien, Backups, Archive und vorbereitete KI-Daten.
+- Salad fuer dynamische API, KI-Rechenarbeit, Verarbeitung, Suche, Indexierung und Cronjobs, sobald diese Funktionen produktionsreif gebraucht werden.
+- Cloudflare aktuell als DNS/Pages/Workers-Uebergang, solange IDrive-e2-Auslieferung und Salad-API noch nicht vollstaendig produktionsreif verbunden sind.
 
 Wachstumsarchitektur:
 
@@ -178,12 +180,12 @@ MVP-Werte duerfen niedriger liegen, aber das Design muss diese Zielwerte vorbere
 - Latenz: Chat muss streamingfaehig sein; langsame AI-Jobs duerfen nie den Request-Pfad blockieren.
 - Kosten: Modell-, Embedding-, Transkriptions- und Storage-Kosten koennen stark wachsen.
 - Abuse: Impersonation, Deepfake-Missbrauch, Scraping und Prompt Injection muessen frueh eingeplant werden.
-- Free-Tier-Grenzen: Cloudflare Free, GitHub Free und IDrive e2 innerhalb kostenloser Nutzung sind Startwerkzeuge, keine Milliarden-Nutzer-Infrastruktur.
+- Start-Infrastruktur-Grenzen: GitHub Free, Spaceship, IDrive e2 und Salad in guenstiger Startnutzung sind Startwerkzeuge, keine garantierte Milliarden-Nutzer-Infrastruktur.
 - Architekturillusion: Milliarden-Skalierung entsteht nicht durch grosse Ziele, sondern durch messbare Gates, horizontale Skalierung, Datenpartitionierung, Provider-Redundanz und operative Exzellenz.
 
 ## 9. Naechste konkrete Schritte
 
 1. Diese Architektur-Dokumente reviewen.
-2. Zielstack bestaetigen: Free-only mit GitHub Free, Cloudflare Free und IDrive e2.
-3. Danach KV-/Storage-/Quota-Modell und Cloudflare-Worker-Struktur als erstes technisches Fundament umsetzen.
+2. Zielstack bestaetigen: GitHub Free fuer Code, Spaceship fuer Domain/DNS, IDrive e2 fuer Speicher, Salad fuer Rechenarbeit.
+3. Danach Storage-/Quota-/Signed-URL-Modell fuer IDrive e2 und API-/Job-Struktur fuer Salad als erstes technisches Fundament umsetzen.
 4. Erst nach stabilen Health Checks, Quota-Schutz, Logging und Security-Baseline mit Produktfeatures beginnen.

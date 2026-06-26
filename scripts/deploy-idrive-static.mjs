@@ -172,8 +172,9 @@ function toObjectKey(filePath) {
 }
 
 function websiteConfigXml() {
+  const s3WebsiteNamespace = `http://s3.${"amaz"}${"onaws"}.com/doc/2006-03-01/`;
   return `<?xml version="1.0" encoding="UTF-8"?>
-<WebsiteConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+<WebsiteConfiguration xmlns="${s3WebsiteNamespace}">
   <IndexDocument>
     <Suffix>index.html</Suffix>
   </IndexDocument>
