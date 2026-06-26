@@ -106,6 +106,77 @@ test.describe("Smyst current app", () => {
     await expect(page.getByRole("button", { name: /Trend im Markt/i })).toBeVisible();
   });
 
+  test("profile writes show a clear temporary storage limit message", async ({ page }) => {
+    await page.route("**/auth/me", async (route) => {
+      await route.fulfill({
+        json: {
+          authenticated: true,
+          user: {
+            sub: "github:test-owner",
+            email: "owner@example.com",
+            name: "Smyst Owner",
+            roles: ["owner"],
+            permissions: [
+              "auth:read",
+              "profile:read",
+              "profile:write",
+              "storage:read",
+              "storage:write",
+              "chat:read",
+              "chat:write",
+              "twin:read",
+              "twin:write",
+            ],
+          },
+        },
+      });
+    });
+    await page.route("**/api/profile", async (route) => {
+      if (route.request().method() === "PATCH") {
+        await route.fulfill({
+          status: 503,
+          json: {
+            error: {
+              code: "storage_write_limited",
+              message: "Temporary storage write limit reached. Please retry later.",
+            },
+          },
+        });
+        return;
+      }
+      await route.fulfill({
+        json: {
+          profile: {
+            id: "default",
+            userSub: "github:test-owner",
+            displayName: "Smyst Owner",
+            roles: [],
+            expertise: [],
+            goals: [],
+            languages: [],
+            tone: "professional",
+            visibility: "private",
+            qualityScore: 15,
+            memoryCount: 0,
+            chatCount: 0,
+            objectPrefix: "users/github_test_owner/profiles/default",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          },
+          limits: {},
+        },
+      });
+    });
+    await page.route("**/api/memories**", async (route) => {
+      await route.fulfill({ json: { memories: [], limits: { maxMemories: 100, remaining: 100 } } });
+    });
+
+    await page.goto("/profile");
+    await page.getByRole("button", { name: "Profil speichern" }).click();
+
+    await expect(page.getByText(/Speichern ist gerade wegen eines temporären Speicherlimits pausiert/i)).toBeVisible();
+  });
+
   test("pwa, seo and api endpoints return assets or JSON instead of app HTML", async ({ request }) => {
     const manifest = await request.get("/manifest.webmanifest");
     expect(manifest.ok()).toBeTruthy();
