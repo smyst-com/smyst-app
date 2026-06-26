@@ -177,8 +177,11 @@ interface UploadUrlResponse {
 
 function errorMessage(body: unknown, fallback: string): string {
   if (body && typeof body === 'object') {
-    const maybe = body as { error?: string | { message?: string } };
+    const maybe = body as { error?: string | { code?: string; message?: string } };
     if (typeof maybe.error === 'string') return maybe.error;
+    if (maybe.error?.code === 'storage_write_limited') {
+      return 'Upload-Speichern ist gerade wegen eines temporären Speicherlimits pausiert. Bitte versuche es später erneut.';
+    }
     if (maybe.error?.message) return maybe.error.message;
   }
   return fallback;

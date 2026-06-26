@@ -199,13 +199,18 @@ export interface ChatSearchResult {
 }
 
 interface ApiErrorShape {
-  error?: string | { message?: string }
+  error?: string | { code?: string; message?: string }
 }
 
 function apiError(body: unknown, fallback: string): string {
   const maybe = body as ApiErrorShape | null
   if (maybe && typeof maybe.error === 'string') return maybe.error
-  if (maybe?.error && typeof maybe.error === 'object' && maybe.error.message) return maybe.error.message
+  if (maybe?.error && typeof maybe.error === 'object') {
+    if (maybe.error.code === 'storage_write_limited') {
+      return 'Speichern ist gerade wegen eines temporären Speicherlimits pausiert. Lesen und Chatten bleiben verfügbar. Bitte versuche es später erneut.'
+    }
+    if (maybe.error.message) return maybe.error.message
+  }
   return fallback
 }
 
