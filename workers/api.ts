@@ -1294,7 +1294,7 @@ async function loadProfile(env: ApiEnv, session: SessionData): Promise<ProfileRe
     return normalized;
   }
   profile.qualityScore = profileQualityScore(profile);
-  await kv.put(profileKey(session.sub), JSON.stringify(profile), { expirationTtl: PROFILE_TTL_SECONDS });
+  await putProfileBestEffort(env, profile, 'profile_default_create');
   return profile;
 }
 
@@ -1302,6 +1302,14 @@ async function putProfile(env: ApiEnv, profile: ProfileRecord): Promise<void> {
   await metadataStore(env).put(profileKey(profile.userSub), JSON.stringify(profile), {
     expirationTtl: PROFILE_TTL_SECONDS,
   });
+}
+
+async function putProfileBestEffort(env: ApiEnv, profile: ProfileRecord, reason: string): Promise<void> {
+  try {
+    await putProfile(env, profile);
+  } catch (err) {
+    console.warn('profile_writeback_skipped', JSON.stringify({ reason, userSub: profile.userSub, error: String(err) }));
+  }
 }
 
 async function putChat(env: ApiEnv, chat: ChatRecord): Promise<void> {
@@ -3182,7 +3190,7 @@ async function handleGetProfile(request: Request, env: ApiEnv): Promise<Response
     next.qualityScore !== profile.qualityScore ||
     next.objectPrefix !== profile.objectPrefix
   ) {
-    await putProfile(env, next);
+    await putProfileBestEffort(env, next, 'profile_get_derived_counts');
   }
 
   return jsonResponse({
