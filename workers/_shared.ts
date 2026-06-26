@@ -243,6 +243,16 @@ function timingHeader(startedAt: number): string {
   return `total;dur=${Date.now() - startedAt}`;
 }
 
+function isStorageWriteLimitError(err: unknown): boolean {
+  const message = String(err).toLowerCase();
+  return (
+    message.includes('kv put() limit exceeded') ||
+    message.includes('kv namespace write operations limit') ||
+    message.includes('storage quota') ||
+    message.includes('quota exceeded')
+  );
+}
+
 export async function safeHandler(handler: () => Promise<Response>, request?: Request): Promise<Response> {
   const startedAt = Date.now();
   const requestId = requestIdFrom(request);
@@ -253,6 +263,16 @@ export async function safeHandler(handler: () => Promise<Response>, request?: Re
     });
   } catch (err) {
     console.error('worker_unhandled_error', JSON.stringify({ requestId, error: String(err) }));
+    if (isStorageWriteLimitError(err)) {
+      return withSecurity(
+        errorResponse('storage_write_limited', 'Temporary storage write limit reached. Please retry later.', 503, { requestId }),
+        {
+          'Server-Timing': timingHeader(startedAt),
+          'X-Smyst-Request-Id': requestId,
+          'Retry-After': '3600',
+        },
+      );
+    }
     return withSecurity(
       errorResponse('internal_error', 'Internal error', 500, { requestId }),
       {
