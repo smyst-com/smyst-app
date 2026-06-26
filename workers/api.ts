@@ -4451,22 +4451,10 @@ export default {
       }
 
       if (url.pathname === '/api/compute/jobs/lease' && request.method === 'POST') {
-        const limited = await requireRateLimit(kv, {
-          key: clientKey(request, 'api:compute-lease'),
-          limit: 120,
-          windowSeconds: 60,
-        });
-        if (limited) return limited;
         return handleComputeLease(request, env);
       }
 
       if (url.pathname === '/api/compute/jobs/complete' && request.method === 'POST') {
-        const limited = await requireRateLimit(kv, {
-          key: clientKey(request, 'api:compute-complete'),
-          limit: 120,
-          windowSeconds: 60,
-        });
-        if (limited) return limited;
         return handleComputeComplete(request, env);
       }
 
