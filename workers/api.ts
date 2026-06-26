@@ -1260,7 +1260,7 @@ function profileQualityScore(profile: ProfileRecord): number {
 
 async function loadProfile(env: ApiEnv, session: SessionData): Promise<ProfileRecord> {
   const kv = metadataStore(env);
-  const stored = (await kv.get(profileKey(session.sub), 'json')) as ProfileRecord | null;
+  const stored = await getJson<ProfileRecord | null>(kv, profileKey(session.sub), null);
   if (stored) return stored;
   const profile = defaultProfile(session);
   profile.qualityScore = profileQualityScore(profile);
@@ -1305,9 +1305,7 @@ async function addMemoryToIndex(env: ApiEnv, userSub: string, memoryId: string):
 async function loadUserMemories(env: ApiEnv, userSub: string): Promise<MemoryRecord[]> {
   const kv = metadataStore(env);
   const ids = await getStringArray(kv, memoryIndexKey(userSub));
-  const records = await Promise.all(
-    ids.slice(0, MAX_MEMORY_ITEMS).map((id) => kv.get(memoryKey(userSub, id), 'json') as Promise<MemoryRecord | null>),
-  );
+  const records = await Promise.all(ids.slice(0, MAX_MEMORY_ITEMS).map((id) => getJson<MemoryRecord | null>(kv, memoryKey(userSub, id), null)));
   return records.filter((record): record is MemoryRecord => Boolean(record));
 }
 
@@ -1332,25 +1330,21 @@ async function loadTwinForUser(env: ApiEnv, userSub: string, twinId: string): Pr
 async function loadPublicTwin(env: ApiEnv, slug: string): Promise<TwinRecord | null> {
   const curated = curatedPublicTwinBySlug(env, slug);
   if (curated) return curated;
-  const stored = (await metadataStore(env).get(publicTwinKey(slug), 'json')) as TwinRecord | null;
+  const stored = await getJson<TwinRecord | null>(metadataStore(env), publicTwinKey(slug), null);
   return stored;
 }
 
 async function loadUserChats(env: ApiEnv, userSub: string): Promise<ChatRecord[]> {
   const kv = metadataStore(env);
   const ids = await getStringArray(kv, chatIndexKey(userSub));
-  const records = await Promise.all(
-    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(chatKey(userSub, id), 'json') as Promise<ChatRecord | null>),
-  );
+  const records = await Promise.all(ids.slice(0, MAX_INDEX_READS).map((id) => getJson<ChatRecord | null>(kv, chatKey(userSub, id), null)));
   return records.filter((record): record is ChatRecord => Boolean(record));
 }
 
 async function loadUserTwins(env: ApiEnv, userSub: string): Promise<TwinRecord[]> {
   const kv = metadataStore(env);
   const ids = await getStringArray(kv, twinIndexKey(userSub));
-  const records = await Promise.all(
-    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(twinKey(userSub, id), 'json') as Promise<TwinRecord | null>),
-  );
+  const records = await Promise.all(ids.slice(0, MAX_INDEX_READS).map((id) => getJson<TwinRecord | null>(kv, twinKey(userSub, id), null)));
   return records.filter((record): record is TwinRecord => Boolean(record));
 }
 
@@ -3677,7 +3671,7 @@ async function handleListMemories(request: Request, env: ApiEnv): Promise<Respon
   const twinId = sanitizeText(url.searchParams.get('twinId'), 120);
   const memories = (await loadUserMemories(env, session.sub))
     .filter((memory) => !status || memory.status === status)
-    .filter((memory) => !twinId || memory.twinIds.includes(twinId))
+    .filter((memory) => !twinId || (Array.isArray(memory.twinIds) && memory.twinIds.includes(twinId)))
     .sort((a, b) => b.updatedAt - a.updatedAt);
 
   return jsonResponse({
