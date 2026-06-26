@@ -550,7 +550,7 @@ function safeComputePayload(value: unknown): unknown {
 async function loadComputeJobs(env: ApiEnv, limit = MAX_COMPUTE_JOBS): Promise<ComputeJobRecord[]> {
   const kv = metadataStore(env);
   const ids = (await getStringArray(kv, computeJobIndexKey())).slice(0, Math.min(limit, MAX_COMPUTE_JOBS));
-  const records = await Promise.all(ids.map((id) => kv.get(computeJobKey(id), 'json') as Promise<ComputeJobRecord | null>));
+  const records = await Promise.all(ids.map((id) => getJson<ComputeJobRecord | null>(kv, computeJobKey(id), null)));
   return records.filter((record): record is ComputeJobRecord => Boolean(record));
 }
 
@@ -896,11 +896,11 @@ async function authenticate(request: Request, env: ApiEnv): Promise<SessionData 
   if (!SESSION_ID_PATTERN.test(sessionId)) {
     session = await readSignedSession(sessionId, env.AUTH_HMAC_SECRET);
   } else {
-    const data = (await env.SESSIONS.get(`s:${sessionId}`, 'json')) as SessionData | null;
+    const data = await getJson<SessionData | null>(env.SESSIONS, `s:${sessionId}`, null);
     session = !data || data.expiresAt < Date.now() ? null : data;
   }
   if (!session) return null;
-  const state = (await metadataStore(env).get(adminUserStateKey(session.sub), 'json')) as AdminUserState | null;
+  const state = await getJson<AdminUserState | null>(metadataStore(env), adminUserStateKey(session.sub), null);
   if (state?.status === 'blocked' && !hasPermission(session, 'admin:write')) return null;
   return session;
 }
@@ -1362,7 +1362,7 @@ async function addTwinToIndex(env: ApiEnv, userSub: string, twinId: string): Pro
 }
 
 async function loadTwinForUser(env: ApiEnv, userSub: string, twinId: string): Promise<TwinRecord | null> {
-  return (await metadataStore(env).get(twinKey(userSub, twinId), 'json')) as TwinRecord | null;
+  return getJson<TwinRecord | null>(metadataStore(env), twinKey(userSub, twinId), null);
 }
 
 async function loadPublicTwin(env: ApiEnv, slug: string): Promise<TwinRecord | null> {
@@ -3137,7 +3137,7 @@ async function handleComputeComplete(request: Request, env: ApiEnv): Promise<Res
   const jobId = sanitizeText(parsed.value.jobId, 120);
   if (!jobId) return errorResponse('invalid_compute_job', 'jobId is required.', 400);
 
-  const job = await metadataStore(env).get(computeJobKey(jobId), 'json') as ComputeJobRecord | null;
+  const job = await getJson<ComputeJobRecord | null>(metadataStore(env), computeJobKey(jobId), null);
   if (!job) return errorResponse('compute_job_not_found', 'Compute job was not found.', 404);
   const now = Date.now();
   const ok = parsed.value.ok === true;
@@ -3254,7 +3254,7 @@ async function handleAccountExport(request: Request, env: ApiEnv): Promise<Respo
     loadUserMemories(env, session.sub),
     loadUserTwins(env, session.sub),
     loadUserChats(env, session.sub),
-    env.SESSIONS.get(`auth:user:${session.sub}`, 'json'),
+    getJson<Record<string, unknown> | null>(env.SESSIONS, `auth:user:${session.sub}`, null),
   ]);
 
   return jsonResponse({
@@ -3441,14 +3441,14 @@ async function recordAdminAudit(
 async function loadAdminAudit(env: ApiEnv, limit = 50): Promise<AdminAuditRecord[]> {
   const kv = metadataStore(env);
   const keys = (await getStringArray(kv, adminAuditIndexKey())).slice(0, Math.min(limit, MAX_ADMIN_AUDIT));
-  const records = await Promise.all(keys.map((key) => kv.get(key, 'json') as Promise<AdminAuditRecord | null>));
+  const records = await Promise.all(keys.map((key) => getJson<AdminAuditRecord | null>(kv, key, null)));
   return records.filter((record): record is AdminAuditRecord => Boolean(record));
 }
 
 async function listAuthUsers(env: ApiEnv, limit = MAX_ADMIN_LIST) {
   const listed = await env.SESSIONS.list({ prefix: 'auth:user:', limit });
   const records = await Promise.all(
-    listed.keys.map((key) => env.SESSIONS.get(key.name, 'json') as Promise<Record<string, unknown> | null>),
+    listed.keys.map((key) => getJson<Record<string, unknown> | null>(env.SESSIONS, key.name, null)),
   );
   return records.filter((record): record is Record<string, unknown> => Boolean(record));
 }
@@ -3457,7 +3457,7 @@ async function summarizeRevenue(env: ApiEnv): Promise<RevenueAggregate[]> {
   const kv = metadataStore(env);
   const slugs = await getStringArray(kv, revenueIndexKey());
   const records = await Promise.all(
-    slugs.slice(0, MAX_ADMIN_LIST).map((slug) => kv.get(revenueProfileKey(slug), 'json') as Promise<RevenueAggregate | null>),
+    slugs.slice(0, MAX_ADMIN_LIST).map((slug) => getJson<RevenueAggregate | null>(kv, revenueProfileKey(slug), null)),
   );
   return records.filter((record): record is RevenueAggregate => Boolean(record));
 }
@@ -3475,7 +3475,7 @@ async function handleAdminOverview(request: Request, env: ApiEnv): Promise<Respo
     loadComputeJobs(env, 50),
   ]);
   const userStates = await Promise.all(
-    users.map((user) => metadataStore(env).get(adminUserStateKey(String(user.sub || '')), 'json') as Promise<AdminUserState | null>),
+    users.map((user) => getJson<AdminUserState | null>(metadataStore(env), adminUserStateKey(String(user.sub || '')), null)),
   );
   const blockedUsers = userStates.filter((state) => state?.status === 'blocked').length;
   const heldProfiles = revenue.filter((item) => item.status === 'hold' || item.status === 'policy').length;
@@ -3518,7 +3518,7 @@ async function handleAdminUsers(request: Request, env: ApiEnv): Promise<Response
 
   const users = await listAuthUsers(env, MAX_ADMIN_LIST);
   const states = await Promise.all(
-    users.map((user) => metadataStore(env).get(adminUserStateKey(String(user.sub || '')), 'json') as Promise<AdminUserState | null>),
+    users.map((user) => getJson<AdminUserState | null>(metadataStore(env), adminUserStateKey(String(user.sub || '')), null)),
   );
   return jsonResponse({
     ok: true,
@@ -3625,7 +3625,7 @@ async function handleAdminRevenueEvent(request: Request, env: ApiEnv): Promise<R
   const slug = slugify(sanitizeText(parsed.value.slug, MAX_REVENUE_SLUG_CHARS));
   if (!slug) return errorResponse('invalid_profile_slug', 'slug is required.', 400);
   const kv = metadataStore(env);
-  const current = (await kv.get(revenueProfileKey(slug), 'json')) as RevenueAggregate | null;
+  const current = await getJson<RevenueAggregate | null>(kv, revenueProfileKey(slug), null);
   const validRevenueCents = cents(parsed.value.validRevenueCents);
   const invalidRevenueCents = cents(parsed.value.invalidRevenueCents);
   const nextValidRevenue = (current?.validRevenueCents ?? 0) + validRevenueCents;
@@ -3674,7 +3674,7 @@ async function handleAdminRevenueHold(request: Request, env: ApiEnv): Promise<Re
   const slug = slugify(sanitizeText(parsed.value.slug, MAX_REVENUE_SLUG_CHARS));
   if (!slug) return errorResponse('invalid_profile_slug', 'slug is required.', 400);
   const kv = metadataStore(env);
-  const current = (await kv.get(revenueProfileKey(slug), 'json')) as RevenueAggregate | null;
+  const current = await getJson<RevenueAggregate | null>(kv, revenueProfileKey(slug), null);
   if (!current) return errorResponse('revenue_profile_not_found', 'Revenue profile not found.', 404);
   const hold = parsed.value.hold !== false;
   const next: RevenueAggregate = {
@@ -3746,7 +3746,7 @@ async function handleCreateMemory(request: Request, env: ApiEnv): Promise<Respon
     : 'manual';
   if (sourceType === 'chat') {
     const chatId = sanitizeText(body.chatId, 120);
-    if (!chatId || !(await metadataStore(env).get(chatKey(session.sub, chatId), 'json'))) {
+    if (!chatId || !(await getJson<ChatRecord | null>(metadataStore(env), chatKey(session.sub, chatId), null))) {
       return errorResponse('memory_source_chat_not_found', 'Source chat was not found for this user.', 404);
     }
   }
@@ -3794,7 +3794,7 @@ async function handleGetMemory(request: Request, env: ApiEnv, memoryId: string):
   if (!session) return errorResponse('unauthorized', 'Unauthorized', 401);
   if (!hasPermission(session, 'profile:read')) return errorResponse('forbidden', 'Missing profile read permission', 403);
 
-  const memory = (await metadataStore(env).get(memoryKey(session.sub, memoryId), 'json')) as MemoryRecord | null;
+  const memory = await getJson<MemoryRecord | null>(metadataStore(env), memoryKey(session.sub, memoryId), null);
   if (!memory) return errorResponse('memory_not_found', 'Memory not found.', 404);
   return jsonResponse({ memory });
 }
@@ -3806,7 +3806,7 @@ async function handleUpdateMemory(request: Request, env: ApiEnv, memoryId: strin
 
   const parsed = await readJsonBody<MemoryWriteRequest>(request, 16 * 1024);
   if (!parsed.ok) return parsed.response;
-  const current = (await metadataStore(env).get(memoryKey(session.sub, memoryId), 'json')) as MemoryRecord | null;
+  const current = await getJson<MemoryRecord | null>(metadataStore(env), memoryKey(session.sub, memoryId), null);
   if (!current) return errorResponse('memory_not_found', 'Memory not found.', 404);
   const body = parsed.value;
   const next: MemoryRecord = {
@@ -3836,7 +3836,7 @@ async function handleDeleteMemory(request: Request, env: ApiEnv, memoryId: strin
   if (deleteConfirmation) return deleteConfirmation;
 
   const kv = metadataStore(env);
-  const current = (await kv.get(memoryKey(session.sub, memoryId), 'json')) as MemoryRecord | null;
+  const current = await getJson<MemoryRecord | null>(kv, memoryKey(session.sub, memoryId), null);
   if (!current) return errorResponse('memory_not_found', 'Memory not found.', 404);
   const tombstone: MemoryRecord = {
     ...current,
@@ -3986,7 +3986,7 @@ async function handleListChats(request: Request, env: ApiEnv): Promise<Response>
   const kv = metadataStore(env);
   const ids = await getStringArray(kv, chatIndexKey(session.sub));
   const records = await Promise.all(
-    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(chatKey(session.sub, id), 'json') as Promise<ChatRecord | null>),
+    ids.slice(0, MAX_INDEX_READS).map((id) => getJson<ChatRecord | null>(kv, chatKey(session.sub, id), null)),
   );
 
   return jsonResponse({
@@ -4071,7 +4071,7 @@ async function handleListTwins(request: Request, env: ApiEnv): Promise<Response>
   const kv = metadataStore(env);
   const ids = await getStringArray(kv, twinIndexKey(session.sub));
   const records = await Promise.all(
-    ids.slice(0, MAX_INDEX_READS).map((id) => kv.get(twinKey(session.sub, id), 'json') as Promise<TwinRecord | null>),
+    ids.slice(0, MAX_INDEX_READS).map((id) => getJson<TwinRecord | null>(kv, twinKey(session.sub, id), null)),
   );
 
   return jsonResponse({
@@ -4277,7 +4277,7 @@ async function handlePublicTwinList(request: Request, env: ApiEnv): Promise<Resp
 
   const listed = await metadataStore(env).list({ prefix: 'public:twin:', limit: MAX_PUBLIC_DISCOVERY_READS });
   const records = await Promise.all(
-    listed.keys.map((item) => metadataStore(env).get(item.name, 'json') as Promise<TwinRecord | null>),
+    listed.keys.map((item) => getJson<TwinRecord | null>(metadataStore(env), item.name, null)),
   );
   const bySlug = new Map<string, TwinRecord>();
   for (const record of records) {
@@ -4318,7 +4318,7 @@ async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionC
   if (session && !hasPermission(session, 'chat:write')) return errorResponse('forbidden', 'Missing chat write permission', 403);
 
   const kv = metadataStore(env);
-  let chat = session ? (await kv.get(chatKey(session.sub, body.chatId), 'json')) as ChatRecord | null : null;
+  let chat = session ? await getJson<ChatRecord | null>(kv, chatKey(session.sub, body.chatId), null) : null;
   if (!chat && transientPublicSlug) {
     chat = {
       id: body.chatId,
@@ -4342,7 +4342,7 @@ async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionC
   const profileMemoryId = chat.twinId ?? chat.publicTwinSlug ?? null;
   const promptMemoryKey = session && profileMemoryId ? recentPromptKey(session.sub, profileMemoryId) : null;
   const promptMemory = promptMemoryKey
-    ? (await kv.get(promptMemoryKey, 'json')) as ChatRecentPromptMemory | null
+    ? await getJson<ChatRecentPromptMemory | null>(kv, promptMemoryKey, null)
     : null;
   const replyHistory = [
     ...recentPromptHistory(promptMemory, now),
