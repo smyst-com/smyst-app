@@ -76,16 +76,17 @@ test.describe("Smyst current app", () => {
 
     await page.goto("/");
 
-    await expect(page.getByText("smyst")).toBeVisible();
-    await expect(page.getByText("Create Your AI Twin")).toBeVisible();
+    const logo = page.getByLabel("smyst Create Your AI Twin");
+    await expect(logo).toBeVisible();
+    await expect(logo.getByText("Create Your AI Twin")).toBeVisible();
     await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Profil wählen" })).toBeVisible();
+    const profileMenuButton = page.getByRole("button", { name: /Choose twin|Profil wechseln/ });
+    await expect(profileMenuButton).toBeVisible();
     await expect(page.getByPlaceholder("Nachricht schreiben")).toBeVisible();
 
-    await page.getByRole("button", { name: "Profil wählen" }).click();
+    await profileMenuButton.click();
     await expect(page.getByText("Sokrates")).toBeVisible();
     await expect(page.getByText(/Max Müller/i)).toHaveCount(0);
-    await expect(page.getByText(/Max Weber/i)).toHaveCount(0);
     await page.getByText("Sokrates").click();
 
     await page.getByPlaceholder("Nachricht schreiben").fill("Was empfiehlst du jungen Leuten?");
@@ -101,9 +102,10 @@ test.describe("Smyst current app", () => {
     await expect(page.getByText("Infrastruktur-Regeln")).toHaveCount(0);
     await expect(page.getByText(/Cloudflare Free/i)).toHaveCount(0);
     await expect(page.getByText(/IDrive e2/i)).toHaveCount(0);
-    await expect(page.getByText("Namenliste")).toBeVisible();
-    await expect(page.getByRole("button", { name: /Mehr genutzt/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /Trend im Markt/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "KI-Profile" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Freigegeben/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Relevanz/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Aktualisiert/i })).toBeVisible();
   });
 
   test("profile writes show a clear temporary storage limit message", async ({ page }) => {

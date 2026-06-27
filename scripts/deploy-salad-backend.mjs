@@ -1,9 +1,9 @@
-// Turnkey-Deploy des FastAPI-Backends (backend/) auf SaladCloud — Cloudflare-frei.
+// Turnkey-Deploy des API-Backends (backend/) auf SaladCloud — Cloudflare-frei.
 //
 // Macht in EINEM Lauf:
 //   1) Docker-Image aus backend/ bauen
 //   2) in eine Container-Registry pushen (Default: GHCR, öffentlich)
-//   3) Salad-Container-Gruppe `smyst-backend` (Org smyst-com / Projekt default) anlegen/aktualisieren
+//   3) Salad-Container-Gruppe `smyst-backend-api` (Org smyst-com / Projekt default) anlegen/aktualisieren
 //   4) starten und die öffentliche Health-/API-URL ausgeben
 //
 // DU tippst die Secrets in DEIN Terminal (nicht der Assistent). Beispiel:
@@ -36,7 +36,7 @@ if (!saladApiKey) throw new Error('Missing SALAD_API_KEY (Salad → API Access).
 const saladApiBase = process.env.SALAD_API_BASE_URL || 'https://api.salad.com/api/public';
 const organizationName = process.env.SALAD_ORGANIZATION_NAME || 'smyst-com';
 const projectName = process.env.SALAD_PROJECT_NAME || 'default';
-const containerGroup = process.env.SALAD_CONTAINER_GROUP || 'smyst-backend';
+const containerGroup = process.env.SALAD_CONTAINER_GROUP || 'smyst-backend-api';
 const image = process.env.IMAGE || 'ghcr.io/smyst-com/smyst-backend:latest';
 
 // ---- Backend-Runtime-Env (Defaults aus docs/runbooks/google-salad-auth.md) ----
@@ -61,7 +61,26 @@ const env = {
   RATE_LIMIT_WINDOW_SECONDS: process.env.RATE_LIMIT_WINDOW_SECONDS || '60',
 };
 // Optionale Secrets nur setzen, wenn vorhanden:
-for (const k of ['IDRIVE_E2_ACCESS_KEY', 'IDRIVE_E2_SECRET_KEY', 'DATABASE_URL', 'REDIS_URL']) {
+for (const k of [
+  'IDRIVE_E2_ACCESS_KEY',
+  'IDRIVE_E2_SECRET_KEY',
+  'OPENROUTER_API_KEY',
+  'OPENAI_API_KEY',
+  'ANTHROPIC_API_KEY',
+  'GEMINI_API_KEY',
+  'XAI_API_KEY',
+  'DEEPSEEK_API_KEY',
+  'MOONSHOT_API_KEY',
+  'ZHIPU_API_KEY',
+  'DASHSCOPE_API_KEY',
+  'MISTRAL_API_KEY',
+  'GROQ_API_KEY',
+  'TOGETHER_API_KEY',
+  'COHERE_API_KEY',
+  'PERPLEXITY_API_KEY',
+  'LLM_PROVIDER_ORDER',
+  'LLM_DEFAULT_MODELS',
+]) {
   if (process.env[k]) env[k] = process.env[k];
 }
 

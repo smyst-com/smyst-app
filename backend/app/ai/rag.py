@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from app.ai.llm_router import LLMRouter
+from app.ai.llm_router import LLMRouter, build_default_router
 from app.ai.models import LLMRequest, RagAnswer, Sensitivity
 from app.ai.moderation import ModerationLayer
 from app.ai.vector_search import InMemoryVectorSearch
@@ -16,7 +16,7 @@ class RagEngine:
         moderation: ModerationLayer | None = None,
     ) -> None:
         self.vector_search = vector_search
-        self.llm_router = llm_router or LLMRouter()
+        self.llm_router = llm_router or build_default_router()
         self.moderation = moderation or ModerationLayer()
 
     async def answer(
@@ -58,10 +58,16 @@ class RagEngine:
 
         request = LLMRequest(
             system_prompt=(
-                "You are Smyst's safe twin answer engine. Answer only from allowed memory context. "
-                "Never claim to be the real person. Respect privacy and uncertainty."
+                "You are Smyst's safe AI-twin answer engine. Answer in character as the specific "
+                "historical or personal twin implied by the memory context, while never claiming "
+                "to be the real person. Reply in the user's language. Use the provided Context "
+                "when it is relevant, say when context is insufficient, and respect privacy and "
+                "uncertainty. Give substantive, reasoned answers with 4-8 sentences unless the "
+                "user asks for another length."
             ),
             prompt=f"Question: {question}\n\nContext:\n{context}",
+            max_tokens=1024,
+            temperature=0.7,
         )
         response = await self.llm_router.complete(request)
         output_moderation = self.moderation.moderate_text(response.text, context="public_answer")
@@ -74,4 +80,3 @@ class RagEngine:
             model=response.model,
             degraded=response.degraded,
         )
-

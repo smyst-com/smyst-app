@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://smyst.com/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <!-- sitemap-image: primary app preview -->
+    <image:image>
+      <image:loc>https://smyst.com/og-image.png</image:loc>
+      <image:title>smyst.com AI Twin Platform</image:title>
+      <image:caption>smyst.com Create Your AI Twin app preview</image:caption>
+    </image:image>
+    <xhtml:link rel="alternate" hreflang="de" href="https://smyst.com/de/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://smyst.com/en/" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://smyst.com/tr/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://smyst.com/fr/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://smyst.com/es/" />
+    <xhtml:link rel="alternate" hreflang="pt" href="https://smyst.com/pt/" />
+    <xhtml:link rel="alternate" hreflang="ar" href="https://smyst.com/ar/" />
+    <xhtml:link rel="alternate" hreflang="zh" href="https://smyst.com/zh/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://smyst.com/ja/" />
+    <xhtml:link rel="alternate" hreflang="ko" href="https://smyst.com/ko/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://smyst.com/" />
+  </url>
+  <url>
+    <loc>https://smyst.com/de/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/en/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/tr/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/fr/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/es/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/pt/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/ar/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/zh/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/ja/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://smyst.com/ko/</loc>
+    <lastmod>2026-06-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
