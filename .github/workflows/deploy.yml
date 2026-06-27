@@ -6,6 +6,34 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      release_approval:
+        description: 'Production-Freigabe. Exakt "Ja OK" eintragen.'
+        required: true
+        type: string
+      release_version:
+        description: "Release-Version, z. B. 0.1.0-foundation.1"
+        required: true
+        type: string
+      release_freeze_confirmed:
+        description: "Release-Freeze ist aktiv und dokumentiert."
+        required: true
+        default: false
+        type: boolean
+      rollback_plan_confirmed:
+        description: "Rollback-Plan fuer IDrive, Salad und Git ist dokumentiert."
+        required: true
+        default: false
+        type: boolean
+      backup_restore_confirmed:
+        description: "Backup-/Restore-Dry-Run fuer Metadaten und IDrive e2 ist dokumentiert."
+        required: true
+        default: false
+        type: boolean
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -45,16 +73,44 @@ jobs:
       - name: Validate dist artifact
         run: sh scripts/check-dist-artifact.sh
 
-  release-summary:
-    name: Release Summary
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist
+          retention-days: 3
+
+  release-gate:
+    name: Release Gate
     needs: ci
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
+      - name: Validate written approval
+        env:
+          RELEASE_APPROVAL: ${{ inputs.release_approval }}
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          RELEASE_FREEZE_CONFIRMED: ${{ inputs.release_freeze_confirmed }}
+          ROLLBACK_PLAN_CONFIRMED: ${{ inputs.rollback_plan_confirmed }}
+          BACKUP_RESTORE_CONFIRMED: ${{ inputs.backup_restore_confirmed }}
+        run: |
+          test "$RELEASE_APPROVAL" = "Ja OK"
+          test -n "$RELEASE_VERSION"
+          test "$RELEASE_FREEZE_CONFIRMED" = "true"
+          test "$ROLLBACK_PLAN_CONFIRMED" = "true"
+          test "$BACKUP_RESTORE_CONFIRMED" = "true"
+          echo "Release gate accepted for $RELEASE_VERSION"
+
+  release-summary:
+    name: Release Summary
+    needs: [ci, release-gate]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
       - name: Print next production workflows
         run: |
-          echo "Cloudflare deploy jobs are disabled in this workflow."
           echo "Run 'IDrive e2 Static Deploy' for static/PWA."
           echo "Run 'Salad Backend Deploy' for API/AI compute."
           echo "After Spaceship DNS points to IDrive + Salad, run: sh scripts/live-test.sh"
