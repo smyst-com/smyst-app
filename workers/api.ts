@@ -25,6 +25,8 @@ import {
   CURATED_PUBLIC_TWIN_LANGUAGES,
   CURATED_PUBLIC_TWIN_SPECS,
 } from './curated-public-twin-data';
+import { generateTwinAnswer, hasAnyProvider } from './llm-inference';
+import type { InferenceMessage, TwinForPrompt } from './llm-inference';
 
 export interface ApiEnv extends AuthEnv {
   METADATA?: KVNamespace;
@@ -41,6 +43,30 @@ export interface ApiEnv extends AuthEnv {
   SMYST_AI_MODEL_REASONING?: string;
   SMYST_AI_MODEL_RAG?: string;
   SMYST_AI_STREAMING_ENABLED?: string;
+  // Hybrid LLM gateway (see workers/llm-inference.ts)
+  SMYST_AI_INFERENCE_BASE_URL?: string;
+  SMYST_AI_INFERENCE_API_KEY?: string;
+  SMYST_AI_TIMEOUT_MS?: string;
+  SMYST_AI_MAX_TOKENS?: string;
+  OPENROUTER_API_KEY?: string;
+  SMYST_AI_OPENROUTER_MODEL?: string;
+  GROQ_API_KEY?: string;
+  SMYST_AI_GROQ_MODEL?: string;
+  GEMINI_API_KEY?: string;
+  SMYST_AI_GEMINI_MODEL?: string;
+  ANTHROPIC_API_KEY?: string;
+  SMYST_AI_CLAUDE_MODEL?: string;
+  XAI_API_KEY?: string;
+  SMYST_AI_GROK_MODEL?: string;
+  DEEPSEEK_API_KEY?: string;
+  SMYST_AI_DEEPSEEK_MODEL?: string;
+  MOONSHOT_API_KEY?: string;
+  SMYST_AI_KIMI_MODEL?: string;
+  MISTRAL_API_KEY?: string;
+  SMYST_AI_MISTRAL_MODEL?: string;
+  OPENAI_API_KEY?: string;
+  SMYST_AI_OPENAI_MODEL?: string;
+  OPENAI_BASE_URL?: string;
 }
 
 const SESSION_COOKIE = 'smyst_session';
@@ -1807,7 +1833,17 @@ function nextRecentPromptMemory(
 
 function questionIntent(input: string): { label: string; decisionNoun: string; action: string; caution: string } {
   const normalized = input.toLowerCase();
-  if (includesAny(normalized, ['hallo', 'hello', 'hi', 'hey', 'guten morgen', 'guten tag', 'guten abend'])) {
+  // A greeting only short-circuits when the message is essentially just a
+  // greeting. If the same message also carries a real question or request
+  // (e.g. "Hallo, erkläre mir die Relativitätstheorie."), fall through so the
+  // actual question gets answered instead of returning a bare greeting.
+  const carriesQuestion = includesAny(normalized, [
+    '?', 'was ', 'wie ', 'warum', 'wieso', 'weshalb', 'welche', 'welcher', 'welches',
+    'wer ', 'wann', 'wofür', 'wofuer', 'erklär', 'erklaer', 'erzähl', 'erzaehl',
+    'nenne', 'beschreib', 'sag mir', 'sage mir', 'what', 'how', 'why', 'who ',
+    'when', 'where', 'explain', 'tell me', 'describe',
+  ]);
+  if (!carriesQuestion && includesAny(normalized, ['hallo', 'hello', 'hi', 'hey', 'guten morgen', 'guten tag', 'guten abend'])) {
     return {
       label: 'Begrüßung',
       decisionNoun: 'Start',
@@ -4299,6 +4335,24 @@ async function handlePublicTwinList(request: Request, env: ApiEnv): Promise<Resp
   });
 }
 
+/** Map the stored twin record to the minimal shape the LLM prompt builder needs. */
+function twinForPrompt(twin: TwinRecord): TwinForPrompt {
+  return {
+    name: twin.name,
+    description: twin.description,
+    style: twin.style,
+    answerStyle: twin.answerStyle,
+    contextSummary: twin.contextSummary,
+    guardrail: twin.guardrail,
+    categories: twin.categories,
+    languages: twin.languages,
+    knowledgeTexts: (twin.knowledgeTexts ?? []).map((k) => ({ title: k.title, text: k.text })),
+    birthLabel: twin.birthLabel,
+    deathLabel: twin.deathLabel,
+    sources: twin.sources,
+  };
+}
+
 async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionContext): Promise<Response> {
   const parsed = await readJsonBody<ChatMessageRequest>(request, 16 * 1024);
   if (!parsed.ok) return parsed.response;
@@ -4354,12 +4408,35 @@ async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionC
     content: message,
     createdAt: now,
   };
+  // Instant, always-available reply. Used directly when no LLM is configured and
+  // as the fallback if the live model is cold, slow, or errors.
+  const templateReply = twin
+    ? ruleBasedTwinReply(message, twin, replyHistory, `${body.chatId}|${now}|${replyHistory.length}`)
+    : freeOnlyReply(message);
+
+  // Real LLM answer (hybrid router: Salad self-hosted + frontier fallback).
+  // Works for both signed-in and public twins. Falls back to the template.
+  let inferenceProvider: string | null = null;
+  let replyContent = templateReply;
+  if (twin && hasAnyProvider(env)) {
+    try {
+      const inferenceHistory: InferenceMessage[] = replyHistory
+        .filter((m) => m.role === 'user' || m.role === 'assistant')
+        .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+      const inference = await generateTwinAnswer(env, twinForPrompt(twin), message, inferenceHistory);
+      if (inference) {
+        replyContent = inference.text;
+        inferenceProvider = inference.provider;
+      }
+    } catch (err) {
+      console.warn('chat_inference_failed', JSON.stringify({ chatId: body.chatId, error: String(err) }));
+    }
+  }
+
   const assistantMessage: ChatMessage = {
     id: crypto.randomUUID(),
     role: 'assistant',
-    content: twin
-      ? ruleBasedTwinReply(message, twin, replyHistory, `${body.chatId}|${now}|${replyHistory.length}`)
-      : freeOnlyReply(message),
+    content: replyContent,
     createdAt: now,
   };
 
@@ -4396,7 +4473,9 @@ async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionC
   }
 
   const compute = computeConfiguration(env);
-  const computeQueued = compute.ready && Boolean(session);
+  // Only fall back to the async Salad job when we did NOT already answer
+  // synchronously with a real LLM (prevents a second, overwriting answer).
+  const computeQueued = compute.ready && Boolean(session) && !inferenceProvider;
   if (computeQueued) {
     const enqueue = enqueueComputeJob(env, {
       type: 'chat_inference',
@@ -4430,12 +4509,13 @@ async function handleChatMessage(request: Request, env: ApiEnv, ctx?: ExecutionC
     chatId: next.id,
     message: assistantMessage,
     twinId: chat.twinId ?? chat.publicTwinSlug ?? null,
-    mode: twin ? 'free-only-twin-mvp' : 'free-only-static',
+    mode: inferenceProvider ? 'llm-live' : (twin ? 'free-only-twin-mvp' : 'free-only-static'),
     compute: {
       mode: compute.mode,
-      provider: compute.ready ? 'salad' : 'cloudflare-fallback',
+      provider: inferenceProvider ?? (compute.ready ? 'salad' : 'cloudflare-fallback'),
       streaming: compute.streamingEnabled,
       queued: computeQueued,
+      live: Boolean(inferenceProvider),
     },
   });
 }
