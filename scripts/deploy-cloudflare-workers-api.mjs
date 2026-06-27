@@ -64,7 +64,7 @@ const deployments = [
       SALAD_CONTAINER_GROUP: 'smyst-compute-worker',
       SALAD_CONTAINER_HEALTH_URL: 'https://juniper-habanero-4boc33ingp3ltvsm.salad.cloud/health',
     },
-    kv: ['SESSIONS', 'OAUTH_STATE', 'METADATA'],
+    kv: ['SESSIONS', 'OAUTH_STATE'],
     secrets: [
       'AUTH_HMAC_SECRET',
       'SALAD_API_BASE_URL',
@@ -107,7 +107,7 @@ const deployments = [
       IDRIVE_E2_MAX_BACKUP_BYTES: '26214400',
       IDRIVE_E2_MAX_TWIN_DATA_BYTES: '10485760',
     },
-    kv: ['TRANSLATIONS', 'SESSIONS', 'METADATA', 'OAUTH_STATE'],
+    kv: ['TRANSLATIONS', 'SESSIONS', 'OAUTH_STATE'],
     secrets: [
       'GITHUB_OAUTH_CLIENT_ID',
       'GITHUB_OAUTH_CLIENT_SECRET',
