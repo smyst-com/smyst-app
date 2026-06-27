@@ -1,4 +1,4 @@
-// Turnkey-Deploy des FastAPI-Backends (backend/) auf SaladCloud — Cloudflare-frei.
+// Turnkey-Deploy des API-Backends (backend/) auf SaladCloud — Cloudflare-frei.
 //
 // Macht in EINEM Lauf:
 //   1) Docker-Image aus backend/ bauen
@@ -64,8 +64,6 @@ const env = {
 for (const k of [
   'IDRIVE_E2_ACCESS_KEY',
   'IDRIVE_E2_SECRET_KEY',
-  'DATABASE_URL',
-  'REDIS_URL',
   'OPENROUTER_API_KEY',
   'OPENAI_API_KEY',
   'ANTHROPIC_API_KEY',

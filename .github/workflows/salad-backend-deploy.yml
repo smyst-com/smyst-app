@@ -1,6 +1,6 @@
 name: Salad Backend Deploy
 
-# Deployt das FastAPI-Backend (backend/) auf SaladCloud — komplett auf GitHubs
+# Deployt das API-Backend (backend/) auf SaladCloud — komplett auf GitHubs
 # Servern, ohne lokales Docker/Node. Du brauchst nur:
 #   1) 3 neue Repo-Secrets (Settings -> Secrets and variables -> Actions):
 #        SALAD_API_KEY                 (Salad -> API Access)
