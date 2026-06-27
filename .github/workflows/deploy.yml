@@ -44,3 +44,17 @@ jobs:
 
       - name: Validate dist artifact
         run: sh scripts/check-dist-artifact.sh
+
+  release-summary:
+    name: Release Summary
+    needs: ci
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Print next production workflows
+        run: |
+          echo "Cloudflare deploy jobs are disabled in this workflow."
+          echo "Run 'IDrive e2 Static Deploy' for static/PWA."
+          echo "Run 'Salad Backend Deploy' for API/AI compute."
+          echo "After Spaceship DNS points to IDrive + Salad, run: sh scripts/live-test.sh"

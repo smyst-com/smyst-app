@@ -25,6 +25,8 @@ class Settings(BaseSettings):
         validation_alias="DATABASE_URL",
     )
     redis_url: str = Field(default="redis://redis:6379/0", validation_alias="REDIS_URL")
+    health_require_postgres: bool = Field(default=False, validation_alias="HEALTH_REQUIRE_POSTGRES")
+    health_require_redis: bool = Field(default=False, validation_alias="HEALTH_REQUIRE_REDIS")
 
     idrive_e2_endpoint: str = Field(
         default="https://s3.us-west-2.idrivee2.com",

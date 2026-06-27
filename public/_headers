@@ -1,5 +1,5 @@
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.idrivee2.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com; connect-src 'self' https://api.smyst.com https://parmesan-onion-pw08cg2t1ge4jnk6.salad.cloud https://*.idrivee2.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://api.smyst.com https://parmesan-onion-pw08cg2t1ge4jnk6.salad.cloud; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.idrivee2.com https://avatars.githubusercontent.com https://lh3.googleusercontent.com; connect-src 'self' https://api.smyst.com https://*.idrivee2.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self' https://api.smyst.com; upgrade-insecure-requests
   Permissions-Policy: camera=(), microphone=(self), geolocation=(self), payment=(), usb=(), interest-cohort=()
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff

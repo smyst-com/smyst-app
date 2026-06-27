@@ -97,6 +97,8 @@ jobs:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
+          HEALTH_REQUIRE_POSTGRES: "false"
+          HEALTH_REQUIRE_REDIS: "false"
           # Falls GHCR-Package privat bleibt: PAT mit read:packages als GHCR_PULL_TOKEN setzen.
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ secrets.GHCR_PULL_TOKEN }}
