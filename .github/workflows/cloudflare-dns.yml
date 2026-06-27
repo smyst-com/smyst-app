@@ -1,0 +1,44 @@
+name: Cloudflare DNS Upsert
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "CNAME target host for api.smyst.com (e.g. xxx.salad.cloud)"
+        required: true
+        type: string
+
+jobs:
+  upsert-dns:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upsert proxied CNAME api.smyst.com -> target
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          TARGET: ${{ github.event.inputs.target }}
+        run: |
+          set -euo pipefail
+          ZONE=df5ecb63a31ec80ac5eb8c74d2703bd4
+          NAME=api.smyst.com
+          API="https://api.cloudflare.com/client/v4/zones/${ZONE}/dns_records"
+          echo "Looking up existing records for ${NAME}"
+          existing=$(curl -sS -X GET "${API}?name=${NAME}" \
+            -H "Authorization: Bearer ${CF_TOKEN}" \
+            -H "Content-Type: application/json")
+          echo "GET response: ${existing}"
+          get_ok=$(echo "$existing" | python3 -c "import sys,json;print(json.load(sys.stdin).get('success'))")
+          if [ "$get_ok" != "True" ]; then echo "Cloudflare GET failed"; exit 1; fi
+          echo "$existing" | python3 -c "import sys,json;rs=json.load(sys.stdin).get('result') or [];print('existing count:',len(rs));[print(' ',r['id'],r['type'],r['content'],'proxied=',r.get('proxied')) for r in rs]"
+          rec_id=$(echo "$existing" | python3 -c "import sys,json;rs=json.load(sys.stdin).get('result') or [];print(rs[0]['id'] if rs else '')")
+          body=$(printf '{"type":"CNAME","name":"%s","content":"%s","proxied":true,"ttl":1}' "$NAME" "$TARGET")
+          if [ -n "$rec_id" ]; then
+            echo "Updating existing record ${rec_id} (PUT)"
+            resp=$(curl -sS -X PUT "${API}/${rec_id}" -H "Authorization: Bearer ${CF_TOKEN}" -H "Content-Type: application/json" --data "$body")
+          else
+            echo "Creating new record (POST)"
+            resp=$(curl -sS -X POST "${API}" -H "Authorization: Bearer ${CF_TOKEN}" -H "Content-Type: application/json" --data "$body")
+          fi
+          echo "Write response: ${resp}"
+          ok=$(echo "$resp" | python3 -c "import sys,json;print(json.load(sys.stdin).get('success'))")
+          if [ "$ok" != "True" ]; then echo "DNS upsert FAILED"; exit 1; fi
+          echo "$resp" | python3 -c "import sys,json;r=json.load(sys.stdin).get('result') or {};print('now ->',r.get('type'),r.get('content'),'proxied=',r.get('proxied'))"
