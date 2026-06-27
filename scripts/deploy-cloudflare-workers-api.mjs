@@ -64,7 +64,7 @@ const deployments = [
       SALAD_CONTAINER_GROUP: 'smyst-compute-worker',
       SALAD_CONTAINER_HEALTH_URL: 'https://juniper-habanero-4boc33ingp3ltvsm.salad.cloud/health',
     },
-    kv: ['SESSIONS', 'OAUTH_STATE'],
+    kv: ['SESSIONS'],
     secrets: [
       'AUTH_HMAC_SECRET',
       'SALAD_API_BASE_URL',
