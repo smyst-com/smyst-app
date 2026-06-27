@@ -59,6 +59,8 @@ const env = {
   IDRIVE_E2_REGION: process.env.IDRIVE_E2_REGION || 'us-west-2',
   RATE_LIMIT_REQUESTS: process.env.RATE_LIMIT_REQUESTS || '120',
   RATE_LIMIT_WINDOW_SECONDS: process.env.RATE_LIMIT_WINDOW_SECONDS || '60',
+  HEALTH_REQUIRE_POSTGRES: process.env.HEALTH_REQUIRE_POSTGRES || 'false',
+  HEALTH_REQUIRE_REDIS: process.env.HEALTH_REQUIRE_REDIS || 'false',
 };
 // Optionale Secrets nur setzen, wenn vorhanden:
 for (const k of [
@@ -202,6 +204,7 @@ console.log(JSON.stringify({
   statusBeforeStart: status,
   started,
   endpoint: dns ? `https://${dns}` : '(URL erscheint im Salad-Portal, sobald deployed)',
-  health: dns ? `https://${dns}/api/v1/health` : null,
+  health: dns ? `https://${dns}/api/v1/health/live` : null,
+  readiness: dns ? `https://${dns}/api/v1/health/ready` : null,
   next: 'DNS: api.smyst.com -> obigen Salad-Endpoint (CNAME), dann VITE_AUTH_BASE_URL ist bereits https://api.smyst.com/auth',
 }, null, 2));

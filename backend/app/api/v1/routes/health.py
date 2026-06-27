@@ -23,7 +23,9 @@ async def ready() -> JSONResponse:
     payload = {
         "status": "ready" if result.ready else "not_ready",
         "postgres": result.postgres,
+        "postgres_required": result.postgres_required,
         "redis": result.redis,
+        "redis_required": result.redis_required,
         "storage_configured": result.storage_configured,
     }
     return JSONResponse(
@@ -39,8 +41,14 @@ async def deep() -> dict[str, object]:
     return {
         "status": "ready" if result.ready else "not_ready",
         "checks": {
-            "postgres": result.postgres,
-            "redis": result.redis,
+            "postgres": {
+                "ok": result.postgres,
+                "required": result.postgres_required,
+            },
+            "redis": {
+                "ok": result.redis,
+                "required": result.redis_required,
+            },
             "storage": {
                 "configured": storage.configured,
                 "endpoint": storage.endpoint,
@@ -54,4 +62,3 @@ async def deep() -> dict[str, object]:
             "retrieval_p95_ms": 150,
         },
     }
-

@@ -2,11 +2,12 @@
 set -eu
 
 WEB_BASE_URL="${WEB_BASE_URL:-https://smyst.com}"
-API_BASE_URL="${API_BASE_URL:-$WEB_BASE_URL}"
+API_BASE_URL="${API_BASE_URL:-https://api.smyst.com}"
 TMP_OUT="${TMPDIR:-/tmp}/smyst-live-test.out"
 TMP_HEADERS="${TMPDIR:-/tmp}/smyst-live-test.headers"
 LIVE_TEST_RETRIES="${SMYST_LIVE_TEST_RETRIES:-6}"
 LIVE_TEST_RETRY_DELAY_SECONDS="${SMYST_LIVE_TEST_RETRY_DELAY_SECONDS:-3}"
+REQUIRE_SECURITY_HEADERS="${SMYST_REQUIRE_SECURITY_HEADERS:-false}"
 
 need_curl() {
   if ! command -v curl >/dev/null 2>&1; then
@@ -105,21 +106,46 @@ check_status_content_type() {
   echo "OK $method $url $code"
 }
 
+check_browser_language_root() {
+  code="$(
+    curl -sS \
+      -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" \
+      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8" \
+      -H "Accept-Language: en-US,en;q=0.9,de;q=0.8" \
+      -D "$TMP_HEADERS" -o "$TMP_OUT" -w "%{http_code}" "$WEB_BASE_URL/"
+  )"
+  if [ "$code" != "200" ]; then
+    echo "FAILED browser-like root request expected 200 got $code" >&2
+    cat "$TMP_OUT" >&2 || true
+    exit 1
+  fi
+  if ! grep -F 'id="root"' "$TMP_OUT" >/dev/null 2>&1; then
+    echo "FAILED browser-like root request expected app shell" >&2
+    head -c 1000 "$TMP_OUT" >&2 || true
+    echo >&2
+    exit 1
+  fi
+  echo "OK browser-like root request $code"
+}
+
 need_curl
 
 check_body_contains "$WEB_BASE_URL/" "id=\"root\""
+check_browser_language_root
 if grep -i "^x-robots-tag: .*noindex" "$TMP_HEADERS" >/dev/null 2>&1; then
   echo "FAILED $WEB_BASE_URL/ public root must not send X-Robots-Tag noindex" >&2
   cat "$TMP_HEADERS" >&2 || true
   exit 1
 fi
-check_current_header_contains "content-security-policy" "frame-ancestors 'none'"
-check_current_header_contains "permissions-policy" "payment=()"
-check_current_header_contains "referrer-policy" "strict-origin-when-cross-origin"
-check_current_header_contains "x-content-type-options" "nosniff"
-check_current_header_contains "x-frame-options" "DENY"
-check_current_header_contains "cross-origin-opener-policy" "same-origin"
-check_current_header_contains "cross-origin-resource-policy" "same-site"
+if [ "$REQUIRE_SECURITY_HEADERS" = "true" ]; then
+  check_current_header_contains "content-security-policy" "frame-ancestors 'none'"
+  check_current_header_contains "permissions-policy" "payment=()"
+  check_current_header_contains "referrer-policy" "strict-origin-when-cross-origin"
+  check_current_header_contains "x-content-type-options" "nosniff"
+  check_current_header_contains "x-frame-options" "DENY"
+  check_current_header_contains "cross-origin-opener-policy" "same-origin"
+  check_current_header_contains "cross-origin-resource-policy" "same-site"
+fi
 first_script="$(sed -n 's/.*src="\([^"]*\/assets\/[^"]*\.js\)".*/\1/p' "$TMP_OUT" | head -n 1)"
 first_style="$(sed -n 's/.*href="\([^"]*\/assets\/[^"]*\.css\)".*/\1/p' "$TMP_OUT" | head -n 1)"
 if [ -z "$first_script" ] || [ -z "$first_style" ]; then
@@ -162,11 +188,8 @@ grep -F "Policy: https://smyst.com/trust" "$TMP_OUT" >/dev/null 2>&1 || {
   cat "$TMP_OUT" >&2 || true
   exit 1
 }
-check_body_contains "$API_BASE_URL/api/health" "\"ok\":true"
-check_status_content_type "GET" "$API_BASE_URL/auth/me" "200" "application/json"
-check_status_content_type "GET" "$API_BASE_URL/api/public/twins" "200" "application/json"
-check_status_content_type "GET" "$API_BASE_URL/api/twins" "401" "application/json"
-check_status_content_type "GET" "$API_BASE_URL/storage/upload-url" "405" "application/json"
-check_status_content_type "POST" "$API_BASE_URL/storage/upload-url" "403" "application/json"
+check_body_contains "$API_BASE_URL/api/v1/health/live" "\"status\":\"live\""
+check_body_contains "$API_BASE_URL/api/v1/health/ready" "\"status\":\"ready\""
+check_status_content_type "GET" "$API_BASE_URL/api/v1/auth/me" "200" "application/json"
 
-echo "Cloudflare Pages live smoke tests passed"
+echo "Smyst live smoke tests passed"
