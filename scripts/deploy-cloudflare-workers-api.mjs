@@ -54,7 +54,7 @@ const deployments = [
   {
     name: 'smyst-api',
     entry: 'workers/api.ts',
-    routes: ['smyst.com/api/*'],
+    routes: ['smyst.com/api/*', 'api.smyst.com/*'],
     vars: {
       ...commonVars,
       SMYST_AI_ROUTER_MODE: 'hybrid',
