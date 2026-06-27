@@ -1,0 +1,29 @@
+name: Cloudflare DNS api
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: CNAME target host
+        required: true
+        default: cherry-asparagus-a32jleuk8dgn22zu.salad.cloud
+jobs:
+  dns:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upsert proxied CNAME api.smyst.com
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ZONE: df5ecb63a31ec80ac5eb8c74d2703bd4
+          TARGET: ${{ inputs.target }}
+        run: |
+          set -e
+          API=https://api.cloudflare.com/client/v4
+          REC=$(curl -s "$API/zones/$ZONE/dns_records?type=CNAME&name=api.smyst.com" -H "Authorization: Bearer $TOKEN")
+          echo "$REC"
+          RID=$(echo "$REC" | jq -r '.result[0].id // empty')
+          DATA=$(jq -nc --arg t "$TARGET" '{type:"CNAME",name:"api.smyst.com",content:$t,proxied:true,ttl:1}')
+          if [ -n "$RID" ]; then
+            curl -s -X PATCH "$API/zones/$ZONE/dns_records/$RID" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data "$DATA" | jq .
+          else
+            curl -s -X POST "$API/zones/$ZONE/dns_records" -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" --data "$DATA" | jq .
+          fi
