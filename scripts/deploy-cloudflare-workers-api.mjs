@@ -1,6 +1,8 @@
 import { build } from 'esbuild';
 import { readFile, writeFile } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 
 const accountId = '477794df69f0b6a0b9e4c59e36883c1f';
 const zoneName = 'smyst.com';
@@ -168,7 +170,7 @@ async function cf(path, init = {}) {
 }
 
 async function bundleWorker(dep) {
-  const outfile = `/private/tmp/${dep.name}.mjs`;
+  const outfile = join(process.env.SMYST_WORKER_TMP_DIR || tmpdir(), `${dep.name}.mjs`);
   await build({
     entryPoints: [dep.entry],
     bundle: true,
