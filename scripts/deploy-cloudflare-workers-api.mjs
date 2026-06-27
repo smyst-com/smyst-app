@@ -23,6 +23,13 @@ const kv = {
   METADATA: 'e85f2a9237b84cb2be1cb3518e56217c',
 };
 
+const kvTitles = {
+  TRANSLATIONS: 'smyst-translations',
+  SESSIONS: 'smyst-sessions',
+  OAUTH_STATE: 'smyst-oauth-state',
+  METADATA: 'smyst-metadata',
+};
+
 const deployments = [
   {
     name: 'smyst-auth',
@@ -169,6 +176,46 @@ async function cf(path, init = {}) {
   throw lastError;
 }
 
+let kvNamespaces;
+
+async function listKvNamespaces() {
+  if (kvNamespaces) return kvNamespaces;
+  const namespaces = [];
+  let page = 1;
+  while (true) {
+    const result = await cf(`/accounts/${accountId}/storage/kv/namespaces?per_page=100&page=${page}`);
+    namespaces.push(...result);
+    if (result.length < 100) break;
+    page += 1;
+  }
+  kvNamespaces = namespaces;
+  return kvNamespaces;
+}
+
+async function resolveKvNamespaceId(name) {
+  const namespaces = await listKvNamespaces();
+  const configuredId = kv[name];
+  if (namespaces.some((namespace) => namespace.id === configuredId)) {
+    return configuredId;
+  }
+
+  const title = kvTitles[name] || name.toLowerCase().replaceAll('_', '-');
+  const titleCandidates = new Set([title, name, name.toLowerCase()]);
+  const existing = namespaces.find((namespace) => titleCandidates.has(namespace.title));
+  if (existing) {
+    return existing.id;
+  }
+
+  const created = await cf(`/accounts/${accountId}/storage/kv/namespaces`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ title }),
+  });
+  kvNamespaces = [...namespaces, created];
+  console.log(`Created KV namespace ${title} (${created.id}) for binding ${name}.`);
+  return created.id;
+}
+
 async function bundleWorker(dep) {
   const outfile = join(process.env.SMYST_WORKER_TMP_DIR || tmpdir(), `${dep.name}.mjs`);
   await build({
@@ -183,13 +230,13 @@ async function bundleWorker(dep) {
   return readFile(outfile, 'utf8');
 }
 
-function bindingsFor(dep) {
+async function bindingsFor(dep) {
   const bindings = [];
   for (const [name, text] of Object.entries(dep.vars)) {
     bindings.push({ type: 'plain_text', name, text });
   }
   for (const name of dep.kv) {
-    bindings.push({ type: 'kv_namespace', name, namespace_id: kv[name] });
+    bindings.push({ type: 'kv_namespace', name, namespace_id: await resolveKvNamespaceId(name) });
   }
   return bindings;
 }
@@ -200,7 +247,7 @@ async function uploadWorker(dep) {
     main_module: 'worker.mjs',
     compatibility_date: '2025-04-01',
     compatibility_flags: ['nodejs_compat'],
-    bindings: bindingsFor(dep),
+    bindings: await bindingsFor(dep),
   };
   const form = new FormData();
   form.append('metadata', new File([JSON.stringify(metadata)], 'metadata.json', { type: 'application/json' }));
