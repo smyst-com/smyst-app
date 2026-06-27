@@ -7,7 +7,55 @@ import { fileURLToPath } from 'url'
 
 const projectRoot = fileURLToPath(new URL('.', import.meta.url))
 
+function previewJson(
+  res: { statusCode: number; setHeader(name: string, value: string): void; end(body: string): void },
+  status: number,
+  body: unknown,
+) {
+  res.statusCode = status
+  res.setHeader('content-type', 'application/json; charset=utf-8')
+  res.end(JSON.stringify(body))
+}
+
 export default defineConfig({
+  plugins: [
+    {
+      name: 'smyst-preview-api-stubs',
+      configurePreviewServer(server) {
+        server.middlewares.use((req, res, next) => {
+          const method = req.method || 'GET'
+          const pathname = new URL(req.url || '/', 'http://127.0.0.1').pathname
+
+          if (method === 'GET' && pathname === '/api/health') {
+            previewJson(res, 200, { ok: true, service: 'smyst-preview', mode: 'local-vite-preview' })
+            return
+          }
+          if (method === 'GET' && pathname === '/auth/me') {
+            previewJson(res, 200, { authenticated: false })
+            return
+          }
+          if (method === 'GET' && pathname === '/api/public/twins') {
+            previewJson(res, 200, { twins: [] })
+            return
+          }
+          if (method === 'GET' && pathname === '/api/twins') {
+            previewJson(res, 401, { error: { code: 'unauthorized', message: 'Authentication required.' } })
+            return
+          }
+          if (pathname === '/storage/upload-url') {
+            previewJson(
+              res,
+              method === 'GET' ? 405 : 403,
+              { error: { code: method === 'GET' ? 'method_not_allowed' : 'forbidden', message: 'Preview storage is disabled.' } },
+            )
+            return
+          }
+
+          next()
+        })
+      },
+    },
+  ],
   optimizeDeps: {
     include: [],
     noDiscovery: true,
