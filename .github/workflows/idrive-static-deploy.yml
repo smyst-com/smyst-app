@@ -44,7 +44,7 @@ jobs:
         run: npm run build
         env:
           VITE_CANONICAL_HOST: https://smyst.com
-          VITE_AUTH_BASE_URL: https://parmesan-onion-pw08cg2t1ge4jnk6.salad.cloud/auth
+          VITE_AUTH_BASE_URL: https://api.smyst.com/auth
 
       - name: Validate dist artifact
         run: sh scripts/check-dist-artifact.sh

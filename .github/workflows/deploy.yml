@@ -1,26 +1,4 @@
-# Smyst — CI und kontrolliertes Production-Deployment
-#
-# Was passiert:
-#   1. Jeder PR + jeder Push auf main triggert nur den "ci"-Job.
-#   2. Production-Deployment ist nur per workflow_dispatch erlaubt.
-#   3. Ohne schriftliche Freigabe mit exakt RELEASE_APPROVAL="Ja OK" wird nicht deployt.
-#
-# Erforderliche GitHub-Secrets (Settings → Secrets and variables → Actions):
-#   CLOUDFLARE_API_TOKEN          — Wrangler-Token mit Pages + Workers + KV write
-#                                   Erstellen unter dash.cloudflare.com/profile/api-tokens
-#                                   Template "Edit Cloudflare Workers" wählen
-#   CLOUDFLARE_ACCOUNT_ID         — 477794df69f0b6a0b9e4c59e36883c1f
-#   VITE_CANONICAL_HOST           — https://smyst.com (optional, hat Default)
-#
-# Zusaetzlich als Repository Secrets dokumentiert, damit Worker-Secrets reproduzierbar bleiben:
-#   SMYST_GITHUB_OAUTH_CLIENT_ID
-#   SMYST_GITHUB_OAUTH_CLIENT_SECRET
-#   AUTH_HMAC_SECRET
-#   IDRIVE_E2_ACCESS_KEY
-#   IDRIVE_E2_SECRET_KEY
-#   ADMIN_TOKEN
-
-name: Deploy
+name: CI
 
 on:
   push:
@@ -28,43 +6,13 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      release_approval:
-        description: 'Production-Freigabe. Exakt "Ja OK" eintragen.'
-        required: true
-        type: string
-      release_version:
-        description: 'Release-Version, z. B. 0.1.0-foundation.1'
-        required: true
-        type: string
-      release_freeze_confirmed:
-        description: 'Release-Freeze ist aktiv und dokumentiert.'
-        required: true
-        default: false
-        type: boolean
-      rollback_plan_confirmed:
-        description: 'Rollback-Plan für Pages, Workers und Git ist dokumentiert.'
-        required: true
-        default: false
-        type: boolean
-      backup_restore_confirmed:
-        description: 'Backup-/Restore-Dry-Run für KV und IDrive e2 ist dokumentiert.'
-        required: true
-        default: false
-        type: boolean
-
-# Vermeide parallele Deploys, queuen wenn nötig
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
-  # ---------- Stage 1: Continuous Integration ----------
   ci:
-    name: CI — Install, Type-Check, Build
+    name: Install, type-check and build PWA
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -73,15 +21,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
       - name: TypeScript check
         run: npm run lint:tsc
-        continue-on-error: false
 
       - name: Validate profile memory contract
         run: python3 scripts/check-profile-memory-contract.py
@@ -93,167 +40,7 @@ jobs:
         run: npm run build
         env:
           VITE_CANONICAL_HOST: ${{ vars.VITE_CANONICAL_HOST || 'https://smyst.com' }}
+          VITE_AUTH_BASE_URL: ${{ vars.VITE_AUTH_BASE_URL || 'https://api.smyst.com/auth' }}
 
       - name: Validate dist artifact
         run: sh scripts/check-dist-artifact.sh
-
-      - name: Upload dist artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: dist
-          path: dist
-          retention-days: 3
-
-  # ---------- Stage 2: Deploy Pages ----------
-  release-gate:
-    name: Release Gate
-    needs: ci
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 2
-    steps:
-      - name: Validate written approval
-        env:
-          RELEASE_APPROVAL: ${{ inputs.release_approval }}
-          RELEASE_VERSION: ${{ inputs.release_version }}
-          RELEASE_FREEZE_CONFIRMED: ${{ inputs.release_freeze_confirmed }}
-          ROLLBACK_PLAN_CONFIRMED: ${{ inputs.rollback_plan_confirmed }}
-          BACKUP_RESTORE_CONFIRMED: ${{ inputs.backup_restore_confirmed }}
-        run: |
-          test "$RELEASE_APPROVAL" = "Ja OK"
-          test -n "$RELEASE_VERSION"
-          test "$RELEASE_FREEZE_CONFIRMED" = "true"
-          test "$ROLLBACK_PLAN_CONFIRMED" = "true"
-          test "$BACKUP_RESTORE_CONFIRMED" = "true"
-          echo "Release gate accepted for $RELEASE_VERSION"
-
-  deploy-pages:
-    name: Deploy Cloudflare Pages
-    needs: [ci, release-gate]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      deployments: write
-    steps:
-      - name: Validate deploy secrets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          test -n "$CLOUDFLARE_API_TOKEN"
-          test -n "$CLOUDFLARE_ACCOUNT_ID"
-
-      - uses: actions/checkout@v6
-
-      - name: Download dist artifact
-        uses: actions/download-artifact@v8
-        with:
-          name: dist
-          path: dist
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "4"
-          command: pages deploy dist --project-name=smyst-vite-app --branch=main
-
-  # ---------- Stage 3: Deploy Workers ----------
-  deploy-workers:
-    name: Deploy Cloudflare Workers
-    needs: [ci, release-gate]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    strategy:
-      matrix:
-        worker:
-          - { name: 'translate', env: '' }
-          - { name: 'warmup',    env: 'warmup' }
-          - { name: 'auth',      env: 'auth' }
-          - { name: 'storage',   env: 'storage' }
-          - { name: 'api',       env: 'api' }
-    steps:
-      - name: Validate deploy secrets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          test -n "$CLOUDFLARE_API_TOKEN"
-          test -n "$CLOUDFLARE_ACCOUNT_ID"
-
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Deploy Worker (${{ matrix.worker.name }})
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          wranglerVersion: "4"
-          command: ${{ matrix.worker.env != '' && format('deploy --env {0}', matrix.worker.env) || 'deploy' }}
-
-  seed-curated-public-profiles:
-    name: Seed curated public profiles
-    needs: [deploy-workers]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Validate seed secrets
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: test -n "$CLOUDFLARE_API_TOKEN"
-
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Update curated public profile rules in KV
-        run: npm run profiles:seed:curated
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          SMYST_CANONICAL_HOST: https://smyst.com
-
-  live-smoke:
-    name: Live Smoke Test
-    needs: [deploy-pages, deploy-workers, seed-curated-public-profiles]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'npm'
-
-      - name: Verify live production
-        run: sh scripts/live-test.sh
-        env:
-          WEB_BASE_URL: https://smyst.com
-
-      - name: Verify live public profile rules
-        run: node scripts/public-profile-quality.mjs
-        env:
-          WEB_BASE_URL: https://smyst.com
