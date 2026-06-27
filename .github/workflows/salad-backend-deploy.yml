@@ -76,7 +76,7 @@ jobs:
           SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
           SALAD_ORGANIZATION_NAME: smyst-com
           SALAD_PROJECT_NAME: default
-          SALAD_CONTAINER_GROUP: smyst-backend
+          SALAD_CONTAINER_GROUP: smyst-backend-api
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           AUTH_SESSION_SECRET: ${{ secrets.AUTH_SESSION_SECRET }}
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
