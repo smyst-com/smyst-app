@@ -104,6 +104,38 @@ function Plus(props: IconProps) {
   )
 }
 
+function FileIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v5h5" />
+      <path d="M8 13h8" />
+      <path d="M8 17h5" />
+    </svg>
+  )
+}
+
+function ContactIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M16 18a4 4 0 0 0-8 0" />
+      <circle cx="12" cy="10" r="3" />
+      <path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" />
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+    </svg>
+  )
+}
+
+function MapPin(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+}
+
 function Search(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
@@ -2203,14 +2235,32 @@ function SmystStartPage({
           <div className={`border-b ${composerLine} px-2 py-1 text-xs font-semibold text-[#d5dbe5] sm:px-3`}>
             {composerMenuOpen && (
               <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="shrink-0 rounded-full border border-white/[0.14] bg-white/[0.08] px-3 py-1">
-                  Dateien
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08]"
+                  aria-label="Dateien"
+                  title="Dateien"
+                >
+                  <FileIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
-                <button type="button" onClick={handlePickContacts} className="shrink-0 rounded-full border border-white/[0.14] bg-white/[0.08] px-3 py-1">
-                  Kontakte
+                <button
+                  type="button"
+                  onClick={handlePickContacts}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08]"
+                  aria-label="Kontakte"
+                  title="Kontakte"
+                >
+                  <ContactIcon className="h-5 w-5" aria-hidden="true" />
                 </button>
-                <button type="button" onClick={handleAttachLocation} className="shrink-0 rounded-full border border-white/[0.14] bg-white/[0.08] px-3 py-1">
-                  Standort
+                <button
+                  type="button"
+                  onClick={handleAttachLocation}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08]"
+                  aria-label="Standort"
+                  title="Standort"
+                >
+                  <MapPin className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
             )}
@@ -5914,14 +5964,32 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
               <div className="mb-1 rounded-[10px] border border-white/20 bg-white/14 px-2 py-1 text-xs font-semibold text-[#555b64]">
                 {composerMenuOpen && (
                   <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="shrink-0 rounded-full border border-white/30 bg-white/20 px-3 py-1">
-                      Dateien
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20"
+                      aria-label="Dateien"
+                      title="Dateien"
+                    >
+                      <FileIcon className="h-4 w-4" aria-hidden="true" />
                     </button>
-                    <button type="button" onClick={handlePickContacts} className="shrink-0 rounded-full border border-white/30 bg-white/20 px-3 py-1">
-                      Kontakte
+                    <button
+                      type="button"
+                      onClick={handlePickContacts}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20"
+                      aria-label="Kontakte"
+                      title="Kontakte"
+                    >
+                      <ContactIcon className="h-4 w-4" aria-hidden="true" />
                     </button>
-                    <button type="button" onClick={handleAttachLocation} className="shrink-0 rounded-full border border-white/30 bg-white/20 px-3 py-1">
-                      Standort
+                    <button
+                      type="button"
+                      onClick={handleAttachLocation}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20"
+                      aria-label="Standort"
+                      title="Standort"
+                    >
+                      <MapPin className="h-4 w-4" aria-hidden="true" />
                     </button>
                   </div>
                 )}
