@@ -13,23 +13,27 @@ jobs:
       - name: Upsert proxied CNAME api.smyst.com
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ZONE: df5ecb63a31ec80ac5eb8c74d2703bd4
           TARGET: ${{ inputs.target }}
         run: |
           set -euo pipefail
           NAME="api.smyst.com"
+          ROOT="smyst.com"
           echo "Token length: ${#CF_TOKEN}"
-          echo "=== Verify token ==="
-          curl -s -o /tmp/verify.json -w "HTTP %{http_code}\n" -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json"
-          jq '{success, errors, status: .result.status}' /tmp/verify.json || cat /tmp/verify.json
-          echo "=== Zone read ==="
-          curl -s -o /tmp/zone.json -w "HTTP %{http_code}\n" -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json"
-          jq '{success, errors, name: .result.name}' /tmp/zone.json || cat /tmp/zone.json
+          echo "=== Accessible zones ==="
+          curl -s -X GET "https://api.cloudflare.com/client/v4/zones?per_page=50" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" | jq '{success, errors, zones: [.result[] | {name, id}]}'
+          echo "=== Resolve zone for $ROOT ==="
+          ZRESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$ROOT" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json")
+          echo "$ZRESP" | jq '{success, errors, result: [.result[] | {name, id}]}'
+          ZONE=$(echo "$ZRESP" | jq -r '.result[0].id // empty')
+          if [ -z "$ZONE" ]; then
+            echo "ERROR: Token cannot resolve zone for $ROOT. Token lacks access to this zone. Aborting."
+            exit 1
+          fi
+          echo "Using zone $ZONE"
           API="https://api.cloudflare.com/client/v4/zones/$ZONE/dns_records"
           BODY=$(printf '{"type":"CNAME","name":"%s","content":"%s","proxied":true,"ttl":1}' "$NAME" "$TARGET")
-          echo "=== Lookup existing CNAME ==="
-          curl -s -o /tmp/rec.json -w "HTTP %{http_code}\n" -X GET "$API?type=CNAME&name=$NAME" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json"
-          ID=$(jq -r '.result[0].id // empty' /tmp/rec.json)
+          REC=$(curl -s -X GET "$API?type=CNAME&name=$NAME" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json")
+          ID=$(echo "$REC" | jq -r '.result[0].id // empty')
           if [ -n "$ID" ]; then
             echo "=== Patch $ID ==="
             curl -s -X PATCH "$API/$ID" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$BODY" | jq '{success, errors, name: .result.name, content: .result.content, proxied: .result.proxied}'
