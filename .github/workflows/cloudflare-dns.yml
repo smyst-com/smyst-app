@@ -19,7 +19,7 @@ jobs:
           NAME="api.smyst.com"
           ROOT="smyst.com"
           ZRESP=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$ROOT" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json")
-          ZONE=$(echo "$ZRESP" | jq -r '.result[0].id // empty')
+          ZONE="df5ecb63a31ec80ac5eb8c74d2703bd4"
           if [ -z "$ZONE" ]; then
             echo "ERROR: cannot resolve zone for $ROOT"; echo "$ZRESP" | jq '.errors'; exit 1
           fi
