@@ -1418,6 +1418,7 @@ function SmystStartPage({
   const startDictation = (options: { live?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
+      if (options.live) setSpeechOutputEnabled(false)
       addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
     }
@@ -1429,6 +1430,7 @@ function SmystStartPage({
     recognition.onstart = () => setVoiceState('listening')
     recognition.onerror = (event) => {
       setVoiceState('idle')
+      if (options.live) setSpeechOutputEnabled(false)
       const error = event.error ?? ''
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
@@ -1467,6 +1469,7 @@ function SmystStartPage({
     } catch {
       recognitionRef.current = null
       setVoiceState('idle')
+      if (options.live) setSpeechOutputEnabled(false)
       addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
     }
   }
@@ -1487,6 +1490,7 @@ function SmystStartPage({
     window.speechSynthesis.cancel()
     setVoiceState('idle')
     setIsSpeaking(false)
+    setSpeechOutputEnabled(false)
   }
 
   const handleSend = async (
@@ -5566,6 +5570,7 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
   const startDictation = (options: { live?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
+      if (options.live) setSpeechOutputEnabled(false)
       addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
     }
@@ -5577,6 +5582,7 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
     recognition.onstart = () => setVoiceState('listening')
     recognition.onerror = (event) => {
       setVoiceState('idle')
+      if (options.live) setSpeechOutputEnabled(false)
       const error = event.error ?? ''
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
@@ -5615,6 +5621,7 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
     } catch {
       recognitionRef.current = null
       setVoiceState('idle')
+      if (options.live) setSpeechOutputEnabled(false)
       addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
     }
   }
@@ -5635,6 +5642,7 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
     window.speechSynthesis.cancel()
     setVoiceState('idle')
     setIsSpeaking(false)
+    setSpeechOutputEnabled(false)
   }
 
   const handleSend = async (
