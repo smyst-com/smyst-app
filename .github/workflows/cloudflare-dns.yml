@@ -18,15 +18,22 @@ jobs:
         run: |
           set -euo pipefail
           NAME="api.smyst.com"
+          echo "Token length: ${#CF_TOKEN}"
+          echo "=== Verify token ==="
+          curl -s -o /tmp/verify.json -w "HTTP %{http_code}\n" -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json"
+          jq '{success, errors, status: .result.status}' /tmp/verify.json || cat /tmp/verify.json
+          echo "=== Zone read ==="
+          curl -s -o /tmp/zone.json -w "HTTP %{http_code}\n" -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json"
+          jq '{success, errors, name: .result.name}' /tmp/zone.json || cat /tmp/zone.json
           API="https://api.cloudflare.com/client/v4/zones/$ZONE/dns_records"
           BODY=$(printf '{"type":"CNAME","name":"%s","content":"%s","proxied":true,"ttl":1}' "$NAME" "$TARGET")
-          echo "Looking up existing CNAME for $NAME ..."
-          REC=$(curl -s -X GET "$API?type=CNAME&name=$NAME" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json")
-          ID=$(echo "$REC" | jq -r '.result[0].id // empty')
+          echo "=== Lookup existing CNAME ==="
+          curl -s -o /tmp/rec.json -w "HTTP %{http_code}\n" -X GET "$API?type=CNAME&name=$NAME" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json"
+          ID=$(jq -r '.result[0].id // empty' /tmp/rec.json)
           if [ -n "$ID" ]; then
-            echo "Patching existing record $ID"
+            echo "=== Patch $ID ==="
             curl -s -X PATCH "$API/$ID" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$BODY" | jq '{success, errors, name: .result.name, content: .result.content, proxied: .result.proxied}'
           else
-            echo "Creating new record"
+            echo "=== Create ==="
             curl -s -X POST "$API" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" --data "$BODY" | jq '{success, errors, name: .result.name, content: .result.content, proxied: .result.proxied}'
           fi
