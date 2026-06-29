@@ -18,6 +18,7 @@ const config = {
   syncCdn: process.env.IDRIVE_E2_SYNC_CDN !== "false",
   configureWebsite: process.env.IDRIVE_E2_CONFIGURE_WEBSITE !== "false",
   setPublicPolicy: process.env.IDRIVE_E2_SET_PUBLIC_POLICY === "true",
+  objectAcl: process.env.IDRIVE_E2_OBJECT_ACL || "",
 };
 
 const endpointUrl = new URL(config.endpoint);
@@ -258,6 +259,7 @@ async function uploadFiles(bucket, files) {
       headers: {
         "cache-control": cacheControlFor(key),
         "content-type": contentTypeFor(key),
+        ...(config.objectAcl ? { "x-amz-acl": config.objectAcl } : {}),
       },
       body,
     });
