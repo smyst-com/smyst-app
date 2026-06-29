@@ -1030,6 +1030,7 @@ function SmystStartPage({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const menuRef = useRef<HTMLElement | null>(null)
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
 
   const latestAssistantText =
@@ -1183,6 +1184,10 @@ function SmystStartPage({
     }, 600)
     return () => window.clearTimeout(timeout)
   }, [realStartTwins])
+
+  useEffect(() => {
+    if (menuRef.current) menuRef.current.inert = !menuOpen
+  }, [menuOpen])
 
   useEffect(() => {
     if (!menuOpen) return
@@ -1761,13 +1766,14 @@ function SmystStartPage({
         }`}
       />
       <aside
-        role="dialog"
-        aria-modal="true"
+        ref={menuRef}
+        role={menuOpen ? 'dialog' : undefined}
+        aria-modal={menuOpen ? 'true' : undefined}
         aria-label="Startmenü"
         aria-hidden={!menuOpen}
         style={{ left: menuOpen ? 0 : '-100%', transform: 'none' }}
         className={`smyst-glass-panel fixed inset-y-0 z-50 flex w-[90vw] max-w-[390px] flex-col border-r border-white/10 shadow-2xl ${
-          menuOpen ? '' : 'pointer-events-none'
+          menuOpen ? 'visible' : 'pointer-events-none invisible'
         }`}
       >
         <div className="border-b border-white/10 px-5 pb-4 pt-[max(env(safe-area-inset-top),18px)]">
@@ -4933,6 +4939,9 @@ function AdminControlCenterView() {
 
 // Dashboard View
 function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const auth = useAuth()
+  const isAuthenticated = auth.status === 'authenticated'
+  const displayName = auth.user?.name || auth.user?.email?.split('@')[0] || 'zurück'
   const startActions: { key: string; title: string; subtitle: string; dot: string; target: AppView }[] = [
     { key: 'choose', title: 'Choose a Twin', subtitle: 'Profile, Themen, Wissen', dot: '#59C7FF', target: 'my-twins' },
     { key: 'ask', title: 'Ask anything', subtitle: 'Chat startet sofort', dot: '#22c55e', target: 'twin-chat' },
@@ -4968,8 +4977,14 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
       </div>
 
       <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Willkommen zurück, Anna</h1>
-        <p className="text-base text-[#555b64]">Dein digitaler Zwilling ist aktiv und bereit für Gespräche.</p>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">
+          {isAuthenticated ? `Willkommen zurück, ${displayName}` : 'Dein Dashboard ist bereit'}
+        </h1>
+        <p className="text-base text-[#555b64]">
+          {isAuthenticated
+            ? 'Deine Twins, Memories und Gespräche bleiben getrennt und kontrollierbar.'
+            : 'Melde dich an, um persönliche Twins, Memories und Chatverläufe sicher zu speichern.'}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -4998,15 +5013,15 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
-                <p className="text-sm font-medium">Letzte Konversation</p>
-                <p className="text-xs text-[#767d87]">Vor 2 Stunden</p>
+                <p className="text-sm font-medium">{isAuthenticated ? 'Letzte Konversation' : 'Gespräche'}</p>
+                <p className="text-xs text-[#767d87]">{isAuthenticated ? 'Wird aus deinem Verlauf geladen' : 'Nach Anmeldung speicherbar'}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate('twin-chat')}>Fortsetzen</Button>
+              <Button variant="ghost" size="sm" onClick={() => onNavigate('twin-chat')}>{isAuthenticated ? 'Fortsetzen' : 'Öffnen'}</Button>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
-                <p className="text-sm font-medium">Neue Memories hochgeladen</p>
-                <p className="text-xs text-[#767d87]">12 Dateien今天</p>
+                <p className="text-sm font-medium">{isAuthenticated ? 'Memories' : 'Memory Upload'}</p>
+                <p className="text-xs text-[#767d87]">{isAuthenticated ? 'Uploads und Quellen verwalten' : 'Nach Anmeldung Dateien sicher hochladen'}</p>
               </div>
               <Button variant="ghost" size="sm" onClick={() => onNavigate('memory-upload')}>Ansehen</Button>
             </div>
@@ -6267,18 +6282,20 @@ function TwinChatView({
                   Smyst ist kein Messenger: Wähle eine KI-Persönlichkeit aus und stelle deine Frage direkt.
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  <a
-                    href="/twins"
-                    className="rounded-md border border-[#0b1c44]/14 bg-[#0b1c44] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#173064]"
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('landing')}
+                    className="rounded-md border border-[#0b1c44]/14 bg-[#0b1c44] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#173064] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b1c44]/35"
                   >
                     Profile ansehen
-                  </a>
-                  <a
-                    href="/twin-builder"
-                    className="rounded-md border border-[#0b1c44]/14 bg-white/42 px-3 py-2 text-sm font-semibold text-[#0b1c44] transition-colors hover:bg-white/70"
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('twin-builder')}
+                    className="rounded-md border border-[#0b1c44]/14 bg-white/42 px-3 py-2 text-sm font-semibold text-[#0b1c44] transition-colors hover:bg-white/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0b1c44]/35"
                   >
                     Profil erstellen
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
