@@ -17,7 +17,7 @@ End-to-end follow-up for the low-risk historical profile launch on smyst.com.
 
 - No paid AI provider was added.
 - No external translation, analytics, database or monitoring service was added.
-- The implementation stays inside GitHub, Cloudflare Workers/KV and IDrive e2 boundaries.
+- The implementation stays inside GitHub, Salad API/KV and IDrive e2 boundaries.
 - Historical demo chat remains rule-based and does not claim to be the real historical person.
 - SQL seeds remain optional local/demo files and are not part of the production data path.
 
@@ -37,4 +37,4 @@ End-to-end follow-up for the low-risk historical profile launch on smyst.com.
 
 ## Known Boundary
 
-The free-only architecture is a Phase-1 MVP. It keeps module boundaries ready for future scale, but it must not promise real billion-user/day capacity on free GitHub and Cloudflare limits.
+The free-only architecture is a Phase-1 MVP. It keeps module boundaries ready for future scale, but it must not promise real billion-user/day capacity on free GitHub and Legacy edge provider limits.

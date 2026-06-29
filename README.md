@@ -53,4 +53,6 @@ Die guenstigste Start-Version ist:
 6. Kleine API nur bauen, wenn Login oder dynamische Funktionen noetig werden.
 7. Salad erst aktivieren, wenn echte Rechenleistung gebraucht wird.
 
-Cloudflare ist nicht die Ziel-Hauptarchitektur. Falls Cloudflare noch aktiv ist, gilt es nur als Uebergang/Legacy, bis Spaceship-DNS und IDrive-e2-Hosting fertig umgestellt sind.
+Neue Deployments, DNS-Aenderungen, Speicherpfade und API-Pfade muessen ueber
+Spaceship, IDrive e2, Salad und GitHub geplant werden. Alte Edge-/CDN-Ressourcen
+gelten als Abschaltbestand und duerfen nicht als Zielarchitektur erweitert werden.

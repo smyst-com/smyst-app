@@ -15,6 +15,13 @@
     "messagePlaceholder": "Message {{name}}",
     "addFile": "Add file",
     "voiceInput": "Voice input",
+    "voiceInputUnsupported": "Voice input is not supported",
+    "liveVoiceStart": "Start live voice mode",
+    "liveVoicePause": "Pause live voice mode",
+    "liveVoiceResume": "Resume live voice mode",
+    "liveVoiceStop": "Stop live voice mode",
+    "speechOutputOn": "Read replies aloud",
+    "speechOutputOff": "Turn speech output off",
     "send": "Send message",
     "freeOnlyNotice": "Public and private profiles stay clearly separated. You choose who you want to chat with."
   },

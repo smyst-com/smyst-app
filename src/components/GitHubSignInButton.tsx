@@ -1,7 +1,7 @@
 /**
- * GitHub Sign-In Button fuer smyst.com.
+ * GitHub Sign-In Button für smyst.com.
  *
- * Der Button startet den erlaubten Free-only OAuth-Flow ueber GitHub.
+ * Der Button startet den erlaubten Free-only OAuth-Flow über GitHub.
  */
 
 import { useAuth } from '@/lib/useAuth';

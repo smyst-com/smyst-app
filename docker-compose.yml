@@ -2,7 +2,7 @@ name: smyst-foundation
 
 # Legacy local-development reference only.
 # Production is not allowed to depend on Docker, PostgreSQL, Redis, Caddy, or a VPS.
-# Use GitHub Free + Cloudflare Free + IDrive e2 for production.
+# Use GitHub Free + Legacy edge provider Free + IDrive e2 for production.
 
 services:
   postgres:

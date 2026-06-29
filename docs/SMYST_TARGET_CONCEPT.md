@@ -17,7 +17,7 @@ Smyst wird als speicherstarkes und rechen-effizientes System geplant:
 - IDrive e2 uebernimmt 99 % aller Speicheraufgaben.
 - GitHub Free wird nur fuer Code, Versionierung, Releases, Issues und Dokumentation genutzt.
 - Spaceship wird fuer Domain-Besitz, Registrar-Sicherheit und Nameserver-Verwaltung genutzt.
-- Cloudflare DNS ist aktuell aktiv, weil Cloudflare Pages fuer die Apex-Domain `smyst.com` und Worker-Routes Cloudflare-Nameserver benoetigt.
+- Spaceship DNS ist aktuell aktiv, weil IDrive e2 static hosting fuer die Apex-Domain `smyst.com` und Worker-Routes Legacy edge provider-Nameserver benoetigt.
 - Salad wird nur fuer echte Rechenarbeit genutzt.
 
 Der wichtigste Architekturgedanke: Speicher zuerst, Server nur bei Bedarf.
@@ -34,7 +34,7 @@ Spaceship uebernimmt dauerhaft:
 - Domain-Sicherheit
 - 2FA-Schutz fuer Domain-Zugriff
 
-Aktueller Produktionsstand: Die Nameserver von `smyst.com` zeigen auf Cloudflare (`anahi.ns.cloudflare.com`, `graham.ns.cloudflare.com`), damit Cloudflare Pages, TLS, Proxy und Worker-Routes fuer die Uebergangsphase korrekt funktionieren.
+Aktueller Produktionsstand: Die Nameserver von `smyst.com` zeigen auf Legacy edge provider (`anahi.ns.legacy-edge-provider.com`, `graham.ns.legacy-edge-provider.com`), damit IDrive e2 static hosting, TLS, Proxy und Worker-Routes fuer die Uebergangsphase korrekt funktionieren.
 
 ### GitHub Free
 
@@ -123,4 +123,4 @@ Zielstruktur:
 
 ## Aktueller Uebergang
 
-Cloudflare ist aktuell aktiver Uebergang fuer DNS, Pages, TLS, Proxy und Workers. Das ist fuer die jetzige Cloudflare-Pages-Apex-Domain und API-Worker-Routes notwendig. Spaceship bleibt Registrar und Domain-Sicherheitsanker. Langfristig kann DNS wieder zu Spaceship wandern, wenn statische Auslieferung, API und Subdomain-Routing ohne Cloudflare Pages/Worker-Abhaengigkeit produktionsreif ueber IDrive e2 und Salad laufen. Neue Architekturentscheidungen duerfen Cloudflare nicht als Hauptspeicher oder dauerhafte Rechenplattform voraussetzen.
+Legacy edge provider ist aktuell aktiver Uebergang fuer DNS, Pages, TLS, Proxy und Workers. Das ist fuer die jetzige Legacy edge provider-Pages-Apex-Domain und API-Worker-Routes notwendig. Spaceship bleibt Registrar und Domain-Sicherheitsanker. Langfristig kann DNS wieder zu Spaceship wandern, wenn statische Auslieferung, API und Subdomain-Routing ohne IDrive e2 static hosting/Worker-Abhaengigkeit produktionsreif ueber IDrive e2 und Salad laufen. Neue Architekturentscheidungen duerfen Legacy edge provider nicht als Hauptspeicher oder dauerhafte Rechenplattform voraussetzen.

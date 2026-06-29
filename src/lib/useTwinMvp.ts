@@ -1,7 +1,7 @@
 /**
  * useTwinMvp — Free-only KI-Zwilling MVP API.
  *
- * Speichert kleine Twin-Metadaten in Cloudflare KV, referenziert Dateien in
+ * Speichert kleine Twin-Metadaten in der aktiven API, referenziert Dateien in
  * IDrive e2 und nutzt nur regelbasierte Chatantworten ohne bezahlte KI-API.
  */
 
@@ -87,6 +87,7 @@ export interface PublicTwinProfile {
   searchIndex?: string
   sources?: Array<{ title: string; publisher: string; url: string }>
   quality?: { ok: boolean; issues: string[] }
+  createdAt?: number
   updatedAt: number
   seo: {
     title: string

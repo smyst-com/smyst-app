@@ -3,14 +3,14 @@
   "productionStatus": "NO-GO",
   "ratingScale": "0-10; 10 requires verified production evidence, green tests, operational runbooks, and no unresolved blockers.",
   "freeOnlyPolicy": {
-    "allowedServices": ["GitHub.com free tier", "Cloudflare.com free tier", "IDrive e2 as central storage"],
+    "allowedServices": ["GitHub.com free tier", "Spaceship DNS", "IDrive e2 as central storage", "Salad compute"],
     "paidServicesAllowed": false,
     "productionDeployRequiresFinalWrittenApproval": true
   },
   "globalBlockers": [
     "Live production is still not verified against the current repository artifact.",
     "No final written production approval has been given.",
-    "Billion-user/day scale cannot be proven or honestly achieved on free-only GitHub and Cloudflare limits.",
+    "Billion-user/day scale cannot be proven or honestly achieved on the current free-only limits.",
     "Real AI model orchestration is not implemented in the free-only MVP.",
     "Legal/privacy/compliance review and abuse operations are not complete."
   ],
@@ -44,7 +44,7 @@
       "score": 6.5,
       "targetScore": 10,
       "status": "blocked-below-10",
-      "why": "The Vite app, Cloudflare edge delivery, static caching, and service worker are ready, but measured production performance is not green yet.",
+      "why": "The Vite app, static caching, and service worker are ready, but measured production performance is not green yet.",
       "automaticImprovements": [
         "Static artifact checks cover manifest icons, service worker assets, and cache-sensitive public files.",
         "Live test now verifies public root/indexing and critical static endpoints."
@@ -56,7 +56,7 @@
       ],
       "nextActions": [
         "Run Lighthouse on preview and production after deployment approval.",
-        "Add lightweight edge timing dashboards from Cloudflare logs/analytics.",
+        "Add lightweight timing dashboards from Salad, IDrive e2 and GitHub release evidence.",
         "Measure upload and chat time-to-first-response with realistic payloads."
       ]
     },
@@ -74,12 +74,12 @@
       "blockers": [
         "No fresh green full browser/mobile test matrix.",
         "No recent restore drill evidence from production-like data.",
-        "No confirmed Cloudflare rollback drill after the latest Worker changes."
+        "No confirmed Salad/IDrive rollback drill after the latest backend changes."
       ],
       "nextActions": [
         "Run Playwright desktop and mobile tests against a preview URL.",
         "Perform one restore dry-run and attach the evidence to the release.",
-        "Run Cloudflare Worker rollback drill before production."
+        "Run Salad backend and IDrive static rollback drill before production."
       ]
     },
     {
@@ -90,12 +90,12 @@
       "status": "blocked-below-10",
       "why": "The system is shaped as an edge MVP, but billion-user/day scale requires paid capacity, traffic engineering, observability, regional data strategy, and model infrastructure.",
       "automaticImprovements": [
-        "Free-only data map documents Cloudflare KV and IDrive e2 boundaries.",
+        "Free-only data map documents Salad metadata and IDrive e2 boundaries.",
         "Legacy SQL/vector targets are blocked from production policy."
       ],
       "blockers": [
-        "Free Cloudflare/GitHub tiers cannot guarantee billion-user/day capacity.",
-        "Cloudflare KV is not a full relational or high-write chat database.",
+        "Current free GitHub, IDrive e2 and Salad limits cannot guarantee billion-user/day capacity.",
+        "The current metadata layer is not a full relational or high-write chat database.",
         "No load-test evidence beyond architecture review."
       ],
       "nextActions": [
@@ -154,18 +154,18 @@
       "score": 6.5,
       "targetScore": 10,
       "status": "blocked-below-10",
-      "why": "Cloudflare Workers/Pages-style deployment, GitHub Actions gates, KV metadata, and IDrive e2 storage are defined, but live routes/secrets cannot be fully verified locally.",
+      "why": "GitHub Actions gates, Salad backend deployment, metadata storage, and IDrive e2 storage are defined, but live routes/secrets cannot be fully verified locally.",
       "automaticImprovements": [
         "Release workflow now blocks production without explicit rollback and restore confirmations.",
         "Preflight script enforces approval, freeze, backup, restore, and rollback inputs."
       ],
       "blockers": [
-        "Cloudflare routes/secrets are not fully re-read and verified in this run.",
+        "Production DNS, backend secrets and storage credentials are not fully re-read and verified in this run.",
         "Current live deployment appears stale compared with repository checks.",
         "No production monitoring/alerting proof beyond free dashboard capabilities."
       ],
       "nextActions": [
-        "Verify Cloudflare routes, Workers, Pages deployment target, and GitHub secrets before release.",
+        "Verify Spaceship DNS, Salad backend target, IDrive e2 target, and GitHub secrets before release.",
         "Run deployment to preview first, never production without written approval.",
         "Document exact free-tier operational limits and escalation thresholds."
       ]

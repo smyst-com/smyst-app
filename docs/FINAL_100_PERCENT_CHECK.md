@@ -10,16 +10,16 @@ Free-Only-Regel-Erfuellung: 95 Prozent.
 
 Produktions-Deployment-Bereitschaft: 74 Prozent.
 
-Grund: Architektur, Codebasis, Worker, PWA, SEO, Security-Baseline, Dokumentation und Native-Konfiguration sind weitgehend konsolidiert. Vollstaendige 100 Prozent sind noch nicht erreicht, weil echte Cloudflare-/IDrive-e2-Live-Flows, voller lokaler/CI-Build, native Builds, OAuth-Callback, Upload-End-to-End und Browser-E2E noch final gegen echte Umgebungen laufen muessen.
+Grund: Architektur, Codebasis, Worker, PWA, SEO, Security-Baseline, Dokumentation und Native-Konfiguration sind weitgehend konsolidiert. Vollstaendige 100 Prozent sind noch nicht erreicht, weil echte Legacy edge provider-/IDrive-e2-Live-Flows, voller lokaler/CI-Build, native Builds, OAuth-Callback, Upload-End-to-End und Browser-E2E noch final gegen echte Umgebungen laufen muessen.
 
 ## Bereichsbewertung
 
 | Bereich | Bewertung | Status |
 | --- | ---: | --- |
-| Free-Only-Architektur | 95% | Production ist auf GitHub Free, Cloudflare Free und IDrive e2 ausgerichtet. |
+| Free-Only-Architektur | 95% | Production ist auf GitHub Free, Legacy edge provider Free und IDrive e2 ausgerichtet. |
 | Dokumentation | 92% | Aktive Doku ist Free-Only-konsistent; Legacy bleibt als lokale Referenz markiert. |
 | Code/TypeScript | 90% | TypeScript-Check und Einzeltranspilationen bestanden. |
-| Cloudflare Workers | 88% | API/Auth/Storage/Translate/Warmup bundlen erfolgreich. Live-Deploy fehlt. |
+| Salad API | 88% | API/Auth/Storage/Translate/Warmup bundlen erfolgreich. Live-Deploy fehlt. |
 | IDrive e2 Uploads | 82% | Signaturen, Limits, Typen, Quotas und Completion-Logik vorhanden. Live-Bucket-Test fehlt. |
 | Sicherheit/Datenschutz | 84% | Headers, CORS, CSRF, Sessions, Rate Limits, Uploadschutz und private Defaults vorhanden. Externe Security-Abnahme fehlt. |
 | UI/Chat MVP | 78% | Minimaler Twin-/Chat-MVP vorhanden; echter Browser-E2E und visuelle QA fehlen. |
@@ -29,7 +29,7 @@ Grund: Architektur, Codebasis, Worker, PWA, SEO, Security-Baseline, Dokumentatio
 | iOS | 68% | Capacitor/iOS-Konfig parsebar. Full Xcode Build fehlt lokal. |
 | Android | 70% | Manifest/XML-Konfig parsebar, `gradlew` ausfuehrbar. Java/Gradle-Build fehlt lokal. |
 | GitHub/CI | 80% | Workflows vorhanden und Free-Only ausgerichtet. Echter GitHub-Actions-Lauf fehlt. |
-| Cloudflare Pages | 76% | Pages-Build-Konfiguration vorhanden. Lokaler voller Vite-Build haengt in dieser Umgebung. |
+| IDrive e2 static hosting | 76% | Pages-Build-Konfiguration vorhanden. Lokaler voller Vite-Build haengt in dieser Umgebung. |
 
 ## Bestandene Checks
 
@@ -71,13 +71,13 @@ Grund: Architektur, Codebasis, Worker, PWA, SEO, Security-Baseline, Dokumentatio
 ## Letzte offene Punkte bis MVP 100 Prozent
 
 1. GitHub Actions einmal echt auf `main` oder Pull Request laufen lassen: `npm ci`, TypeScript und Vite Build.
-2. Cloudflare Pages Preview deployen und `dist` live pruefen.
-3. Cloudflare Workers fuer `api`, `auth`, `storage`, `translate` und `warmup` deployen.
-4. IDrive-e2-Secrets in Cloudflare setzen und echten Upload-End-to-End-Test ausfuehren.
+2. IDrive e2 static hosting Preview deployen und `dist` live pruefen.
+3. Salad API fuer `api`, `auth`, `storage`, `translate` und `warmup` deployen.
+4. IDrive-e2-Secrets in Legacy edge provider setzen und echten Upload-End-to-End-Test ausfuehren.
 5. GitHub OAuth App mit echten Redirect URLs testen: Login, Callback, Session, Logout.
 6. Storage-Flows live testen: upload-url, upload-complete, list, download, delete.
 7. Private/public Twin-Sichtbarkeit live pruefen, inklusive `noindex` fuer private Inhalte.
-8. Browser-E2E gegen Cloudflare Preview oder lokalen Dev-Server ausfuehren.
+8. Browser-E2E gegen Legacy edge provider Preview oder lokalen Dev-Server ausfuehren.
 9. PWA-Install, Offline-Fallback und Cache-Verhalten in Browser/Android/iOS testen.
 10. Android mit installierter Java Runtime bauen.
 11. iOS mit vollem Xcode und CocoaPods bauen.
@@ -89,6 +89,6 @@ Grund: Architektur, Codebasis, Worker, PWA, SEO, Security-Baseline, Dokumentatio
 
 ## Schlussbewertung
 
-smyst.com ist als Free-Only-MVP technisch gut vorbereitet, aber noch nicht 100 Prozent produktionsfertig. Die naechste Schwelle ist kein weiterer Architekturumbau, sondern echte Live-Abnahme auf GitHub Actions, Cloudflare Pages/Workers und IDrive e2.
+smyst.com ist als Free-Only-MVP technisch gut vorbereitet, aber noch nicht 100 Prozent produktionsfertig. Die naechste Schwelle ist kein weiterer Architekturumbau, sondern echte Live-Abnahme auf GitHub Actions, IDrive e2 static hosting/Workers und IDrive e2.
 
 Die Milliarden-Nutzer-Vision bleibt ein Langfristziel. Mit reinen kostenlosen Kontingenten ist sie nicht erreichbar; die aktuelle Architektur verhindert aber bezahlte Pflichtabhaengigkeiten und haelt spaetere horizontale Skalierung offen.

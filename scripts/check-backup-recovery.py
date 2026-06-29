@@ -19,8 +19,8 @@ def main() -> None:
     policy = data.get("policy", {})
     if policy.get("paidServicesAllowed") is not False:
         fail("paid services must be disabled")
-    if policy.get("productionDatabase") != "cloudflare-kv":
-        fail("production database must be cloudflare-kv")
+    if policy.get("productionDatabase") != "salad-api-idrive-metadata":
+        fail("production database must be Salad/IDrive metadata")
     if policy.get("productionObjectStore") != "idrive-e2":
         fail("production object store must be idrive-e2")
     if policy.get("legacySqlProduction") is not False:
@@ -29,9 +29,9 @@ def main() -> None:
     targets = {target.get("name"): target for target in data.get("targets", [])}
     required_targets = {
         "code-and-config",
-        "cloudflare-pages-deployment",
-        "cloudflare-workers",
-        "cloudflare-kv-metadata",
+        "idrive-e2-static-deployment",
+        "salad-backend",
+        "salad-idrive-metadata",
         "idrive-e2-user-objects",
         "legacy-local-sql-reference",
     }
@@ -39,13 +39,13 @@ def main() -> None:
     if missing:
         fail(f"missing targets: {', '.join(missing)}")
 
-    kv = targets["cloudflare-kv-metadata"]
+    metadata = targets["salad-idrive-metadata"]
     for prefix in ["auth:user:", "meta:twin:", "meta:upload:", "public:twin:", "storage:user:"]:
-        if prefix not in kv.get("includePrefixes", []):
-            fail(f"KV include prefix missing: {prefix}")
+        if prefix not in metadata.get("includePrefixes", []):
+            fail(f"metadata include prefix missing: {prefix}")
     for forbidden in ["s:", "state:"]:
-        if forbidden not in kv.get("excludePrefixes", []):
-            fail(f"KV exclude prefix missing: {forbidden}")
+        if forbidden not in metadata.get("excludePrefixes", []):
+            fail(f"metadata exclude prefix missing: {forbidden}")
 
     idrive = targets["idrive-e2-user-objects"]
     controls = set(idrive.get("requiredBucketControls", []))
@@ -58,12 +58,12 @@ def main() -> None:
         fail("legacy SQL target must be blocked for production")
 
     evidence = set(data.get("releaseEvidence", []))
-    for item in ["KV restore dry-run result", "IDrive e2 bucket CORS/encryption/lifecycle confirmation", "rollback target"]:
+    for item in ["metadata restore dry-run result", "IDrive e2 bucket CORS/encryption/lifecycle confirmation", "rollback target"]:
         if item not in evidence:
             fail(f"release evidence missing: {item}")
 
     risks = set(data.get("blockingRisks", []))
-    for risk in ["no KV restore dry-run", "no IDrive e2 signed object restore test", "production data stored in legacy SQL or server filesystem"]:
+    for risk in ["no metadata restore dry-run", "no IDrive e2 signed object restore test", "production data stored in legacy SQL or server filesystem"]:
         if risk not in risks:
             fail(f"blocking risk missing: {risk}")
 

@@ -1,6 +1,6 @@
 # Backend
 
-This folder is the Cloudflare-free API/auth foundation for Salad-hosted runtime work.
+This folder is the provider-independent API/auth foundation for Salad-hosted runtime work.
 
 Production rule:
 

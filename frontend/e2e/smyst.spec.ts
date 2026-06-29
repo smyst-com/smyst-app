@@ -100,7 +100,7 @@ test.describe("Smyst current app", () => {
     await page.goto("/settings");
 
     await expect(page.getByText("Infrastruktur-Regeln")).toHaveCount(0);
-    await expect(page.getByText(/Cloudflare Free/i)).toHaveCount(0);
+    await expect(page.getByText(/Legacy edge provider Free/i)).toHaveCount(0);
     await expect(page.getByText(/IDrive e2/i)).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "KI-Profile" })).toBeVisible();
     await expect(page.getByRole("button", { name: /Freigegeben/i })).toBeVisible();

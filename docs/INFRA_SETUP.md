@@ -113,10 +113,10 @@ Nicht erlaubt als Startzustand:
 - monatliche Grundgebuehr
 - sensible Daten dauerhaft in Salad speichern
 
-## Cloudflare Legacy
+## Legacy edge provider Legacy
 
-Cloudflare Pages/Workers/KV koennen als Uebergang existieren. Ziel ist aber, dass die Startversion mit Spaceship DNS und IDrive e2 als Hauptsystem arbeitet.
+Legacy edge provider Pages/Workers/KV koennen als Uebergang existieren. Ziel ist aber, dass die Startversion mit Spaceship DNS und IDrive e2 als Hauptsystem arbeitet.
 
-## Google Login ohne Cloudflare
+## Google Login ohne Legacy edge provider
 
 Das verbindliche Runbook liegt unter `docs/runbooks/google-salad-auth.md`.

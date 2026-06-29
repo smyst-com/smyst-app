@@ -7,24 +7,24 @@ Status: verbindliche Production-Datenlandkarte.
 | Ebene | Dienst | Aufgabe | Gespeicherte Daten |
 |---|---|---|---|
 | Code | GitHub Free | Repository, Versionierung, CI/CD, Dokumentation | Quellcode, Markdown-Doku, Workflows, Release-Notizen |
-| Web/PWA | Cloudflare Pages Free | Vite/React Build ausliefern | statische Assets aus `dist/`, HTML, CSS, JS, Manifest, Sitemap, `robots.txt`, `llms.txt` |
-| API | Cloudflare Workers Free | Auth, Storage-Signing, kleine API-Flows, Sprache/Edge-Routing | keine grossen Dateien, keine dauerhafte grosse Datenbank |
-| Sessions | Cloudflare KV Free | Session-, User-, Rollen-/Rechte- und OAuth-State | `s:{sessionId}`, `auth:sessions:{userSub}`, `auth:user:{sub}`, `state:{nonce}` |
-| Metadaten | Cloudflare KV Free | kleine User-/Upload-/Twin-/Profil-/Chat-/Quota-/Support-/Statusdaten | `meta:upload:{userSub}:{uploadId}`, `meta:uploads:{userSub}`, `meta:upload-by-key:{userSub}:{sha256(key)}`, `meta:twin:{userSub}:{twinId}`, `meta:twins:{userSub}`, `public:twin:{slug}`, `meta:chat:{userSub}:{chatId}`, `meta:chats:{userSub}`, `meta:support-report:{createdAt}:{reportId}`, `quota:user:{userSub}:{month}`, `quota:global:{month}` |
+| Web/PWA | IDrive e2 static hosting Free | Vite/React Build ausliefern | statische Assets aus `dist/`, HTML, CSS, JS, Manifest, Sitemap, `robots.txt`, `llms.txt` |
+| API | Salad API Free | Auth, Storage-Signing, kleine API-Flows, Sprache/Edge-Routing | keine grossen Dateien, keine dauerhafte grosse Datenbank |
+| Sessions | Salad/IDrive metadata Free | Session-, User-, Rollen-/Rechte- und OAuth-State | `s:{sessionId}`, `auth:sessions:{userSub}`, `auth:user:{sub}`, `state:{nonce}` |
+| Metadaten | Salad/IDrive metadata Free | kleine User-/Upload-/Twin-/Profil-/Chat-/Quota-/Support-/Statusdaten | `meta:upload:{userSub}:{uploadId}`, `meta:uploads:{userSub}`, `meta:upload-by-key:{userSub}:{sha256(key)}`, `meta:twin:{userSub}:{twinId}`, `meta:twins:{userSub}`, `public:twin:{slug}`, `meta:chat:{userSub}:{chatId}`, `meta:chats:{userSub}`, `meta:support-report:{createdAt}:{reportId}`, `quota:user:{userSub}:{month}`, `quota:global:{month}` |
 | Dateien | IDrive e2 | zentraler Speicher fuer Uploads, Profilbilder, Backups und Twin-Daten | `users/{userSub}/uploads/...`, `users/{userSub}/profile/images/...`, `users/{userSub}/backups/...`, `users/{userSub}/twins/{twinId}/data/...` |
 
 ## Nicht in Production speichern
 
 - Keine privaten Dateien in GitHub.
 - Keine IDrive-e2-Secrets im Browser.
-- Keine grossen Dateien in Cloudflare KV.
+- Keine grossen Dateien in Salad/IDrive metadata.
 - Keine permanenten Tokens im Client.
 - Keine Produktdaten in externen Analytics- oder Translation-Diensten.
 - Keine Production-Daten in Legacy-Server-, Docker- oder Datenbankpfaden.
 
 ## User Session
 
-Cloudflare KV:
+Salad/IDrive metadata:
 
 ```text
 s:{sessionId}
@@ -50,7 +50,7 @@ Der Browser sieht nur ein HttpOnly Secure Cookie. JavaScript liest die Session n
 
 ## Auth Rollen Und Rechte
 
-Cloudflare KV:
+Salad/IDrive metadata:
 
 ```text
 auth:user:{sub}
@@ -91,7 +91,7 @@ SMYST_ADMIN_EMAILS
 
 ## Upload Intent
 
-Cloudflare KV:
+Salad/IDrive metadata:
 
 ```text
 meta:upload:{userSub}:{uploadId}
@@ -142,7 +142,7 @@ Backup-Metadaten duerfen klein in KV liegen. Der eigentliche Backup-Inhalt gehoe
 
 ## Chat
 
-Cloudflare KV:
+Salad/IDrive metadata:
 
 ```text
 meta:chat:{userSub}:{chatId}
@@ -153,7 +153,7 @@ In der Free-Only-Phase speichert der API-Worker nur kleine Chat-Zustaende. Es we
 
 ## Support, Abuse Und Privacy Reports
 
-Cloudflare KV:
+Salad/IDrive metadata:
 
 ```text
 meta:support-report:{createdAt}:{reportId}
@@ -163,7 +163,7 @@ Diese Records speichern kleine In-App-Meldungen fuer Fehler, Missbrauch, Datensc
 
 ## KI-Zwilling MVP
 
-Cloudflare KV:
+Salad/IDrive metadata:
 
 ```text
 meta:twin:{userSub}:{twinId}
@@ -194,7 +194,7 @@ Inhalt:
 }
 ```
 
-Der MVP-Kontext bleibt klein genug fuer KV. Dokumente, Bilder, Videos, Audio, Backups und groessere Twin-Daten liegen als Objekte in IDrive e2 und werden nur referenziert. Phase 1 erzeugt Antworten regelbasiert aus `description`, `knowledgeTexts`, `mediaRefs`, `categories`, `languages` und `style`; echte Modelle duerfen spaeter nur als austauschbare Schicht angebunden werden, ohne GitHub-Free/Cloudflare-Free/IDrive-e2 als Production-Regel zu brechen.
+Der MVP-Kontext bleibt klein genug fuer KV. Dokumente, Bilder, Videos, Audio, Backups und groessere Twin-Daten liegen als Objekte in IDrive e2 und werden nur referenziert. Phase 1 erzeugt Antworten regelbasiert aus `description`, `knowledgeTexts`, `mediaRefs`, `categories`, `languages` und `style`; echte Modelle duerfen spaeter nur als austauschbare Schicht angebunden werden, ohne GitHub-Free/Legacy edge provider-Free/IDrive-e2 als Production-Regel zu brechen.
 
 ## Öffentliche Und Private Profile
 
@@ -206,7 +206,7 @@ GET /api/public/twins/{slug}
 public:twin:{slug}
 ```
 
-Öffentliche Profile sind kleine, suchmaschinenlesbare Profilobjekte aus Cloudflare KV. Sie enthalten Name, Bild-URL oder Bildreferenz, Beschreibung, Kategorien, Sprachen, Sichtbarkeit, Inhaltszaehler, Chat-Pfad, Canonical-URL und Schema.org-ProfilePage-Daten. Grosse Medieninhalte bleiben in IDrive e2.
+Öffentliche Profile sind kleine, suchmaschinenlesbare Profilobjekte aus Salad/IDrive metadata. Sie enthalten Name, Bild-URL oder Bildreferenz, Beschreibung, Kategorien, Sprachen, Sichtbarkeit, Inhaltszaehler, Chat-Pfad, Canonical-URL und Schema.org-ProfilePage-Daten. Grosse Medieninhalte bleiben in IDrive e2.
 
 Private Profile:
 

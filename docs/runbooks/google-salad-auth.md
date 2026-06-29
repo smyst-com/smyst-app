@@ -2,7 +2,7 @@
 
 ## Target
 
-Google Login runs without Cloudflare:
+Google Login runs without Legacy edge provider:
 
 - `smyst.com` serves the web/PWA surface.
 - `api.smyst.com` serves auth/API from Salad.

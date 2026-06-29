@@ -9,14 +9,15 @@
     "deploy:idrive": "node scripts/deploy-idrive-static.mjs",
     "deploy:idrive:dry-run": "node scripts/deploy-idrive-static.mjs --dry-run",
     "deploy:salad:backend": "node scripts/deploy-salad-backend.mjs",
-    "check:cutover": "sh scripts/check-cloudflare-cutover.sh",
+    "check:live": "sh scripts/live-test.sh",
+    "check:provider-exit": "python3 scripts/check-provider-exit.py",
     "preview": "vite preview",
     "app:assets": "node scripts/generate-app-assets.mjs",
     "app:sync": "npm run build && npm run app:assets && cap sync",
     "app:ios": "npm run app:sync && cap open ios",
     "app:android": "npm run app:sync && cap open android",
     "lint:tsc": "tsc --noEmit",
-    "profiles:quality": "node scripts/profile-answer-quality.mjs && node scripts/public-profile-quality.mjs && node scripts/curated-profile-database-audit.mjs",
+    "profiles:quality": "node scripts/public-profile-quality.mjs && node scripts/curated-profile-database-audit.mjs",
     "profiles:seed:curated": "node scripts/seed-curated-public-profiles.mjs",
     "salad:compute:deploy": "node scripts/deploy-salad-compute-worker.mjs"
   },
@@ -35,7 +36,6 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250101.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
@@ -44,8 +44,7 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "~5.6.2",
-    "vite": "^6.0.5",
-    "wrangler": "^4.63.0"
+    "vite": "^6.0.5"
   },
   "overrides": {
     "esbuild": "^0.28.1",

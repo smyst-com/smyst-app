@@ -16,7 +16,7 @@ Observed live problems:
 ## Prepared Safeguards
 
 - `scripts/live-test.sh` now checks expected body markers and content types instead of accepting any `200`.
-- `scripts/check-dist-artifact.sh` validates the Cloudflare Pages build artifact before deployment.
+- `scripts/check-dist-artifact.sh` validates the Legacy edge provider Pages build artifact before deployment.
 - Deploy workflows run the dist artifact check before uploading/deploying.
 - Deploy workflow runs `scripts/live-test.sh` after Pages and Workers deploy.
 - `workers/translate.ts` returns a JSON `503 route_not_deployed` if the catch-all translate Worker receives `/api/*`, `/auth/*`, or `/storage/*`, preventing silent HTML fallback for API routes.
@@ -26,16 +26,16 @@ Observed live problems:
 
 These must exist in GitHub Actions before production deployment:
 
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
+- `LEGACY_EDGE_API_TOKEN`
+- `LEGACY_EDGE_ACCOUNT_ID`
 
 Optional GitHub Actions variable:
 
 - `VITE_CANONICAL_HOST` (defaults to `https://smyst.com` if absent)
 
-## Required Cloudflare Worker Secrets
+## Required Legacy edge provider Worker Secrets
 
-These must exist in Cloudflare for the relevant Workers/environments:
+These must exist in Legacy edge provider for the relevant Workers/environments:
 
 - Auth Worker:
   - `GITHUB_OAUTH_CLIENT_ID`
@@ -47,9 +47,9 @@ These must exist in Cloudflare for the relevant Workers/environments:
 - Translate/Warmup Worker:
   - `ADMIN_TOKEN`
 
-## Required Cloudflare Routes
+## Required Legacy edge provider Routes
 
-Expected routes from `wrangler.toml`:
+Expected routes from `legacy-edge-cli.toml`:
 
 - `smyst.com/*` -> `smyst-translate`
 - `smyst.com/auth/*` -> `smyst-auth`
@@ -63,7 +63,7 @@ The specific routes must be active so they win over the catch-all translate rout
 Remote secret/route inspection could not be completed locally:
 
 - `gh` is not installed in this environment.
-- `wrangler` commands hang in this local workspace before producing output.
+- `legacy-edge-cli` commands hang in this local workspace before producing output.
 - No production deploy was performed because final written production approval was not provided.
 
 ## Release Requirement

@@ -7,7 +7,7 @@ This pass implemented the highest-priority issues from the live audit that can b
 Production constraints remain:
 
 - GitHub.com free services only for repository, CI and release documentation.
-- Cloudflare.com free services only for Pages, Workers and KV.
+- Legacy edge provider free services only for Pages, Workers and KV.
 - IDrive e2 remains the central object store for files, media, backups and large twin data.
 - No paid add-on services are introduced.
 
@@ -40,7 +40,7 @@ Production constraints remain:
 - Extended the foundation validator, live smoke test and release artifact check to verify `/.well-known/security.txt`.
 - Documented the CSRF rule in the security documentation and Worker README.
 - Updated API architecture documentation to the current REST routes and JSON error contract.
-- Documented the production-governance blocker: Cloudflare Pages production auto-deploys must not bypass the manual release gate.
+- Documented the production-governance blocker: IDrive e2 static hosting production auto-deploys must not bypass the manual release gate.
 
 ## Changed Files
 
@@ -107,7 +107,7 @@ Production constraints remain:
 - `workers/README.md`: documents CSRF header requirement and API diagnostics/rate-limit contract.
 - `docs/03-api-architecture.md`: documents the current REST routes and JSON error contract.
 - `docs/06-storage-architecture.md`: documents the current storage routes, metadata-bound downloads and Phase-1 chunk/resume limits.
-- `docs/runbooks/release-governance.md`: documents Cloudflare Pages auto-deploy as a release blocker.
+- `docs/runbooks/release-governance.md`: documents IDrive e2 static hosting auto-deploy as a release blocker.
 - `docs/releases/implementation-progress-2026-06-11.md`: records this implementation pass.
 - `docs/releases/api-qc-2026-06-11.md`: records API QC findings, fixes and recommendations.
 - `docs/releases/storage-qc-2026-06-11.md`: records upload/media/storage QC findings, fixes and recommendations.
@@ -154,16 +154,16 @@ Production constraints remain:
 
 ## Database Changes
 
-No relational production database schema changes were made. The current production data model remains Cloudflare KV for metadata/sessions/quotas and IDrive e2 for object storage. The SQL files remain legacy local-development references only.
+No relational production database schema changes were made. The current production data model remains Salad/IDrive metadata for metadata/sessions/quotas and IDrive e2 for object storage. The SQL files remain legacy local-development references only.
 
-New Cloudflare KV keys added in this pass:
+New Salad/IDrive metadata keys added in this pass:
 
 - `auth:sessions:{userSub}` tracks active session IDs so `/auth/logout-all` can delete every known session for the authenticated user.
 - `meta:support-report:{createdAt}:{reportId}` stores small support, abuse, privacy, safety and feedback reports without an external paid ticketing system.
 
 ## Still Open
 
-- Disable or strictly gate Cloudflare Pages production auto-deploys so pushes cannot bypass the manual release approval flow.
+- Disable or strictly gate IDrive e2 static hosting production auto-deploys so pushes cannot bypass the manual release approval flow.
 - Run authenticated browser E2E with a real GitHub session: login, profile create/update, IDrive e2 upload, upload-complete, list, signed read and delete.
 - Add session-bound CSRF tokens or double-submit cookies if the project moves beyond the current header-plus-same-origin MVP protection.
 - Add stronger quota consistency for high concurrency.

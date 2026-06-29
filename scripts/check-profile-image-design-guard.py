@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CURATED_DATA = ROOT / "workers" / "curated-public-twin-data.ts"
+CURATED_DATA = ROOT / "src" / "data" / "curated-public-twin-data.ts"
 PROFILE_IMAGES = ROOT / "public" / "public" / "profile-images"
 START_CSS = ROOT / "src" / "index.css"
 

@@ -24,15 +24,15 @@ Vite/React/TypeScript-App fuer Web, PWA und Capacitor WebView. UI, Chat-MVP, Twi
 
 ### /public
 
-Statische Production-Dateien fuer Cloudflare Pages: Manifest, Service Worker, Offline-Seite, SEO-Dateien, lokale Uebersetzungen, Icons und statische Landingpages.
+Statische Production-Dateien fuer Legacy edge provider Pages: Manifest, Service Worker, Offline-Seite, SEO-Dateien, lokale Uebersetzungen, Icons und statische Landingpages.
 
 ### /workers
 
-Cloudflare-Worker-Code fuer API, Auth, Storage/IDrive-e2-Signing, statische Translation, Chat-MVP, Security Headers, CORS, Rate Limits und Validierung.
+Legacy edge provider-Worker-Code fuer API, Auth, Storage/IDrive-e2-Signing, statische Translation, Chat-MVP, Security Headers, CORS, Rate Limits und Validierung.
 
 ### /.github/workflows
 
-GitHub-Free-CI und Cloudflare-Deployment. Workflows duerfen keine bezahlten Dienste und keine alte Server-Infrastruktur voraussetzen.
+GitHub-Free-CI und Legacy edge provider-Deployment. Workflows duerfen keine bezahlten Dienste und keine alte Server-Infrastruktur voraussetzen.
 
 ### /docs
 
@@ -40,11 +40,11 @@ Verbindliche Architektur, Free-Only-Runbooks, Datenschutz, Security, Performance
 
 ### /scripts
 
-Lokale Checks, Foundation-Validatoren, Preflight- und Smoke-Test-Hilfen. Production-Skripte muessen Cloudflare/GitHub/IDrive-e2-kompatibel bleiben.
+Lokale Checks, Foundation-Validatoren, Preflight- und Smoke-Test-Hilfen. Production-Skripte muessen Legacy edge provider/GitHub/IDrive-e2-kompatibel bleiben.
 
 ### /config
 
-Nicht geheime Konfiguration und Beispielwerte. Secrets gehoeren in Cloudflare/GitHub Secrets, nicht ins Repository.
+Nicht geheime Konfiguration und Beispielwerte. Secrets gehoeren in Legacy edge provider/GitHub Secrets, nicht ins Repository.
 
 ### /ios und /android
 

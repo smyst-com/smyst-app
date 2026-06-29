@@ -2,7 +2,7 @@
 
 ## Ziel
 
-Die API ist der stabile Vertrag zwischen Clients, Cloudflare Workers, IDrive e2 und spaeteren AI-Schichten. In der Free-Only-Phase ist Cloudflare Workers der Production-API-Layer.
+Die API ist der stabile Vertrag zwischen Clients, Salad API, IDrive e2 und spaeteren AI-Schichten. In der Free-Only-Phase ist Salad API der Production-API-Layer.
 
 ## Production-Regel
 
@@ -55,7 +55,7 @@ Auth:
 - `POST /auth/logout`
 - `POST /auth/logout-all`
 
-Auth speichert ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen und Rechte werden in KV am User-Record und an der Session gehalten. `POST /auth/logout-all` entfernt die aktuelle bekannte User-Session-Liste aus KV und meldet alle gespeicherten Sessions ab. In Phase 1 ist GitHub OAuth der aktive Production-Provider; Google, Apple und Magic-Link sind im Vertrag sichtbar, aber bis zur Provider-, Abuse- und Legal-Freigabe nicht aktiv. Admin-API-Routen verlangen nach Login zusaetzlich eine frische TOTP-Verifikation ueber `/auth/admin-2fa/verify`; TOTP-Secrets werden ausschliesslich als Cloudflare Secrets/Umgebungsvariablen gesetzt.
+Auth speichert ein zufaelliges opaque Session-Token als HttpOnly Secure Cookie. Rollen und Rechte werden in KV am User-Record und an der Session gehalten. `POST /auth/logout-all` entfernt die aktuelle bekannte User-Session-Liste aus KV und meldet alle gespeicherten Sessions ab. In Phase 1 ist GitHub OAuth der aktive Production-Provider; Google, Apple und Magic-Link sind im Vertrag sichtbar, aber bis zur Provider-, Abuse- und Legal-Freigabe nicht aktiv. Admin-API-Routen verlangen nach Login zusaetzlich eine frische TOTP-Verifikation ueber `/auth/admin-2fa/verify`; TOTP-Secrets werden ausschliesslich als Legacy edge provider Secrets/Umgebungsvariablen gesetzt.
 
 Storage:
 
@@ -72,7 +72,7 @@ Storage:
 
 Translation/Edge:
 
-- Cloudflare Worker fuer statische/identische Free-Only-Translation.
+- Legacy edge provider Worker fuer statische/identische Free-Only-Translation.
 - Kein DeepL- oder Google-Translate-Provider in Production.
 
 ## Standard-Response
@@ -108,14 +108,14 @@ Der Chat-Pfad muss spaeter als Worker-first API entstehen:
 Auth:
 
 - Session-Cookie im Browser: HttpOnly, Secure, SameSite=Strict. Der OAuth-Callback nutzt eine same-origin Session-Ready-Antwort, damit der anschliessende App-Aufruf die Strict-Session zuverlaessig sendet.
-- Session-Daten in Cloudflare KV.
-- User-Rollen und Rechte in Cloudflare KV.
-- OAuth-State in Cloudflare KV.
+- Session-Daten in Salad/IDrive metadata.
+- User-Rollen und Rechte in Salad/IDrive metadata.
+- OAuth-State in Salad/IDrive metadata.
 - Admin-2FA ist fuer Admin-API-Routen serverseitig erzwungen.
 
 Storage:
 
-- Upload-Intent, Upload-Status, Upload-Index und Quotas in Cloudflare KV.
+- Upload-Intent, Upload-Status, Upload-Index und Quotas in Salad/IDrive metadata.
 - Dateiinhalt, Medien, Dokumente und Backups in IDrive e2.
 - Browser erhaelt nur kurzlebige signed URLs, nie IDrive-e2-Secrets.
 
@@ -137,23 +137,23 @@ Profile/Twins/Chat:
 ## Profil-, Chat- und Memory-API
 
 Die Phase-1-API hat einen Free-Only-Pfad fuer professionelle Profile,
-Chatverlaeufe und bestaetigte Memories. Sie nutzt Cloudflare KV fuer kleine
+Chatverlaeufe und bestaetigte Memories. Sie nutzt Salad/IDrive metadata fuer kleine
 Metadaten und IDrive-e2-Objektschluessel als dauerhafte Speicherstruktur.
 
 | Route | Methode | Zweck | Speicher |
 | --- | --- | --- | --- |
-| `/api/profile` | `GET` | privates Nutzerprofil, Qualitaet, Limits | Cloudflare KV |
-| `/api/profile` | `PATCH` | Profilfelder, Rollen, Expertise, Ziele, Sprache, Sichtbarkeit | Cloudflare KV |
-| `/api/chat/start` | `POST` | Chat sofort starten | Cloudflare KV + IDrive-e2-Archivpfad |
-| `/api/chat/messages` | `POST` | Nachricht speichern, Antwort erzeugen, Summary aktualisieren | Cloudflare KV |
-| `/api/chat/list` | `GET` | Chatverlauf im Profil listen | Cloudflare KV |
-| `/api/chat/search` | `GET` | Chat-Summaries und gespeicherte Nachrichten durchsuchen | Cloudflare KV |
-| `/api/memories` | `GET` | bestaetigte, pending oder gefilterte Memories listen | Cloudflare KV |
-| `/api/memories` | `POST` | Memory mit Quelle, Sensitivity und Twin-Zugriff erstellen | Cloudflare KV + IDrive-e2-Objektschluessel |
-| `/api/memories/{id}` | `GET` | einzelne Memory lesen | Cloudflare KV |
-| `/api/memories/{id}` | `PATCH` | Memory bestaetigen, bearbeiten, sperren oder Twins zuweisen | Cloudflare KV |
-| `/api/memories/{id}` | `DELETE` | Memory tombstonen, nicht blind entfernen | Cloudflare KV |
-| `/api/account/export` | `GET` | Profil, Chatmetadaten, Memories, Twins und Objektlayout exportieren | Cloudflare KV + IDrive-e2-Referenzen |
+| `/api/profile` | `GET` | privates Nutzerprofil, Qualitaet, Limits | Salad/IDrive metadata |
+| `/api/profile` | `PATCH` | Profilfelder, Rollen, Expertise, Ziele, Sprache, Sichtbarkeit | Salad/IDrive metadata |
+| `/api/chat/start` | `POST` | Chat sofort starten | Salad/IDrive metadata + IDrive-e2-Archivpfad |
+| `/api/chat/messages` | `POST` | Nachricht speichern, Antwort erzeugen, Summary aktualisieren | Salad/IDrive metadata |
+| `/api/chat/list` | `GET` | Chatverlauf im Profil listen | Salad/IDrive metadata |
+| `/api/chat/search` | `GET` | Chat-Summaries und gespeicherte Nachrichten durchsuchen | Salad/IDrive metadata |
+| `/api/memories` | `GET` | bestaetigte, pending oder gefilterte Memories listen | Salad/IDrive metadata |
+| `/api/memories` | `POST` | Memory mit Quelle, Sensitivity und Twin-Zugriff erstellen | Salad/IDrive metadata + IDrive-e2-Objektschluessel |
+| `/api/memories/{id}` | `GET` | einzelne Memory lesen | Salad/IDrive metadata |
+| `/api/memories/{id}` | `PATCH` | Memory bestaetigen, bearbeiten, sperren oder Twins zuweisen | Salad/IDrive metadata |
+| `/api/memories/{id}` | `DELETE` | Memory tombstonen, nicht blind entfernen | Salad/IDrive metadata |
+| `/api/account/export` | `GET` | Profil, Chatmetadaten, Memories, Twins und Objektlayout exportieren | Salad/IDrive metadata + IDrive-e2-Referenzen |
 
 Destruktive Memory-Aktionen brauchen `X-Smyst-Delete-Confirm:
 delete-memory`. Account-Loeschung loescht Profil-, Chat-, Memory- und

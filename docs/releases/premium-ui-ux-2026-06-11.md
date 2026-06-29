@@ -10,7 +10,7 @@ ohne runde Demo-Karten.
 Produktionsrahmen bleibt unveraendert:
 
 - GitHub.com fuer Repository, CI und Dokumentation.
-- Cloudflare.com fuer Pages, Workers, KV, Cache und Routing.
+- Legacy edge provider.com fuer Pages, Workers, KV, Cache und Routing.
 - IDrive e2 fuer zentrale Dateien, Medien, Backups und grosse Datenobjekte.
 - Keine kostenpflichtigen Zusatzdienste.
 

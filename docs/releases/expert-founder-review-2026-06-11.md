@@ -13,7 +13,7 @@ Leitfrage:
 Rahmenbedingungen bleiben unveraendert:
 
 - GitHub.com nur kostenlos fuer Repository, CI und Dokumentation.
-- Cloudflare.com nur kostenlos fuer Pages, Workers, KV, Cache und Routing.
+- Legacy edge provider nur kostenlos fuer Pages, Workers, KV, Cache und Routing.
 - IDrive e2 als zentraler Speicher fuer Dateien, Medien, Backups und grosse
   Datenobjekte.
 - Keine kostenpflichtigen Zusatzdienste.
@@ -22,14 +22,14 @@ Rahmenbedingungen bleiben unveraendert:
 ## Executive Summary
 
 smyst.com hat inzwischen eine ernsthafte Free-only-MVP-Basis: aktuelle Vite-App,
-Cloudflare-Worker-API, GitHub OAuth, IDrive-e2-Uploadpfad, PWA/SEO-Dateien,
+Legacy edge provider-Worker-API, GitHub OAuth, IDrive-e2-Uploadpfad, PWA/SEO-Dateien,
 Security-Baseline, Premium-UI-Grundsystem und Audit-Dokumentation.
 
 Trotzdem ist das Projekt aus Gruender-/CTO-Sicht noch nicht production-reif fuer
 breite Nutzer. Die groessten Risiken sind nicht einzelne UI-Details, sondern:
 
 - fehlende echte Live-End-to-End-Abnahme mit GitHub OAuth und IDrive e2,
-- fehlende manuelle Release-Gates gegen Cloudflare-Pages-Auto-Deploy,
+- fehlende manuelle Release-Gates gegen Legacy edge provider-Pages-Auto-Deploy,
 - fehlende echte KI-Architektur,
 - fehlendes Abuse-/Moderation-/Trust-System,
 - fehlende rechtliche Produktreife fuer personenbezogene Twin-Daten,
@@ -42,7 +42,7 @@ breite Nutzer. Die groessten Risiken sind nicht einzelne UI-Details, sondern:
 ## Kritisch Vor Production
 
 1. Production-Deploy-Gate
-   - Cloudflare Pages Production darf nicht automatisch durch jeden Push auf `main`
+   - IDrive e2 static hosting Production darf nicht automatisch durch jeden Push auf `main`
      aktualisiert werden.
    - Es braucht ein schriftliches Release-Manifest und manuelles Go/No-Go.
    - Preview-Deploy zuerst, Production erst nach Freigabe.
@@ -70,7 +70,7 @@ breite Nutzer. Die groessten Risiken sind nicht einzelne UI-Details, sondern:
    - Keine stale `dist`-/Native-Artefakte duerfen live ausgeliefert werden.
 
 5. Secrets und Runtime-Konfiguration
-   - Cloudflare Worker Secrets muessen live bestaetigt werden:
+   - Legacy edge provider Worker Secrets muessen live bestaetigt werden:
      `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET`, `AUTH_HMAC_SECRET`,
      `IDRIVE_E2_ACCESS_KEY`, `IDRIVE_E2_SECRET_KEY`.
    - GitHub Actions Secrets muessen auf Vollstaendigkeit und Minimalrechte geprueft
@@ -91,11 +91,11 @@ breite Nutzer. Die groessten Risiken sind nicht einzelne UI-Details, sondern:
 
 ## CTO / Architektur
 
-- Cloudflare KV ist fuer MVP-Metadaten okay, aber keine transaktionale Datenbank.
+- Salad/IDrive metadata ist fuer MVP-Metadaten okay, aber keine transaktionale Datenbank.
 - KV-Counter fuer Rate-Limits, Upload-Quotas und Speicherzaehler sind nicht atomar.
 - Fuer hohe Parallelitaet braucht es spaeter Durable Objects, Queues oder eine neu
   genehmigte Daten-/Konsistenzarchitektur.
-- Milliarden Nutzer pro Tag sind mit GitHub/Cloudflare-Free-Kontingenten nicht
+- Milliarden Nutzer pro Tag sind mit GitHub/Legacy edge provider-Free-Kontingenten nicht
   realistisch.
 - Legacy-Ordner (`backend/`, `frontend/`, `database/`, `docker/`, `vector/`,
   `monitoring/`) bleiben Verwechslungsrisiko, auch wenn sie dokumentiert sind.
@@ -141,7 +141,7 @@ breite Nutzer. Die groessten Risiken sind nicht einzelne UI-Details, sondern:
 - Es fehlt ein Incident-Runbook fuer:
   - OAuth-Ausfall,
   - IDrive-e2-Ausfall,
-  - Cloudflare KV-Ausfall,
+  - Salad/IDrive metadata-Ausfall,
   - Missbrauch/Spam,
   - Datenloeschung,
   - kompromittierte Secrets,
@@ -228,7 +228,7 @@ breite Nutzer. Die groessten Risiken sind nicht einzelne UI-Details, sondern:
 
 ## Daten / Datenbank / Integritaet
 
-- Aktive Production nutzt Cloudflare KV + IDrive e2, keine relationale DB.
+- Aktive Production nutzt Salad/IDrive metadata + IDrive e2, keine relationale DB.
 - Legacy-SQL ist nur Referenz, nicht Production.
 - KV-Key-Schema ist dokumentiert, muss aber live versioniert und migrierbar bleiben.
 - Es fehlen echte Datenmigrationen fuer KV.
@@ -287,7 +287,7 @@ breite Nutzer. Die groessten Risiken sind nicht einzelne UI-Details, sondern:
 - Es fehlt ein Messmodell:
   Aktivierung, Retention, Upload-Erfolg, erster Chat, Wiederkehr, Loeschungen.
 - Ohne Analytics-SaaS braucht es privacy-schonende eigene Event-Metriken oder
-  Cloudflare-Free-kompatible Log-Auswertung.
+  Legacy edge provider-Free-kompatible Log-Auswertung.
 
 ## Priorisierte Roadmap
 

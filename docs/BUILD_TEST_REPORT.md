@@ -59,4 +59,4 @@ npm run build
 python3 scripts/validate-foundation.py
 ```
 
-Production must still stay within GitHub Free, Cloudflare Free and IDrive e2 with no paid add-on services.
+Production must still stay within GitHub Free, Legacy edge provider Free and IDrive e2 with no paid add-on services.

@@ -8,7 +8,7 @@ Status: Production-Grundlage ohne externe Pflichtdienste.
 - `public/sitemap.xml`: statische Einstiegsseiten und bekannte öffentliche Profilbeispiele.
 - `public/llms.txt`: maschinenlesbare Zusammenfassung fuer KI-Antwortsysteme.
 - `public/ai.txt`: KI-Sichtbarkeits- und Public/Private-Grenzen fuer AI-Crawler und Antwortsysteme.
-- `public/_headers`: Cloudflare Pages Header fuer `noindex`, Cache und Content-Type.
+- `public/_headers`: Legacy edge provider Pages Header fuer `noindex`, Cache und Content-Type.
 - `public/{de,en,tr,fr,es,pt,ar,zh,ja,ko}/index.html`: statische mehrsprachige Landingpages mit Meta, OpenGraph und JSON-LD.
 - `public/locales/{de,en,tr,fr,es,pt,ar,zh,ja,ko}.json`: statische UI-Texte fuer die App ohne externen Uebersetzungsprovider.
 
@@ -31,7 +31,7 @@ Private Profile:
 
 ## Free-Only-Regel
 
-Es gibt keine Production-Pflicht fuer externe Webmaster-Portale, bezahlte SEO APIs, externe Analytics oder externe Uebersetzungsdienste. Auffindbarkeit entsteht ueber offene Webstandards, Cloudflare Pages/Workers/KV und IDrive-e2-Referenzen.
+Es gibt keine Production-Pflicht fuer externe Webmaster-Portale, bezahlte SEO APIs, externe Analytics oder externe Uebersetzungsdienste. Auffindbarkeit entsteht ueber offene Webstandards, Legacy edge provider Pages/Workers/KV und IDrive-e2-Referenzen.
 
 ## Suchmaschinen Und KI-Systeme
 

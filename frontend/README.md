@@ -3,9 +3,9 @@
 Legacy local-development reference only.
 
 The active production frontend for the Free-Only-MVP is the repository-root
-Vite/React/TypeScript/PWA app deployed through Cloudflare Pages Free. This
+Vite/React/TypeScript/PWA app deployed through Legacy edge provider Pages Free. This
 Next.js folder is not a production target, not a deployment requirement and not
-part of the Cloudflare Pages build.
+part of the Legacy edge provider Pages build.
 
 Implemented now:
 

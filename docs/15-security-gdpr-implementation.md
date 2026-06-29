@@ -4,7 +4,7 @@ Status: Free-Only-Security- und Datenschutzbasis fuer Phase 1.
 
 ## Implementierte Production-Basis
 
-- Cloudflare-Worker-Security-Headers.
+- Legacy edge provider-Worker-Security-Headers.
 - Strenge CORS-Preflights.
 - Same-Origin/CSRF-Schutz fuer Cookie-basierte Mutationen.
 - HttpOnly Secure SameSite Session-Cookies.
@@ -68,7 +68,7 @@ Lokale Backend-, SQL-, Container- oder Vektor-Experimente koennen als Referenz b
 ## Offene Security-Gates
 
 - Vollstaendige negative Zugriffstests fuer Auth, Upload, Twin-Sichtbarkeit und Chat-Kontext.
-- CSRF/CORS Browser-Smoke-Test gegen Cloudflare Preview.
+- CSRF/CORS Browser-Smoke-Test gegen Legacy edge provider Preview.
 - IDrive-e2-Loesch- und Restore-Test.
 - Dokumentierter Incident- und Deindexing-Prozess.
 - Passkey/WebAuthn als spaetere Free-Only-Alternative zu OAuth.

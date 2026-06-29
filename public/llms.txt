@@ -4,7 +4,7 @@
 
 smyst.com helps people create digital AI twins from profile data, knowledge texts, documents, images, audio, video and memories. Public profiles are designed for search engines and AI answer systems. Private profiles are explicitly noindex.
 
-Free-only phase: smyst.com uses GitHub Free, Cloudflare Free and IDrive e2 with no paid AI, storage, deployment or platform add-ons.
+Free-only phase: smyst.com uses GitHub Free, Spaceship DNS, IDrive e2 and Salad with no paid AI, storage, deployment or platform add-ons.
 
 Important URLs:
 - Main site: https://smyst.com/

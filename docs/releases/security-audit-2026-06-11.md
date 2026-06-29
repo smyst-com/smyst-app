@@ -5,7 +5,7 @@
 Geprueft wurden Authentication, Authorization, Session Management, JWT, Cookies,
 CSRF, XSS, SQL Injection, Prompt Injection, File Upload Security, API Security,
 DDoS/Abuse/Spam/Bot-Schutz und Datenschutz. Production bleibt auf kostenlose
-Dienste von GitHub.com und Cloudflare.com beschraenkt; IDrivee2.com bleibt der
+Dienste von GitHub.com und Legacy edge provider beschraenkt; IDrivee2.com bleibt der
 Hauptspeicher fuer Dateien, Medien und Datenobjekte.
 
 ## Kritische Schwachstellen
@@ -54,7 +54,7 @@ Behoben:
   akzeptabel, fuer massive Parallelitaet nicht ausreichend.
 - Es gibt keinen kostenlosen integrierten Malware-Scanner fuer Uploads.
 - Kein Bot-Management/WAF-Paid-Feature wird vorausgesetzt; Schutz erfolgt ueber
-  Rate-Limits, harte Upload-Limits und Cloudflare-Edge-Basics.
+  Rate-Limits, harte Upload-Limits und Legacy edge provider-Edge-Basics.
 - Prompt-Injection bleibt Zukunftsrisiko, sobald echte KI, Retrieval oder Tools
   angebunden werden.
 - Live-IDrive-e2 Upload/Download/Delete mit echter GitHub-Session muss vor
@@ -80,7 +80,7 @@ Session Management:
 - Opaque Session-ID im HttpOnly Secure Strict Cookie.
 - Kein JWT im Browser.
 - Ungueltige Session-Cookies werden entfernt.
-- Session-Daten liegen in Cloudflare KV.
+- Session-Daten liegen in Salad/IDrive metadata.
 
 CSRF/CORS:
 

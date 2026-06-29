@@ -21,7 +21,7 @@ Production deployment is blocked until the release owner records the required ap
 ## Free-Only Evidence
 
 - GitHub Free only:
-- Cloudflare Free only:
+- Legacy edge provider Free only:
 - IDrive e2 storage only:
 - No paid add-on dependency:
 - No legacy server/database production dependency:
@@ -32,7 +32,7 @@ Production deployment is blocked until the release owner records the required ap
 - `scripts/test-all.sh`:
 - TypeScript check:
 - Root app build:
-- Cloudflare Pages build:
+- IDrive e2 static hosting build:
 - Worker deployment:
 - Upload signed URL check:
 - Auth check:
@@ -57,15 +57,15 @@ Production deployment is blocked until the release owner records the required ap
 ## Deployment Plan
 
 - GitHub workflow:
-- Cloudflare Pages command:
-- Cloudflare Workers command:
+- IDrive e2 static hosting command:
+- Salad API command:
 - Expected Pages URL:
 - Expected Worker routes:
 
 ## Rollback Plan
 
 - Git rollback ref:
-- Cloudflare Pages rollback:
+- IDrive e2 static hosting rollback:
 - Worker rollback:
 - Storage rollback needed: no/yes
 - Maximum tolerated outage:

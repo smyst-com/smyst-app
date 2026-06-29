@@ -4,7 +4,7 @@ Status: verbindliche Free-Only-Datenarchitektur fuer Phase 1.
 
 ## Ziel
 
-Production nutzt in Phase 1 keine separat betriebene Datenbank. Kleine Metadaten, Sessions, Quotas und Statuswerte liegen in Cloudflare KV Free. Dateien, Medien, Dokumente, Backups und Twin-Daten liegen in IDrive e2.
+Production nutzt in Phase 1 keine separat betriebene Datenbank. Kleine Metadaten, Sessions, Quotas und Statuswerte liegen in Salad/IDrive metadata Free. Dateien, Medien, Dokumente, Backups und Twin-Daten liegen in IDrive e2.
 
 Relationale Schemas und SQL-Dateien im Repository bleiben nur lokale Modellierungs- und Entwicklungsreferenzen.
 
@@ -12,18 +12,18 @@ Relationale Schemas und SQL-Dateien im Repository bleiben nur lokale Modellierun
 
 | Datenklasse | Production-Speicher | Zweck |
 | --- | --- | --- |
-| Sessions | Cloudflare KV | Session-ID, User-Sub, Rolle, Ablaufzeit |
-| Auth-State | Cloudflare KV | kurzlebiger OAuth/WebAuthn-State |
-| Profile | Cloudflare KV + IDrive e2 | kleine oeffentliche Metadaten in KV, umfangreiche Daten in IDrive e2 |
-| Twin-Metadaten | Cloudflare KV | Name, Slug, Sichtbarkeit, Sprache, Kategorien |
+| Sessions | Salad/IDrive metadata | Session-ID, User-Sub, Rolle, Ablaufzeit |
+| Auth-State | Salad/IDrive metadata | kurzlebiger OAuth/WebAuthn-State |
+| Profile | Salad/IDrive metadata + IDrive e2 | kleine oeffentliche Metadaten in KV, umfangreiche Daten in IDrive e2 |
+| Twin-Metadaten | Salad/IDrive metadata | Name, Slug, Sichtbarkeit, Sprache, Kategorien |
 | Twin-Kontext | IDrive e2 | Wissenstexte, Dokument-Auszug, strukturierte Kontextobjekte |
-| Upload-Intent | Cloudflare KV | Dateityp, Groesse, Kategorie, Ablaufzeit |
+| Upload-Intent | Salad/IDrive metadata | Dateityp, Groesse, Kategorie, Ablaufzeit |
 | Upload-Dateien | IDrive e2 | Bilder, Videos, Audio, Dokumente, Profilbilder |
-| Chat-MVP-Metadaten | Cloudflare KV | kleine Chat-Indizes, Status, Sprache, Sichtbarkeit und TTL-Daten |
+| Chat-MVP-Metadaten | Salad/IDrive metadata | kleine Chat-Indizes, Status, Sprache, Sichtbarkeit und TTL-Daten |
 | Chat-Archiv | IDrive e2 | private Chatverlaeufe, Chat-Summaries und Exportobjekte |
-| Memory | Cloudflare KV + IDrive e2 | kleine Memory-Indizes in KV, bestaetigte Memory-Objekte in IDrive e2 |
+| Memory | Salad/IDrive metadata + IDrive e2 | kleine Memory-Indizes in KV, bestaetigte Memory-Objekte in IDrive e2 |
 | Backups | IDrive e2 | Nutzerexporte, Konfigurationssnapshots, Wiederherstellungsdaten |
-| SEO-Index | Cloudflare KV + statische Dateien | oeffentliche, gefilterte Profil-Snapshots und Sitemap-Basis |
+| SEO-Index | Salad/IDrive metadata + statische Dateien | oeffentliche, gefilterte Profil-Snapshots und Sitemap-Basis |
 
 ## KV Key-Schema
 
@@ -66,7 +66,7 @@ Private Objekte bleiben privat. Oeffentliche Objekte duerfen nur explizit freige
 
 ## Konsistenzmodell
 
-Cloudflare KV ist eventual consistent. Deshalb gilt:
+Salad/IDrive metadata ist eventual consistent. Deshalb gilt:
 
 - kritische Mutationen speichern eine eindeutige `version`.
 - Upload-Status darf nur vorwaerts wechseln.

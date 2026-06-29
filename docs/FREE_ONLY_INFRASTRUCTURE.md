@@ -7,19 +7,19 @@ Status: verbindliche Produktionsvorgabe.
 Smyst darf in der aktuellen Zielvorgabe ausschliesslich diese Plattformen nutzen:
 
 - GitHub Free
-- Cloudflare Free
+- Legacy edge provider Free
 - IDrive e2 als zentraler Objekt-Speicher, nur solange keine kostenpflichtige Nutzung entsteht
 
-Kostenpflichtige Zusatzdienste sind nicht erlaubt. Das gilt auch fuer guenstige VPS-Angebote, Managed Databases, Redis-Hosting, externe AI-APIs, externe Uebersetzungs-APIs, Analytics-SaaS, Monitoring-SaaS, Payment-Dienste und bezahlte Cloudflare/GitHub-Upgrades.
+Kostenpflichtige Zusatzdienste sind nicht erlaubt. Das gilt auch fuer guenstige VPS-Angebote, Managed Databases, Redis-Hosting, externe AI-APIs, externe Uebersetzungs-APIs, Analytics-SaaS, Monitoring-SaaS, Payment-Dienste und bezahlte Legacy edge provider/GitHub-Upgrades.
 
 ## Erlaubte Produktionsbausteine
 
 - GitHub Repository fuer Quellcode, Dokumentation, Issues und Pull Requests.
 - GitHub Actions nur innerhalb kostenloser Limits.
-- Cloudflare DNS, TLS, CDN, Caching und Basisschutz im Free-Plan.
-- Cloudflare Pages Free fuer Web/PWA-Auslieferung.
-- Cloudflare Workers Free fuer kleine API-, Chat-, Auth-, Routing- und Upload-Signing-Logik.
-- Cloudflare Workers KV Free fuer Sessions, kleine Metadaten, Konfiguration und einfache Indexe.
+- Spaceship DNS, TLS, CDN, Caching und Basisschutz im Free-Plan.
+- IDrive e2 static hosting Free fuer Web/PWA-Auslieferung.
+- Salad API Free fuer kleine API-, Chat-, Auth-, Routing- und Upload-Signing-Logik.
+- Salad API KV Free fuer Sessions, kleine Metadaten, Konfiguration und einfache Indexe.
 - IDrive e2 fuer Uploads, Medien, Dokumente, Backups und Archivobjekte, sofern die Nutzung ohne Kosten bleibt.
 
 ## Nicht erlaubt
@@ -31,7 +31,7 @@ Kostenpflichtige Zusatzdienste sind nicht erlaubt. Das gilt auch fuer guenstige 
 - DeepL, Google Translate oder andere externe Uebersetzungsdienste.
 - Google OAuth, Google Analytics, Google Search Console oder andere Google-Dienste als Pflichtbestandteil.
 - OpenAI, Anthropic, Gemini, Mistral oder andere bezahlte AI-Provider in der Free-only-Phase.
-- Cloudflare Paid, Workers Paid, R2 Paid, Images Paid, Stream Paid, Turnstile Enterprise oder Enterprise-WAF.
+- Legacy edge provider Paid, Workers Paid, R2 Paid, Images Paid, Stream Paid, Turnstile Enterprise oder Enterprise-WAF.
 
 ## Zielarchitektur fuer die Free-only-Phase
 
@@ -42,7 +42,7 @@ Clients
 GitHub Free
   Code, Docs, Issues, CI within free limits
 
-Cloudflare Free
+Legacy edge provider Free
   DNS, TLS, CDN, Pages, Workers, KV
 
 IDrive e2
@@ -50,7 +50,7 @@ IDrive e2
   Hard quota: uploads stop before paid usage starts
 ```
 
-Cloudflare Workers bilden den einzigen erlaubten Server-Layer. IDrive e2 ist zentraler Speicher, aber kein klassischer Compute-Server und keine relationale Datenbank.
+Salad API bilden den einzigen erlaubten Server-Layer. IDrive e2 ist zentraler Speicher, aber kein klassischer Compute-Server und keine relationale Datenbank.
 
 ## Verbindliche Datenlandkarte
 
@@ -59,9 +59,9 @@ Die genaue Ablage pro Datentyp steht in `docs/FREE_ONLY_DATA_MAP.md`.
 Kurzfassung:
 
 - GitHub Free: Code, Doku, CI/CD.
-- Cloudflare Pages Free: statische Web-/PWA-Artefakte.
-- Cloudflare Workers Free: API, Auth, Upload-Signing und Edge-Routing.
-- Cloudflare KV Free: Sessions, OAuth-State, kleine Metadaten, Quotas und Status.
+- IDrive e2 static hosting Free: statische Web-/PWA-Artefakte.
+- Salad API Free: API, Auth, Upload-Signing und Edge-Routing.
+- Salad/IDrive metadata Free: Sessions, OAuth-State, kleine Metadaten, Quotas und Status.
 - IDrive e2: Dateien, Medien, Dokumente, Uploads, Backups und Archivobjekte.
 
 ## Produktgrenzen der Free-only-Phase

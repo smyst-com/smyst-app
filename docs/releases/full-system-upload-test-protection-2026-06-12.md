@@ -82,9 +82,9 @@ erfolgreiche Tests" wurde kein neuer Production-Deploy ausgefuehrt.
 ## Offene Punkte
 
 1. Production-Deploy erst erlauben, wenn der Live-Smoke-Test gruen ist.
-2. Root-`noindex` live nach Worker-/Cloudflare-Konfiguration beheben und danach
+2. Root-`noindex` live nach Worker-/Legacy edge provider-Konfiguration beheben und danach
    `scripts/live-test.sh` erneut ausfuehren.
-3. iOS- und Android-Testumgebung installieren oder in GitHub Actions/Cloudflare-
+3. iOS- und Android-Testumgebung installieren oder in GitHub Actions/Legacy edge provider-
    kompatible kostenlose Pruefpfade auslagern.
 4. Login, Registrierung, Profile, Feed, Market, Chat, Uploads und Calls als
    echte E2E-Suite automatisieren. Sprachanrufe und Videoanrufe sind nicht als

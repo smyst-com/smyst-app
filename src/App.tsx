@@ -6,8 +6,6 @@ import type { NavItem } from '@/components/MobileNav'
 import { DEFAULT_LANG, SUPPORTED_LANGS, useLanguage, type SupportedLang } from '@/lib/i18n'
 import {
   categoryFacets,
-  isNewProfile,
-  isPopularProfile,
   newProfiles,
   popularProfiles,
   rankProfiles,
@@ -16,7 +14,7 @@ import {
   similarProfiles,
   type DiscoveryProfile,
 } from '@/lib/profileDiscovery'
-import { useStaticTranslations } from '@/lib/staticTranslations'
+import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
@@ -25,10 +23,11 @@ import {
   CURATED_PUBLIC_TWIN_LANGUAGES,
   CURATED_PUBLIC_TWIN_SPECS,
   type CuratedPublicTwinSpec,
-} from '../workers/curated-public-twin-data'
+} from './data/curated-public-twin-data'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
+const EmailAuthForm = lazy(() => import('@/components/EmailAuthForm'))
 const MobileNav = lazy(() => import('@/components/MobileNav'))
 
 type IconProps = SVGProps<SVGSVGElement>
@@ -104,33 +103,50 @@ function Plus(props: IconProps) {
   )
 }
 
+function ImageIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <circle cx="8.5" cy="10" r="1.5" />
+      <path d="m21 15-4.5-4.5L6 19" />
+    </svg>
+  )
+}
+
 function FileIcon(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
       <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z" />
       <path d="M14 2v5h5" />
-      <path d="M8 13h8" />
-      <path d="M8 17h5" />
+      <path d="M9 13h6" />
+      <path d="M9 17h4" />
     </svg>
   )
 }
 
-function ContactIcon(props: IconProps) {
+function LinkIcon(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
-      <path d="M16 18a4 4 0 0 0-8 0" />
-      <circle cx="12" cy="10" r="3" />
-      <path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z" />
-      <path d="M8 2v4" />
-      <path d="M16 2v4" />
+      <path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1" />
+      <path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1" />
     </svg>
   )
 }
 
-function MapPin(props: IconProps) {
+function BookSpark(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
-      <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" />
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+      <path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5Z" />
+      <path d="M12 7l.7 1.6L14.5 9l-1.8.4L12 11l-.7-1.6L9.5 9l1.8-.4Z" />
+    </svg>
+  )
+}
+
+function MapPinIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 0 1 16 0Z" />
       <circle cx="12" cy="10" r="3" />
     </svg>
   )
@@ -196,7 +212,7 @@ type AppView =
 type AppTheme = 'dark' | 'light'
 type NameSortMode = 'famous' | 'used' | 'popular' | 'trend' | 'manual'
 type SpeechRecognitionState = 'idle' | 'listening' | 'paused' | 'replying'
-type ChatAttachmentKind = 'image' | 'video' | 'audio' | 'document' | 'contact' | 'location' | 'file'
+type ChatAttachmentKind = 'image' | 'video' | 'audio' | 'document' | 'contact' | 'location' | 'file' | 'link'
 
 type ChatAttachment = {
   id: string
@@ -603,7 +619,7 @@ export default function App() {
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
         {currentView === 'memory-upload' && <MemoryUploadView />}
-        {currentView === 'twin-chat' && <TwinChatView initialTwinId={profileSlug} />}
+        {currentView === 'twin-chat' && <TwinChatView initialTwinId={profileSlug} onNavigate={navigateTo} />}
         {currentView === 'settings' && (
           <SettingsView
             onNavigate={navigateTo}
@@ -819,7 +835,7 @@ function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsag
   return {
     id: twin.id,
     name: twin.name,
-    description: twin.description || 'Persoenlicher KI-Zwilling',
+    description: twin.description || 'Persönlicher KI-Zwilling',
     role: publicProfile ? 'Öffentlich' : 'Privat',
     accent: ['#71E8FF', '#A8FFCB', '#9DBBFF', '#FFFFFF', '#FFD56A'][index % 5] ?? '#71E8FF',
     initials: initialsForName(twin.name),
@@ -863,7 +879,7 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
     imageUrl: profile.imageUrl ?? null,
     categories,
     languages,
-    createdAt: profile.updatedAt,
+    createdAt: profile.createdAt ?? profile.updatedAt,
     updatedAt: profile.updatedAt,
     knowledgeCount: profile.knowledgeCount,
     mediaCount: profile.mediaCount,
@@ -884,6 +900,10 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
 function curatedPublicProfileToPublicTwinProfile(spec: CuratedPublicTwinSpec, index: number): PublicTwinProfile {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://smyst.com'
   const updatedAt = CURATED_PUBLIC_TWIN_BASE_TIME + (CURATED_PUBLIC_TWIN_SPECS.length - index) * 1000
+  // Distinct "catalog age": earlier specs were added first (older), later specs
+  // are newer. Keeps "Neu" a real recency order, separate from the curated
+  // "Empfohlen" importance order.
+  const createdAt = CURATED_PUBLIC_TWIN_BASE_TIME - (CURATED_PUBLIC_TWIN_SPECS.length - index) * 1000
   const imageUrl = spec.imageFile ? `/public/profile-images/${spec.imageFile}` : null
   return {
     id: `curated-${spec.slug}`,
@@ -918,6 +938,7 @@ function curatedPublicProfileToPublicTwinProfile(spec: CuratedPublicTwinSpec, in
     searchIndex: spec.searchIndex,
     sources: spec.sources,
     quality: { ok: Boolean(imageUrl), issues: imageUrl ? [] : ['missing_profile_image'] },
+    createdAt,
     updatedAt,
     seo: {
       title: `${spec.name} KI-Profil | smyst.com`,
@@ -988,6 +1009,7 @@ function SmystStartPage({
   const twinMvp = useTwinMvp()
   const memoryUpload = useMemoryUpload()
   const [query, setQuery] = useState('')
+  const [showEmailForm, setShowEmailForm] = useState(false)
   const [selectedTwin, setSelectedTwin] = useState<StartTwin | null>(null)
   const [realStartTwins, setRealStartTwins] = useState<StartTwin[]>([])
   const [profilesLoaded, setProfilesLoaded] = useState(false)
@@ -1022,6 +1044,21 @@ function SmystStartPage({
   }, [activeCategory, nameSortMode, query, realStartTwins])
 
   const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
+  const genericMessageLabel =
+    lang === DEFAULT_LANG
+      ? 'Nachricht schreiben'
+      : t.start.messagePlaceholder.replace(/\s*(an|to)?\s*\{\{name\}\}/i, '').trim()
+  const messageInputLabel = selectedTwin
+    ? t.start.messagePlaceholder.replace('{{name}}', selectedTwin.name)
+    : genericMessageLabel || DEFAULT_TRANSLATIONS.start.messagePlaceholder.replace(/\s*an\s*\{\{name\}\}/i, '').trim()
+  const liveVoiceLabel =
+    voiceState === 'idle'
+      ? t.start.liveVoiceStart
+      : voiceState === 'listening'
+        ? t.start.liveVoicePause
+        : voiceState === 'paused'
+          ? t.start.liveVoiceResume
+          : t.start.liveVoiceStop
   const canSend = input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')
   const canSpeak = latestAssistantText.length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
@@ -1087,7 +1124,7 @@ function SmystStartPage({
           if (!alive) return
           const next = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
             .filter(isCompletePublicProfile)
-            .map(publicProfileToStartTwin)
+            .map((profile, index) => publicProfileToStartTwin(profile, index))
           setRealStartTwins(next)
           setSelectedTwin(null)
           setProfilesLoaded(true)
@@ -1247,26 +1284,6 @@ function SmystStartPage({
     </span>
   )
 
-  const renderProfileBadges = (twin: StartTwin) => (
-    <span className="flex flex-wrap gap-1">
-      {isPopularProfile(twin) && (
-        <span className="rounded-full border border-white/14 bg-white/[0.10] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#dfe8f7]">
-          Beliebt
-        </span>
-      )}
-      {isNewProfile(twin) && (
-        <span className="rounded-full border border-[#71E8FF]/30 bg-[#71E8FF]/12 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#dff8ff]">
-          Neu
-        </span>
-      )}
-      {twin.publicProfile && (
-        <span className="rounded-full border border-white/14 bg-white/[0.08] px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#c8d2df]">
-          Öffentlich
-        </span>
-      )}
-    </span>
-  )
-
   const renderProfileCard = (twin: StartTwin, compact = false) => (
     <button
       key={twin.id}
@@ -1417,6 +1434,29 @@ function SmystStartPage({
       resizeInput([input, `Kontakt:\n${text}`].filter(Boolean).join('\n\n'))
     } catch {
       addNotice('Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.')
+    }
+  }
+
+  const handleAttachLink = () => {
+    setComposerMenuOpen(false)
+    const rawLink = window.prompt('Link einfügen')
+    if (!rawLink?.trim()) return
+    try {
+      const url = new URL(rawLink.trim())
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Unsupported protocol')
+      setAttachments((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          kind: 'link',
+          name: url.hostname.replace(/^www\./, '') || 'Link',
+          status: 'ready',
+          url: url.href,
+        },
+      ])
+      addNotice('Link wurde angehängt.')
+    } catch {
+      addNotice('Bitte einen gültigen http- oder https-Link einfügen.')
     }
   }
 
@@ -1647,13 +1687,13 @@ function SmystStartPage({
   }
 
   const menuItems: Array<{ label: string; view: AppView; detail: string }> = [
-    { label: 'Mein Profil', view: 'account-profile', detail: 'Identitaet, Bio, Rollen und Profilqualitaet' },
-    { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persoenlichkeit, Wissen und Sichtbarkeit' },
-    { label: 'Meine Twins', view: 'my-twins', detail: 'Private und oeffentliche AI Twins' },
+    { label: 'Mein Profil', view: 'account-profile', detail: 'Identität, Bio, Rollen und Profilqualität' },
+    { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persönlichkeit, Wissen und Sichtbarkeit' },
+    { label: 'Meine Twins', view: 'my-twins', detail: 'Private und öffentliche AI Twins' },
     { label: 'Memories', view: 'memory-upload', detail: 'Dateien, Wissen und Erinnerungen hochladen' },
-    { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespraeche und Twin-Auswahl' },
+    { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespräche und Twin-Auswahl' },
     { label: 'Admin', view: 'admin', detail: 'User, Werbung, Umsatz, Sicherheit und Betrieb' },
-    { label: 'Datenschutz', view: 'trust', detail: 'Private Defaults, noindex, Export und Loeschung' },
+    { label: 'Datenschutz', view: 'trust', detail: 'Private Defaults, noindex, Export und Löschung' },
     { label: 'Einstellungen', view: 'settings', detail: 'Sprache, Theme, Account und Logout' },
   ]
 
@@ -1667,18 +1707,20 @@ function SmystStartPage({
       provider: 'ID',
       title: 'Normaler Login',
       detail: 'E-Mail und Passwort',
-      status: 'Bald',
+      status: 'Aktiv',
+      onClick: () => setShowEmailForm((value) => !value),
     },
     {
       provider: 'GO',
       title: 'Mit Google fortfahren',
-      detail: 'Geplant fuer Multi-Provider-Login',
-      status: 'Bald',
+      detail: 'Schneller Login mit Google',
+      status: 'Aktiv',
+      onClick: () => auth.signInWithGoogle('/'),
     },
     {
       provider: 'AP',
       title: 'Mit Apple fortfahren',
-      detail: 'Vorbereitet fuer App-Login',
+      detail: 'Vorbereitet für App-Login',
       status: 'Bald',
     },
     {
@@ -1697,16 +1739,16 @@ function SmystStartPage({
   ]
 
   const profileQuickActions = [
-    { label: 'Profil oeffnen', view: 'account-profile' as const },
+    { label: 'Profil öffnen', view: 'account-profile' as const },
     { label: 'Twin erstellen', view: 'twin-builder' as const },
     { label: 'Daten hochladen', view: 'memory-upload' as const },
   ]
 
   const profileControlCards = [
-    ['Identitaet', 'Name, Rollen, Expertise und Bio sauber pflegen.'],
-    ['AI Twin', 'Persoenlichkeit, Wissen und Sichtbarkeit steuern.'],
+    ['Identität', 'Name, Rollen, Expertise und Bio sauber pflegen.'],
+    ['AI Twin', 'Persönlichkeit, Wissen und Sichtbarkeit steuern.'],
     ['Memories', 'Uploads, Quellen und Erinnerungen als Kontext verwalten.'],
-    ['Datenschutz', 'Export, Loeschung, noindex und private Defaults.'],
+    ['Datenschutz', 'Export, Löschung, noindex und private Defaults.'],
   ]
 
   return (
@@ -1721,10 +1763,11 @@ function SmystStartPage({
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Startmenue"
+        aria-label="Startmenü"
         aria-hidden={!menuOpen}
-        className={`smyst-glass-panel fixed inset-y-0 left-0 z-50 flex w-[90vw] max-w-[390px] flex-col border-r border-white/10 shadow-2xl transition-transform ${
-          menuOpen ? 'translate-x-0' : 'pointer-events-none -translate-x-full'
+        style={{ left: menuOpen ? 0 : '-100%', transform: 'none' }}
+        className={`smyst-glass-panel fixed inset-y-0 z-50 flex w-[90vw] max-w-[390px] flex-col border-r border-white/10 shadow-2xl ${
+          menuOpen ? '' : 'pointer-events-none'
         }`}
       >
         <div className="border-b border-white/10 px-5 pb-4 pt-[max(env(safe-area-inset-top),18px)]">
@@ -1837,6 +1880,13 @@ function SmystStartPage({
                   )
                 })}
               </div>
+              {showEmailForm && (
+                <div className="mt-3">
+                  <Suspense fallback={null}>
+                    <EmailAuthForm onClose={() => setShowEmailForm(false)} />
+                  </Suspense>
+                </div>
+              )}
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {['HttpOnly', 'Noindex', 'Export'].map((label) => (
                   <span key={label} className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-center text-[11px] font-bold text-[#d5dbe5]">
@@ -1881,9 +1931,9 @@ function SmystStartPage({
 
           <div className="mt-5 grid gap-2 border-t border-white/10 px-2 pt-5">
             {[
-              ['HttpOnly Session', 'Login bleibt serverseitig geschuetzt.'],
+              ['HttpOnly Session', 'Login bleibt serverseitig geschützt.'],
               ['Private Inhalte noindex', 'Private Profile werden nicht indexiert.'],
-              ['Export & Loeschung', 'Datenkontrolle bleibt im Profilbereich.'],
+              ['Export & Löschung', 'Datenkontrolle bleibt im Profilbereich.'],
             ].map(([title, text]) => (
               <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
                 <p className="text-xs font-bold text-white">{title}</p>
@@ -2223,44 +2273,35 @@ function SmystStartPage({
                 void handleSend()
               }
             }}
-            placeholder="Nachricht schreiben"
+            placeholder={messageInputLabel}
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
             className="block min-h-[34px] w-full resize-none overflow-y-auto bg-transparent text-xl font-light leading-tight text-white outline-none placeholder:text-[#aeb6c4]/[0.66] sm:text-2xl"
-            aria-label={activeTwin ? t.start.messagePlaceholder.replace('{{name}}', activeTwin.name) : 'Nachricht schreiben'}
+            aria-label={messageInputLabel}
           />
         </div>
         {(composerMenuOpen || attachments.length > 0 || composerNotice || memoryUpload.uploading) && (
           <div className={`border-b ${composerLine} px-2 py-1 text-xs font-semibold text-[#d5dbe5] sm:px-3`}>
             {composerMenuOpen && (
               <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08]"
-                  aria-label="Dateien"
-                  title="Dateien"
-                >
-                  <FileIcon className="h-5 w-5" aria-hidden="true" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Foto hinzufügen" title="Foto hinzufügen">
+                  <ImageIcon className="h-4 w-4" />
                 </button>
-                <button
-                  type="button"
-                  onClick={handlePickContacts}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08]"
-                  aria-label="Kontakte"
-                  title="Kontakte"
-                >
-                  <ContactIcon className="h-5 w-5" aria-hidden="true" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Dateien" title="Dateien">
+                  <FileIcon className="h-4 w-4" />
                 </button>
-                <button
-                  type="button"
-                  onClick={handleAttachLocation}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08]"
-                  aria-label="Standort"
-                  title="Standort"
-                >
-                  <MapPin className="h-5 w-5" aria-hidden="true" />
+                <button type="button" onClick={handleAttachLink} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Link" title="Link">
+                  <LinkIcon className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => { setComposerMenuOpen(false); onNavigate('memory-upload') }} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Memory" title="Memory">
+                  <BookSpark className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={handlePickContacts} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Kontakte" title="Kontakte">
+                  <User className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={handleAttachLocation} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Standort" title="Standort">
+                  <MapPinIcon className="h-4 w-4" />
                 </button>
               </div>
             )}
@@ -2304,7 +2345,7 @@ function SmystStartPage({
                 voiceState === 'listening' ? 'bg-white/[0.12]' : ''
               }`}
               aria-label={t.start.voiceInput}
-              title={speechRecognitionSupported() ? t.start.voiceInput : 'Spracheingabe nicht unterstützt'}
+              title={speechRecognitionSupported() ? t.start.voiceInput : t.start.voiceInputUnsupported}
             >
               <Mic className="h-6 w-6" />
             </button>
@@ -2314,8 +2355,8 @@ function SmystStartPage({
               className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
                 voiceState !== 'idle' ? 'bg-white/[0.12]' : ''
               }`}
-              aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Live-Sprachmodus pausieren' : 'Live-Sprachmodus fortsetzen'}
-              title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Pausieren' : voiceState === 'paused' ? 'Fortsetzen' : 'Beenden'}
+              aria-label={liveVoiceLabel}
+              title={liveVoiceLabel}
             >
               <Waveform className="h-6 w-6" />
             </button>
@@ -2326,8 +2367,8 @@ function SmystStartPage({
                 speechOutputEnabled || isSpeaking ? 'bg-white/[0.12]' : ''
               }`}
               data-ready={canSpeak ? 'true' : 'false'}
-              aria-label={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
-              title={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
+              aria-label={speechOutputEnabled ? t.start.speechOutputOff : t.start.speechOutputOn}
+              title={speechOutputEnabled ? t.start.speechOutputOff : t.start.speechOutputOn}
             >
               <Speaker className="h-6 w-6" />
             </button>
@@ -2728,18 +2769,193 @@ function TwinProfileView({
   )
 }
 
+function emailAuthMessageForCode(result: { ok: boolean; code?: string; message?: string }): string {
+  switch (result.code) {
+    case 'email_service_unavailable':
+      return 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange GitHub.'
+    case 'email_not_verified':
+      return 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.'
+    case 'invalid_credentials':
+      return 'E-Mail oder Passwort ist falsch.'
+    case 'email_taken':
+      return 'Für diese E-Mail gibt es bereits ein Konto. Bitte logge dich ein.'
+    case 'weak_password':
+      return 'Das Passwort muss mindestens 8 Zeichen lang sein.'
+    case 'invalid_email':
+      return 'Bitte gib eine gültige E-Mail-Adresse an.'
+    default:
+      return result.message || 'Aktion fehlgeschlagen. Bitte versuche es erneut.'
+  }
+}
+
+function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
+  const auth = useAuth()
+  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+
+  const submit = async () => {
+    if (busy) return
+    setError('')
+    setInfo('')
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanEmail || !password) {
+      setError('Bitte E-Mail und Passwort eingeben.')
+      return
+    }
+    if (mode === 'register' && password.length < 8) {
+      setError('Das Passwort muss mindestens 8 Zeichen lang sein.')
+      return
+    }
+    setBusy(true)
+    try {
+      if (mode === 'register') {
+        const result = await auth.registerWithEmail(cleanEmail, password, name.trim() || undefined)
+        if (result.ok) {
+          setInfo('Fast geschafft: Wir haben dir eine Bestätigungs-Mail geschickt. Bestätige die E-Mail und logge dich dann ein.')
+          setMode('login')
+          setPassword('')
+        } else {
+          setError(emailAuthMessageForCode(result))
+        }
+      } else {
+        const result = await auth.signInWithEmail(cleanEmail, password)
+        if (result.ok) {
+          window.location.assign(returnTo || window.location.pathname + window.location.search)
+        } else {
+          setError(emailAuthMessageForCode(result))
+        }
+      }
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const forgot = async () => {
+    if (busy) return
+    setError('')
+    setInfo('')
+    const cleanEmail = email.trim().toLowerCase()
+    if (!cleanEmail) {
+      setError('Bitte gib zuerst deine E-Mail-Adresse ein.')
+      return
+    }
+    setBusy(true)
+    try {
+      await auth.requestPasswordReset(cleanEmail)
+      setInfo('Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const inputClass =
+    'w-full rounded-md border border-[#0b1c44]/16 bg-white/70 px-3 py-2 text-sm text-[#16181b] outline-none transition-colors focus:border-[#0b1c44]/40'
+
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        void submit()
+      }}
+      className="flex w-full flex-col gap-2"
+    >
+      {mode === 'register' && (
+        <input
+          type="text"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder="Name (optional)"
+          autoComplete="name"
+          className={inputClass}
+        />
+      )}
+      <input
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        placeholder="E-Mail"
+        autoComplete="email"
+        required
+        className={inputClass}
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        placeholder={mode === 'register' ? 'Passwort (min. 8 Zeichen)' : 'Passwort'}
+        autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+        required
+        className={inputClass}
+      />
+      {error && <p className="text-xs font-medium text-[#b91c1c]">{error}</p>}
+      {info && <p className="text-xs font-medium text-[#0b7a3b]">{info}</p>}
+      <button
+        type="submit"
+        disabled={busy}
+        className="rounded-md border border-[#0b1c44]/14 bg-[#0b1c44] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#173064] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {busy ? 'Bitte warten…' : mode === 'register' ? 'Konto erstellen' : 'Mit E-Mail einloggen'}
+      </button>
+      <div className="flex items-center justify-between text-xs text-[#555b64]">
+        <button
+          type="button"
+          onClick={() => {
+            setMode((current) => (current === 'login' ? 'register' : 'login'))
+            setError('')
+            setInfo('')
+          }}
+          className="font-medium text-[#0b1c44] hover:underline"
+        >
+          {mode === 'login' ? 'Neu hier? Konto erstellen' : 'Schon ein Konto? Einloggen'}
+        </button>
+        {mode === 'login' && (
+          <button type="button" onClick={() => void forgot()} className="hover:underline">
+            Passwort vergessen?
+          </button>
+        )}
+      </div>
+    </form>
+  )
+}
+
+const SIGN_IN_RULES = [
+  'Chat darf sofort sichtbar sein',
+  'Private Daten erst nach Login speichern',
+  'Fehlertext sagt immer, was zu tun ist',
+  'HttpOnly-Session statt Token im Browser',
+  'Export/Löschung direkt auffindbar',
+  'Bot-Schutz an, ohne dass Login stört',
+]
+
 function SignInRequiredCard({ title, text, returnTo }: { title: string; text: string; returnTo: string }) {
   return (
     <Card className="p-6 sm:p-8">
-      <CardContent className="flex flex-col items-start gap-4 p-0 sm:flex-row sm:items-center sm:justify-between">
+      <CardContent className="flex flex-col items-start gap-4 p-0 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-xl font-bold tracking-tight">{title}</h2>
           <p className="mt-1 text-sm text-[#555b64]">{text}</p>
+          <ul className="mt-4 space-y-1.5">
+            {SIGN_IN_RULES.map((rule) => (
+              <li key={rule} className="flex items-center gap-2 text-sm text-[#555b64]">
+                <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#22c55e]/15 text-[10px] font-bold text-[#0b7a3b]">✓</span>
+                {rule}
+              </li>
+            ))}
+          </ul>
         </div>
         <div className="w-full sm:w-auto sm:min-w-[260px]">
           <Suspense fallback={null}>
             <GitHubSignInButton variant="official" returnTo={returnTo} />
           </Suspense>
+          <div className="my-3 flex items-center gap-2 text-[11px] uppercase tracking-wide text-[#9aa6b7]">
+            <span className="h-px flex-1 bg-[#0b1c44]/10"></span>oder<span className="h-px flex-1 bg-[#0b1c44]/10"></span>
+          </div>
+          <EmailPasswordForm returnTo={returnTo} />
         </div>
       </CardContent>
     </Card>
@@ -2820,7 +3036,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     if (!result?.profile) return
     setProfile(result.profile)
     hydrateProfileDraft(result.profile)
-    setPrivacyStatus('Profil gespeichert und fuer IDrive-e2-Objektpersistenz vorgemerkt.')
+    setPrivacyStatus('Profil gespeichert und für IDrive-e2-Objektpersistenz vorgemerkt.')
   }
 
   const createManualMemory = async () => {
@@ -2848,12 +3064,12 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   }
 
   const deleteMemory = async (memory: MemoryRecord) => {
-    const confirmed = window.confirm('Diese Memory wirklich loeschen?')
+    const confirmed = window.confirm('Diese Memory wirklich löschen?')
     if (!confirmed) return
     const result = await twinMvp.deleteMemory(memory.id)
     if (!result) return
     setMemories((current) => current.filter((item) => item.id !== memory.id))
-    setPrivacyStatus('Memory geloescht.')
+    setPrivacyStatus('Memory gelöscht.')
   }
 
   const searchChats = async () => {
@@ -2890,7 +3106,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     <div className="pt-[72px]">
       <div className="mb-8">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">Mein Profil</h1>
-        <p className="text-base text-[#555b64]">Account, Session und Datenschutzstatus fuer deinen smyst-Zugang.</p>
+        <p className="text-base text-[#555b64]">Account, Session und Datenschutzstatus für deinen smyst-Zugang.</p>
       </div>
 
       {auth.status !== 'authenticated' ? (
@@ -2934,11 +3150,11 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
               </div>
               <div className="rounded-lg bg-white/16 p-4">
                 <p className="text-xs text-[#667085]">Datenschutz</p>
-                <p className="mt-1 text-sm font-semibold">Private Inhalte standardmaessig noindex</p>
+                <p className="mt-1 text-sm font-semibold">Private Inhalte standardmäßig noindex</p>
               </div>
               <div className="rounded-lg bg-white/16 p-4">
                 <p className="text-xs text-[#667085]">Speicher</p>
-                <p className="mt-1 text-sm font-semibold">Dateien und Medien geschuetzt</p>
+                <p className="mt-1 text-sm font-semibold">Dateien und Medien geschützt</p>
               </div>
             </div>
 
@@ -2971,7 +3187,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 />
               </label>
               <label className="grid gap-1 text-sm font-semibold">
-                Oeffentliche Bio
+                Öffentliche Bio
                 <textarea
                   value={profileDraft.publicBio}
                   onChange={(event) => setProfileDraft((current) => ({ ...current, publicBio: event.target.value }))}
@@ -2999,7 +3215,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white/14 p-4">
                 <div>
-                  <p className="text-sm font-semibold">Profilqualitaet {profile?.qualityScore ?? 0}/100</p>
+                  <p className="text-sm font-semibold">Profilqualität {profile?.qualityScore ?? 0}/100</p>
                   <p className="text-xs text-[#667085]">{profile?.chatCount ?? 0} Chats · {profile?.memoryCount ?? 0} Memories</p>
                 </div>
                 <Button onClick={() => void saveProfile()}>Profil speichern</Button>
@@ -3008,7 +3224,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           </Card>
 
           <Card className="p-6">
-            <h3 className="mb-4 text-lg font-semibold">Naechste Schritte</h3>
+            <h3 className="mb-4 text-lg font-semibold">Nächste Schritte</h3>
             <div className="space-y-3">
               <Button className="w-full justify-center" onClick={() => onNavigate('twin-builder')}>Twin erstellen</Button>
               <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
@@ -3040,7 +3256,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h3 className="text-lg font-semibold">Memory</h3>
-                <p className="text-sm text-[#555b64]">Bestaetigte Informationen bleiben privat im Profil und koennen spaeter pro Twin genutzt werden.</p>
+                <p className="text-sm text-[#555b64]">Bestätigte Informationen bleiben privat im Profil und können später pro Twin genutzt werden.</p>
               </div>
               <Button variant="secondary" onClick={() => void refreshProfileData()}>Aktualisieren</Button>
             </div>
@@ -3058,16 +3274,16 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 <div key={memory.id} className="rounded-lg border border-white/20 bg-white/12 p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-sm font-semibold">{memory.text || 'Geloeschte Memory'}</p>
+                      <p className="text-sm font-semibold">{memory.text || 'Gelöschte Memory'}</p>
                       <p className="mt-1 text-xs text-[#667085]">
                         {memory.type} · {memory.status} · {memory.sensitivity} · Confidence {Math.round(memory.confidence * 100)}%
                       </p>
                     </div>
                     <div className="flex gap-2">
                       {memory.status !== 'confirmed' && (
-                        <Button size="sm" variant="secondary" onClick={() => void confirmMemory(memory)}>Bestaetigen</Button>
+                        <Button size="sm" variant="secondary" onClick={() => void confirmMemory(memory)}>Bestätigen</Button>
                       )}
-                      <Button size="sm" variant="secondary" onClick={() => void deleteMemory(memory)}>Loeschen</Button>
+                      <Button size="sm" variant="secondary" onClick={() => void deleteMemory(memory)}>Löschen</Button>
                     </div>
                   </div>
                 </div>
@@ -3140,7 +3356,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="mb-2 text-4xl font-bold tracking-tight">Meine Twins</h1>
-          <p className="text-base text-[#555b64]">Alle privaten und oeffentlichen Twin-Profile deines Accounts.</p>
+          <p className="text-base text-[#555b64]">Alle privaten und öffentlichen Twin-Profile deines Accounts.</p>
         </div>
         <Button onClick={() => onNavigate('twin-builder')}>Twin erstellen</Button>
       </div>
@@ -3252,7 +3468,7 @@ function SettingsView({
             <div className="space-y-4">
               <p className="text-sm text-[#555b64]">Angemeldet als <span className="font-semibold text-[#17191d]">{auth.user?.email}</span></p>
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => onNavigate('account-profile')}>Profil oeffnen</Button>
+                <Button onClick={() => onNavigate('account-profile')}>Profil öffnen</Button>
                 <Button variant="secondary" onClick={() => void auth.signOut()}>Logout</Button>
                 <Button variant="secondary" onClick={() => void auth.signOutAll()}>Alle Sessions abmelden</Button>
               </div>
@@ -3320,7 +3536,7 @@ function SettingsView({
             <div>
               <h2 className="text-xl font-bold">Feedback, Fehler oder Missbrauch melden</h2>
               <p className="mt-1 text-sm text-[#555b64]">
-                Meldungen werden gespeichert und koennen vom verantwortlichen Team geprueft werden.
+                Meldungen werden gespeichert und können vom verantwortlichen Team geprüft werden.
               </p>
             </div>
             <Button variant="secondary" onClick={() => onNavigate('trust')}>Trust Center</Button>
@@ -3363,7 +3579,7 @@ function SettingsView({
               <input
                 value={reportContact}
                 onChange={(event) => setReportContact(event.target.value)}
-                placeholder="E-Mail oder Hinweis, falls Rueckfrage erwuenscht ist"
+                placeholder="E-Mail oder Hinweis, falls Rückfrage erwünscht ist"
                 className="h-12 border border-white/20 bg-white/10 px-3 text-sm"
               />
             </label>
@@ -3386,10 +3602,10 @@ function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const items = [
     ['Klare Infrastruktur', 'App, Dateien und Daten sind nach Sicherheits- und Datenschutzbereichen getrennt.'],
     ['Private Defaults', 'Private Profile und Uploads bleiben noindex und sind an die GitHub-Session gebunden.'],
-    ['Account-Kontrolle', 'Export, Account-Loeschung und Logout aller Sessions sind im Produkt vorbereitet.'],
-    ['Upload-Schutz', 'Dateityp, Kategorie, Groesse, Quota und Besitzerpfad werden serverseitig geprueft.'],
+    ['Account-Kontrolle', 'Export, Account-Löschung und Logout aller Sessions sind im Produkt vorbereitet.'],
+    ['Upload-Schutz', 'Dateityp, Kategorie, Größe, Quota und Besitzerpfad werden serverseitig geprüft.'],
     ['API-Vertrag', 'JSON-Fehler, Request-ID, Rate-Limit-Header und 405-Handling sind dokumentiert.'],
-    ['KI-Transparenz', 'Antworten muessen klar, nachvollziehbar und ohne falsche Personenbehauptung bleiben.'],
+    ['KI-Transparenz', 'Antworten müssen klar, nachvollziehbar und ohne falsche Personenbehauptung bleiben.'],
   ]
 
   return (
@@ -3429,34 +3645,34 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   const content = {
     privacy: {
       title: 'Datenschutz',
-      intro: 'Diese Datenschutzerklaerung beschreibt den aktuellen Projektstand und ersetzt keine finale Rechtsberatung.',
+      intro: 'Diese Datenschutzerklärung beschreibt den aktuellen Projektstand und ersetzt keine finale Rechtsberatung.',
       points: [
-        'Login erfolgt ueber GitHub OAuth. Die Session liegt als HttpOnly Secure Cookie vor.',
-        'Profilinformationen, Dateien, Medien und groessere Datenobjekte werden getrennt verarbeitet.',
-        'Private Profile, private API-Routen und private Dateien sind nicht fuer Suchmaschinen bestimmt.',
-        'Account-Export und Account-Loeschung sind im Profilbereich vorbereitet.',
-        'Drittanbieter-Dienste duerfen private Daten nicht unnoetig auslesen oder verfolgen.',
+        'Login erfolgt über GitHub OAuth. Die Session liegt als HttpOnly Secure Cookie vor.',
+        'Profilinformationen, Dateien, Medien und größere Datenobjekte werden getrennt verarbeitet.',
+        'Private Profile, private API-Routen und private Dateien sind nicht für Suchmaschinen bestimmt.',
+        'Account-Export und Account-Löschung sind im Profilbereich vorbereitet.',
+        'Drittanbieter-Dienste dürfen private Daten nicht unnötig auslesen oder verfolgen.',
       ],
     },
     terms: {
       title: 'Nutzungsbedingungen',
       intro: 'Diese Bedingungen definieren die sichere Nutzung bis zur finalen juristischen Freigabe.',
       points: [
-        'Nutzer duerfen nur Daten hochladen, fuer die sie Rechte und Einwilligungen haben.',
-        'Missbrauch, Spam, illegale Inhalte und Verletzungen von Persoenlichkeitsrechten sind verboten.',
-        'AI-Twins sind digitale Profile und duerfen nicht als echte Person ausgegeben werden.',
-        'Oeffentliche Twins koennen indexiert werden; private Twins bleiben privat und noindex.',
+        'Nutzer dürfen nur Daten hochladen, für die sie Rechte und Einwilligungen haben.',
+        'Missbrauch, Spam, illegale Inhalte und Verletzungen von Persönlichkeitsrechten sind verboten.',
+        'AI-Twins sind digitale Profile und dürfen nicht als echte Person ausgegeben werden.',
+        'Öffentliche Twins können indexiert werden; private Twins bleiben privat und noindex.',
         'Uploads, Speicher und API-Nutzung haben Schutz- und Missbrauchsgrenzen.',
       ],
     },
     imprint: {
       title: 'Impressum',
-      intro: 'Impressum-Platzhalter fuer den aktuellen Projektstand. Vor Production muessen Betreiberangaben final juristisch geprueft werden.',
+      intro: 'Impressum-Platzhalter für den aktuellen Projektstand. Vor Production müssen Betreiberangaben final juristisch geprüft werden.',
       points: [
         'Kontakt: i@smyst.com',
         'Domain: smyst.com',
-        'Betrieb und technische Dienstleister werden vor Production final geprueft.',
-        'Finale Betreiberadresse, Rechtsform, Vertretungsberechtigte und Pflichtangaben sind vor Production zu ergaenzen.',
+        'Betrieb und technische Dienstleister werden vor Production final geprüft.',
+        'Finale Betreiberadresse, Rechtsform, Vertretungsberechtigte und Pflichtangaben sind vor Production zu ergänzen.',
       ],
     },
   }[kind]
@@ -3486,11 +3702,11 @@ function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">404</p>
         <h1 className="mb-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">Diese Seite gibt es nicht.</h1>
         <p className="max-w-[620px] text-base leading-relaxed text-[#9aa6b7]">
-          Der Link ist unvollstaendig, veraltet oder zeigt auf einen Bereich, der nicht veroeffentlicht ist.
+          Der Link ist unvollständig, veraltet oder zeigt auf einen Bereich, der nicht veröffentlicht ist.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button onClick={() => onNavigate('landing')}>Zur Startseite</Button>
-          <Button variant="secondary" onClick={() => onNavigate('twin-chat')}>Chats oeffnen</Button>
+          <Button variant="secondary" onClick={() => onNavigate('twin-chat')}>Chats öffnen</Button>
           <Button variant="secondary" onClick={() => onNavigate('trust')}>Trust Center</Button>
         </div>
       </div>
@@ -3998,9 +4214,9 @@ function AdminControlCenterView() {
         <div className="grid gap-4 lg:grid-cols-4">
           {[
             { label: 'Composer', value: 'locked', detail: 'Schreibbereich bleibt exakt im bisherigen Design mit bestehenden Icons.', tone: 'green' },
-            { label: 'Layout', value: 'A-Z', detail: 'Ein konsistentes System fuer Web, PWA, iPhone und Android.', tone: 'cyan' },
+            { label: 'Layout', value: 'A-Z', detail: 'Ein konsistentes System für Web, PWA, iPhone und Android.', tone: 'cyan' },
             { label: 'A11y', value: 'AA+', detail: 'Kontrast, Fokus, Touch-Ziele und klare Zustände.', tone: 'green' },
-            { label: 'Motion', value: 'subtle', detail: 'Streaming fuehlt sich schnell an, ohne unruhig zu werden.', tone: 'amber' },
+            { label: 'Motion', value: 'subtle', detail: 'Streaming fühlt sich schnell an, ohne unruhig zu werden.', tone: 'amber' },
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
         </div>
         <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
@@ -4022,12 +4238,12 @@ function AdminControlCenterView() {
             <h2 className="text-xl font-bold text-[#111722]">UI Regeln</h2>
             <div className="mt-5 grid gap-3">
               {[
-                ['Chat Composer', 'Nicht veraendern: gleiche Position, gleiche Icons, gleiche Bedienlogik.'],
-                ['Kinderleicht', 'Jede Hauptaktion braucht einen klaren Primaerbutton und sofortige Rueckmeldung.'],
+                ['Chat Composer', 'Nicht verändern: gleiche Position, gleiche Icons, gleiche Bedienlogik.'],
+                ['Kinderleicht', 'Jede Hauptaktion braucht einen klaren Primärbutton und sofortige Rückmeldung.'],
                 ['Dichte', 'Admin bleibt dicht, scanbar und arbeitsorientiert statt Marketing-Layout.'],
-                ['Fehler', 'Jede Fehlermeldung sagt Ursache, Status und naechste Aktion.'],
-                ['Mobile', 'Keine ueberlappenden Texte, keine Layoutspruenge, Touch-Ziele mindestens 44px.'],
-                ['Future Platforms', 'Tokens und Komponenten muessen auf neue Oberflaechen uebertragbar bleiben.'],
+                ['Fehler', 'Jede Fehlermeldung sagt Ursache, Status und nächste Aktion.'],
+                ['Mobile', 'Keine überlappenden Texte, keine Layoutsprünge, Touch-Ziele mindestens 44px.'],
+                ['Future Platforms', 'Tokens und Komponenten müssen auf neue Oberflächen übertragbar bleiben.'],
               ].map(([label, detail]) => (
                 <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
                   <AdminStatusChip tone="cyan">{label}</AdminStatusChip>
@@ -4311,7 +4527,7 @@ function AdminControlCenterView() {
         {[
           { label: 'Payable', value: '$62K', detail: '25 % User-Anteil nach Validierung.', tone: 'green' },
           { label: 'On Hold', value: '$8.4K', detail: 'Policy, KYC oder Invalid-Traffic offen.', tone: 'amber' },
-          { label: 'KYC Ready', value: '91 %', detail: 'Auszahlbare Creator mit vollstaendigem Profil.', tone: 'cyan' },
+          { label: 'KYC Ready', value: '91 %', detail: 'Auszahlbare Creator mit vollständigem Profil.', tone: 'cyan' },
           { label: 'Tax Queue', value: '318', detail: 'Steuerdaten, Rechnungen und Export.', tone: 'navy' },
         ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
       </div>
@@ -4325,12 +4541,12 @@ function AdminControlCenterView() {
         <h2 className="text-xl font-bold text-[#111722]">Auszahlungsregeln</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {[
-            'Nur finaler, gueltiger AdSense-Umsatz wird geteilt.',
+            'Nur finaler, gültiger AdSense-Umsatz wird geteilt.',
             'Profilinhaber erhalten 25 % pro genutztem AI-Profil.',
             'Invalid Traffic, Policy Claims und Refunds gehen vor Auszahlung ab.',
             'KYC, Steuerstatus, Mindestbetrag und Admin-Freigabe sind Pflicht.',
             'Jede Auszahlung erzeugt Audit-Log, Export und IDrive-e2-Beleg.',
-            'User sieht transparent: Impressionen, Abzuege, Anteil und Status.',
+            'User sieht transparent: Impressionen, Abzüge, Anteil und Status.',
           ].map((item) => (
             <div key={item} className="rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 text-sm font-bold text-[#172033]">{item}</div>
           ))}
@@ -4342,7 +4558,7 @@ function AdminControlCenterView() {
   const renderAiQuality = () => {
     const routerRows = [
       ['Fast Chat', '89 %', '#43d17a', 'Sofortantwort, niedrige Kosten'],
-      ['Deep Reasoning', '41 %', '#59c7ff', 'Komplexe Aufgaben, laengere Kontexte'],
+      ['Deep Reasoning', '41 %', '#59c7ff', 'Komplexe Aufgaben, längere Kontexte'],
       ['RAG Verified', '68 %', '#f7b733', 'Quellengebundene Antworten'],
       ['Safety Rewrite', '12 %', '#ef4444', 'Policy, Risiko, sensible Inhalte'],
     ]
@@ -4373,13 +4589,13 @@ function AdminControlCenterView() {
             ))}
           </section>
           <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Qualitaets-Pruefungen</h2>
+            <h2 className="text-xl font-bold text-[#111722]">Qualitäts-Prüfungen</h2>
             <div className="mt-5 grid gap-3">
               {[
                 ['Eval Suites', 'Regression gegen ChatGPT, Gemini, Claude, Grok und Open-Model Benchmarks.'],
                 ['Prompt Library', 'Versionierte Systemprompts in IDrive e2, Code in GitHub.'],
                 ['RAG Guardrails', 'Quellenpflicht, Halluzinationsscore, Zitierbarkeit.'],
-                ['Memory Safety', 'Profilwissen getrennt, verschluesselt und exportierbar.'],
+                ['Memory Safety', 'Profilwissen getrennt, verschlüsselt und exportierbar.'],
                 ['Latency Budget', 'Vorberechnung, Cache, Queue und Fallback pro Intent.'],
               ].map(([label, detail]) => (
                 <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
@@ -4414,7 +4630,7 @@ function AdminControlCenterView() {
       <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
         <h2 className="text-xl font-bold text-[#111722]">Nicht in IDrive e2</h2>
         <p className="mt-3 text-sm font-semibold leading-relaxed text-[#5d6776]">
-          Login, Live-Datenbank, Sessions, Zahlungen, Rechtepruefung, Echtzeit-Chat, KI-Antworten und serverseitige Logik laufen nicht direkt in IDrive e2. Diese Aufgaben gehen ueber API/Compute, waehrend Ergebnisse wieder nach IDrive e2 gespeichert werden.
+          Login, Live-Datenbank, Sessions, Zahlungen, Rechteprüfung, Echtzeit-Chat, KI-Antworten und serverseitige Logik laufen nicht direkt in IDrive e2. Diese Aufgaben gehen über API/Compute, während Ergebnisse wieder nach IDrive e2 gespeichert werden.
         </p>
       </section>
     </div>
@@ -4442,7 +4658,7 @@ function AdminControlCenterView() {
           Fehler: job.lastError ?? '-',
         }))
       : [
-          { Job: 'KI Antwort', Ziel: 'chat/archive/', Status: ready ? 'salad-ready' : 'fallback', Provider: ready ? 'salad' : 'cloudflare', Versuche: '0/3', Fehler: '-' },
+          { Job: 'KI Antwort', Ziel: 'chat/archive/', Status: ready ? 'salad-ready' : 'blocked', Provider: 'salad', Versuche: '0/3', Fehler: ready ? '-' : 'compute_not_ready' },
           { Job: 'Embedding Build', Ziel: 'ai/embeddings/', Status: ready ? 'salad-ready' : 'blocked', Provider: 'salad', Versuche: '0/3', Fehler: missing.length ? 'compute_not_configured' : '-' },
           { Job: 'Upload Scan', Ziel: 'private/uploads/', Status: ready ? 'salad-ready' : 'blocked', Provider: 'salad', Versuche: '0/3', Fehler: missing.length ? 'compute_not_configured' : '-' },
         ]
@@ -4451,15 +4667,15 @@ function AdminControlCenterView() {
       <div className="grid gap-5">
         <div className="grid gap-4 lg:grid-cols-4">
           {[
-            { label: 'Compute Status', value: status, detail: ready ? 'Salad kann schwere Jobs uebernehmen.' : 'Cloudflare-Fallback bleibt aktiv.', tone: ready ? 'green' : 'amber' },
-            { label: 'Runtime', value: runtimeOperational ? 'running' : runtimeStatus, detail: runtimeCounts ? `${runtimeCounts.running} running, ${runtimeCounts.allocating} allocating, ${runtimeCounts.creating} creating` : 'Salad Runtime wird geprueft.', tone: runtimeOperational ? 'green' : runtimeStatus === 'deploying' ? 'amber' : ready ? 'cyan' : 'red' },
+            { label: 'Compute Status', value: status, detail: ready ? 'Salad kann schwere Jobs übernehmen.' : 'Salad muss noch vollständig bereit sein.', tone: ready ? 'green' : 'amber' },
+            { label: 'Runtime', value: runtimeOperational ? 'running' : runtimeStatus, detail: runtimeCounts ? `${runtimeCounts.running} running, ${runtimeCounts.allocating} allocating, ${runtimeCounts.creating} creating` : 'Salad Runtime wird geprüft.', tone: runtimeOperational ? 'green' : runtimeStatus === 'deploying' ? 'amber' : ready ? 'cyan' : 'red' },
             { label: 'Queue', value: queue ? String(queue.queued + queue.running) : '0', detail: queue ? `${queue.running} running, ${queue.failed} failed, ${queue.retryable} retry` : 'Noch keine Jobs im Ledger.', tone: queue?.failed ? 'red' : 'cyan' },
             { label: 'Missing', value: missing.length ? String(missing.length) : '0', detail: missing.length ? missing.join(', ') : 'Keine Compute-Blocker.', tone: missing.length ? 'red' : 'green' },
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
         </div>
         <div className="grid gap-4 lg:grid-cols-4">
           {[
-            { label: 'Health', value: healthStatus, detail: runtime?.health.ok ? runtime.health.service ?? 'Worker antwortet.' : runtime?.health.error ?? 'Health noch nicht bestaetigt.', tone: runtime?.health.ok ? 'green' : 'amber' },
+            { label: 'Health', value: healthStatus, detail: runtime?.health.ok ? runtime.health.service ?? 'Worker antwortet.' : runtime?.health.error ?? 'Health noch nicht bestätigt.', tone: runtime?.health.ok ? 'green' : 'amber' },
             { label: 'First Token', value: latency?.firstToken ? `${latency.firstToken} ms` : 'pending', detail: config?.streamingEnabled ? 'Streaming ist konfiguriert.' : 'Streaming wartet auf Compute.', tone: config?.streamingEnabled ? 'green' : 'amber' },
             { label: 'Leases', value: queue ? String(queue.running) : '0', detail: 'Aktive Compute-Worker-Leases.', tone: queue?.running ? 'cyan' : 'navy' },
             { label: 'Succeeded', value: queue ? String(queue.succeeded) : '0', detail: 'Erfolgreich abgeschlossene Jobs.', tone: 'green' },
@@ -4467,9 +4683,9 @@ function AdminControlCenterView() {
         </div>
         <div className="grid gap-5 xl:grid-cols-3">
           {[
-            ['Queue', 'Prioritaet pro Aufgabe: Chat zuerst, danach Suche, Medien, Batch.'],
-            ['Compute', ready ? 'Salad ist fuer stateless Rechenarbeit vorbereitet.' : 'Salad bleibt blockiert, bis API, Organisation, Projekt, Container Group und Secret gesetzt sind.'],
-            ['Persist', 'Ergebnisse, Logs und Artefakte gehen nach IDrive e2 zurueck.'],
+            ['Queue', 'Priorität pro Aufgabe: Chat zuerst, danach Suche, Medien, Batch.'],
+            ['Compute', ready ? 'Salad ist für stateless Rechenarbeit vorbereitet.' : 'Salad bleibt blockiert, bis API, Organisation, Projekt, Container Group und Secret gesetzt sind.'],
+            ['Persist', 'Ergebnisse, Logs und Artefakte gehen nach IDrive e2 zurück.'],
           ].map(([title, detail]) => (
             <section key={title} className="rounded-lg border border-[#d9e2ec] bg-white p-5">
               <AdminStatusChip tone={title === 'Compute' && !ready ? 'amber' : title === 'Compute' ? 'cyan' : 'green'}>{title}</AdminStatusChip>
@@ -4499,17 +4715,17 @@ function AdminControlCenterView() {
     <div className="grid gap-5">
       <div className="grid gap-4 lg:grid-cols-4">
         {[
-          { label: 'Web', value: 'ready', detail: 'smyst.com und app.smyst.com als Hauptoberflaeche.', tone: 'green' },
-          { label: 'PWA', value: 'first', detail: 'Installierbar, offline faehig, schnelle Updates.', tone: 'cyan' },
-          { label: 'iPhone', value: 'wrap', detail: 'Spaeter Wrapper/native Shell mit gleicher API.', tone: 'amber' },
-          { label: 'Android', value: 'wrap', detail: 'Spaeter Play Store, Huawei und weitere Stores.', tone: 'amber' },
+          { label: 'Web', value: 'ready', detail: 'smyst.com und app.smyst.com als Hauptoberfläche.', tone: 'green' },
+          { label: 'PWA', value: 'first', detail: 'Installierbar, offline fähig, schnelle Updates.', tone: 'cyan' },
+          { label: 'iPhone', value: 'wrap', detail: 'Später Wrapper/native Shell mit gleicher API.', tone: 'amber' },
+          { label: 'Android', value: 'wrap', detail: 'Später Play Store, Huawei und weitere Stores.', tone: 'amber' },
         ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
       </div>
       <AdminTable columns={['Plattform', 'Status', 'Pflicht vor Launch', 'Updatequelle', 'Risiko']} rows={[
         { Plattform: 'Web', Status: 'laufend', 'Pflicht vor Launch': 'DNS, SSL, Cache, Monitoring', Updatequelle: 'GitHub release + IDrive assets', Risiko: 'niedrig' },
-        { Plattform: 'PWA', Status: 'naechster Fokus', 'Pflicht vor Launch': 'Manifest, Service Worker, Offline UI', Updatequelle: 'assets.smyst.com', Risiko: 'mittel' },
-        { Plattform: 'iPhone', Status: 'spaeter', 'Pflicht vor Launch': 'App Review, Privacy Nutrition, Login', Updatequelle: 'IPA/TestFlight + IDrive build archive', Risiko: 'mittel' },
-        { Plattform: 'Android', Status: 'spaeter', 'Pflicht vor Launch': 'APK/AAB, Play Policy, Push', Updatequelle: 'AAB/APK + IDrive build archive', Risiko: 'mittel' },
+        { Plattform: 'PWA', Status: 'nächster Fokus', 'Pflicht vor Launch': 'Manifest, Service Worker, Offline UI', Updatequelle: 'assets.smyst.com', Risiko: 'mittel' },
+        { Plattform: 'iPhone', Status: 'später', 'Pflicht vor Launch': 'App Review, Privacy Nutrition, Login', Updatequelle: 'IPA/TestFlight + IDrive build archive', Risiko: 'mittel' },
+        { Plattform: 'Android', Status: 'später', 'Pflicht vor Launch': 'APK/AAB, Play Policy, Push', Updatequelle: 'AAB/APK + IDrive build archive', Risiko: 'mittel' },
         { Plattform: 'Future', Status: 'geplant', 'Pflicht vor Launch': 'Design tokens, API compatibility', Updatequelle: 'versionierte configs', Risiko: 'niedrig' },
       ]} />
     </div>
@@ -4527,10 +4743,10 @@ function AdminControlCenterView() {
       </div>
       <div className="grid gap-5 xl:grid-cols-2">
         {[
-          ['Produkt', ['Sofort-Chat', 'Composer unveraendert', 'Profil/Twin Flow', 'Upload/Memory', 'Support/Privacy']],
-          ['Admin', ['User sperren', 'Registrierungen pruefen', 'AdSense Regeln', '25 % Revenue Share', 'KYC/Tax/Payout']],
+          ['Produkt', ['Sofort-Chat', 'Composer unverändert', 'Profil/Twin Flow', 'Upload/Memory', 'Support/Privacy']],
+          ['Admin', ['User sperren', 'Registrierungen prüfen', 'AdSense Regeln', '25 % Revenue Share', 'KYC/Tax/Payout']],
           ['Infrastruktur', ['Spaceship DNS', 'GitHub Code only', 'IDrive 99 % Storage', 'Salad Compute', 'Secrets getrennt']],
-          ['Qualitaet', ['Mobile QA', 'Performance Budget', 'Security Audit', 'Rollback', 'Monitoring']],
+          ['Qualität', ['Mobile QA', 'Performance Budget', 'Security Audit', 'Rollback', 'Monitoring']],
         ].map(([group, items]) => (
           <section key={group as string} className="rounded-lg border border-[#d9e2ec] bg-white p-5">
             <h2 className="text-xl font-bold text-[#111722]">{group}</h2>
@@ -4615,7 +4831,7 @@ function AdminControlCenterView() {
                   <h2 className="mt-1 text-xl font-bold text-[#111722]">Zweiter Faktor erforderlich</h2>
                   <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
                     Admin-Daten bleiben gesperrt, bis ein frischer Authenticator-Code verifiziert wurde.
-                    {!adminMfaStatus.configured && ' Fuer diesen Admin ist noch kein TOTP-Secret in Cloudflare konfiguriert.'}
+                    {!adminMfaStatus.configured && ' Für diesen Admin ist noch kein TOTP-Secret konfiguriert.'}
                     {adminMfaStatus.note ? ` ${adminMfaStatus.note}` : ''}
                   </p>
                 </div>
@@ -4635,7 +4851,7 @@ function AdminControlCenterView() {
                     disabled={!adminMfaStatus.canVerify || adminMfaSubmitting}
                     className="min-h-11 rounded-md bg-[#111722] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-[#8892a0]"
                   >
-                    {adminMfaSubmitting ? 'Pruefen' : 'Verifizieren'}
+                    {adminMfaSubmitting ? 'Prüfen' : 'Verifizieren'}
                   </button>
                   {adminMfaMessage && (
                     <p className="text-sm font-bold text-amber-800 sm:col-span-2">{adminMfaMessage}</p>
@@ -4649,7 +4865,7 @@ function AdminControlCenterView() {
               <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Admin API</p>
               <p className="mt-1 text-sm font-bold text-[#111722]">
                 {adminBackendStatus === 'live'
-                  ? adminOverview?.mode ?? 'cloudflare-kv-admin-control'
+                  ? adminOverview?.mode ?? 'salad-admin-control'
                   : adminBackendStatus === 'denied'
                     ? 'Admin-Session oder Rechte fehlen'
                     : adminBackendStatus === 'loading'
@@ -4674,7 +4890,7 @@ function AdminControlCenterView() {
                     : `IDrive e2 blockiert: ${(storageCapabilities.configuration.missing ?? []).join(', ')}`
                   : adminOverview?.storagePlan
                     ? `${adminOverview.storagePlan.metadata} + ${adminOverview.storagePlan.objects}`
-                    : 'IDrive e2 + Salad API (Cloudflare Übergang)'}
+                    : 'IDrive e2 + Salad API'}
               </p>
             </div>
             <div>
@@ -4685,14 +4901,14 @@ function AdminControlCenterView() {
                     ? `${computeCapabilities.provider ?? 'Salad'} bereit`
                     : `Salad blockiert: ${(computeCapabilities.configuration.missing ?? []).join(', ')}`
                   : adminOverview?.computePlan
-                    ? `${adminOverview.computePlan.mode ?? 'cloudflare-fallback'}`
+                    ? `${adminOverview.computePlan.mode ?? 'salad'}`
                     : 'Prüfung läuft'}
               </p>
             </div>
           </section>
           {storageCapabilities?.configuration && !storageCapabilities.configuration.ready && (
             <section className="mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-bold text-red-900">
-              IDrive e2 ist noch nicht produktiv nutzbar. Fehlend in Cloudflare Storage Worker:
+              IDrive e2 ist noch nicht produktiv nutzbar. Fehlende Storage-Konfiguration:
               {' '}
               {(storageCapabilities.configuration.missing ?? []).join(', ')}.
               {' '}
@@ -4705,7 +4921,7 @@ function AdminControlCenterView() {
               {' '}
               {(computeCapabilities.configuration.missing ?? []).join(', ')}.
               {' '}
-              Chats laufen kontrolliert im Cloudflare-Fallback, bis Salad API, Container Group und Secret gesetzt sind.
+              Chats bleiben blockiert, bis Salad API, Container Group und Secret gesetzt sind.
             </section>
           )}
           {renderActiveSection()}
@@ -4717,8 +4933,40 @@ function AdminControlCenterView() {
 
 // Dashboard View
 function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const startActions: { key: string; title: string; subtitle: string; dot: string; target: AppView }[] = [
+    { key: 'choose', title: 'Choose a Twin', subtitle: 'Profile, Themen, Wissen', dot: '#59C7FF', target: 'my-twins' },
+    { key: 'ask', title: 'Ask anything', subtitle: 'Chat startet sofort', dot: '#22c55e', target: 'twin-chat' },
+    { key: 'create', title: 'Create Twin', subtitle: 'Identität + Memories', dot: '#f59e0b', target: 'twin-builder' },
+  ]
   return (
     <div className="pt-[72px]">
+      <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-[18px] sm:p-8">
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Was möchtest du heute mit einem KI-Twin tun?</h2>
+        <p className="mt-1 text-sm text-[#555b64] sm:text-base">Wähle einen Twin, frage direkt oder erstelle deinen eigenen Zwilling.</p>
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {startActions.map((action) => (
+            <button
+              key={action.key}
+              type="button"
+              onClick={() => onNavigate(action.target)}
+              className="flex items-start gap-3 rounded-xl border border-white/20 bg-white/12 p-4 text-left transition-all hover:-translate-y-0.5 hover:bg-white/20"
+            >
+              <span className="mt-1 h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: action.dot }}></span>
+              <span>
+                <span className="block text-base font-semibold text-[#16181b]">{action.title}</span>
+                <span className="block text-sm text-[#555b64]">{action.subtitle}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-4 rounded-xl border border-white/20 bg-white/8 p-4">
+          <p className="text-base font-semibold text-[#16181b]">Private by default</p>
+          <p className="mt-0.5 text-sm text-[#555b64]">
+            IDrive E2 speichert Medien, Wissen, Backups und signierte Dateien. Salad rechnet nur API, KI, Suche und Cronjobs.
+          </p>
+        </div>
+      </div>
+
       <div className="mb-8">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">Willkommen zurück, Anna</h1>
         <p className="text-base text-[#555b64]">Dein digitaler Zwilling ist aktiv und bereit für Gespräche.</p>
@@ -5289,7 +5537,13 @@ function MemoryUploadView() {
 }
 
 // Twin Chat View
-function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null }) {
+function TwinChatView({
+  initialTwinId = null,
+  onNavigate,
+}: {
+  initialTwinId?: string | null
+  onNavigate: (view: AppView) => void
+}) {
   type TwinChatUiMessage = {
     id: string
     role: 'ai' | 'user'
@@ -5353,7 +5607,13 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
   const [composerMenuOpen, setComposerMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
+  const [savedMemoryIds, setSavedMemoryIds] = useState<Set<string>>(() => new Set())
+  const [savingMemoryId, setSavingMemoryId] = useState<string | null>(null)
+  const [noteText, setNoteText] = useState('')
+  const [noteSaving, setNoteSaving] = useState(false)
+  const [noteStatus, setNoteStatus] = useState('')
 
+  const hasUserTurn = messages.some((message) => message.role === 'user')
   const latestAssistantText =
     [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
   const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
@@ -5590,6 +5850,29 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
     }
   }
 
+  const handleAttachLink = () => {
+    setComposerMenuOpen(false)
+    const rawLink = window.prompt('Link einfügen')
+    if (!rawLink?.trim()) return
+    try {
+      const url = new URL(rawLink.trim())
+      if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Unsupported protocol')
+      setAttachments((current) => [
+        ...current,
+        {
+          id: crypto.randomUUID(),
+          kind: 'link',
+          name: url.hostname.replace(/^www\./, '') || 'Link',
+          status: 'ready',
+          url: url.href,
+        },
+      ])
+      addNotice('Link wurde angehängt.')
+    } catch {
+      addNotice('Bitte einen gültigen http- oder https-Link einfügen.')
+    }
+  }
+
   const handleAttachLocation = () => {
     setComposerMenuOpen(false)
     if (!('geolocation' in navigator)) {
@@ -5788,6 +6071,88 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
     if (started) setIsSpeaking(true)
   }
 
+  const handleExplainSimpler = () => {
+    if (isReplying || !activeTwin) {
+      if (isReplying) addNotice('Antwort läuft gerade. Bitte kurz warten.')
+      return
+    }
+    void handleSend('Erkläre deine letzte Antwort bitte einfacher – in 2–3 kurzen Sätzen, ohne Fachbegriffe.')
+  }
+
+  const handleAskFollowUp = () => {
+    if (!activeTwin) {
+      addNotice('Wähle zuerst ein KI-Profil aus.')
+      return
+    }
+    resizeInput('')
+    inputRef.current?.focus()
+    addNotice('Stelle direkt deine nächste Frage – der Kontext bleibt erhalten.')
+  }
+
+  const handleSaveAnswerToMemory = async (msg: TwinChatUiMessage) => {
+    if (msg.role !== 'ai' || !msg.content.trim()) return
+    if (auth.status !== 'authenticated') {
+      addNotice('Melde dich an, um Antworten dauerhaft im Memory zu speichern.')
+      return
+    }
+    if (savedMemoryIds.has(msg.id) || savingMemoryId) return
+    setSavingMemoryId(msg.id)
+    try {
+      const memory = await twinMvp.createMemory({
+        type: 'fact',
+        text: msg.content.trim(),
+        sourceType: 'chat',
+        chatId: chatId ?? undefined,
+        sourceLabel: activeTwin ? `Chat mit ${activeTwin.name}` : 'Twin Chat',
+        twinIds: activeTwin && !activeTwin.publicProfile ? [activeTwin.id] : undefined,
+      })
+      if (memory) {
+        setSavedMemoryIds((current) => {
+          const next = new Set(current)
+          next.add(msg.id)
+          return next
+        })
+        addNotice('Antwort wurde im Memory gespeichert.')
+      } else {
+        addNotice('Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.')
+      }
+    } catch {
+      addNotice('Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.')
+    } finally {
+      setSavingMemoryId(null)
+    }
+  }
+
+  const handleCreateNote = async () => {
+    const text = noteText.trim()
+    if (!text || noteSaving) return
+    if (auth.status !== 'authenticated') {
+      setNoteStatus('Melde dich an, um Notizen zu speichern.')
+      return
+    }
+    setNoteSaving(true)
+    setNoteStatus('')
+    try {
+      const memory = await twinMvp.createMemory({
+        type: 'fact',
+        text,
+        sourceType: 'manual',
+        sourceLabel: activeTwin ? `Notiz zu ${activeTwin.name}` : 'Workspace-Notiz',
+        twinIds: activeTwin && !activeTwin.publicProfile ? [activeTwin.id] : undefined,
+      })
+      if (memory) {
+        setNoteText('')
+        setNoteStatus('Notiz im Memory gespeichert ✓')
+      } else {
+        setNoteStatus('Speichern gerade nicht möglich. Bitte später erneut.')
+      }
+    } catch {
+      setNoteStatus('Speichern gerade nicht möglich. Bitte später erneut.')
+    } finally {
+      setNoteSaving(false)
+    }
+  }
+
   const handleSendButtonClick = () => {
     if (!activeTwin) {
       addNotice('Wähle zuerst ein KI-Profil aus.')
@@ -5818,13 +6183,20 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
               <h1 className="text-base font-bold tracking-tight">Twin Chat</h1>
               <p className="text-xs text-[#555b64]">Melde dich an, um KI-Profile auszuwählen und Chats zu speichern.</p>
             </div>
-            <Suspense fallback={null}>
-              <GitHubSignInButton variant="official" returnTo={window.location.pathname + window.location.search} />
-            </Suspense>
+            <div className="w-full sm:w-auto sm:min-w-[240px]">
+              <Suspense fallback={null}>
+                <GitHubSignInButton variant="official" returnTo={window.location.pathname + window.location.search} />
+              </Suspense>
+              <div className="my-2 flex items-center gap-2 text-[10px] uppercase tracking-wide text-[#9aa6b7]">
+                <span className="h-px flex-1 bg-[#0b1c44]/10"></span>oder<span className="h-px flex-1 bg-[#0b1c44]/10"></span>
+              </div>
+              <EmailPasswordForm returnTo={window.location.pathname + window.location.search} />
+            </div>
           </CardContent>
         </Card>
       )}
 
+      <div className="flex min-h-0 flex-1 gap-2">
       <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-white/24 bg-white/14 shadow-none backdrop-blur-[24px]">
         <header className="flex min-h-[44px] shrink-0 items-center justify-between gap-2 border-b border-white/18 bg-white/14 px-2 py-1 backdrop-blur-[18px] sm:min-h-[48px] sm:px-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -5872,6 +6244,20 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
           </button>
         </header>
 
+        {isReplying && (
+          <div className="flex shrink-0 items-center gap-3 border-b border-white/14 bg-white/10 px-3 py-1 text-[11px] font-medium text-[#555b64]">
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#22c55e]"></span>Prompt erhalten
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#59C7FF]"></span>Memory geprüft
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#f59e0b]"></span>Antwort streamt
+            </span>
+          </div>
+        )}
+
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-[3px] py-1 sm:px-2 sm:py-2">
           {messages.length === 0 && (
             <div className="grid min-h-full place-items-center px-3 py-8 text-center">
@@ -5902,7 +6288,7 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
               {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
               >
                 <div
                   className={`max-w-[calc(100%-8px)] rounded-[10px] border px-3 py-2 text-[15px] leading-snug shadow-none sm:max-w-[94%] sm:text-base ${
@@ -5924,6 +6310,37 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
                     <span className="ml-0.5 inline-block h-4 w-1 translate-y-0.5 animate-pulse rounded-full bg-[#59C7FF] align-middle"></span>
                   )}
                 </div>
+                {msg.role === 'ai' && !msg.streaming && msg.content.trim().length > 0 && hasUserTurn && (
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    <button
+                      type="button"
+                      onClick={handleExplainSimpler}
+                      disabled={isReplying}
+                      className="rounded-full border border-white/30 bg-white/14 px-2.5 py-1 text-[11px] font-medium text-[#555b64] transition-colors hover:bg-white/28 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      Einfacher erklären
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAskFollowUp}
+                      className="rounded-full border border-white/30 bg-white/14 px-2.5 py-1 text-[11px] font-medium text-[#555b64] transition-colors hover:bg-white/28"
+                    >
+                      Nachfragen
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleSaveAnswerToMemory(msg)}
+                      disabled={savingMemoryId === msg.id || savedMemoryIds.has(msg.id)}
+                      className="rounded-full border border-white/30 bg-white/14 px-2.5 py-1 text-[11px] font-medium text-[#555b64] transition-colors hover:bg-white/28 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {savedMemoryIds.has(msg.id)
+                        ? 'Im Memory gespeichert ✓'
+                        : savingMemoryId === msg.id
+                          ? 'Speichern…'
+                          : 'Im Memory speichern'}
+                    </button>
+                  </div>
+                )}
               </div>
               ))}
             </div>
@@ -5964,32 +6381,23 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
               <div className="mb-1 rounded-[10px] border border-white/20 bg-white/14 px-2 py-1 text-xs font-semibold text-[#555b64]">
                 {composerMenuOpen && (
                   <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20"
-                      aria-label="Dateien"
-                      title="Dateien"
-                    >
-                      <FileIcon className="h-4 w-4" aria-hidden="true" />
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Foto hinzufügen" title="Foto hinzufügen">
+                      <ImageIcon className="h-4 w-4" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={handlePickContacts}
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20"
-                      aria-label="Kontakte"
-                      title="Kontakte"
-                    >
-                      <ContactIcon className="h-4 w-4" aria-hidden="true" />
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Dateien" title="Dateien">
+                      <FileIcon className="h-4 w-4" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleAttachLocation}
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20"
-                      aria-label="Standort"
-                      title="Standort"
-                    >
-                      <MapPin className="h-4 w-4" aria-hidden="true" />
+                    <button type="button" onClick={handleAttachLink} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Link" title="Link">
+                      <LinkIcon className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => { setComposerMenuOpen(false); onNavigate('memory-upload') }} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Memory" title="Memory">
+                      <BookSpark className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={handlePickContacts} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Kontakte" title="Kontakte">
+                      <User className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={handleAttachLocation} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Standort" title="Standort">
+                      <MapPinIcon className="h-4 w-4" />
                     </button>
                   </div>
                 )}
@@ -6098,6 +6506,49 @@ function TwinChatView({ initialTwinId = null }: { initialTwinId?: string | null 
           </div>
         </footer>
       </section>
+        <aside className="hidden w-80 shrink-0 flex-col gap-2 overflow-y-auto rounded-md border border-white/24 bg-white/14 p-3 backdrop-blur-[24px] xl:flex">
+          <div>
+            <h2 className="text-sm font-bold tracking-tight text-[#16181b]">Workspace</h2>
+            <p className="text-xs text-[#555b64]">Halte Ideen fest und vertiefe die Antwort.</p>
+          </div>
+          <div className="rounded-[10px] border border-white/22 bg-white/16 p-2">
+            <label className="mb-1 block text-xs font-semibold text-[#16181b]">Create note</label>
+            <textarea
+              value={noteText}
+              onChange={(event) => setNoteText(event.target.value)}
+              placeholder="Kernidee, einfache Erklärung, Folgefragen …"
+              rows={5}
+              className="w-full resize-none rounded-md border border-[#0b1c44]/16 bg-white/70 px-2 py-1.5 text-sm text-[#16181b] outline-none focus:border-[#0b1c44]/40"
+            />
+            <button
+              type="button"
+              onClick={() => void handleCreateNote()}
+              disabled={noteSaving || !noteText.trim()}
+              className="mt-2 w-full rounded-md border border-[#0b1c44]/14 bg-[#0b1c44] px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[#173064] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {noteSaving ? 'Speichern…' : 'Notiz speichern'}
+            </button>
+            {noteStatus && <p className="mt-1 text-xs font-medium text-[#0b7a3b]">{noteStatus}</p>}
+          </div>
+          <div className="mt-1 flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={handleExplainSimpler}
+              disabled={isReplying || !hasUserTurn}
+              className="rounded-md border border-white/30 bg-white/16 px-3 py-1.5 text-sm font-medium text-[#16181b] transition-colors hover:bg-white/28 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Explain simpler
+            </button>
+            <button
+              type="button"
+              onClick={handleAskFollowUp}
+              className="rounded-md border border-white/30 bg-white/16 px-3 py-1.5 text-sm font-medium text-[#16181b] transition-colors hover:bg-white/28"
+            >
+              Ask follow-up
+            </button>
+          </div>
+        </aside>
+      </div>
     </div>
   )
 }

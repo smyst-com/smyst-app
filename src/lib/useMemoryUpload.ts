@@ -6,7 +6,7 @@
  *   2. Worker liefert Presigned PUT URL zurück
  *   3. Frontend macht PUT direkt an IDrive E2 (KEIN Proxying durch Worker → schnell)
  *   4. Bei Success: Frontend ruft POST /storage/upload-complete auf
- *   5. Worker markiert kleine Upload-Metadaten in Cloudflare KV als uploaded
+ *   5. API markiert kleine Upload-Metadaten als uploaded
  *
  * Vorteile:
  *  - Worker-Bandbreite wird nicht belastet (direkter App-Upload → IDrive)

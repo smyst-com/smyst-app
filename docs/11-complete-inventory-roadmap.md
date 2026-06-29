@@ -6,9 +6,9 @@ Status: Free-Only-Konsolidierung.
 
 - Vite/React/TypeScript Root-App.
 - Capacitor fuer mobile Shells.
-- Cloudflare Pages fuer Web/PWA.
-- Cloudflare Workers fuer Auth, Storage, Translation und Edge-Routing.
-- Cloudflare KV fuer Sessions, OAuth-State, Translation Cache und Quotas.
+- IDrive e2 static hosting fuer Web/PWA.
+- Salad API fuer Auth, Storage, Translation und Edge-Routing.
+- Salad/IDrive metadata fuer Sessions, OAuth-State, Translation Cache und Quotas.
 - IDrive e2 fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten.
 - GitHub Actions fuer CI/CD.
 

@@ -2,7 +2,7 @@
 
 ## Ziel
 
-IDrive e2 ist der zentrale Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten. Cloudflare Workers erzeugen signed URLs und setzen Quotas.
+IDrive e2 ist der zentrale Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten. Salad API erzeugen signed URLs und setzen Quotas.
 
 ## Production-Regel
 
@@ -33,7 +33,7 @@ maschinenlesbar aus.
 
 1. Client fragt `POST /storage/upload-url`.
 2. Worker prueft Session, Dateityp, Dateigroesse, User-Quota und Global-Quota.
-3. Worker reserviert Quota in Cloudflare KV und schreibt einen Upload-Intent.
+3. Worker reserviert Quota in Salad/IDrive metadata und schreibt einen Upload-Intent.
 4. Worker erstellt eine kurzlebige signed PUT URL fuer IDrive e2.
 5. Client laedt direkt zu IDrive e2 hoch.
 6. Client meldet `POST /storage/upload-complete`.

@@ -2,7 +2,7 @@
  * smyst.com i18n Helper — Client-Side
  *
  * Gemeinsame Konstanten und Hooks für Spracherkennung im Frontend.
- * Spiegelt die Logik aus workers/translator.ts.
+ * Spiegelt die statische Sprachlogik der App.
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -84,10 +84,7 @@ export function writeCookie(name: string, value: string, maxAgeSec = 31536000): 
  * Detection-Priorität (Frontend):
  *   1. URL ?lang=
  *   2. URL Pfad-Prefix /de/, /en/, ...
- *   3. localStorage
- *   4. Cookie
- *   5. navigator.language
- *   6. DEFAULT_LANG
+ *   3. DEFAULT_LANG for unprefixed routes
  */
 export function detectInitialLang(): SupportedLang {
   if (typeof window === 'undefined') return DEFAULT_LANG;
@@ -101,18 +98,9 @@ export function detectInitialLang(): SupportedLang {
     return pathLang as SupportedLang;
   }
 
-  try {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored) return toSupportedLang(stored);
-  } catch {
-    // localStorage kann in Private-Mode etc. blockiert sein
-  }
-
-  const cookieLang = readCookie(COOKIE_NAME);
-  if (cookieLang) return toSupportedLang(cookieLang);
-
-  if (navigator.language) return toSupportedLang(navigator.language);
-
+  // The canonical unprefixed routes are German. Do not let a previously stored
+  // browser preference put the SPA into another language while the edge worker
+  // has served the German document.
   return DEFAULT_LANG;
 }
 

@@ -19,37 +19,13 @@ def require_text(path: str, terms: list[str]) -> None:
 
 
 def main() -> None:
-    require_text("workers/auth-github.ts", [
-        "profile:write",
-        "ROLE_PERMISSIONS",
+    require_text("backend/app/main.py", [
+        "FastAPI",
+        "CORSMiddleware",
     ])
-    require_text("workers/api.ts", [
-        "handleGetProfile",
-        "handleUpdateProfile",
-        "handleListMemories",
-        "handleCreateMemory",
-        "handleUpdateMemory",
-        "handleDeleteMemory",
-        "handleSearchChats",
-        "persistManagedObject",
-        "deleteManagedObject",
-        "/storage/object",
-        "chatArchiveObjectKey",
-        "memoryObjectKey",
-        "profileObjectKey",
-        "hasProfileWritePermission",
-    ])
-    require_text("workers/storage-idrive.ts", [
-        "handlePutManagedObject",
-        "handleGetManagedObject",
-        "handleDeleteManagedObject",
-        "PUT /storage/object",
-        "GET /storage/object",
-        "DELETE /storage/object",
-        "isManagedObjectKey",
-        "putObjectToIdrive",
-        "getObjectFromIdrive",
-        "delete-object",
+    require_text("backend/app/api/v1/router.py", [
+        "api_router",
+        "include_router",
     ])
     require_text("src/lib/useTwinMvp.ts", [
         "getProfile",
@@ -64,19 +40,13 @@ def main() -> None:
         "Profil speichern",
         "Memory speichern",
         "Chatverlauf suchen",
-        "Profilqualitaet",
+        "Profilqualität",
     ])
     require_text("docs/03-api-architecture.md", [
-        "PUT /storage/object",
+        "IDrive e2",
+        "Salad",
         "/api/memories",
         "/api/chat/search",
-        "IDrive e2",
-    ])
-    require_text("docs/FREE_ONLY_PROFILE_MEMORY_AI_PLAN.md", [
-        "GitHub.com darf nur im dauerhaft kostenlosen Free-Tarif genutzt werden",
-        "Cloudflare.com darf nur im dauerhaft kostenlosen Free-Tarif genutzt werden",
-        "IDrive e2 / S3-kompatibler Storage ist der zentrale Hauptspeicher",
-        "Phase 1 trainiert keine eigenen Modelle",
     ])
     print("profile memory contract validation passed")
 

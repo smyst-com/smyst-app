@@ -10,7 +10,7 @@ finale schriftliche Freigabe vorliegt.
 
 Rahmen:
 
-- Nur kostenlose Dienste von GitHub.com und Cloudflare.com.
+- Nur kostenlose Dienste von GitHub.com und Legacy edge provider.
 - IDrive e2 bleibt Hauptspeicher fuer Dateien, Medien, Backups und grosse Daten.
 - Kein Production-Deploy wurde ausgefuehrt.
 
@@ -52,7 +52,7 @@ Rahmen:
 ### Backup / Wiederherstellung
 
 - `docs/runbooks/backup-recovery.md` erweitert:
-  - Cloudflare KV Export/Restore,
+  - Salad/IDrive metadata Export/Restore,
   - Restore-Dry-Run,
   - IDrive-e2-CORS,
   - server-side encryption,
@@ -156,9 +156,9 @@ Zusatzbefunde aus dem End-Audit:
    - Download,
    - Delete,
    - Account Export/Delete.
-7. Backup/Restore-Dry-Run fuer Cloudflare KV und IDrive e2 muss dokumentiert sein.
-8. Cloudflare Pages Auto-Deploy muss sicher gegated sein.
-9. GitHub/Cloudflare/IDrive Secrets und Bindings muessen live bestaetigt sein.
+7. Backup/Restore-Dry-Run fuer Salad/IDrive metadata und IDrive e2 muss dokumentiert sein.
+8. IDrive e2 static hosting Auto-Deploy muss sicher gegated sein.
+9. GitHub/Legacy edge provider/IDrive Secrets und Bindings muessen live bestaetigt sein.
 10. Finale schriftliche Production-Freigabe muss vorliegen.
 
 ## Fazit

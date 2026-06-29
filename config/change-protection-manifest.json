@@ -15,7 +15,9 @@
     "paidServicesAllowed": false,
     "allowedProductionServiceTiers": [
       "GitHub.com Free",
-      "Cloudflare.com Free"
+      "IDrive e2",
+      "Salad.com",
+      "Spaceship DNS"
     ],
     "centralStorage": "IDrive e2",
     "autoBillingServicesAllowed": false,
@@ -33,14 +35,16 @@
     "criticalFileChangeRule": "No critical production file may be changed without written approval, diff review and rollback plan.",
     "dataChangeRule": "Do not delete or overwrite users, profiles, profile images, uploads, chats, API data structures or storage metadata without explicit destructive approval and restore evidence.",
     "featureChangeRule": "Do not rebuild working design, routing, chat, upload, profile or security behavior without an explicit task.",
-    "costRule": "Only GitHub.com Free, Cloudflare.com Free and IDrive e2 are allowed for production; no trials, paid add-ons or auto-billing products.",
+    "costRule": "Only GitHub.com, IDrive e2, Salad.com and Spaceship DNS are production targets; legacy edge/CDN providers must not be expanded.",
     "fallbackRule": "If an official deploy, backup, restore or live validation step cannot be proven, block release and report NO-GO."
   },
   "hardArchitectureRules": [
     "GitHub.com may be used only on the Free tier",
-    "Cloudflare.com may be used only on the Free tier",
+    "Legacy edge/CDN providers must not be used for new production work",
     "No paid add-on service may be introduced",
     "No service may be introduced if it can automatically create cost",
+    "Spaceship remains the DNS and domain authority",
+    "Salad.com remains the compute/API target",
     "IDrive e2 remains central storage for files, media, models, backups and data",
     "Do not delete profiles, chats, images, videos or user data without explicit destructive approval",
     "Do not remove curated profile image files, imageFile metadata or public profile visibility without written approval",
@@ -75,6 +79,7 @@
     "scripts/check-dist-artifact.sh",
     "scripts/check-final-readiness.py",
     "scripts/check-profile-image-design-guard.py",
+    "scripts/check-provider-exit.py",
     "scripts/check-surface-protection.py",
     "scripts/live-test.sh",
     "scripts/preflight-release.sh",
@@ -85,12 +90,10 @@
     "src/lib/useMemoryUpload.ts",
     "src/lib/useTwinMvp.ts",
     "src/main.tsx",
-    "workers/_shared.ts",
-    "workers/api.ts",
-    "workers/auth-github.ts",
-    "workers/curated-public-twin-data.ts",
-    "workers/storage-idrive.ts",
-    "wrangler.toml"
+    "src/data/curated-public-twin-data.ts",
+    "backend/app/main.py",
+    "backend/app/api/v1/router.py",
+    "backend/app/security/middleware.py"
   ],
   "destructiveRoutes": [
     {
@@ -138,8 +141,8 @@
     "rollback_plan_confirmed required",
     "backup_restore_confirmed required",
     "CI typecheck/build/artifact validation before deploy",
-    "Cloudflare Pages artifact deploy from CI output",
-    "Worker deploy waits for CI and release gate",
+    "IDrive e2 static artifact deploy from CI output",
+    "Salad backend deploy waits for CI and release gate",
     "live smoke test after deploy",
     "concurrency group prevents overlapping deploys"
   ],
@@ -175,10 +178,10 @@
   },
   "rollbackProtections": [
     "Git revert or cherry-pick rollback path",
-    "Cloudflare Pages deployment rollback path",
-    "Cloudflare Worker version rollback path",
+    "IDrive e2 static artifact rollback path",
+    "Salad backend rollback path",
     "IDrive e2 user object restore test required before release",
-    "Cloudflare KV preview restore dry-run required before release"
+    "Salad metadata restore dry-run required before release"
   ],
   "dataIntegrityProtections": [
     "IDrive e2 object keys are user-scoped",

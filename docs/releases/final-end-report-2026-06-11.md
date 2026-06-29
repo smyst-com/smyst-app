@@ -6,7 +6,7 @@ Dieser Bericht fasst den finalen Stand nach Analyse, Umsetzung, Audit, Schutzmas
 
 ## Rahmenbedingungen
 
-- Erlaubt: kostenlose Dienste von GitHub.com und Cloudflare.com.
+- Erlaubt: kostenlose Dienste von GitHub.com und Legacy edge provider.
 - Zentraler Speicher: IDrive e2 fuer Dateien, Medien, Backups und grosse Daten.
 - Nicht erlaubt: kostenpflichtige Zusatzdienste.
 - Production-Deploy: nur nach finaler schriftlicher Freigabe.
@@ -26,9 +26,9 @@ Dieser Bericht fasst den finalen Stand nach Analyse, Umsetzung, Audit, Schutzmas
 - Live-/Repo-Abgleich dokumentiert.
 - Vite-App als Zielarchitektur gegen alte Inline-/Legacy-Auslieferung abgesichert.
 - Free-only Architektur dokumentiert und validiert.
-- Cloudflare Workers fuer Auth, API, Storage und Translate-Handoff gehaertet.
+- Salad API fuer Auth, API, Storage und Translate-Handoff gehaertet.
 - GitHub Actions Release-Gates verschaerft.
-- Backup-/Recovery-Konzept fuer Cloudflare KV und IDrive e2 dokumentiert.
+- Backup-/Recovery-Konzept fuer Salad/IDrive metadata und IDrive e2 dokumentiert.
 - Change-Protection gegen versehentliches Loeschen, fehlerhafte Deployments und falsche Production-Freigabe ergaenzt.
 - Finales Readiness-Scorecard-Gate eingefuehrt.
 - UI/UX mehrfach an das gewuenschte dunkle, viereckige smyst-Design angepasst.
@@ -71,7 +71,7 @@ Dieser Bericht fasst den finalen Stand nach Analyse, Umsetzung, Audit, Schutzmas
 
 - Neue Referenzmigration: `database/migrations/0005_integrity_performance_hardening.sql`.
 - Neuer Init-Hook: `database/init/006_run_integrity_migrations.sql`.
-- Dokumentiert: Production nutzt in Phase 1 Cloudflare KV fuer Metadaten und IDrive e2 fuer Objekte, keine separat betriebene SQL-Production-Datenbank.
+- Dokumentiert: Production nutzt in Phase 1 Salad/IDrive metadata fuer Metadaten und IDrive e2 fuer Objekte, keine separat betriebene SQL-Production-Datenbank.
 - SQL-Legacy bleibt Referenz fuer lokale Entwicklung und Zukunft, nicht Production-Ziel.
 - Ergaenzt: Constraints, Performance-Indizes, `updated_at` Trigger, aktive Twins View und indexierbare Public Pages View.
 
@@ -95,7 +95,7 @@ Dieser Bericht fasst den finalen Stand nach Analyse, Umsetzung, Audit, Schutzmas
 
 - GitHub Actions Deploy-Workflow mit Release Approval, Freeze, Rollback-Plan und Backup-Restore Confirmation.
 - Preflight-Release-Script blockiert Production ohne notwendige Bestaetigungen.
-- Cloudflare Worker Routing fuer statische Dateien, API/Auth/Storage und Translate verbessert.
+- Legacy edge provider Worker Routing fuer statische Dateien, API/Auth/Storage und Translate verbessert.
 - Runbooks fuer Release Governance und Backup/Recovery erweitert.
 - Backup-/Recovery-Manifest und Change-Protection-Manifest hinzugefuegt.
 - Final-Readiness-Scorecard hinzugefuegt.
@@ -244,8 +244,8 @@ Eingeschraenkt/offen:
 - Live `smyst.com` kann noch stale sein und nicht den aktuellen Repo-Stand ausliefern.
 - Root/SEO kann live weiterhin durch `noindex` oder falsche statische Datei-Auslieferung blockiert sein.
 - IDrive-e2 Upload/Complete/List/Download/Delete ist noch nicht final als Production-E2E belegt.
-- GitHub/Cloudflare/IDrive Secrets und Bindings muessen vor Release live verifiziert werden.
-- Cloudflare/GitHub Free-Tiers sind nicht fuer Milliarden Nutzer pro Tag garantierbar.
+- GitHub/Legacy edge provider/IDrive Secrets und Bindings muessen vor Release live verifiziert werden.
+- Legacy edge provider/GitHub Free-Tiers sind nicht fuer Milliarden Nutzer pro Tag garantierbar.
 - Keine echte KI-Orchestrierung, keine Multi-Provider-Failover-Strategie, keine AI-Evaluation.
 - Keine vollstaendige Legal-/Privacy-/Compliance-Freigabe.
 - Kein kompletter Pen-Test, Abuse/Bot-Schutz-Test oder Malware-Scanning fuer Uploads.
@@ -266,7 +266,7 @@ Eingeschraenkt/offen:
 
 - Preview-Deployment zuerst, dann komplette Smoke-/E2E-/Mobile-/A11y-Pruefung.
 - Echte AI-Gateway-Schicht mit austauschbaren Providern, aber keine paid Provider im MVP aktivieren.
-- Hochwertige Observability mit Cloudflare Logs/Analytics im Free-only-Rahmen.
+- Hochwertige Observability mit Legacy edge provider Logs/Analytics im Free-only-Rahmen.
 - Komponentenaufteilung von `src/App.tsx` in kleinere UI-/Flow-Module.
 - Accessibility Tests, Visual Regression Tests und Device Matrix.
 - Restore-Drills automatisieren und als Release-Evidence speichern.
@@ -290,7 +290,7 @@ Production darf erst freigegeben werden, wenn:
 2. Preview-Deploy gruen.
 3. `scripts/test-all.sh` inklusive Build gruen.
 4. Live-Test gegen Preview und danach gegen `https://smyst.com` gruen.
-5. GitHub/Cloudflare/IDrive-e2 Secrets und Routes verifiziert.
+5. GitHub/Legacy edge provider/IDrive-e2 Secrets und Routes verifiziert.
 6. Login, Profil, Twin, Chat, Upload, Download, Delete und Account Export/Delete E2E gruen.
 7. KV + IDrive-e2 Backup/Restore-Dry-Run dokumentiert.
 8. Mobile 390x844, Desktop, PWA und Accessibility abgenommen.

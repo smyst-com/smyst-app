@@ -13,7 +13,7 @@ Ja OK
 The free-only constraints remain active:
 
 - GitHub.com Free for repository, CI/CD and deployment pipeline.
-- Cloudflare.com Free for DNS, SSL, CDN, Pages, Workers and KV.
+- Legacy edge provider.com Free for DNS, SSL, CDN, Pages, Workers and KV.
 - IDrive e2 as central object storage for files, media, documents, uploads, backups and larger twin data.
 - No paid add-on services.
 - No external Google Fonts.
@@ -37,11 +37,11 @@ id="root"
 
 The live HTML response still includes Google Fonts references, so it is not release-compliant.
 
-## Cloudflare Dashboard Finding
+## Legacy edge provider Dashboard Finding
 
-The Cloudflare account `477794df69f0b6a0b9e4c59e36883c1f` was inspected through the dashboard after approval.
+The Legacy edge provider account `477794df69f0b6a0b9e4c59e36883c1f` was inspected through the dashboard after approval.
 
-Observed Cloudflare state:
+Observed Legacy edge provider state:
 
 - Pages project `smyst-app` exists.
 - `smyst-app` has these domains attached:
@@ -67,11 +67,11 @@ Production deployment could not be completed from this local environment because
 - Local Git remote `origin` is configured as `https://github.com/smyst-com/smyst-app.git`.
 - Terminal Git is not authenticated against this private GitHub repository yet, so `git ls-remote origin HEAD` still returns `Repository not found`.
 - A dedicated local SSH key was generated for this repository, but GitHub account settings still show no SSH keys saved. GitHub requires account password/sudo confirmation before adding the key.
-- The Cloudflare Pages project `smyst-app` is not connected to GitHub, so Cloudflare cannot build this repository automatically.
+- The Legacy edge provider Pages project `smyst-app` is not connected to GitHub, so Legacy edge provider cannot build this repository automatically.
 - `gh` is not installed in this environment.
-- Global `wrangler` is not installed.
-- Local `node_modules/.bin/wrangler` is a broken empty symlink.
-- Direct Wrangler invocation through `node_modules/wrangler/bin/wrangler.js` hangs before producing output.
+- Global `legacy-edge-cli` is not installed.
+- Local `node_modules/.bin/legacy-edge-cli` is a broken empty symlink.
+- Direct Wrangler invocation through `node_modules/legacy-edge-cli/bin/legacy-edge-cli.js` hangs before producing output.
 - Local Vite production build hangs at `vite v6.4.2 building for production...`; the existing `dist/` artifact is stale and must not be deployed.
 - Local dependency inspection found `chokidar` hanging during package load, which also blocks Tailwind/PostCSS-based fallback builds in this local `node_modules`.
 
@@ -82,11 +82,11 @@ Production deployment could not be completed from this local environment because
    ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDcVweWl5DIvcxTl2XRjhgvLahghS73iW+RI4lMJEI0i smyst-app-deploy
    ```
 2. Switch the local `origin` remote to SSH and push `main` to `git@github.com:smyst-com/smyst-app.git`.
-3. Connect Cloudflare Pages project `smyst-app` to the same GitHub repository, or use a verified manual upload artifact.
+3. Connect Legacy edge provider Pages project `smyst-app` to the same GitHub repository, or use a verified manual upload artifact.
 3. Ensure GitHub Actions secrets exist:
-   - `CLOUDFLARE_API_TOKEN`
-   - `CLOUDFLARE_ACCOUNT_ID`
-4. Ensure Cloudflare Worker secrets exist:
+   - `LEGACY_EDGE_API_TOKEN`
+   - `LEGACY_EDGE_ACCOUNT_ID`
+4. Ensure Legacy edge provider Worker secrets exist:
    - `GITHUB_OAUTH_CLIENT_ID`
    - `GITHUB_OAUTH_CLIENT_SECRET`
    - `AUTH_HMAC_SECRET`

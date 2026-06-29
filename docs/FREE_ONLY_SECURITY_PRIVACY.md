@@ -1,6 +1,6 @@
 # Free-Only Sicherheit und Datenschutz
 
-Status: Phase-1-MVP auf GitHub Free, Cloudflare Free und IDrive e2.
+Status: Phase-1-MVP auf GitHub Free, Legacy edge provider Free und IDrive e2.
 
 ## Grundsatz
 
@@ -9,7 +9,7 @@ Production darf keine kostenpflichtigen Zusatzdienste voraussetzen. Sensible Dat
 ## Zugriffskontrollen
 
 - Auth läuft über GitHub OAuth und HttpOnly-Session-Cookies.
-- Sessions liegen in Cloudflare KV.
+- Sessions liegen in Salad/IDrive metadata.
 - Rollen und Rechte werden serverseitig geprüft: `storage:*`, `twin:*`, `chat:*`, `admin:*`.
 - Private Daten werden nur über usergebundene KV-Keys und IDrive-e2-Pfade unter `users/{userSub}/...` gelesen.
 
@@ -23,7 +23,7 @@ Production darf keine kostenpflichtigen Zusatzdienste voraussetzen. Sensible Dat
 - Ungueltig formatierte Session-Cookies werden verworfen und geloescht.
 - OAuth-State ist HMAC-signiert, kurzlebig und wird nach Nutzung gelöscht.
 - Die Auth-Konfiguration verlangt HTTPS fuer `CANONICAL_HOST` und ein starkes HMAC-Secret.
-- `POST /auth/logout-all` entfernt bekannte Sessions des aktuellen Users aus Cloudflare KV.
+- `POST /auth/logout-all` entfernt bekannte Sessions des aktuellen Users aus Salad/IDrive metadata.
 
 ## Upload-Schutz
 
@@ -36,7 +36,7 @@ Production darf keine kostenpflichtigen Zusatzdienste voraussetzen. Sensible Dat
 
 ## Export und Löschung
 
-- `GET /api/account/export` exportiert eigene Cloudflare-KV-Metadaten wie User-Record, Twins und Chats als JSON.
+- `GET /api/account/export` exportiert eigene Legacy edge provider-KV-Metadaten wie User-Record, Twins und Chats als JSON.
 - `DELETE /storage/account` loescht bekannte User-Objekte in IDrive e2 ueber serverseitig erzeugte kurzlebige Delete-Signaturen.
 - `DELETE /api/account` loescht eigene Chat-, Twin-, Public-Profile- und Account-Metadaten aus KV und beendet die Session.
 - Account-Loeschung ist zweistufig: zuerst Storage-Objekte ueber den Storage-Worker, danach KV-Metadaten ueber den API-Worker.
@@ -51,7 +51,7 @@ Production darf keine kostenpflichtigen Zusatzdienste voraussetzen. Sensible Dat
 ## XSS, Headers und öffentliche Daten
 
 - API-Antworten haben sichere JSON- und No-Store-Header.
-- Cloudflare Pages setzt CSP, Framing-Schutz, Referrer-Policy, Permissions-Policy und `nosniff`.
+- IDrive e2 static hosting setzt CSP, Framing-Schutz, Referrer-Policy, Permissions-Policy und `nosniff`.
 - React rendert Nutzerdaten escaped; Worker entfernen Steuerzeichen und spitze Klammern aus Profiltexten.
 - Twin-Bild-URLs duerfen nur auf same-origin `/storage/file/`, `/assets/` oder `/public/` zeigen.
 - Öffentliche Twin-Profile geben keine privaten Medien-Keys, User-IDs, `imageKey` oder Wissenstexte aus. Das öffentliche KV enthält nur einen entschärften Snapshot mit Zählwerten und Profilmetadaten.

@@ -1,13 +1,13 @@
 # Free-Only Native Apps: iOS und Android
 
-Status: Phase-1-MVP auf Capacitor, GitHub Free, Cloudflare Free und IDrive e2.
+Status: Phase-1-MVP auf Capacitor, GitHub Free, Legacy edge provider Free und IDrive e2.
 
 ## App-Identität
 
 - App-Name: `smyst.com`
 - Bundle-ID / Application-ID: `com.smyst.app`
 - Web-Quelle: lokale Vite-Build-Dateien aus `dist`
-- Production-Backend: Cloudflare Pages/Workers/KV
+- Production-Backend: Legacy edge provider Pages/Workers/KV
 - Zentraler Datei- und Medienspeicher: IDrive e2
 
 ## iOS
@@ -39,7 +39,7 @@ Voll verifizierte Universal Links/App Links brauchen reale Store-/Signing-Daten:
 - Apple: `apple-app-site-association` mit Team-ID und Bundle-ID.
 - Android: `assetlinks.json` mit Release-Zertifikat-Fingerprint.
 
-Diese Dateien duerfen spaeter statisch ueber Cloudflare Pages ausgeliefert werden und brauchen keinen kostenpflichtigen Dienst.
+Diese Dateien duerfen spaeter statisch ueber Legacy edge provider Pages ausgeliefert werden und brauchen keinen kostenpflichtigen Dienst.
 
 ## PWA-Verhalten
 
@@ -51,7 +51,7 @@ Diese Dateien duerfen spaeter statisch ueber Cloudflare Pages ausgeliefert werde
 
 - Native App und PWA nutzen denselben Web-Upload-Flow.
 - Große Dateien gehen direkt per kurzlebiger Presigned-URL zu IDrive e2.
-- Cloudflare Worker pruefen Session, Quotas, Content-Type, Dateigroesse und Eigentum.
+- Legacy edge provider Worker pruefen Session, Quotas, Content-Type, Dateigroesse und Eigentum.
 - Frontend blockiert offensichtlich falsche Dateitypen und zu große Dateien frueh, der Worker bleibt autoritativ.
 
 ## Phase-1-Grenzen

@@ -1,9 +1,9 @@
 {
   "version": "2026-06-11",
   "policy": {
-    "services": ["GitHub Free", "Cloudflare Free", "IDrive e2"],
+    "services": ["GitHub Free", "IDrive e2", "Salad.com", "Spaceship DNS"],
     "paidServicesAllowed": false,
-    "productionDatabase": "cloudflare-kv",
+    "productionDatabase": "salad-api-idrive-metadata",
     "productionObjectStore": "idrive-e2",
     "legacySqlProduction": false
   },
@@ -14,32 +14,32 @@
       "backupOwner": "GitHub",
       "rpo": "latest pushed commit",
       "rto": "30 minutes for revert or redeploy",
-      "restoreMethod": "git revert/cherry-pick plus gated Cloudflare deploy",
+      "restoreMethod": "git revert/cherry-pick plus gated IDrive e2 static deploy and Salad backend deploy",
       "mustNotContain": ["private user files", "IDrive e2 secrets", "OAuth secrets"]
     },
     {
-      "name": "cloudflare-pages-deployment",
-      "sourceOfTruth": "Cloudflare Pages deployments",
-      "backupOwner": "Cloudflare",
-      "rpo": "last successful gated deployment",
-      "rto": "15 minutes for Pages rollback",
-      "restoreMethod": "rollback to known-good Pages deployment id"
+      "name": "idrive-e2-static-deployment",
+      "sourceOfTruth": "IDrive e2 static website buckets",
+      "backupOwner": "IDrive e2 and GitHub build artifact",
+      "rpo": "last successful gated static deployment",
+      "rto": "30 minutes for static artifact rollback",
+      "restoreMethod": "sync known-good dist artifact to IDrive e2 website buckets"
     },
     {
-      "name": "cloudflare-workers",
-      "sourceOfTruth": "GitHub worker source and Cloudflare worker versions",
-      "backupOwner": "GitHub and Cloudflare",
-      "rpo": "latest committed worker source plus latest deployed version id",
-      "rto": "30 minutes for worker rollback/redeploy",
-      "restoreMethod": "redeploy committed worker or rollback worker version"
+      "name": "salad-backend",
+      "sourceOfTruth": "GitHub backend source and Salad container image/deployment",
+      "backupOwner": "GitHub and Salad",
+      "rpo": "latest committed backend source plus latest deployed container image",
+      "rto": "30 minutes for Salad rollback/redeploy",
+      "restoreMethod": "redeploy known-good backend container or roll Salad container group to known-good image"
     },
     {
-      "name": "cloudflare-kv-metadata",
-      "sourceOfTruth": "Cloudflare KV",
-      "backupOwner": "Cloudflare KV export into controlled restore artifact",
+      "name": "salad-idrive-metadata",
+      "sourceOfTruth": "Salad API metadata and IDrive e2 metadata artifacts",
+      "backupOwner": "IDrive e2 controlled restore artifact",
       "rpo": "24 hours for MVP metadata after first production release",
       "rto": "4 hours for small namespace restore dry-run",
-      "restoreMethod": "restore selected prefixes into preview KV namespace, verify counts, then promote only after approval",
+      "restoreMethod": "restore selected metadata prefixes into a staging artifact/API namespace, verify counts, then promote only after approval",
       "includePrefixes": [
         "auth:user:",
         "auth:sessions:",
@@ -87,20 +87,20 @@
   ],
   "releaseEvidence": [
     "git commit hash",
-    "Cloudflare Pages deployment id",
-    "Cloudflare Worker version ids",
-    "KV namespace inventory",
-    "KV restore dry-run result",
+    "IDrive e2 static deployment artifact id",
+    "Salad backend deployment id",
+    "metadata inventory",
+    "metadata restore dry-run result",
     "IDrive e2 bucket CORS/encryption/lifecycle confirmation",
     "signed upload/download/delete smoke result",
     "rollback target"
   ],
   "blockingRisks": [
-    "no KV restore dry-run",
+    "no metadata restore dry-run",
     "no IDrive e2 signed object restore test",
     "live root noindex",
     "static files served as SPA HTML",
-    "Cloudflare Pages auto-deploy bypasses release gate",
+    "static deploy bypasses release gate",
     "secrets missing or over-scoped",
     "production data stored in legacy SQL or server filesystem"
   ]

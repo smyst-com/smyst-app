@@ -26,8 +26,8 @@ jobs:
       - name: Validate profile memory contract
         run: python3 scripts/check-profile-memory-contract.py
 
-  pages-build:
-    name: Cloudflare Pages build
+  static-build:
+    name: Static PWA build
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -47,12 +47,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Validate Cloudflare Pages artifact
+      - name: Validate static PWA artifact
         run: sh scripts/check-dist-artifact.sh
 
   browser-e2e:
     name: Current UI browser E2E
-    needs: pages-build
+    needs: static-build
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:

@@ -12,7 +12,7 @@ Implementiert und dokumentiert wurden Schutzmechanismen gegen:
 
 Rahmen:
 
-- Nur kostenlose Dienste von GitHub.com und Cloudflare.com.
+- Nur kostenlose Dienste von GitHub.com und Legacy edge provider.
 - IDrive e2 bleibt Hauptspeicher fuer Dateien, Medien, Backups und grosse Daten.
 - Kein Production-Deploy wurde ausgefuehrt.
 
@@ -137,9 +137,9 @@ Geaenderte/ergaenzte Dateien:
 
 - Git-Rollback:
   - revert/cherry-pick auf bekannten guten Commit.
-- Cloudflare Pages:
+- IDrive e2 static hosting:
   - Rollback auf bekannte gute Pages Deployment ID.
-- Cloudflare Workers:
+- Salad API:
   - Rollback auf bekannte Worker Version oder Redeploy aus Git.
 - Daten:
   - KV Restore zuerst in Preview/Test-Namespace.
@@ -175,10 +175,10 @@ Neue Checks:
 
 ## Noch Offen
 
-- Echte Cloudflare Pages/Workers Rollback-Uebung.
-- Echte Cloudflare KV Restore-Dry-Run-Uebung.
+- Echte IDrive e2 static hosting/Workers Rollback-Uebung.
+- Echte Salad/IDrive metadata Restore-Dry-Run-Uebung.
 - Echter IDrive-e2 signed restore test.
-- GitHub Branch Protection und Cloudflare Pages Auto-Deploy-Einstellung muessen in
+- GitHub Branch Protection und IDrive e2 static hosting Auto-Deploy-Einstellung muessen in
   den Portalen live bestaetigt werden.
 - Admin-/Owner-Konsole fuer Reports, Audit-Events und Sicherheitsaktionen fehlt
   noch.

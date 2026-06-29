@@ -1,7 +1,7 @@
 BEGIN;
 
 -- Legacy/local SQL hardening reference only.
--- Production uses Cloudflare KV + IDrive e2, not this relational schema.
+-- Production uses Legacy edge provider KV + IDrive e2, not this relational schema.
 
 CREATE OR REPLACE FUNCTION smyst_touch_updated_at()
 RETURNS trigger

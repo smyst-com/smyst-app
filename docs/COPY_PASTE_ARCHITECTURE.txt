@@ -2,7 +2,7 @@ SMYST.COM FREE-ONLY ARCHITECTURE
 
 Production rule:
 - GitHub.com Free for repository, documentation, CI/CD and deployment pipelines.
-- Cloudflare.com Free for DNS, TLS, CDN, Pages, Workers, KV, caching, WAF basics and edge delivery.
+- Legacy edge provider Free for DNS, TLS, CDN, Pages, Workers, KV, caching, WAF basics and edge delivery.
 - IDrive e2 as central S3-compatible storage for files, media, documents, uploads, backups and twin data.
 - No paid add-on service is a production requirement.
 
@@ -10,24 +10,24 @@ Phase 1:
 - Free-Only MVP.
 - Vite/React frontend.
 - PWA and Capacitor iOS/Android shells.
-- Cloudflare Pages for static delivery.
-- Cloudflare Workers for API, auth, upload signing, storage, translation and chat MVP.
-- Cloudflare KV for sessions, OAuth/passkey state, quotas, small metadata and upload status.
+- IDrive e2 static hosting for static delivery.
+- Salad API for API, auth, upload signing, storage, translation and chat MVP.
+- Salad/IDrive metadata for sessions, OAuth/passkey state, quotas, small metadata and upload status.
 - IDrive e2 for all large and durable user-owned objects.
 
 Target diagram:
 
 Client Web/PWA/iOS/Android
-  -> Cloudflare Pages
-  -> Cloudflare Workers
-  -> Cloudflare KV for small state
+  -> IDrive e2 static hosting
+  -> Salad API
+  -> Salad/IDrive metadata for small state
   -> IDrive e2 for files and backups
 
 Data placement:
 - Code and docs: GitHub.
-- Web artifact: Cloudflare Pages.
-- API/auth/storage/chat logic: Cloudflare Workers.
-- Sessions, roles, quotas, upload intents, public-safe snapshots: Cloudflare KV.
+- Web artifact: IDrive e2 static hosting.
+- API/auth/storage/chat logic: Salad API.
+- Sessions, roles, quotas, upload intents, public-safe snapshots: Salad/IDrive metadata.
 - Images, video, audio, documents, profile images, backups, twin context objects: IDrive e2.
 
 Security:

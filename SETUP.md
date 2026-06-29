@@ -80,6 +80,9 @@ Nutzung nur bei Bedarf:
 - Generierung von App-Inhalten
 - temporaere Rechenleistung
 
-## Cloudflare
+## Alte Edge-/CDN-Ressourcen
 
-Cloudflare ist in dieser Zielarchitektur kein Hauptsystem. Bestehende Cloudflare Pages/Workers duerfen nur als Uebergang laufen, bis IDrive e2 Static Hosting und Spaceship DNS produktiv sind.
+Alte Pages-, Worker-, Key-Value-, DNS- oder Cache-Ressourcen muessen vor der
+Account-Kuendigung entweder ersetzt, exportiert oder bewusst verworfen werden.
+Neue Einrichtung erfolgt nur ueber Spaceship DNS, IDrive e2 Static Hosting,
+IDrive e2 Object Storage, Salad Compute und GitHub Actions.

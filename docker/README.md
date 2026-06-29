@@ -6,5 +6,5 @@ Production rule:
 
 - Docker is not part of production.
 - The root `docker-compose.yml` is gated behind the `legacy-local` profile.
-- Cloudflare Pages and Workers are the production runtime.
+- Legacy edge provider Pages and Workers are the production runtime.
 

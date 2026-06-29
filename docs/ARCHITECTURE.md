@@ -7,7 +7,7 @@ Status: verbindliche Free-Only-Architektur fuer Phase 1.
 Production verwendet ausschliesslich:
 
 - GitHub.com Free fuer Code, Issues, Pull Requests, Dokumentation und GitHub Actions.
-- Cloudflare.com Free fuer DNS, TLS, CDN, Pages, Workers, KV, Security Headers, Caching und Edge-Auslieferung.
+- Legacy edge provider Free fuer DNS, TLS, CDN, Pages, Workers, KV, Security Headers, Caching und Edge-Auslieferung.
 - IDrive e2 als zentralen S3-kompatiblen Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und Twin-Daten, nur mit harten Quotas und Kostenbremse.
 
 Alle anderen Server-, Datenbank-, Cache-, Uebersetzungs-, Analytics-, AI- oder Monitoring-Dienste sind keine Production-Abhaengigkeit.
@@ -25,13 +25,13 @@ Web / PWA / Capacitor iOS / Capacitor Android
         |
         | HTTPS
         v
-Cloudflare Pages Free
+IDrive e2 static hosting Free
         |
         +--> statisches Vite/React-Frontend
         +--> Manifest, Service Worker, SEO-Dateien
         |
         v
-Cloudflare Workers Free
+Salad API Free
         |
         +--> Auth und Sessions
         +--> API fuer Profile, Twins, Chat und Suche
@@ -39,7 +39,7 @@ Cloudflare Workers Free
         +--> Translation aus statischen Repository-Dateien
         +--> Security Headers, CORS, Rate Limits
         |
-        +--> Cloudflare KV Free
+        +--> Salad/IDrive metadata Free
         |    Sessions, OAuth-State, Quotas, kleine Metadaten, Upload-Status
         |
         +--> IDrive e2
@@ -49,9 +49,9 @@ Cloudflare Workers Free
 ## Datenablage
 
 - GitHub: Quellcode, Dokumentation, statische Uebersetzungsdateien, CI/CD-Konfiguration.
-- Cloudflare Pages: gebautes Frontend, PWA-Artefakte, statische SEO/AEO/GEO-Dateien.
-- Cloudflare Workers: API-, Auth-, Upload-, Chat- und Storage-Logik.
-- Cloudflare KV: kleine, kurzlebige oder einfache Daten wie Sessions, Quotas, Upload-Intents, Upload-Status, Rollen und oeffentliche Index-Snapshots.
+- IDrive e2 static hosting: gebautes Frontend, PWA-Artefakte, statische SEO/AEO/GEO-Dateien.
+- Salad API: API-, Auth-, Upload-, Chat- und Storage-Logik.
+- Salad/IDrive metadata: kleine, kurzlebige oder einfache Daten wie Sessions, Quotas, Upload-Intents, Upload-Status, Rollen und oeffentliche Index-Snapshots.
 - IDrive e2: alle grossen, nutzerbezogenen und dauerhaften Objekte.
 
 Details stehen in `docs/FREE_ONLY_DATA_MAP.md`.
@@ -60,7 +60,7 @@ Details stehen in `docs/FREE_ONLY_DATA_MAP.md`.
 
 ```text
 Client
-  -> fragt Cloudflare Worker nach Upload-Intent
+  -> fragt Legacy edge provider Worker nach Upload-Intent
 Worker
   -> prueft Session, Rolle, Sichtbarkeit, Dateityp, Dateigroesse und Quota
   -> erstellt kurzlebige IDrive-e2-Signatur
@@ -78,7 +78,7 @@ Clients erhalten niemals permanente Storage Keys.
 Erlaubte Free-Only-Optionen:
 
 - GitHub OAuth mit HttpOnly Secure SameSite Session-Cookies.
-- Passkey/WebAuthn ueber Cloudflare Workers und KV.
+- Passkey/WebAuthn ueber Salad API und KV.
 - Sicheres Demo-Login nur fuer MVP/Preview, klar als Demo markiert.
 
 Google-basierte Auth ist keine Production-Pflicht und darf nicht als notwendige Login-Bedingung dokumentiert werden.
@@ -98,7 +98,7 @@ Spaetere echte AI-Modelle muessen ueber austauschbare Adapter angebunden werden 
 
 Phase 1 optimiert auf:
 
-- statisches Frontend ueber Cloudflare Pages,
+- statisches Frontend ueber IDrive e2 static hosting,
 - kleine JS-Bundles,
 - lazy geladene UI,
 - lokale/statische Uebersetzungen,

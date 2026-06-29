@@ -11,7 +11,6 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { useLanguage } from '@/lib/i18n';
 import { usePrefersReducedMotion } from '@/lib/useResponsive';
 import LangSwitcher from './LangSwitcher';
 
@@ -30,7 +29,6 @@ interface Props {
 }
 
 export default function MobileNav({ open, onClose, items, primaryAction }: Props) {
-  const { lang } = useLanguage();
   const reduced = usePrefersReducedMotion();
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -143,7 +141,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
           <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.05] p-4">
             <p className="text-sm font-bold">Profil, Twins und Memories</p>
             <p className="mt-1 text-xs leading-relaxed text-[#9aa6b7]">
-              Steuere Identitaet, Wissen, Chats und Datenschutz an einer Stelle.
+              Steuere Identität, Wissen, Chats und Datenschutz an einer Stelle.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
@@ -190,7 +188,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
             {[
               ['HttpOnly Cookie', 'Session bleibt sicher serverseitig.'],
               ['Private Inhalte noindex', 'Private Profile werden nicht indexiert.'],
-              ['Export & Loeschung', 'Datenkontrolle im Profilbereich.'],
+              ['Export & Löschung', 'Datenkontrolle im Profilbereich.'],
             ].map(([title, text]) => (
               <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
                 <p className="text-xs font-bold text-white">{title}</p>

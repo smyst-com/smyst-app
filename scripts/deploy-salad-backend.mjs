@@ -1,4 +1,4 @@
-// Turnkey-Deploy des API-Backends (backend/) auf SaladCloud — Cloudflare-frei.
+// Turnkey-Deploy des API-Backends (backend/) auf SaladCloud — legacy-edge-frei.
 //
 // Macht in EINEM Lauf:
 //   1) Docker-Image aus backend/ bauen

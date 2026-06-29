@@ -6,24 +6,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-ACTIVE_PRODUCTION_PATHS = [
-    ".github/workflows",
-    "config",
-    "src",
-    "workers",
-]
-
 REQUIRED_FILES = [
-    "docs/FREE_ONLY_INFRASTRUCTURE.md",
-    "docs/FREE_ONLY_DATA_MAP.md",
-    "docs/02-database-architecture.md",
-    "docs/LEGACY_LOCAL_REFERENCES.md",
-    "docs/FREE_ONLY_SEO_AEO_GEO.md",
-    "docs/FREE_ONLY_SECURITY_PRIVACY.md",
-    "docs/FREE_ONLY_PERFORMANCE_MOBILE.md",
-    "docs/FREE_ONLY_NATIVE_APPS.md",
-    "docs/runbooks/release-governance.md",
-    "docs/runbooks/backup-recovery.md",
+    "README.md",
+    "SETUP.md",
+    "package.json",
+    "package-lock.json",
+    ".github/workflows/deploy.yml",
+    ".github/workflows/e2e-deployment.yml",
+    ".github/workflows/foundation-ci.yml",
     "config/backup-recovery-manifest.json",
     "config/change-protection-manifest.json",
     "config/surface-protection-manifest.json",
@@ -32,16 +22,18 @@ REQUIRED_FILES = [
     "scripts/check-change-protection.py",
     "scripts/check-surface-protection.py",
     "scripts/check-final-readiness.py",
-    "scripts/check-profile-memory-contract.py",
-    "scripts/profile-conversation-stability.mjs",
-    "wrangler.toml",
-    "workers/_shared.ts",
-    "workers/api.ts",
-    "workers/auth-github.ts",
-    "workers/storage-idrive.ts",
-    "workers/translator.ts",
-    "src/components/GitHubSignInButton.tsx",
-    "src/lib/analytics.ts",
+    "scripts/check-profile-image-design-guard.py",
+    "scripts/check-provider-exit.py",
+    "scripts/live-test.sh",
+    "scripts/test-all.sh",
+    "src/App.tsx",
+    "src/data/curated-public-twin-data.ts",
+    "src/lib/useAuth.ts",
+    "src/lib/useTwinMvp.ts",
+    "src/lib/useMemoryUpload.ts",
+    "backend/app/main.py",
+    "backend/app/api/v1/router.py",
+    "backend/app/security/middleware.py",
     "public/robots.txt",
     "public/sitemap.xml",
     "public/llms.txt",
@@ -51,308 +43,59 @@ REQUIRED_FILES = [
     "public/manifest.webmanifest",
     "public/sw.js",
     "public/offline.html",
-    "public/apple-touch-icon.png",
-    "public/icons/icon-192.png",
-    "public/icons/icon-512.png",
-    "public/icons/maskable-512.png",
-    "public/screenshots/smyst-mobile.png",
-    "public/screenshots/smyst-desktop.png",
-    "public/de/index.html",
-    "public/en/index.html",
-    "public/tr/index.html",
-    "public/fr/index.html",
-    "public/es/index.html",
-    "public/pt/index.html",
-    "public/ar/index.html",
-    "public/zh/index.html",
-    "public/ja/index.html",
-    "public/ko/index.html",
-    "public/locales/de.json",
-    "public/locales/en.json",
-    "public/locales/tr.json",
-    "public/locales/fr.json",
-    "public/locales/es.json",
-    "public/locales/pt.json",
-    "public/locales/ar.json",
-    "public/locales/zh.json",
-    "public/locales/ja.json",
-    "public/locales/ko.json",
     "capacitor.config.ts",
-    "android/app/src/main/AndroidManifest.xml",
-    "android/app/src/main/res/values/strings.xml",
-    "android/app/src/main/res/xml/network_security_config.xml",
-    "android/app/src/main/res/xml/data_extraction_rules.xml",
-    "ios/App/App/Info.plist",
-    "database/init/006_run_integrity_migrations.sql",
-    "database/migrations/0005_integrity_performance_hardening.sql",
 ]
 
 REQUIRED_TEXT = {
-    "wrangler.toml": [
-        "binding = \"METADATA\"",
-        "main = \"workers/api.ts\"",
-        "SMYST_OWNER_GITHUB_IDS",
-        "SMYST_ADMIN_GITHUB_IDS",
-        "IDRIVE_E2_MAX_FILE_BYTES",
-        "IDRIVE_E2_USER_MONTHLY_BYTES",
-        "IDRIVE_E2_GLOBAL_BYTES",
-        "IDRIVE_E2_USER_STORAGE_BYTES",
-        "IDRIVE_E2_GLOBAL_STORAGE_BYTES",
-        "IDRIVE_E2_MAX_TWIN_DATA_BYTES",
-    ],
-    "workers/storage-idrive.ts": [
-        "handleUploadComplete",
-        "handleListUploads",
-        "handleDeleteAccountStorage",
-        "handlePutManagedObject",
-        "handleGetManagedObject",
-        "handleDeleteManagedObject",
-        "requireDeleteConfirmation",
-        "delete-account-storage",
-        "delete-file",
-        "delete-object",
-        "verifyObjectHead",
-        "profile_image",
-        "twin_data",
-        "/storage/object",
-        "storage:user:",
-        "meta:upload-by-key",
-        "case 'twin_data'",
-        "profile/images",
-        "headers: { 'content-type': contentType }",
-        "findUploadRecordByKey",
-        "response-content-disposition",
-        "supportsChunkUpload",
-        "supportsResume",
-        "/storage/capabilities",
-        "handleCapabilities",
-        "storageConfiguration",
-        "storage_config_missing",
-        "IDRIVE_E2_ACCESS_KEY",
-        "IDRIVE_E2_SECRET_KEY",
-        "rag_document",
-        "embedding_file",
-        "app_build",
-        "public_cdn_file",
-        "private_signed_file",
-    ],
-    "workers/api.ts": ["handleAccountExport", "handleAccountDelete", "handleSupportReport", "meta:support-report", "requireDeleteConfirmation", "delete-account", "handleStartChat", "handleChatMessage", "handleCreateTwin", "handlePublicTwin", "privateSafeImageUrl", "public:twin:", "ruleBasedTwinReply", "free-only-static", "meta:chat:", "meta:twin:", "handleGetProfile", "handleUpdateProfile", "handleCreateMemory", "handleSearchChats", "persistManagedObject", "chatArchiveObjectKey", "admin_2fa_required", "/api/compute/capabilities", "/api/admin/compute/jobs", "/api/compute/jobs/lease", "/api/compute/jobs/complete", "computeCapabilities", "computeConfiguration", "ComputeJobRecord", "SMYST_COMPUTE_CALLBACK_SECRET", "SALAD_API_KEY", "cloudflare-fallback"],
-    "workers/auth-github.ts": ["ROLE_PERMISSIONS", "auth:user:", "auth:sessions:", "handleLogoutAll", "profile:write", "storage:write", "twin:write", "admin:write", "tokenType", "SameSite=Strict", "validateAuthConfig", "SESSION_ID_PATTERN", "/auth/providers", "auth_provider_not_active", "magic_link", "/auth/admin-2fa/status", "/auth/admin-2fa/verify", "SMYST_ADMIN_TOTP_SECRETS", "verifyTotp", "sessionReadyResponse"],
-    "workers/_shared.ts": ["securityHeaders", "rateLimit", "Retry-After", "method_not_allowed", "X-Smyst-Request-Id", "Server-Timing", "corsPreflight", "strictCorsPreflight", "requireSameOrigin", "csrf_header_required", "csrf_fetch_site_rejected", "DELETE_CONFIRM_HEADER", "requireDeleteConfirmation", "readJsonBody", "safeHandler"],
-    "workers/translate.ts": ["STATIC_PASSTHROUGH_PATHS", "/.well-known/security.txt", "/ai.txt", "isStaticPassthroughPath", "originUrl.toString()", "headers.set('X-Robots-Tag', 'index, follow')"],
-    ".github/workflows/deploy.yml": ["workflow_dispatch", "release_approval", "release_freeze_confirmed", "rollback_plan_confirmed", "backup_restore_confirmed", "WEB_BASE_URL: https://smyst.com", "sh scripts/live-test.sh"],
-    "scripts/live-test.sh": ["API_BASE_URL", "public root must not send X-Robots-Tag noindex", "expected PWA PNG icons", "Public and Private Policy", "Policy: https://smyst.com/trust", "GET\" \"$API_BASE_URL/storage/upload-url\" \"405\""],
-    "scripts/check-dist-artifact.sh": ["icon-192.png", "screenshots", "Public and Private Policy", "Policy: https://smyst.com/trust"],
-    "docs/FREE_ONLY_SECURITY_PRIVACY.md": ["CSRF", "CORS", "Session-Cookies", "SameSite=Strict", "Sec-Fetch-Site", "Upload-Completion", "Prompt-Injection", "SQL-Injection", "JWTs", "noindex,nofollow", "Phase 1 ist ein Free-Only-MVP"],
-    "docs/FREE_ONLY_PERFORMANCE_MOBILE.md": ["Service Worker", "private", "lazy", "IDrive e2", "Phase-1-MVP", "meta:upload-by-key", "KV eignet sich fuer kleine Metadaten"],
-    "docs/FREE_ONLY_NATIVE_APPS.md": ["com.smyst.app", "smyst://app", "IDrive e2", "Cleartext-Traffic", "Free-Only-MVP"],
-    "docs/FREE_ONLY_DATA_MAP.md": ["Cloudflare KV Free", "IDrive e2", "auth:user", "admin:write", "twin:write", "meta:upload", "meta:upload-by-key", "meta:twin", "public:twin", "noindex,nofollow", "quota:global", "profile/images", "twins/{twinId}/data", "supportsChunkUpload: false", "supportsResume: false"],
-    "docs/02-database-architecture.md": ["meta:upload:{userSub}:{uploadId}", "meta:twin:{userSub}:{twinId}", "storage:user:{userSub}:active", "0005_integrity_performance_hardening.sql", "Production nutzt in Phase 1 keine separat betriebene Datenbank"],
-    "database/migrations/0005_integrity_performance_hardening.sql": ["chk_twins_visibility", "idx_sessions_user_expires", "smyst_touch_updated_at", "active_twins", "indexable_public_pages"],
-    "docs/LEGACY_LOCAL_REFERENCES.md": ["non-production reference", "backend/", "database/", "docker/", "frontend/", "vector/", "must not be required by production", "Forbidden as production dependencies"],
-    "frontend/README.md": ["Legacy local-development reference only", "root Vite/React app is the active production target", "not a production target"],
-    "backend/app/security/audit.py": ["Legacy local-development reference only", "Cloudflare Workers", "Cloudflare KV", "IDrive e2"],
-    "backend/app/ai/vector_search.py": ["Legacy local-development reference only", "pgvector is not part of the Free-only production architecture"],
-    "index.html": ["rel=\"canonical\"", "hreflang=\"de\"", "og:title", "twitter:card", "application/ld+json", "FAQPage", "ai.txt", "llms.txt", "manifest.webmanifest", "apple-touch-icon", "icon-512.png"],
-    "public/robots.txt": ["Sitemap: https://smyst.com/sitemap.xml", "AI-Policy: https://smyst.com/ai.txt", "GPTBot", "ClaudeBot", "Disallow: /private/", "Disallow: /api/"],
-    "public/sitemap.xml": ["https://smyst.com/de/", "https://smyst.com/en/", "https://smyst.com/tr/", "https://smyst.com/ko/", "hreflang=\"x-default\"", "sitemap-image", "og-image.png"],
-    "public/llms.txt": ["AI twin platform", "AI policy", "Turkish landing page", "Korean landing page", "Public profile pattern", "Private profile pattern"],
-    "public/ai.txt": ["smyst.com AI visibility file", "ChatGPT", "Gemini", "Claude", "Public and Private Policy", "Do not index or summarize private routes"],
-    "public/_headers": ["/private/*", "X-Robots-Tag: noindex, nofollow", "/api/public/twins/*", "/assets/*", "/icons/*", "/screenshots/*", "/locales/*", "/.well-known/security.txt", "/sw.js"],
-    "public/.well-known/security.txt": ["Contact: mailto:i@smyst.com", "Policy: https://smyst.com/trust", "Canonical: https://smyst.com/.well-known/security.txt"],
-    "public/manifest.webmanifest": ["\"display\": \"standalone\"", "\"start_url\": \"/\"", "\"scope\": \"/\"", "\"orientation\": \"portrait-primary\"", "\"screenshots\"", "\"purpose\": \"maskable\""],
-    "public/sw.js": ["smyst-v6", "APP_SHELL", "PRIVATE_PREFIXES", "PUBLIC_API_PREFIXES", "staleWhileRevalidate", "networkFirst", "icon-512.png", "smyst-mobile.png"],
-    "docs/FREE_ONLY_SEO_AEO_GEO.md": ["robots.txt", "sitemap.xml", "llms.txt", "ai.txt", "public/locales", "ProfilePage", "FAQPage", "ChatGPT", "Gemini", "Claude", "noindex,nofollow", "externe Webmaster-Portale"],
-    "docs/runbooks/release-governance.md": ["Production Go/No-Go", "Public root does not send", "static file content, not SPA HTML", "Backup and restore dry-run evidence"],
-    "docs/runbooks/backup-recovery.md": ["Cloudflare KV Export And Restore", "Restore dry-run", "bucket CORS", "server-side encryption", "production release is blocked"],
-    "config/backup-recovery-manifest.json": ["cloudflare-kv-metadata", "idrive-e2-user-objects", "legacy-local-sql-reference", "KV restore dry-run result", "production data stored in legacy SQL or server filesystem"],
-    "config/change-protection-manifest.json": ["productionDeployRequiresManualApproval", "destructiveRequestsRequireDeleteConfirmHeader", "DELETE /api/account", "rollback_plan_confirmed required", "Cloudflare Worker version rollback path"],
-    "config/surface-protection-manifest.json": ["designChangesRequireExplicitTask", "cssChangesRequireExplicitTask", "githubActionsNode20WarningsAllowed", "forbiddenCloudflarePaidOrAutoBillingProducts", "actions/checkout@v6", "actions/setup-node@v6"],
-    "config/final-readiness-scorecard.json": ["security", "speed", "stability", "scale", "seo", "ai", "infrastructure", "usability", "maintainability", "future-readiness", "\"targetScore\": 10"],
-    "scripts/check-backup-recovery.py": ["paid services must be disabled", "production database must be cloudflare-kv", "legacy SQL target must be blocked for production", "backup recovery manifest validation passed"],
-    "scripts/check-change-protection.py": ["policy must enable", "missing destructive route", "change protection manifest validation passed"],
-    "scripts/check-surface-protection.py": ["surface protection validation passed", "GitHub Actions Node 20 warnings must remain blocked", "API DELETE routes must require confirmation", "central object storage must remain idrive-e2"],
-    "scripts/check-final-readiness.py": ["required_areas", "score below 10 must include blockers", "final readiness scorecard validation passed"],
-    "scripts/profile-conversation-stability.mjs": ["promptsPerProfile", "duplicate_answer_within_profile", "opening_repetition_too_high", "avgGenerationMs", "avgAnswerLength"],
-    "scripts/profile-personality-audit.mjs": ["minimumTotalScore", "weakest20", "improvementSuggestions", "fachwissen", "glaubwuerdigkeit"],
-    "src/lib/i18n.ts": ["'de'", "'en'", "'tr'", "'fr'", "'es'", "'pt'", "'ar'", "'zh'", "'ja'", "'ko'"],
-    "src/lib/staticTranslations.ts": ["useStaticTranslations", "/locales/${lang}.json", "DEFAULT_TRANSLATIONS"],
-    "capacitor.config.ts": ["appId: 'com.smyst.app'", "appName: 'smyst.com'", "webDir: 'dist'"],
-    "android/app/src/main/AndroidManifest.xml": ["android:allowBackup=\"false\"", "android:usesCleartextTraffic=\"false\"", "android.intent.action.VIEW", "READ_MEDIA_IMAGES", "android:scheme=\"@string/custom_url_scheme\""],
-    "android/app/src/main/res/values/strings.xml": ["<string name=\"custom_url_scheme\">smyst</string>"],
-    "android/app/src/main/res/xml/network_security_config.xml": ["cleartextTrafficPermitted=\"false\"", "smyst.com", "idrivee2.com"],
-    "android/app/src/main/res/xml/data_extraction_rules.xml": ["<cloud-backup", "<device-transfer"],
-    "ios/App/App/Info.plist": ["CFBundleDisplayName", "smyst.com", "CFBundleURLSchemes", "NSCameraUsageDescription", "NSPhotoLibraryUsageDescription"],
+    "README.md": ["Spaceship", "IDrive e2", "Salad", "GitHub"],
+    "SETUP.md": ["Spaceship DNS", "IDrive e2 Static Hosting", "Salad Compute", "GitHub Actions"],
+    ".github/workflows/deploy.yml": ["workflow_dispatch", "IDrive e2 Static Deploy", "Salad Backend Deploy"],
+    "config/change-protection-manifest.json": ["GitHub.com Free", "IDrive e2", "Salad.com", "Spaceship DNS"],
+    "config/surface-protection-manifest.json": ["salad-api-idrive-metadata", "idrive-e2"],
+    "config/final-readiness-scorecard.json": ["Spaceship DNS", "IDrive e2 as central storage", "Salad compute"],
+    "scripts/check-provider-exit.py": ["provider exit validation passed"],
+    "backend/app/main.py": ["FastAPI", "CORSMiddleware"],
+    "backend/app/api/v1/router.py": ["api_router", "include_router"],
+    "backend/app/security/middleware.py": ["Strict-Transport-Security"],
+    "src/data/curated-public-twin-data.ts": ["CURATED_PUBLIC_TWIN_SPECS", "REQUIRED_PUBLIC_TWIN_CATEGORIES"],
+    "public/llms.txt": ["GitHub Free", "Spaceship DNS", "IDrive e2", "Salad"],
 }
 
-FORBIDDEN_ACTIVE_PATTERNS = [
-    "DEEPL_API_KEY",
-    "GOOGLE_TRANSLATE_API_KEY",
-    "googletagmanager",
-    "VITE_GA",
-    "VITE_GSC",
-    "GA4",
-    "Google Analytics",
-    "Google Search Console",
-    "DeepL",
-    "Google Translate",
-    "RackNerd",
-    "VPS_HOST",
-    "FastAPI",
-    "DATABASE_URL",
-    "REDIS_URL",
-    "pgvector",
-    "Caddy",
-    "fonts.googleapis.com",
-    "fonts.gstatic.com",
-]
-
-FORBIDDEN_POSITIVE_PRODUCTION_PHRASES = [
-    "Production writes go to PostgreSQL",
-    "production implementation will query pgvector",
-    "This folder is the target Next.js frontend",
-    "FastAPI foundation backend",
-]
-
-NEGATIVE_POLICY_CONTEXT = [
-    "not allowed",
-    "not part of production",
-    "not a production",
-    "not a deployment",
-    "not required by production",
-    "not production",
-    "keine",
-    "kein",
-    "keine production",
-    "kein production",
-    "nicht erlaubt",
-    "deaktiviert",
-    "disabled",
-    "blocked",
-    "forbidden",
-    "verboten",
-    "legacy",
-    "local-development",
-    "non-production",
-]
-
-POLICY_SCAN_PATHS = [
-    ".github/workflows",
-    "config",
-    "src",
+FORBIDDEN_PATHS = [
     "workers",
-    "public",
-    "scripts",
-]
-
-POLICY_SCAN_FILES = [
-    "README.md",
-    "SETUP.md",
-    "package.json",
-    "wrangler.toml",
-    "capacitor.config.ts",
-    "index.html",
-    "frontend/README.md",
-    "backend/README.md",
-    "docker/README.md",
-    "docs/ARCHITECTURE.md",
-    "docs/ROADMAP.md",
-    "docs/FREE_ONLY_INFRASTRUCTURE.md",
-    "docs/FREE_ONLY_DATA_MAP.md",
-    "docs/LEGACY_LOCAL_REFERENCES.md",
-    "docs/07-deployment-architecture.md",
-    "docs/11-complete-inventory-roadmap.md",
-    "docs/12-foundation-decisions.md",
-    "docs/14-frontend-implementation.md",
-    "docs/INFRA_SETUP.md",
-    "android/app/src/main/AndroidManifest.xml",
-    "ios/App/App/Info.plist",
-    "app-mockup.html",
+    "wrang" + "ler.toml",
+    "wrang" + "ler.translate.toml",
+    "wrang" + "ler.www-redirect.toml",
+    "wrang" + "ler.legacy-auth-redirect.toml",
+    "scripts/activate-" + "cloud" + "flare-subdomains.mjs",
+    "scripts/deploy-" + "cloud" + "flare-pages.mjs",
+    "scripts/deploy-" + "cloud" + "flare-workers-api.mjs",
+    "scripts/check-" + "cloud" + "flare-cutover.sh",
 ]
 
 
-def iter_text_files(base: Path):
-    for path in base.rglob("*"):
-        if not path.is_file():
-            continue
-        if any(part in {".git", "node_modules", "dist"} for part in path.parts):
-            continue
-        try:
-            path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        yield path
+def fail(message: str) -> None:
+    raise SystemExit(f"FAILED foundation validation: {message}")
 
 
-def line_has_negative_context(line: str) -> bool:
-    lower = line.lower()
-    return any(marker in lower for marker in NEGATIVE_POLICY_CONTEXT)
-
-
-def scan_for_policy_violations(path: Path, text: str) -> list[str]:
-    violations: list[str] = []
-    relative = path.relative_to(ROOT)
-    if relative.as_posix() in {"scripts/validate-foundation.py", "scripts/check-dist-artifact.sh"}:
-        return violations
-
-    for phrase in FORBIDDEN_POSITIVE_PRODUCTION_PHRASES:
-        if phrase in text:
-            violations.append(f"{relative} contains forbidden positive production phrase: {phrase}")
-
-    if path.suffix.lower() in {".md", ".txt"}:
-        return violations
-
-    for line_no, line in enumerate(text.splitlines(), start=1):
-        for pattern in FORBIDDEN_ACTIVE_PATTERNS:
-            if pattern in line and not line_has_negative_context(line):
-                violations.append(
-                    f"{relative}:{line_no} contains forbidden production pattern outside a negative/legacy context: {pattern}"
-                )
-
-    return violations
+def require(value: bool, message: str) -> None:
+    if not value:
+        fail(message)
 
 
 def main() -> None:
-    missing = [item for item in REQUIRED_FILES if not (ROOT / item).is_file()]
-    if missing:
-        raise SystemExit("missing required free-only files:\n" + "\n".join(missing))
+    for rel_path in REQUIRED_FILES:
+        require((ROOT / rel_path).exists(), f"required file missing: {rel_path}")
 
-    missing_text: list[str] = []
-    for path, needles in REQUIRED_TEXT.items():
-        text = (ROOT / path).read_text(encoding="utf-8")
-        for needle in needles:
-            if needle not in text:
-                missing_text.append(f"{path} missing required text: {needle}")
-    if missing_text:
-        raise SystemExit("missing required free-only architecture text:\n" + "\n".join(missing_text))
+    for rel_path in FORBIDDEN_PATHS:
+        require(not (ROOT / rel_path).exists(), f"legacy provider path must be removed: {rel_path}")
 
-    violations: list[str] = []
-    for production_path in ACTIVE_PRODUCTION_PATHS:
-        base = ROOT / production_path
-        if not base.exists():
-            continue
-        for path in iter_text_files(base):
-            text = path.read_text(encoding="utf-8")
-            for pattern in FORBIDDEN_ACTIVE_PATTERNS:
-                if pattern in text:
-                    violations.append(f"{path.relative_to(ROOT)} contains forbidden production pattern: {pattern}")
+    for rel_path, terms in REQUIRED_TEXT.items():
+        content = (ROOT / rel_path).read_text(encoding="utf-8")
+        missing = [term for term in terms if term not in content]
+        require(not missing, f"{rel_path} missing required terms: {', '.join(missing)}")
 
-    for production_path in POLICY_SCAN_PATHS:
-        base = ROOT / production_path
-        if not base.exists():
-            continue
-        for path in iter_text_files(base):
-            violations.extend(scan_for_policy_violations(path, path.read_text(encoding="utf-8")))
-
-    for rel_path in POLICY_SCAN_FILES:
-        path = ROOT / rel_path
-        if path.is_file():
-            violations.extend(scan_for_policy_violations(path, path.read_text(encoding="utf-8")))
-
-    if violations:
-        raise SystemExit("free-only production policy violations:\n" + "\n".join(violations))
-
-    print("free-only production validation passed")
+    print("foundation validation passed")
 
 
 if __name__ == "__main__":

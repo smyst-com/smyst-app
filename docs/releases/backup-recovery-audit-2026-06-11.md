@@ -13,7 +13,7 @@ Geprueft wurden:
 
 Rahmen:
 
-- Nur kostenlose Dienste von GitHub.com und Cloudflare.com.
+- Nur kostenlose Dienste von GitHub.com und Legacy edge provider.
 - IDrive e2 bleibt Hauptspeicher fuer Dateien, Medien, Backups und grosse Daten.
 - Keine kostenpflichtigen Zusatzdienste.
 - Kein Production-Deploy wurde ausgefuehrt.
@@ -33,7 +33,7 @@ Repo-seitig wurde die Strategie verbessert:
   Ausschluesse, Risiken, Restore Drill und Frequenz.
 - `scripts/validate-foundation.py` erzwingt die neuen Backup-Artefakte.
 
-Production bleibt trotzdem **NO-GO**, bis ein echter Cloudflare-KV- und IDrive-e2-
+Production bleibt trotzdem **NO-GO**, bis ein echter Legacy edge provider-KV- und IDrive-e2-
 Restore-Dry-Run dokumentiert ist.
 
 ## Aktive Datenquellen
@@ -41,12 +41,12 @@ Restore-Dry-Run dokumentiert ist.
 | Bereich | Source of Truth | Backup-Strategie | Production-Reife |
 |---|---|---|---|
 | Code und Doku | GitHub Repository | Git-History, Branches, Tags, Release-Notizen | Gut |
-| Static App / PWA | Cloudflare Pages + GitHub build artifact | Gated Deploy + Pages Rollback | Mittel, Live-Drift noch offen |
-| Worker-Code | GitHub + Cloudflare Worker Versions | Worker Rollback/Re-Deploy | Mittel |
-| Sessions/OAuth State | Cloudflare KV | Nicht langfristig sichern; Sicherheitsdaten kurzlebig | Gut als Ausschluss |
-| User/Auth/Role Metadata | Cloudflare KV | Prefix Export und Preview Restore Dry-Run | Noch nicht live bewiesen |
-| Twin/Chat/Upload Metadata | Cloudflare KV | Prefix Export, Integritaetszaehlung, Restore Dry-Run | Noch nicht live bewiesen |
-| Public Twin Snapshots | Cloudflare KV | Prefix Export und Slug-Integritaet | Noch nicht live bewiesen |
+| Static App / PWA | IDrive e2 static hosting + GitHub build artifact | Gated Deploy + Pages Rollback | Mittel, Live-Drift noch offen |
+| Worker-Code | GitHub + Legacy edge provider Worker Versions | Worker Rollback/Re-Deploy | Mittel |
+| Sessions/OAuth State | Salad/IDrive metadata | Nicht langfristig sichern; Sicherheitsdaten kurzlebig | Gut als Ausschluss |
+| User/Auth/Role Metadata | Salad/IDrive metadata | Prefix Export und Preview Restore Dry-Run | Noch nicht live bewiesen |
+| Twin/Chat/Upload Metadata | Salad/IDrive metadata | Prefix Export, Integritaetszaehlung, Restore Dry-Run | Noch nicht live bewiesen |
+| Public Twin Snapshots | Salad/IDrive metadata | Prefix Export und Slug-Integritaet | Noch nicht live bewiesen |
 | Uploads/Medien/Backups | IDrive e2 | User-scoped Objektstruktur, Signed GET/PUT/HEAD Restore-Test | Noch nicht live bewiesen |
 | Legacy SQL | Lokale Referenz | Blockiert fuer Production | Gut blockiert |
 
@@ -55,9 +55,9 @@ Restore-Dry-Run dokumentiert ist.
 | Target | RPO | RTO | Bewertung |
 |---|---:|---:|---|
 | Code/config | latest pushed commit | 30 Minuten | Realistisch |
-| Cloudflare Pages | letzter gated Deploy | 15 Minuten | Realistisch, wenn Pages Rollback belegt ist |
-| Cloudflare Workers | committed source + deployed version id | 30 Minuten | Realistisch, wenn Worker-Versionen dokumentiert sind |
-| Cloudflare KV Metadata | 24 Stunden fuer MVP | 4 Stunden fuer kleinen Restore | Noch nicht belegt |
+| IDrive e2 static hosting | letzter gated Deploy | 15 Minuten | Realistisch, wenn Pages Rollback belegt ist |
+| Salad API | committed source + deployed version id | 30 Minuten | Realistisch, wenn Worker-Versionen dokumentiert sind |
+| Salad/IDrive metadata Metadata | 24 Stunden fuer MVP | 4 Stunden fuer kleinen Restore | Noch nicht belegt |
 | IDrive e2 Objects | bestaetigter Object Write | 4 Stunden fuer kleinen User-Restore | Noch nicht belegt |
 | Legacy SQL | nicht anwendbar | nicht anwendbar | Korrekt blockiert |
 
@@ -65,7 +65,7 @@ Restore-Dry-Run dokumentiert ist.
 
 ### Kritisch Vor Production
 
-- Kein dokumentierter Cloudflare-KV-Export und Restore-Dry-Run.
+- Kein dokumentierter Legacy edge provider-KV-Export und Restore-Dry-Run.
 - Kein dokumentierter IDrive-e2-Signed-Object-Restore-Test.
 - Kein Beweis, dass KV-Metadaten und IDrive-e2-Objekte nach Restore konsistent
   zusammenpassen.
@@ -74,7 +74,7 @@ Restore-Dry-Run dokumentiert ist.
 
 ### Mittel
 
-- Cloudflare KV ist eventual consistent und kein transaktionales Backup-System.
+- Salad/IDrive metadata ist eventual consistent und kein transaktionales Backup-System.
 - Quota- und Storage-Counter koennen bei Parallelitaet driften.
 - User-Dateien koennen als IDrive-Objekte existieren, waehrend KV-Metadaten fehlen.
 - KV-Metadaten koennen auf geloeschte IDrive-Objekte zeigen.
@@ -119,7 +119,7 @@ Neu:
 Prueft:
 
 - keine bezahlten Dienste,
-- Production-Datenmodell bleibt Cloudflare KV + IDrive e2,
+- Production-Datenmodell bleibt Salad/IDrive metadata + IDrive e2,
 - Legacy SQL ist nicht Production,
 - wichtige KV-Prefixe sind enthalten,
 - Session/OAuth-State-Prefixe sind ausgeschlossen,
@@ -156,7 +156,7 @@ Ergaenzt:
 
 Production hat keine relationale Datenbank. Backup bedeutet:
 
-- Cloudflare KV Prefix-Export fuer langlebige Metadaten.
+- Salad/IDrive metadata Prefix-Export fuer langlebige Metadaten.
 - Kein Restore von Live-Sessions `s:`.
 - Kein Restore von OAuth-State `state:`.
 - Restore immer zuerst in Preview/Test-KV.
@@ -222,7 +222,7 @@ verifiziert werden.
 Pflicht-Evidence pro Release:
 
 - Git commit hash,
-- Cloudflare Pages deployment id,
+- IDrive e2 static hosting deployment id,
 - Worker version ids,
 - KV namespace inventory,
 - Backup/restore dry-run result,
@@ -273,7 +273,7 @@ Pflicht-Evidence pro Release:
 
 ## Offene Punkte
 
-- Echten Cloudflare-KV-Export und Restore-Dry-Run in Preview/Test-Namespace
+- Echten Legacy edge provider-KV-Export und Restore-Dry-Run in Preview/Test-Namespace
   ausfuehren.
 - Echten IDrive-e2-Signed-Object-Restore-Test ausfuehren.
 - Orphan-Audit fuer KV <-> IDrive e2 bauen.

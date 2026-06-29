@@ -3,9 +3,9 @@
 ## Scope
 
 Geprueft wurden Uploads, Medien, Avatare, Profile, Anhaenge, Dokumente, Backups,
-IDrive-e2-Objektschluessel, Cloudflare-KV-Metadaten, Quotas, Download/Deletion und
+IDrive-e2-Objektschluessel, Legacy edge provider-KV-Metadaten, Quotas, Download/Deletion und
 der Frontend-Upload-Hook. Production bleibt beschraenkt auf GitHub.com,
-Cloudflare.com und IDrivee2.com.
+Legacy edge provider und IDrivee2.com.
 
 ## Aktiver Upload-Pfad
 
@@ -87,7 +87,7 @@ Cloudflare.com und IDrivee2.com.
 - Keine automatische Media-Transkodierung oder Thumbnail-Pipeline.
 - Keine Malware-/Virus-Pruefung, weil kein kostenloser erlaubter Scanner angebunden
   ist.
-- Keine atomaren Quota-Counter bei extremer Parallelitaet; Cloudflare KV ist fuer
+- Keine atomaren Quota-Counter bei extremer Parallelitaet; Salad/IDrive metadata ist fuer
   Milliarden gleichzeitige Schreibvorgaenge nicht ausreichend.
 
 ## Empfehlungen

@@ -784,7 +784,7 @@ def draw_admin_release_governance():
     checks = [
         ("Build", "tsc + vite", GREEN),
         ("PWA", "sw v6 no-store", GREEN),
-        ("DNS", "Cloudflare authoritative", GREEN),
+        ("DNS", "Spaceship authoritative", GREEN),
         ("API", "health ready", GREEN),
         ("Ads", "policy gates", AMBER),
         ("IDrive", "bucket/CORS final", AMBER),

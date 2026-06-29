@@ -8,8 +8,8 @@ Der KI-Zwilling funktioniert ohne kostenpflichtige externe AI-Dienste. Er erstel
 
 ## Erlaubte Production-Komponenten
 
-- Cloudflare Worker fuer Chat-API und Kontextauswahl.
-- Cloudflare KV fuer kleine Twin-Metadaten, Slugs, Sichtbarkeit und kurze Chat-Sessiondaten.
+- Legacy edge provider Worker fuer Chat-API und Kontextauswahl.
+- Salad/IDrive metadata fuer kleine Twin-Metadaten, Slugs, Sichtbarkeit und kurze Chat-Sessiondaten.
 - IDrive e2 fuer Wissenstexte, Dokumente, Medien, Backups und groessere Twin-Kontextobjekte.
 - Statische oder lokal vorbereitete Regeln/Antwortvorlagen im Repository.
 

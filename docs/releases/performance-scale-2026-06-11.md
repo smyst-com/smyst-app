@@ -2,31 +2,31 @@
 
 ## Scope
 
-Geprueft wurden Frontend, PWA/Service Worker, Cloudflare Worker APIs, Cloudflare KV,
+Geprueft wurden Frontend, PWA/Service Worker, Legacy edge provider Worker APIs, Salad/IDrive metadata,
 IDrive e2 Storage, Suche und KI-Komponenten. Diese Analyse ist eine Architektur- und
 Codepfad-Simulation; es wurde keine echte Last mit Millionen oder Milliarden Nutzern
 gegen Live-Systeme erzeugt. Production bleibt Free-only auf GitHub.com,
-Cloudflare.com und IDrivee2.com.
+Legacy edge provider und IDrivee2.com.
 
 ## Aktueller Performance-Stand
 
 Frontend:
 
 - Vite/React App mit lazy geladenem Cookie-Banner, Mobile Navigation und GitHub Login.
-- Statische Assets werden ueber Cloudflare Pages/CDN ausgeliefert.
+- Statische Assets werden ueber IDrive e2 static hosting/CDN ausgeliefert.
 - Service Worker cached App-Shell, Locale-Dateien und oeffentliche Standarddateien.
 - Private Pfade `/api/`, `/auth/`, `/storage/`, `/private/` werden nicht offline gecached.
 
 APIs:
 
-- Cloudflare Workers fuer Auth, API/Chat/Twins, Storage und Translation.
+- Salad API fuer Auth, API/Chat/Twins, Storage und Translation.
 - Private JSON-Antworten sind `no-store`.
 - Public Twin API ist kurzzeitig edge-cachebar.
 - Rate-Limits sind KV-basiert und liefern HTTP-Rate-Limit-Header.
 
 Daten:
 
-- Cloudflare KV fuer kleine Metadaten, Sessions, Rollen, Quotas, Upload-Intents,
+- Salad/IDrive metadata fuer kleine Metadaten, Sessions, Rollen, Quotas, Upload-Intents,
   Chats und Twin-Metadaten.
 - IDrive e2 fuer grosse Dateien, Medien, Backups und Twin-Datenobjekte.
 - Kein aktiver SQL-/GraphQL-/Search-/KI-Backenddienst in Production.
@@ -64,7 +64,7 @@ Frontend:
 
 APIs:
 
-- Cloudflare KV ist eventual consistent und nicht fuer atomare Milliarden-Schreiblast
+- Salad/IDrive metadata ist eventual consistent und nicht fuer atomare Milliarden-Schreiblast
   gebaut.
 - Rate-Limits und Quotas sind KV-basiert und damit fuer extreme Parallelitaet nur
   MVP-tauglich.
@@ -96,7 +96,7 @@ Kurzfristig, innerhalb Free-only:
 - Bundle-Groessen messen, nach Route/View splitten und grosse UI-Bereiche weiter lazy
   laden.
 - Weitere direkte KV-Indexe nur dort einfuehren, wo Hot Paths entstehen.
-- Cloudflare Pages Production Deploy strikt manuell freigeben.
+- IDrive e2 static hosting Production Deploy strikt manuell freigeben.
 
 Mittelfristig:
 

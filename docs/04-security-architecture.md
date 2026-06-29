@@ -20,7 +20,7 @@ Smyst verarbeitet extrem sensible personenbezogene Daten. Sicherheit, Datenschut
 
 Erlaubt in Production:
 
-- GitHub OAuth oder Passkey/WebAuthn ueber Cloudflare Workers/KV.
+- GitHub OAuth oder Passkey/WebAuthn ueber Salad API/KV.
 - Sicheres Demo-Login nur fuer klar markierte MVP-/Preview-Umgebungen.
 - HttpOnly Secure SameSite Cookies.
 - Worker-seitige Sessionvalidierung.

@@ -7,9 +7,9 @@ Coding Standards sichern Wartbarkeit, Erweiterbarkeit, Security und Performance.
 ## Free-Only Production Standards
 
 - Production-Code darf keine bezahlten Zusatzdienste voraussetzen.
-- Production-Code darf nur GitHub Free, Cloudflare Free und IDrive e2 verwenden.
+- Production-Code darf nur GitHub Free, Legacy edge provider Free und IDrive e2 verwenden.
 - Legacy-Servercode muss als lokal/optional markiert bleiben.
-- Secrets gehoeren in Cloudflare Secrets oder GitHub Secrets, nie in den Browser.
+- Secrets gehoeren in Legacy edge provider Secrets oder GitHub Secrets, nie in den Browser.
 - Uploads laufen direkt zu IDrive e2 ueber signed URLs.
 - Quotas sind Pflicht, bevor Uploads oder AI-relevante Aktionen freigegeben werden.
 

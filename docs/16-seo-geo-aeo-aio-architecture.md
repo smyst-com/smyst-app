@@ -341,8 +341,8 @@ All public APIs need:
 
 1. Keep production release blocked until full foundation tests run.
 2. Finish real dynamic public page routes for profiles, twins, knowledge, Q&A, documents, and media.
-3. Store public-safe profile snapshots in Cloudflare KV.
-4. Build consent-aware indexing/export logic in Cloudflare Workers.
+3. Store public-safe profile snapshots in Salad/IDrive metadata.
+4. Build consent-aware indexing/export logic in Salad API.
 5. Build deindexing service for deletion and consent revocation.
 6. Generate per-page JSON-LD from resource data.
 7. Generate dynamic sitemap indexes from `public_pages`.
@@ -362,7 +362,7 @@ All public APIs need:
 
 ## Current Risks
 
-- Full live Cloudflare Pages/Workers, PWA and IDrive-e2 tests have not run in this local environment.
+- Full live IDrive e2 static hosting/Workers, PWA and IDrive-e2 tests have not run in this local environment.
 - Dynamic public pages are not yet connected to real backend data.
 - Some sitemap URLs currently resolve to baseline SSR pages, not final resource pages.
 - Real AI integrations for OCR, transcription, video analysis, embeddings, and LLM routing are long-term placeholders and not Free-Only production requirements.

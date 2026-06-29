@@ -5,9 +5,9 @@
 Validate the free-only production path:
 
 - GitHub Actions.
-- Cloudflare Pages.
-- Cloudflare Workers.
-- Cloudflare KV.
+- IDrive e2 static hosting.
+- Salad API.
+- Salad/IDrive metadata.
 - IDrive e2 signed uploads.
 
 ## Checks

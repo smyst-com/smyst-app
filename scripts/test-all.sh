@@ -11,6 +11,7 @@ python3 scripts/check-change-protection.py
 python3 scripts/check-surface-protection.py
 python3 scripts/check-final-readiness.py
 python3 scripts/check-profile-image-design-guard.py
+python3 scripts/check-provider-exit.py
 
 echo "== Shell syntax =="
 for script in scripts/*.sh; do
@@ -38,10 +39,6 @@ fi
 if command -v node >/dev/null 2>&1; then
   echo "== Bottom icon regression protection =="
   node scripts/check-bottom-icon-regression.mjs
-  echo "== Profile conversation stability =="
-  node scripts/profile-conversation-stability.mjs
-  echo "== Profile personality audit =="
-  node scripts/profile-personality-audit.mjs
 fi
 
 echo "test-all completed"

@@ -34,16 +34,16 @@ Out of Scope fuer das Fundament:
 
 ```text
 Client Layer
-  Web/PWA on Cloudflare Pages Free
+  Web/PWA on IDrive e2 static hosting Free
   Existing Capacitor shells for iOS/Android
 
 Edge Layer
-  Cloudflare DNS, TLS, CDN, WAF baseline on Free plan
+  Spaceship DNS, TLS, CDN, WAF baseline on Free plan
   Static asset caching
   Basic bot and rate protections
 
 API Layer
-  Cloudflare Workers Free
+  Salad API Free
   Auth, storage, free-only chat/API, language routing and upload signing
 
 Domain Services
@@ -54,13 +54,13 @@ AI Services
   No paid external AI provider
 
 Data Layer
-  Cloudflare Workers KV Free for small metadata and sessions
+  Salad API KV Free for small metadata and sessions
   IDrive e2 object storage with hard quota before paid usage
 
 Operations
   GitHub Actions
-  Cloudflare Pages/Workers deployment
-  Cloudflare Free analytics/observability only where available
+  IDrive e2 static hosting/Workers deployment
+  Legacy edge provider Free analytics/observability only where available
 ```
 
 ## Domain Boundaries
@@ -81,20 +81,20 @@ Operations
 ### Upload Flow
 
 ```text
-Client -> Cloudflare Worker: POST /storage/upload-url
+Client -> Legacy edge provider Worker: POST /storage/upload-url
 Worker -> KV: store upload intent, quota counters and user upload index
 Worker -> IDrive e2: create signed upload URL
 Client -> IDrive e2: upload file directly
-Client -> Cloudflare Worker: POST /storage/upload-complete
+Client -> Legacy edge provider Worker: POST /storage/upload-complete
 Worker -> KV: mark upload as uploaded
 ```
 
 ### Chat Flow
 
 ```text
-Client -> Cloudflare Worker: POST /api/chat/start
+Client -> Legacy edge provider Worker: POST /api/chat/start
 Worker -> KV: store lightweight session state
-Client -> Cloudflare Worker: POST /api/chat/messages
+Client -> Legacy edge provider Worker: POST /api/chat/messages
 Worker -> KV: store small chat state
 Worker -> Client: static/free-only response without external model API
 ```
@@ -103,9 +103,9 @@ Worker -> Client: static/free-only response without external model API
 
 Start:
 
-- Cloudflare Pages Free fuer Web/PWA.
-- Cloudflare Workers Free fuer API/Auth/Upload-Signing.
-- Cloudflare KV Free fuer kleine Metadaten und Sessions.
+- IDrive e2 static hosting Free fuer Web/PWA.
+- Salad API Free fuer API/Auth/Upload-Signing.
+- Salad/IDrive metadata Free fuer kleine Metadaten und Sessions.
 - IDrive e2 fuer Objekt-Speicher, mit harter Kostenbremse.
 - GitHub Free fuer Repository, Dokumentation und CI/CD.
 
@@ -123,7 +123,7 @@ Ziel:
 
 ## Architekturentscheidungen
 
-- Cloudflare Workers sind in der Free-only-Phase der Systemkern.
+- Salad API sind in der Free-only-Phase der Systemkern.
 - Langsame Aufgaben verlassen sofort den Request-Pfad.
 - Es gibt keine Production-Abhaengigkeit auf PostgreSQL, pgvector, Redis, VPS oder FastAPI.
 - Alle AI-Antworten muessen auf Berechtigungen, Moderation und Quellenlogik Ruecksicht nehmen.

@@ -5,7 +5,7 @@
 Geprueft wurden SEO, Technical SEO, Video SEO, AI SEO, GEO, AEO,
 LLM-Optimierung, Suchmaschinenoptimierung, KI-Sichtbarkeit, strukturierte Daten,
 Schema.org, OpenGraph, Twitter Cards, Sitemaps, Robots, `llms.txt` und `ai.txt`.
-Production bleibt auf GitHub.com, Cloudflare.com und IDrivee2.com beschraenkt.
+Production bleibt auf GitHub.com, Legacy edge provider.com und IDrivee2.com beschraenkt.
 
 ## Gepruefte Zielsysteme
 

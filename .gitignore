@@ -57,6 +57,9 @@ pnpm-debug.log*
 # --- Test coverage ---
 coverage
 .nyc_output
+__pycache__/
+*.py[cod]
+*.egg-info/
 
 # --- Generated audit/mockup artifacts ---
 output

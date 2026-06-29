@@ -49,8 +49,8 @@ jobs:
       - name: TypeScript check
         run: npm run lint:tsc
 
-      - name: Build Cloudflare Pages artifact
+      - name: Build static PWA artifact
         run: npm run build
 
-      - name: Validate Cloudflare Pages artifact
+      - name: Validate static PWA artifact
         run: sh scripts/check-dist-artifact.sh

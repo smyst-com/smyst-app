@@ -22,8 +22,8 @@ class AuditLogService:
 
     Legacy local-development reference only.
 
-    Free-only production audit/status data must stay in Cloudflare Workers,
-    Cloudflare KV and/or IDrive e2 according to the active data map. This
+    Free-only production audit/status data must stay in the Salad API,
+    GitHub release evidence and/or IDrive e2 according to the active data map. This
     in-memory sink keeps local data-flow tests deterministic.
     """
 

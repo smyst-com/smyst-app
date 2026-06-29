@@ -18,6 +18,13 @@ export interface StaticTranslations {
     messagePlaceholder: string
     addFile: string
     voiceInput: string
+    voiceInputUnsupported: string
+    liveVoiceStart: string
+    liveVoicePause: string
+    liveVoiceResume: string
+    liveVoiceStop: string
+    speechOutputOn: string
+    speechOutputOff: string
     send: string
     freeOnlyNotice: string
   }
@@ -41,7 +48,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
   seo: {
     title: 'smyst.com | KI-Zwillinge, digitale Profile und Twin Chat',
     description:
-      'smyst.com ist eine Plattform fuer oeffentliche und private KI-Zwillinge, Wissen, Erinnerungen und schnelle Twin-Chats.',
+      'smyst.com ist eine Plattform für öffentliche und private KI-Zwillinge, Wissen, Erinnerungen und schnelle Twin-Chats.',
     keywords: 'KI-Zwilling, AI Twin, digitaler Zwilling, Wissensprofil, Erinnerungen, smyst',
   },
   start: {
@@ -53,13 +60,20 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     messagePlaceholder: 'Nachricht an {{name}}',
     addFile: 'Datei hinzufügen',
     voiceInput: 'Spracheingabe',
+    voiceInputUnsupported: 'Spracheingabe nicht unterstützt',
+    liveVoiceStart: 'Live-Sprachmodus starten',
+    liveVoicePause: 'Live-Sprachmodus pausieren',
+    liveVoiceResume: 'Live-Sprachmodus fortsetzen',
+    liveVoiceStop: 'Live-Sprachmodus beenden',
+    speechOutputOn: 'Antworten vorlesen',
+    speechOutputOff: 'Sprachausgabe ausschalten',
     send: 'Nachricht senden',
     freeOnlyNotice:
-      'Oeffentliche und private Profile bleiben klar getrennt. Du entscheidest, womit du chatten moechtest.',
+      'Öffentliche und private Profile bleiben klar getrennt. Du entscheidest, womit du chatten möchtest.',
   },
   chat: {
     replyIntro: 'Antworte kurz, direkt und sachlich.',
-    replyMvp: 'Ich wuerde es ruhig betrachten: Die Welt ist voller Tempo, Wissen und Unruhe zugleich.',
+    replyMvp: 'Ich würde es ruhig betrachten: Die Welt ist voller Tempo, Wissen und Unruhe zugleich.',
     replyQuestion: 'Zu deiner Frage: "{{question}}"',
     replyNextStep: 'Wichtig ist, genauer hinzusehen, neugierig zu bleiben und Fortschritt mit Verantwortung zu verbinden.',
   },

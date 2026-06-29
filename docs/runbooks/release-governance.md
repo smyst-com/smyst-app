@@ -4,7 +4,9 @@
 
 Production deployment is manual and requires the exact approval phrase configured in `.github/workflows/deploy.yml`.
 
-Cloudflare Pages must not auto-deploy `main` outside this gate. If the Pages project is connected to GitHub, disable production auto-deploys in Cloudflare or point production deployment to the gated GitHub Actions workflow only. A release is blocked when a direct push to `main` can publish production without the `workflow_dispatch` approval phrase.
+IDrive e2 static deploys and Salad backend deploys must not bypass this gate. A
+release is blocked when a direct push to `main` can publish production without
+the `workflow_dispatch` approval phrase.
 
 ## Required Evidence
 
@@ -21,9 +23,9 @@ Cloudflare Pages must not auto-deploy `main` outside this gate. If the Pages pro
 - `manifest.webmanifest` contains PNG PWA icons, maskable icon and screenshots.
 - `/auth/me`, `/api/health`, `/api/twins` and `/storage/upload-url` return JSON
   contract responses, never HTML fallback.
-- Cloudflare Pages deploy plan reviewed.
-- Cloudflare Pages auto-deploy setting reviewed and confirmed gated.
-- Cloudflare Worker deploy plan reviewed.
+- IDrive e2 static deploy plan reviewed.
+- IDrive e2 public website bucket policy reviewed and confirmed gated.
+- Salad backend deploy plan reviewed.
 - IDrive e2 quotas reviewed.
 - IDrive e2 CORS, server-side encryption, lifecycle rules and incomplete upload
   cleanup reviewed.
@@ -33,7 +35,7 @@ Cloudflare Pages must not auto-deploy `main` outside this gate. If the Pages pro
 
 Block release if any production path requires:
 
-- paid GitHub or Cloudflare add-ons,
+- paid GitHub or Legacy edge provider add-ons,
 - a hosted server,
 - a server-side database/cache/queue,
 - external translation API,
@@ -42,7 +44,8 @@ Block release if any production path requires:
 
 ## Rollback
 
-Rollback uses Cloudflare Pages deployments, Worker versions and Git revert/cherry-pick. Server rollback commands are not part of production.
+Rollback uses Git revert/cherry-pick, known-good IDrive e2 static artifacts and
+known-good Salad backend deployments.
 
 ## Production Go/No-Go
 
@@ -67,16 +70,16 @@ Protected mode blocks production release unless all of these are true:
 - `scripts/preflight-release.sh` is green with the release gate variables.
 - `scripts/live-test.sh` is green against the approved production URL.
 - Backup/restore and rollback evidence have been reviewed.
-- The deploy goes through the official GitHub Actions workflow and Cloudflare.
+- The deploy goes through the official GitHub Actions workflow to IDrive e2 and Salad.
 
 Critical production files listed in the change-protection manifest require
 written approval, diff review and a rollback plan before they are changed. This
-includes workflow files, Worker routes, storage/auth logic, PWA/SEO/security
+includes workflow files, API routes, storage/auth logic, PWA/SEO/security
 files, release scripts, dependency manifests and the main app shell.
 
 Data-shape changes require a backup and rollback plan before execution. Do not
 delete or overwrite users, profiles, profile images, uploads, chats, API
-structures, KV metadata or IDrive e2 objects without explicit destructive
+structures, metadata or IDrive e2 objects without explicit destructive
 approval and restore evidence.
 
 Working design, routing, chat, upload, profile and security behavior must not be

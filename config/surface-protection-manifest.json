@@ -3,7 +3,7 @@
   "policy": {
     "paidServicesAllowed": false,
     "autoBillingServicesAllowed": false,
-    "productionDatabase": "cloudflare-kv",
+    "productionDatabase": "salad-api-idrive-metadata",
     "centralObjectStorage": "idrive-e2",
     "designChangesRequireExplicitTask": true,
     "cssChangesRequireExplicitTask": true,
@@ -20,16 +20,18 @@
       "frontend/components/smyst-app.tsx"
     ],
     "productionData": [
-      "workers/api.ts",
-      "workers/auth-github.ts",
-      "workers/storage-idrive.ts",
-      "wrangler.toml",
+      "backend/app/main.py",
+      "backend/app/api/v1/router.py",
+      "backend/app/security/middleware.py",
+      "backend/app/core/config.py",
       "config/backup-recovery-manifest.json"
     ],
     "api": [
-      "workers/api.ts",
-      "workers/storage-idrive.ts",
-      "workers/_shared.ts"
+      "backend/app/main.py",
+      "backend/app/api/v1/router.py",
+      "backend/app/security/middleware.py",
+      "backend/app/api/v1/routes/auth.py",
+      "backend/app/api/v1/routes/health.py"
     ],
     "githubActions": [
       ".github/workflows/deploy.yml",
@@ -55,15 +57,9 @@
     "amazonaws",
     "azure",
     "gcp",
-    "google cloud",
-    "openai_api_key",
-    "anthropic_api_key",
-    "gemini_api_key",
-    "mistral_api_key",
-    "deepseek_api_key",
-    "groq_api_key"
+    "google cloud paid runtime"
   ],
-  "forbiddenCloudflarePaidOrAutoBillingProducts": [
+  "forbiddenLegacyEdgePaidOrAutoBillingProducts": [
     "r2_buckets",
     "d1_databases",
     "durable_objects",
@@ -89,10 +85,10 @@
     "node-version: 20"
   ],
   "requiredApiProtectionTerms": [
-    "requireSameOrigin",
-    "requireRateLimit",
-    "requireDeleteConfirmation",
-    "methodNotAllowed",
-    "safeHandler"
+    "CORSMiddleware",
+    "RateLimitMiddleware",
+    "SecurityHeadersMiddleware",
+    "allow_credentials=True",
+    "Strict-Transport-Security"
   ]
 }

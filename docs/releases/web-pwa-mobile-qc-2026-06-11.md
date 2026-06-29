@@ -11,7 +11,7 @@ freigegebenen Deploy noch manuell oder per Device-Farm geprueft werden.
 Production bleibt Free-only:
 
 - GitHub.com fuer Repository, Actions und Release-Dokumentation.
-- Cloudflare.com fuer Pages, Workers, KV, Cache und Routing.
+- Legacy edge provider.com fuer Pages, Workers, KV, Cache und Routing.
 - IDrive e2 fuer zentrale Dateien, Medien, Backups und grosse Datenobjekte.
 - Keine kostenpflichtigen Zusatzdienste.
 
@@ -129,7 +129,7 @@ Push:
 
 ## Empfehlungen
 
-- Nach schriftlicher Deploy-Freigabe: Cloudflare Pages Preview/Production ausrollen
+- Nach schriftlicher Deploy-Freigabe: Legacy edge provider Pages Preview/Production ausrollen
   und `scripts/live-test.sh` gegen die Ziel-URL ausfuehren.
 - Danach echte Geraete testen:
   - iPhone Safari: Start, Install, Home-Screen, Safe-Area, Tastaturverhalten.

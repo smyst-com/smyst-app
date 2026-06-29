@@ -10,10 +10,10 @@ Monitoring darf in der Free-Only-Phase keinen externen SaaS-Dienst voraussetzen.
 
 Erlaubt:
 
-- Cloudflare Dashboards und Worker-Logs im Free-Rahmen.
+- Legacy edge provider Dashboards und Worker-Logs im Free-Rahmen.
 - GitHub Actions Logs.
 - Lokale Build- und Smoke-Test-Ausgaben.
-- Leichte Audit-/Statusobjekte in Cloudflare KV oder IDrive e2.
+- Leichte Audit-/Statusobjekte in Salad/IDrive metadata oder IDrive e2.
 
 Nicht als Pflicht erlaubt:
 

@@ -52,6 +52,47 @@ const GOOGLE_START_ENDPOINT = `${AUTH_BASE_URL}/google/start`;
 const GITHUB_START_ENDPOINT = `${AUTH_BASE_URL}/github/start`;
 const LOGOUT_ENDPOINT = `${AUTH_BASE_URL}/logout`;
 const LOGOUT_ALL_ENDPOINT = `${AUTH_BASE_URL}/logout-all`;
+const EMAIL_LOGIN_ENDPOINT = `${AUTH_BASE_URL}/email/login`;
+const EMAIL_REGISTER_ENDPOINT = `${AUTH_BASE_URL}/email/register`;
+const EMAIL_FORGOT_ENDPOINT = `${AUTH_BASE_URL}/email/forgot`;
+
+export interface EmailAuthResult {
+  ok: boolean;
+  code?: string;
+  message?: string;
+  status?: string;
+}
+
+const JSON_POST_HEADERS = {
+  'Content-Type': 'application/json',
+  Accept: 'application/json',
+  'X-Smyst-CSRF': '1',
+} as const;
+
+async function postEmailAuth(endpoint: string, payload: Record<string, unknown>): Promise<EmailAuthResult> {
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      credentials: 'include',
+      headers: JSON_POST_HEADERS,
+      body: JSON.stringify(payload),
+    });
+    const data = (await res.json().catch(() => null)) as
+      | { ok?: boolean; status?: string; error?: { code?: string; message?: string } }
+      | null;
+    if (!res.ok) {
+      return {
+        ok: false,
+        code: data?.error?.code,
+        message: data?.error?.message,
+      };
+    }
+    return { ok: true, status: data?.status };
+  } catch (err) {
+    console.warn('[auth] email auth request failed', err);
+    return { ok: false, code: 'network_error', message: 'Verbindung fehlgeschlagen. Bitte erneut versuchen.' };
+  }
+}
 
 export function useAuth(options: { enabled?: boolean } = {}) {
   const enabled = options.enabled ?? true;
@@ -110,6 +151,29 @@ export function useAuth(options: { enabled?: boolean } = {}) {
     window.location.href = url;
   }, []);
 
+  const signInWithEmail = useCallback(
+    async (email: string, password: string): Promise<EmailAuthResult> => {
+      const result = await postEmailAuth(EMAIL_LOGIN_ENDPOINT, { email, password });
+      if (result.ok) await fetchMe();
+      return result;
+    },
+    [fetchMe],
+  );
+
+  const registerWithEmail = useCallback(
+    async (email: string, password: string, name?: string): Promise<EmailAuthResult> => {
+      return postEmailAuth(EMAIL_REGISTER_ENDPOINT, { email, password, name });
+    },
+    [],
+  );
+
+  const requestPasswordReset = useCallback(
+    async (email: string): Promise<EmailAuthResult> => {
+      return postEmailAuth(EMAIL_FORGOT_ENDPOINT, { email });
+    },
+    [],
+  );
+
   const signOut = useCallback(async () => {
     try {
       await fetch(LOGOUT_ENDPOINT, {
@@ -143,6 +207,9 @@ export function useAuth(options: { enabled?: boolean } = {}) {
     ...state,
     signInWithGoogle,
     signInWithGitHub,
+    signInWithEmail,
+    registerWithEmail,
+    requestPasswordReset,
     signOut,
     signOutAll,
     refresh: fetchMe,

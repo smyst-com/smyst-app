@@ -64,7 +64,7 @@ def iter_policy_files() -> list[Path]:
         "config",
         "scripts",
         "src",
-        "workers",
+        "backend",
         "public",
         "frontend",
     ]
@@ -87,7 +87,7 @@ def main() -> None:
     policy = data.get("policy", {})
     require(policy.get("paidServicesAllowed") is False, "paid services must remain disabled")
     require(policy.get("autoBillingServicesAllowed") is False, "auto-billing services must remain disabled")
-    require(policy.get("productionDatabase") == "cloudflare-kv", "production database must remain cloudflare-kv")
+    require(policy.get("productionDatabase") == "salad-api-idrive-metadata", "production database must remain Salad/IDrive metadata")
     require(policy.get("centralObjectStorage") == "idrive-e2", "central object storage must remain idrive-e2")
     require(policy.get("designChangesRequireExplicitTask") is True, "design changes must require explicit task")
     require(policy.get("cssChangesRequireExplicitTask") is True, "CSS changes must require explicit task")
@@ -100,7 +100,7 @@ def main() -> None:
             require((ROOT / rel_path).exists(), f"protected surface missing: {rel_path}")
 
     forbidden_services = data.get("forbiddenProductionServices", [])
-    forbidden_cloudflare = data.get("forbiddenCloudflarePaidOrAutoBillingProducts", [])
+    forbidden_legacy_edge = data.get("forbiddenLegacyEdgePaidOrAutoBillingProducts", [])
     issues: list[str] = []
     for path in iter_policy_files():
         if path.relative_to(ROOT).as_posix() in {
@@ -109,13 +109,9 @@ def main() -> None:
         }:
             continue
         issues.extend(scan_file_forbidden(path, forbidden_services))
-        issues.extend(scan_file_forbidden(path, forbidden_cloudflare))
+        issues.extend(scan_file_forbidden(path, forbidden_legacy_edge))
     if issues:
         fail("\n" + "\n".join(issues))
-
-    wrangler = text("wrangler.toml").lower()
-    for pattern in forbidden_cloudflare:
-        require(pattern.lower() not in wrangler, f"wrangler.toml must not configure {pattern}")
 
     workflow_text = "\n".join(text(path) for path in protected.get("githubActions", []))
     for required in data.get("requiredGithubActionsProtections", []):
@@ -126,10 +122,6 @@ def main() -> None:
     api_text = "\n".join(text(path) for path in protected.get("api", []))
     for required in data.get("requiredApiProtectionTerms", []):
         require(required in api_text, f"API protection term missing: {required}")
-    for path in ["workers/api.ts", "workers/storage-idrive.ts"]:
-        content = text(path)
-        if "DELETE" in content:
-            require("requireDeleteConfirmation" in content, f"{path} has DELETE routes without delete confirmation guard")
 
     print("surface protection validation passed")
 

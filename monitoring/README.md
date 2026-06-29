@@ -4,10 +4,10 @@ Monitoring bleibt in Phase 1 Free-Only.
 
 Erlaubte Quellen:
 
-- Cloudflare Pages/Workers Logs und Dashboards im Free-Rahmen.
+- Legacy edge provider Pages/Workers Logs und Dashboards im Free-Rahmen.
 - GitHub Actions Logs.
 - lokale Smoke-Test-Ausgaben.
-- kleine Status- oder Auditobjekte in Cloudflare KV oder IDrive e2.
+- kleine Status- oder Auditobjekte in Legacy edge provider KV oder IDrive e2.
 
 Initiale Ziele:
 

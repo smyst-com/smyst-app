@@ -8,7 +8,7 @@ Repository ohne bezahlte Dienste und ohne Production-Deploy sauber realisierbar 
 Rahmen:
 
 - GitHub.com free only.
-- Cloudflare.com free only.
+- Legacy edge provider free only.
 - IDrive e2 als Hauptspeicher fuer Dateien, Medien und grosse Datenobjekte.
 - Kein Production-Deploy ohne finale schriftliche Freigabe.
 
@@ -35,7 +35,7 @@ Rahmen:
 ### Support, Abuse und Datenschutzmeldungen
 
 - `POST /api/support/report` im API-Worker hinzugefuegt.
-- Meldungen werden in Cloudflare KV unter
+- Meldungen werden in Salad/IDrive metadata unter
   `meta:support-report:{createdAt}:{reportId}` gespeichert.
 - Meldungen sind rate-limitiert und same-origin/CSRF-geschuetzt.
 - Settings-UI enthaelt ein Formular fuer Feedback, Fehler, Missbrauch,
@@ -103,7 +103,7 @@ API:
 
 ## Datenmodell-Aenderungen
 
-Cloudflare KV:
+Salad/IDrive metadata:
 
 - Neu: `auth:sessions:{userSub}` fuer bekannte Session-IDs eines Users.
 - Neu: `meta:support-report:{createdAt}:{reportId}` fuer Support-/Abuse-/Privacy-
@@ -133,7 +133,7 @@ Eingeschraenkt:
 - Echte Production-/Preview-Live-E2E mit GitHub OAuth und IDrive e2.
 - Native App Links mit finalen Android SHA-256 Fingerprints und Apple Team/App ID.
 - Malware-Scanning, weil kein kostenloser erlaubter Scanner angebunden ist.
-- Atomare Milliarden-Quota-Schicht, weil Cloudflare KV dafuer nicht ausreicht.
+- Atomare Milliarden-Quota-Schicht, weil Salad/IDrive metadata dafuer nicht ausreicht.
 - Echter KI-Kern, weil keine erlaubte kostenlose Modell-/Compute-Architektur
   freigegeben wurde.
 - App Store / Play Store Readiness.

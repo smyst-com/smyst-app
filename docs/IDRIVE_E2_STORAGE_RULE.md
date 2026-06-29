@@ -79,7 +79,7 @@ IDrive e2 uebernimmt fuer `smyst.com` 99 % aller Speicheraufgaben. Jeder neue Sp
 - GitHub Free: nur Code, Versionierung, Releases und GitHub Actions.
 - Spaceship: Domain `smyst.com`, DNS und Subdomains.
 - Salad.com: nur echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
-- Cloudflare: nur Uebergang/Legacy, bis Spaceship DNS und IDrive e2 Static Hosting produktiv sind.
+- Legacy edge provider: nur Uebergang/Legacy, bis Spaceship DNS und IDrive e2 Static Hosting produktiv sind.
 
 ## Aktueller Blocker
 

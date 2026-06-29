@@ -201,7 +201,9 @@ export function similarProfiles(
 }
 
 export function recommendedProfiles(profiles: DiscoveryProfile[], limit = 8): DiscoveryProfile[] {
-  return rankProfiles(profiles, '', 'famous').slice(0, limit)
+  // "Empfohlen" = curated importance (manualRank): a stable featured order that
+  // does not depend on recency, so it stays distinct from the "Neu" rail.
+  return rankProfiles(profiles, '', 'manual').slice(0, limit)
 }
 
 export function popularProfiles(profiles: DiscoveryProfile[], limit = 8): DiscoveryProfile[] {
@@ -209,10 +211,12 @@ export function popularProfiles(profiles: DiscoveryProfile[], limit = 8): Discov
 }
 
 export function newProfiles(profiles: DiscoveryProfile[], limit = 8, now = Date.now()): DiscoveryProfile[] {
-  return profiles
-    .filter((profile) => isNewProfile(profile, now))
-    .sort((a, b) => b.createdAt - a.createdAt)
-    .slice(0, limit)
+  // Newest by creation time. Robust: if none fall inside the "new" window
+  // (e.g. a catalog seeded a while ago), still show the most recently created
+  // ones instead of an empty rail.
+  const byNewest = [...profiles].sort((a, b) => b.createdAt - a.createdAt)
+  const fresh = byNewest.filter((profile) => isNewProfile(profile, now))
+  return (fresh.length ? fresh : byNewest).slice(0, limit)
 }
 
 export function recentlyUsedProfiles(profiles: DiscoveryProfile[], limit = 8): DiscoveryProfile[] {

@@ -4,7 +4,7 @@
 
 Production currently does not use a separately hosted relational database. The active free-only data layer is:
 
-- Cloudflare KV for sessions, auth state, roles, upload intents/status, quotas, twin metadata, chat MVP state and public twin snapshots.
+- Salad/IDrive metadata for sessions, auth state, roles, upload intents/status, quotas, twin metadata, chat MVP state and public twin snapshots.
 - IDrive e2 for user files, media, backup objects and large twin data.
 
 The SQL files under `database/` are legacy/local domain-model references. They were audited and hardened for local experiments only.
@@ -68,7 +68,7 @@ The local SQL hardening migration adds:
 
 ## Recommendations
 
-- Keep production within Cloudflare KV + IDrive e2 until the free-only MVP is proven.
+- Keep production within Salad/IDrive metadata + IDrive e2 until the free-only MVP is proven.
 - Do not promote `database/`, `backend/`, `docker/`, `vector/` or local SQL scripts into production without a new architecture decision.
 - Add periodic KV consistency audits through Workers for orphaned public twin snapshots, upload records and storage counters.
 - For future high scale, define a new approved data tier with transactions, global indexing, queueing, vector search and observability.
