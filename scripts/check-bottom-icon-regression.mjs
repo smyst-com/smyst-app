@@ -34,6 +34,7 @@ requireAtLeast(/onClick=\{handleSendButtonClick\}/g, 2, 'send button handler');
 requireAtLeast(/onClick=\{handleSpeakInput\}/g, 2, 'speaker button handler');
 requireAtLeast(/onClick=\{\(\) => startDictation\(\)\}/g, 2, 'voice input handler');
 requireAtLeast(/onClick=\{handleToggleLiveVoice\}/g, 2, 'live voice handler');
+requireAtLeast(/<VoiceWaveStatus state=\{voiceState\} isSpeaking=\{isSpeaking\}/g, 2, 'visible live voice wave status');
 requireAtLeast(/speakable\?: boolean/g, 2, 'speakable message contract');
 requireAtLeast(/message\.speakable !== false/g, 2, 'speaker ignores non-speakable assistant messages');
 
@@ -54,5 +55,9 @@ requireIncludes('Antwort läuft gerade. Bitte kurz warten.', 'twin-chat pending 
 requireAtLeast(/Dateien/g, 2, 'file menu item');
 requireAtLeast(/Kontakte/g, 2, 'contacts menu item');
 requireAtLeast(/Standort/g, 2, 'location menu item');
+requireAtLeast(/Kamera öffnen/g, 2, 'camera menu item');
+requireAtLeast(/Audio hinzufügen/g, 2, 'audio menu item');
+requireIncludes('Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.', 'live voice pause-to-send guidance');
+requireIncludes('Twin spricht laut', 'spoken answer wave label');
 
 console.log('bottom icon regression validation passed');

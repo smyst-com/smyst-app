@@ -152,6 +152,15 @@ function MapPinIcon(props: IconProps) {
   )
 }
 
+function CameraIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M14.5 4 16 7h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3l1.5-3Z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
+  )
+}
+
 function Search(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
@@ -319,6 +328,47 @@ function speechRecognitionConstructor(): BrowserSpeechRecognitionConstructor | n
 
 function speechRecognitionSupported() {
   return Boolean(speechRecognitionConstructor())
+}
+
+function VoiceWaveStatus({
+  state,
+  isSpeaking,
+  variant = 'dark',
+}: {
+  state: SpeechRecognitionState
+  isSpeaking: boolean
+  variant?: 'dark' | 'light'
+}) {
+  if (state === 'idle' && !isSpeaking) return null
+
+  const label = isSpeaking
+    ? 'Twin spricht laut'
+    : state === 'listening'
+      ? 'Sprachwelle hört zu'
+      : state === 'paused'
+        ? 'Sprachwelle pausiert'
+        : 'Antwort wird vorbereitet'
+  const detail = isSpeaking
+    ? 'Laut vorlesen aktiv'
+    : state === 'listening'
+      ? 'Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.'
+      : state === 'paused'
+        ? 'Tippe die Welle erneut, um weiterzusprechen.'
+        : 'Der Twin antwortet gleich und liest danach laut vor.'
+
+  return (
+    <div className={`smyst-voice-wave smyst-voice-wave-${variant}`} data-voice-state={isSpeaking ? 'speaking' : state}>
+      <span className="smyst-voice-wave-bars" aria-hidden="true">
+        {[0, 1, 2, 3, 4, 5, 6].map((bar) => (
+          <span key={bar} style={{ animationDelay: `${bar * 90}ms` }} />
+        ))}
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate text-xs font-black uppercase tracking-[0.14em]">{label}</span>
+        <span className="block truncate text-[11px] font-semibold opacity-78">{detail}</span>
+      </span>
+    </div>
+  )
 }
 
 function mediaCategoryForFile(file: File): MemoryCategory {
@@ -1030,8 +1080,11 @@ function SmystStartPage({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const cameraInputRef = useRef<HTMLInputElement | null>(null)
   const menuRef = useRef<HTMLElement | null>(null)
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
+  const liveVoiceDraftRef = useRef('')
+  const liveVoiceSendTimerRef = useRef<number | null>(null)
 
   const latestAssistantText =
     [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
@@ -1200,6 +1253,8 @@ function SmystStartPage({
 
   useEffect(() => {
     return () => {
+      clearLiveVoiceTimer()
+      liveVoiceDraftRef.current = ''
       if ('speechSynthesis' in window) window.speechSynthesis.cancel()
       recognitionRef.current?.abort()
     }
@@ -1244,6 +1299,8 @@ function SmystStartPage({
   }, [input, selectedTwin])
 
   const resetActiveChat = () => {
+    clearLiveVoiceTimer()
+    liveVoiceDraftRef.current = ''
     setChatId(null)
     setChatProfileKey(null)
     setMessages([])
@@ -1492,6 +1549,12 @@ function SmystStartPage({
     )
   }
 
+  const clearLiveVoiceTimer = () => {
+    if (liveVoiceSendTimerRef.current === null) return
+    window.clearTimeout(liveVoiceSendTimerRef.current)
+    liveVoiceSendTimerRef.current = null
+  }
+
   const startDictation = (options: { live?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
@@ -1531,14 +1594,28 @@ function SmystStartPage({
       }
       const nextText = (finalText || interimText).trim()
       if (!nextText) return
-      resizeInput(nextText)
-      if (options.live && finalText.trim()) {
-        recognition.stop()
-        setVoiceState('replying')
-        void handleSend(finalText.trim(), [], { forceSpeech: true }).finally(() => {
-          setVoiceState('idle')
-        })
+      if (options.live) {
+        const finalChunk = finalText.trim()
+        if (finalChunk) {
+          liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
+        }
+        resizeInput([liveVoiceDraftRef.current.trim(), interimText.trim()].filter(Boolean).join(' '))
+        if (finalChunk) {
+          clearLiveVoiceTimer()
+          liveVoiceSendTimerRef.current = window.setTimeout(() => {
+            const message = liveVoiceDraftRef.current.trim()
+            if (!message) return
+            liveVoiceDraftRef.current = ''
+            recognition.stop()
+            setVoiceState('replying')
+            void handleSend(message, [], { forceSpeech: true }).finally(() => {
+              setVoiceState('idle')
+            })
+          }, 1600)
+        }
+        return
       }
+      resizeInput(nextText)
     }
     recognitionRef.current = recognition
     try {
@@ -1553,16 +1630,20 @@ function SmystStartPage({
 
   const handleToggleLiveVoice = () => {
     if (voiceState === 'listening') {
+      clearLiveVoiceTimer()
       recognitionRef.current?.stop()
       setVoiceState('paused')
       addNotice('Live-Sprachmodus pausiert.')
       return
     }
     if (voiceState === 'paused' || voiceState === 'idle') {
+      if (voiceState === 'idle') liveVoiceDraftRef.current = ''
       setSpeechOutputEnabled(true)
       startDictation({ live: true })
       return
     }
+    clearLiveVoiceTimer()
+    liveVoiceDraftRef.current = ''
     recognitionRef.current?.abort()
     window.speechSynthesis.cancel()
     setVoiceState('idle')
@@ -2267,6 +2348,17 @@ function SmystStartPage({
             event.target.value = ''
           }}
         />
+        <input
+          ref={cameraInputRef}
+          type="file"
+          className="hidden"
+          accept="image/*"
+          capture="environment"
+          onChange={(event) => {
+            void handleFilesSelected(event.target.files)
+            event.target.value = ''
+          }}
+        />
         <div className={`border-b ${composerLine} px-2 py-1 sm:px-3`}>
           <textarea
             ref={textareaRef}
@@ -2291,11 +2383,17 @@ function SmystStartPage({
           <div className={`border-b ${composerLine} px-2 py-1 text-xs font-semibold text-[#d5dbe5] sm:px-3`}>
             {composerMenuOpen && (
               <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Foto hinzufügen" title="Foto hinzufügen">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Foto oder Video hinzufügen" title="Foto oder Video hinzufügen">
                   <ImageIcon className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Kamera öffnen" title="Kamera öffnen">
+                  <CameraIcon className="h-4 w-4" />
                 </button>
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Dateien" title="Dateien">
                   <FileIcon className="h-4 w-4" />
+                </button>
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Audio hinzufügen" title="Audio hinzufügen">
+                  <Mic className="h-4 w-4" />
                 </button>
                 <button type="button" onClick={handleAttachLink} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Link" title="Link">
                   <LinkIcon className="h-4 w-4" />
@@ -2327,6 +2425,11 @@ function SmystStartPage({
                   : composerNotice}
               </p>
             )}
+          </div>
+        )}
+        {(voiceState !== 'idle' || isSpeaking) && (
+          <div className="px-2 py-1 sm:px-3">
+            <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant={shellTheme === 'light' ? 'light' : 'dark'} />
           </div>
         )}
         <div className="flex h-[44px] items-center justify-between px-2 text-white sm:px-3">
@@ -5612,7 +5715,10 @@ function TwinChatView({
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+  const cameraInputRef = useRef<HTMLInputElement | null>(null)
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
+  const liveVoiceDraftRef = useRef('')
+  const liveVoiceSendTimerRef = useRef<number | null>(null)
   const { lang } = useLanguage({ reloadOnChange: false })
   const auth = useAuth()
   const twinMvp = useTwinMvp()
@@ -5766,6 +5872,8 @@ function TwinChatView({
 
   useEffect(() => {
     return () => {
+      clearLiveVoiceTimer()
+      liveVoiceDraftRef.current = ''
       if ('speechSynthesis' in window) window.speechSynthesis.cancel()
       recognitionRef.current?.abort()
     }
@@ -5798,6 +5906,12 @@ function TwinChatView({
 
   const updateAttachment = (id: string, patch: Partial<ChatAttachment>) => {
     setAttachments((current) => current.map((attachment) => (attachment.id === id ? { ...attachment, ...patch } : attachment)))
+  }
+
+  const clearLiveVoiceTimer = () => {
+    if (liveVoiceSendTimerRef.current === null) return
+    window.clearTimeout(liveVoiceSendTimerRef.current)
+    liveVoiceSendTimerRef.current = null
   }
 
   const addNotice = (notice: string) => {
@@ -5954,14 +6068,28 @@ function TwinChatView({
       }
       const nextText = (finalText || interimText).trim()
       if (!nextText) return
-      resizeInput(nextText)
-      if (options.live && finalText.trim()) {
-        recognition.stop()
-        setVoiceState('replying')
-        void handleSend(finalText.trim(), [], { forceSpeech: true }).finally(() => {
-          setVoiceState('idle')
-        })
+      if (options.live) {
+        const finalChunk = finalText.trim()
+        if (finalChunk) {
+          liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
+        }
+        resizeInput([liveVoiceDraftRef.current.trim(), interimText.trim()].filter(Boolean).join(' '))
+        if (finalChunk) {
+          clearLiveVoiceTimer()
+          liveVoiceSendTimerRef.current = window.setTimeout(() => {
+            const message = liveVoiceDraftRef.current.trim()
+            if (!message) return
+            liveVoiceDraftRef.current = ''
+            recognition.stop()
+            setVoiceState('replying')
+            void handleSend(message, [], { forceSpeech: true }).finally(() => {
+              setVoiceState('idle')
+            })
+          }, 1600)
+        }
+        return
       }
+      resizeInput(nextText)
     }
     recognitionRef.current = recognition
     try {
@@ -5976,16 +6104,20 @@ function TwinChatView({
 
   const handleToggleLiveVoice = () => {
     if (voiceState === 'listening') {
+      clearLiveVoiceTimer()
       recognitionRef.current?.stop()
       setVoiceState('paused')
       addNotice('Live-Sprachmodus pausiert.')
       return
     }
     if (voiceState === 'paused' || voiceState === 'idle') {
+      if (voiceState === 'idle') liveVoiceDraftRef.current = ''
       setSpeechOutputEnabled(true)
       startDictation({ live: true })
       return
     }
+    clearLiveVoiceTimer()
+    liveVoiceDraftRef.current = ''
     recognitionRef.current?.abort()
     window.speechSynthesis.cancel()
     setVoiceState('idle')
@@ -6377,6 +6509,17 @@ function TwinChatView({
                 event.target.value = ''
               }}
             />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              className="hidden"
+              accept="image/*"
+              capture="environment"
+              onChange={(event) => {
+                void handleFilesSelected(event.target.files)
+                event.target.value = ''
+              }}
+            />
             {suggestions.length > 0 && (
               <div className="mb-1 flex gap-1 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none]">
                 {suggestions.map((suggestion) => (
@@ -6398,11 +6541,17 @@ function TwinChatView({
               <div className="mb-1 rounded-[10px] border border-white/20 bg-white/14 px-2 py-1 text-xs font-semibold text-[#555b64]">
                 {composerMenuOpen && (
                   <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Foto hinzufügen" title="Foto hinzufügen">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Foto oder Video hinzufügen" title="Foto oder Video hinzufügen">
                       <ImageIcon className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Kamera öffnen" title="Kamera öffnen">
+                      <CameraIcon className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Dateien" title="Dateien">
                       <FileIcon className="h-4 w-4" />
+                    </button>
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Audio hinzufügen" title="Audio hinzufügen">
+                      <Mic className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={handleAttachLink} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Link" title="Link">
                       <LinkIcon className="h-4 w-4" />
@@ -6434,6 +6583,11 @@ function TwinChatView({
                       : composerNotice}
                   </p>
                 )}
+              </div>
+            )}
+            {(voiceState !== 'idle' || isSpeaking) && (
+              <div className="mb-1">
+                <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant="light" />
               </div>
             )}
 
