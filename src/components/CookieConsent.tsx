@@ -73,7 +73,7 @@ export default function CookieConsent() {
       aria-modal={false}
       aria-labelledby="privacy-consent-title"
       aria-describedby="privacy-consent-desc"
-      className="fixed inset-x-0 bottom-0 z-[55] mx-auto w-full max-w-3xl px-3 pb-[max(env(safe-area-inset-bottom),12px)] sm:bottom-3 sm:px-4"
+      className="fixed inset-x-0 top-0 z-[55] mx-auto w-full max-w-3xl px-3 pt-[max(env(safe-area-inset-top),12px)] sm:top-3 sm:px-4 sm:pt-0"
     >
       <div className="rounded-2xl border border-white/10 bg-[#171d29]/95 p-4 text-[#f4f7fb] shadow-2xl ring-1 ring-black/20 backdrop-blur-xl sm:p-5">
         {view === 'banner' ? (

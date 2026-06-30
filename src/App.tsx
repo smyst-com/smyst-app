@@ -2495,6 +2495,33 @@ function SmystStartPage({
             </button>
           </div>
         </div>
+        <div className={`border-t ${composerLine} px-2 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 sm:px-3`}>
+          <div aria-label="Erklärung der unteren Icons">
+            <p className="mb-1 text-[12px] font-bold text-[#8e97a8]">Icon</p>
+            <div className="grid grid-cols-1 gap-1 text-[11px] font-semibold text-[#aeb6c4] sm:grid-cols-5">
+              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
+                <Plus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span><span className="text-white">Plus:</span> Medien, Kamera, Dateien, Audio, Link, Memory, Kontakte oder Standort.</span>
+              </span>
+              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
+                <Mic className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span><span className="text-white">Mikro:</span> Nachricht diktieren.</span>
+              </span>
+              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
+                <Waveform className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span><span className="text-white">Welle:</span> Live-Sprachmodus starten.</span>
+              </span>
+              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
+                <Speaker className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span><span className="text-white">Lautsprecher:</span> Antwort vorlesen.</span>
+              </span>
+              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
+                <ArrowUp className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span><span className="text-white">Pfeil:</span> Nachricht senden.</span>
+              </span>
+            </div>
+          </div>
+        </div>
       </footer>
     </main>
   )
