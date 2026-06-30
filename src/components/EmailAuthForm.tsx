@@ -5,13 +5,12 @@
  */
 
 import { useState } from 'react';
+import { fetchAuth } from '../lib/authEndpoints';
 
 type Mode = 'login' | 'register' | 'forgot';
 
-const AUTH_BASE_URL = (import.meta.env.VITE_AUTH_BASE_URL || '/auth').replace(/\/$/, '');
-
 async function postJson(path: string, body: Record<string, unknown>) {
-  const res = await fetch(`${AUTH_BASE_URL}${path}`, {
+  const res = await fetchAuth(path, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },

@@ -73,6 +73,7 @@ for (const k of [
   'XAI_API_KEY',
   'DEEPSEEK_API_KEY',
   'MOONSHOT_API_KEY',
+  'MANUS_API_KEY',
   'ZHIPU_API_KEY',
   'DASHSCOPE_API_KEY',
   'MISTRAL_API_KEY',

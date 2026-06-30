@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { buildAuthUrl, fetchAuth } from './authEndpoints';
 
 export interface AuthUser {
   sub: string;
@@ -46,15 +47,8 @@ interface MeResponse {
   };
 }
 
-const AUTH_BASE_URL = (import.meta.env.VITE_AUTH_BASE_URL || '/auth').replace(/\/$/, '');
-const ME_ENDPOINT = `${AUTH_BASE_URL}/me`;
-const GOOGLE_START_ENDPOINT = `${AUTH_BASE_URL}/google/start`;
-const GITHUB_START_ENDPOINT = `${AUTH_BASE_URL}/github/start`;
-const LOGOUT_ENDPOINT = `${AUTH_BASE_URL}/logout`;
-const LOGOUT_ALL_ENDPOINT = `${AUTH_BASE_URL}/logout-all`;
-const EMAIL_LOGIN_ENDPOINT = `${AUTH_BASE_URL}/email/login`;
-const EMAIL_REGISTER_ENDPOINT = `${AUTH_BASE_URL}/email/register`;
-const EMAIL_FORGOT_ENDPOINT = `${AUTH_BASE_URL}/email/forgot`;
+const GOOGLE_START_ENDPOINT = buildAuthUrl('/google/start');
+const GITHUB_START_ENDPOINT = buildAuthUrl('/github/start');
 
 export interface EmailAuthResult {
   ok: boolean;
@@ -69,9 +63,9 @@ const JSON_POST_HEADERS = {
   'X-Smyst-CSRF': '1',
 } as const;
 
-async function postEmailAuth(endpoint: string, payload: Record<string, unknown>): Promise<EmailAuthResult> {
+async function postEmailAuth(path: string, payload: Record<string, unknown>): Promise<EmailAuthResult> {
   try {
-    const res = await fetch(endpoint, {
+    const res = await fetchAuth(path, {
       method: 'POST',
       credentials: 'include',
       headers: JSON_POST_HEADERS,
@@ -104,7 +98,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
       return;
     }
     try {
-      const res = await fetch(ME_ENDPOINT, {
+      const res = await fetchAuth('/me', {
         method: 'GET',
         credentials: 'include',
         headers: { Accept: 'application/json' },
@@ -153,7 +147,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
 
   const signInWithEmail = useCallback(
     async (email: string, password: string): Promise<EmailAuthResult> => {
-      const result = await postEmailAuth(EMAIL_LOGIN_ENDPOINT, { email, password });
+      const result = await postEmailAuth('/email/login', { email, password });
       if (result.ok) await fetchMe();
       return result;
     },
@@ -162,21 +156,21 @@ export function useAuth(options: { enabled?: boolean } = {}) {
 
   const registerWithEmail = useCallback(
     async (email: string, password: string, name?: string): Promise<EmailAuthResult> => {
-      return postEmailAuth(EMAIL_REGISTER_ENDPOINT, { email, password, name });
+      return postEmailAuth('/email/register', { email, password, name });
     },
     [],
   );
 
   const requestPasswordReset = useCallback(
     async (email: string): Promise<EmailAuthResult> => {
-      return postEmailAuth(EMAIL_FORGOT_ENDPOINT, { email });
+      return postEmailAuth('/email/forgot', { email });
     },
     [],
   );
 
   const signOut = useCallback(async () => {
     try {
-      await fetch(LOGOUT_ENDPOINT, {
+      await fetchAuth('/logout', {
         method: 'POST',
         credentials: 'include',
         headers: { 'X-Smyst-CSRF': '1' },
@@ -191,7 +185,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
 
   const signOutAll = useCallback(async () => {
     try {
-      await fetch(LOGOUT_ALL_ENDPOINT, {
+      await fetchAuth('/logout-all', {
         method: 'POST',
         credentials: 'include',
         headers: { 'X-Smyst-CSRF': '1' },
