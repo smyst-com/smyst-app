@@ -1599,7 +1599,6 @@ function SmystStartPage({
         if (finalChunk) {
           liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
         }
-        resizeInput([liveVoiceDraftRef.current.trim(), interimText.trim()].filter(Boolean).join(' '))
         if (finalChunk) {
           clearLiveVoiceTimer()
           liveVoiceSendTimerRef.current = window.setTimeout(() => {
@@ -6073,7 +6072,6 @@ function TwinChatView({
         if (finalChunk) {
           liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
         }
-        resizeInput([liveVoiceDraftRef.current.trim(), interimText.trim()].filter(Boolean).join(' '))
         if (finalChunk) {
           clearLiveVoiceTimer()
           liveVoiceSendTimerRef.current = window.setTimeout(() => {
