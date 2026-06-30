@@ -80,16 +80,14 @@ test.describe("Smyst current app", () => {
     await expect(logo).toBeVisible();
     await expect(logo.getByText("Create Your AI Twin")).toBeVisible();
     await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
-    const profileMenuButton = page.getByRole("button", { name: /Choose twin|Profil wechseln/ });
+    const profileMenuButton = page.getByRole("button", { name: /Choose twin|Profil wechseln|Twin wählen/ });
     await expect(profileMenuButton).toBeVisible();
-    await expect(page.getByPlaceholder("Nachricht schreiben")).toBeVisible();
-
-    await profileMenuButton.click();
     await expect(page.getByText("Sokrates")).toBeVisible();
     await expect(page.getByText(/Max Müller/i)).toHaveCount(0);
-    await page.getByText("Sokrates").click();
 
-    await page.getByPlaceholder("Nachricht schreiben").fill("Was empfiehlst du jungen Leuten?");
+    const messageInput = page.getByPlaceholder("Nachricht schreiben");
+    await expect(messageInput).toBeVisible();
+    await messageInput.fill("Was empfiehlst du jungen Leuten?");
     await page.keyboard.press("Enter");
     await expect(page.getByText("Was empfiehlst du jungen Leuten?")).toBeVisible();
     await expect(page.getByText("Melde dich an, um den Chat mit diesem echten KI-Profil zu starten")).toHaveCount(0);
