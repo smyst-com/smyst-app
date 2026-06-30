@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     xai_api_key: str | None = Field(default=None, validation_alias="XAI_API_KEY")
     deepseek_api_key: str | None = Field(default=None, validation_alias="DEEPSEEK_API_KEY")
     moonshot_api_key: str | None = Field(default=None, validation_alias="MOONSHOT_API_KEY")
+    manus_api_key: str | None = Field(default=None, validation_alias="MANUS_API_KEY")
     zhipu_api_key: str | None = Field(default=None, validation_alias="ZHIPU_API_KEY")
     dashscope_api_key: str | None = Field(default=None, validation_alias="DASHSCOPE_API_KEY")
     mistral_api_key: str | None = Field(default=None, validation_alias="MISTRAL_API_KEY")

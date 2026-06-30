@@ -8,8 +8,10 @@ from app.ai.llm_router import (
     LLMRouter,
     LocalDeterministicProvider,
     OpenAICompatibleProvider,
+    provider_statuses,
 )
 from app.ai.models import LLMRequest, LLMResponse
+from app.core.config import Settings
 
 
 class FakeResponse:
@@ -130,3 +132,26 @@ async def test_router_can_fall_back_to_local_deterministic_provider() -> None:
     assert response.provider == "local"
     assert response.degraded is True
     assert "Smyst memory context" in response.text
+
+
+def test_provider_statuses_do_not_expose_secret_values() -> None:
+    settings = Settings(
+        OPENROUTER_API_KEY="secret-openrouter",
+        GEMINI_API_KEY="secret-gemini",
+        LLM_PROVIDER_ORDER="openrouter,gemini,manus",
+        LLM_DEFAULT_MODELS="openrouter=google/gemini-2.5-flash",
+    )
+
+    statuses = provider_statuses(settings)
+
+    openrouter = next(status for status in statuses if status["provider"] == "openrouter")
+    gemini = next(status for status in statuses if status["provider"] == "gemini")
+    manus = next(status for status in statuses if status["provider"] == "manus")
+
+    assert openrouter["configured"] is True
+    assert openrouter["model"] == "google/gemini-2.5-flash"
+    assert "secret-openrouter" not in str(statuses)
+    assert gemini["configured"] is True
+    assert manus["configured"] is False
+    assert manus["supported"] is True
+    assert manus["key_name"] == "MANUS_API_KEY"

@@ -257,6 +257,118 @@ class AnthropicProvider(OpenAICompatibleProvider):
         )
 
 
+class ManusProvider(LLMProvider):
+    name = "manus"
+
+    def __init__(
+        self,
+        api_key: str,
+        agent_profile: str = "manus-1.6-lite",
+        base_url: str = "https://api.manus.ai/v2",
+        timeout: float = 60,
+        poll_attempts: int = 18,
+        poll_interval: float = 1.0,
+    ) -> None:
+        self.api_key = api_key
+        self.model = agent_profile
+        self.base_url = base_url.rstrip("/")
+        self.timeout = timeout
+        self.poll_attempts = poll_attempts
+        self.poll_interval = poll_interval
+
+    async def complete(self, request: LLMRequest) -> LLMResponse:
+        started = perf_counter()
+        headers = {
+            "x-manus-api-key": self.api_key,
+            "content-type": "application/json",
+        }
+        task_payload = {
+            "agent_profile": self.model,
+            "interactive": False,
+            "hide_in_task_list": True,
+            "share_visibility": "private",
+            "message": {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": f"{request.system_prompt or DEFAULT_SYSTEM_PROMPT}\n\n{request.prompt}",
+                    }
+                ],
+            },
+        }
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            created = await client.post(
+                f"{self.base_url}/task.create",
+                headers=headers,
+                json=task_payload,
+            )
+            created.raise_for_status()
+            task_id = self._extract_task_id(created.json())
+
+            last_status = "unknown"
+            for _ in range(self.poll_attempts):
+                messages_response = await client.get(
+                    f"{self.base_url}/task.listMessages",
+                    headers=headers,
+                    params={"task_id": task_id, "limit": 20, "order": "desc"},
+                )
+                messages_response.raise_for_status()
+                messages = messages_response.json()
+                text = self._extract_answer(messages)
+                if text:
+                    latency_ms = int((perf_counter() - started) * 1000)
+                    return LLMResponse(
+                        text=text,
+                        provider=self.name,
+                        model=self.model,
+                        input_tokens=len(request.prompt.split()),
+                        output_tokens=len(text.split()),
+                        latency_ms=latency_ms,
+                        degraded=False,
+                    )
+                last_status = self._extract_status(messages) or last_status
+                if last_status in {"stopped", "failed"}:
+                    break
+                await asyncio.sleep(self.poll_interval)
+
+        raise RuntimeError(f"Manus task did not return an answer; status={last_status}")
+
+    def _extract_task_id(self, data: dict[str, Any]) -> str:
+        task_id = data.get("task_id") or (data.get("data") or {}).get("task_id")
+        if not isinstance(task_id, str) or not task_id.strip():
+            raise RuntimeError("Manus task.create returned no task_id")
+        return task_id
+
+    def _extract_answer(self, data: dict[str, Any]) -> str:
+        items = data.get("messages") or data.get("items") or data.get("data") or []
+        if isinstance(items, dict):
+            items = items.get("messages") or items.get("items") or []
+        for item in items if isinstance(items, list) else []:
+            if not isinstance(item, dict) or item.get("type") != "assistant_message":
+                continue
+            content = item.get("content")
+            if isinstance(content, str) and content.strip():
+                return content
+            if isinstance(content, list):
+                text = "".join(part.get("text", "") for part in content if isinstance(part, dict))
+                if text.strip():
+                    return text
+        return ""
+
+    def _extract_status(self, data: dict[str, Any]) -> str | None:
+        items = data.get("messages") or data.get("items") or data.get("data") or []
+        if isinstance(items, dict):
+            items = items.get("messages") or items.get("items") or []
+        for item in items if isinstance(items, list) else []:
+            if isinstance(item, dict) and item.get("type") == "status_update":
+                status = item.get("status")
+                if isinstance(status, str):
+                    return status
+        return None
+
+
 PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
     "openrouter": ProviderConfig(
         name="openrouter",
@@ -299,6 +411,12 @@ PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
         base_url="https://api.moonshot.ai/v1",
         api_key_attr="moonshot_api_key",
         default_model="kimi-k2-0711-preview",
+    ),
+    "manus": ProviderConfig(
+        name="manus",
+        base_url="https://api.manus.ai/v2",
+        api_key_attr="manus_api_key",
+        default_model="manus-1.6-lite",
     ),
     "zhipu": ProviderConfig(
         name="zhipu",
@@ -349,6 +467,7 @@ PROVIDER_ALIASES = {
     "grok": "xai",
     "kimi": "moonshot",
     "moonshotai": "moonshot",
+    "manusai": "manus",
     "glm": "zhipu",
     "zai": "zhipu",
     "qwen": "dashscope",
@@ -363,6 +482,7 @@ DEFAULT_PROVIDER_ORDER = [
     "xai",
     "deepseek",
     "moonshot",
+    "manus",
     "zhipu",
     "dashscope",
     "mistral",
@@ -388,6 +508,39 @@ def _provider_order(settings: Settings) -> list[str]:
     return [name for name in order if name in PROVIDER_CONFIGS]
 
 
+def provider_statuses(settings: Settings | None = None) -> list[dict[str, object]]:
+    active_settings = settings or get_settings()
+    model_overrides = {
+        _canonical_provider_name(provider): model
+        for provider, model in active_settings.llm_default_models.items()
+    }
+    statuses: list[dict[str, object]] = []
+    seen: set[str] = set()
+
+    status_order = [
+        *_provider_order(active_settings),
+        *(name for name in DEFAULT_PROVIDER_ORDER if name not in _provider_order(active_settings)),
+    ]
+    for provider_name in status_order:
+        if provider_name in seen:
+            continue
+        seen.add(provider_name)
+        config = PROVIDER_CONFIGS[provider_name]
+        key_value = getattr(active_settings, config.api_key_attr, None)
+        statuses.append(
+            {
+                "provider": config.name,
+                "key_name": config.api_key_attr.upper(),
+                "configured": bool(key_value),
+                "supported": True,
+                "model": model_overrides.get(provider_name, config.default_model),
+                "base_url": config.base_url,
+            }
+        )
+
+    return statuses
+
+
 def build_default_router(settings: Settings | None = None) -> LLMRouter:
     active_settings = settings or get_settings()
     model_overrides = {
@@ -409,7 +562,10 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
         provider_cls = (
             AnthropicProvider if provider_name == "anthropic" else OpenAICompatibleProvider
         )
-        providers.append(provider_cls(config.name, config.base_url, api_key, model))
+        if provider_name == "manus":
+            providers.append(ManusProvider(api_key, agent_profile=model, base_url=config.base_url))
+        else:
+            providers.append(provider_cls(config.name, config.base_url, api_key, model))
 
     providers.append(LocalDeterministicProvider())
     return LLMRouter(providers)
