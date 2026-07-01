@@ -38,19 +38,21 @@ const organizationName = process.env.SALAD_ORGANIZATION_NAME || 'smyst-com';
 const projectName = process.env.SALAD_PROJECT_NAME || 'default';
 const containerGroup = process.env.SALAD_CONTAINER_GROUP || 'smyst-backend-api';
 const image = process.env.IMAGE || 'ghcr.io/smyst-com/smyst-backend:latest';
+const publicSaladBaseUrl =
+  process.env.SMYST_SALAD_PUBLIC_BASE_URL || 'https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud';
 
 // ---- Backend-Runtime-Env (Defaults aus docs/runbooks/google-salad-auth.md) ----
 const env = {
   APP_ENV: process.env.APP_ENV || 'production',
   PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL || 'https://smyst.com',
-  AUTH_PUBLIC_BASE_URL: process.env.AUTH_PUBLIC_BASE_URL || 'https://api.smyst.com',
+  AUTH_PUBLIC_BASE_URL: process.env.AUTH_PUBLIC_BASE_URL || publicSaladBaseUrl,
   CORS_ORIGINS: process.env.CORS_ORIGINS || 'https://smyst.com,https://app.smyst.com',
   GOOGLE_OAUTH_CLIENT_ID:
     process.env.GOOGLE_OAUTH_CLIENT_ID ||
     '449969912847-icfrvs99eee2rlaiosij3ck5f7dcbejh.apps.googleusercontent.com',
   GOOGLE_OAUTH_CLIENT_SECRET: process.env.GOOGLE_OAUTH_CLIENT_SECRET || '',
   GOOGLE_OAUTH_REDIRECT_URI:
-    process.env.GOOGLE_OAUTH_REDIRECT_URI || 'https://api.smyst.com/auth/google/callback',
+    process.env.GOOGLE_OAUTH_REDIRECT_URI || `${publicSaladBaseUrl}/auth/google/callback`,
   AUTH_SESSION_SECRET: process.env.AUTH_SESSION_SECRET || '',
   SMYST_OWNER_EMAILS: process.env.SMYST_OWNER_EMAILS || 'smyst247@gmail.com',
   SMYST_ADMIN_EMAILS: process.env.SMYST_ADMIN_EMAILS || '',
@@ -207,5 +209,5 @@ console.log(JSON.stringify({
   endpoint: dns ? `https://${dns}` : '(URL erscheint im Salad-Portal, sobald deployed)',
   health: dns ? `https://${dns}/api/v1/health/live` : null,
   readiness: dns ? `https://${dns}/api/v1/health/ready` : null,
-  next: 'DNS: api.smyst.com -> obigen Salad-Endpoint (CNAME), dann VITE_AUTH_BASE_URL ist bereits https://api.smyst.com/auth',
+  next: 'App: VITE_AUTH_BASE_URL should use the Salad endpoint until api.smyst.com is accepted as a custom gateway host.',
 }, null, 2));

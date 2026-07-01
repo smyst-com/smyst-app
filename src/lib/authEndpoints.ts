@@ -16,11 +16,6 @@ export const AUTH_FALLBACK_BASE_URL = cleanBaseUrl(
 
 export const AUTH_FETCH_BASE_URLS = unique([AUTH_BASE_URL, AUTH_FALLBACK_BASE_URL]);
 
-function shouldTryNext(response: Response) {
-  if (response.status === 502 || response.status === 503 || response.status === 504) return true;
-  return response.status >= 520 && response.status <= 530;
-}
-
 export function buildAuthUrl(path: string, baseUrl = AUTH_BASE_URL) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   return `${baseUrl}${normalizedPath}`;
@@ -28,13 +23,12 @@ export function buildAuthUrl(path: string, baseUrl = AUTH_BASE_URL) {
 
 export async function fetchAuth(path: string, init: RequestInit = {}) {
   let lastError: unknown = null;
-  let lastResponse: Response | null = null;
 
   for (const baseUrl of AUTH_FETCH_BASE_URLS) {
     try {
       const response = await fetch(buildAuthUrl(path, baseUrl), init);
-      if (shouldTryNext(response)) {
-        lastResponse = response;
+      if (response.status >= 500 && baseUrl !== AUTH_FETCH_BASE_URLS[AUTH_FETCH_BASE_URLS.length - 1]) {
+        lastError = new Error(`Auth endpoint failed with ${response.status}`);
         continue;
       }
       return response;
@@ -43,6 +37,5 @@ export async function fetchAuth(path: string, init: RequestInit = {}) {
     }
   }
 
-  if (lastResponse) return lastResponse;
   throw lastError instanceof Error ? lastError : new Error('Auth request failed');
 }
