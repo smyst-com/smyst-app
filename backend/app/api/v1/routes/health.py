@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.integrations.storage import get_storage_config_status
 from app.services.health import check_readiness
+from app.services.production_readiness import production_readiness
 
 router = APIRouter(tags=["health"])
 
@@ -62,3 +63,8 @@ async def deep() -> dict[str, object]:
             "retrieval_p95_ms": 150,
         },
     }
+
+
+@router.get("/health/production")
+async def production() -> dict[str, object]:
+    return await production_readiness()
