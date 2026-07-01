@@ -110,7 +110,11 @@ async function s3Request(method, bucket, objectKey = "", options = {}) {
   let lastError;
   for (let attempt = 1; attempt <= 4; attempt += 1) {
     try {
-      const response = await fetch(url, { method, headers, body });
+      const init = { method, headers };
+      if (method !== "GET" && method !== "HEAD") {
+        init.body = body;
+      }
+      const response = await fetch(url, init);
       const text = await response.text();
       if (response.ok || (method === "DELETE" && response.status === 404)) {
         return text;
