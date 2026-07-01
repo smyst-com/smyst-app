@@ -1,0 +1,41 @@
+name: IDrive e2 Static Bucket Reset
+
+on:
+  workflow_dispatch:
+    inputs:
+      reset_approval:
+        description: 'Drei statische IDrive Buckets leeren und löschen. Exakt "Ja OK" eintragen.'
+        required: true
+        type: string
+
+concurrency:
+  group: idrive-static-reset-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  reset:
+    name: Empty and delete static IDrive buckets
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate written approval
+        env:
+          RESET_APPROVAL: ${{ inputs.reset_approval }}
+        run: test "$RESET_APPROVAL" = "Ja OK"
+
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Empty and delete static buckets
+        run: node scripts/reset-idrive-static-buckets.mjs
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          IDRIVE_E2_ENDPOINT: ${{ vars.IDRIVE_E2_ENDPOINT || 'https://s3.us-west-2.idrivee2.com' }}
+          IDRIVE_E2_REGION: ${{ vars.IDRIVE_E2_REGION || 'us-west-2' }}
+          IDRIVE_E2_RESET_BUCKETS: smyst.com,app.smyst.com,cdn.smyst.com
