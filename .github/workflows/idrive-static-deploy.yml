@@ -63,7 +63,7 @@ jobs:
           IDRIVE_E2_APP_BUCKET: ${{ vars.IDRIVE_E2_APP_BUCKET || 'app.smyst.com' }}
           IDRIVE_E2_CDN_BUCKET: ${{ vars.IDRIVE_E2_CDN_BUCKET || 'cdn.smyst.com' }}
           IDRIVE_E2_SET_PUBLIC_POLICY: ${{ inputs.set_public_policy }}
-          IDRIVE_E2_OBJECT_ACL: public-read
+          IDRIVE_E2_OBJECT_ACL: ${{ vars.IDRIVE_E2_OBJECT_ACL || '' }}
           IDRIVE_E2_VERIFY_URLS: |
             https://smyst.com/
             https://www.smyst.com/

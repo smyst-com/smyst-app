@@ -22,6 +22,7 @@ const config = {
 };
 
 const endpointUrl = new URL(config.endpoint);
+const transientStatuses = new Set([408, 429, 500, 502, 503, 504]);
 
 function sha256Hex(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -146,12 +147,29 @@ async function s3Request(method, bucket, objectKey = "", options = {}) {
   headers.authorization =
     `AWS4-HMAC-SHA256 Credential=${config.accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
-  const response = await fetch(url, { method, headers, body });
-  const text = await response.text();
-  if (!response.ok) {
-    throw new Error(`${method} ${bucket}/${objectKey} failed: ${response.status} ${text}`);
+  let lastError;
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    try {
+      const response = await fetch(url, { method, headers, body });
+      const text = await response.text();
+      if (response.ok) {
+        return text;
+      }
+      if (!transientStatuses.has(response.status) || attempt === 4) {
+        throw new Error(`${method} ${bucket}/${objectKey} failed: ${response.status} ${text}`);
+      }
+      lastError = new Error(`${method} ${bucket}/${objectKey} transient ${response.status}`);
+    } catch (error) {
+      if (attempt === 4) {
+        throw error;
+      }
+      lastError = error;
+    }
+    const delay = 500 * 2 ** (attempt - 1);
+    console.warn(`${method} ${bucket}/${objectKey} retry ${attempt}/3 after ${lastError.message}`);
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
-  return text;
+  throw lastError;
 }
 
 async function listFiles(directory) {
