@@ -26,7 +26,12 @@ export async function fetchAuth(path: string, init: RequestInit = {}) {
 
   for (const baseUrl of AUTH_FETCH_BASE_URLS) {
     try {
-      return await fetch(buildAuthUrl(path, baseUrl), init);
+      const response = await fetch(buildAuthUrl(path, baseUrl), init);
+      if (response.status >= 500 && baseUrl !== AUTH_FETCH_BASE_URLS[AUTH_FETCH_BASE_URLS.length - 1]) {
+        lastError = new Error(`Auth endpoint failed with ${response.status}`);
+        continue;
+      }
+      return response;
     } catch (err) {
       lastError = err;
     }
