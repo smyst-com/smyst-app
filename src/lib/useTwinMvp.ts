@@ -6,6 +6,7 @@
  */
 
 import { useCallback, useState } from 'react'
+import { fetchService } from './serviceEndpoints'
 
 export type TwinStyle = 'warm' | 'direct' | 'humorous' | 'wise' | 'neutral'
 export type TwinVisibility = 'private' | 'public'
@@ -221,7 +222,7 @@ async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   if ((init.method ?? 'GET').toUpperCase() !== 'GET') {
     headers.set('X-Smyst-CSRF', '1')
   }
-  const res = await fetch(path, {
+  const res = await fetchService(path, {
     ...init,
     credentials: 'include',
     headers,
@@ -518,7 +519,7 @@ export function useTwinMvp() {
   const deleteAccount = useCallback(
     () =>
       run(async () => {
-        const storageRes = await fetch('/storage/account', {
+        const storageRes = await fetchService('/storage/account', {
           method: 'DELETE',
           credentials: 'include',
           headers: { 'X-Smyst-CSRF': '1', 'X-Smyst-Delete-Confirm': 'delete-account-storage' },

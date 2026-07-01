@@ -15,6 +15,7 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
+import { fetchService } from './serviceEndpoints';
 
 export type MemoryCategory =
   | 'audio'
@@ -219,7 +220,7 @@ export function useMemoryUpload() {
         }
 
         // Schritt 1: Presigned URL holen
-        const urlRes = await fetch('/storage/upload-url', {
+        const urlRes = await fetchService('/storage/upload-url', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
@@ -284,7 +285,7 @@ export function useMemoryUpload() {
           }
         }
 
-        const completeRes = await fetch('/storage/upload-complete', {
+        const completeRes = await fetchService('/storage/upload-complete', {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
