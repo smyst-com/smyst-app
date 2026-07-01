@@ -35,10 +35,10 @@ jobs:
         run: npm run build
         env:
           VITE_CANONICAL_HOST: https://smyst.com
-          VITE_API_BASE_URL: https://api.smyst.com
-          VITE_API_FALLBACK_BASE_URL: https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud
-          VITE_AUTH_BASE_URL: https://api.smyst.com/auth
-          VITE_AUTH_FALLBACK_BASE_URL: https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud/auth
+          VITE_API_BASE_URL: https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud
+          VITE_API_FALLBACK_BASE_URL: https://api.smyst.com
+          VITE_AUTH_BASE_URL: https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud/auth
+          VITE_AUTH_FALLBACK_BASE_URL: https://api.smyst.com/auth
 
       - name: Preserve custom domain
         run: echo "smyst.com" > dist/CNAME
