@@ -36,6 +36,17 @@ class Settings(BaseSettings):
     idrive_e2_region: str = Field(default="us-west-2", validation_alias="IDRIVE_E2_REGION")
     idrive_e2_access_key: str | None = Field(default=None, validation_alias="IDRIVE_E2_ACCESS_KEY")
     idrive_e2_secret_key: str | None = Field(default=None, validation_alias="IDRIVE_E2_SECRET_KEY")
+    idrive_e2_site_bucket: str = Field(default="smyst.com", validation_alias="IDRIVE_E2_SITE_BUCKET")
+    idrive_e2_app_bucket: str = Field(default="app.smyst.com", validation_alias="IDRIVE_E2_APP_BUCKET")
+    idrive_e2_cdn_bucket: str = Field(default="cdn.smyst.com", validation_alias="IDRIVE_E2_CDN_BUCKET")
+    idrive_e2_public_access_enabled: bool = Field(
+        default=False,
+        validation_alias="IDRIVE_E2_PUBLIC_ACCESS_ENABLED",
+    )
+    salad_public_base_url: str = Field(
+        default="https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud",
+        validation_alias="SMYST_SALAD_PUBLIC_BASE_URL",
+    )
 
     auth_session_secret: str = Field(
         default="replace-with-48-byte-random-secret",

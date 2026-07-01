@@ -62,6 +62,16 @@ Recommended GitHub Variables:
 - `IDRIVE_E2_SITE_BUCKET=smyst.com`
 - `IDRIVE_E2_APP_BUCKET=app.smyst.com`
 - `IDRIVE_E2_CDN_BUCKET=cdn.smyst.com`
+- `IDRIVE_E2_SET_PUBLIC_POLICY=false` until IDrive public bucket access is enabled
+- `IDRIVE_E2_OBJECT_ACL=` unless IDrive confirms object ACL public reads are supported
+
+Important current IDrive constraint:
+
+- Private bucket creation, private object upload and static website configuration work.
+- Public bucket creation is blocked on the current Free account tier in the IDrive console.
+- S3 bucket policy writes return `403 AccessDenied` with the current IDrive e2 API.
+- Object upload with `public-read` does not make objects publicly readable on the current account.
+- Therefore IDrive can already be used for private storage, backups, uploads, archives and signed/private assets, but public CDN/static hosting requires paid/public access enablement by IDrive before it can replace GitHub Pages for public static traffic.
 
 ## Deploy Order
 
