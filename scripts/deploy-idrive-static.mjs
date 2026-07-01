@@ -300,7 +300,16 @@ async function main() {
 
   for (const bucket of publicBuckets) {
     await configureWebsite(bucket);
-    await setPublicPolicy(bucket);
+    try {
+      await setPublicPolicy(bucket);
+    } catch (error) {
+      if (!config.objectAcl || !String(error.message).includes("AccessDenied")) {
+        throw error;
+      }
+      console.warn(
+        `Public bucket policy was denied for ${bucket}; continuing with ${config.objectAcl} object ACL fallback.`,
+      );
+    }
   }
 
   await uploadFiles(config.siteBucket, allFiles);
