@@ -36,6 +36,7 @@ jobs:
         env:
           VITE_CANONICAL_HOST: https://smyst.com
           VITE_AUTH_BASE_URL: https://api.smyst.com/auth
+          VITE_AUTH_FALLBACK_BASE_URL: https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud/auth
 
       - name: Preserve custom domain
         run: echo "smyst.com" > dist/CNAME
