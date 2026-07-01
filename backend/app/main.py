@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
     app.add_middleware(SecurityHeadersMiddleware)
 
     app.include_router(api_router, prefix=f"/api/{settings.api_version}")
+    app.include_router(api_router, prefix="/api")
     app.include_router(api_router)
     return app
 
