@@ -216,6 +216,17 @@ function apiError(body: unknown, fallback: string): string {
   return fallback
 }
 
+
+async function staticPublicJson<T>(path: string): Promise<T | null> {
+  try {
+    const res = await fetch(path, { credentials: 'omit' })
+    if (!res.ok) return null
+    return (await res.json()) as T
+  } catch {
+    return null
+  }
+}
+
 async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('Content-Type', 'application/json')
@@ -271,7 +282,9 @@ export function useTwinMvp() {
   const getPublicTwin = useCallback(
     (slug: string) =>
       run(async () => {
-        const body = await apiJson<{ twin: PublicTwinProfile }>(`/api/public/twins/${encodeURIComponent(slug)}`)
+        const body =
+          (await staticPublicJson<{ twin: PublicTwinProfile }>(`/api/public/twins/${encodeURIComponent(slug)}/`)) ??
+          (await apiJson<{ twin: PublicTwinProfile }>(`/api/public/twins/${encodeURIComponent(slug)}`))
         return body.twin
       }),
     [run],
@@ -280,7 +293,9 @@ export function useTwinMvp() {
   const listPublicTwins = useCallback(
     () =>
       run(async () => {
-        const body = await apiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins')
+        const body =
+          (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
+          (await apiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
         return body.twins
       }),
     [run],
