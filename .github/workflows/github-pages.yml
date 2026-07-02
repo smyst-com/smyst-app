@@ -46,6 +46,11 @@ jobs:
       - name: Add SPA fallback for deep links
         run: cp dist/index.html dist/404.html
 
+      - name: Prerender public profile pages
+        run: node scripts/generate-profile-pages.mjs
+        env:
+          VITE_CANONICAL_HOST: https://smyst.com
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
