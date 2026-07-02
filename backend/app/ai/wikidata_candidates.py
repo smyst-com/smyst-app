@@ -24,20 +24,23 @@ from app.ai.historical_pipeline import (
 SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 USER_AGENT = "smyst.com-candidate-ingest/1.0 (https://smyst.com; pipeline)"
 
-#: Zielkategorien -> Wikidata-Occupation-QIDs (P106, inkl. Unterklassen via P279*).
-CATEGORY_OCCUPATIONS: dict[str, str] = {
-    "Kunst": "Q1028181",          # painter
-    "Literatur": "Q36180",        # writer
-    "Musik": "Q36834",            # composer
-    "Wissenschaft": "Q901",       # scientist
-    "Philosophie": "Q4964182",    # philosopher
-    "Politik": "Q82955",          # politician
-    "Mathematik": "Q170790",      # mathematician
-    "Medizin": "Q39631",          # physician
-    "Architektur": "Q42973",      # architect
-    "Erfinder": "Q205375",        # inventor
-    "Entdecker": "Q11900058",     # explorer
-    "Technik": "Q81096",          # engineer
+#: Zielkategorien -> konkrete Wikidata-Occupation-QIDs (direkter P106-Match).
+#: BEWUSST ohne P279*-Subklassen-Pfad: der traversierte Pfad ueber alle
+#: Menschen laeuft in das 60s-Timeout des Wikidata-Endpoints (Befund
+#: Pipeline-Run #3). Direkte VALUES-Listen sind um Groessenordnungen schneller.
+CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
+    "Kunst": ("Q1028181", "Q1281618"),                # painter, sculptor
+    "Literatur": ("Q36180", "Q49757", "Q6625963"),    # writer, poet, novelist
+    "Musik": ("Q36834", "Q639669"),                   # composer, musician
+    "Wissenschaft": ("Q169470", "Q593644", "Q864503", "Q11063"),  # physicist, chemist, biologist, astronomer
+    "Philosophie": ("Q4964182",),                     # philosopher
+    "Politik": ("Q82955",),                           # politician
+    "Mathematik": ("Q170790",),                       # mathematician
+    "Medizin": ("Q39631",),                           # physician
+    "Architektur": ("Q42973",),                       # architect
+    "Erfinder": ("Q205375",),                         # inventor
+    "Entdecker": ("Q11900058",),                      # explorer
+    "Technik": ("Q81096",),                           # engineer
 }
 
 
@@ -53,12 +56,14 @@ def build_sparql_query(
 
     Sortierung nach Sitelinks absteigend -> bekannteste zuerst, reproduzierbar.
     """
-    occupation = CATEGORY_OCCUPATIONS[category]
+    occupations = CATEGORY_OCCUPATIONS[category]
+    values = " ".join(f"wd:{qid}" for qid in occupations)
     limit_value = limit if limit is not None else config.daily_candidate_limit
     return f"""
-SELECT ?person ?personLabel ?birth ?death ?sitelinks ?countryLabel WHERE {{
-  ?person wdt:P31 wd:Q5 ;
-          wdt:P106/wdt:P279* wd:{occupation} ;
+SELECT DISTINCT ?person ?personLabel ?birth ?death ?sitelinks ?countryLabel WHERE {{
+  VALUES ?occupation {{ {values} }}
+  ?person wdt:P106 ?occupation ;
+          wdt:P31 wd:Q5 ;
           wdt:P570 ?death ;
           wikibase:sitelinks ?sitelinks .
   OPTIONAL {{ ?person wdt:P569 ?birth . }}
