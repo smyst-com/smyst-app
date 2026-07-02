@@ -3,42 +3,49 @@ Allow: /
 Allow: /llms.txt
 Allow: /ai.txt
 Disallow: /private/
+Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
 User-agent: GPTBot
 Allow: /
 Disallow: /private/
+Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
 User-agent: ChatGPT-User
 Allow: /
 Disallow: /private/
+Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
 User-agent: Google-Extended
 Allow: /
 Disallow: /private/
+Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
 User-agent: ClaudeBot
 Allow: /
 Disallow: /private/
+Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
 User-agent: anthropic-ai
 Allow: /
 Disallow: /private/
+Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
 User-agent: PerplexityBot
 Allow: /
 Disallow: /private/
+Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
