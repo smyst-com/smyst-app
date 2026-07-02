@@ -80,7 +80,7 @@ test.describe("Smyst current app", () => {
     await expect(logo).toBeVisible();
     await expect(logo.getByText("Create Your AI Twin")).toBeVisible();
     await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
-    const profileMenuButton = page.getByRole("button", { name: /Choose twin|Profil wechseln|Twin wählen/ });
+    const profileMenuButton = page.getByRole("button", { name: /Choose twin|Profil wechseln|Profil wählen|Twin wählen/ });
     await expect(profileMenuButton).toBeVisible();
     await expect(page.getByText("Sokrates").first()).toBeVisible();
     await expect(page.getByText(/Max Müller/i)).toHaveCount(0);
