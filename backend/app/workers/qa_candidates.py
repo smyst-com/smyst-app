@@ -48,25 +48,36 @@ def load_capsule_document(store: CandidateStore, qid: str) -> dict:
 def build_chat_fn(capsule_doc: dict) -> Callable[[str], str] | None:
     """Bindet den Chat-Smoke-Test an den konfigurierten LLM-Router an.
 
-    Rueckgabe None, wenn kein Provider konfiguriert ist (QA dann nicht bestehbar).
+    Nutzt build_default_router (Provider-Kette aus Settings; enthaelt am Ende
+    einen deterministischen Fallback). Sind KEINE externen Provider-Keys
+    gesetzt, liefern wir None zurueck — der Fallback wuerde die QA-Regeln
+    ohnehin nicht bestehen, und 'skipped' ist ehrlicher als 'fail'.
     """
     try:  # pragma: no cover - reine Verdrahtung, im Test injiziert
         import asyncio
 
-        from app.ai.llm_router import LlmRouter  # type: ignore[attr-defined]
+        from app.ai.llm_router import LocalDeterministicProvider, build_default_router
+        from app.ai.models import LLMRequest
 
-        router = LlmRouter()
-        if not getattr(router, "has_provider", lambda: False)():
+        router = build_default_router()
+        external = [
+            provider for provider in router.providers
+            if not isinstance(provider, LocalDeterministicProvider)
+        ]
+        if not external:
             return None
 
         def chat(question: str) -> str:
-            return asyncio.run(
+            response = asyncio.run(
                 router.complete(
-                    system=capsule_doc.get("persona_prompt", ""),
-                    prompt=question,
-                    max_tokens=400,
+                    LLMRequest(
+                        prompt=question,
+                        system_prompt=capsule_doc.get("persona_prompt", ""),
+                        max_tokens=400,
+                    )
                 )
             )
+            return response.text
 
         return chat
     except Exception:
