@@ -43,6 +43,9 @@ jobs:
       - name: Preserve custom domain
         run: echo "smyst.com" > dist/CNAME
 
+      - name: Add SPA fallback for deep links
+        run: cp dist/index.html dist/404.html
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
