@@ -4109,6 +4109,34 @@ function AdminTable({ columns, rows }: { columns: string[]; rows: AdminRow[] }) 
 }
 
 function AdminControlCenterView() {
+  const [adminGateAuthed, setAdminGateAuthed] = useState<boolean | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    fetch('/auth/me', { credentials: 'include' })
+      .then((response) => (response.ok ? response.json() : { authenticated: false }))
+      .then((data: { authenticated?: boolean } | null) => {
+        if (!cancelled) setAdminGateAuthed(Boolean(data?.authenticated))
+      })
+      .catch(() => {
+        if (!cancelled) setAdminGateAuthed(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+  if (adminGateAuthed === null) return null
+  if (!adminGateAuthed) {
+    return (
+      <div className="mx-auto max-w-md px-6 py-16 text-center">
+        <h1 className="text-2xl font-bold">Zugriff nur mit Anmeldung</h1>
+        <p className="mt-2 text-sm opacity-80">Der Admin-Bereich von smyst.com ist geschützt. Bitte melde dich zuerst an.</p>
+      </div>
+    )
+  }
+  return <AdminControlCenterInner />
+}
+
+function AdminControlCenterInner() {
   const [activeSection, setActiveSection] = useState<AdminSection>('overview')
   const [adminOverview, setAdminOverview] = useState<AdminOverviewApi | null>(null)
   const [adminBackendStatus, setAdminBackendStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
@@ -4925,7 +4953,7 @@ function AdminControlCenterView() {
       <div className="grid gap-5 lg:grid-cols-[272px_1fr]">
         <aside className="rounded-lg bg-[#111722] p-5 text-white lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
           <div className="mb-6">
-            <p className="font-smyst-logo text-3xl leading-none">SMYST Admin</p>
+            <p className="font-smyst-logo text-3xl leading-none">smyst.com Admin</p>
             <p className="mt-2 text-sm font-semibold text-[#aeb6c4]">Global control</p>
           </div>
           <nav className="grid gap-2" aria-label="Admin Navigation">
