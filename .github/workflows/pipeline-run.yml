@@ -12,11 +12,15 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run oder run-small"
+        description: "dry-run | run-small | status | publish-reviewed"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small]
+        options: [dry-run, run-small, status, publish-reviewed]
+      approved_by:
+        description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
+        required: false
+        default: ""
 
 concurrency:
   group: pipeline-run
@@ -46,7 +50,27 @@ jobs:
       - name: Unit-Tests (komplette Pipeline-Suite, ohne Provider-Keys)
         run: python -m pytest tests/ -q
 
+      - name: "Status-Report (read-only)"
+        if: inputs.mode == 'status'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.report_status
+
+      - name: "Publish (nur mit dokumentierter Freigabe)"
+        if: inputs.mode == 'publish-reviewed'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          if [ -z "${{ inputs.approved_by }}" ]; then
+            echo "publish-reviewed erfordert approved_by (Freigabe-E-Mail)."; exit 2
+          fi
+          python -m app.workers.publish_profiles publish --all-reviewed \
+            --approved-by "${{ inputs.approved_by }}" --enabled
+
       - name: "Worker 1: Wikidata-Ingest"
+        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -58,6 +82,7 @@ jobs:
           fi
 
       - name: "Worker 2: Research"
+        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -69,6 +94,7 @@ jobs:
           fi
 
       - name: "Worker 3: Risiko-Check"
+        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -80,6 +106,7 @@ jobs:
           fi
 
       - name: "Worker 4: Twin-Capsule-Build"
+        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -91,6 +118,7 @@ jobs:
           fi
 
       - name: "Worker 5: QA (inkl. Chat-Smoke-Test)"
+        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -111,6 +139,7 @@ jobs:
           fi
 
       - name: Hinweis Publish
+        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
         run: |
           echo "Kein automatischer Publish. Freigabe durch Menschen:"
           echo "python -m app.workers.publish_profiles publish --qid <QID> --approved-by <email> --enabled"
