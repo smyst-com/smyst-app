@@ -665,7 +665,20 @@ export default function App() {
         }
       >
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
-        {currentView === 'admin' && <AdminControlCenterView />}
+        {currentView === 'admin' && auth.status === 'authenticated' && <AdminControlCenterView />}
+        {currentView === 'admin' && auth.status === 'anonymous' && (
+          <section className="mx-auto mt-12 max-w-[30rem] rounded-lg border border-white/[0.12] bg-white/[0.04] p-6 text-center">
+            <h2 className="text-xl font-bold">Admin-Bereich geschützt</h2>
+            <p className="mt-2 text-sm text-[#9aa6b7]">
+              Der Admin-Bereich ist nur für angemeldete Betreiber zugänglich. Bitte melde dich an.
+            </p>
+            <div className="mt-5 flex justify-center">
+              <Suspense fallback={null}>
+                <GitHubSignInButton variant="official" returnTo="/admin" />
+              </Suspense>
+            </div>
+          </section>
+        )}
         {currentView === 'account-profile' && <AccountProfileView onNavigate={navigateTo} />}
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
@@ -2096,7 +2109,7 @@ function SmystStartPage({
 
       {selectedTwin ? (
         <header className="smyst-glass-panel z-20 shrink-0 border-b border-white/[0.08] pt-[env(safe-area-inset-top)]">
-          <div className="relative flex min-h-[66px] items-center justify-center px-1 sm:min-h-[74px]">
+          <div className="relative flex min-h-[54px] items-center justify-center px-1 sm:min-h-[58px]">
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
@@ -2122,7 +2135,7 @@ function SmystStartPage({
               <User className="h-6 w-6" />
             </button>
 
-            <div className="smyst-glass-control flex h-14 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-16 sm:max-w-[520px]">
+            <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
               <span className="grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86]">
                 {selectedTwin.imageUrl ? (
                   <img
@@ -2138,8 +2151,7 @@ function SmystStartPage({
               </span>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
                 <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{selectedTwin.name}</span>
-                <span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>
-                <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileLifeLine(selectedTwin)}</span>
+                <span className="truncate text-[11px] font-medium leading-tight text-[#8e97a8] sm:text-xs">{selectedTwin.role}</span>
               </span>
             </div>
           </div>
@@ -2494,33 +2506,6 @@ function SmystStartPage({
             >
               <ArrowUp className="h-7 w-7" />
             </button>
-          </div>
-        </div>
-        <div className={`border-t ${composerLine} px-2 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 sm:px-3`}>
-          <div aria-label="Erklärung der unteren Icons">
-            <p className="mb-1 text-[12px] font-bold text-[#8e97a8]">Icon</p>
-            <div className="grid grid-cols-2 gap-1 text-[11px] font-semibold text-[#aeb6c4] sm:grid-cols-5">
-              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
-                <Plus className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span><span className="text-white">Plus:</span> Medien, Kamera, Dateien, Audio, Link, Memory, Kontakte oder Standort.</span>
-              </span>
-              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
-                <Mic className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span><span className="text-white">Mikro:</span> Nachricht diktieren.</span>
-              </span>
-              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
-                <Waveform className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span><span className="text-white">Welle:</span> Live-Sprachmodus starten.</span>
-              </span>
-              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
-                <Speaker className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span><span className="text-white">Lautsprecher:</span> Antwort vorlesen.</span>
-              </span>
-              <span className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-white/[0.1] bg-white/[0.045] px-2 py-1">
-                <ArrowUp className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span><span className="text-white">Pfeil:</span> Nachricht senden.</span>
-              </span>
-            </div>
           </div>
         </div>
       </footer>
@@ -4109,34 +4094,6 @@ function AdminTable({ columns, rows }: { columns: string[]; rows: AdminRow[] }) 
 }
 
 function AdminControlCenterView() {
-  const [adminGateAuthed, setAdminGateAuthed] = useState<boolean | null>(null)
-  useEffect(() => {
-    let cancelled = false
-    fetch('/auth/me', { credentials: 'include' })
-      .then((response) => (response.ok ? response.json() : { authenticated: false }))
-      .then((data: { authenticated?: boolean } | null) => {
-        if (!cancelled) setAdminGateAuthed(Boolean(data?.authenticated))
-      })
-      .catch(() => {
-        if (!cancelled) setAdminGateAuthed(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-  if (adminGateAuthed === null) return null
-  if (!adminGateAuthed) {
-    return (
-      <div className="mx-auto max-w-md px-6 py-16 text-center">
-        <h1 className="text-2xl font-bold">Zugriff nur mit Anmeldung</h1>
-        <p className="mt-2 text-sm opacity-80">Der Admin-Bereich von smyst.com ist geschützt. Bitte melde dich zuerst an.</p>
-      </div>
-    )
-  }
-  return <AdminControlCenterInner />
-}
-
-function AdminControlCenterInner() {
   const [activeSection, setActiveSection] = useState<AdminSection>('overview')
   const [adminOverview, setAdminOverview] = useState<AdminOverviewApi | null>(null)
   const [adminBackendStatus, setAdminBackendStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
@@ -4953,7 +4910,7 @@ function AdminControlCenterInner() {
       <div className="grid gap-5 lg:grid-cols-[272px_1fr]">
         <aside className="rounded-lg bg-[#111722] p-5 text-white lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
           <div className="mb-6">
-            <p className="font-smyst-logo text-3xl leading-none">smyst.com Admin</p>
+            <p className="font-smyst-logo text-3xl leading-none">SMYST Admin</p>
             <p className="mt-2 text-sm font-semibold text-[#aeb6c4]">Global control</p>
           </div>
           <nav className="grid gap-2" aria-label="Admin Navigation">
@@ -5734,8 +5691,6 @@ function TwinChatView({
     label: string
     publicProfile: boolean
     imageUrl?: string | null
-    branch: string
-    lifeLine: string
   }
 
   const privateTwinToChatSummary = (twin: TwinRecord): ChatTwinSummary => ({
@@ -5747,8 +5702,6 @@ function TwinChatView({
     label: 'Eigener Twin',
     publicProfile: false,
     imageUrl: twin.imageUrl ?? null,
-    branch: profileMainCategory(twin),
-    lifeLine: profileLifeLine(twin),
   })
 
   const publicTwinToChatSummary = (profile: PublicTwinProfile): ChatTwinSummary => ({
@@ -5760,8 +5713,6 @@ function TwinChatView({
     label: profile.categories[0] ?? 'Öffentliches Profil',
     publicProfile: true,
     imageUrl: profile.imageUrl,
-    branch: profileMainCategory(profile),
-    lifeLine: profileLifeLine(profile),
   })
 
   const [messages, setMessages] = useState<TwinChatUiMessage[]>([])
@@ -6427,14 +6378,12 @@ function TwinChatView({
             )}
             <div className="min-w-0">
               <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? 'Kein Profil ausgewählt'}</h1>
-              <p className="mt-0.5 truncate text-[11px] font-semibold leading-none text-[#555b64] sm:text-xs">
-                {activeTwin ? activeTwin.branch : 'Profil auswählen'}
-              </p>
-              {activeTwin && (
-                <p className="mt-0.5 truncate text-[10px] font-medium leading-none text-[#667085] sm:text-[11px]">
-                  {activeTwin.lifeLine}
-                </p>
-              )}
+              <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] leading-none text-[#555b64] sm:text-xs">
+                <span>{activeTwin ? 'KI-Profil' : 'Profil auswählen'}</span>
+                <span>{activeTwin ? `${activeTwin.style} Stil` : 'Kein Chat gestartet'}</span>
+                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'Nur echte Profile'}</span>
+                {activeTwin?.publicProfile && <span>{activeTwin.label}</span>}
+              </div>
             </div>
           </div>
           <button
