@@ -222,16 +222,17 @@ function profile(input: ProfileInput): CuratedPublicTwinSpec {
   const imageFile = input.imageFile ?? `${input.slug}.svg`;
   const contentType = input.contentType ?? (generatedPortrait ? 'image/svg+xml' : 'image/jpeg');
   const knowledge = buildProfileKnowledge(input);
+  // Suchindex bewusst OHNE knowledge und EXAMPLE_QUESTIONS: beide enthalten
+  // profiluebergreifende Boilerplate-Texte (z. B. die Regel mit "Napoleon",
+  // "Leonardo", "Einstein"), die sonst jede Namenssuche auf ALLE Profile
+  // matchen lassen (Live-Befund 2026-07-02: Suche "Einstein" -> 100 Treffer).
   const searchIndex = [
     input.name,
     input.slug,
     input.mainCategory,
     input.categories.join(' '),
     input.description,
-    input.answerStyle,
     input.lens,
-    knowledge,
-    EXAMPLE_QUESTIONS.join(' '),
   ].join(' ');
   return {
     ...input.life,
