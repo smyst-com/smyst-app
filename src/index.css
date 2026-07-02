@@ -917,3 +917,24 @@
     scrollbar-width: thin;
   }
 }
+
+
+/* Fix 2026-07-02: Light-Theme-Kontrast.
+   1) Buttons, die im hellen Theme bewusst dunkelblau bleiben (E-Mail-Login,
+      Submit), behalten hellen Text - Gegenstueck zur .text-white-Regel.
+   2) Inaktive Kategorie-Chips (#c7d1de) sind auf hellem Grund unlesbar. */
+.smyst-app-light .bg-\[\#0b1c44\].text-white,
+.smyst-start-shell-glass-light .bg-\[\#0b1c44\].text-white,
+.smyst-start-shell-theme-light .bg-\[\#0b1c44\].text-white {
+    color: #f4f7fb !important;
+}
+
+.smyst-app-light .text-\[\#c7d1de\],
+.smyst-start-shell-glass-light .text-\[\#c7d1de\],
+.smyst-start-shell-theme-light .text-\[\#c7d1de\] {
+    color: #4f5b6b !important;
+}
+
+.smyst-start-shell-theme-dark .text-\[\#c7d1de\] {
+    color: #c7d1de !important;
+}
