@@ -7,7 +7,9 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { tmpdir } from 'node:os';
+import { build } from 'esbuild';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -53,9 +55,37 @@ function urlElement(entry, today) {
   </url>`;
 }
 
-function buildSitemap() {
+async function loadProfileSlugs() {
+  const bundledData = resolve(tmpdir(), `smyst-curated-data-sitemap-${Date.now()}.mjs`);
+  await build({
+    entryPoints: [resolve(ROOT, 'src/data/curated-public-twin-data.ts')],
+    bundle: true,
+    format: 'esm',
+    target: 'es2022',
+    platform: 'node',
+    outfile: bundledData,
+    logLevel: 'silent',
+  });
+  const { CURATED_PUBLIC_TWIN_SPECS } = await import(pathToFileURL(bundledData).href);
+  return CURATED_PUBLIC_TWIN_SPECS.map((spec) => spec.slug).filter(Boolean);
+}
+
+function profileUrlElement(slug, today) {
+  return `  <url>
+    <loc>${HOST}/t/${slug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+}
+
+async function buildSitemap() {
   const today = new Date().toISOString().split('T')[0];
-  const urls = PAGES.map((page) => urlElement(page, today)).join('\n');
+  const profileSlugs = await loadProfileSlugs();
+  const urls = [
+    ...PAGES.map((page) => urlElement(page, today)),
+    ...profileSlugs.map((slug) => profileUrlElement(slug, today)),
+  ].join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml"
@@ -66,6 +96,6 @@ ${urls}
 }
 
 mkdirSync(PUBLIC_DIR, { recursive: true });
-writeFileSync(resolve(PUBLIC_DIR, 'sitemap.xml'), buildSitemap(), 'utf-8');
+writeFileSync(resolve(PUBLIC_DIR, 'sitemap.xml'), await buildSitemap(), 'utf-8');
 
-console.log(`Generated sitemap.xml (${LANGS.length} languages, ${PAGES.length} URLs)`);
+console.log(`Generated sitemap.xml (${LANGS.length} languages, ${PAGES.length} landing URLs + profile URLs)`);
