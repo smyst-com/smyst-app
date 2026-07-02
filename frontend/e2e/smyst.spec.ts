@@ -82,7 +82,7 @@ test.describe("Smyst current app", () => {
     await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
     const profileMenuButton = page.getByRole("button", { name: /Choose twin|Profil wechseln|Twin wählen/ });
     await expect(profileMenuButton).toBeVisible();
-    await expect(page.getByText("Sokrates")).toBeVisible();
+    await expect(page.getByText("Sokrates").first()).toBeVisible();
     await expect(page.getByText(/Max Müller/i)).toHaveCount(0);
 
     const messageInput = page.getByPlaceholder("Nachricht schreiben");
