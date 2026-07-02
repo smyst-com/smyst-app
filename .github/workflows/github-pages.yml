@@ -51,6 +51,22 @@ jobs:
         env:
           VITE_CANONICAL_HOST: https://smyst.com
 
+      # Autopilot-Pipeline: menschlich freigegebene Profile aus IDrive e2 laden.
+      # Fehlt der Index (noch nichts publiziert), ist das ein No-op.
+      - name: Fetch published pipeline profiles (optional)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          aws s3 cp s3://smyst-memories/pipeline/published/index.json pipeline-published-index.json \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 \
+            || echo "Kein Publish-Index in IDrive e2 (ok) — Site bleibt unveraendert."
+
+      - name: Merge published pipeline profiles
+        run: node scripts/merge-pipeline-published.mjs
+        env:
+          VITE_CANONICAL_HOST: https://smyst.com
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
