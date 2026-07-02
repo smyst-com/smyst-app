@@ -167,6 +167,28 @@ def test_publish_one_requires_reviewed_and_writes_artifacts() -> None:
     assert fragment["count"] == 0
 
 
+def test_select_reviewed_qids_requires_qa_passed() -> None:
+    from app.workers.publish_profiles import select_reviewed_qids
+
+    store = _prepared_store(status="reviewed")
+    assert select_reviewed_qids(store) == ["Q1035"]
+
+    doc = store.load_candidate_document("Q1035")
+    doc["qa_passed"] = False
+    store.save_candidate_document("Q1035", doc)
+    assert select_reviewed_qids(store) == []
+
+
+def test_status_report_lists_candidates() -> None:
+    from app.workers.report_status import build_report
+
+    store = _prepared_store(status="reviewed")
+    report = build_report(store)
+    assert report["counts"] == {"reviewed": 1}
+    assert report["candidates"][0]["qid"] == "Q1035"
+    assert report["candidates"][0]["qa_passed"] is True
+
+
 def test_publish_one_rejects_wrong_status_and_daily_limit() -> None:
     from app.workers.publish_profiles import publish_one
 
