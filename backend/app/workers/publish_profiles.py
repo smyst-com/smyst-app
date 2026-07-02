@@ -53,6 +53,15 @@ def actor_uuid(email: str) -> uuid.UUID:
     return uuid.uuid5(ACTOR_NAMESPACE, email.strip().casefold())
 
 
+def select_reviewed_qids(store: CandidateStore) -> list[str]:
+    """QIDs aller Kandidaten mit Status reviewed UND bestandener QA."""
+    return [
+        doc["wikidata_qid"]
+        for doc in store.candidate_documents_by_status(PipelineStatus.REVIEWED.value)
+        if doc.get("qa_passed")
+    ]
+
+
 def _load_index(store: CandidateStore) -> list[dict]:
     try:
         response = store._client.get_object(Bucket=store._bucket, Key=PUBLISH_INDEX_KEY)  # noqa: SLF001
@@ -162,7 +171,11 @@ def unpublish_one(
 def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdrahtung
     parser = argparse.ArgumentParser(description="smyst.com publish-Schritt (menschliche Freigabe)")
     parser.add_argument("command", choices=["publish", "unpublish"])
-    parser.add_argument("--qid", action="append", required=True)
+    parser.add_argument("--qid", action="append", default=None)
+    parser.add_argument(
+        "--all-reviewed", action="store_true",
+        help="alle Kandidaten mit Status reviewed + qa_passed publizieren (Tageslimit gilt)",
+    )
     parser.add_argument("--approved-by", required=True, help="E-Mail der freigebenden Person")
     parser.add_argument("--reason", default="", help="Pflicht bei unpublish")
     parser.add_argument("--dry-run", action="store_true")
@@ -173,10 +186,19 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     if args.command == "unpublish" and not args.reason.strip():
         print("unpublish erfordert --reason.", file=sys.stderr)
         return 2
+    if args.command == "unpublish" and not args.qid:
+        print("unpublish erfordert --qid.", file=sys.stderr)
+        return 2
+    if args.command == "publish" and not args.qid and not args.all_reviewed:
+        print("publish erfordert --qid oder --all-reviewed.", file=sys.stderr)
+        return 2
 
     store = CandidateStore(build_s3_client(), _pipeline_bucket())
+    qids = list(args.qid or [])
+    if args.command == "publish" and args.all_reviewed:
+        qids += [qid for qid in select_reviewed_qids(store) if qid not in qids]
     results = {}
-    for qid in args.qid:
+    for qid in qids:
         try:
             if args.command == "publish":
                 results[qid] = publish_one(
