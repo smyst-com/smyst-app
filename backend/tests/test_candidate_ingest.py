@@ -56,7 +56,9 @@ def test_blacklist_matches_by_qid_and_name_fallback() -> None:
 
 def test_query_contains_cutoff_sitelinks_and_occupation() -> None:
     query = build_sparql_query(category="Wissenschaft", config=CONFIG, limit=7, offset=3)
-    assert f"wd:{CATEGORY_OCCUPATIONS['Wissenschaft']}" in query
+    for qid in CATEGORY_OCCUPATIONS["Wissenschaft"]:
+        assert f"wd:{qid}" in query
+    assert "P279" not in query  # kein Subklassen-Pfad: WDQS-Timeout (Run #3)
     assert f"YEAR(?death) <= {CONFIG.max_death_year}" in query
     assert f"?sitelinks >= {CONFIG.min_sitelinks}" in query
     assert "LIMIT 7" in query and "OFFSET 3" in query
