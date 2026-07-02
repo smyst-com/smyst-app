@@ -459,7 +459,8 @@ function localizedPath(path: string): string {
 }
 
 function initialRoute(): { view: AppView; profileSlug: string | null; privateTwinId: string | null } {
-  const { appPath: path } = splitLocalizedPath(window.location.pathname)
+  const { appPath: rawAppPath } = splitLocalizedPath(window.location.pathname)
+  const path = rawAppPath !== '/' && rawAppPath.endsWith('/') ? rawAppPath.replace(/\/+$/, '') : rawAppPath
   if (path === '/') return { view: 'landing', profileSlug: null, privateTwinId: null }
   if (path.startsWith('/t/')) {
     return { view: 'twin-profile', profileSlug: decodeURIComponent(path.slice(3)), privateTwinId: null }
