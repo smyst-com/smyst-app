@@ -380,6 +380,13 @@
     background-color: rgba(20, 26, 37, 0.96) !important;
   }
 
+  /* Elemente, die bg-white bewusst mit dunklem Text kombinieren (aktive
+     Kategorie-Chips, Login-Optionen), bleiben im Dark Theme hell und lesbar. */
+  .smyst-app-dark .bg-white.text-\[\#111722\] {
+    background-color: #f4f7fb !important;
+    color: #111722 !important;
+  }
+
   .smyst-app-dark .rounded-full,
   .smyst-app-dark .rounded-2xl,
   .smyst-app-dark .rounded-xl,

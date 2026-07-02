@@ -1336,7 +1336,7 @@ function SmystStartPage({
       {twin.imageUrl ? (
         <img
           src={twin.imageUrl}
-          alt=""
+          alt={twin.name}
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
           decoding="async"
@@ -2126,7 +2126,7 @@ function SmystStartPage({
                 {selectedTwin.imageUrl ? (
                   <img
                     src={selectedTwin.imageUrl}
-                    alt=""
+                    alt={selectedTwin.name}
                     className="h-full w-full object-cover"
                     decoding="async"
                     onError={() => removeProfileWithBrokenImage(selectedTwin.imageUrl as string)}
@@ -2284,7 +2284,7 @@ function SmystStartPage({
             <div className="smyst-glass-panel border-b border-white/[0.08]">
               <div className="flex min-h-[42px] items-center justify-between border-b border-white/[0.08] px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">
                 <span>{activeCategory ? `${selectedSortOption.label} · ${activeCategory}` : selectedSortOption.label}</span>
-                <span>{filteredTwins.length} Profile</span>
+                <span>{filteredTwins.length} {filteredTwins.length === 1 ? 'Profil' : 'Profile'}</span>
               </div>
               <div>
                 {filteredTwins.map((twin) => renderProfileCard(twin))}
