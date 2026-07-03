@@ -68,6 +68,42 @@ export interface StaticTranslations {
     profileCompleteness: string
     conversationQuality: string
   }
+  trust: {
+    title: string
+    intro: string
+    item1Title: string
+    item1Text: string
+    item2Title: string
+    item2Text: string
+    item3Title: string
+    item3Text: string
+    item4Title: string
+    item4Text: string
+    item5Title: string
+    item5Text: string
+    item6Title: string
+    item6Text: string
+    openTitle: string
+    openText: string
+    reportButton: string
+    privacyButton: string
+  }
+  myTwins: {
+    title: string
+    subtitle: string
+    createButton: string
+    signInTitle: string
+    signInText: string
+    loading: string
+    emptyTitle: string
+    emptyText: string
+    emptyButton: string
+    noDescription: string
+    statKnowledge: string
+    statMedia: string
+    statStyle: string
+    uploadButton: string
+  }
 }
 
 export const DEFAULT_TRANSLATIONS: StaticTranslations = {
@@ -140,6 +176,43 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     profileCompleteness: 'Profil Vollständigkeit',
     conversationQuality: 'Gesprächsqualität',
   },
+  trust: {
+    title: 'Sicherheit, Datenschutz und Betrieb',
+    intro: 'smyst.com startet mit klaren Grenzen, privaten Defaults und dokumentiertem Release-Gate.',
+    item1Title: 'Klare Infrastruktur',
+    item1Text: 'App, Dateien und Daten sind nach Sicherheits- und Datenschutzbereichen getrennt.',
+    item2Title: 'Private Defaults',
+    item2Text: 'Private Profile und Uploads bleiben noindex und sind an die Login-Session gebunden.',
+    item3Title: 'Account-Kontrolle',
+    item3Text: 'Export, Account-Löschung und Logout aller Sessions sind im Produkt vorbereitet.',
+    item4Title: 'Upload-Schutz',
+    item4Text: 'Dateityp, Kategorie, Größe, Quota und Besitzerpfad werden serverseitig geprüft.',
+    item5Title: 'API-Vertrag',
+    item5Text: 'JSON-Fehler, Request-ID, Rate-Limit-Header und 405-Handling sind dokumentiert.',
+    item6Title: 'KI-Transparenz',
+    item6Text: 'Antworten müssen klar, nachvollziehbar und ohne falsche Personenbehauptung bleiben.',
+    openTitle: 'Was noch bewusst offen ist',
+    openText:
+      'Echte iPhone-/Android-Abnahme, Push-Benachrichtigungen, Malware-Scanning, sehr hohe Lastgrenzen und ein echter KI-Kern sind separate Freigaben. Diese Punkte werden nicht versteckt, sondern vor Production in Release-Berichten ausgewiesen.',
+    reportButton: 'Meldung senden',
+    privacyButton: 'Datenschutz lesen',
+  },
+  myTwins: {
+    title: 'Meine Twins',
+    subtitle: 'Alle privaten und öffentlichen Twin-Profile deines Accounts.',
+    createButton: 'Twin erstellen',
+    signInTitle: 'Anmelden, um deine Twins zu sehen',
+    signInText: 'Melde dich an, damit deine privaten Twins nur deinem Account zugeordnet werden.',
+    loading: 'Twins werden geladen...',
+    emptyTitle: 'Noch kein Twin gespeichert',
+    emptyText: 'Erstelle zuerst einen Twin und lade danach Erinnerungen oder Wissen hoch.',
+    emptyButton: 'Ersten Twin erstellen',
+    noDescription: 'Noch keine Beschreibung',
+    statKnowledge: 'Wissen',
+    statMedia: 'Medien',
+    statStyle: 'Stil',
+    uploadButton: 'Daten hochladen',
+  },
 }
 
 const cache = new Map<SupportedLang, StaticTranslations>([[DEFAULT_LANG, DEFAULT_TRANSLATIONS]])
@@ -153,6 +226,8 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     chat: { ...DEFAULT_TRANSLATIONS.chat, ...value.chat },
     profile: { ...DEFAULT_TRANSLATIONS.profile, ...value.profile },
     dashboard: { ...DEFAULT_TRANSLATIONS.dashboard, ...value.dashboard },
+    trust: { ...DEFAULT_TRANSLATIONS.trust, ...value.trust },
+    myTwins: { ...DEFAULT_TRANSLATIONS.myTwins, ...value.myTwins },
   }
 }
 
