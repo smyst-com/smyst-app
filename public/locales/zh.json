@@ -30,7 +30,7 @@
     "item6Title": "AI 透明",
     "item6Text": "回答必须清晰、可追溯，且不得虚假声称是真人。",
     "openTitle": "有意保持开放的部分",
-    "openText": "真实的 iPhone/Android 验收、推送通知、恶意软件扫描、极高负载上限和完整的 AI 内核是单独的审批项。这些内容不会被隐藏，而是在上线前列入发布报告。",
+    "openText": "真实的 iPhone/Android 验收、推送通知、恶意软件扫描和极高负载上限是单独的审批项。这些内容不会被隐藏，而是在上线前列入发布报告。",
     "reportButton": "发送反馈",
     "privacyButton": "阅读隐私政策"
   },
