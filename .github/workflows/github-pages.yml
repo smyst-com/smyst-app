@@ -46,6 +46,13 @@ jobs:
       - name: Add SPA fallback for deep links
         run: cp dist/index.html dist/404.html
 
+      - name: Prerender legal routes with real 200 status
+        run: |
+          for route in privacy imprint terms trust; do
+            mkdir -p "dist/$route"
+            cp dist/index.html "dist/$route/index.html"
+          done
+
       - name: Prerender public profile pages
         run: node scripts/generate-profile-pages.mjs
         env:
