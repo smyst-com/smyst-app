@@ -22,6 +22,18 @@ VOICE_FILES: dict[str, str] = {
     "de-female": "de_DE-kerstin-low.onnx",
     "en-male": "en_US-ryan-medium.onnx",
     "en-female": "en_US-amy-medium.onnx",
+    "de-thorsten": "de_DE-thorsten-medium.onnx",
+    "de-karlsson": "de_DE-karlsson-low.onnx",
+    "de-pavoque": "de_DE-pavoque-low.onnx",
+    "de-kerstin": "de_DE-kerstin-low.onnx",
+    "de-ramona": "de_DE-ramona-low.onnx",
+    "de-eva": "de_DE-eva_k-x_low.onnx",
+    "en-ryan": "en_US-ryan-medium.onnx",
+    "en-joe": "en_US-joe-medium.onnx",
+    "en-lessac": "en_US-lessac-medium.onnx",
+    "en-hfc-male": "en_US-hfc_male-medium.onnx",
+    "en-amy": "en_US-amy-medium.onnx",
+    "en-hfc-female": "en_US-hfc_female-medium.onnx",
 }
 
 def _resolve_voice_id(voice_id: str | None, lang: str | None, gender: str | None) -> str:
