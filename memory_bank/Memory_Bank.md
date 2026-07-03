@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-07-03 V: Erster Cron-Tag — 502-Ausfall behoben, Tageslauf gruen, 8 reviewed warten auf Freigabe
+
+- Cron-Lauf #7-Aequivalent (manueller Nachholversuch 09:2x) scheiterte an WDQS 502 (Kunst: Maler/Bildhauer = riesige Ergebnismengen). FIX (PR #24, gemergt): fetch_bindings mit 3 Versuchen (Backoff 10s/30s) bei 5xx/Timeout; run_ingest toleriert Kategorie-Fehler (Report-Feld 'errors', Lauf geht weiter); exit 1 nur wenn ALLE Kategorien scheitern. 12 Ingest-Tests gruen. Sandbox-Hinweis: httpx fehlt lokal — Stub unter /tmp/hp_stubs noetig.
+- Der echte Cron-Lauf #8 'Scheduled' kam VERSPAETET (~09:2x statt 06:00 — GitHub-Cron-Verzoegerung bei neuen Workflows ueblich) und war GRUEN; Nachhol-Lauf #9 ebenfalls gruen. Kein Publish (bleibt manuell).
+- Status (Run #10): published 5, reviewed 8 (u.a. Diego Velázquez Q297, Galileo Galilei Q307, William Blake Q41513 — Risk 0.0, QA passed), candidate 28, rejected 2 (u.a. Sarah Bernhardt: Sterbedatum widerspruechlich — Konsistenz-Check hat korrekt gegriffen).
+- NAECHSTER SCHRITT (braucht Adams schriftliche Freigabe): publish-reviewed fuer die 8 reviewed-Profile (Tageslimit 5/Tag greift), danach Pages-Deploy.
+
 ## Update 2026-07-03 IV: A-Z-Livetest bestanden + Duplikat-Schutz gegen kuratierte Profile
 
 - A-Z-LIVETEST (auf schriftliche Anweisung Adam King) BESTANDEN: Startseite laedt, Pipeline-Profile erscheinen in Sektion NEU; https://smyst.com/t/carl-von-linne rendert mit Commons-Portrait, Lebensdaten, KI-Kennzeichnung, Quellen; Chat mit Pipeline-Profil funktioniert end-to-end (Frage 'Wer bist du...' -> korrekte, gekennzeichnete Antwort inkl. Systema Naturae). Statische API liefert 103 Twins (100 kuratiert + 3 Pipeline, alle mit Bild).
