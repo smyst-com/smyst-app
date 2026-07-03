@@ -30,7 +30,7 @@
     "item6Title": "AI transparency",
     "item6Text": "Answers must stay clear, traceable and free of false claims of being a real person.",
     "openTitle": "What is intentionally still open",
-    "openText": "Real iPhone/Android approval, push notifications, malware scanning, very high load limits and a full AI core are separate sign-offs. These points are not hidden - they are listed in release reports before production.",
+    "openText": "Real iPhone/Android approval, push notifications, malware scanning and very high load limits are separate sign-offs. These points are not hidden - they are listed in release reports before production.",
     "reportButton": "Send a report",
     "privacyButton": "Read privacy policy"
   },
