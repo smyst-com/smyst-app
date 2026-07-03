@@ -301,7 +301,7 @@ function speechLangFor(lang?: string) {
   return 'de-DE'
 }
 
-function speakText(text: string, lang: string, onDone: () => void) {
+function speakText(text: string, lang: string, onDone: () => void, voiceKey?: string) {
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return false
 
   const cleanText = text.trim()
@@ -312,13 +312,17 @@ function speakText(text: string, lang: string, onDone: () => void) {
   const targetLang = speechLangFor(lang)
   utterance.lang = targetLang
   const voices = window.speechSynthesis.getVoices()
-  const voice =
-    voices.find((item) => item.lang === targetLang && /natural|premium|enhanced|neural/i.test(item.name)) ??
-    voices.find((item) => item.lang === targetLang) ??
-    voices.find((item) => item.lang.startsWith(targetLang.slice(0, 2)))
+  const preferred = voices.filter((item) => item.lang === targetLang && /natural|premium|enhanced|neural/i.test(item.name))
+  const sameLang = voices.filter((item) => item.lang === targetLang)
+  const sameBase = voices.filter((item) => item.lang.startsWith(targetLang.slice(0, 2)))
+  const pool = preferred.length > 0 ? preferred : sameLang.length > 0 ? sameLang : sameBase
+  const key = voiceKey?.trim() ?? ''
+  let seed = 0
+  for (let index = 0; index < key.length; index += 1) seed = (seed * 31 + key.charCodeAt(index)) % 997
+  const voice = pool.length > 0 ? pool[key ? seed % pool.length : 0] : undefined
   if (voice) utterance.voice = voice
-  utterance.rate = 0.96
-  utterance.pitch = 1
+  utterance.rate = key ? 0.92 + (seed % 5) * 0.02 : 0.96
+  utterance.pitch = key ? 0.9 + (seed % 11) * 0.02 : 1
   utterance.onend = onDone
   utterance.onerror = onDone
   window.speechSynthesis.speak(utterance)
@@ -1690,7 +1694,7 @@ function SmystStartPage({
           setIsSpeaking(false)
           if (liveVoiceActiveRef.current) startDictation({ live: true })
           else setVoiceState('idle')
-        })
+        }, twinName)
         if (started) {
           setIsSpeaking(true)
         } else {
@@ -1782,7 +1786,7 @@ function SmystStartPage({
       const reply = await twinMvp.sendTwinMessage(nextChatId, fullMessage)
       if (!reply?.message?.content) throw new Error('Keine Antwort vom Profil erhalten.')
       await streamText(assistantId, reply.message.content)
-      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false))) {
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false), twin.name)) {
         setIsSpeaking(true)
       }
       return reply.message.content
@@ -1819,7 +1823,7 @@ function SmystStartPage({
       return
     }
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
+    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
     if (started) setIsSpeaking(true)
   }
 
