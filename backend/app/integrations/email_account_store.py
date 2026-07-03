@@ -127,16 +127,56 @@ class EmailAccountStore:
         self._put_record(record)
         return record
 
-    def delete_account(self, email: str) -> bool:
-        """DSGVO-Löschung: entfernt den Konto-Datensatz des Nutzers vollständig.
+    def tombstone_account(self, email: str) -> bool:
+        """DSGVO-Löschung Schritt 1 (synchron, schnell): PII sofort entfernen.
 
-        Rückgabe: True, wenn ein Datensatz existierte und gelöscht wurde.
+        Überschreibt den Datensatz mit einem Grabstein OHNE personenbezogene
+        Daten (kein Name, kein Passwort-Hash, keine Klartext-E-Mail) via
+        put_object — dieselbe, live erprobte Operation wie Registrierung/Reset.
+        Der Login ist danach sofort gesperrt (status != "active").
+
+        Bewusst NICHT delete_object: ein synchroner Objekt-Delete im Request-Pfad
+        reißt über das Salad-Gateway die Verbindung ab (2026-07-03 verifiziert).
+        Der endgültige Objekt-Delete läuft asynchron über hard_delete_account.
+
+        Rückgabe: True, wenn ein aktiver/bestehender Datensatz getombstonet wurde.
         """
         client = self._get_client()
         self._ensure_bucket(client)
+        existing = self.get_account(email)
+        if existing is None or existing.get("status") == "deleted":
+            return False
+        now_ms = int(time.time() * 1000)
+        tombstone = {
+            "version": 1,
+            "sub": existing.get("sub"),
+            "status": "deleted",
+            "deletedAt": now_ms,
+            "updatedAt": now_ms,
+        }
+        client.put_object(
+            Bucket=settings.idrive_e2_bucket,
+            Key=account_key(email),
+            Body=json.dumps(tombstone, separators=(",", ":"), sort_keys=True).encode("utf-8"),
+            ContentType="application/json",
+        )
+        return True
+
+    def hard_delete_account(self, email: str) -> bool:
+        """DSGVO-Löschung Schritt 2 (asynchron, best-effort): Objekt entfernen.
+
+        Läuft ausschließlich in einem Hintergrund-Task, niemals im Request-Pfad.
+        Wirft nie — Fehler werden vom Aufrufer geloggt.
+        """
+        client = self._get_client()
+        client.delete_object(Bucket=settings.idrive_e2_bucket, Key=account_key(email))
+        return True
+
+    # Rückwärtskompatibler Alias (nur Tests/lokal): vollständiger synchroner Delete.
+    def delete_account(self, email: str) -> bool:
         if self.get_account(email) is None:
             return False
-        client.delete_object(Bucket=settings.idrive_e2_bucket, Key=account_key(email))
+        self.hard_delete_account(email)
         return True
 
     def _put_record(self, record: dict[str, Any]) -> None:

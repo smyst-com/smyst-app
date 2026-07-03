@@ -51,8 +51,25 @@ class FakeStore:
         self.accounts[normalize_email(record["email"])] = dict(record)
         return dict(record)
 
-    def delete_account(self, email: str) -> bool:
+    def tombstone_account(self, email: str) -> bool:
+        normalized = normalize_email(email)
+        existing = self.accounts.get(normalized)
+        if existing is None or existing.get("status") == "deleted":
+            return False
+        self.accounts[normalized] = {
+            "version": 1,
+            "sub": existing.get("sub"),
+            "status": "deleted",
+            "deletedAt": int(time.time() * 1000),
+            "updatedAt": int(time.time() * 1000),
+        }
+        return True
+
+    def hard_delete_account(self, email: str) -> bool:
         return self.accounts.pop(normalize_email(email), None) is not None
+
+    def delete_account(self, email: str) -> bool:
+        return self.hard_delete_account(email)
 
 
 def setup_function() -> None:
@@ -134,3 +151,16 @@ def test_delete_for_google_session_is_stateless() -> None:
     assert response.status_code == 200
     assert response.json()["deleted"]["accountRecord"] is False
     assert response.json()["deleted"]["session"] is True
+
+
+def test_delete_is_idempotent() -> None:
+    token = _register()
+    first = client.post(
+        "/auth/account/erase", headers={**DELETE_HEADERS, "Authorization": f"Bearer {token}"}
+    )
+    assert first.status_code == 200 and first.json()["deleted"]["accountRecord"] is True
+    # Zweiter Aufruf mit demselben (nun ungültigen) Session-Token: keine Löschung mehr.
+    second = client.post(
+        "/auth/account/erase", headers={**DELETE_HEADERS, "Authorization": f"Bearer {token}"}
+    )
+    assert second.status_code == 200 and second.json()["deleted"]["accountRecord"] is False
