@@ -80,6 +80,34 @@ function commonsImageUrl(record) {
   return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image.commons_file)}?width=512`;
 }
 
+async function mirrorCommonsImage(record, slug) {
+  // Selbst-Hosting (Freigabe Adam King 2026-07-03): Commons-Bild wird beim
+  // Build nach dist/public/profile-images/<slug>.<ext> gespiegelt und lokal
+  // ausgeliefert (schneller, kein Hotlink). Bei Fehlern bleibt die gepruefte
+  // Commons-URL der Fallback — der Build scheitert dadurch NIE.
+  const remote = commonsImageUrl(record);
+  if (!remote) return { imageUrl: null };
+  try {
+    const res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const type = String(res.headers.get('content-type') || '');
+    if (!type.startsWith('image/')) throw new Error(`kein Bild: ${type}`);
+    const ext = type.includes('png') ? '.png' : type.includes('svg') ? '.svg' : '.jpg';
+    const dir = resolve(DIST, 'public', 'profile-images');
+    mkdirSync(dir, { recursive: true });
+    const file = `${slug}${ext}`;
+    writeFileSync(resolve(dir, file), Buffer.from(await res.arrayBuffer()));
+    return { imageUrl: `/public/profile-images/${file}` };
+  } catch (error) {
+    console.warn(`merge-pipeline-published: Bild-Mirror fuer '${slug}' fehlgeschlagen (${error.message}) — nutze Commons-URL.`);
+    return { imageUrl: remote };
+  }
+}
+
+function absoluteUrl(url) {
+  return url && url.startsWith('/') ? `${HOST}${url}` : url;
+}
+
 function cardDescription(record) {
   // Die Start-Liste der App filtert Profile mit description < 40 Zeichen
   // (isCompletePublicProfile in App.tsx). Wikidata-Kurzbeschreibungen wie
@@ -96,11 +124,10 @@ function cardDescription(record) {
   return withYears ? `${withYears} — ${suffix}` : suffix;
 }
 
-function toPublicTwinProfile(record) {
+function toPublicTwinProfile(record, imageUrl) {
   const publishedAt = Date.parse(record.published_at || '') || Date.now();
   const description = cardDescription(record);
   const seo = record.seo || {};
-  const imageUrl = commonsImageUrl(record);
   return {
     id: `pipeline-${record.slug}`,
     name: record.name,
@@ -172,7 +199,7 @@ function renderPage(profile) {
       description: profile.description,
       ...(profile.birthDate ? { birthDate: profile.birthDate } : {}),
       ...(profile.deathDate ? { deathDate: profile.deathDate } : {}),
-      ...(profile.imageUrl ? { image: profile.imageUrl } : {}),
+      ...(profile.imageUrl ? { image: absoluteUrl(profile.imageUrl) } : {}),
     },
     disambiguatingDescription:
       `KI-Profil (digitaler KI-Zwilling) von ${profile.name} auf smyst.com. Historisches, verstorbenes Vorbild; keine echte Person und keine authentischen Aussagen der historischen Person.`,
@@ -186,7 +213,7 @@ function renderPage(profile) {
   html = html.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${escapeAttr(description)}$2`);
   html = html.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${pageUrl}$2`);
   if (profile.imageUrl) {
-    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttr(profile.imageUrl)}$2`);
+    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttr(absoluteUrl(profile.imageUrl))}$2`);
     html = html.replace(
       /(<meta property="og:image:alt" content=")[^"]*(")/,
       `$1${escapeAttr(`${profile.name} – KI-Profil auf smyst.com`)}$2`,
@@ -206,7 +233,8 @@ for (const record of eligible) {
     console.log(`merge-pipeline-published: Slug '${record.slug}' existiert bereits (kuratiert) — uebersprungen.`);
     continue;
   }
-  const profile = toPublicTwinProfile(record);
+  const image = await mirrorCommonsImage(record, record.slug);
+  const profile = toPublicTwinProfile(record, image.imageUrl);
   twins.push(profile);
   takenSlugs.add(record.slug);
 
