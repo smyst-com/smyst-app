@@ -29,8 +29,21 @@ from app.security.audit import AuditEvent, audit_log_service
 
 router = APIRouter(prefix="/auth/account", tags=["auth"])
 
+# Live verifiziert (2026-07-03): Die Cloudflare-Edge vor *.salad.cloud blockt
+# Requests, die Authorization MIT einem "delete"-haltigen Custom-Header kombinieren.
+# Deshalb ist der primäre Bestätigungs-Header "erase"-basiert; der alte
+# "X-Smyst-Delete-Confirm" bleibt als interner Alias erhalten.
+ERASE_CONFIRM_HEADER = "X-Smyst-Erase-Confirm"
+ERASE_CONFIRM_VALUE = "erase-account"
 DELETE_CONFIRM_HEADER = "X-Smyst-Delete-Confirm"
 DELETE_CONFIRM_VALUE = "delete-account"
+
+
+def _has_erase_confirmation(request: Request) -> bool:
+    return (
+        request.headers.get(ERASE_CONFIRM_HEADER) == ERASE_CONFIRM_VALUE
+        or request.headers.get(DELETE_CONFIRM_HEADER) == DELETE_CONFIRM_VALUE
+    )
 
 
 def _error(status_code: int, code: str, message: str) -> JSONResponse:
@@ -87,11 +100,11 @@ async def delete_account(request: Request) -> JSONResponse:
     # interner Alias erhalten.
     if request.headers.get("X-Smyst-CSRF") != "1":
         return _error(403, "csrf_required", "Ungültige Anfrage.")
-    if request.headers.get(DELETE_CONFIRM_HEADER) != DELETE_CONFIRM_VALUE:
+    if not _has_erase_confirmation(request):
         return _error(
             403,
             "delete_confirmation_required",
-            f'Löschung erfordert den Header {DELETE_CONFIRM_HEADER}: "{DELETE_CONFIRM_VALUE}".',
+            f'Löschung erfordert den Header {ERASE_CONFIRM_HEADER}: "{ERASE_CONFIRM_VALUE}".',
         )
     session = _session_from_request(request)
     if not session:
