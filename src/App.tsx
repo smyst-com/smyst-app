@@ -527,6 +527,12 @@ export default function App() {
   }, [nameSortMode])
 
   useEffect(() => {
+    if (currentView !== 'start' && currentView !== 'twin-profile') {
+      document.title = 'smyst.com | KI-Zwillinge, digitale Profile und Twin Chat'
+    }
+  }, [currentView])
+
+  useEffect(() => {
     const syncRoute = () => {
       const next = initialRoute()
       setCurrentView(next.view)
@@ -3749,7 +3755,7 @@ function SettingsView({
 function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const items = [
     ['Klare Infrastruktur', 'App, Dateien und Daten sind nach Sicherheits- und Datenschutzbereichen getrennt.'],
-    ['Private Defaults', 'Private Profile und Uploads bleiben noindex und sind an die GitHub-Session gebunden.'],
+    ['Private Defaults', 'Private Profile und Uploads bleiben noindex und sind an die Login-Session gebunden.'],
     ['Account-Kontrolle', 'Export, Account-Löschung und Logout aller Sessions sind im Produkt vorbereitet.'],
     ['Upload-Schutz', 'Dateityp, Kategorie, Größe, Quota und Besitzerpfad werden serverseitig geprüft.'],
     ['API-Vertrag', 'JSON-Fehler, Request-ID, Rate-Limit-Header und 405-Handling sind dokumentiert.'],
@@ -3795,7 +3801,7 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
       title: 'Datenschutz',
       intro: 'Diese Datenschutzerklärung beschreibt den aktuellen Projektstand und ersetzt keine finale Rechtsberatung.',
       points: [
-        'Login erfolgt über GitHub OAuth. Die Session liegt als HttpOnly Secure Cookie vor.',
+        'Login erfolgt über Google oder E-Mail + Passwort. Die Session ist signiert und wird serverseitig geprüft.',
         'Profilinformationen, Dateien, Medien und größere Datenobjekte werden getrennt verarbeitet.',
         'Private Profile, private API-Routen und private Dateien sind nicht für Suchmaschinen bestimmt.',
         'Account-Export und Account-Löschung sind im Profilbereich vorbereitet.',
@@ -5314,7 +5320,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
             <div className="flex-1">
               <h2 className="mb-1 text-xl font-bold tracking-tight">Anmelden, um deinen Twin zu speichern</h2>
               <p className="text-sm text-[#555b64]">
-                Per GitHub fortfahren, damit dein Twin sicher deinem Account zugeordnet wird.
+                Mit Google oder E-Mail fortfahren, damit dein Twin sicher deinem Account zugeordnet wird.
               </p>
             </div>
             <div className="w-full sm:w-auto sm:min-w-[260px]">
