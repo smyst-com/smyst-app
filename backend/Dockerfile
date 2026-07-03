@@ -22,6 +22,22 @@ ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/mediu
 ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/ryan/medium/en_US-ryan-medium.onnx.json /voices/en_US-ryan-medium.onnx.json
 ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/medium/en_US-amy-medium.onnx /voices/en_US-amy-medium.onnx
 ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/medium/en_US-amy-medium.onnx.json /voices/en_US-amy-medium.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/karlsson/low/de_DE-karlsson-low.onnx /voices/de_DE-karlsson-low.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/karlsson/low/de_DE-karlsson-low.onnx.json /voices/de_DE-karlsson-low.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/pavoque/low/de_DE-pavoque-low.onnx /voices/de_DE-pavoque-low.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/pavoque/low/de_DE-pavoque-low.onnx.json /voices/de_DE-pavoque-low.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/ramona/low/de_DE-ramona-low.onnx /voices/de_DE-ramona-low.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/ramona/low/de_DE-ramona-low.onnx.json /voices/de_DE-ramona-low.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx /voices/de_DE-eva_k-x_low.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx.json /voices/de_DE-eva_k-x_low.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx /voices/en_US-lessac-medium.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json /voices/en_US-lessac-medium.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/joe/medium/en_US-joe-medium.onnx /voices/en_US-joe-medium.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/joe/medium/en_US-joe-medium.onnx.json /voices/en_US-joe-medium.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx /voices/en_US-hfc_male-medium.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_male/medium/en_US-hfc_male-medium.onnx.json /voices/en_US-hfc_male-medium.onnx.json
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx /voices/en_US-hfc_female-medium.onnx
+ADD https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/hfc_female/medium/en_US-hfc_female-medium.onnx.json /voices/en_US-hfc_female-medium.onnx.json
 RUN chmod -R a+rX /opt/piper /voices
 
 EXPOSE 8000
