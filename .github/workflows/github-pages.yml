@@ -53,6 +53,15 @@ jobs:
             cp dist/index.html "dist/$route/index.html"
           done
 
+      - name: Redirect German legal aliases
+        run: |
+          for pair in impressum:imprint datenschutz:privacy agb:terms; do
+            src="${pair%%:*}"
+            dst="${pair##*:}"
+            mkdir -p "dist/$src"
+            printf '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=/%s/"><link rel="canonical" href="https://smyst.com/%s/"><meta name="robots" content="noindex"><title>smyst.com</title><script>location.replace("/%s/")</script></head><body></body></html>' "$dst" "$dst" "$dst" > "dist/$src/index.html"
+          done
+
       - name: Prerender public profile pages
         run: node scripts/generate-profile-pages.mjs
         env:
