@@ -16,7 +16,7 @@ import {
 } from '@/lib/profileDiscovery'
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
-import { pickVoiceSettings, voiceGenderFor } from '@/lib/voiceProfiles'
+import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
@@ -324,7 +324,7 @@ function speakText(text: string, lang: string, onDone: () => void, voiceKey?: st
   if (!cleanText) return false
   if ('speechSynthesis' in window) window.speechSynthesis.cancel()
   stopRemoteSpeech()
-  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone).then((started) => {
+  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, remoteVoiceIdFor(voiceKey, lang)).then((started) => {
     if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
   })
   return true
