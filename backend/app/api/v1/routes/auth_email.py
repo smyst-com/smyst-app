@@ -161,8 +161,9 @@ async def login(body: LoginRequest, request: Request) -> JSONResponse:
     except Exception:
         return _error(502, "storage_error", "Speicherdienst nicht erreichbar. Bitte später erneut versuchen.")
 
-    if account is None:
-        # Gleiche Rechenzeit wie eine echte Prüfung → keine User-Enumeration über Timing.
+    if account is None or account.get("status") == "deleted":
+        # Gelöschte Konten (Grabstein) verhalten sich wie nicht existierende Konten —
+        # gleiche Rechenzeit und gleiche Fehlermeldung, keine User-Enumeration.
         await asyncio.to_thread(spend_verification_time)
         return _error(401, "invalid_credentials", "E-Mail oder Passwort ist falsch.")
     if account.get("status") != "active":
