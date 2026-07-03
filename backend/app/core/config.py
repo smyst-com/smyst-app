@@ -55,6 +55,8 @@ class Settings(BaseSettings):
     google_oauth_client_id: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_ID")
     google_oauth_client_secret: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_SECRET")
     google_oauth_redirect_uri: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_REDIRECT_URI")
+    resend_api_key: str | None = Field(default=None, validation_alias="RESEND_API_KEY")
+    mail_from: str = Field(default="smyst.com <no-reply@smyst.com>", validation_alias="MAIL_FROM")
     smyst_owner_emails_raw: str = Field(default="", validation_alias="SMYST_OWNER_EMAILS")
     smyst_admin_emails_raw: str = Field(default="", validation_alias="SMYST_ADMIN_EMAILS")
 
