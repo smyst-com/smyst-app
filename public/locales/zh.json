@@ -1,6 +1,19 @@
 {
   "locale": "zh",
   "dir": "ltr",
+  "footer": {
+    "columnProduct": "产品",
+    "columnCompany": "公司",
+    "columnLegal": "法律",
+    "careers": "招聘",
+    "b2b": "B2B 咨询",
+    "imprint": "法律声明",
+    "privacy": "隐私",
+    "terms": "条款",
+    "rights": "© 2026 smyst.com 版权所有。",
+    "contact": "联系我们",
+    "appData": "应用数据"
+  },
   "trust": {
     "title": "安全、隐私与运营",
     "intro": "smyst.com 以清晰的边界、默认隐私和有记录的发布关卡起步。",

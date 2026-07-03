@@ -1,6 +1,19 @@
 {
   "locale": "es",
   "dir": "ltr",
+  "footer": {
+    "columnProduct": "Producto",
+    "columnCompany": "Empresa",
+    "columnLegal": "Legal",
+    "careers": "Empleo",
+    "b2b": "Consultas B2B",
+    "imprint": "Aviso legal",
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "rights": "© 2026 smyst.com. Todos los derechos reservados.",
+    "contact": "Contacto",
+    "appData": "Datos de la app"
+  },
   "trust": {
     "title": "Seguridad, privacidad y operación",
     "intro": "smyst.com empieza con límites claros, privacidad por defecto y un release gate documentado.",

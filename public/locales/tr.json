@@ -1,6 +1,19 @@
 {
   "locale": "tr",
   "dir": "ltr",
+  "footer": {
+    "columnProduct": "Ürün",
+    "columnCompany": "Şirket",
+    "columnLegal": "Hukuki",
+    "careers": "Kariyer",
+    "b2b": "B2B talepleri",
+    "imprint": "Künye",
+    "privacy": "Gizlilik",
+    "terms": "Koşullar",
+    "rights": "© 2026 smyst.com. Tüm hakları saklıdır.",
+    "contact": "İletişim",
+    "appData": "Uygulama verileri"
+  },
   "trust": {
     "title": "Güvenlik, gizlilik ve işletim",
     "intro": "smyst.com net sınırlar, varsayılan gizlilik ve belgelenmiş yayın kapısıyla başlar.",

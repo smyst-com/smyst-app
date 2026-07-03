@@ -104,6 +104,19 @@ export interface StaticTranslations {
     statStyle: string
     uploadButton: string
   }
+  footer: {
+    columnProduct: string
+    columnCompany: string
+    columnLegal: string
+    careers: string
+    b2b: string
+    imprint: string
+    privacy: string
+    terms: string
+    rights: string
+    contact: string
+    appData: string
+  }
 }
 
 export const DEFAULT_TRANSLATIONS: StaticTranslations = {
@@ -213,6 +226,19 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     statStyle: 'Stil',
     uploadButton: 'Daten hochladen',
   },
+  footer: {
+    columnProduct: 'Produkt',
+    columnCompany: 'Unternehmen',
+    columnLegal: 'Rechtliches',
+    careers: 'Karriere',
+    b2b: 'B2B-Anfragen',
+    imprint: 'Impressum',
+    privacy: 'Datenschutz',
+    terms: 'AGB',
+    rights: '© 2026 smyst.com. Alle Rechte vorbehalten.',
+    contact: 'Kontakt',
+    appData: 'App-Daten',
+  },
 }
 
 const cache = new Map<SupportedLang, StaticTranslations>([[DEFAULT_LANG, DEFAULT_TRANSLATIONS]])
@@ -228,6 +254,7 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     dashboard: { ...DEFAULT_TRANSLATIONS.dashboard, ...value.dashboard },
     trust: { ...DEFAULT_TRANSLATIONS.trust, ...value.trust },
     myTwins: { ...DEFAULT_TRANSLATIONS.myTwins, ...value.myTwins },
+    footer: { ...DEFAULT_TRANSLATIONS.footer, ...value.footer },
   }
 }
 

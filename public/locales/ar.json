@@ -1,6 +1,19 @@
 {
   "locale": "ar",
   "dir": "rtl",
+  "footer": {
+    "columnProduct": "المنتج",
+    "columnCompany": "الشركة",
+    "columnLegal": "الشؤون القانونية",
+    "careers": "الوظائف",
+    "b2b": "طلبات B2B",
+    "imprint": "بيانات الناشر",
+    "privacy": "الخصوصية",
+    "terms": "الشروط",
+    "rights": "© 2026 smyst.com. جميع الحقوق محفوظة.",
+    "contact": "اتصال",
+    "appData": "بيانات التطبيق"
+  },
   "trust": {
     "title": "الأمان والخصوصية والتشغيل",
     "intro": "يبدأ smyst.com بحدود واضحة وخصوصية افتراضية وبوابة إصدار موثقة.",
