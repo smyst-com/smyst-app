@@ -1,6 +1,19 @@
 {
   "locale": "ko",
   "dir": "ltr",
+  "footer": {
+    "columnProduct": "제품",
+    "columnCompany": "회사",
+    "columnLegal": "법적 고지",
+    "careers": "채용",
+    "b2b": "B2B 문의",
+    "imprint": "운영자 정보",
+    "privacy": "개인정보",
+    "terms": "이용약관",
+    "rights": "© 2026 smyst.com. 모든 권리 보유.",
+    "contact": "문의",
+    "appData": "앱 데이터"
+  },
   "trust": {
     "title": "보안, 개인정보 보호, 운영",
     "intro": "smyst.com은 명확한 경계, 기본 비공개 설정, 문서화된 릴리스 게이트로 시작합니다.",
