@@ -105,7 +105,7 @@ def test_export_contains_account_without_password_hash() -> None:
 
 def test_delete_requires_confirmation_header() -> None:
     token = _register()
-    response = client.post("/auth/account/delete", headers={**CSRF, "Authorization": f"Bearer {token}"})
+    response = client.post("/auth/account/erase", headers={**CSRF, "Authorization": f"Bearer {token}"})
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "delete_confirmation_required"
 
@@ -113,7 +113,7 @@ def test_delete_requires_confirmation_header() -> None:
 def test_delete_removes_email_account_and_blocks_login() -> None:
     token = _register()
     response = client.post(
-        "/auth/account/delete", headers={**DELETE_HEADERS, "Authorization": f"Bearer {token}"}
+        "/auth/account/erase", headers={**DELETE_HEADERS, "Authorization": f"Bearer {token}"}
     )
     assert response.status_code == 200
     assert response.json()["deleted"]["accountRecord"] is True
@@ -129,7 +129,7 @@ def test_delete_removes_email_account_and_blocks_login() -> None:
 def test_delete_for_google_session_is_stateless() -> None:
     token = _google_session_token()
     response = client.post(
-        "/auth/account/delete", headers={**DELETE_HEADERS, "Authorization": f"Bearer {token}"}
+        "/auth/account/erase", headers={**DELETE_HEADERS, "Authorization": f"Bearer {token}"}
     )
     assert response.status_code == 200
     assert response.json()["deleted"]["accountRecord"] is False
