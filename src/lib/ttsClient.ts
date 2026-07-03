@@ -28,6 +28,7 @@ export async function playRemoteSpeech(
   lang: string | undefined,
   gender: 'female' | 'male' | undefined,
   onDone: () => void,
+  voiceId?: string,
 ): Promise<boolean> {
   stopRemoteSpeech()
   try {
@@ -36,7 +37,7 @@ export async function playRemoteSpeech(
     const response = await fetch(buildServiceUrl('/api/tts'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text.slice(0, 800), lang: lang ?? 'de', gender }),
+      body: JSON.stringify({ text: text.slice(0, 800), lang: lang ?? 'de', gender, voiceId }),
       signal: controller.signal,
     })
     window.clearTimeout(timer)
