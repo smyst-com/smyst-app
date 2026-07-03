@@ -127,6 +127,18 @@ class EmailAccountStore:
         self._put_record(record)
         return record
 
+    def delete_account(self, email: str) -> bool:
+        """DSGVO-Löschung: entfernt den Konto-Datensatz des Nutzers vollständig.
+
+        Rückgabe: True, wenn ein Datensatz existierte und gelöscht wurde.
+        """
+        client = self._get_client()
+        self._ensure_bucket(client)
+        if self.get_account(email) is None:
+            return False
+        client.delete_object(Bucket=settings.idrive_e2_bucket, Key=account_key(email))
+        return True
+
     def _put_record(self, record: dict[str, Any]) -> None:
         client = self._get_client()
         self._ensure_bucket(client)
