@@ -16,7 +16,7 @@ from app.main import app
 client = TestClient(app)
 
 CSRF = {"X-Smyst-CSRF": "1"}
-DELETE_HEADERS = {"X-Smyst-CSRF": "1", "X-Smyst-Delete-Confirm": "delete-account"}
+DELETE_HEADERS = {"X-Smyst-CSRF": "1", "X-Smyst-Erase-Confirm": "erase-account"}
 
 
 class FakeStore:
