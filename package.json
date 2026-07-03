@@ -19,7 +19,8 @@
     "lint:tsc": "tsc --noEmit",
     "profiles:quality": "node scripts/public-profile-quality.mjs && node scripts/curated-profile-database-audit.mjs",
     "profiles:seed:curated": "node scripts/seed-curated-public-profiles.mjs",
-    "salad:compute:deploy": "node scripts/deploy-salad-compute-worker.mjs"
+    "salad:compute:deploy": "node scripts/deploy-salad-compute-worker.mjs",
+    "verify:free-stack:live-dns": "node scripts/verify-free-stack-live-dns.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.4",
