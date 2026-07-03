@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-07-03 VI: Publish-Welle 2 — 8 Pipeline-Profile live, Duplikat-Schutz bewaehrt
+
+- Publish-Run #11 (schriftliche Freigabe Adam 'Ja', approved_by=smyst247@gmail.com): 5 published (Diego Velázquez, William Blake, Khalil Gibran, Francisco de Goya, Vincent van Gogh). Q529 Louis Pasteur vom NEUEN Duplikat-Schutz korrekt abgelehnt ('existiert bereits als kuratiertes Live-Profil'). Q5586/Q5589 abgelehnt wegen Tageslimit 5 -> morgen publizieren.
+- BEFUND Pages-Deploys #55-#58 rot: Build jeweils GRUEN, nur der GitHub-Deploy-Schritt scheiterte transient ('Deployment failed, try again later' — GitHub-seitig). Deploy #59 (nach Merge PR #25 — PARALLELER AGENT arbeitet im Repo!) lief danach gruen und enthielt bereits den neuen Publish-Index. Lehre: Bei rotem Pages-Deploy erst Build/Deploy-Schritt unterscheiden; transiente Deploy-Fehler einfach re-runnen.
+- LIVE VERIFIZIERT: /api/public/twins = 108 Twins (100 kuratiert + 8 Pipeline, ALLE mit Commons-Bild); https://smyst.com/t/vincent-van-gogh rendert komplett (Selbstportraet, KI-Kennzeichnung, Quellen).
+- Die 2 Alt-Duplikate im Index (Blaise Pascal Q1290, Galileo Galilei Q307 — published, aber nie gemergt, kollidieren mit kuratierten Slugs) bleiben harmlos; bei Gelegenheit unpublish --reason 'Duplikat kuratiertes Profil'.
+
 ## Update 2026-07-03 V: Erster Cron-Tag — 502-Ausfall behoben, Tageslauf gruen, 8 reviewed warten auf Freigabe
 
 - Cron-Lauf #7-Aequivalent (manueller Nachholversuch 09:2x) scheiterte an WDQS 502 (Kunst: Maler/Bildhauer = riesige Ergebnismengen). FIX (PR #24, gemergt): fetch_bindings mit 3 Versuchen (Backoff 10s/30s) bei 5xx/Timeout; run_ingest toleriert Kategorie-Fehler (Report-Feld 'errors', Lauf geht weiter); exit 1 nur wenn ALLE Kategorien scheitern. 12 Ingest-Tests gruen. Sandbox-Hinweis: httpx fehlt lokal — Stub unter /tmp/hp_stubs noetig.
