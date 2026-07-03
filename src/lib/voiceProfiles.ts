@@ -33,6 +33,11 @@ const MALE_VOICE_NAMES = [
   'xander', 'jorge', 'juan',
 ]
 
+export function voiceGenderFor(voiceKey: string | undefined): VoiceGender | undefined {
+  if (!voiceKey) return undefined
+  return VOICE_HINTS[normalizeKey(voiceKey)]?.gender
+}
+
 // Kuratierte Hinweise fuer bekannte Profile (Schluessel: Name in Kleinschreibung).
 const VOICE_HINTS: Record<string, VoiceProfileHint> = {
   'albert einstein': { gender: 'male', pitch: 0.88, rate: 0.92 },
