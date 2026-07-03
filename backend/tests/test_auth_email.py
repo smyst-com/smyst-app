@@ -50,6 +50,13 @@ class FakeStore:
         self.accounts[normalized] = record
         return record
 
+    def update_account(self, record: dict[str, Any]) -> dict[str, Any]:
+        self.accounts[normalize_email(record["email"])] = dict(record)
+        return dict(record)
+
+    def delete_account(self, email: str) -> bool:
+        return self.accounts.pop(normalize_email(email), None) is not None
+
 
 def setup_function() -> None:
     store_module.set_email_account_store(FakeStore())  # type: ignore[arg-type]
@@ -144,7 +151,69 @@ def test_csrf_header_required() -> None:
     assert response.status_code == 403
 
 
-def test_forgot_reports_unavailable() -> None:
+def test_forgot_reports_unavailable_without_mail_provider() -> None:
     response = client.post("/auth/email/forgot", json={"email": "wer@example.com"}, headers=CSRF)
     assert response.status_code == 503
     assert response.json()["error"]["code"] == "reset_service_unavailable"
+
+
+def test_password_reset_flow(monkeypatch) -> None:
+    from app.api.v1.routes import auth_email as auth_email_module
+
+    sent: list[dict[str, str]] = []
+
+    async def fake_send_email(to: str, subject: str, text: str) -> None:
+        sent.append({"to": to, "subject": subject, "text": text})
+
+    monkeypatch.setattr(auth_email_module, "is_email_sending_configured", lambda: True)
+    monkeypatch.setattr(auth_email_module, "send_email", fake_send_email)
+
+    client.post(
+        "/auth/email/register",
+        json={"email": "reset@example.com", "password": "altes-passwort-123"},
+        headers=CSRF,
+    )
+
+    # Forgot: gleiche Antwort für existierende und unbekannte Konten (Anti-Enumeration).
+    known = client.post("/auth/email/forgot", json={"email": "reset@example.com"}, headers=CSRF)
+    unknown = client.post("/auth/email/forgot", json={"email": "unbekannt@example.com"}, headers=CSRF)
+    assert known.status_code == 200 and unknown.status_code == 200
+    assert known.json() == unknown.json()
+    assert len(sent) == 1 and sent[0]["to"] == "reset@example.com"
+
+    token = sent[0]["text"].split("#smyst_pwreset=")[1].split()[0]
+
+    # Reset mit gültigem Token → neues Passwort aktiv, direkt eingeloggt.
+    reset = client.post(
+        "/auth/email/reset", json={"token": token, "password": "neues-passwort-456"}, headers=CSRF
+    )
+    assert reset.status_code == 200
+    assert reset.json()["token"].startswith("v1.")
+
+    old_login = client.post(
+        "/auth/email/login",
+        json={"email": "reset@example.com", "password": "altes-passwort-123"},
+        headers=CSRF,
+    )
+    assert old_login.status_code == 401
+    new_login = client.post(
+        "/auth/email/login",
+        json={"email": "reset@example.com", "password": "neues-passwort-456"},
+        headers=CSRF,
+    )
+    assert new_login.status_code == 200
+
+    # Einmal-Verwendung: derselbe Token ist nach dem Reset ungültig.
+    reuse = client.post(
+        "/auth/email/reset", json={"token": token, "password": "noch-ein-passwort-789"}, headers=CSRF
+    )
+    assert reuse.status_code == 400
+    assert reuse.json()["error"]["code"] == "invalid_reset_token"
+
+
+def test_reset_rejects_garbage_token() -> None:
+    response = client.post(
+        "/auth/email/reset", json={"token": "v1.kaputt.kaputt", "password": "egal-egal-egal"}, headers=CSRF
+    )
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "invalid_reset_token"
