@@ -88,7 +88,12 @@ async function mirrorCommonsImage(record, slug) {
   const remote = commonsImageUrl(record);
   if (!remote) return { imageUrl: null };
   try {
-    const res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+    let res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+    if (res.status === 429 || res.status >= 500) {
+      // Commons drosselt Burst-Downloads (429) — einmal geduldig wiederholen.
+      await new Promise((wait) => setTimeout(wait, 5000));
+      res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const type = String(res.headers.get('content-type') || '');
     if (!type.startsWith('image/')) throw new Error(`kein Bild: ${type}`);
