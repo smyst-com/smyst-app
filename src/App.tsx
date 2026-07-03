@@ -16,6 +16,7 @@ import {
 } from '@/lib/profileDiscovery'
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
+import { pickVoiceSettings } from '@/lib/voiceProfiles'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
 import {
@@ -311,18 +312,10 @@ function speakText(text: string, lang: string, onDone: () => void, voiceKey?: st
   const utterance = new SpeechSynthesisUtterance(cleanText)
   const targetLang = speechLangFor(lang)
   utterance.lang = targetLang
-  const voices = window.speechSynthesis.getVoices()
-  const preferred = voices.filter((item) => item.lang === targetLang && /natural|premium|enhanced|neural/i.test(item.name))
-  const sameLang = voices.filter((item) => item.lang === targetLang)
-  const sameBase = voices.filter((item) => item.lang.startsWith(targetLang.slice(0, 2)))
-  const pool = preferred.length > 0 ? preferred : sameLang.length > 0 ? sameLang : sameBase
-  const key = voiceKey?.trim() ?? ''
-  let seed = 0
-  for (let index = 0; index < key.length; index += 1) seed = (seed * 31 + key.charCodeAt(index)) % 997
-  const voice = pool.length > 0 ? pool[key ? seed % pool.length : 0] : undefined
-  if (voice) utterance.voice = voice
-  utterance.rate = key ? 0.92 + (seed % 5) * 0.02 : 0.96
-  utterance.pitch = key ? 0.9 + (seed % 11) * 0.02 : 1
+  const voiceSettings = pickVoiceSettings(voiceKey, window.speechSynthesis.getVoices(), targetLang)
+  if (voiceSettings.voice) utterance.voice = voiceSettings.voice
+  utterance.rate = voiceSettings.rate
+  utterance.pitch = voiceSettings.pitch
   utterance.onend = onDone
   utterance.onerror = onDone
   window.speechSynthesis.speak(utterance)
