@@ -35,12 +35,36 @@ from app.ai.wikidata_candidates import (
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 
 
-def fetch_bindings(query: str, *, timeout_seconds: float = 60.0) -> dict:
-    """SPARQL-Anfrage gegen Wikidata (GET, JSON)."""
+RETRY_DELAYS_SECONDS = (10.0, 30.0)  # WDQS liefert unter Last transiente 5xx (Run #7: 502)
+
+
+def fetch_bindings(
+    query: str, *, timeout_seconds: float = 60.0, sleep=None
+) -> dict:
+    """SPARQL-Anfrage gegen Wikidata (GET, JSON) mit Retry bei 5xx/Timeout."""
+    import time
+
+    sleep = sleep or time.sleep
     url = f"{SPARQL_ENDPOINT}?{urllib.parse.urlencode({'query': query, 'format': 'json'})}"
-    response = httpx.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout_seconds)
-    response.raise_for_status()
-    return response.json()
+    last_error: Exception | None = None
+    for attempt in range(1 + len(RETRY_DELAYS_SECONDS)):
+        if attempt:
+            sleep(RETRY_DELAYS_SECONDS[attempt - 1])
+        try:
+            response = httpx.get(
+                url, headers={"User-Agent": USER_AGENT}, timeout=timeout_seconds
+            )
+            if response.status_code >= 500:  # transient: retry lohnt
+                last_error = httpx.HTTPStatusError(
+                    f"Server error '{response.status_code}'",
+                    request=response.request, response=response,
+                )
+                continue
+            response.raise_for_status()  # 4xx: kein Retry (Query-Fehler)
+            return response.json()
+        except (httpx.TimeoutException, httpx.TransportError) as error:
+            last_error = error
+    raise last_error  # type: ignore[misc]
 
 
 def categories_for_today(run_date: date, *, all_categories: bool) -> list[str]:
@@ -67,13 +91,21 @@ def run_ingest(
         "started_at": datetime.now(timezone.utc).isoformat(),
         "dry_run": dry_run,
         "categories": {},
+        "errors": {},
         "totals": {"accepted": 0, "rejected": 0, "skipped_duplicates": 0},
     }
     per_category_limit = max(1, config.daily_candidate_limit // max(1, len(categories)))
 
     for category in categories:
         query = build_sparql_query(category=category, config=config, limit=per_category_limit)
-        payload = fetch_bindings(query)
+        try:
+            payload = fetch_bindings(query)
+        except Exception as error:
+            # Eine klemmende Kategorie (z.B. WDQS-502 bei grossen Berufen wie
+            # Maler) darf den Tageslauf nicht komplett stoppen — dokumentieren
+            # und mit der naechsten Kategorie weitermachen (Run #7-Befund).
+            report["errors"][category] = f"{type(error).__name__}: {error}"
+            continue
         parsed = parse_sparql_bindings(payload, category=category)
         result = screen_candidates(parsed, existing_qids=existing, config=config)
 
@@ -120,7 +152,10 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     report = run_ingest(
         categories=categories, config=config, store=store, dry_run=args.dry_run, run_date=run_date
     )
-    print(json.dumps(report["totals"], ensure_ascii=False))
+    print(json.dumps({**report["totals"], "errors": report["errors"]}, ensure_ascii=False))
+    if report["errors"] and not report["categories"]:
+        # ALLE Kategorien fehlgeschlagen -> rot (GitHub mailt dem Owner).
+        return 1
     return 0
 
 

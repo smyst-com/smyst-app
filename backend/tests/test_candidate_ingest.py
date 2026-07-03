@@ -182,3 +182,52 @@ def test_candidate_document_is_json_serializable() -> None:
 
     doc = candidate_document(make_candidate())
     json.dumps(doc, default=_json_default)
+
+
+# --- Worker-Robustheit (Run #7: WDQS 502) ---
+
+def test_fetch_bindings_retries_on_5xx(monkeypatch) -> None:
+    import httpx as httpx_mod
+
+    from app.workers import ingest_candidates as worker
+
+    calls = {"n": 0}
+
+    class FakeResponse:
+        def __init__(self, status_code: int) -> None:
+            self.status_code = status_code
+            self.request = httpx_mod.Request("GET", "https://query.wikidata.org/sparql")
+
+        def raise_for_status(self) -> None:
+            pass
+
+        def json(self) -> dict:
+            return {"results": {"bindings": []}}
+
+    def fake_get(url, **kwargs):
+        calls["n"] += 1
+        return FakeResponse(502 if calls["n"] < 3 else 200)
+
+    monkeypatch.setattr(worker.httpx, "get", fake_get)
+    payload = worker.fetch_bindings("SELECT 1", sleep=lambda s: None)
+    assert calls["n"] == 3
+    assert payload == {"results": {"bindings": []}}
+
+
+def test_run_ingest_continues_after_category_error(monkeypatch) -> None:
+    from app.workers import ingest_candidates as worker
+
+    def fake_fetch(query, **kwargs):
+        if "Q1028181" in query:  # Kunst (Maler) klemmt
+            raise RuntimeError("WDQS 502")
+        return payload(binding("Q1035", "Charles Darwin", "1882-04-19T00:00:00Z", 250))
+
+    monkeypatch.setattr(worker, "fetch_bindings", fake_fetch)
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    report = worker.run_ingest(
+        categories=["Kunst", "Wissenschaft"], config=CONFIG, store=store,
+        dry_run=False, run_date=date(2026, 7, 3),
+    )
+    assert "Kunst" in report["errors"]
+    assert report["categories"]["Wissenschaft"]["accepted"] == ["Q1035"]
+    assert report["totals"]["accepted"] == 1
