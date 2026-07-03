@@ -16,7 +16,8 @@ import {
 } from '@/lib/profileDiscovery'
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
-import { pickVoiceSettings } from '@/lib/voiceProfiles'
+import { pickVoiceSettings, voiceGenderFor } from '@/lib/voiceProfiles'
+import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
 import {
@@ -302,14 +303,10 @@ function speechLangFor(lang?: string) {
   return 'de-DE'
 }
 
-function speakText(text: string, lang: string, onDone: () => void, voiceKey?: string) {
+function speakLocal(text: string, lang: string, onDone: () => void, voiceKey?: string) {
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return false
-
-  const cleanText = text.trim()
-  if (!cleanText) return false
-
   window.speechSynthesis.cancel()
-  const utterance = new SpeechSynthesisUtterance(cleanText)
+  const utterance = new SpeechSynthesisUtterance(text)
   const targetLang = speechLangFor(lang)
   utterance.lang = targetLang
   const voiceSettings = pickVoiceSettings(voiceKey, window.speechSynthesis.getVoices(), targetLang)
@@ -319,6 +316,17 @@ function speakText(text: string, lang: string, onDone: () => void, voiceKey?: st
   utterance.onend = onDone
   utterance.onerror = onDone
   window.speechSynthesis.speak(utterance)
+  return true
+}
+
+function speakText(text: string, lang: string, onDone: () => void, voiceKey?: string) {
+  const cleanText = text.trim()
+  if (!cleanText) return false
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+  stopRemoteSpeech()
+  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone).then((started) => {
+    if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
+  })
   return true
 }
 
@@ -1594,7 +1602,7 @@ function SmystStartPage({
         if (current === 'paused' || current === 'replying') return current
         if (current === 'listening' && options.live && liveVoiceActiveRef.current) {
           window.setTimeout(() => {
-            if (liveVoiceActiveRef.current && !recognitionRef.current && !window.speechSynthesis.speaking) {
+            if (liveVoiceActiveRef.current && !recognitionRef.current && !window.speechSynthesis.speaking && !isRemoteSpeechActive()) {
               startDictation({ live: true })
             }
           }, 300)
@@ -1634,7 +1642,7 @@ function SmystStartPage({
                   setVoiceState('idle')
                   return
                 }
-                if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()) {
                   window.setTimeout(resumeListening, 350)
                   return
                 }
@@ -6184,6 +6192,7 @@ function TwinChatView({
     liveVoiceDraftRef.current = ''
     recognitionRef.current?.abort()
     window.speechSynthesis.cancel()
+    stopRemoteSpeech()
     setVoiceState('idle')
     setIsSpeaking(false)
     setSpeechOutputEnabled(false)
@@ -6265,6 +6274,7 @@ function TwinChatView({
   const handleSpeakInput = () => {
     if (speechOutputEnabled || isSpeaking) {
       window.speechSynthesis.cancel()
+      stopRemoteSpeech()
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
       return
