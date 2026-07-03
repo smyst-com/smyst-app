@@ -17,7 +17,7 @@ import {
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
-import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech } from '@/lib/ttsClient'
+import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
 import {
@@ -1674,6 +1674,7 @@ function SmystStartPage({
   }
 
   const handleToggleLiveVoice = () => {
+    unlockAudioPlayback()
     if (voiceState === 'listening') {
       liveVoiceActiveRef.current = false
       clearLiveVoiceTimer()
@@ -1815,8 +1816,10 @@ function SmystStartPage({
   }
 
   const handleSpeakInput = () => {
+    unlockAudioPlayback()
     if (speechOutputEnabled || isSpeaking) {
       window.speechSynthesis.cancel()
+      stopRemoteSpeech()
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
       return
