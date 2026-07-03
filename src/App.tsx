@@ -32,6 +32,7 @@ const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
 const EmailAuthForm = lazy(() => import('@/components/EmailAuthForm'))
 const MobileNav = lazy(() => import('@/components/MobileNav'))
 import AccountPrivacyActions from '@/components/AccountPrivacyActions'
+import PasswordResetGate from '@/components/PasswordResetGate'
 
 type IconProps = SVGProps<SVGSVGElement>
 
@@ -586,6 +587,7 @@ export default function App() {
           nameSortMode={nameSortMode}
           onNameSortModeChange={setNameSortMode}
         />
+		  <PasswordResetGate />
         <Suspense fallback={null}>
           <CookieConsent />
         </Suspense>
