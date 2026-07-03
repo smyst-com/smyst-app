@@ -80,9 +80,25 @@ function commonsImageUrl(record) {
   return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image.commons_file)}?width=512`;
 }
 
+function cardDescription(record) {
+  // Die Start-Liste der App filtert Profile mit description < 40 Zeichen
+  // (isCompletePublicProfile in App.tsx). Wikidata-Kurzbeschreibungen wie
+  // 'deutscher Mathematiker' (22 Zeichen) fielen dadurch aus der Liste
+  // (Befund 2026-07-03: 4 von 8 Pipeline-Profilen unsichtbar).
+  // Deterministisch anreichern, kuratierte Profile bleiben unberuehrt.
+  const base = String(record.description || record.category || '').replace(/\s+/g, ' ').trim();
+  if (base.length >= 40) return base;
+  const years = record.birth_date && record.death_date
+    ? `${String(record.birth_date).slice(0, 4)}–${String(record.death_date).slice(0, 4)}`
+    : '';
+  const withYears = base && years && !base.includes(years) ? `${base} (${years})` : base;
+  const suffix = 'Historisches KI-Profil mit dokumentierten Quellen.';
+  return withYears ? `${withYears} — ${suffix}` : suffix;
+}
+
 function toPublicTwinProfile(record) {
   const publishedAt = Date.parse(record.published_at || '') || Date.now();
-  const description = record.description || record.category || '';
+  const description = cardDescription(record);
   const seo = record.seo || {};
   const imageUrl = commonsImageUrl(record);
   return {
