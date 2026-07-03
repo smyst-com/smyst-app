@@ -30,7 +30,7 @@
     "item6Title": "Transparência de IA",
     "item6Text": "As respostas devem ser claras, rastreáveis e sem afirmar falsamente ser uma pessoa real.",
     "openTitle": "O que segue aberto de propósito",
-    "openText": "Aprovação real de iPhone/Android, notificações push, verificação de malware, limites de carga muito altos e um núcleo de IA completo são aprovações separadas. Esses pontos não são escondidos: são listados nos relatórios de release antes da produção.",
+    "openText": "Aprovação real de iPhone/Android, notificações push, verificação de malware e limites de carga muito altos são aprovações separadas. Esses pontos não são escondidos: são listados nos relatórios de release antes da produção.",
     "reportButton": "Enviar um aviso",
     "privacyButton": "Ler a privacidade"
   },

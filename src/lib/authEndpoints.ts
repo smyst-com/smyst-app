@@ -70,6 +70,7 @@ export function captureAuthTokenFromLocation(): string | null {
 
 export async function fetchAuth(path: string, init: RequestInit = {}) {
   let lastError: unknown = null;
+  let lastResponse: Response | null = null;
 
   const token = getStoredAuthToken();
   if (token) {
@@ -83,6 +84,7 @@ export async function fetchAuth(path: string, init: RequestInit = {}) {
       const response = await fetch(buildAuthUrl(path, baseUrl), init);
       if (response.status >= 500 && baseUrl !== AUTH_FETCH_BASE_URLS[AUTH_FETCH_BASE_URLS.length - 1]) {
         lastError = new Error(`Auth endpoint failed with ${response.status}`);
+        lastResponse = response;
         continue;
       }
       return response;
@@ -90,6 +92,10 @@ export async function fetchAuth(path: string, init: RequestInit = {}) {
       lastError = err;
     }
   }
+
+  // Hat ein Endpunkt geantwortet (z. B. ehrliche 503 mit JSON-Fehlertext),
+  // geben wir diese Antwort zurueck statt einen Netzwerkfehler zu werfen.
+  if (lastResponse) return lastResponse;
 
   throw lastError instanceof Error ? lastError : new Error('Auth request failed');
 }

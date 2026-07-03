@@ -206,7 +206,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     item6Text: 'Antworten müssen klar, nachvollziehbar und ohne falsche Personenbehauptung bleiben.',
     openTitle: 'Was noch bewusst offen ist',
     openText:
-      'Echte iPhone-/Android-Abnahme, Push-Benachrichtigungen, Malware-Scanning, sehr hohe Lastgrenzen und ein echter KI-Kern sind separate Freigaben. Diese Punkte werden nicht versteckt, sondern vor Production in Release-Berichten ausgewiesen.',
+      'Echte iPhone-/Android-Abnahme, Push-Benachrichtigungen, Malware-Scanning und sehr hohe Lastgrenzen sind separate Freigaben. Diese Punkte werden nicht versteckt, sondern vor Production in Release-Berichten ausgewiesen.',
     reportButton: 'Meldung senden',
     privacyButton: 'Datenschutz lesen',
   },

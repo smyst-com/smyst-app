@@ -30,7 +30,7 @@
     "item6Title": "Yapay zeka şeffaflığı",
     "item6Text": "Yanıtlar net, izlenebilir ve gerçek kişi iddiasından arınmış olmalıdır.",
     "openTitle": "Bilerek açık bırakılanlar",
-    "openText": "Gerçek iPhone/Android onayı, anlık bildirimler, kötü amaçlı yazılım taraması, çok yüksek yük sınırları ve tam yapay zeka çekirdeği ayrı onaylardır. Bu noktalar gizlenmez; üretimden önce sürüm raporlarında listelenir.",
+    "openText": "Gerçek iPhone/Android onayı, anlık bildirimler, kötü amaçlı yazılım taraması ve çok yüksek yük sınırları ayrı onaylardır. Bu noktalar gizlenmez; üretimden önce sürüm raporlarında listelenir.",
     "reportButton": "Bildirim gönder",
     "privacyButton": "Gizliliği oku"
   },
