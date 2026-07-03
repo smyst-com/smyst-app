@@ -36,5 +36,33 @@
     "privateProfile": "Private twin profile",
     "chatButton": "Chat with twin",
     "noindex": "Private profiles are not indexed."
+  },
+  "dashboard": {
+    "heroTitle": "What would you like to do with an AI twin today?",
+    "heroSubtitle": "Choose a twin, ask directly or create your own twin.",
+    "actionChooseSubtitle": "Profiles, topics, knowledge",
+    "actionAskSubtitle": "Chat starts instantly",
+    "actionCreateSubtitle": "Identity + memories",
+    "privateByDefaultText": "IDrive E2 stores media, knowledge, backups and signed files. Salad only computes API, AI, search and cron jobs.",
+    "welcomeBack": "Welcome back, {{name}}",
+    "readyTitle": "Your dashboard is ready",
+    "introAuthed": "Your twins, memories and conversations stay separate and under your control.",
+    "introGuest": "Sign in to store personal twins, memories and chat history securely.",
+    "cardChatText": "Talk to your digital twin. Ask questions and get answers in your style.",
+    "cardUploadText": "Add new memories. Texts, audio, photos and documents are processed automatically.",
+    "cardSettingsTitle": "Twin Settings",
+    "cardSettingsText": "Adjust your twin's personality. Manage values, tone of voice and access rights.",
+    "activityTitle": "Activity overview",
+    "lastConversation": "Last conversation",
+    "conversations": "Conversations",
+    "loadedFromHistory": "Loaded from your history",
+    "savableAfterLogin": "Savable after sign-in",
+    "resume": "Resume",
+    "open": "Open",
+    "manageUploads": "Manage uploads and sources",
+    "uploadAfterLogin": "Upload files securely after sign-in",
+    "view": "View",
+    "profileCompleteness": "Profile completeness",
+    "conversationQuality": "Conversation quality"
   }
 }

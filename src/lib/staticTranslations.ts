@@ -40,6 +40,34 @@ export interface StaticTranslations {
     chatButton: string
     noindex: string
   }
+  dashboard: {
+    heroTitle: string
+    heroSubtitle: string
+    actionChooseSubtitle: string
+    actionAskSubtitle: string
+    actionCreateSubtitle: string
+    privateByDefaultText: string
+    welcomeBack: string
+    readyTitle: string
+    introAuthed: string
+    introGuest: string
+    cardChatText: string
+    cardUploadText: string
+    cardSettingsTitle: string
+    cardSettingsText: string
+    activityTitle: string
+    lastConversation: string
+    conversations: string
+    loadedFromHistory: string
+    savableAfterLogin: string
+    resume: string
+    open: string
+    manageUploads: string
+    uploadAfterLogin: string
+    view: string
+    profileCompleteness: string
+    conversationQuality: string
+  }
 }
 
 export const DEFAULT_TRANSLATIONS: StaticTranslations = {
@@ -83,6 +111,35 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     chatButton: 'Mit Twin chatten',
     noindex: 'Private Profile werden nicht indexiert.',
   },
+  dashboard: {
+    heroTitle: 'Was möchtest du heute mit einem KI-Twin tun?',
+    heroSubtitle: 'Wähle einen Twin, frage direkt oder erstelle deinen eigenen Zwilling.',
+    actionChooseSubtitle: 'Profile, Themen, Wissen',
+    actionAskSubtitle: 'Chat startet sofort',
+    actionCreateSubtitle: 'Identität + Memories',
+    privateByDefaultText:
+      'IDrive E2 speichert Medien, Wissen, Backups und signierte Dateien. Salad rechnet nur API, KI, Suche und Cronjobs.',
+    welcomeBack: 'Willkommen zurück, {{name}}',
+    readyTitle: 'Dein Dashboard ist bereit',
+    introAuthed: 'Deine Twins, Memories und Gespräche bleiben getrennt und kontrollierbar.',
+    introGuest: 'Melde dich an, um persönliche Twins, Memories und Chatverläufe sicher zu speichern.',
+    cardChatText: 'Sprich mit deinem digitalen Zwilling. Stelle Fragen und erhalte Antworten in deinem Stil.',
+    cardUploadText: 'Füge neue Erinnerungen hinzu. Texte, Audio, Fotos und Dokumente werden automatisch verarbeitet.',
+    cardSettingsTitle: 'Twin Einstellungen',
+    cardSettingsText: 'Passe die Persönlichkeit deines Twins an. Werte, Sprachstil und Zugriffsrechte verwalten.',
+    activityTitle: 'Aktivitätsübersicht',
+    lastConversation: 'Letzte Konversation',
+    conversations: 'Gespräche',
+    loadedFromHistory: 'Wird aus deinem Verlauf geladen',
+    savableAfterLogin: 'Nach Anmeldung speicherbar',
+    resume: 'Fortsetzen',
+    open: 'Öffnen',
+    manageUploads: 'Uploads und Quellen verwalten',
+    uploadAfterLogin: 'Nach Anmeldung Dateien sicher hochladen',
+    view: 'Ansehen',
+    profileCompleteness: 'Profil Vollständigkeit',
+    conversationQuality: 'Gesprächsqualität',
+  },
 }
 
 const cache = new Map<SupportedLang, StaticTranslations>([[DEFAULT_LANG, DEFAULT_TRANSLATIONS]])
@@ -95,6 +152,7 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     start: { ...DEFAULT_TRANSLATIONS.start, ...value.start },
     chat: { ...DEFAULT_TRANSLATIONS.chat, ...value.chat },
     profile: { ...DEFAULT_TRANSLATIONS.profile, ...value.profile },
+    dashboard: { ...DEFAULT_TRANSLATIONS.dashboard, ...value.dashboard },
   }
 }
 

@@ -5115,19 +5115,21 @@ function AdminControlCenterInner() {
 
 // Dashboard View
 function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const auth = useAuth()
   const isAuthenticated = auth.status === 'authenticated'
   const displayName = auth.user?.name || auth.user?.email?.split('@')[0] || 'zurück'
   const startActions: { key: string; title: string; subtitle: string; dot: string; target: AppView }[] = [
-    { key: 'choose', title: 'Choose a Twin', subtitle: 'Profile, Themen, Wissen', dot: '#59C7FF', target: 'my-twins' },
-    { key: 'ask', title: 'Ask anything', subtitle: 'Chat startet sofort', dot: '#22c55e', target: 'twin-chat' },
-    { key: 'create', title: 'Create Twin', subtitle: 'Identität + Memories', dot: '#f59e0b', target: 'twin-builder' },
+    { key: 'choose', title: 'Choose a Twin', subtitle: t.dashboard.actionChooseSubtitle, dot: '#59C7FF', target: 'my-twins' },
+    { key: 'ask', title: 'Ask anything', subtitle: t.dashboard.actionAskSubtitle, dot: '#22c55e', target: 'twin-chat' },
+    { key: 'create', title: 'Create Twin', subtitle: t.dashboard.actionCreateSubtitle, dot: '#f59e0b', target: 'twin-builder' },
   ]
   return (
     <div className="pt-[72px]">
       <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-[18px] sm:p-8">
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Was möchtest du heute mit einem KI-Twin tun?</h2>
-        <p className="mt-1 text-sm text-[#555b64] sm:text-base">Wähle einen Twin, frage direkt oder erstelle deinen eigenen Zwilling.</p>
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{t.dashboard.heroTitle}</h2>
+        <p className="mt-1 text-sm text-[#555b64] sm:text-base">{t.dashboard.heroSubtitle}</p>
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {startActions.map((action) => (
             <button
@@ -5147,19 +5149,19 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
         <div className="mt-4 rounded-xl border border-white/20 bg-white/8 p-4">
           <p className="text-base font-semibold text-[#16181b]">Private by default</p>
           <p className="mt-0.5 text-sm text-[#555b64]">
-            IDrive E2 speichert Medien, Wissen, Backups und signierte Dateien. Salad rechnet nur API, KI, Suche und Cronjobs.
+            {t.dashboard.privateByDefaultText}
           </p>
         </div>
       </div>
 
       <div className="mb-8">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">
-          {isAuthenticated ? `Willkommen zurück, ${displayName}` : 'Dein Dashboard ist bereit'}
+          {isAuthenticated ? t.dashboard.welcomeBack.replace('{{name}}', displayName) : t.dashboard.readyTitle}
         </h1>
         <p className="text-base text-[#555b64]">
           {isAuthenticated
-            ? 'Deine Twins, Memories und Gespräche bleiben getrennt und kontrollierbar.'
-            : 'Melde dich an, um persönliche Twins, Memories und Chatverläufe sicher zu speichern.'}
+            ? t.dashboard.introAuthed
+            : t.dashboard.introGuest}
         </p>
       </div>
 
@@ -5167,39 +5169,39 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
         <Card className="cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg" onClick={() => onNavigate('twin-chat')}>
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(89,199,255,0.18)] text-2xl">💬</div>
           <h3 className="mb-2 text-xl font-semibold">Twin Chat</h3>
-          <p className="text-sm text-[#555b64]">Sprich mit deinem digitalen Zwilling. Stelle Fragen und erhalte Antworten in deinem Stil.</p>
+          <p className="text-sm text-[#555b64]">{t.dashboard.cardChatText}</p>
         </Card>
 
         <Card className="cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg" onClick={() => onNavigate('memory-upload')}>
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(139,124,255,0.18)] text-2xl">📁</div>
           <h3 className="mb-2 text-xl font-semibold">Memory Upload</h3>
-          <p className="text-sm text-[#555b64]">Füge neue Erinnerungen hinzu. Texte, Audio, Fotos und Dokumente werden automatisch verarbeitet.</p>
+          <p className="text-sm text-[#555b64]">{t.dashboard.cardUploadText}</p>
         </Card>
 
         <Card className="cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg" onClick={() => onNavigate('twin-builder')}>
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(89,199,255,0.18)] text-2xl">⚙️</div>
-          <h3 className="mb-2 text-xl font-semibold">Twin Einstellungen</h3>
-          <p className="text-sm text-[#555b64]">Passe die Persönlichkeit deines Twins an. Werte, Sprachstil und Zugriffsrechte verwalten.</p>
+          <h3 className="mb-2 text-xl font-semibold">{t.dashboard.cardSettingsTitle}</h3>
+          <p className="text-sm text-[#555b64]">{t.dashboard.cardSettingsText}</p>
         </Card>
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
-          <h3 className="mb-4 text-lg font-semibold">Aktivitätsübersicht</h3>
+          <h3 className="mb-4 text-lg font-semibold">{t.dashboard.activityTitle}</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
-                <p className="text-sm font-medium">{isAuthenticated ? 'Letzte Konversation' : 'Gespräche'}</p>
-                <p className="text-xs text-[#767d87]">{isAuthenticated ? 'Wird aus deinem Verlauf geladen' : 'Nach Anmeldung speicherbar'}</p>
+                <p className="text-sm font-medium">{isAuthenticated ? t.dashboard.lastConversation : t.dashboard.conversations}</p>
+                <p className="text-xs text-[#767d87]">{isAuthenticated ? t.dashboard.loadedFromHistory : t.dashboard.savableAfterLogin}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate('twin-chat')}>{isAuthenticated ? 'Fortsetzen' : 'Öffnen'}</Button>
+              <Button variant="ghost" size="sm" onClick={() => onNavigate('twin-chat')}>{isAuthenticated ? t.dashboard.resume : t.dashboard.open}</Button>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
                 <p className="text-sm font-medium">{isAuthenticated ? 'Memories' : 'Memory Upload'}</p>
-                <p className="text-xs text-[#767d87]">{isAuthenticated ? 'Uploads und Quellen verwalten' : 'Nach Anmeldung Dateien sicher hochladen'}</p>
+                <p className="text-xs text-[#767d87]">{isAuthenticated ? t.dashboard.manageUploads : t.dashboard.uploadAfterLogin}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate('memory-upload')}>Ansehen</Button>
+              <Button variant="ghost" size="sm" onClick={() => onNavigate('memory-upload')}>{t.dashboard.view}</Button>
             </div>
           </div>
         </Card>
@@ -5209,7 +5211,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
           <div className="space-y-4">
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">Profil Vollständigkeit</span>
+                <span className="text-sm font-medium">{t.dashboard.profileCompleteness}</span>
                 <span className="text-sm font-bold">86%</span>
               </div>
               <div className="h-2 w-full rounded-full bg-white/20">
@@ -5227,7 +5229,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
             </div>
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">Gesprächsqualität</span>
+                <span className="text-sm font-medium">{t.dashboard.conversationQuality}</span>
                 <span className="text-sm font-bold">88%</span>
               </div>
               <div className="h-2 w-full rounded-full bg-white/20">
