@@ -3824,12 +3824,12 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
     },
     imprint: {
       title: 'Impressum',
-      intro: 'Impressum-Platzhalter für den aktuellen Projektstand. Vor Production müssen Betreiberangaben final juristisch geprüft werden.',
+      intro: 'Angaben zum Betreiber von smyst.com.',
       points: [
-        'Kontakt: i@smyst.com',
+        'Betreiber: AUS2001 LLC',
+        'Anschrift: 30 N Gould St Ste R, Sheridan, WY 82801, USA',
+        'E-Mail: s@smyst.com',
         'Domain: smyst.com',
-        'Betrieb und technische Dienstleister werden vor Production final geprüft.',
-        'Finale Betreiberadresse, Rechtsform, Vertretungsberechtigte und Pflichtangaben sind vor Production zu ergänzen.',
       ],
     },
   }[kind]
