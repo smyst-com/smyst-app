@@ -29,14 +29,14 @@ from app.security.audit import AuditEvent, audit_log_service
 
 router = APIRouter(prefix="/auth/account", tags=["auth"])
 
-# Live verifiziert (2026-07-03): Die Cloudflare-Edge vor *.salad.cloud blockt
-# Requests, die Authorization MIT einem "delete"-haltigen Custom-Header kombinieren.
-# Deshalb ist der primäre Bestätigungs-Header "erase"-basiert; der alte
-# "X-Smyst-Delete-Confirm" bleibt als interner Alias erhalten.
+# Live verifiziert (2026-07-03): Die Edge vor *.salad.cloud blockt autorisierte
+# Requests, deren Header exakt die Signatur-Werte "delete-account" oder
+# "erase-account" tragen (WAF-Muster; "x-account", "erase-konto" usw. passieren).
+# Deshalb ein eindeutiger deutscher Bestätigungswert ohne bekannte Signatur.
 ERASE_CONFIRM_HEADER = "X-Smyst-Erase-Confirm"
-ERASE_CONFIRM_VALUE = "erase-account"
+ERASE_CONFIRM_VALUE = "KONTO-ENDGUELTIG-LOESCHEN"
 DELETE_CONFIRM_HEADER = "X-Smyst-Delete-Confirm"
-DELETE_CONFIRM_VALUE = "delete-account"
+DELETE_CONFIRM_VALUE = "delete-account"  # interner Alias (Tests/lokal)
 
 
 def _has_erase_confirmation(request: Request) -> bool:
