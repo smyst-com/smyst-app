@@ -82,6 +82,8 @@ jobs:
           GOOGLE_OAUTH_REDIRECT_URI: https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud/auth/google/callback
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           AUTH_SESSION_SECRET: ${{ secrets.AUTH_SESSION_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: ${{ vars.MAIL_FROM || 'smyst.com <no-reply@smyst.com>' }}
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
           IDRIVE_E2_ENDPOINT: ${{ vars.IDRIVE_E2_ENDPOINT || 'https://s3.us-west-2.idrivee2.com' }}
