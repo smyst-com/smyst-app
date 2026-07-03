@@ -3487,6 +3487,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
 }
 
 function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const auth = useAuth()
   const twinMvp = useTwinMvp()
   const [twins, setTwins] = useState<TwinRecord[]>([])
@@ -3512,25 +3514,25 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
     <div className="pt-[72px]">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="mb-2 text-4xl font-bold tracking-tight">Meine Twins</h1>
-          <p className="text-base text-[#555b64]">Alle privaten und öffentlichen Twin-Profile deines Accounts.</p>
+          <h1 className="mb-2 text-4xl font-bold tracking-tight">{t.myTwins.title}</h1>
+          <p className="text-base text-[#555b64]">{t.myTwins.subtitle}</p>
         </div>
-        <Button onClick={() => onNavigate('twin-builder')}>Twin erstellen</Button>
+        <Button onClick={() => onNavigate('twin-builder')}>{t.myTwins.createButton}</Button>
       </div>
 
       {auth.status !== 'authenticated' ? (
         <SignInRequiredCard
-          title="Anmelden, um deine Twins zu sehen"
-          text="Melde dich an, damit deine privaten Twins nur deinem Account zugeordnet werden."
+          title={t.myTwins.signInTitle}
+          text={t.myTwins.signInText}
           returnTo="/twins"
         />
       ) : !loaded ? (
-        <Card className="p-8 text-sm text-[#555b64]">Twins werden geladen...</Card>
+        <Card className="p-8 text-sm text-[#555b64]">{t.myTwins.loading}</Card>
       ) : twins.length === 0 ? (
         <Card className="p-8">
-          <h2 className="mb-2 text-xl font-bold">Noch kein Twin gespeichert</h2>
-          <p className="mb-5 text-sm text-[#555b64]">Erstelle zuerst einen Twin und lade danach Erinnerungen oder Wissen hoch.</p>
-          <Button onClick={() => onNavigate('twin-builder')}>Ersten Twin erstellen</Button>
+          <h2 className="mb-2 text-xl font-bold">{t.myTwins.emptyTitle}</h2>
+          <p className="mb-5 text-sm text-[#555b64]">{t.myTwins.emptyText}</p>
+          <Button onClick={() => onNavigate('twin-builder')}>{t.myTwins.emptyButton}</Button>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -3539,7 +3541,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-xl font-bold">{twin.name}</h2>
-                  <p className="mt-1 text-sm text-[#555b64]">{twin.description || 'Noch keine Beschreibung'}</p>
+                  <p className="mt-1 text-sm text-[#555b64]">{twin.description || t.myTwins.noDescription}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${twin.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
                   {twin.visibility === 'public' ? 'Public' : 'Private'}
@@ -3548,15 +3550,15 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
               <div className="mb-5 grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-lg bg-white/16 p-3">
                   <p className="text-lg font-bold">{twin.knowledgeTexts.length}</p>
-                  <p className="text-xs text-[#667085]">Wissen</p>
+                  <p className="text-xs text-[#667085]">{t.myTwins.statKnowledge}</p>
                 </div>
                 <div className="rounded-lg bg-white/16 p-3">
                   <p className="text-lg font-bold">{twin.mediaRefs.length}</p>
-                  <p className="text-xs text-[#667085]">Medien</p>
+                  <p className="text-xs text-[#667085]">{t.myTwins.statMedia}</p>
                 </div>
                 <div className="rounded-lg bg-white/16 p-3">
                   <p className="text-sm font-bold capitalize">{twin.style}</p>
-                  <p className="text-xs text-[#667085]">Stil</p>
+                  <p className="text-xs text-[#667085]">{t.myTwins.statStyle}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -3569,7 +3571,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
                 >
                   Chat
                 </Button>
-                <Button size="sm" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
+                <Button size="sm" variant="secondary" onClick={() => onNavigate('memory-upload')}>{t.myTwins.uploadButton}</Button>
               </div>
             </Card>
           ))}
@@ -3756,22 +3758,24 @@ function SettingsView({
 }
 
 function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const items = [
-    ['Klare Infrastruktur', 'App, Dateien und Daten sind nach Sicherheits- und Datenschutzbereichen getrennt.'],
-    ['Private Defaults', 'Private Profile und Uploads bleiben noindex und sind an die Login-Session gebunden.'],
-    ['Account-Kontrolle', 'Export, Account-Löschung und Logout aller Sessions sind im Produkt vorbereitet.'],
-    ['Upload-Schutz', 'Dateityp, Kategorie, Größe, Quota und Besitzerpfad werden serverseitig geprüft.'],
-    ['API-Vertrag', 'JSON-Fehler, Request-ID, Rate-Limit-Header und 405-Handling sind dokumentiert.'],
-    ['KI-Transparenz', 'Antworten müssen klar, nachvollziehbar und ohne falsche Personenbehauptung bleiben.'],
+    [t.trust.item1Title, t.trust.item1Text],
+    [t.trust.item2Title, t.trust.item2Text],
+    [t.trust.item3Title, t.trust.item3Text],
+    [t.trust.item4Title, t.trust.item4Text],
+    [t.trust.item5Title, t.trust.item5Text],
+    [t.trust.item6Title, t.trust.item6Text],
   ]
 
   return (
     <div className="pt-[72px]">
       <div className="mb-8">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Trust Center</p>
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Sicherheit, Datenschutz und Betrieb</h1>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">{t.trust.title}</h1>
         <p className="max-w-[760px] text-base text-[#9aa6b7]">
-          smyst.com startet mit klaren Grenzen, privaten Defaults und dokumentiertem Release-Gate.
+          {t.trust.intro}
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -3783,15 +3787,15 @@ function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
         ))}
       </div>
       <Card className="mt-6 p-6">
-        <h2 className="mb-2 text-xl font-bold">Was noch bewusst offen ist</h2>
+        <h2 className="mb-2 text-xl font-bold">{t.trust.openTitle}</h2>
         <p className="text-sm leading-relaxed text-[#9aa6b7]">
-          Echte iPhone-/Android-Abnahme, Push-Benachrichtigungen, Malware-Scanning,
-          sehr hohe Lastgrenzen und ein echter KI-Kern sind separate Freigaben. Diese Punkte werden nicht versteckt,
-          sondern vor Production in Release-Berichten ausgewiesen.
+          {t.trust.openText}
+          
+          
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Button onClick={() => onNavigate('settings')}>Meldung senden</Button>
-          <Button variant="secondary" onClick={() => onNavigate('privacy')}>Datenschutz lesen</Button>
+          <Button onClick={() => onNavigate('settings')}>{t.trust.reportButton}</Button>
+          <Button variant="secondary" onClick={() => onNavigate('privacy')}>{t.trust.privacyButton}</Button>
         </div>
       </Card>
     </div>
