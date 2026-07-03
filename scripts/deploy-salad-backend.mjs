@@ -89,6 +89,8 @@ for (const k of [
   'PERPLEXITY_API_KEY',
   'LLM_PROVIDER_ORDER',
   'LLM_DEFAULT_MODELS',
+  'RESEND_API_KEY',
+  'MAIL_FROM',
 ]) {
   if (process.env[k]) env[k] = process.env[k];
 }
