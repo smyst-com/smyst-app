@@ -309,7 +309,14 @@ function speakText(text: string, lang: string, onDone: () => void) {
 
   window.speechSynthesis.cancel()
   const utterance = new SpeechSynthesisUtterance(cleanText)
-  utterance.lang = speechLangFor(lang)
+  const targetLang = speechLangFor(lang)
+  utterance.lang = targetLang
+  const voices = window.speechSynthesis.getVoices()
+  const voice =
+    voices.find((item) => item.lang === targetLang && /natural|premium|enhanced|neural/i.test(item.name)) ??
+    voices.find((item) => item.lang === targetLang) ??
+    voices.find((item) => item.lang.startsWith(targetLang.slice(0, 2)))
+  if (voice) utterance.voice = voice
   utterance.rate = 0.96
   utterance.pitch = 1
   utterance.onend = onDone
@@ -1085,6 +1092,7 @@ function SmystStartPage({
   const menuRef = useRef<HTMLElement | null>(null)
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
   const liveVoiceDraftRef = useRef('')
+  const liveVoiceActiveRef = useRef(false)
   const liveVoiceSendTimerRef = useRef<number | null>(null)
 
   const latestAssistantText =
@@ -1570,9 +1578,13 @@ function SmystStartPage({
     recognition.continuous = Boolean(options.live)
     recognition.onstart = () => setVoiceState('listening')
     recognition.onerror = (event) => {
-      setVoiceState('idle')
-      if (options.live) setSpeechOutputEnabled(false)
       const error = event.error ?? ''
+      if (options.live && (error === 'no-speech' || error === 'aborted')) return
+      setVoiceState('idle')
+      if (options.live) {
+        liveVoiceActiveRef.current = false
+        setSpeechOutputEnabled(false)
+      }
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
           ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
@@ -1581,8 +1593,19 @@ function SmystStartPage({
     }
     recognition.onend = () => {
       if (recognitionRef.current === recognition) recognitionRef.current = null
-      setVoiceState((current) => (current === 'paused' ? 'paused' : 'idle'))
-    }
+      setVoiceState((current) => {
+        if (current === 'paused' || current === 'replying') return current
+        if (current === 'listening' && options.live && liveVoiceActiveRef.current) {
+          window.setTimeout(() => {
+            if (liveVoiceActiveRef.current && !recognitionRef.current && !window.speechSynthesis.speaking) {
+              startDictation({ live: true })
+            }
+          }, 300)
+          return 'listening'
+        }
+        return 'idle'
+      })
+	}
     recognition.onresult = (event) => {
       let finalText = ''
       let interimText = ''
@@ -1609,7 +1632,18 @@ function SmystStartPage({
             recognition.stop()
             setVoiceState('replying')
             void handleSend(message, [], { forceSpeech: true }).finally(() => {
-              setVoiceState('idle')
+              const resumeListening = () => {
+                if (!liveVoiceActiveRef.current) {
+                  setVoiceState('idle')
+                  return
+                }
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+                  window.setTimeout(resumeListening, 350)
+                  return
+                }
+                startDictation({ live: true })
+              }
+              window.setTimeout(resumeListening, 500)
             })
           }, 1600)
         }
@@ -1630,6 +1664,7 @@ function SmystStartPage({
 
   const handleToggleLiveVoice = () => {
     if (voiceState === 'listening') {
+      liveVoiceActiveRef.current = false
       clearLiveVoiceTimer()
       recognitionRef.current?.stop()
       setVoiceState('paused')
@@ -1637,11 +1672,36 @@ function SmystStartPage({
       return
     }
     if (voiceState === 'paused' || voiceState === 'idle') {
-      if (voiceState === 'idle') liveVoiceDraftRef.current = ''
+      liveVoiceActiveRef.current = true
       setSpeechOutputEnabled(true)
+      if (voiceState === 'idle') {
+        liveVoiceDraftRef.current = ''
+        const twinName = (selectedTwin ?? activeTwin)?.name?.trim()
+        const greeting =
+          lang === 'de'
+            ? twinName
+              ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
+              : 'Hallo! Schön, dass du da bist. Was kann ich für dich tun?'
+            : twinName
+              ? 'Hello! This is ' + twinName + '. Nice to meet you. What can I do for you?'
+              : 'Hello! Nice to meet you. What can I do for you?'
+        setVoiceState('replying')
+        const started = speakText(greeting, lang, () => {
+          setIsSpeaking(false)
+          if (liveVoiceActiveRef.current) startDictation({ live: true })
+          else setVoiceState('idle')
+        })
+        if (started) {
+          setIsSpeaking(true)
+        } else {
+          startDictation({ live: true })
+        }
+        return
+      }
       startDictation({ live: true })
       return
     }
+    liveVoiceActiveRef.current = false
     clearLiveVoiceTimer()
     liveVoiceDraftRef.current = ''
     recognitionRef.current?.abort()
