@@ -15,7 +15,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { buildAuthUrl, fetchAuth } from './authEndpoints';
+import { buildAuthUrl, captureAuthTokenFromLocation, clearStoredAuthToken, fetchAuth } from './authEndpoints';
 
 export interface AuthUser {
   sub: string;
@@ -124,6 +124,10 @@ export function useAuth(options: { enabled?: boolean } = {}) {
       setState({ status: 'anonymous', user: null });
       return;
     }
+    // Nach dem OAuth-Callback steht die Session als Token im URL-Fragment
+    // (#smyst_auth=...), weil Cross-Site-Cookies (salad.cloud -> smyst.com)
+    // von Browsern blockiert werden. Einmalig auslesen, speichern, URL saeubern.
+    captureAuthTokenFromLocation();
     fetchMe();
     // Re-prüfe bei Tab-Fokus (User könnte in einem anderen Tab eingeloggt haben)
     const onVisibility = () => {
@@ -178,6 +182,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
     } catch (err) {
       console.warn('[auth] logout failed', err);
     }
+    clearStoredAuthToken();
     setState({ status: 'anonymous', user: null });
     // Reload, damit alle authentifizierten Komponenten neu gerendert werden
     window.location.href = '/';
@@ -193,6 +198,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
     } catch (err) {
       console.warn('[auth] logout-all failed', err);
     }
+    clearStoredAuthToken();
     setState({ status: 'anonymous', user: null });
     window.location.href = '/';
   }, []);
