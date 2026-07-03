@@ -62,6 +62,29 @@ def select_reviewed_qids(store: CandidateStore) -> list[str]:
     ]
 
 
+LIVE_TWINS_API = "https://smyst.com/api/public/twins/"
+
+
+def fetch_live_slugs(timeout_seconds: float = 20.0) -> set[str]:
+    """Slugs aller live sichtbaren Profile (kuratierte + Pipeline).
+
+    Verhindert, dass die Pipeline Personen publiziert, die es als kuratierte
+    Profile bereits gibt (Befund 2026-07-03: Blaise Pascal). Bei Netzfehlern
+    leere Menge — der Slug-Schutz im Pages-Merge bleibt als zweite Linie.
+    """
+    try:
+        import httpx  # lazy: Tests injizieren stattdessen
+
+        response = httpx.get(
+            LIVE_TWINS_API, timeout=timeout_seconds, follow_redirects=True,
+            headers={"Cache-Control": "no-cache"},
+        )
+        response.raise_for_status()
+        return {t.get("slug") for t in response.json().get("twins", []) if t.get("slug")}
+    except Exception:
+        return set()
+
+
 def _load_index(store: CandidateStore) -> list[dict]:
     try:
         response = store._client.get_object(Bucket=store._bucket, Key=PUBLISH_INDEX_KEY)  # noqa: SLF001
@@ -93,7 +116,8 @@ def _append_audit(document: dict, event) -> list[dict]:
 
 
 def publish_one(
-    qid: str, *, store: CandidateStore, config: PipelineConfig, approved_by: str, dry_run: bool
+    qid: str, *, store: CandidateStore, config: PipelineConfig, approved_by: str,
+    dry_run: bool, live_slugs: set[str] | None = None,
 ) -> str:
     document = store.load_candidate_document(qid)
     if document.get("status") != PipelineStatus.REVIEWED.value:
@@ -108,6 +132,14 @@ def publish_one(
 
     capsule_doc = load_capsule_document(store, qid)
     record = build_publish_record(document, capsule_doc, approved_by=approved_by)
+
+    # Duplikat-Schutz gegen kuratierte Live-Profile (nicht Teil des eigenen
+    # Publish-Index): der Pages-Merge wuerde den Slug sowieso ueberspringen —
+    # hier lehnen wir frueher ab, damit kein toter Index-Eintrag entsteht.
+    own_slugs = {entry.get("slug") for entry in index}
+    if live_slugs and record["slug"] in live_slugs and record["slug"] not in own_slugs:
+        return f"abgelehnt: Slug '{record['slug']}' existiert bereits als kuratiertes Live-Profil"
+
     new_index = upsert_index(index, record)  # wirft bei Slug-/Namenskonflikt
 
     candidate = replace(
@@ -197,13 +229,14 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     qids = list(args.qid or [])
     if args.command == "publish" and args.all_reviewed:
         qids += [qid for qid in select_reviewed_qids(store) if qid not in qids]
+    live_slugs = fetch_live_slugs() if args.command == "publish" else set()
     results = {}
     for qid in qids:
         try:
             if args.command == "publish":
                 results[qid] = publish_one(
                     qid, store=store, config=config, approved_by=args.approved_by,
-                    dry_run=args.dry_run,
+                    dry_run=args.dry_run, live_slugs=live_slugs,
                 )
             else:
                 results[qid] = unpublish_one(

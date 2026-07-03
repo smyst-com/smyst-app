@@ -167,6 +167,30 @@ def test_publish_one_requires_reviewed_and_writes_artifacts() -> None:
     assert fragment["count"] == 0
 
 
+def test_publish_one_rejects_curated_live_duplicate() -> None:
+    from app.workers.publish_profiles import publish_one
+
+    store = _prepared_store()
+    result = publish_one(
+        "Q1035", store=store, config=CONFIG, approved_by="a@smyst.com",
+        dry_run=True, live_slugs={"charles-darwin", "sokrates"},
+    )
+    assert result.startswith("abgelehnt: Slug 'charles-darwin'")
+
+    # Re-Publish desselben Pipeline-Profils bleibt erlaubt (Slug im eigenen Index)
+    store = _prepared_store()
+    assert publish_one(
+        "Q1035", store=store, config=CONFIG, approved_by="a@smyst.com", dry_run=False
+    ).startswith("published")
+    doc = store.load_candidate_document("Q1035")
+    doc["status"] = "reviewed"
+    store.save_candidate_document("Q1035", doc)
+    assert publish_one(
+        "Q1035", store=store, config=CONFIG, approved_by="a@smyst.com",
+        dry_run=True, live_slugs={"charles-darwin"},
+    ).startswith("published")
+
+
 def test_select_reviewed_qids_requires_qa_passed() -> None:
     from app.workers.publish_profiles import select_reviewed_qids
 

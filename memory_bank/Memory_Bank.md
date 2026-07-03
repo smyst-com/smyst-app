@@ -1,5 +1,73 @@
 # Memory Bank
 
+## Update 2026-07-03 IV: A-Z-Livetest bestanden + Duplikat-Schutz gegen kuratierte Profile
+
+- A-Z-LIVETEST (auf schriftliche Anweisung Adam King) BESTANDEN: Startseite laedt, Pipeline-Profile erscheinen in Sektion NEU; https://smyst.com/t/carl-von-linne rendert mit Commons-Portrait, Lebensdaten, KI-Kennzeichnung, Quellen; Chat mit Pipeline-Profil funktioniert end-to-end (Frage 'Wer bist du...' -> korrekte, gekennzeichnete Antwort inkl. Systema Naturae). Statische API liefert 103 Twins (100 kuratiert + 3 Pipeline, alle mit Bild).
+- BEFUND: Von 5 published Profilen wurden nur 3 live gemergt (Linné Q1043, Alfred Nobel, David Hilbert). 2 (u.a. Blaise Pascal Q1290) kollidieren per Slug mit kuratierten Profilen — der Merge-Slug-Schutz hat sie korrekt uebersprungen (nichts kaputt), aber der QA-Duplikat-Check kannte nur Pipeline-Profile, nicht die 100 kuratierten.
+- FIX (validiert, 9 Publisher-Tests gruen): publish_profiles.fetch_live_slugs() laedt https://smyst.com/api/public/twins/ und publish_one lehnt Slugs ab, die als kuratiertes Live-Profil existieren (eigene Re-Publishes bleiben erlaubt; bei Netzfehler greift weiterhin der Merge-Schutz als zweite Linie). Die 2 bestehenden Duplikat-Eintraege im Publish-Index bleiben stehen (harmlos, werden nie gemergt) — bei Gelegenheit per unpublish --reason 'Duplikat kuratiertes Profil' bereinigen.
+- Kleiner Schoenheitsfehler (offen, niedrig): Profil-Kachel in der Startseiten-Liste zeigt fuer Linné Initialen statt Commons-Bild, obwohl imageUrl gesetzt ist und die Profilseite das Bild zeigt — vermutlich Kachel-Komponente laedt Bild lazy/anders. Kein Funktionsverlust.
+- SCHUTZ BESTAETIGT: Branch-Schutz auf main aktiv (Aenderungen nur via PR mit gruenen Checks). AENDERUNGSSTOPP gilt: keine Aenderungen ohne schriftliche Bestaetigung von Adam King.
+
+## Update 2026-07-03 III: TAEGLICHER AUTOMATIK-LAUF AKTIV (PR #22, auf ausdrueckliche Anweisung Adam King)
+
+- pipeline-run.yml hat jetzt schedule-Trigger: cron "0 4 * * *" (06:00 Berlin Sommerzeit). Cron laeuft immer als run-small (MODE-Default via inputs.mode || 'run-small'): Ingest MIT taeglicher Kategorien-Rotation (2 Kategorien/Tag, --category-Flag entfernt) -> Research 5 -> Risk 5 -> Capsule 5 -> QA 5. Erster automatischer Lauf: morgen frueh.
+- PUBLISH BLEIBT MANUELL (Master Prompt: keine Veroeffentlichung ohne Freigabe): Adam King fuehrt Actions -> Pipeline Run -> publish-reviewed + E-Mail aus, danach GitHub Pages Deploy. Empfohlener Rhythmus: taeglich oder alle paar Tage; Tageslimit 5 published/Tag greift automatisch.
+- Betriebs-Monitoring: schlaegt der Cron-Lauf fehl, erscheint er rot unter Actions; GitHub mailt dem Owner bei fehlgeschlagenen scheduled runs. Hinweis: GitHub deaktiviert scheduled Workflows nach 60 Tagen ohne Repo-Aktivitaet — bei aktiver Entwicklung irrelevant.
+
+## Update 2026-07-03 II: Profilbilder live (PR #21, Pages-Deploy #54) — Pipeline-Profile jetzt vollstaendig
+
+- merge-pipeline-published.mjs erweitert: Pipeline-Profile mit image.mode=commons (Lizenz vom risk-Worker geprueft: PD/CC0/CC-BY*) bekommen imageUrl via Commons Special:FilePath (?width=512) + imageCredit-Feld; og:image und JSON-LD Person.image auf der prerenderten Seite; quality.ok=true. Profile ohne freies Bild bleiben imageUrl=null (KI-Portrait-Anweisung liegt in der Capsule, Generierung bewusst nicht automatisiert).
+- LIVE VERIFIZIERT (Cache-Buster noetig, Pages-CDN cached einige Minuten): /api/public/twins/carl-von-linne liefert imageUrl auf Commons, mediaCount 1, quality ok.
+- OFFEN (niedrig prioritaer): KI-Portrait-Generierung fuer Profile ohne Commons-Bild; juristische Kurzpruefung Blacklist vor Skalierung >5/Tag; optional taeglicher Cron fuer Pipeline-Run (Empfehlung: erst nach 1-2 Wochen manueller Freigabe-Routine).
+
+## Update 2026-07-03: ERSTE PIPELINE-PROFILE LIVE AUF SMYST.COM (Freigabe Adam King)
+
+- Neu (PR #20): app/workers/report_status.py (read-only Statusreport), publish_profiles --all-reviewed, Workflow-Modes 'status' und 'publish-reviewed' (approved_by-Input Pflicht, wird als actor im Audit-Trail dokumentiert). 8 Publisher-Tests gruen.
+- Status-Report (Run #5): 5 Kandidaten reviewed mit qa_passed (echte LLM-Chat-Tests bestanden), Risk-Score 0.0, u.a. Carl von Linné (Q1043), Blaise Pascal (Q1290); 21 candidates in der Warteschlange.
+- Publish (Run #6, approved_by=smyst247@gmail.com auf schriftliche Freigabe 'Ja, Weiter' zur exakt beschriebenen Publish-Frage): 5 Profile published; Publish-Index, profile.json und Sitemap-Fragment in IDrive e2 geschrieben.
+- Pages-Deploy #53: Merge-Script hat die 5 Profile in die Live-Site uebernommen. LIVE VERIFIZIERT: https://smyst.com/t/carl-von-linne (prerenderte Seite, Title/Canonical/Schema korrekt) und /api/public/twins/carl-von-linne (vollstaendiger Datensatz inkl. 6 Quellen mit e2-Snapshot-Keys, KI-Disclosure, rightsPosture). Suchindex des Profils sauber (nur Name/Slug/Kategorie/Beschreibung).
+- Bekannte Nacharbeit: Pipeline-Profile haben noch kein Profilbild (quality.issues=missing_profile_image; image-Anweisung 'generated' liegt in der Capsule — Bildgenerierung ist bewusst noch nicht automatisiert). Unpublish-Rollback: python -m app.workers.publish_profiles unpublish --qid <QID> --reason ... --approved-by ... --enabled, danach Pages-Deploy.
+- Damit ist der komplette Kreislauf produktiv: Wikidata -> Research -> Risk -> Capsule -> QA -> menschliche Freigabe -> smyst.com.
+
+## Update 2026-07-03: Frontend-Anbindung LIVE (PR #19, Pages-Deploy #51 gruen) — Pipeline vollstaendig verdrahtet
+
+- Neu: scripts/merge-pipeline-published.mjs — laeuft im Pages-Build NACH generate-profile-pages.mjs. Merged menschlich freigegebene Pipeline-Profile (pipeline-published-index.json, vom Workflow aus IDrive e2 pipeline/published/index.json geladen) in: statische JSON-API (dist/api/public/twins/), Einzelprofil-API, prerenderte /t/<slug>-Seiten (SEO/JSON-LD) und sitemap.xml. DEFENSIV: fehlender/leerer Index = No-op; nur visible+qa_passed; Slug-Kollisionen: kuratierte Profile gewinnen. Mit Fixtures getestet (Merge, QA-Filter, Slug-Schutz, No-op).
+- Erweitert: .github/workflows/github-pages.yml — Steps 'Fetch published pipeline profiles (optional)' (aws s3 cp aus IDrive e2, non-fatal) und 'Merge published pipeline profiles' vor dem Artifact-Upload. Basis exakt gegen aktuelles main gebaut (nur +16 Zeilen Diff, nichts ueberschrieben).
+- Verifiziert: Pages-Deploy #51 gruen (37s, No-op-Pfad), smyst.com laedt unveraendert mit 100 kuratierten Profilen.
+- DAMIT KOMPLETT: Sobald Adam King den ersten Publish freigibt (publish_profiles CLI), erscheint das Profil beim naechsten Pages-Deploy automatisch auf smyst.com — API, Profilseite, SEO und Sitemap inklusive. Pages-Deploy laesst sich manuell triggern (workflow_dispatch) oder kommt mit jedem main-Push.
+- Hinweis: Paralleler Agent hat AGENTS.md und weitere PRs (#10, #14) gemergt — Koordination weiter ueber PRs.
+
+## Update 2026-07-03: END-TO-END-LAUF ERFOLGREICH — Pipeline lief komplett mit echten Credentials (Run #4 gruen)
+
+- Neuer Workflow .github/workflows/pipeline-run.yml (workflow_dispatch, mode dry-run|run-small): installiert backend, laeuft komplette pytest-Suite (88 Tests, BEWUSST ohne Provider-Keys — Bestands-Tests erwarten local-Provider), dann Worker 1-5 sequenziell mit echten Secrets (IDrive e2; LLM-Keys nur fuer QA-Step). KEIN Auto-Publish.
+- Run #4 (run-small) SUCCESS in 1m47s: Unit-Tests gruen, Ingest 33s (echte Wikidata-SPARQL), Research 9s (Wikipedia/EntityData + Snapshots nach e2), Risiko 3s, Capsule-Build 4s, QA 30s (echte LLM-Chat-Smoke-Tests via konfigurierte Provider, u.a. Groq). Kandidaten/Artefakte liegen jetzt in IDrive e2 unter pipeline/.
+- Behobene Befunde auf dem Weg (PRs #16/#17/#18): fehlende Dateien auf main nachgeliefert (candidate_store.py, workers/__init__.py, ingest_candidates.py, research_candidates.py, assess_risk.py — stille Upload-Verluste); build_chat_fn an echte LLMRouter-API angebunden (build_default_router + LLMRequest, None wenn nur local-Fallback); SPARQL-Query von P106/P279*-Subklassenpfad (WDQS-60s-Timeout, Befund Run #3) auf direkte VALUES-Occupation-Listen umgestellt.
+- Wichtig fuer Agenten: Nach jedem Web-Upload-Commit die Ziel-Datei auf dem Branch VERIFIZIEREN (tree-Ansicht), Klicks auf Commit/Propose brauchen die Position aus einem frischen Screenshot.
+- NAECHSTER SCHRITT (Mensch): reviewed-Kandidaten in e2 pruefen (pipeline/candidates/, qa_report) und ersten Publish freigeben: python -m app.workers.publish_profiles publish --qid <QID> --approved-by smyst247@gmail.com --enabled. Danach Frontend-Anbindung (CDN-API aus pipeline/published/index.json).
+
+## Update 2026-07-03: publish-Schritt (Schritt 7) validiert + gemergt (PR #13, b04ba09) — PIPELINE KOMPLETT
+
+- Neu: backend/app/ai/publisher.py — Publish-Record (inkl. ai_disclosure, Capsule-/Quellen-Referenzen, approved_by), Publish-Index mit Slug-/Namens-Konfliktschutz, Sitemap-Fragment, Tageszaehler. Unpublish entzieht nur Sichtbarkeit (kein Loeschen, Master Prompt).
+- Neu: backend/app/workers/publish_profiles.py — BEWUSST KEIN Cronjob: Mensch fuehrt aus nach Pruefung der reviewed-Kandidaten. --approved-by Pflicht (uuid5-actor im Audit-Trail), nur Status reviewed+qa_passed, Tageslimit + pipeline.enabled erzwungen, Index-Konflikte brechen vor jedem Schreiben ab. Artefakte: pipeline/published/{qid}/profile.json, index.json (Quelle fuer statische CDN-API), sitemap-fragment.json.
+- Verifiziert: 6 neue Tests, 65 gesamt gruen (7 Suiten), py_compile ok, PR #13 mit 8 gruenen Checks.
+- PIPELINE-STAND: alle 7 Bausteine fertig — candidate -> researched -> verified -> generated -> reviewed -> published/unpublished. Die menschliche Freigabe ist der publish-CLI-Aufruf (Interim bis Review-Queue-UI existiert).
+- Verbleibend (operativ, braucht Adam King): (1) Salad-Dry-Runs aller Worker (Runbook weiter unten), (2) LLM-Provider-Keys auf Salad fuer den Chat-Smoke-Test, (3) juristische Kurzpruefung Blacklist, (4) optional Review-Queue-UI im Admin (UI-Aenderung -> voller Browser-Testpfad), (5) Frontend-Anbindung: statische CDN-API aus pipeline/published/index.json speisen (Prerender-Erweiterung).
+
+## Update 2026-07-02 (Nacht II): qa-Worker (Schritt 6) validiert + auf main gemergt (PR #12, a972c97)
+
+- Neu: backend/app/ai/qa_checks.py — QA gemaess Spec 4.5: Vollstaendigkeit (Pflichtfelder Kandidat+Capsule, >=3 Quellen), Sterbedatum-Konsistenz Kandidat vs. Capsule/SEO, Duplikat-Schutz (QID + normalisierter Name gegen published), Chat-Smoke-Test mit 5 Standardfragen (Identitaet, Lebenswerk, Ereignis nach Tod, Sprachwechsel, Fangfrage) — regelbasierte Bewertung (KI-Kennzeichnung Pflicht, Taeuschungsformeln verboten, Nach-Tod-Einordnung Pflicht, Fangfrage muss zurueckgewiesen werden) plus optional injizierbarer LLM-Judge.
+- Neu: backend/app/workers/qa_candidates.py — generated -> reviewed (qa_passed) / rejected (Duplikat) / bleibt generated mit gespeichertem QA-Report (Issues nachvollziehbar). WICHTIG: ohne konfigurierten Chat-Provider ist qa_passed NICHT erreichbar (chat_smoke_test=skipped) — keine Freigabe ohne Chat-Pruefung. Anbindung an app/ai/llm_router vorbereitet (build_chat_fn), im Test injiziert.
+- Verifiziert: 9 neue Tests, 59 gesamt gruen (alle 6 Suiten), py_compile ok. PR #12 mit 8 gruenen Checks gemergt.
+- Pipeline-Stand: candidate -> researched -> verified -> generated -> reviewed KOMPLETT. Offen: Review-Queue im Admin-UI (menschliche Freigabe), Publish-Schritt (kuratierte Profildaten + Sitemap/SEO/API + Unpublish), Salad-Dry-Runs, LLM-Provider-Keys fuer den Chat-Smoke-Test auf Salad setzen, juristische Pruefung Blacklist.
+
+## Update 2026-07-02 (Nacht): build-Worker (Schritt 5) validiert + auf main gemergt; E2E-Fix; Branch-Schutz aktiv
+
+- Neu auf main (PR #11, 8 Checks gruen, Merge 3d530ef): backend/app/ai/capsule_builder.py (Persona-Prompt mit Pflicht-Sicherheitsregeln inkl. Zitatverbot bei works=restricted, RAG-Chunks, SEO/JSON-LD Person, Bild-Anweisung commons/generated, TwinCapsule versioniert), backend/app/workers/build_capsules.py (verified -> generated, Artefakte nach pipeline/capsules/{qid}/), backend/tests/test_capsule_builder.py. Lokal: 6/6 neue Tests, 50 gesamt gruen.
+- Ausserdem auf main: kompletter Pipeline-Code (Spec, Migration 0007, Domain-Module, Store, Worker 1-3, 44 Tests, Memory Bank) via Web-Uploads + PRs #8/#9; E2E-Fix in frontend/e2e/smyst.spec.ts ('Profil waehlen' fehlte im Locator-Regex — Browser-E2E war dadurch dauerhaft rot, jetzt gruen).
+- Branch-Schutz auf main ist seit heute aktiv: Aenderungen nur noch via PR; Browser-E2E ist Pflicht-Check.
+- Prozess-Hinweis fuer Agenten: Im lokalen Repo arbeitet parallel ein anderer Agent (Codex); .git/index.lock-Kollisionen moeglich — lokale Commits vermeiden, wenn Lock vorhanden; GitHub-Web-Uploads als Weg in die Versionierung nutzen. Beim GitHub-Upload-Formular landen Textfeld-Eingaben nicht immer — vor dem Commit-Klick per Screenshot verifizieren; Commit-Messages optional (Default akzeptabel).
+- Pipeline-Stand: candidate -> researched -> verified -> generated fertig implementiert und getestet. Offen: qa-Worker (Chat-Smoke-Test + LLM-Judge), Review-Queue im Admin, Publish-Schritt (Sitemap/SEO/API), Salad-Dry-Runs mit echten Credentials, juristische Pruefung Blacklist.
+
 ## Update 2026-07-02 (Abend): risk-Worker (Schritt 4) validiert
 
 - Neu: backend/app/ai/risk_checks.py — 4-Stufen-Check: (1) Werke: Sterbejahr>Cutoff -> restricted (nur Paraphrase); (2) Bild: Commons LicenseShortName (PD/CC0/CC-BY* pass, unfrei -> Bild verwerfen + KI-Portrait, NIE Profil-Block); (3) Publicity: estate_blacklist; (4) Ethik-Watchlist (NS-/Massenverbrecher + Mohammed = block; Jesus/Moses/Buddha = manual_review). Gewichteter Score 0-10 (ethics 5.0 > publicity 4.0 > works 1.5 > image 1.0). Nur publicity/ethics koennen rejecten.
