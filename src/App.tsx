@@ -1853,6 +1853,7 @@ function SmystStartPage({
   }
 
   const loginOptions = [
+	  { provider: 'ID', title: 'Normaler Login', detail: 'E-Mail und Passwort', status: 'Aktiv', onClick: () => setShowEmailForm((value) => !value) },
     {
       provider: 'GO',
       title: 'Mit Google fortfahren',
@@ -2920,7 +2921,7 @@ function TwinProfileView({
 function emailAuthMessageForCode(result: { ok: boolean; code?: string; message?: string }): string {
   switch (result.code) {
     case 'email_service_unavailable':
-      return 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange GitHub.'
+      return 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange den Google-Login.'
     case 'email_not_verified':
       return 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.'
     case 'invalid_credentials':
@@ -2964,9 +2965,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
       if (mode === 'register') {
         const result = await auth.registerWithEmail(cleanEmail, password, name.trim() || undefined)
         if (result.ok) {
-          setInfo('Fast geschafft: Wir haben dir eine Bestätigungs-Mail geschickt. Bestätige die E-Mail und logge dich dann ein.')
-          setMode('login')
-          setPassword('')
+          window.location.assign(returnTo || window.location.pathname + window.location.search)
         } else {
           setError(emailAuthMessageForCode(result))
         }
