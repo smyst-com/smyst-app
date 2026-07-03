@@ -25,6 +25,32 @@ Profil-Grid, Chat-Composer/Footer und Seitenmenü) ist eingefroren.
 4. Ohne Freigabe erlaubt: reine Bug- und Sicherheits-Fixes ohne sichtbare
    Design-Auswirkung auf die Startseite.
 
+## Funktions-Freeze Sprachsystem (Pflicht, 100 % geschuetzt)
+
+Der komplette Sprach-Stack ist eingefroren (Stand 2026-07-03, End-to-End live getestet:
+Begruessung -> Zuhoeren -> Erkennung -> Antwort -> Vorlesen -> Weiterzuhoeren).
+
+Geschuetzte Dateien/Bereiche:
+- Frontend: speakText/speakLocal und die Live-Gespraechslogik in src/App.tsx
+  (startDictation, handleToggleLiveVoice, handleSpeakInput, resumeListening),
+  src/lib/ttsClient.ts, src/lib/voiceProfiles.ts
+- Backend: backend/app/api/v1/routes/tts.py, public_twins.py, deren Registrierung
+  in router.py sowie die Piper-Bloecke im backend/Dockerfile
+
+Regeln:
+1. KEINE Aenderung an diesen Bereichen ohne ausdrueckliche schriftliche
+   Bestaetigung des Inhabers (Adam King). Keine Ausnahme.
+2. Gilt auch fuer Restores, Reverts und Komplett-Ersetzungen von Dateien:
+   Vor JEDEM Commit, der src/App.tsx oder backend/.../router.py beruehrt,
+   pruefen, dass diese Marker erhalten bleiben: playRemoteSpeech,
+   stopRemoteSpeech, unlockAudioPlayback, tts_router, public_twins_router.
+   (Vorfaelle: tts_router 2x still entfernt, Fix-PRs #45/#48.)
+3. Pflicht-Smoke nach jedem Backend-Merge/-Deploy: GET /api/tts/voices muss
+   200 mit ready:true liefern. Nach jedem Frontend-Merge: Bundle muss
+   '/api/tts' enthalten.
+4. Ohne Freigabe erlaubt: reine Sicherheits-Fixes, die die Funktion
+   nachweislich nicht veraendern (Smoke-Tests danach Pflicht).
+
 ## Branch- und PR-Regeln (Pflicht)
 
 1. Kein direkter Push auf `main`. Jede Änderung läuft über einen Feature-Branch
