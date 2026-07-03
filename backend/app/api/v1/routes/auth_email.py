@@ -13,7 +13,10 @@ Antwortformat (Vertrag mit dem Frontend):
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import json
 import re
+import secrets
 import time
 from typing import Any
 
@@ -26,7 +29,14 @@ from app.api.v1.routes.auth import (
     _cookie_kwargs,
     _make_token,
     _permissions_for_roles,
+    _read_token,
     _roles_for_email,
+)
+from app.core.config import settings
+from app.integrations.email_sender import (
+    EmailSendError,
+    is_email_sending_configured,
+    send_email,
 )
 from app.integrations.email_account_store import (
     EmailAccountAlreadyExists,
@@ -60,6 +70,25 @@ class LoginRequest(BaseModel):
 
 class ForgotRequest(BaseModel):
     email: str = Field(min_length=5, max_length=254)
+
+
+class ResetRequest(BaseModel):
+    token: str = Field(min_length=10, max_length=4096)
+    password: str = Field(min_length=1, max_length=PASSWORD_MAX_LENGTH)
+
+
+RESET_TOKEN_TTL_SECONDS = 30 * 60
+
+
+def _password_fingerprint(account: dict[str, Any]) -> str:
+    """Kurzer Fingerabdruck des aktuellen Passwort-Hashes.
+
+    Wird in den Reset-Token eingebettet: Nach erfolgreichem Reset ändert sich
+    der Hash und alle zuvor ausgestellten Reset-Tokens werden ungültig —
+    Einmal-Verwendung ohne serverseitigen Zustand.
+    """
+    raw = json.dumps(account.get("passwordHash") or {}, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
 
 def _error(status_code: int, code: str, message: str) -> JSONResponse:
@@ -148,10 +177,78 @@ async def login(body: LoginRequest, request: Request) -> JSONResponse:
 async def forgot(body: ForgotRequest, request: Request) -> JSONResponse:
     if (csrf := _require_csrf(request)) is not None:
         return csrf
-    # Bewusste Entscheidung: Es ist noch kein E-Mail-Versanddienst angebunden.
-    # Ein ehrlicher Fehler ist besser als ein vorgetäuschter Reset-Link.
-    return _error(
-        503,
-        "reset_service_unavailable",
-        "Passwort-Zurücksetzen ist noch nicht verfügbar. Bitte melde dich über hello@smyst.com.",
-    )
+    if not is_email_sending_configured():
+        # Ehrlicher Fehler statt vorgetäuschtem Reset-Link, solange kein
+        # Mail-Versanddienst (RESEND_API_KEY) angebunden ist.
+        return _error(
+            503,
+            "reset_service_unavailable",
+            "Passwort-Zurücksetzen ist noch nicht verfügbar. Bitte melde dich über hello@smyst.com.",
+        )
+
+    email = normalize_email(body.email)
+    store = get_email_account_store()
+    try:
+        account = await asyncio.to_thread(store.get_account, email)
+    except Exception:
+        account = None
+
+    if account is not None and account.get("status") == "active":
+        now_ms = int(time.time() * 1000)
+        token = _make_token(
+            {
+                "purpose": "pwreset",
+                "email": email,
+                "ph": _password_fingerprint(account),
+                "n": secrets.token_urlsafe(16),
+                "expiresAt": now_ms + RESET_TOKEN_TTL_SECONDS * 1000,
+            }
+        )
+        link = f"{settings.public_base_url.rstrip('/')}/#smyst_pwreset={token}"
+        text = (
+            "Hallo,\n\n"
+            "für dein smyst.com-Konto wurde das Zurücksetzen des Passworts angefordert.\n"
+            f"Öffne diesen Link (30 Minuten gültig):\n\n{link}\n\n"
+            "Wenn du das nicht warst, kannst du diese E-Mail ignorieren.\n\n"
+            "smyst.com"
+        )
+        try:
+            await send_email(email, "smyst.com — Passwort zurücksetzen", text)
+        except EmailSendError:
+            # Kein abweichender Fehler nach außen: verhindert User-Enumeration.
+            pass
+
+    # Immer dieselbe Antwort — unabhängig davon, ob das Konto existiert.
+    return JSONResponse({"ok": True, "status": "reset_email_sent_if_account_exists"})
+
+
+@router.post("/reset")
+async def reset(body: ResetRequest, request: Request) -> JSONResponse:
+    if (csrf := _require_csrf(request)) is not None:
+        return csrf
+    payload = _read_token(body.token)
+    if not payload or payload.get("purpose") != "pwreset" or not payload.get("email"):
+        return _error(400, "invalid_reset_token", "Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.")
+    if len(body.password) < PASSWORD_MIN_LENGTH:
+        return _error(400, "weak_password", "Das Passwort muss mindestens 8 Zeichen lang sein.")
+
+    store = get_email_account_store()
+    try:
+        account = await asyncio.to_thread(store.get_account, str(payload["email"]))
+    except EmailAccountStoreNotConfigured:
+        return _error(503, "email_service_unavailable", "E-Mail-Login ist hier nicht verfügbar.")
+    except Exception:
+        return _error(502, "storage_error", "Speicherdienst nicht erreichbar. Bitte später erneut versuchen.")
+
+    if account is None or _password_fingerprint(account) != payload.get("ph"):
+        # Konto weg ODER Passwort seit Token-Ausstellung geändert → Token einmalig.
+        return _error(400, "invalid_reset_token", "Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen an.")
+
+    account = dict(account)
+    account["passwordHash"] = hash_password(body.password)
+    try:
+        account = await asyncio.to_thread(store.update_account, account)
+    except Exception:
+        return _error(502, "storage_error", "Speicherdienst nicht erreichbar. Bitte später erneut versuchen.")
+    # Nach erfolgreichem Reset direkt anmelden.
+    return _session_response(account)
