@@ -78,8 +78,13 @@ async def export_account(request: Request) -> JSONResponse:
     return response
 
 
+@router.post("/erase")
 @router.post("/delete")
 async def delete_account(request: Request) -> JSONResponse:
+    # Hinweis (live verifiziert 2026-07-03): Die Cloudflare-Edge vor *.salad.cloud
+    # blockt POST auf ".../delete"-Pfade mit Authorization-Header (WAF).
+    # /erase ist deshalb der öffentlich nutzbare Pfad; /delete bleibt als
+    # interner Alias erhalten.
     if request.headers.get("X-Smyst-CSRF") != "1":
         return _error(403, "csrf_required", "Ungültige Anfrage.")
     if request.headers.get(DELETE_CONFIRM_HEADER) != DELETE_CONFIRM_VALUE:
