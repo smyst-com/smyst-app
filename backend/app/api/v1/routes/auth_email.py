@@ -184,7 +184,7 @@ async def forgot(body: ForgotRequest, request: Request) -> JSONResponse:
         return _error(
             503,
             "reset_service_unavailable",
-            "Passwort-Zurücksetzen ist noch nicht verfügbar. Bitte melde dich über hello@smyst.com.",
+            "Passwort-Zurücksetzen ist noch nicht verfügbar. Bitte melde dich über s@smyst.com.",
         )
 
     email = normalize_email(body.email)
