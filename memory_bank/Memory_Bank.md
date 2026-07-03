@@ -1,5 +1,13 @@
 # Memory Bank
 
+## Update 2026-07-03 VII: Startlisten-Fix (Beschreibung >=40) + taeglicher Betreuungs-Task
+
+- BEFUND: 4 von 8 Pipeline-Profilen (Hilbert, Velázquez, Blake, +1) fehlten in der App-Startliste — isCompletePublicProfile in App.tsx filtert description < 40 Zeichen; Wikidata-Kurzbeschreibungen ('deutscher Mathematiker' = 22) fielen durch. Profilseiten /t/<slug> waren nie betroffen.
+- FIX (PR #31, gemergt, Deploy #64 gruen, live verifiziert): cardDescription() in scripts/merge-pipeline-published.mjs reichert kurze Beschreibungen deterministisch an: 'deutscher Mathematiker (1862–1943) — Historisches KI-Profil mit dokumentierten Quellen.' Kuratierte Profile unberuehrt. Live-API: 108 Twins, 0 mit description < 40.
+- Kachel-Initialen statt Bild in der Liste = nur Ladeverzoegerung der Commons-Thumbnails + CDN-Cache (App laedt /api/public/twins ohne Cache-Buster, Fastly cached einige Minuten) — kein Bug. ACHTUNG Falle in App.tsx: onError eines Kachel-Bilds ENTFERNT das Profil komplett aus der Liste (removeProfileWithBrokenImage).
+- AUTOMATISIERUNG: Taeglicher Cowork-Scheduled-Task 'smyst-pipeline-morgenlauf' (07:00, laeuft nur bei geoeffneter Claude-App): prueft Cron-Lauf, publiziert NUR bereits freigegebene Profile (Stand: Q5586/Q5589, Freigabe Adam 03.07. 'Ja'), Pages-Deploy + Live-Check, Memory-Sync, Bericht. Neue reviewed-Profile werden nur GEMELDET (Master Prompt: keine Veroeffentlichung ohne Freigabe).
+- Hinweis: Paralleler Agent merged eigene PRs (#25, #27, #29, #30) — bei roten Pages-Deploys erst pruefen, wessen Commit; transiente 'Deployment failed, try again later' einfach re-runnen.
+
 ## Update 2026-07-03 VI: Publish-Welle 2 — 8 Pipeline-Profile live, Duplikat-Schutz bewaehrt
 
 - Publish-Run #11 (schriftliche Freigabe Adam 'Ja', approved_by=smyst247@gmail.com): 5 published (Diego Velázquez, William Blake, Khalil Gibran, Francisco de Goya, Vincent van Gogh). Q529 Louis Pasteur vom NEUEN Duplikat-Schutz korrekt abgelehnt ('existiert bereits als kuratiertes Live-Profil'). Q5586/Q5589 abgelehnt wegen Tageslimit 5 -> morgen publizieren.
