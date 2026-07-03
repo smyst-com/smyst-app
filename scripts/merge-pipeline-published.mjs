@@ -72,16 +72,26 @@ function truncate(text, max) {
   return clean.length <= max ? clean : `${clean.slice(0, max - 1).trimEnd()}…`;
 }
 
+function commonsImageUrl(record) {
+  // Lizenz wurde vom risk-Worker geprueft (PD/CC0/CC-BY*); Commons-Thumbnails
+  // via Special:FilePath sind der offizielle, stabile Auslieferungsweg.
+  const image = record.image || {};
+  if (image.mode !== 'commons' || !image.commons_file) return null;
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image.commons_file)}?width=512`;
+}
+
 function toPublicTwinProfile(record) {
   const publishedAt = Date.parse(record.published_at || '') || Date.now();
   const description = record.description || record.category || '';
   const seo = record.seo || {};
+  const imageUrl = commonsImageUrl(record);
   return {
     id: `pipeline-${record.slug}`,
     name: record.name,
     slug: record.slug,
     description,
-    imageUrl: null,
+    imageUrl,
+    imageCredit: imageUrl ? 'Bild: Wikimedia Commons (lizenzgeprueft, PD/CC)' : undefined,
     categories: [record.category].filter(Boolean),
     languages: [record.language_default || 'de'],
     visibility: 'public',
@@ -90,10 +100,10 @@ function toPublicTwinProfile(record) {
     url: `${HOST}/t/${record.slug}`,
     chatPath: `/twin-chat?twin=${encodeURIComponent(record.slug)}`,
     uploadedContents: [
-      { category: 'Profilbild', count: 0 },
+      { category: 'Profilbild', count: imageUrl ? 1 : 0 },
       { category: 'Wissensprofil', count: 1 },
     ],
-    mediaCount: 0,
+    mediaCount: imageUrl ? 1 : 0,
     knowledgeCount: 1,
     contextSummary: `${record.name}: ${description}`,
     guardrail:
@@ -111,7 +121,9 @@ function toPublicTwinProfile(record) {
     exampleQuestions: [],
     searchIndex: [record.name, record.slug, record.category, description].filter(Boolean).join(' '),
     sources: record.sources || [],
-    quality: { ok: false, issues: ['missing_profile_image'] },
+    quality: imageUrl
+      ? { ok: true, issues: [] }
+      : { ok: false, issues: ['missing_profile_image'] },
     createdAt: publishedAt,
     updatedAt: publishedAt,
     seo: {
@@ -144,6 +156,7 @@ function renderPage(profile) {
       description: profile.description,
       ...(profile.birthDate ? { birthDate: profile.birthDate } : {}),
       ...(profile.deathDate ? { deathDate: profile.deathDate } : {}),
+      ...(profile.imageUrl ? { image: profile.imageUrl } : {}),
     },
     disambiguatingDescription:
       `KI-Profil (digitaler KI-Zwilling) von ${profile.name} auf smyst.com. Historisches, verstorbenes Vorbild; keine echte Person und keine authentischen Aussagen der historischen Person.`,
@@ -156,6 +169,13 @@ function renderPage(profile) {
   html = html.replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${escapeAttr(title)}$2`);
   html = html.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${escapeAttr(description)}$2`);
   html = html.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${pageUrl}$2`);
+  if (profile.imageUrl) {
+    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttr(profile.imageUrl)}$2`);
+    html = html.replace(
+      /(<meta property="og:image:alt" content=")[^"]*(")/,
+      `$1${escapeAttr(`${profile.name} – KI-Profil auf smyst.com`)}$2`,
+    );
+  }
   html = html.replace(
     '</head>',
     `<script type="application/ld+json" id="smyst-profile-schema">${jsonLd}</script></head>`,
