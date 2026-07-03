@@ -30,7 +30,7 @@
     "item6Title": "Transparence IA",
     "item6Text": "Les réponses doivent rester claires, traçables et sans fausse prétention d'être une personne réelle.",
     "openTitle": "Ce qui reste volontairement ouvert",
-    "openText": "Validation réelle iPhone/Android, notifications push, analyse antimalware, très hautes limites de charge et un vrai cœur IA sont des validations séparées. Ces points ne sont pas cachés : ils sont listés dans les rapports de release avant la production.",
+    "openText": "Validation réelle iPhone/Android, notifications push, analyse antimalware et très hautes limites de charge sont des validations séparées. Ces points ne sont pas cachés : ils sont listés dans les rapports de release avant la production.",
     "reportButton": "Envoyer un signalement",
     "privacyButton": "Lire la confidentialité"
   },
