@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import io
 import os
-import threading
-import wave
-from typing import Any
+import subprocess
+import tempfile
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
@@ -15,8 +13,9 @@ from app.security.sanitization import normalize_text
 router = APIRouter(prefix="/tts", tags=["tts"])
 
 # Kuratierte, rein synthetische Piper-Stimmen (keine Klone realer Personen).
-# Modelle werden beim Docker-Build nach /voices gelegt; Worker bleibt stateless.
+# Binary und Modelle werden beim Docker-Build installiert; Worker bleibt stateless.
 VOICES_DIR = os.environ.get("PIPER_VOICES_DIR", "/voices")
+PIPER_BIN = os.environ.get("PIPER_BIN", "/opt/piper/piper")
 
 VOICE_FILES: dict[str, str] = {
     "de-male": "de_DE-thorsten-medium.onnx",
@@ -25,31 +24,12 @@ VOICE_FILES: dict[str, str] = {
     "en-female": "en_US-amy-medium.onnx",
 }
 
-_voice_cache: dict[str, Any] = {}
-_voice_lock = threading.Lock()
-
-
 def _resolve_voice_id(voice_id: str | None, lang: str | None, gender: str | None) -> str:
     if voice_id and voice_id in VOICE_FILES:
         return voice_id
     base = "de" if (lang or "de").lower().startswith("de") else "en"
     suffix = "female" if (gender or "").lower() == "female" else "male"
     return f"{base}-{suffix}"
-
-
-def _load_voice(voice_id: str) -> Any:
-    with _voice_lock:
-        cached = _voice_cache.get(voice_id)
-        if cached is not None:
-            return cached
-        model_path = os.path.join(VOICES_DIR, VOICE_FILES[voice_id])
-        if not os.path.exists(model_path):
-            raise HTTPException(status_code=503, detail="Voice model not available")
-        from piper.voice import PiperVoice
-
-        voice = PiperVoice.load(model_path)
-        _voice_cache[voice_id] = voice
-        return voice
 
 
 class TtsRequest(BaseModel):
@@ -66,7 +46,11 @@ def list_voices() -> dict[str, object]:
         for voice_id, file_name in VOICE_FILES.items()
         if os.path.exists(os.path.join(VOICES_DIR, file_name))
     )
-    return {"voices": available, "engine": "piper"}
+    return {
+        "voices": available,
+        "engine": "piper",
+        "ready": os.path.exists(PIPER_BIN) and len(available) > 0,
+    }
 
 
 @router.post("")
@@ -76,14 +60,29 @@ def synthesize(body: TtsRequest) -> Response:
         raise HTTPException(status_code=422, detail="Empty text")
 
     voice_id = _resolve_voice_id(body.voiceId, body.lang, body.gender)
-    voice = _load_voice(voice_id)
+    model_path = os.path.join(VOICES_DIR, VOICE_FILES[voice_id])
+    if not os.path.exists(PIPER_BIN) or not os.path.exists(model_path):
+        raise HTTPException(status_code=503, detail="TTS engine not available")
 
-    buffer = io.BytesIO()
-    with wave.open(buffer, "wb") as wav_file:
-        voice.synthesize(text, wav_file)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        output_path = os.path.join(tmp_dir, "out.wav")
+        try:
+            completed = subprocess.run(
+                [PIPER_BIN, "--model", model_path, "--output_file", output_path],
+                input=text.encode("utf-8"),
+                capture_output=True,
+                timeout=60,
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exc:
+            raise HTTPException(status_code=504, detail="TTS timeout") from exc
+        if completed.returncode != 0 or not os.path.exists(output_path):
+            raise HTTPException(status_code=500, detail="TTS synthesis failed")
+        with open(output_path, "rb") as wav_file:
+            audio = wav_file.read()
 
     return Response(
-        content=buffer.getvalue(),
+        content=audio,
         media_type="audio/wav",
         headers={
             "Cache-Control": "public, max-age=86400",
