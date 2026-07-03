@@ -256,15 +256,23 @@ async def me(request: Request) -> dict[str, Any]:
     }
 
 
+def _clear_session_cookie(response: JSONResponse) -> None:
+    # Cross-Site-Cookie-Löschung: Browser akzeptieren das Set-Cookie einer
+    # Cross-Site-Antwort nur mit denselben Attributen wie beim Setzen
+    # (SameSite=None; Secure). Ein delete_cookie ohne diese Attribute wird
+    # verworfen und die Session bliebe bestehen (Logout-Bugfix 2026-07-03).
+    response.set_cookie(value="", **_cookie_kwargs(max_age=0))
+
+
 @router.post("/logout")
 async def logout() -> JSONResponse:
     response = JSONResponse({"ok": True})
-    response.delete_cookie(SESSION_COOKIE, path="/")
+    _clear_session_cookie(response)
     return response
 
 
 @router.post("/logout-all")
 async def logout_all() -> JSONResponse:
     response = JSONResponse({"ok": True, "mode": "stateless-current-session-cleared"})
-    response.delete_cookie(SESSION_COOKIE, path="/")
+    _clear_session_cookie(response)
     return response
