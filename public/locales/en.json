@@ -1,6 +1,19 @@
 {
   "locale": "en",
   "dir": "ltr",
+  "footer": {
+    "columnProduct": "Product",
+    "columnCompany": "Company",
+    "columnLegal": "Legal",
+    "careers": "Careers",
+    "b2b": "B2B inquiries",
+    "imprint": "Imprint",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "rights": "© 2026 smyst.com. All rights reserved.",
+    "contact": "Contact",
+    "appData": "App data"
+  },
   "trust": {
     "title": "Security, privacy and operations",
     "intro": "smyst.com starts with clear boundaries, private defaults and a documented release gate.",
