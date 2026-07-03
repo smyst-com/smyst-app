@@ -1,6 +1,19 @@
 {
   "locale": "ja",
   "dir": "ltr",
+  "footer": {
+    "columnProduct": "製品",
+    "columnCompany": "会社",
+    "columnLegal": "法的情報",
+    "careers": "採用情報",
+    "b2b": "法人のお問い合わせ",
+    "imprint": "運営者情報",
+    "privacy": "プライバシー",
+    "terms": "利用規約",
+    "rights": "© 2026 smyst.com 無断転載を禁じます。",
+    "contact": "お問い合わせ",
+    "appData": "アプリデータ"
+  },
   "trust": {
     "title": "セキュリティ・プライバシー・運用",
     "intro": "smyst.com は明確な境界、プライベートなデフォルト、文書化されたリリースゲートから始まります。",
