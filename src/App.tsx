@@ -1850,37 +1850,11 @@ function SmystStartPage({
 
   const loginOptions = [
     {
-      provider: 'ID',
-      title: 'Normaler Login',
-      detail: 'E-Mail und Passwort',
-      status: 'Aktiv',
-      onClick: () => setShowEmailForm((value) => !value),
-    },
-    {
       provider: 'GO',
       title: 'Mit Google fortfahren',
       detail: 'Schneller Login mit Google',
       status: 'Aktiv',
       onClick: () => auth.signInWithGoogle('/'),
-    },
-    {
-      provider: 'AP',
-      title: 'Mit Apple fortfahren',
-      detail: 'Vorbereitet für App-Login',
-      status: 'Bald',
-    },
-    {
-      provider: 'GH',
-      title: 'Mit GitHub fortfahren',
-      detail: 'Aktiver Phase-1-Produktionslogin',
-      status: 'Aktiv',
-      onClick: () => auth.signInWithGitHub('/'),
-    },
-    {
-      provider: '@',
-      title: 'E-Mail Magic Link',
-      detail: 'Passwortloser Zugang',
-      status: 'Bald',
     },
   ]
 

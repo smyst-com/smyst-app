@@ -103,12 +103,18 @@ def _permissions_for_roles(roles: list[str]) -> list[str]:
 
 
 def _cookie_kwargs(max_age: int = SESSION_TTL_SECONDS) -> dict[str, Any]:
+    # Frontend (smyst.com) und Auth-Backend (salad.cloud) sind cross-site.
+    # SameSite=Lax wuerde das Cookie bei fetch()-Aufrufen von smyst.com nie mitsenden;
+    # daher SameSite=None (nur bei HTTPS erlaubt). Safari blockt Third-Party-Cookies
+    # trotzdem — deshalb traegt der Callback die Session zusaetzlich als Token im
+    # URL-Fragment zurueck (siehe google_callback) und /me akzeptiert Bearer-Tokens.
+    secure = settings.auth_public_base_url.startswith("https://")
     return {
         "key": SESSION_COOKIE,
         "max_age": max_age,
         "httponly": True,
-        "secure": settings.auth_public_base_url.startswith("https://"),
-        "samesite": "lax",
+        "secure": secure,
+        "samesite": "none" if secure else "lax",
         "path": "/",
     }
 
@@ -126,7 +132,14 @@ async def google_start(return_to: str | None = None) -> RedirectResponse:
     _require_google_config()
     issued_at = int(time.time())
     nonce = secrets.token_urlsafe(24)
-    state_payload = {"n": nonce, "iat": issued_at, "returnTo": _safe_return_to(return_to)}
+    state_payload = {
+        "n": nonce,
+        "iat": issued_at,
+        # _read_token verlangt ein gueltiges expiresAt — ohne dieses Feld schlug
+        # JEDER Callback mit "Invalid Google OAuth state." fehl (Bugfix 2026-07-03).
+        "expiresAt": (issued_at + STATE_TTL_SECONDS) * 1000,
+        "returnTo": _safe_return_to(return_to),
+    }
     state = _make_token(state_payload)
     params = {
         "client_id": settings.google_oauth_client_id,
@@ -200,15 +213,29 @@ async def google_callback(code: str | None = None, state: str | None = None, err
         "expiresAt": now_ms + SESSION_TTL_SECONDS * 1000,
     }
     token = _make_token(session)
-    location = f"{settings.public_base_url.rstrip('/')}{_safe_return_to(str(state_payload.get('returnTo') or '/'))}"
+    return_path = _safe_return_to(str(state_payload.get("returnTo") or "/"))
+    # Session-Token im URL-Fragment: Fragmente werden nie an Server/Logs uebertragen.
+    # Das Frontend liest das Token einmalig aus, speichert es und entfernt das Fragment
+    # sofort aus der URL. Noetig, weil Cross-Site-Cookies (salad.cloud -> smyst.com)
+    # von Safari immer und von anderen Browsern zunehmend blockiert werden.
+    location = f"{settings.public_base_url.rstrip('/')}{return_path}#smyst_auth={token}"
     response = RedirectResponse(location, status_code=status.HTTP_302_FOUND)
     response.set_cookie(value=token, **_cookie_kwargs())
     return response
 
 
+def _session_from_request(request: Request) -> dict[str, Any] | None:
+    authorization = request.headers.get("Authorization", "")
+    if authorization.startswith("Bearer "):
+        session = _read_token(authorization.removeprefix("Bearer ").strip())
+        if session:
+            return session
+    return _read_token(request.cookies.get(SESSION_COOKIE, ""))
+
+
 @router.get("/me")
 async def me(request: Request) -> dict[str, Any]:
-    session = _read_token(request.cookies.get(SESSION_COOKIE, ""))
+    session = _session_from_request(request)
     if not session:
         return {"authenticated": False}
     return {
