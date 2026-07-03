@@ -31,6 +31,7 @@ const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
 const EmailAuthForm = lazy(() => import('@/components/EmailAuthForm'))
 const MobileNav = lazy(() => import('@/components/MobileNav'))
+import AccountPrivacyActions from '@/components/AccountPrivacyActions'
 
 type IconProps = SVGProps<SVGSVGElement>
 
@@ -699,6 +700,7 @@ export default function App() {
           />
         )}
         {currentView === 'trust' && <TrustView onNavigate={navigateTo} />}
+		  {currentView === 'trust' && <AccountPrivacyActions />}
         {currentView === 'privacy' && <LegalView kind="privacy" />}
         {currentView === 'terms' && <LegalView kind="terms" />}
         {currentView === 'imprint' && <LegalView kind="imprint" />}
