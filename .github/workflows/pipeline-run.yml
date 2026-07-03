@@ -9,6 +9,10 @@ name: Pipeline Run (historische Profile)
 #                  bleibt eine menschliche Handlung (publish_profiles CLI).
 
 on:
+  # Taeglicher Automatik-Lauf 04:00 UTC = 06:00 Europe/Berlin (Sommerzeit).
+  # Cron laeuft immer als run-small (Ingest bis QA). Publish bleibt manuell.
+  schedule:
+    - cron: "0 4 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -34,6 +38,8 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      MODE: ${{ inputs.mode || 'run-small' }}
     steps:
       - uses: actions/checkout@v6
 
@@ -51,14 +57,14 @@ jobs:
         run: python -m pytest tests/ -q
 
       - name: "Status-Report (read-only)"
-        if: inputs.mode == 'status'
+        if: env.MODE == 'status'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: python -m app.workers.report_status
 
       - name: "Publish (nur mit dokumentierter Freigabe)"
-        if: inputs.mode == 'publish-reviewed'
+        if: env.MODE == 'publish-reviewed'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -70,55 +76,55 @@ jobs:
             --approved-by "${{ inputs.approved_by }}" --enabled
 
       - name: "Worker 1: Wikidata-Ingest"
-        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "${{ inputs.mode }}" = "run-small" ]; then
-            python -m app.workers.ingest_candidates --enabled --category Wissenschaft
+          if [ "$MODE" = "run-small" ]; then
+            python -m app.workers.ingest_candidates --enabled
           else
             python -m app.workers.ingest_candidates --dry-run --category Wissenschaft
           fi
 
       - name: "Worker 2: Research"
-        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "${{ inputs.mode }}" = "run-small" ]; then
+          if [ "$MODE" = "run-small" ]; then
             python -m app.workers.research_candidates --enabled --limit 5
           else
             python -m app.workers.research_candidates --dry-run --limit 3
           fi
 
       - name: "Worker 3: Risiko-Check"
-        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "${{ inputs.mode }}" = "run-small" ]; then
+          if [ "$MODE" = "run-small" ]; then
             python -m app.workers.assess_risk --enabled --limit 5
           else
             python -m app.workers.assess_risk --dry-run --limit 3
           fi
 
       - name: "Worker 4: Twin-Capsule-Build"
-        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "${{ inputs.mode }}" = "run-small" ]; then
+          if [ "$MODE" = "run-small" ]; then
             python -m app.workers.build_capsules --enabled --limit 5
           else
             python -m app.workers.build_capsules --dry-run --limit 3
           fi
 
       - name: "Worker 5: QA (inkl. Chat-Smoke-Test)"
-        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -132,14 +138,14 @@ jobs:
           LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
-          if [ "${{ inputs.mode }}" = "run-small" ]; then
+          if [ "$MODE" = "run-small" ]; then
             python -m app.workers.qa_candidates --enabled --limit 5
           else
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
 
       - name: Hinweis Publish
-        if: inputs.mode == 'dry-run' || inputs.mode == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
         run: |
           echo "Kein automatischer Publish. Freigabe durch Menschen:"
           echo "python -m app.workers.publish_profiles publish --qid <QID> --approved-by <email> --enabled"
