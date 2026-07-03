@@ -15,7 +15,13 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { buildAuthUrl, captureAuthTokenFromLocation, clearStoredAuthToken, fetchAuth } from './authEndpoints';
+import {
+  buildAuthUrl,
+  captureAuthTokenFromLocation,
+  clearStoredAuthToken,
+  fetchAuth,
+  storeAuthToken,
+} from './authEndpoints';
 
 export interface AuthUser {
   sub: string;
@@ -72,7 +78,7 @@ async function postEmailAuth(path: string, payload: Record<string, unknown>): Pr
       body: JSON.stringify(payload),
     });
     const data = (await res.json().catch(() => null)) as
-      | { ok?: boolean; status?: string; error?: { code?: string; message?: string } }
+      | { ok?: boolean; status?: string; token?: string; error?: { code?: string; message?: string } }
       | null;
     if (!res.ok) {
       return {
@@ -81,6 +87,9 @@ async function postEmailAuth(path: string, payload: Record<string, unknown>): Pr
         message: data?.error?.message,
       };
     }
+    // E-Mail-Login/-Registrierung liefert die Session zusätzlich als Bearer-Token,
+    // weil Cross-Site-Cookies (salad.cloud -> smyst.com) blockiert werden.
+    if (data?.token) storeAuthToken(data.token);
     return { ok: true, status: data?.status };
   } catch (err) {
     console.warn('[auth] email auth request failed', err);
