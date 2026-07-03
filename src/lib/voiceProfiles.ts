@@ -8,6 +8,7 @@ export type VoiceProfileHint = {
   gender?: VoiceGender
   pitch?: number
   rate?: number
+  voiceId?: string
 }
 
 export type VoiceSettings = {
@@ -38,14 +39,34 @@ export function voiceGenderFor(voiceKey: string | undefined): VoiceGender | unde
   return VOICE_HINTS[normalizeKey(voiceKey)]?.gender
 }
 
+// Verfuegbare Piper-Stimmen auf dem Salad-Backend (siehe backend routes/tts.py).
+const REMOTE_VOICES: Record<string, string[]> = {
+  'de-male': ['de-thorsten', 'de-karlsson', 'de-pavoque'],
+  'de-female': ['de-kerstin', 'de-ramona', 'de-eva'],
+  'en-male': ['en-ryan', 'en-joe', 'en-lessac', 'en-hfc-male'],
+  'en-female': ['en-amy', 'en-hfc-female'],
+}
+
+export function remoteVoiceIdFor(voiceKey: string | undefined, lang: string | undefined): string | undefined {
+  if (!voiceKey) return undefined
+  const base = (lang ?? 'de').toLowerCase().startsWith('de') ? 'de' : 'en'
+  const key = normalizeKey(voiceKey)
+  const hint: VoiceProfileHint | undefined = VOICE_HINTS[key]
+  if (hint?.voiceId && hint.voiceId.startsWith(base)) return hint.voiceId
+  const gender = hint?.gender === 'female' ? 'female' : 'male'
+  const pool = REMOTE_VOICES[base + '-' + gender] ?? []
+  if (pool.length === 0) return undefined
+  return pool[hashSeed(key) % pool.length]
+}
+
 // Kuratierte Hinweise fuer bekannte Profile (Schluessel: Name in Kleinschreibung).
 const VOICE_HINTS: Record<string, VoiceProfileHint> = {
-  'albert einstein': { gender: 'male', pitch: 0.88, rate: 0.92 },
-  'marie curie': { gender: 'female', pitch: 1.04, rate: 0.94 },
+  'albert einstein': { gender: 'male', pitch: 0.88, rate: 0.92, voiceId: 'de-thorsten' },
+  'marie curie': { gender: 'female', pitch: 1.04, rate: 0.94, voiceId: 'de-ramona' },
   'ada lovelace': { gender: 'female', pitch: 1.08, rate: 0.97 },
   'jane austen': { gender: 'female', pitch: 1.06, rate: 0.96 },
   'mary shelley': { gender: 'female', pitch: 1.02, rate: 0.95 },
-  'sokrates': { gender: 'male', pitch: 0.86, rate: 0.9 },
+  'sokrates': { gender: 'male', pitch: 0.86, rate: 0.9, voiceId: 'de-pavoque' },
   'platon': { gender: 'male', pitch: 0.92, rate: 0.93 },
   'aristoteles': { gender: 'male', pitch: 0.9, rate: 0.92 },
   'leonardo da vinci': { gender: 'male', pitch: 0.98, rate: 0.97 },
@@ -53,7 +74,7 @@ const VOICE_HINTS: Record<string, VoiceProfileHint> = {
   'ludwig van beethoven': { gender: 'male', pitch: 0.84, rate: 0.9 },
   'johann sebastian bach': { gender: 'male', pitch: 0.9, rate: 0.92 },
   'friedrich nietzsche': { gender: 'male', pitch: 0.92, rate: 0.95 },
-  'immanuel kant': { gender: 'male', pitch: 0.94, rate: 0.9 },
+  'immanuel kant': { gender: 'male', pitch: 0.94, rate: 0.9, voiceId: 'de-karlsson' },
   'napoleon bonaparte': { gender: 'male', pitch: 0.96, rate: 1.0 },
   'william shakespeare': { gender: 'male', pitch: 1.0, rate: 0.98 },
   'nikola tesla': { gender: 'male', pitch: 0.96, rate: 0.99 },
