@@ -1,11 +1,13 @@
 /**
- * EmailAuthForm — E-Mail/Passwort Login, Registrierung und Passwort-Reset.
- * Spricht die Auth-Worker-Endpunkte /auth/email/* an (HttpOnly-Session-Cookie).
- * Wird nur angezeigt, wenn der Provider aktiv ist (Backend: RESEND_API_KEY gesetzt).
+ * EmailAuthForm — E-Mail/Passwort Login und Registrierung.
+ * Spricht die Backend-Endpunkte /auth/email/* an. Die Session kommt als
+ * HttpOnly-Cookie plus Bearer-Token im Response-Body (Token wird gespeichert,
+ * weil Cross-Site-Cookies zwischen smyst.com und dem Auth-Backend blockiert werden).
+ * Passwort-Reset ist serverseitig noch nicht verfügbar (kein Mail-Versanddienst).
  */
 
 import { useState } from 'react';
-import { fetchAuth } from '../lib/authEndpoints';
+import { fetchAuth, storeAuthToken } from '../lib/authEndpoints';
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -16,12 +18,13 @@ async function postJson(path: string, body: Record<string, unknown>) {
     headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
     body: JSON.stringify(body),
   });
-  let data: { ok?: boolean; error?: { code?: string; message?: string }; status?: string } = {};
+  let data: { ok?: boolean; token?: string; error?: { code?: string; message?: string }; status?: string } = {};
   try {
     data = await res.json();
   } catch {
     /* non-JSON */
   }
+  if (res.ok && data.token) storeAuthToken(data.token);
   return { ok: res.ok, status: res.status, data };
 }
 
@@ -54,16 +57,17 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
       } else if (mode === 'register') {
         const { ok, data } = await postJson('/email/register', { email, password, name });
         if (ok) {
-          setMessage('Fast geschafft! Wir haben dir eine Bestätigungs-E-Mail geschickt. Bitte bestätige deine Adresse.');
-        } else {
-          setError(data.error?.message ?? 'Registrierung fehlgeschlagen.');
+          // Konto ist sofort aktiv und die Session gesetzt — direkt einloggen.
+          window.location.reload();
+          return;
         }
+        setError(data.error?.message ?? 'Registrierung fehlgeschlagen.');
       } else {
-        const { ok } = await postJson('/email/forgot', { email });
+        const { ok, data } = await postJson('/email/forgot', { email });
         if (ok) {
           setMessage('Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.');
         } else {
-          setError('Anfrage fehlgeschlagen. Bitte später erneut versuchen.');
+          setError(data.error?.message ?? 'Anfrage fehlgeschlagen. Bitte später erneut versuchen.');
         }
       }
     } catch {
