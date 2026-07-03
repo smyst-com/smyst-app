@@ -110,8 +110,3 @@ export function pickVoiceSettings(
     rate: hint?.rate ?? 0.92 + (seed % 5) * 0.02,
   }
 }
-
-export function voiceGenderFor(voiceKey: string | undefined): VoiceGender | undefined {
-  if (!voiceKey) return undefined
-  return VOICE_HINTS[normalizeKey(voiceKey)]?.gender
-}
