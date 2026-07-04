@@ -134,6 +134,63 @@ async def test_router_can_fall_back_to_local_deterministic_provider() -> None:
     assert "Smyst memory context" in response.text
 
 
+@pytest.mark.asyncio
+async def test_provider_does_not_retry_on_auth_error(monkeypatch) -> None:
+    FakeAsyncClient.posts = []
+    FakeAsyncClient.responses = [FakeResponse({}, status_code=401)]
+    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+
+    provider = OpenAICompatibleProvider("test", "https://llm.example/v1/", "bad-key", "m")
+    with pytest.raises(httpx.HTTPStatusError):
+        await provider.complete(make_request())
+
+    assert len(FakeAsyncClient.posts) == 1  # kein sinnloser Retry bei kaputtem Key
+
+
+@pytest.mark.asyncio
+async def test_provider_retries_once_on_server_error(monkeypatch) -> None:
+    FakeAsyncClient.posts = []
+    FakeAsyncClient.responses = [
+        FakeResponse({}, status_code=500),
+        FakeResponse(
+            {
+                "model": "m",
+                "choices": [{"message": {"content": "Recovered."}}],
+                "usage": {},
+            }
+        ),
+    ]
+    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+
+    provider = OpenAICompatibleProvider("test", "https://llm.example/v1/", "key", "m")
+    response = await provider.complete(make_request())
+
+    assert response.text == "Recovered."
+    assert len(FakeAsyncClient.posts) == 2
+
+
+@pytest.mark.asyncio
+async def test_router_deadline_falls_back_to_local() -> None:
+    import asyncio
+
+    class SlowProvider(LLMProvider):
+        name = "slow"
+        model = "slow-model"
+
+        async def complete(self, request: LLMRequest) -> LLMResponse:
+            await asyncio.sleep(0.5)
+            raise AssertionError("should have been cancelled")
+
+    router = LLMRouter(
+        [SlowProvider(), LocalDeterministicProvider()],
+        total_deadline_seconds=0.05,
+    )
+    response = await router.complete(make_request())
+
+    assert response.provider == "local"
+    assert response.degraded is True
+
+
 def test_provider_statuses_do_not_expose_secret_values() -> None:
     settings = Settings(
         OPENROUTER_API_KEY="secret-openrouter",

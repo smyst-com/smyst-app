@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from time import perf_counter
@@ -11,11 +12,18 @@ import httpx
 from app.ai.models import LLMRequest, LLMResponse
 from app.core.config import Settings, get_settings
 
+logger = logging.getLogger("smyst.ai.llm_router")
 
 DEFAULT_SYSTEM_PROMPT = (
     "You are Smyst's safe AI-twin answer engine. Answer as the requested persona "
     "without claiming to be the real person. Use the provided memory context when relevant."
 )
+
+# Statuscodes, bei denen ein Retry sinnlos ist (Key/Anfrage kaputt -> sofort
+# zum naechsten Provider in der Kette wechseln statt erneut zu versuchen).
+NO_RETRY_STATUSES = frozenset({400, 401, 403, 404, 422})
+RETRY_BACKOFF_SECONDS = 0.15
+RATE_LIMIT_BACKOFF_SECONDS = 1.0
 
 
 @dataclass(frozen=True)
@@ -61,50 +69,6 @@ class LocalDeterministicProvider(LLMProvider):
         )
 
 
-class ExternalProviderPlaceholder(LLMProvider):
-    def __init__(self, name: str, model: str) -> None:
-        self.name = name
-        self.model = model
-
-    async def complete(self, request: LLMRequest) -> LLMResponse:
-        raise RuntimeError(f"LLM provider '{self.name}' is not configured")
-
-
-class GeminiProvider(ExternalProviderPlaceholder):
-    def __init__(self) -> None:
-        super().__init__("gemini", "gemini-routing-target")
-
-
-class ClaudeProvider(ExternalProviderPlaceholder):
-    def __init__(self) -> None:
-        super().__init__("claude", "claude-routing-target")
-
-
-class GrokProvider(ExternalProviderPlaceholder):
-    def __init__(self) -> None:
-        super().__init__("grok", "grok-routing-target")
-
-
-class DeepSeekProvider(ExternalProviderPlaceholder):
-    def __init__(self) -> None:
-        super().__init__("deepseek", "deepseek-routing-target")
-
-
-class KimiProvider(ExternalProviderPlaceholder):
-    def __init__(self) -> None:
-        super().__init__("kimi", "kimi-routing-target")
-
-
-class ManusProvider(ExternalProviderPlaceholder):
-    def __init__(self) -> None:
-        super().__init__("manus", "manus-routing-target")
-
-
-class MistralProvider(ExternalProviderPlaceholder):
-    def __init__(self) -> None:
-        super().__init__("mistral", "mistral-routing-target")
-
-
 class OpenAICompatibleProvider(LLMProvider):
     def __init__(
         self,
@@ -115,6 +79,7 @@ class OpenAICompatibleProvider(LLMProvider):
         timeout: float = 60,
         max_tokens: int = 1024,
         temperature: float = 0.7,
+        extra_headers: dict[str, str] | None = None,
     ) -> None:
         self.name = name
         self.base_url = base_url.rstrip("/") + "/"
@@ -123,6 +88,7 @@ class OpenAICompatibleProvider(LLMProvider):
         self.timeout = timeout
         self.max_tokens = max_tokens
         self.temperature = temperature
+        self.extra_headers = extra_headers or {}
 
     @property
     def chat_completions_url(self) -> str:
@@ -141,29 +107,12 @@ class OpenAICompatibleProvider(LLMProvider):
                 request.temperature if request.temperature is not None else self.temperature
             ),
         }
-        headers = {"Authorization": f"Bearer {self.api_key}"}
+        headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
 
-        response = None
-        last_error: Exception | None = None
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            for attempt in range(2):
-                try:
-                    response = await client.post(
-                        self.chat_completions_url,
-                        headers=headers,
-                        json=payload,
-                    )
-                    response.raise_for_status()
-                    break
-                except Exception as exc:
-                    last_error = exc
-                    if attempt == 0:
-                        await asyncio.sleep(0.15)
-                        continue
-                    raise
-
-        if response is None:
-            raise last_error or RuntimeError(f"LLM provider '{self.name}' returned no response")
+            response = await self._post_with_retry(
+                client, self.chat_completions_url, headers, payload
+            )
 
         data = response.json()
         text = self._parse_text(data)
@@ -178,6 +127,46 @@ class OpenAICompatibleProvider(LLMProvider):
             latency_ms=latency_ms,
             degraded=False,
         )
+
+    async def _post_with_retry(
+        self,
+        client: httpx.AsyncClient,
+        url: str,
+        headers: dict[str, str],
+        payload: dict[str, Any],
+    ) -> Any:
+        """POST mit differenziertem Retry.
+
+        - 400/401/403/404/422: kein Retry (Key oder Anfrage kaputt) -> sofort raisen,
+          Router wechselt zum naechsten Provider.
+        - 429: ein Retry nach laengerem Backoff (Rate Limit).
+        - 5xx / Netzwerkfehler: ein Retry nach kurzem Backoff.
+        """
+        for attempt in range(2):
+            try:
+                response = await client.post(url, headers=headers, json=payload)
+                response.raise_for_status()
+                return response
+            except httpx.HTTPStatusError as exc:
+                status = exc.response.status_code
+                if status in NO_RETRY_STATUSES or attempt == 1:
+                    raise
+                logger.warning(
+                    "llm provider '%s' got HTTP %s, retrying once", self.name, status
+                )
+                await asyncio.sleep(
+                    RATE_LIMIT_BACKOFF_SECONDS if status == 429 else RETRY_BACKOFF_SECONDS
+                )
+            except Exception as exc:
+                if attempt == 1:
+                    raise
+                logger.warning(
+                    "llm provider '%s' request error (%s), retrying once",
+                    self.name,
+                    type(exc).__name__,
+                )
+                await asyncio.sleep(RETRY_BACKOFF_SECONDS)
+        raise RuntimeError(f"LLM provider '{self.name}' returned no response")
 
     def _parse_text(self, data: dict[str, Any]) -> str:
         choices = data.get("choices") or []
@@ -219,25 +208,10 @@ class AnthropicProvider(OpenAICompatibleProvider):
             "anthropic-version": "2023-06-01",
         }
 
-        response = None
         async with httpx.AsyncClient(timeout=self.timeout) as client:
-            for attempt in range(2):
-                try:
-                    response = await client.post(
-                        urljoin(self.base_url, "messages"),
-                        headers=headers,
-                        json=payload,
-                    )
-                    response.raise_for_status()
-                    break
-                except Exception:
-                    if attempt == 0:
-                        await asyncio.sleep(0.15)
-                        continue
-                    raise
-
-        if response is None:
-            raise RuntimeError("Anthropic provider returned no response")
+            response = await self._post_with_retry(
+                client, urljoin(self.base_url, "messages"), headers, payload
+            )
 
         data = response.json()
         content = data.get("content") or []
@@ -404,7 +378,7 @@ PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
         name="deepseek",
         base_url="https://api.deepseek.com",
         api_key_attr="deepseek_api_key",
-        default_model="deepseek-v4-flash",
+        default_model="deepseek-chat",
     ),
     "moonshot": ProviderConfig(
         name="moonshot",
@@ -562,32 +536,87 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
         provider_cls = (
             AnthropicProvider if provider_name == "anthropic" else OpenAICompatibleProvider
         )
+        timeout = active_settings.llm_provider_timeout_seconds
         if provider_name == "manus":
-            providers.append(ManusProvider(api_key, agent_profile=model, base_url=config.base_url))
+            providers.append(
+                ManusProvider(
+                    api_key, agent_profile=model, base_url=config.base_url, timeout=timeout
+                )
+            )
+        elif provider_name == "openrouter":
+            providers.append(
+                OpenAICompatibleProvider(
+                    config.name,
+                    config.base_url,
+                    api_key,
+                    model,
+                    timeout=timeout,
+                    extra_headers={
+                        "HTTP-Referer": active_settings.public_base_url,
+                        "X-Title": active_settings.app_name,
+                    },
+                )
+            )
         else:
-            providers.append(provider_cls(config.name, config.base_url, api_key, model))
+            providers.append(
+                provider_cls(config.name, config.base_url, api_key, model, timeout=timeout)
+            )
 
     providers.append(LocalDeterministicProvider())
-    return LLMRouter(providers)
+    return LLMRouter(
+        providers,
+        total_deadline_seconds=active_settings.llm_total_deadline_seconds,
+    )
 
 
 class LLMRouter:
-    """Provider router with deterministic fallback."""
+    """Provider router with deterministic fallback.
 
-    def __init__(self, providers: list[LLMProvider] | None = None) -> None:
+    Faellt bei Fehlern durch die Provider-Kette; ein Gesamt-Zeitbudget
+    (total_deadline_seconds) verhindert minutenlange Wartezeiten, wenn mehrere
+    Remote-Provider nacheinander haengen. Der lokale deterministische Fallback
+    laeuft immer, auch nach Ablauf des Budgets.
+    """
+
+    def __init__(
+        self,
+        providers: list[LLMProvider] | None = None,
+        total_deadline_seconds: float | None = None,
+    ) -> None:
         self.providers = providers or [LocalDeterministicProvider()]
+        self.total_deadline_seconds = total_deadline_seconds
 
     @staticmethod
     def supported_provider_targets() -> list[str]:
         return [*DEFAULT_PROVIDER_ORDER, *PROVIDER_ALIASES, "local"]
 
     async def complete(self, request: LLMRequest) -> LLMResponse:
+        started = perf_counter()
         last_error: Exception | None = None
         for provider in self.providers:
+            is_local = isinstance(provider, LocalDeterministicProvider)
+            remaining: float | None = None
+            if self.total_deadline_seconds is not None and not is_local:
+                remaining = self.total_deadline_seconds - (perf_counter() - started)
+                if remaining <= 0:
+                    logger.warning(
+                        "llm deadline of %.1fs exhausted, skipping provider '%s'",
+                        self.total_deadline_seconds,
+                        provider.name,
+                    )
+                    continue
             try:
+                if remaining is not None:
+                    return await asyncio.wait_for(provider.complete(request), timeout=remaining)
                 return await provider.complete(request)
             except Exception as exc:
                 last_error = exc
+                logger.warning(
+                    "llm provider '%s' failed (%s: %s), trying next provider",
+                    provider.name,
+                    type(exc).__name__,
+                    exc,
+                )
                 continue
         if last_error:
             raise last_error
