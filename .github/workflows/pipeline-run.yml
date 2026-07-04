@@ -16,17 +16,21 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run | run-small | status | publish-reviewed"
+        description: "dry-run | run-small | status | publish-reviewed | unpublish"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small, status, publish-reviewed]
+        options: [dry-run, run-small, status, publish-reviewed, unpublish]
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
         default: ""
       qids:
-        description: "Optional (nur publish-reviewed): kommagetrennte QIDs — publiziert NUR diese reviewed-Profile statt --all-reviewed"
+        description: "Optional (publish-reviewed/unpublish): kommagetrennte QIDs — publiziert bzw. unpublisht NUR diese Profile"
+        required: false
+        default: ""
+      reason:
+        description: "Begruendung (nur fuer unpublish; wird im Audit-Trail dokumentiert)"
         required: false
         default: ""
 
@@ -157,6 +161,22 @@ jobs:
           else
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
+
+      # Unpublish entzieht nur die Sichtbarkeit (kein Loeschen, Master Prompt).
+      - name: "Unpublish (nur mit dokumentierter Freigabe)"
+        if: env.MODE == 'unpublish'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          if [ -z "${{ inputs.approved_by }}" ] || [ -z "${{ inputs.qids }}" ] || [ -z "${{ inputs.reason }}" ]; then
+            echo "unpublish erfordert approved_by, qids und reason."; exit 2
+          fi
+          for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
+            python -m app.workers.publish_profiles unpublish --qid "$qid" \
+              --reason "${{ inputs.reason }}" \
+              --approved-by "${{ inputs.approved_by }}" --enabled
+          done
 
       # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026):
       # der naechtliche Cron publiziert alle reviewed-Profile mit bestandener QA
