@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-07-04 VII: Generierte Profilbilder (PR #84) + /en/-i18n-Auftrag angenommen
+
+- NEUE ANWEISUNG ADAM (04.07., schriftlich): (1) /en/-i18n soll der Betreuungs-Agent KOMPLETT fertigstellen (nicht mehr auf Codex warten — dessen i18n-Branch war lokal und wurde nie gepusht); (2) Profilbilder 'keine Risiko': nur freie Fotos ODER selbst generierte Bilder mit klarer Kennzeichnung.
+- GENERIERTE PROFILBILDER (PR #84, gemergt, Checks gruen): merge-pipeline-published.mjs erzeugt fuer Profile OHNE freies Commons-Bild ein deterministisches, stilisiertes SVG-Portrait (Initialen + Name + Lebensdaten + Gradient, Fusszeile 'KI-Profil · smyst.com · keine Fotografie') nach dist/public/profile-images/<slug>-ki-profil.svg; imageUrl gesetzt, quality.ok=true, imageCredit='KI-generierte, stilisierte Darstellung (keine Fotografie der Person)'. BEWUSST kein kuenstliches Gesicht (Taeuschungsrisiko null, Kosten null, offline, reproduzierbar). Greift automatisch ab dem naechsten Profil ohne Bild; bestehende 13 Pipeline-Profile haben alle Commons-Fotos.
+- /en/-i18n: In den taeglichen Morgenlauf als Teil B eingeplant (pro Lauf eine Etappe: Audit -> kleiner PR -> E2E -> live pruefen), Scheduled Task entsprechend erweitert. Fortschritt wird hier dokumentiert. Stand: noch keine Etappe umgesetzt.
+- Merge-Hinweis: 'Merging is blocked / Checking for the ability to merge automatically' direkt nach Checks-Gruen ist transient — 10s warten + F5, dann ist der Merge-Button aktiv.
+
 ## Update 2026-07-04 VI: Restliste abgeschlossen — Urheber-Klarnamen (PR #78+#81) + Kachel-onError-Fix (PR #79), alles live
 
 - URHEBER-KLARNAME (PR #78, gemergt): merge-pipeline-published.mjs holt jetzt in EINEM gebatchten Commons-API-Call (action=query prop=imageinfo iiprop=extmetadata, max 50 Titel) Artist + LicenseShortName fuer alle Pipeline-Bilder. imageCredit z.B. 'Bild: Orren Jack Turner — Wikimedia Commons (Public domain) — Quelle: <File-Seite>'. Fallback bei API-Fehler: bisheriger Quellseiten-Link, Build scheitert NIE.
