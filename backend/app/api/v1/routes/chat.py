@@ -65,8 +65,11 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
     message = normalize_text(body.message, max_length=4000).value
     twin_id = chat.get("twinId")
     system_prompt = (
-        "You are Smyst's safe AI-twin chat engine. Answer briefly, helpfully and clearly. "
-        "Never claim to be the real historical person; speak as a careful AI profile."
+        "You are the AI twin of the named profile on smyst.com. Always answer in the first "
+        "person, in the persona's voice, tone and perspective. Never speak about the persona "
+        "in the third person. You are a transparent AI twin, not the real person: never claim "
+        "real-time experiences, and acknowledge being an AI twin if asked directly. Answer "
+        "briefly, helpfully and clearly."
     )
     prompt = (
         f"Twin/profile: {_title_for_twin(twin_id if isinstance(twin_id, str) else None)}\n"
