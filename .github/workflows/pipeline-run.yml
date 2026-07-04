@@ -25,6 +25,10 @@ on:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
         default: ""
+      qids:
+        description: "Optional (nur publish-reviewed): kommagetrennte QIDs — publiziert NUR diese reviewed-Profile statt --all-reviewed"
+        required: false
+        default: ""
 
 concurrency:
   group: pipeline-run
@@ -72,8 +76,15 @@ jobs:
           if [ -z "${{ inputs.approved_by }}" ]; then
             echo "publish-reviewed erfordert approved_by (Freigabe-E-Mail)."; exit 2
           fi
-          python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "${{ inputs.approved_by }}" --enabled
+          if [ -n "${{ inputs.qids }}" ]; then
+            for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
+              python -m app.workers.publish_profiles publish --qid "$qid" \
+                --approved-by "${{ inputs.approved_by }}" --enabled
+            done
+          else
+            python -m app.workers.publish_profiles publish --all-reviewed \
+              --approved-by "${{ inputs.approved_by }}" --enabled
+          fi
 
       - name: "Worker 1: Wikidata-Ingest"
         if: env.MODE == 'dry-run' || env.MODE == 'run-small'
