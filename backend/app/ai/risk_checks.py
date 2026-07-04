@@ -61,6 +61,13 @@ ALLOWED_LICENSE_PREFIXES = (
     "public domain", "pd", "cc0", "cc by", "cc-by", "no restrictions",
 )
 
+#: Rechtsanalyse 2026-07-04 (Abschnitt 2.3): Werke von Kuenstlern mit Sterbejahr
+#: nach 1950 koennen jurisdiktionsabhaengig noch urheberrechtlich geschuetzt sein
+#: (70 Jahre p.m.a. zzgl. Kriegsverlaengerungen) -> works=restricted erzwingen,
+#: auch wenn der allgemeine max_death_year-Cutoff noch PASS ergeben wuerde.
+ART_WORKS_RESTRICTED_AFTER_YEAR = 1950
+ART_CATEGORIES = ("Kunst",)
+
 
 def ethics_risk(qid: str | None, name: str) -> tuple[RiskResult, str | None]:
     entry = _ETHICS_BY_QID.get(qid or "") or _ETHICS_BY_NAME.get(_n(name))
@@ -115,14 +122,24 @@ def assess_risk(
     notes: list[str] = []
 
     # 1. Werke
-    if candidate.death_date.year <= config.max_death_year:
-        works = RiskResult.PASS
-    else:
+    if candidate.death_date.year > config.max_death_year:
         works = RiskResult.RESTRICTED
         notes.append(
             f"Sterbejahr {candidate.death_date.year} > {config.max_death_year}: "
             "keine Originalzitate/Werkauszuege, nur paraphrasierte Fakten"
         )
+    elif (
+        candidate.category in ART_CATEGORIES
+        and candidate.death_date.year > ART_WORKS_RESTRICTED_AFTER_YEAR
+    ):
+        works = RiskResult.RESTRICTED
+        notes.append(
+            f"Kunst mit Sterbejahr {candidate.death_date.year} > "
+            f"{ART_WORKS_RESTRICTED_AFTER_YEAR}: Werke koennen noch geschuetzt sein "
+            "(70 Jahre p.m.a.) — keine Werkreproduktionen/Zitate, nur Paraphrase"
+        )
+    else:
+        works = RiskResult.PASS
 
     # 2. Bild
     if image_commons_file:
