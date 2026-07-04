@@ -1,5 +1,13 @@
 # Memory Bank
 
+## Update 2026-07-04 IV: Aufraeumen (unpublish-Mode, PR #73) + Rechtsanalyse erstellt
+
+- Neu (PR #73, gemergt): Workflow-Mode 'unpublish' (Inputs qids + reason + approved_by, Sichtbarkeitsentzug ohne Loeschen). Lauf #18 GRUEN: Q1290 Blaise Pascal + Q307 Galileo Galilei aus dem Publish-Index entfernt (reason 'Duplikat kuratiertes Profil') — die 2 Alt-Duplikate aus Welle 1 sind bereinigt. Live-Site unveraendert (waren nie gemergt).
+- Q529 Louis Pasteur bleibt reviewed; der naechtliche Auto-Publish versucht ihn, der Duplikat-Schutz lehnt ab — harmlos, erscheint als 'abgelehnt' im Cron-Log (kein Fehler).
+- Erster Cron NACH Automatik-Merge: Run #17 'Scheduled' (08:4x, verspaetet) lief noch auf dem ALTEN Workflow-Stand (b9ec9df, vor PR #71) — nur Ingest->QA, gruen, KEIN Auto-Publish. Ab morgen 06:00 laeuft der Cron mit Auto-Publish + Auto-Deploy; als erstes gehen Q131018 Rabelais + Q22670 Schiller live (heute Tageslimit erreicht: 5 published).
+- RECHTSANALYSE erstellt: memory_bank/Rechtsanalyse_Estate_Blacklist.md — Bewertung aller Risikofelder (postmortales Persoenlichkeitsrecht DE, US Publicity/Blacklist, Urheberrecht, Bildlizenzen, DSGVO, AI-Act, Ethik). Fazit: aktueller Autopilot gut vertretbar; VOR Tageslimit-Erhoehung zwei kleine Pipeline-PRs umsetzen: (a) Kunst + Sterbejahr > 1950 -> works=restricted, (b) CC-BY-Attribution (Urheber+Lizenz) konkret ins imageCredit-Feld. Anwaltliche Bestaetigung einmalig empfohlen (Analyse ist keine Rechtsberatung). Ergebnis Fliesstext-Empfehlung an Adam gesendet.
+- OFFENE PUNKTE (Reihenfolge): (1) works=restricted-Regel Kunst>1950, (2) CC-BY-imageCredit, (3) KI-Portraits fuer Profile ohne Commons-Bild, (4) /en/-i18n + Kachel-onError-Falle, (5) Tageslimit-Erhoehung erst nach (1)+(2)+Anwalt.
+
 ## Update 2026-07-04 III: VOLL-AUTOMATIK — Publish + Deploy laufen jetzt komplett auf GitHub (PR #71)
 
 - Adams Anforderung: alles automatisch, OHNE dass sein Rechner/die Claude-App an ist. Umsetzung (PR #71, gemergt, Checks gruen): pipeline-run.yml publiziert bei scheduled Cron-Laeufen (06:00 Berlin) nach der QA automatisch ALLE reviewed-Profile (publish --all-reviewed, approved_by=smyst247@gmail.com, dokumentierte Pauschal-Freigabe 04.07.2026) und triggert danach den GitHub Pages Deploy via gh workflow run (job permissions: actions: write). Alle Publisher-Schutzmechanismen (qa_passed, Tageslimit 5, Duplikat-Schutz, Audit-Trail) bleiben aktiv.
