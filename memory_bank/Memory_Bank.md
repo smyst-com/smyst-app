@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-07-04 V: Beide Pipeline-Fixes aus der Rechtsanalyse umgesetzt (PR #75 + #76)
+
+- FIX 1 (PR #75, gemergt, Checks gruen): risk_checks.py — neue Regel ART_WORKS_RESTRICTED_AFTER_YEAR=1950: Kategorie Kunst + Sterbejahr > 1950 -> works=restricted (Werke koennen jurisdiktionsabhaengig noch geschuetzt sein, 70 J. p.m.a.), auch wenn max_death_year-Cutoff (1955) PASS ergaebe. Neuer Test test_artist_death_after_1950_marks_works_restricted (Matisse restricted, van Gogh pass, Nicht-Kunst 1954 pass). Alle 12 risk-Tests lokal + CI gruen. Wirkt nur auf KUENFTIGE Risk-Laeufe; bereits publizierte Profile (Matisse) unveraendert — bei Bedarf Re-Assessment.
+- FIX 2 (PR #76, gemergt, Checks gruen): merge-pipeline-published.mjs — imageCredit nennt jetzt konkret die Commons-Quellseite: 'Bild: Wikimedia Commons (lizenzgeprueft, PD/CC) — Quelle & Urheber: https://commons.wikimedia.org/wiki/File:<datei>' (dort stehen Urheber/Titel/Lizenz; CC-BY-Attribution nachpruefbar). Fallback ohne Bild unveraendert. Lokal mit Fixture getestet (Attribution-Link, Slug-Schutz, Fallback, Mirror-Fallback bei Netzfehler). Greift fuer ALLE Pipeline-Profile beim naechsten Deploy.
+- Arbeitsweise-Notiz (validiert): Python/JS-Dateien von main byte-genau via GitHub-Blob embeddedData.rawLines lesen (get_page_text zerstoert Einrueckung; DLP-Blocker mit Zeichen-Substitution umgehen); Aenderungen lokal in Sandbox testen (pytest fehlt/PyPI gesperrt -> Mini-Runner mit PYTHONPATH), Upload via GitHub-Web auf Branch, zweite Datei per /upload/<branch>/<pfad> direkt auf denselben Branch committen.
+- OFFEN (naechste Laeufe): (1) Pipeline soll Commons-Artist-Namen selbst erfassen (assess_risk imageinfo extmetadata Artist -> capsule.image.artist -> imageCredit mit Klarnamen), (2) KI-Portraits fuer Profile ohne Commons-Bild, (3) /en/-i18n + Kachel-onError, (4) Tageslimit-Erhoehung: technische Voraussetzungen aus Rechtsanalyse sind jetzt ERFUELLT — es fehlt nur noch die einmalige anwaltliche Bestaetigung.
+
 ## Update 2026-07-04 IV: Aufraeumen (unpublish-Mode, PR #73) + Rechtsanalyse erstellt
 
 - Neu (PR #73, gemergt): Workflow-Mode 'unpublish' (Inputs qids + reason + approved_by, Sichtbarkeitsentzug ohne Loeschen). Lauf #18 GRUEN: Q1290 Blaise Pascal + Q307 Galileo Galilei aus dem Publish-Index entfernt (reason 'Duplikat kuratiertes Profil') — die 2 Alt-Duplikate aus Welle 1 sind bereinigt. Live-Site unveraendert (waren nie gemergt).
