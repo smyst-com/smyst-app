@@ -39,6 +39,9 @@ jobs:
     name: Worker-Kette (${{ inputs.mode }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: write
     defaults:
       run:
         working-directory: backend
@@ -155,8 +158,28 @@ jobs:
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
 
+      # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026):
+      # der naechtliche Cron publiziert alle reviewed-Profile mit bestandener QA
+      # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
+      # reviewed+qa_passed, Tageslimit, Duplikat-Schutz gegen kuratierte
+      # Live-Profile, Audit-Trail mit approved_by.
+      - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04)"
+        if: github.event_name == 'schedule'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          python -m app.workers.publish_profiles publish --all-reviewed \
+            --approved-by "smyst247@gmail.com" --enabled
+
+      - name: "Auto-Deploy nach Publish (nur Cron)"
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+
       - name: Hinweis Publish
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule')
         run: |
           echo "Kein automatischer Publish. Freigabe durch Menschen:"
           echo "python -m app.workers.publish_profiles publish --qid <QID> --approved-by <email> --enabled"
