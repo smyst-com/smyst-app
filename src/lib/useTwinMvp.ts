@@ -407,6 +407,72 @@ export function useTwinMvp() {
     [run],
   )
 
+  const sendTwinMessageStream = useCallback(
+    (chatId: string, message: string, onPartial: (text: string) => void) =>
+      run(async () => {
+        type ChatReply = { chatId: string; twinId: string | null; message: TwinChatMessage; mode: string }
+        try {
+          const headers = new Headers()
+          headers.set('Content-Type', 'application/json')
+          headers.set('X-Smyst-CSRF', '1')
+          const res = await fetchService('/api/chat/messages/stream', {
+            method: 'POST',
+            credentials: 'include',
+            headers,
+            body: JSON.stringify({ chatId, message }),
+          })
+          if (!res.ok || !res.body) throw new Error(`stream failed (${res.status})`)
+          const reader = res.body.getReader()
+          const decoder = new TextDecoder()
+          let buffer = ''
+          let full = ''
+          let finalReply: ChatReply | null = null
+          for (;;) {
+            const chunk = await reader.read()
+            if (chunk.done) break
+            buffer += decoder.decode(chunk.value, { stream: true })
+            const events = buffer.split('\n\n')
+            buffer = events.pop() ?? ''
+            for (const rawEvent of events) {
+              const dataLine = rawEvent.split('\n').find((line) => line.startsWith('data:'))
+              if (!dataLine) continue
+              const payload = JSON.parse(dataLine.slice(5)) as {
+                delta?: string
+                done?: boolean
+                error?: boolean
+                chatId?: string
+                twinId?: string | null
+                message?: TwinChatMessage
+                mode?: string
+              }
+              if (typeof payload.delta === 'string') {
+                full += payload.delta
+                onPartial(full)
+              } else if (payload.done && payload.message) {
+                finalReply = {
+                  chatId: payload.chatId ?? chatId,
+                  twinId: payload.twinId ?? null,
+                  message: payload.message,
+                  mode: payload.mode ?? 'unknown',
+                }
+              } else if (payload.error) {
+                throw new Error('stream error event')
+              }
+            }
+          }
+          if (!finalReply) throw new Error('stream ended without done event')
+          return { ...finalReply, streamed: true }
+        } catch {
+          const body = await apiJson<ChatReply>('/api/chat/messages', {
+            method: 'POST',
+            body: JSON.stringify({ chatId, message }),
+          })
+          return { ...body, streamed: false }
+        }
+      }),
+    [run],
+  )
+
   const listTwinChats = useCallback(
     () =>
       run(async () => {
@@ -578,6 +644,7 @@ export function useTwinMvp() {
     addMedia,
     startTwinChat,
     sendTwinMessage,
+    sendTwinMessageStream,
     listTwinChats,
     searchTwinChats,
     getProfile,
