@@ -15,7 +15,7 @@ export interface StaticTranslations {
     changeTwin: string
     chooseTwin: string
     emptyText: string
-    messagePlaceholder: string
+    messagePlaceholder: string; discoveryLabel: string; discoveryText: string; recommendedLabel: string; newLabel: string
     addFile: string
     voiceInput: string
     voiceInputUnsupported: string
@@ -134,7 +134,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     changeTwin: 'Ausgewähltes Profil ändern',
     chooseTwin: 'Profil wählen',
     emptyText: 'Wähle oben ein KI-Profil oder schreibe direkt. Das ausgewählte Profil bleibt oben fixiert.',
-    messagePlaceholder: 'Nachricht an {{name}}',
+    messagePlaceholder: 'Nachricht an {{name}}', discoveryLabel: 'Profilentdeckung', discoveryText: '{{count}} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.', recommendedLabel: 'Empfohlen', newLabel: 'Neu',
     addFile: 'Datei hinzufügen',
     voiceInput: 'Spracheingabe',
     voiceInputUnsupported: 'Spracheingabe nicht unterstützt',
