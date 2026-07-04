@@ -108,10 +108,15 @@ async function fetchCommonsAttribution(files) {
       const data = await res.json();
       for (const page of Object.values(data?.query?.pages || {})) {
         const meta = (page?.imageinfo && page.imageinfo[0] && page.imageinfo[0].extmetadata) || {};
-        const artist = String((meta.Artist && meta.Artist.value) || '')
+        let artist = String((meta.Artist && meta.Artist.value) || '')
           .replace(/<[^>]*>/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
+        // Commons-Platzhalter sind KEINE Urheber (z.B. 'missing name' bei
+        // Hokusai-Selbstportraet) — dann bleibt der Quellseiten-Link die Attribution.
+        if (/^(missing name|unknown([ -]?author)?|anonymous|anonymus|unbekannt|not provided|n\/a|none)$/i.test(artist)) {
+          artist = '';
+        }
         const license = String((meta.LicenseShortName && meta.LicenseShortName.value) || '').trim();
         const title = String(page?.title || '').replace(/^File:/, '').replace(/_/g, ' ');
         if (title) result.set(title, { artist, license });
