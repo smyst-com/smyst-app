@@ -638,7 +638,7 @@ export default function App() {
             >
               {appTheme === 'dark' ? 'Heller' : 'Dunkler'}
             </button>
-            <a href="mailto:i@smyst.com" className="hidden text-sm text-[#9aa6b7] transition-colors hover:text-white lg:block">i@smyst.com</a>
+            <a href="mailto:s@smyst.com" className="hidden text-sm text-[#9aa6b7] transition-colors hover:text-white lg:block">s@smyst.com</a>
             {/* Auth-Action: Avatar wenn eingeloggt, sonst Sign-In/Early-Access */}
             {auth.status === 'authenticated' ? (
               <button
@@ -731,8 +731,8 @@ export default function App() {
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">{ft.footer.columnCompany}</h4>
               <button onClick={() => navigateTo('trust')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Trust Center</button>
-              <a href="mailto:i@smyst.com?subject=Karriere%20bei%20smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.careers}</a>
-              <a href="mailto:b2b@smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.b2b}</a>
+              <a href="mailto:s@smyst.com?subject=Karriere%20bei%20smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.careers}</a>
+              <a href="mailto:s@smyst.com?subject=B2B-Anfrage" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.b2b}</a>
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">{ft.footer.columnLegal}</h4>
@@ -746,7 +746,7 @@ export default function App() {
         <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-white/[0.08] pt-6 md:flex-row">
           <p className="text-sm text-[#9aa6b7]">{ft.footer.rights}</p>
           <div className="flex flex-wrap gap-5">
-            <a href="mailto:i@smyst.com" className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.contact}</a>
+            <a href="mailto:s@smyst.com" className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.contact}</a>
             <button onClick={() => navigateTo('trust')} className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Trust</button>
             <button
               type="button"
