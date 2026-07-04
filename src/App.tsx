@@ -3812,13 +3812,19 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   const content = {
     privacy: {
       title: 'Datenschutz',
-      intro: 'Diese Datenschutzerklärung beschreibt den aktuellen Projektstand und ersetzt keine finale Rechtsberatung.',
+      intro: 'Verantwortlich: AUS2001 LLC, 30 N Gould St Ste R, Sheridan, WY 82801, USA. E-Mail: s@smyst.com. Stand: 4. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
       points: [
-        'Login erfolgt über Google oder E-Mail + Passwort. Die Session ist signiert und wird serverseitig geprüft.',
-        'Profilinformationen, Dateien, Medien und größere Datenobjekte werden getrennt verarbeitet.',
-        'Private Profile, private API-Routen und private Dateien sind nicht für Suchmaschinen bestimmt.',
-        'Account-Export und Account-Löschung sind im Profilbereich vorbereitet.',
-        'Drittanbieter-Dienste dürfen private Daten nicht unnötig auslesen oder verfolgen.',
+        'Ohne Konto verarbeiten wir technische Zugriffsdaten (IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser- und Geraetetyp) fuer Betrieb, Stabilitaet und Missbrauchsabwehr (Art. 6 Abs. 1 lit. f DSGVO). Chat-Anfragen an oeffentliche KI-Profile werden zur Beantwortung an unser Backend uebertragen; ohne Anmeldung wird kein Chat-Verlauf dauerhaft gespeichert.',
+        'Mit Konto verarbeiten wir E-Mail-Adresse, Name (optional), Passwort ausschliesslich als kryptografischen Hash (scrypt), Profilinhalte, erstellte AI-Twins, hochgeladene Dateien (Dokumente, Bilder, Audio, Video), Chat-Verlaeufe sowie Einstellungs- und Sitzungsdaten zur Bereitstellung deines Kontos und der Kernfunktionen (Art. 6 Abs. 1 lit. b DSGVO).',
+        'Bei Google-Login erhalten wir nur die Google-Konto-Basisdaten (E-Mail-Adresse, Name, Profilbild-URL). Dein Google-Passwort wird nicht an uns uebertragen.',
+        'Technisch notwendige lokale Speicherung (Session-Cookie bzw. signiertes Token, Sprach- und Design-Einstellung, Consent-Status) erfolgt nach Par. 25 Abs. 2 TDDDG bzw. Art. 6 Abs. 1 lit. b/f DSGVO. Optionale anonyme Nutzungsstatistik nur nach Einwilligung ueber das Consent-Banner, jederzeit widerrufbar. Keine Werbe-Tracker von Drittanbietern.',
+        'Dienstleister: IDrive Inc. (USA, Objektspeicher und Auslieferung der Website-Dateien), Salad Technologies (USA, Backend fuer Login, API und KI-Antworten), GitHub Inc. (USA, Code-Hosting), Google LLC (USA, nur bei Google-Login), Spaceship/Namecheap-Gruppe (Domain, DNS, E-Mail-Weiterleitung an s@smyst.com).',
+        'Drittlandbezug: Die Verarbeitung findet ueberwiegend in den USA statt, gestuetzt auf das EU-US Data Privacy Framework, soweit Anbieter zertifiziert sind, andernfalls auf EU-Standardvertragsklauseln bzw. die Standard-Datenschutzvereinbarungen der Anbieter (Art. 44 ff. DSGVO).',
+        'Speicherdauer: Kontodaten bleiben gespeichert, solange dein Konto besteht. Nach Konto-Loeschung werden personenbezogene Daten zweistufig entfernt (sofortige Sperrung, anschliessend endgueltige Loeschung der Datenobjekte). Technische Logs nur so lange, wie fuer Betrieb und Sicherheit erforderlich. Chats ohne Konto werden nicht dauerhaft gespeichert.',
+        'Deine Rechte: Auskunft (Art. 15), Berichtigung (Art. 16), Loeschung (Art. 17), Einschraenkung (Art. 18), Datenuebertragbarkeit (Art. 20), Widerspruch (Art. 21) und jederzeitiger Widerruf erteilter Einwilligungen. Konto-Export und Konto-Loeschung stehen direkt im Produkt bereit (Trust Center, Deine Daten: Export und Loeschung); zusaetzlich per E-Mail an s@smyst.com. Du kannst dich ausserdem bei einer Datenschutz-Aufsichtsbehoerde beschweren.',
+        'KI-Hinweise: AI-Twins sind kuratierte digitale Profile und geben nicht die echte (historische) Person wieder. Private Profile und private Uploads werden nicht fuer Suchmaschinen indexiert und sind an deine Login-Session gebunden. Wir verwenden deine privaten Inhalte nicht zum Training fremder Modelle.',
+        'Datensicherheit: Uebertragung ausschliesslich ueber HTTPS, signierte und serverseitig gepruefte Sessions, Passwoerter nur als scrypt-Hash, serverseitige Upload-Pruefung (Typ, Groesse, Besitzerpfad), getrennte App-, Datei- und Datenbereiche.',
+        'Aenderungen: Wir passen diese Erklaerung an, wenn sich Funktionen oder Dienstleister aendern.',
       ],
     },
     terms: {
