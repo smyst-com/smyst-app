@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-07-04 III: VOLL-AUTOMATIK — Publish + Deploy laufen jetzt komplett auf GitHub (PR #71)
+
+- Adams Anforderung: alles automatisch, OHNE dass sein Rechner/die Claude-App an ist. Umsetzung (PR #71, gemergt, Checks gruen): pipeline-run.yml publiziert bei scheduled Cron-Laeufen (06:00 Berlin) nach der QA automatisch ALLE reviewed-Profile (publish --all-reviewed, approved_by=smyst247@gmail.com, dokumentierte Pauschal-Freigabe 04.07.2026) und triggert danach den GitHub Pages Deploy via gh workflow run (job permissions: actions: write). Alle Publisher-Schutzmechanismen (qa_passed, Tageslimit 5, Duplikat-Schutz, Audit-Trail) bleiben aktiv.
+- Damit laeuft die komplette Kette Wikidata -> ... -> QA -> Publish -> Deploy -> smyst.com jede Nacht serverseitig auf GitHub. Der Cowork-Task 'smyst-pipeline-morgenlauf' (07:00, nur bei offener App) ist jetzt AUFSICHT: prueft ob der Cron gruen war, fixt Fehler via PR, berichtet Adam. Er publiziert nur noch Reste (z.B. wenn der Cron rot war); doppeltes Publizieren ist harmlos (Publisher lehnt bereits published ab).
+- Morgen (05.07.) erwartet: Cron publiziert Q131018 Rabelais + Q22670 Schiller (gestern Tageslimit) + bis zu 3 neue reviewed; Q529 Pasteur wird vom Duplikat-Schutz abgelehnt (bewusst, bei Gelegenheit rejecten).
+- OFFENE PUNKTE (Adam will alles ueber Agenten laufen lassen, nichts selbst tun): (1) Pasteur rejecten + Alt-Duplikate Pascal Q1290/Galilei Q307 unpublishen, (2) juristische Risiko-Analyse Blacklist als Dokument, (3) KI-Portraits fuer Profile ohne Commons-Bild, (4) /en/-i18n + Kachel-onError-Falle, (5) Tageslimit erst nach juristischer Pruefung erhoehen.
+
 ## Update 2026-07-04 II: DAUERHAFTE PAUSCHAL-FREIGABE von Adam + Publish-Welle 3 (113 Twins live)
 
 - WICHTIG — NEUE PUBLISH-REGEL: Adam King hat am 04.07.2026 schriftlich eine dauerhafte Pauschal-Freigabe erteilt ("Ich gebe dir einmaliger Freigabe fuer jedes Mal ohne mich fragen ... kannst du jeden Tag neue Profile hinzufuegen"). Ab jetzt publiziert der taegliche Morgenlauf ALLE reviewed-Profile mit qa_passed automatisch (qids explizit setzen), ohne Einzelfreigabe. Ausnahmen: Duplikate kuratierter Profile (Q529 Pasteur) und ethics block/manual_review — nur melden. Scheduled Task 'smyst-pipeline-morgenlauf' entsprechend aktualisiert.
