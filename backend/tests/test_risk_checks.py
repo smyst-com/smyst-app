@@ -81,6 +81,33 @@ def test_late_death_year_marks_works_restricted() -> None:
     assert b.flags["works"] == "restricted" and not b.reject
 
 
+def test_artist_death_after_1950_marks_works_restricted() -> None:
+    # Rechtsanalyse 2026-07-04, 2.3: Kunst + Sterbejahr > 1950 -> works=restricted,
+    # auch wenn der allgemeine max_death_year-Cutoff (1955) noch PASS ergaebe.
+    artist = HistoricalCandidate(
+        wikidata_qid="Q5589", name="Henri Matisse", death_date=date(1954, 11, 3),
+        category="Kunst", sitelink_count=200, source_count=3,
+    )
+    a = assess_risk(artist, config=CONFIG,
+                    image_commons_file=None, image_license_short_name=None)
+    assert a.flags["works"] == "restricted" and not a.reject
+    assert any("p.m.a." in n for n in a.notes)
+    # Kunst mit Sterbejahr <= 1950 bleibt pass:
+    early_artist = HistoricalCandidate(
+        wikidata_qid="Q5582", name="Vincent van Gogh", death_date=date(1890, 7, 29),
+        category="Kunst", sitelink_count=200, source_count=3,
+    )
+    b = assess_risk(early_artist, config=CONFIG,
+                    image_commons_file=None, image_license_short_name=None)
+    assert b.flags["works"] == "pass"
+    # Gleiches Sterbejahr, andere Kategorie: bleibt pass (Sonderregel nur Kunst).
+    c = assess_risk(
+        make_candidate(name="Testperson Nachkrieg", qid="Q999000111", death=date(1954, 7, 13)),
+        config=CONFIG, image_commons_file=None, image_license_short_name=None,
+    )
+    assert c.flags["works"] == "pass"
+
+
 def test_publicity_block_rejects_with_reason() -> None:
     a = assess_risk(
         make_candidate(name="Marilyn Monroe", qid="Q4616", death=date(1962, 8, 4)),
