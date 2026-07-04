@@ -1,5 +1,14 @@
 # Memory Bank
 
+## Update 2026-07-04: Morgenlauf — Hokusai/Matisse live, selektiver Publish (PR #66), tts.py-Hotfix (PR #67)
+
+- CRON FEHLTE: Der Scheduled-Lauf 06:00 Berlin kam bis ~07:15 nicht (GitHub-Cron-Verzoegerung). Manueller run-small #12 GRUEN (1m58s). Status-Lauf #13: published 10, reviewed 8, candidate 48, rejected 2.
+- GEFAHR ERKANNT + BEHOBEN: mode=publish-reviewed rief bisher IMMER publish --all-reviewed auf. Mit 8 reviewed haette das bis zu 5 Profile publiziert, auch NICHT freigegebene (u.a. Gandhi Q1001, publicity=manual_review). FIX (PR #66, gemergt): neuer optionaler Workflow-Input qids (kommagetrennt) — wenn gesetzt, publiziert der Publish-Step NUR diese QIDs via publish --qid; leer = Verhalten unveraendert.
+- MAIN WAR KAPUTT: Publish-Lauf #14 rot — IndentationError in backend/app/api/v1/routes/tts.py:48 (Datei mit durchgehend zerstoerter Einrueckung auf main, brach die komplette pytest-Collection). FIX (PR #67, gemergt): Datei mit identischer Logik und sauberer 4-Space-Einrueckung wiederhergestellt. Hinweis: Paralleler Agent hat direkt danach PR #68 (claude/fix-tts-...) gemergt — Koordination weiter beachten.
+- PUBLISH (Lauf #15 GRUEN, approved_by=smyst247@gmail.com, qids=Q5586,Q5589 — schriftliche Freigabe Adam 03.07. 'Ja'): Q5586 Katsushika Hokusai (slug katsushika-hokusai) + Q5589 Henri Matisse (slug henri-matisse) published. KEINE weiteren Profile publiziert.
+- DEPLOY + LIVE VERIFIZIERT: Pages-Deploy #103 (manuell) gruen; /api/public/twins/?cb= liefert 110 Twins (100 kuratiert + 10 Pipeline), Hokusai + Matisse mit Commons-imageUrl, 0 Beschreibungen <40; /t/katsushika-hokusai rendert mit Portrait, Lebensdaten, KI-Kennzeichnung.
+- WARTEN AUF FREIGABE (6 reviewed, qa_passed, NICHT publiziert): Q1001 Mohandas Gandhi (Literatur, Risk 1.74, publicity manual_review), Q11758 Ludwik Zamenhof (Medizin, 0.0), Q125249 William James (Medizin, 0.0), Q131018 Francois Rabelais (Medizin, 0.0), Q22670 Friedrich Schiller (Medizin, 0.0), Q529 Louis Pasteur (Wissenschaft, 0.0 — Duplikat kuratiertes Profil, Publisher wuerde ablehnen; besser rejecten statt publizieren).
+
 ## Update 2026-07-03 VII: Startlisten-Fix (Beschreibung >=40) + taeglicher Betreuungs-Task
 
 - BEFUND: 4 von 8 Pipeline-Profilen (Hilbert, Velázquez, Blake, +1) fehlten in der App-Startliste — isCompletePublicProfile in App.tsx filtert description < 40 Zeichen; Wikidata-Kurzbeschreibungen ('deutscher Mathematiker' = 22) fielen durch. Profilseiten /t/<slug> waren nie betroffen.
