@@ -55,8 +55,6 @@ class Settings(BaseSettings):
     google_oauth_client_id: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_ID")
     google_oauth_client_secret: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_SECRET")
     google_oauth_redirect_uri: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_REDIRECT_URI")
-    resend_api_key: str | None = Field(default=None, validation_alias="RESEND_API_KEY")
-    mail_from: str = Field(default="smyst.com <no-reply@smyst.com>", validation_alias="MAIL_FROM")
     smyst_owner_emails_raw: str = Field(default="", validation_alias="SMYST_OWNER_EMAILS")
     smyst_admin_emails_raw: str = Field(default="", validation_alias="SMYST_ADMIN_EMAILS")
 
@@ -77,6 +75,12 @@ class Settings(BaseSettings):
     perplexity_api_key: str | None = Field(default=None, validation_alias="PERPLEXITY_API_KEY")
     llm_provider_order_raw: str = Field(default="", validation_alias="LLM_PROVIDER_ORDER")
     llm_default_models_raw: str = Field(default="", validation_alias="LLM_DEFAULT_MODELS")
+    llm_provider_timeout_seconds: float = Field(
+        default=20.0, validation_alias="LLM_PROVIDER_TIMEOUT_SECONDS"
+    )
+    llm_total_deadline_seconds: float = Field(
+        default=45.0, validation_alias="LLM_TOTAL_DEADLINE_SECONDS"
+    )
 
     cors_origin_raw: str = Field(default="http://localhost:3000", validation_alias="CORS_ORIGINS")
     csp_report_only: bool = Field(default=False, validation_alias="CSP_REPORT_ONLY")
