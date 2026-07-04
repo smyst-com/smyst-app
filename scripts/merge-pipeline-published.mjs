@@ -91,6 +91,52 @@ function commonsFilePageUrl(record) {
   return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}`;
 }
 
+async function fetchCommonsAttribution(files) {
+  // CC-BY-Namensnennung mit KLARNAMEN (Rechtsanalyse 2026-07-04, 2.4):
+  // Ein gebatchter Commons-API-Call (max. 50 Titel/Request) liefert
+  // extmetadata.Artist + LicenseShortName. Fehlt die Antwort, bleibt der
+  // Quellseiten-Link die Attribution — der Build scheitert dadurch NIE.
+  const result = new Map();
+  const list = [...new Set(files)].filter(Boolean);
+  for (let i = 0; i < list.length; i += 50) {
+    const batch = list.slice(i, i + 50);
+    const titles = batch.map((f) => `File:${f}`).join('|');
+    const url = `https://commons.wikimedia.org/w/api.php?action=query&prop=imageinfo&iiprop=extmetadata&format=json&origin=*&titles=${encodeURIComponent(titles)}`;
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      for (const page of Object.values(data?.query?.pages || {})) {
+        const meta = (page?.imageinfo && page.imageinfo[0] && page.imageinfo[0].extmetadata) || {};
+        const artist = String((meta.Artist && meta.Artist.value) || '')
+          .replace(/<[^>]*>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const license = String((meta.LicenseShortName && meta.LicenseShortName.value) || '').trim();
+        const title = String(page?.title || '').replace(/^File:/, '').replace(/_/g, ' ');
+        if (title) result.set(title, { artist, license });
+      }
+    } catch (error) {
+      console.warn(`merge-pipeline-published: Commons-Attribution nicht ladbar (${error.message}) — Quellseiten-Link bleibt die Namensnennung.`);
+    }
+  }
+  return result;
+}
+
+function imageCreditText(record, imageUrl, attribution) {
+  if (!imageUrl) return undefined;
+  const creditSource = commonsFilePageUrl(record);
+  const image = record.image || {};
+  const key = String(image.commons_file || '').replace(/_/g, ' ');
+  const meta = attribution.get(key) || {};
+  const artist = meta.artist ? truncate(meta.artist, 80) : '';
+  const license = meta.license || 'lizenzgeprueft, PD/CC';
+  const base = artist
+    ? `Bild: ${artist} — Wikimedia Commons (${license})`
+    : `Bild: Wikimedia Commons (${license})`;
+  return creditSource ? `${base} — Quelle: ${creditSource}` : base;
+}
+
 async function mirrorCommonsImage(record, slug) {
   // Selbst-Hosting (Freigabe Adam King 2026-07-03): Commons-Bild wird beim
   // Build nach dist/public/profile-images/<slug>.<ext> gespiegelt und lokal
@@ -140,20 +186,17 @@ function cardDescription(record) {
   return withYears ? `${withYears} — ${suffix}` : suffix;
 }
 
-function toPublicTwinProfile(record, imageUrl) {
+function toPublicTwinProfile(record, imageUrl, attribution = new Map()) {
   const publishedAt = Date.parse(record.published_at || '') || Date.now();
   const description = cardDescription(record);
   const seo = record.seo || {};
-  const creditSource = commonsFilePageUrl(record);
   return {
     id: `pipeline-${record.slug}`,
     name: record.name,
     slug: record.slug,
     description,
     imageUrl,
-    imageCredit: imageUrl
-      ? `Bild: Wikimedia Commons (lizenzgeprueft, PD/CC)${creditSource ? ` — Quelle & Urheber: ${creditSource}` : ''}`
-      : undefined,
+    imageCredit: imageCreditText(record, imageUrl, attribution),
     categories: [record.category].filter(Boolean),
     languages: [record.language_default || 'de'],
     visibility: 'public',
@@ -247,13 +290,16 @@ function renderPage(profile) {
 
 let merged = 0;
 const newUrls = [];
+const attribution = await fetchCommonsAttribution(
+  eligible.map((record) => ((record.image || {}).mode === 'commons' ? (record.image || {}).commons_file : null)),
+);
 for (const record of eligible) {
   if (takenSlugs.has(record.slug)) {
     console.log(`merge-pipeline-published: Slug '${record.slug}' existiert bereits (kuratiert) — uebersprungen.`);
     continue;
   }
   const image = await mirrorCommonsImage(record, record.slug);
-  const profile = toPublicTwinProfile(record, image.imageUrl);
+  const profile = toPublicTwinProfile(record, image.imageUrl, attribution);
   twins.push(profile);
   takenSlugs.add(record.slug);
 
