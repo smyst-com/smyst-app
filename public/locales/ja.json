@@ -89,7 +89,7 @@
     "changeTwin": "選択中の Twin を変更",
     "chooseTwin": "Twin を選択",
     "emptyText": "上で名前を選ぶか、そのまま入力してください。選択した Twin は右上に固定されます。",
-    "messagePlaceholder": "{{name}} へのメッセージ",
+    "messagePlaceholder": "{{name}} へのメッセージ", "discoveryLabel": "プロフィール発見", "discoveryText": "{{count}} 件の本物のAIプロフィールが利用可能。1つ選んですぐに始めましょう。", "recommendedLabel": "おすすめ", "newLabel": "新着",
     "addFile": "ファイルを追加",
     "voiceInput": "音声入力",
     "send": "メッセージを送信",
