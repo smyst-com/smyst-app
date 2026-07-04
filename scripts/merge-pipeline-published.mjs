@@ -80,6 +80,17 @@ function commonsImageUrl(record) {
   return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(image.commons_file)}?width=512`;
 }
 
+function commonsFilePageUrl(record) {
+  // CC-BY verlangt Namensnennung (Rechtsanalyse 2026-07-04, Abschnitt 2.4):
+  // Der Link zur Commons-Dateiseite nennt Urheber, Titel und Lizenz konkret —
+  // bis die Pipeline den Artist-Namen selbst mitliefert, ist die verlinkte
+  // Quellseite die vollstaendige, nachpruefbare Attribution.
+  const image = record.image || {};
+  if (image.mode !== 'commons' || !image.commons_file) return null;
+  const file = String(image.commons_file).replace(/ /g, '_');
+  return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}`;
+}
+
 async function mirrorCommonsImage(record, slug) {
   // Selbst-Hosting (Freigabe Adam King 2026-07-03): Commons-Bild wird beim
   // Build nach dist/public/profile-images/<slug>.<ext> gespiegelt und lokal
@@ -133,13 +144,16 @@ function toPublicTwinProfile(record, imageUrl) {
   const publishedAt = Date.parse(record.published_at || '') || Date.now();
   const description = cardDescription(record);
   const seo = record.seo || {};
+  const creditSource = commonsFilePageUrl(record);
   return {
     id: `pipeline-${record.slug}`,
     name: record.name,
     slug: record.slug,
     description,
     imageUrl,
-    imageCredit: imageUrl ? 'Bild: Wikimedia Commons (lizenzgeprueft, PD/CC)' : undefined,
+    imageCredit: imageUrl
+      ? `Bild: Wikimedia Commons (lizenzgeprueft, PD/CC)${creditSource ? ` — Quelle & Urheber: ${creditSource}` : ''}`
+      : undefined,
     categories: [record.category].filter(Boolean),
     languages: [record.language_default || 'de'],
     visibility: 'public',
