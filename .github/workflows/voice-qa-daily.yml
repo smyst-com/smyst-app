@@ -1,0 +1,28 @@
+name: Voice QA Daily
+
+# Taeglicher Read-only-Check der Sprachwelle (Piper-TTS auf Salad).
+# Der Job aendert nichts am System; er testet nur und archiviert den Bericht.
+on:
+  schedule:
+    - cron: "30 5 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  voice-qa:
+    name: Voice-QA gegen Live-Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Voice-QA ausfuehren
+        run: python3 qa/voice_qa_daily.py --out voice_qa_bericht.md
+      - name: Bericht als Artefakt sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-qa-bericht
+          path: voice_qa_bericht.md
+          retention-days: 30
