@@ -16,6 +16,8 @@ import {
 } from '@/lib/profileDiscovery'
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
+import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
+import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
 import {
@@ -29,6 +31,8 @@ const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
 const EmailAuthForm = lazy(() => import('@/components/EmailAuthForm'))
 const MobileNav = lazy(() => import('@/components/MobileNav'))
+import AccountPrivacyActions from '@/components/AccountPrivacyActions'
+import PasswordResetGate from '@/components/PasswordResetGate'
 
 type IconProps = SVGProps<SVGSVGElement>
 
@@ -301,29 +305,30 @@ function speechLangFor(lang?: string) {
   return 'de-DE'
 }
 
-// Referenz auf die aktive Utterance halten: Chrome bricht die Sprachausgabe sonst ab,
-// sobald der Garbage Collector die lokale Variable einsammelt (bekannter Chrome-Bug).
-let activeUtterance: SpeechSynthesisUtterance | null = null
-
-function speakText(text: string, lang: string, onDone: () => void) {
+function speakLocal(text: string, lang: string, onDone: () => void, voiceKey?: string) {
   if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) return false
+  window.speechSynthesis.cancel()
+  const utterance = new SpeechSynthesisUtterance(text)
+  const targetLang = speechLangFor(lang)
+  utterance.lang = targetLang
+  const voiceSettings = pickVoiceSettings(voiceKey, window.speechSynthesis.getVoices(), targetLang)
+  if (voiceSettings.voice) utterance.voice = voiceSettings.voice
+  utterance.rate = voiceSettings.rate
+  utterance.pitch = voiceSettings.pitch
+  utterance.onend = onDone
+  utterance.onerror = onDone
+  window.speechSynthesis.speak(utterance)
+  return true
+}
 
+function speakText(text: string, lang: string, onDone: () => void, voiceKey?: string) {
   const cleanText = text.trim()
   if (!cleanText) return false
-
-  window.speechSynthesis.cancel()
-  const utterance = new SpeechSynthesisUtterance(cleanText)
-  utterance.lang = speechLangFor(lang)
-  utterance.rate = 0.96
-  utterance.pitch = 1
-  const finish = () => {
-    if (activeUtterance === utterance) activeUtterance = null
-    onDone()
-  }
-  utterance.onend = finish
-  utterance.onerror = finish
-  activeUtterance = utterance
-  window.speechSynthesis.speak(utterance)
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+  stopRemoteSpeech()
+  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, remoteVoiceIdFor(voiceKey, lang)).then((started) => {
+    if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
+  })
   return true
 }
 
@@ -468,7 +473,8 @@ function localizedPath(path: string): string {
 }
 
 function initialRoute(): { view: AppView; profileSlug: string | null; privateTwinId: string | null } {
-  const { appPath: path } = splitLocalizedPath(window.location.pathname)
+  const { appPath: rawAppPath } = splitLocalizedPath(window.location.pathname)
+  const path = rawAppPath !== '/' && rawAppPath.endsWith('/') ? rawAppPath.replace(/\/+$/, '') : rawAppPath
   if (path === '/') return { view: 'landing', profileSlug: null, privateTwinId: null }
   if (path.startsWith('/t/')) {
     return { view: 'twin-profile', profileSlug: decodeURIComponent(path.slice(3)), privateTwinId: null }
@@ -499,6 +505,8 @@ function initialRoute(): { view: AppView; profileSlug: string | null; privateTwi
 
 export default function App() {
   const route = useMemo(() => initialRoute(), [])
+  const { lang: appLang } = useLanguage({ reloadOnChange: false })
+  const ft = useStaticTranslations(appLang)
   const [currentView, setCurrentView] = useState<AppView>(route.view)
   const [profileSlug, setProfileSlug] = useState<string | null>(route.profileSlug)
   const [privateTwinId, setPrivateTwinId] = useState<string | null>(route.privateTwinId)
@@ -521,6 +529,12 @@ export default function App() {
   useEffect(() => {
     window.localStorage.setItem('smyst-name-sort', nameSortMode)
   }, [nameSortMode])
+
+  useEffect(() => {
+    if (currentView !== 'start' && currentView !== 'twin-profile') {
+      document.title = 'smyst.com | KI-Zwillinge, digitale Profile und Twin Chat'
+    }
+  }, [currentView])
 
   useEffect(() => {
     const syncRoute = () => {
@@ -573,6 +587,7 @@ export default function App() {
           nameSortMode={nameSortMode}
           onNameSortModeChange={setNameSortMode}
         />
+		  <PasswordResetGate />
         <Suspense fallback={null}>
           <CookieConsent />
         </Suspense>
@@ -623,7 +638,7 @@ export default function App() {
             >
               {appTheme === 'dark' ? 'Heller' : 'Dunkler'}
             </button>
-            <a href="mailto:i@smyst.com" className="hidden text-sm text-[#9aa6b7] transition-colors hover:text-white lg:block">i@smyst.com</a>
+            <a href="mailto:s@smyst.com" className="hidden text-sm text-[#9aa6b7] transition-colors hover:text-white lg:block">s@smyst.com</a>
             {/* Auth-Action: Avatar wenn eingeloggt, sonst Sign-In/Early-Access */}
             {auth.status === 'authenticated' ? (
               <button
@@ -687,6 +702,7 @@ export default function App() {
           />
         )}
         {currentView === 'trust' && <TrustView onNavigate={navigateTo} />}
+		  {currentView === 'trust' && <AccountPrivacyActions />}
         {currentView === 'privacy' && <LegalView kind="privacy" />}
         {currentView === 'terms' && <LegalView kind="terms" />}
         {currentView === 'imprint' && <LegalView kind="imprint" />}
@@ -706,38 +722,38 @@ export default function App() {
 
           <div className="grid grid-cols-3 gap-8">
             <div className="flex flex-col gap-2.5">
-              <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Produkt</h4>
+              <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">{ft.footer.columnProduct}</h4>
               <button onClick={() => navigateTo('twin-builder')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Builder</button>
               <button onClick={() => navigateTo('memory-upload')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Memory Upload</button>
               <button onClick={() => navigateTo('twin-chat')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Chat</button>
               <button onClick={() => navigateTo('admin')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Admin</button>
             </div>
             <div className="flex flex-col gap-2.5">
-              <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Unternehmen</h4>
+              <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">{ft.footer.columnCompany}</h4>
               <button onClick={() => navigateTo('trust')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Trust Center</button>
-              <a href="mailto:i@smyst.com?subject=Karriere%20bei%20smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">Karriere</a>
-              <a href="mailto:b2b@smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">B2B-Anfragen</a>
+              <a href="mailto:s@smyst.com?subject=Karriere%20bei%20smyst.com" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.careers}</a>
+              <a href="mailto:s@smyst.com?subject=B2B-Anfrage" className="inline-flex min-h-8 items-center text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.b2b}</a>
             </div>
             <div className="flex flex-col gap-2.5">
-              <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">Rechtliches</h4>
-              <button onClick={() => navigateTo('imprint')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Impressum</button>
-              <button onClick={() => navigateTo('privacy')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Datenschutz</button>
-              <button onClick={() => navigateTo('terms')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">AGB</button>
+              <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">{ft.footer.columnLegal}</h4>
+              <button onClick={() => navigateTo('imprint')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.imprint}</button>
+              <button onClick={() => navigateTo('privacy')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.privacy}</button>
+              <button onClick={() => navigateTo('terms')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.terms}</button>
             </div>
           </div>
         </div>
 
         <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-white/[0.08] pt-6 md:flex-row">
-          <p className="text-sm text-[#9aa6b7]">© 2026 smyst.com. Alle Rechte vorbehalten.</p>
+          <p className="text-sm text-[#9aa6b7]">{ft.footer.rights}</p>
           <div className="flex flex-wrap gap-5">
-            <a href="mailto:i@smyst.com" className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Kontakt</a>
+            <a href="mailto:s@smyst.com" className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.contact}</a>
             <button onClick={() => navigateTo('trust')} className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">Trust</button>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new Event('smyst:open-cookie-settings'))}
               className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white"
             >
-              App-Daten
+              {ft.footer.appData}
             </button>
           </div>
         </div>
@@ -1093,11 +1109,8 @@ function SmystStartPage({
   const menuRef = useRef<HTMLElement | null>(null)
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
   const liveVoiceDraftRef = useRef('')
+  const liveVoiceActiveRef = useRef(false)
   const liveVoiceSendTimerRef = useRef<number | null>(null)
-  // Half-Duplex-Schutz: true solange der Live-Sprachmodus aktiv ist (STT -> LLM -> TTS -> STT)
-  const liveModeRef = useRef(false)
-  // Doppelsende-Schutz: true solange eine Nachricht gesendet wird
-  const sendingRef = useRef(false)
 
   const latestAssistantText =
     [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
@@ -1329,8 +1342,8 @@ function SmystStartPage({
   }
 
   const removeProfileWithBrokenImage = (imageUrl: string) => {
-    setRealStartTwins((current) => current.filter((twin) => twin.imageUrl !== imageUrl))
-    setSelectedTwin((current) => (current?.imageUrl === imageUrl ? null : current))
+    setRealStartTwins((current) => current.map((twin) => (twin.imageUrl === imageUrl ? { ...twin, imageUrl: '' } : twin)))
+    setSelectedTwin((current) => (current?.imageUrl === imageUrl ? { ...current, imageUrl: '' } : current))
   }
 
   const renderProfileAvatar = (twin: StartTwin, className = 'h-12 w-12') => (
@@ -1342,7 +1355,7 @@ function SmystStartPage({
       {twin.imageUrl ? (
         <img
           src={twin.imageUrl}
-          alt=""
+          alt={twin.name}
           className="absolute inset-0 h-full w-full object-cover"
           loading="lazy"
           decoding="async"
@@ -1400,7 +1413,7 @@ function SmystStartPage({
   const renderProfileLoadingState = () => (
     <div className="smyst-glass-panel min-h-[260px] border-b border-white/[0.08] px-4 py-5 sm:min-h-[320px] sm:px-6">
       <div className="mb-4">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">Profilentdeckung</p>
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilentdeckung' : t.start.discoveryLabel}</p>
         <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
           Echte KI-Profile werden geladen...
         </p>
@@ -1565,24 +1578,25 @@ function SmystStartPage({
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
       if (options.live) {
-        liveModeRef.current = false
+        liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
       addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
     }
     if (!options.live) {
-      // Mikro-Button beendet einen aktiven Live-Modus und wirkt als Diktat-Toggle
-      liveModeRef.current = false
+      // Mikro-Button: beendet aktiven Live-Modus, wirkt als Diktat-Toggle und stoppt jede Sprachausgabe
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
       if (voiceState === 'listening' && recognitionRef.current) {
         recognitionRef.current.stop()
         setVoiceState('idle')
         return
       }
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
     }
-    // Half-Duplex: nie zuhören, während die Sprachausgabe läuft
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
-    setIsSpeaking(false)
     recognitionRef.current?.abort()
     const recognition = new Recognition()
     recognition.lang = speechLangFor(lang)
@@ -1590,12 +1604,13 @@ function SmystStartPage({
     recognition.continuous = Boolean(options.live)
     recognition.onstart = () => setVoiceState('listening')
     recognition.onerror = (event) => {
+      const error = event.error ?? ''
+      if (options.live && (error === 'no-speech' || error === 'aborted')) return
       setVoiceState('idle')
       if (options.live) {
-        liveModeRef.current = false
+        liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      const error = event.error ?? ''
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
           ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
@@ -1604,8 +1619,19 @@ function SmystStartPage({
     }
     recognition.onend = () => {
       if (recognitionRef.current === recognition) recognitionRef.current = null
-      setVoiceState((current) => (current === 'replying' ? 'replying' : 'idle'))
-    }
+      setVoiceState((current) => {
+        if (current === 'paused' || current === 'replying') return current
+        if (current === 'listening' && options.live && liveVoiceActiveRef.current) {
+          window.setTimeout(() => {
+            if (liveVoiceActiveRef.current && !recognitionRef.current && !window.speechSynthesis.speaking && !isRemoteSpeechActive()) {
+              startDictation({ live: true })
+            }
+          }, 300)
+          return 'listening'
+        }
+        return 'idle'
+      })
+	}
     recognition.onresult = (event) => {
       let finalText = ''
       let interimText = ''
@@ -1622,17 +1648,33 @@ function SmystStartPage({
         const finalChunk = finalText.trim()
         if (finalChunk) {
           liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
+        }
+        if (finalChunk) {
           clearLiveVoiceTimer()
           liveVoiceSendTimerRef.current = window.setTimeout(() => {
-            liveVoiceSendTimerRef.current = null
             const message = liveVoiceDraftRef.current.trim()
             if (!message) return
             liveVoiceDraftRef.current = ''
-            // Mikro sofort hart aus, BEVOR die Antwort gesprochen wird (kein Echo der TTS)
-            recognition.abort()
+            recognition.stop()
             setVoiceState('replying')
-            void handleSend(message, [], { forceSpeech: true, live: true }).then((content) => {
-              if (!content) stopLiveVoice()
+            void handleSend(message, [], { forceSpeech: true }).finally(() => {
+              const resumeListening = (quietChecks = 0) => {
+                if (!liveVoiceActiveRef.current) {
+                  setVoiceState('idle')
+                  return
+                }
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()) {
+                  window.setTimeout(() => resumeListening(0), 350)
+                  return
+                }
+                // Doppelt pruefen: Remote-Audio kann kurze Luecken haben - sonst hoert die App ihre eigene Stimme
+                if (quietChecks < 2) {
+                  window.setTimeout(() => resumeListening(quietChecks + 1), 400)
+                  return
+                }
+                startDictation({ live: true })
+              }
+              window.setTimeout(resumeListening, 500)
             })
           }, 1600)
         }
@@ -1647,44 +1689,66 @@ function SmystStartPage({
       recognitionRef.current = null
       setVoiceState('idle')
       if (options.live) {
-        liveModeRef.current = false
+        liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
       addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
     }
   }
 
-  // Beendet den Live-Sprachmodus vollständig: STT, TTS, Timer, Draft, Loop-Flag
-  const stopLiveVoice = (notice?: string) => {
-    liveModeRef.current = false
-    clearLiveVoiceTimer()
-    liveVoiceDraftRef.current = ''
-    recognitionRef.current?.abort()
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
-    setVoiceState('idle')
-    setIsSpeaking(false)
-    setSpeechOutputEnabled(false)
-    if (notice) addNotice(notice)
-  }
-
   const handleToggleLiveVoice = () => {
-    const ttsActive = 'speechSynthesis' in window && window.speechSynthesis.speaking
-    if (liveModeRef.current || voiceState !== 'idle' || isSpeaking || ttsActive) {
-      // Ein Klick stoppt ALLES — egal ob gerade zugehört, verarbeitet oder gesprochen wird
-      stopLiveVoice('Live-Sprachmodus beendet.')
+    unlockAudioPlayback()
+    const liveTtsActive =
+      window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()
+    if (voiceState !== 'idle' || liveVoiceActiveRef.current || isSpeaking || liveTtsActive) {
+      // EIN Klick stoppt ALLES: Mikro, lokale und Remote-Sprachausgabe, Timer, Draft, Live-Modus
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      liveVoiceDraftRef.current = ''
+      recognitionRef.current?.abort()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setVoiceState('idle')
+      setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
+      addNotice('Live-Sprachmodus beendet.')
       return
     }
-    liveModeRef.current = true
-    setSpeechOutputEnabled(true)
-    startDictation({ live: true })
+    {
+      liveVoiceActiveRef.current = true
+      setSpeechOutputEnabled(true)
+      {
+        liveVoiceDraftRef.current = ''
+        const twinName = (selectedTwin ?? activeTwin)?.name?.trim()
+        const greeting =
+          lang === 'de'
+            ? twinName
+              ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
+              : 'Hallo! Schön, dass du da bist. Was kann ich für dich tun?'
+            : twinName
+              ? 'Hello! This is ' + twinName + '. Nice to meet you. What can I do for you?'
+              : 'Hello! Nice to meet you. What can I do for you?'
+        setVoiceState('replying')
+        const started = speakText(greeting, lang, () => {
+          setIsSpeaking(false)
+          if (liveVoiceActiveRef.current) startDictation({ live: true })
+          else setVoiceState('idle')
+        }, twinName)
+        if (started) {
+          setIsSpeaking(true)
+        } else {
+          startDictation({ live: true })
+        }
+        return
+      }
+    }
   }
 
   const handleSend = async (
     overrideText?: string,
     overrideAttachments?: ChatAttachment[],
-    options: { forceSpeech?: boolean; live?: boolean } = {},
+    options: { forceSpeech?: boolean } = {},
   ): Promise<string | null> => {
-    if (sendingRef.current) return null
     const text = (overrideText ?? input).trim()
     const sendAttachments = overrideAttachments ?? attachments
     const fullMessage = composeMessageWithAttachments(text, sendAttachments)
@@ -1729,7 +1793,6 @@ function SmystStartPage({
       return null
     }
 
-    sendingRef.current = true
     const assistantId = crypto.randomUUID()
     setMessages((current) => [
       ...current,
@@ -1749,22 +1812,25 @@ function SmystStartPage({
         setChatId(nextChatId)
         setChatProfileKey(twinChatKey)
       }
-      const reply = await twinMvp.sendTwinMessage(nextChatId, fullMessage)
+      const reply = await twinMvp.sendTwinMessageStream(nextChatId, fullMessage, (partial) => {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
+          ),
+        )
+      })
       if (!reply?.message?.content) throw new Error('Keine Antwort vom Profil erhalten.')
-      await streamText(assistantId, reply.message.content)
-      const spoken =
-        (speechOutputEnabled || options.forceSpeech) &&
-        speakText(reply.message.content, lang, () => {
-          setIsSpeaking(false)
-          // Half-Duplex: erst NACH Ende der Sprachausgabe wieder zuhören — kein Echo-Loop
-          if (options.live && liveModeRef.current) startDictation({ live: true })
-          else if (options.live) setVoiceState('idle')
-        })
-      if (spoken) {
+      if (reply.streamed) {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: reply.message.content, streaming: false } : entry,
+          ),
+        )
+      } else {
+        await streamText(assistantId, reply.message.content)
+      }
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false), twin.name)) {
         setIsSpeaking(true)
-      } else if (options.live) {
-        if (liveModeRef.current) startDictation({ live: true })
-        else setVoiceState('idle')
       }
       return reply.message.content
     } catch (err) {
@@ -1781,15 +1847,21 @@ function SmystStartPage({
         ),
       )
       return null
-    } finally {
-      sendingRef.current = false
     }
   }
 
   const handleSpeakInput = () => {
+    unlockAudioPlayback()
     if (speechOutputEnabled || isSpeaking) {
       // Aus: beendet Vorlesen UND einen evtl. aktiven Live-Modus sauber
-      stopLiveVoice()
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      recognitionRef.current?.abort()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
+      setVoiceState('idle')
       return
     }
     if (!latestAssistantText) {
@@ -1800,10 +1872,10 @@ function SmystStartPage({
       addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
       return
     }
-    // Mikro aus, bevor vorgelesen wird — sonst hört die App ihre eigene Stimme
+    // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
+    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
     if (started) setIsSpeaking(true)
   }
 
@@ -1833,38 +1905,13 @@ function SmystStartPage({
   }
 
   const loginOptions = [
-    {
-      provider: 'ID',
-      title: 'Normaler Login',
-      detail: 'E-Mail und Passwort',
-      status: 'Aktiv',
-      onClick: () => setShowEmailForm((value) => !value),
-    },
+	  { provider: 'ID', title: 'Normaler Login', detail: 'E-Mail und Passwort', status: 'Aktiv', onClick: () => setShowEmailForm((value) => !value) },
     {
       provider: 'GO',
       title: 'Mit Google fortfahren',
       detail: 'Schneller Login mit Google',
       status: 'Aktiv',
       onClick: () => auth.signInWithGoogle('/'),
-    },
-    {
-      provider: 'AP',
-      title: 'Mit Apple fortfahren',
-      detail: 'Vorbereitet für App-Login',
-      status: 'Bald',
-    },
-    {
-      provider: 'GH',
-      title: 'Mit GitHub fortfahren',
-      detail: 'Aktiver Phase-1-Produktionslogin',
-      status: 'Aktiv',
-      onClick: () => auth.signInWithGitHub('/'),
-    },
-    {
-      provider: '@',
-      title: 'E-Mail Magic Link',
-      detail: 'Passwortloser Zugang',
-      status: 'Bald',
     },
   ]
 
@@ -2140,7 +2187,7 @@ function SmystStartPage({
 
       {selectedTwin ? (
         <header className="smyst-glass-panel z-20 shrink-0 border-b border-white/[0.08] pt-[env(safe-area-inset-top)]">
-          <div className="relative flex min-h-[54px] items-center justify-center px-1 sm:min-h-[58px]">
+          <div className="relative flex min-h-[66px] items-center justify-center px-1 sm:min-h-[74px]">
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
@@ -2166,12 +2213,12 @@ function SmystStartPage({
               <User className="h-6 w-6" />
             </button>
 
-            <div className="smyst-glass-control flex h-11 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-12 sm:max-w-[520px]">
+            <div className="smyst-glass-control flex h-14 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-16 sm:max-w-[520px]">
               <span className="grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86]">
                 {selectedTwin.imageUrl ? (
                   <img
                     src={selectedTwin.imageUrl}
-                    alt=""
+                    alt={selectedTwin.name}
                     className="h-full w-full object-cover"
                     decoding="async"
                     onError={() => removeProfileWithBrokenImage(selectedTwin.imageUrl as string)}
@@ -2182,7 +2229,8 @@ function SmystStartPage({
               </span>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
                 <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{selectedTwin.name}</span>
-                <span className="truncate text-[11px] font-medium leading-tight text-[#8e97a8] sm:text-xs">{selectedTwin.role}</span>
+                <span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>
+                <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileLifeLine(selectedTwin)}</span>
               </span>
             </div>
           </div>
@@ -2242,7 +2290,7 @@ function SmystStartPage({
               aria-expanded={namePickerOpen}
             >
               <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
-              <span className="whitespace-nowrap">Profil wählen</span>
+              <span className="whitespace-nowrap">{lang === DEFAULT_LANG ? 'Profil wählen' : t.start.chooseTwin}</span>
             </button>
           </div>
           {visibleCategories.length > 0 && (
@@ -2294,14 +2342,14 @@ function SmystStartPage({
           {!selectedTwin && !showNamePicker && realStartTwins.length > 0 && (
             <div className="smyst-glass-panel min-h-[260px] border-b border-white/[0.08] sm:min-h-[320px]">
               <div className="border-b border-white/[0.08] px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">Profilentdeckung</p>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilentdeckung' : t.start.discoveryLabel}</p>
                 <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
-                  {realStartTwins.length} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.
+                  {lang === DEFAULT_LANG ? `${realStartTwins.length} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.` : t.start.discoveryText.replace('{{count}}', String(realStartTwins.length))}
                 </p>
               </div>
-              {renderDiscoveryRail('Empfohlen', recommendedTwins)}
+              {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Empfohlen' : t.start.recommendedLabel, recommendedTwins)}
               {renderDiscoveryRail('Beliebt', popularTwins)}
-              {renderDiscoveryRail('Neu', freshTwins)}
+              {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Neu' : t.start.newLabel, freshTwins)}
               {renderDiscoveryRail('Kürzlich genutzt', recentTwins)}
             </div>
           )}
@@ -2329,7 +2377,7 @@ function SmystStartPage({
             <div className="smyst-glass-panel border-b border-white/[0.08]">
               <div className="flex min-h-[42px] items-center justify-between border-b border-white/[0.08] px-4 text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">
                 <span>{activeCategory ? `${selectedSortOption.label} · ${activeCategory}` : selectedSortOption.label}</span>
-                <span>{filteredTwins.length} Profile</span>
+                <span>{filteredTwins.length} {filteredTwins.length === 1 ? 'Profil' : 'Profile'}</span>
               </div>
               <div>
                 {filteredTwins.map((twin) => renderProfileCard(twin))}
@@ -2925,7 +2973,7 @@ function TwinProfileView({
 function emailAuthMessageForCode(result: { ok: boolean; code?: string; message?: string }): string {
   switch (result.code) {
     case 'email_service_unavailable':
-      return 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange GitHub.'
+      return 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange den Google-Login.'
     case 'email_not_verified':
       return 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.'
     case 'invalid_credentials':
@@ -2969,9 +3017,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
       if (mode === 'register') {
         const result = await auth.registerWithEmail(cleanEmail, password, name.trim() || undefined)
         if (result.ok) {
-          setInfo('Fast geschafft: Wir haben dir eine Bestätigungs-Mail geschickt. Bestätige die E-Mail und logge dich dann ein.')
-          setMode('login')
-          setPassword('')
+          window.location.assign(returnTo || window.location.pathname + window.location.search)
         } else {
           setError(emailAuthMessageForCode(result))
         }
@@ -3483,6 +3529,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
 }
 
 function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const auth = useAuth()
   const twinMvp = useTwinMvp()
   const [twins, setTwins] = useState<TwinRecord[]>([])
@@ -3508,25 +3556,25 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
     <div className="pt-[72px]">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="mb-2 text-4xl font-bold tracking-tight">Meine Twins</h1>
-          <p className="text-base text-[#555b64]">Alle privaten und öffentlichen Twin-Profile deines Accounts.</p>
+          <h1 className="mb-2 text-4xl font-bold tracking-tight">{t.myTwins.title}</h1>
+          <p className="text-base text-[#555b64]">{t.myTwins.subtitle}</p>
         </div>
-        <Button onClick={() => onNavigate('twin-builder')}>Twin erstellen</Button>
+        <Button onClick={() => onNavigate('twin-builder')}>{t.myTwins.createButton}</Button>
       </div>
 
       {auth.status !== 'authenticated' ? (
         <SignInRequiredCard
-          title="Anmelden, um deine Twins zu sehen"
-          text="Melde dich an, damit deine privaten Twins nur deinem Account zugeordnet werden."
+          title={t.myTwins.signInTitle}
+          text={t.myTwins.signInText}
           returnTo="/twins"
         />
       ) : !loaded ? (
-        <Card className="p-8 text-sm text-[#555b64]">Twins werden geladen...</Card>
+        <Card className="p-8 text-sm text-[#555b64]">{t.myTwins.loading}</Card>
       ) : twins.length === 0 ? (
         <Card className="p-8">
-          <h2 className="mb-2 text-xl font-bold">Noch kein Twin gespeichert</h2>
-          <p className="mb-5 text-sm text-[#555b64]">Erstelle zuerst einen Twin und lade danach Erinnerungen oder Wissen hoch.</p>
-          <Button onClick={() => onNavigate('twin-builder')}>Ersten Twin erstellen</Button>
+          <h2 className="mb-2 text-xl font-bold">{t.myTwins.emptyTitle}</h2>
+          <p className="mb-5 text-sm text-[#555b64]">{t.myTwins.emptyText}</p>
+          <Button onClick={() => onNavigate('twin-builder')}>{t.myTwins.emptyButton}</Button>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -3535,7 +3583,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
               <div className="mb-4 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-xl font-bold">{twin.name}</h2>
-                  <p className="mt-1 text-sm text-[#555b64]">{twin.description || 'Noch keine Beschreibung'}</p>
+                  <p className="mt-1 text-sm text-[#555b64]">{twin.description || t.myTwins.noDescription}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${twin.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
                   {twin.visibility === 'public' ? 'Public' : 'Private'}
@@ -3544,15 +3592,15 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
               <div className="mb-5 grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-lg bg-white/16 p-3">
                   <p className="text-lg font-bold">{twin.knowledgeTexts.length}</p>
-                  <p className="text-xs text-[#667085]">Wissen</p>
+                  <p className="text-xs text-[#667085]">{t.myTwins.statKnowledge}</p>
                 </div>
                 <div className="rounded-lg bg-white/16 p-3">
                   <p className="text-lg font-bold">{twin.mediaRefs.length}</p>
-                  <p className="text-xs text-[#667085]">Medien</p>
+                  <p className="text-xs text-[#667085]">{t.myTwins.statMedia}</p>
                 </div>
                 <div className="rounded-lg bg-white/16 p-3">
                   <p className="text-sm font-bold capitalize">{twin.style}</p>
-                  <p className="text-xs text-[#667085]">Stil</p>
+                  <p className="text-xs text-[#667085]">{t.myTwins.statStyle}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -3565,7 +3613,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
                 >
                   Chat
                 </Button>
-                <Button size="sm" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
+                <Button size="sm" variant="secondary" onClick={() => onNavigate('memory-upload')}>{t.myTwins.uploadButton}</Button>
               </div>
             </Card>
           ))}
@@ -3752,22 +3800,24 @@ function SettingsView({
 }
 
 function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const items = [
-    ['Klare Infrastruktur', 'App, Dateien und Daten sind nach Sicherheits- und Datenschutzbereichen getrennt.'],
-    ['Private Defaults', 'Private Profile und Uploads bleiben noindex und sind an die GitHub-Session gebunden.'],
-    ['Account-Kontrolle', 'Export, Account-Löschung und Logout aller Sessions sind im Produkt vorbereitet.'],
-    ['Upload-Schutz', 'Dateityp, Kategorie, Größe, Quota und Besitzerpfad werden serverseitig geprüft.'],
-    ['API-Vertrag', 'JSON-Fehler, Request-ID, Rate-Limit-Header und 405-Handling sind dokumentiert.'],
-    ['KI-Transparenz', 'Antworten müssen klar, nachvollziehbar und ohne falsche Personenbehauptung bleiben.'],
+    [t.trust.item1Title, t.trust.item1Text],
+    [t.trust.item2Title, t.trust.item2Text],
+    [t.trust.item3Title, t.trust.item3Text],
+    [t.trust.item4Title, t.trust.item4Text],
+    [t.trust.item5Title, t.trust.item5Text],
+    [t.trust.item6Title, t.trust.item6Text],
   ]
 
   return (
     <div className="pt-[72px]">
       <div className="mb-8">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Trust Center</p>
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Sicherheit, Datenschutz und Betrieb</h1>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">{t.trust.title}</h1>
         <p className="max-w-[760px] text-base text-[#9aa6b7]">
-          smyst.com startet mit klaren Grenzen, privaten Defaults und dokumentiertem Release-Gate.
+          {t.trust.intro}
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -3779,15 +3829,15 @@ function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
         ))}
       </div>
       <Card className="mt-6 p-6">
-        <h2 className="mb-2 text-xl font-bold">Was noch bewusst offen ist</h2>
+        <h2 className="mb-2 text-xl font-bold">{t.trust.openTitle}</h2>
         <p className="text-sm leading-relaxed text-[#9aa6b7]">
-          Echte iPhone-/Android-Abnahme, Push-Benachrichtigungen, Malware-Scanning,
-          sehr hohe Lastgrenzen und ein echter KI-Kern sind separate Freigaben. Diese Punkte werden nicht versteckt,
-          sondern vor Production in Release-Berichten ausgewiesen.
+          {t.trust.openText}
+          
+          
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Button onClick={() => onNavigate('settings')}>Meldung senden</Button>
-          <Button variant="secondary" onClick={() => onNavigate('privacy')}>Datenschutz lesen</Button>
+          <Button onClick={() => onNavigate('settings')}>{t.trust.reportButton}</Button>
+          <Button variant="secondary" onClick={() => onNavigate('privacy')}>{t.trust.privacyButton}</Button>
         </div>
       </Card>
     </div>
@@ -3798,13 +3848,19 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   const content = {
     privacy: {
       title: 'Datenschutz',
-      intro: 'Diese Datenschutzerklärung beschreibt den aktuellen Projektstand und ersetzt keine finale Rechtsberatung.',
+      intro: 'Verantwortlich: AUS2001 LLC, 30 N Gould St Ste R, Sheridan, WY 82801, USA. E-Mail: s@smyst.com. Stand: 4. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
       points: [
-        'Login erfolgt über GitHub OAuth. Die Session liegt als HttpOnly Secure Cookie vor.',
-        'Profilinformationen, Dateien, Medien und größere Datenobjekte werden getrennt verarbeitet.',
-        'Private Profile, private API-Routen und private Dateien sind nicht für Suchmaschinen bestimmt.',
-        'Account-Export und Account-Löschung sind im Profilbereich vorbereitet.',
-        'Drittanbieter-Dienste dürfen private Daten nicht unnötig auslesen oder verfolgen.',
+        'Ohne Konto verarbeiten wir technische Zugriffsdaten (IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser- und Geraetetyp) fuer Betrieb, Stabilitaet und Missbrauchsabwehr (Art. 6 Abs. 1 lit. f DSGVO). Chat-Anfragen an oeffentliche KI-Profile werden zur Beantwortung an unser Backend uebertragen; ohne Anmeldung wird kein Chat-Verlauf dauerhaft gespeichert.',
+        'Mit Konto verarbeiten wir E-Mail-Adresse, Name (optional), Passwort ausschliesslich als kryptografischen Hash (scrypt), Profilinhalte, erstellte AI-Twins, hochgeladene Dateien (Dokumente, Bilder, Audio, Video), Chat-Verlaeufe sowie Einstellungs- und Sitzungsdaten zur Bereitstellung deines Kontos und der Kernfunktionen (Art. 6 Abs. 1 lit. b DSGVO).',
+        'Bei Google-Login erhalten wir nur die Google-Konto-Basisdaten (E-Mail-Adresse, Name, Profilbild-URL). Dein Google-Passwort wird nicht an uns uebertragen.',
+        'Technisch notwendige lokale Speicherung (Session-Cookie bzw. signiertes Token, Sprach- und Design-Einstellung, Consent-Status) erfolgt nach Par. 25 Abs. 2 TDDDG bzw. Art. 6 Abs. 1 lit. b/f DSGVO. Optionale anonyme Nutzungsstatistik nur nach Einwilligung ueber das Consent-Banner, jederzeit widerrufbar. Keine Werbe-Tracker von Drittanbietern.',
+        'Dienstleister: IDrive Inc. (USA, Objektspeicher und Auslieferung der Website-Dateien), Salad Technologies (USA, Backend fuer Login, API und KI-Antworten), GitHub Inc. (USA, Code-Hosting), Google LLC (USA, nur bei Google-Login), Spaceship/Namecheap-Gruppe (Domain, DNS, E-Mail-Weiterleitung an s@smyst.com).',
+        'Drittlandbezug: Die Verarbeitung findet ueberwiegend in den USA statt, gestuetzt auf das EU-US Data Privacy Framework, soweit Anbieter zertifiziert sind, andernfalls auf EU-Standardvertragsklauseln bzw. die Standard-Datenschutzvereinbarungen der Anbieter (Art. 44 ff. DSGVO).',
+        'Speicherdauer: Kontodaten bleiben gespeichert, solange dein Konto besteht. Nach Konto-Loeschung werden personenbezogene Daten zweistufig entfernt (sofortige Sperrung, anschliessend endgueltige Loeschung der Datenobjekte). Technische Logs nur so lange, wie fuer Betrieb und Sicherheit erforderlich. Chats ohne Konto werden nicht dauerhaft gespeichert.',
+        'Deine Rechte: Auskunft (Art. 15), Berichtigung (Art. 16), Loeschung (Art. 17), Einschraenkung (Art. 18), Datenuebertragbarkeit (Art. 20), Widerspruch (Art. 21) und jederzeitiger Widerruf erteilter Einwilligungen. Konto-Export und Konto-Loeschung stehen direkt im Produkt bereit (Trust Center, Deine Daten: Export und Loeschung); zusaetzlich per E-Mail an s@smyst.com. Du kannst dich ausserdem bei einer Datenschutz-Aufsichtsbehoerde beschweren.',
+        'KI-Hinweise: AI-Twins sind kuratierte digitale Profile und geben nicht die echte (historische) Person wieder. Private Profile und private Uploads werden nicht fuer Suchmaschinen indexiert und sind an deine Login-Session gebunden. Wir verwenden deine privaten Inhalte nicht zum Training fremder Modelle.',
+        'Datensicherheit: Uebertragung ausschliesslich ueber HTTPS, signierte und serverseitig gepruefte Sessions, Passwoerter nur als scrypt-Hash, serverseitige Upload-Pruefung (Typ, Groesse, Besitzerpfad), getrennte App-, Datei- und Datenbereiche.',
+        'Aenderungen: Wir passen diese Erklaerung an, wenn sich Funktionen oder Dienstleister aendern.',
       ],
     },
     terms: {
@@ -3820,12 +3876,12 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
     },
     imprint: {
       title: 'Impressum',
-      intro: 'Impressum-Platzhalter für den aktuellen Projektstand. Vor Production müssen Betreiberangaben final juristisch geprüft werden.',
+      intro: 'Angaben zum Betreiber von smyst.com.',
       points: [
-        'Kontakt: i@smyst.com',
+        'Betreiber: AUS2001 LLC',
+        'Anschrift: 30 N Gould St Ste R, Sheridan, WY 82801, USA',
+        'E-Mail: s@smyst.com',
         'Domain: smyst.com',
-        'Betrieb und technische Dienstleister werden vor Production final geprüft.',
-        'Finale Betreiberadresse, Rechtsform, Vertretungsberechtigte und Pflichtangaben sind vor Production zu ergänzen.',
       ],
     },
   }[kind]
@@ -5114,19 +5170,21 @@ function AdminControlCenterInner() {
 
 // Dashboard View
 function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const auth = useAuth()
   const isAuthenticated = auth.status === 'authenticated'
   const displayName = auth.user?.name || auth.user?.email?.split('@')[0] || 'zurück'
   const startActions: { key: string; title: string; subtitle: string; dot: string; target: AppView }[] = [
-    { key: 'choose', title: 'Choose a Twin', subtitle: 'Profile, Themen, Wissen', dot: '#59C7FF', target: 'my-twins' },
-    { key: 'ask', title: 'Ask anything', subtitle: 'Chat startet sofort', dot: '#22c55e', target: 'twin-chat' },
-    { key: 'create', title: 'Create Twin', subtitle: 'Identität + Memories', dot: '#f59e0b', target: 'twin-builder' },
+    { key: 'choose', title: 'Choose a Twin', subtitle: t.dashboard.actionChooseSubtitle, dot: '#59C7FF', target: 'my-twins' },
+    { key: 'ask', title: 'Ask anything', subtitle: t.dashboard.actionAskSubtitle, dot: '#22c55e', target: 'twin-chat' },
+    { key: 'create', title: 'Create Twin', subtitle: t.dashboard.actionCreateSubtitle, dot: '#f59e0b', target: 'twin-builder' },
   ]
   return (
     <div className="pt-[72px]">
       <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-[18px] sm:p-8">
-        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Was möchtest du heute mit einem KI-Twin tun?</h2>
-        <p className="mt-1 text-sm text-[#555b64] sm:text-base">Wähle einen Twin, frage direkt oder erstelle deinen eigenen Zwilling.</p>
+        <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{t.dashboard.heroTitle}</h2>
+        <p className="mt-1 text-sm text-[#555b64] sm:text-base">{t.dashboard.heroSubtitle}</p>
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
           {startActions.map((action) => (
             <button
@@ -5146,19 +5204,19 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
         <div className="mt-4 rounded-xl border border-white/20 bg-white/8 p-4">
           <p className="text-base font-semibold text-[#16181b]">Private by default</p>
           <p className="mt-0.5 text-sm text-[#555b64]">
-            IDrive E2 speichert Medien, Wissen, Backups und signierte Dateien. Salad rechnet nur API, KI, Suche und Cronjobs.
+            {t.dashboard.privateByDefaultText}
           </p>
         </div>
       </div>
 
       <div className="mb-8">
         <h1 className="mb-2 text-4xl font-bold tracking-tight">
-          {isAuthenticated ? `Willkommen zurück, ${displayName}` : 'Dein Dashboard ist bereit'}
+          {isAuthenticated ? t.dashboard.welcomeBack.replace('{{name}}', displayName) : t.dashboard.readyTitle}
         </h1>
         <p className="text-base text-[#555b64]">
           {isAuthenticated
-            ? 'Deine Twins, Memories und Gespräche bleiben getrennt und kontrollierbar.'
-            : 'Melde dich an, um persönliche Twins, Memories und Chatverläufe sicher zu speichern.'}
+            ? t.dashboard.introAuthed
+            : t.dashboard.introGuest}
         </p>
       </div>
 
@@ -5166,39 +5224,39 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
         <Card className="cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg" onClick={() => onNavigate('twin-chat')}>
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(89,199,255,0.18)] text-2xl">💬</div>
           <h3 className="mb-2 text-xl font-semibold">Twin Chat</h3>
-          <p className="text-sm text-[#555b64]">Sprich mit deinem digitalen Zwilling. Stelle Fragen und erhalte Antworten in deinem Stil.</p>
+          <p className="text-sm text-[#555b64]">{t.dashboard.cardChatText}</p>
         </Card>
 
         <Card className="cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg" onClick={() => onNavigate('memory-upload')}>
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(139,124,255,0.18)] text-2xl">📁</div>
           <h3 className="mb-2 text-xl font-semibold">Memory Upload</h3>
-          <p className="text-sm text-[#555b64]">Füge neue Erinnerungen hinzu. Texte, Audio, Fotos und Dokumente werden automatisch verarbeitet.</p>
+          <p className="text-sm text-[#555b64]">{t.dashboard.cardUploadText}</p>
         </Card>
 
         <Card className="cursor-pointer transition-all hover:-translate-y-1 hover:shadow-lg" onClick={() => onNavigate('twin-builder')}>
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[rgba(89,199,255,0.18)] text-2xl">⚙️</div>
-          <h3 className="mb-2 text-xl font-semibold">Twin Einstellungen</h3>
-          <p className="text-sm text-[#555b64]">Passe die Persönlichkeit deines Twins an. Werte, Sprachstil und Zugriffsrechte verwalten.</p>
+          <h3 className="mb-2 text-xl font-semibold">{t.dashboard.cardSettingsTitle}</h3>
+          <p className="text-sm text-[#555b64]">{t.dashboard.cardSettingsText}</p>
         </Card>
       </div>
 
       <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
-          <h3 className="mb-4 text-lg font-semibold">Aktivitätsübersicht</h3>
+          <h3 className="mb-4 text-lg font-semibold">{t.dashboard.activityTitle}</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
-                <p className="text-sm font-medium">{isAuthenticated ? 'Letzte Konversation' : 'Gespräche'}</p>
-                <p className="text-xs text-[#767d87]">{isAuthenticated ? 'Wird aus deinem Verlauf geladen' : 'Nach Anmeldung speicherbar'}</p>
+                <p className="text-sm font-medium">{isAuthenticated ? t.dashboard.lastConversation : t.dashboard.conversations}</p>
+                <p className="text-xs text-[#767d87]">{isAuthenticated ? t.dashboard.loadedFromHistory : t.dashboard.savableAfterLogin}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate('twin-chat')}>{isAuthenticated ? 'Fortsetzen' : 'Öffnen'}</Button>
+              <Button variant="ghost" size="sm" onClick={() => onNavigate('twin-chat')}>{isAuthenticated ? t.dashboard.resume : t.dashboard.open}</Button>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
                 <p className="text-sm font-medium">{isAuthenticated ? 'Memories' : 'Memory Upload'}</p>
-                <p className="text-xs text-[#767d87]">{isAuthenticated ? 'Uploads und Quellen verwalten' : 'Nach Anmeldung Dateien sicher hochladen'}</p>
+                <p className="text-xs text-[#767d87]">{isAuthenticated ? t.dashboard.manageUploads : t.dashboard.uploadAfterLogin}</p>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate('memory-upload')}>Ansehen</Button>
+              <Button variant="ghost" size="sm" onClick={() => onNavigate('memory-upload')}>{t.dashboard.view}</Button>
             </div>
           </div>
         </Card>
@@ -5208,7 +5266,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
           <div className="space-y-4">
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">Profil Vollständigkeit</span>
+                <span className="text-sm font-medium">{t.dashboard.profileCompleteness}</span>
                 <span className="text-sm font-bold">86%</span>
               </div>
               <div className="h-2 w-full rounded-full bg-white/20">
@@ -5226,7 +5284,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
             </div>
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">Gesprächsqualität</span>
+                <span className="text-sm font-medium">{t.dashboard.conversationQuality}</span>
                 <span className="text-sm font-bold">88%</span>
               </div>
               <div className="h-2 w-full rounded-full bg-white/20">
@@ -5319,7 +5377,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
             <div className="flex-1">
               <h2 className="mb-1 text-xl font-bold tracking-tight">Anmelden, um deinen Twin zu speichern</h2>
               <p className="text-sm text-[#555b64]">
-                Per GitHub fortfahren, damit dein Twin sicher deinem Account zugeordnet wird.
+                Mit Google oder E-Mail fortfahren, damit dein Twin sicher deinem Account zugeordnet wird.
               </p>
             </div>
             <div className="w-full sm:w-auto sm:min-w-[260px]">
@@ -5750,6 +5808,8 @@ function TwinChatView({
     label: string
     publicProfile: boolean
     imageUrl?: string | null
+    branch: string
+    lifeLine: string
   }
 
   const privateTwinToChatSummary = (twin: TwinRecord): ChatTwinSummary => ({
@@ -5761,6 +5821,8 @@ function TwinChatView({
     label: 'Eigener Twin',
     publicProfile: false,
     imageUrl: twin.imageUrl ?? null,
+    branch: profileMainCategory(twin),
+    lifeLine: profileLifeLine(twin),
   })
 
   const publicTwinToChatSummary = (profile: PublicTwinProfile): ChatTwinSummary => ({
@@ -5772,6 +5834,8 @@ function TwinChatView({
     label: profile.categories[0] ?? 'Öffentliches Profil',
     publicProfile: true,
     imageUrl: profile.imageUrl,
+    branch: profileMainCategory(profile),
+    lifeLine: profileLifeLine(profile),
   })
 
   const [messages, setMessages] = useState<TwinChatUiMessage[]>([])
@@ -5791,8 +5855,8 @@ function TwinChatView({
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
   const liveVoiceDraftRef = useRef('')
   const liveVoiceSendTimerRef = useRef<number | null>(null)
-  // Half-Duplex-Schutz: true solange der Live-Sprachmodus aktiv ist (STT -> LLM -> TTS -> STT)
-  const liveModeRef = useRef(false)
+  // true solange der Live-Sprachmodus aktiv ist (Half-Duplex-Schutz gegen Echo-Loop)
+  const liveVoiceActiveRef = useRef(false)
   const { lang } = useLanguage({ reloadOnChange: false })
   const auth = useAuth()
   const twinMvp = useTwinMvp()
@@ -6107,24 +6171,25 @@ function TwinChatView({
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
       if (options.live) {
-        liveModeRef.current = false
+        liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
       addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
     }
     if (!options.live) {
-      // Mikro-Button beendet einen aktiven Live-Modus und wirkt als Diktat-Toggle
-      liveModeRef.current = false
+      // Mikro-Button: beendet aktiven Live-Modus, wirkt als Diktat-Toggle und stoppt jede Sprachausgabe
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
       if (voiceState === 'listening' && recognitionRef.current) {
         recognitionRef.current.stop()
         setVoiceState('idle')
         return
       }
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
     }
-    // Half-Duplex: nie zuhören, während die Sprachausgabe läuft
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
-    setIsSpeaking(false)
     recognitionRef.current?.abort()
     const recognition = new Recognition()
     recognition.lang = speechLangFor(lang)
@@ -6134,7 +6199,7 @@ function TwinChatView({
     recognition.onerror = (event) => {
       setVoiceState('idle')
       if (options.live) {
-        liveModeRef.current = false
+        liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
       const error = event.error ?? ''
@@ -6164,17 +6229,33 @@ function TwinChatView({
         const finalChunk = finalText.trim()
         if (finalChunk) {
           liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
+        }
+        if (finalChunk) {
           clearLiveVoiceTimer()
           liveVoiceSendTimerRef.current = window.setTimeout(() => {
-            liveVoiceSendTimerRef.current = null
             const message = liveVoiceDraftRef.current.trim()
             if (!message) return
             liveVoiceDraftRef.current = ''
             // Mikro sofort hart aus, BEVOR die Antwort gesprochen wird (kein Echo der TTS)
             recognition.abort()
             setVoiceState('replying')
-            void handleSend(message, [], { forceSpeech: true, live: true }).then((content) => {
-              if (!content) stopLiveVoice()
+            void handleSend(message, [], { forceSpeech: true }).finally(() => {
+              const resumeListening = (quietChecks = 0) => {
+                if (!liveVoiceActiveRef.current) {
+                  setVoiceState('idle')
+                  return
+                }
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()) {
+                  window.setTimeout(() => resumeListening(0), 350)
+                  return
+                }
+                if (quietChecks < 2) {
+                  window.setTimeout(() => resumeListening(quietChecks + 1), 400)
+                  return
+                }
+                startDictation({ live: true })
+              }
+              window.setTimeout(resumeListening, 500)
             })
           }, 1600)
         }
@@ -6189,34 +6270,32 @@ function TwinChatView({
       recognitionRef.current = null
       setVoiceState('idle')
       if (options.live) {
-        liveModeRef.current = false
+        liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
       addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
     }
   }
 
-  // Beendet den Live-Sprachmodus vollständig: STT, TTS, Timer, Draft, Loop-Flag
-  const stopLiveVoice = (notice?: string) => {
-    liveModeRef.current = false
-    clearLiveVoiceTimer()
-    liveVoiceDraftRef.current = ''
-    recognitionRef.current?.abort()
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
-    setVoiceState('idle')
-    setIsSpeaking(false)
-    setSpeechOutputEnabled(false)
-    if (notice) addNotice(notice)
-  }
-
   const handleToggleLiveVoice = () => {
-    const ttsActive = 'speechSynthesis' in window && window.speechSynthesis.speaking
-    if (liveModeRef.current || voiceState !== 'idle' || isSpeaking || ttsActive) {
-      // Ein Klick stoppt ALLES — egal ob gerade zugehört, verarbeitet oder gesprochen wird
-      stopLiveVoice('Live-Sprachmodus beendet.')
+    const liveTtsActive =
+      window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()
+    if (voiceState !== 'idle' || liveVoiceActiveRef.current || isSpeaking || liveTtsActive) {
+      // EIN Klick stoppt ALLES: Mikro, lokale und Remote-Sprachausgabe, Timer, Draft, Live-Modus
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      liveVoiceDraftRef.current = ''
+      recognitionRef.current?.abort()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setVoiceState('idle')
+      setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
+      addNotice('Live-Sprachmodus beendet.')
       return
     }
-    liveModeRef.current = true
+    liveVoiceActiveRef.current = true
+    liveVoiceDraftRef.current = ''
     setSpeechOutputEnabled(true)
     startDictation({ live: true })
   }
@@ -6224,7 +6303,7 @@ function TwinChatView({
   const handleSend = async (
     overrideText?: string,
     overrideAttachments?: ChatAttachment[],
-    options: { forceSpeech?: boolean; live?: boolean } = {},
+    options: { forceSpeech?: boolean } = {},
   ): Promise<string | null> => {
     const message = composeMessageWithAttachments((overrideText ?? input).trim(), overrideAttachments ?? attachments)
     const canChatWithActiveTwin = auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)
@@ -6268,22 +6347,25 @@ function TwinChatView({
         setChatId(nextChatId)
       }
 
-      const reply = await twinMvp.sendTwinMessage(nextChatId, message)
+      const reply = await twinMvp.sendTwinMessageStream(nextChatId, message, (partial) => {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
+          ),
+        )
+      })
       if (!reply?.message) throw new Error('Keine Antwort vom Chat erhalten.')
-      await streamAssistantMessage(assistantId, reply.message.content)
-      const spoken =
-        (speechOutputEnabled || options.forceSpeech) &&
-        speakText(reply.message.content, lang, () => {
-          setIsSpeaking(false)
-          // Half-Duplex: erst NACH Ende der Sprachausgabe wieder zuhören — kein Echo-Loop
-          if (options.live && liveModeRef.current) startDictation({ live: true })
-          else if (options.live) setVoiceState('idle')
-        })
-      if (spoken) {
+      if (reply.streamed) {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: reply.message.content, streaming: false } : entry,
+          ),
+        )
+      } else {
+        await streamAssistantMessage(assistantId, reply.message.content)
+      }
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false))) {
         setIsSpeaking(true)
-      } else if (options.live) {
-        if (liveModeRef.current) startDictation({ live: true })
-        else setVoiceState('idle')
       }
       return reply.message.content
     } catch (err) {
@@ -6308,7 +6390,14 @@ function TwinChatView({
   const handleSpeakInput = () => {
     if (speechOutputEnabled || isSpeaking) {
       // Aus: beendet Vorlesen UND einen evtl. aktiven Live-Modus sauber
-      stopLiveVoice()
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      recognitionRef.current?.abort()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
+      setVoiceState('idle')
       return
     }
     if (!latestAssistantText) {
@@ -6319,7 +6408,7 @@ function TwinChatView({
       addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
       return
     }
-    // Mikro aus, bevor vorgelesen wird — sonst hört die App ihre eigene Stimme
+    // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
     const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
@@ -6474,12 +6563,14 @@ function TwinChatView({
             )}
             <div className="min-w-0">
               <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? 'Kein Profil ausgewählt'}</h1>
-              <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] leading-none text-[#555b64] sm:text-xs">
-                <span>{activeTwin ? 'KI-Profil' : 'Profil auswählen'}</span>
-                <span>{activeTwin ? `${activeTwin.style} Stil` : 'Kein Chat gestartet'}</span>
-                <span>{activeTwin ? `${activeTwin.knowledgeCount} Quellen/Wissen` : 'Nur echte Profile'}</span>
-                {activeTwin?.publicProfile && <span>{activeTwin.label}</span>}
-              </div>
+              <p className="mt-0.5 truncate text-[11px] font-semibold leading-none text-[#555b64] sm:text-xs">
+                {activeTwin ? activeTwin.branch : 'Profil auswählen'}
+              </p>
+              {activeTwin && (
+                <p className="mt-0.5 truncate text-[10px] font-medium leading-none text-[#667085] sm:text-[11px]">
+                  {activeTwin.lifeLine}
+                </p>
+              )}
             </div>
           </div>
           <button
