@@ -1,0 +1,6 @@
+Contact: mailto:s@smyst.com
+Policy: https://smyst.com/trust
+Preferred-Languages: de, en
+Canonical: https://smyst.com/security.txt
+Expires: 2027-06-11T00:00:00Z
+
