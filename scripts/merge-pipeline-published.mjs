@@ -175,6 +175,61 @@ function absoluteUrl(url) {
   return url && url.startsWith('/') ? `${HOST}${url}` : url;
 }
 
+function initialsOf(name) {
+  return String(name)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 3)
+    .toUpperCase();
+}
+
+function accentColorFor(slug) {
+  // Deterministische Farbwahl pro Slug — reproduzierbare Builds (Master Prompt).
+  const palette = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#e11d48'];
+  let hash = 0;
+  for (const ch of String(slug)) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
+  return palette[hash % palette.length];
+}
+
+function xmlEscape(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function generatedPortrait(record, slug) {
+  // Profile OHNE freies Commons-Bild bekommen ein selbst generiertes,
+  // stilisiertes Portrait-Bild (Initialen + Lebensdaten) — BEWUSST kein
+  // kuenstliches Gesicht (Anweisung Adam King 2026-07-04: 'keine Risiko',
+  // Rechtsanalyse 2.6: keine Taeuschung). Deterministisch, kostenlos, offline.
+  const accent = accentColorFor(slug);
+  const initials = xmlEscape(initialsOf(record.name));
+  const name = xmlEscape(truncate(record.name, 26));
+  const years = record.birth_date && record.death_date
+    ? `${String(record.birth_date).slice(0, 4)}–${String(record.death_date).slice(0, 4)}`
+    : '';
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="${name} – KI-Profil auf smyst.com">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="${accent}"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <circle cx="256" cy="216" r="118" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="3"/>
+  <text x="256" y="252" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="96" fill="#ffffff" opacity="0.95">${initials}</text>
+  <text x="256" y="396" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="26" fill="#ffffff" opacity="0.9">${name}</text>
+  ${years ? `<text x="256" y="430" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="20" fill="#ffffff" opacity="0.65">${years}</text>` : ''}
+  <text x="256" y="484" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#ffffff" opacity="0.55">KI-Profil · smyst.com · keine Fotografie</text>
+</svg>
+`;
+  const dir = resolve(DIST, 'public', 'profile-images');
+  mkdirSync(dir, { recursive: true });
+  const file = `${slug}-ki-profil.svg`;
+  writeFileSync(resolve(dir, file), svg, 'utf8');
+  return `/public/profile-images/${file}`;
+}
+
 function cardDescription(record) {
   // Die Start-Liste der App filtert Profile mit description < 40 Zeichen
   // (isCompletePublicProfile in App.tsx). Wikidata-Kurzbeschreibungen wie
@@ -191,7 +246,7 @@ function cardDescription(record) {
   return withYears ? `${withYears} — ${suffix}` : suffix;
 }
 
-function toPublicTwinProfile(record, imageUrl, attribution = new Map()) {
+function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generatedImage = false) {
   const publishedAt = Date.parse(record.published_at || '') || Date.now();
   const description = cardDescription(record);
   const seo = record.seo || {};
@@ -201,7 +256,9 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map()) {
     slug: record.slug,
     description,
     imageUrl,
-    imageCredit: imageCreditText(record, imageUrl, attribution),
+    imageCredit: generatedImage
+      ? 'KI-generierte, stilisierte Darstellung (keine Fotografie der Person)'
+      : imageCreditText(record, imageUrl, attribution),
     categories: [record.category].filter(Boolean),
     languages: [record.language_default || 'de'],
     visibility: 'public',
@@ -304,7 +361,13 @@ for (const record of eligible) {
     continue;
   }
   const image = await mirrorCommonsImage(record, record.slug);
-  const profile = toPublicTwinProfile(record, image.imageUrl, attribution);
+  let imageUrl = image.imageUrl;
+  let generatedImage = false;
+  if (!imageUrl) {
+    imageUrl = generatedPortrait(record, record.slug);
+    generatedImage = true;
+  }
+  const profile = toPublicTwinProfile(record, imageUrl, attribution, generatedImage);
   twins.push(profile);
   takenSlugs.add(record.slug);
 
