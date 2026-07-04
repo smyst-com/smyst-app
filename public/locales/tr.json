@@ -89,7 +89,7 @@
     "changeTwin": "Seçili twin'i değiştir",
     "chooseTwin": "Twin seç",
     "emptyText": "Yukarıdan bir isim seç veya direkt yazmaya başla. Seçili twin sağ üstte sabit kalır.",
-    "messagePlaceholder": "{{name}} için mesaj",
+    "messagePlaceholder": "{{name}} için mesaj", "discoveryLabel": "Profil keşfi", "discoveryText": "{{count}} gerçek yapay zeka profili hazır. Birini seç ve hemen yazmaya başla.", "recommendedLabel": "Önerilen", "newLabel": "Yeni",
     "addFile": "Dosya ekle",
     "voiceInput": "Sesli giriş",
     "send": "Mesaj gönder",
