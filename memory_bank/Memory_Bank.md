@@ -1,5 +1,13 @@
 # Memory Bank
 
+## Update 2026-07-04 II: DAUERHAFTE PAUSCHAL-FREIGABE von Adam + Publish-Welle 3 (113 Twins live)
+
+- WICHTIG — NEUE PUBLISH-REGEL: Adam King hat am 04.07.2026 schriftlich eine dauerhafte Pauschal-Freigabe erteilt ("Ich gebe dir einmaliger Freigabe fuer jedes Mal ohne mich fragen ... kannst du jeden Tag neue Profile hinzufuegen"). Ab jetzt publiziert der taegliche Morgenlauf ALLE reviewed-Profile mit qa_passed automatisch (qids explizit setzen), ohne Einzelfreigabe. Ausnahmen: Duplikate kuratierter Profile (Q529 Pasteur) und ethics block/manual_review — nur melden. Scheduled Task 'smyst-pipeline-morgenlauf' entsprechend aktualisiert.
+- Publish-Lauf #16 (qids=Q1001,Q11758,Q125249,Q131018,Q22670, approved_by=smyst247@gmail.com auf Adams Anweisung 'alle freigeben'): 3 published — Q1001 Gandhi (mohandas-karamchand-gandhi), Q11758 Zamenhof (ludwik-lejzer-zamenhof), Q125249 William James (william-james). Q131018 Rabelais + Q22670 Schiller abgelehnt: Tageslimit 5/Tag erreicht (heute schon Hokusai/Matisse) -> MORGEN ZUERST publizieren.
+- Deploy #105 gruen, LIVE VERIFIZIERT: /api/public/twins/?cb= = 113 Twins, alle 3 neuen mit Commons-imageUrl; /t/william-james rendert.
+- Q529 Louis Pasteur bleibt reviewed, wird bewusst NICHT publiziert (Duplikat kuratiertes Live-Profil); bei Gelegenheit rejecten/unpublishen.
+- Hinweis App-Anzeige: Adam sah nur 108 Profile — Fastly/CDN cached /api/public/twins einige Minuten (App laedt ohne Cache-Buster); kein Bug, nach Cache-Ablauf korrekt.
+
 ## Update 2026-07-04: Morgenlauf — Hokusai/Matisse live, selektiver Publish (PR #66), tts.py-Hotfix (PR #67)
 
 - CRON FEHLTE: Der Scheduled-Lauf 06:00 Berlin kam bis ~07:15 nicht (GitHub-Cron-Verzoegerung). Manueller run-small #12 GRUEN (1m58s). Status-Lauf #13: published 10, reviewed 8, candidate 48, rejected 2.
