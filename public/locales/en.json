@@ -61,7 +61,7 @@
     "changeTwin": "Change selected twin",
     "chooseTwin": "Choose twin",
     "emptyText": "Choose a name above or start writing. The selected twin stays fixed in the top right.",
-    "messagePlaceholder": "Message {{name}}",
+    "messagePlaceholder": "Message {{name}}", "discoveryLabel": "Profile discovery", "discoveryText": "{{count}} real AI profiles ready. Pick one and start writing.", "recommendedLabel": "Recommended", "newLabel": "New",
     "addFile": "Add file",
     "voiceInput": "Voice input",
     "voiceInputUnsupported": "Voice input is not supported",
