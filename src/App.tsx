@@ -1349,8 +1349,8 @@ function SmystStartPage({
   }
 
   const removeProfileWithBrokenImage = (imageUrl: string) => {
-    setRealStartTwins((current) => current.filter((twin) => twin.imageUrl !== imageUrl))
-    setSelectedTwin((current) => (current?.imageUrl === imageUrl ? null : current))
+    setRealStartTwins((current) => current.map((twin) => (twin.imageUrl === imageUrl ? { ...twin, imageUrl: '' } : twin)))
+    setSelectedTwin((current) => (current?.imageUrl === imageUrl ? { ...current, imageUrl: '' } : current))
   }
 
   const renderProfileAvatar = (twin: StartTwin, className = 'h-12 w-12') => (
