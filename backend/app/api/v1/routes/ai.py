@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.ai.dataflow import AiDataflowProbe
-from app.ai.llm_router import provider_statuses
+from app.ai.llm_router import ping_providers, provider_statuses
 
 router = APIRouter(prefix="/ai", tags=["ai"])
 
@@ -12,11 +12,18 @@ async def ai_dataflow() -> dict[str, object]:
 
 
 @router.get("/providers")
-async def ai_providers() -> dict[str, object]:
+async def ai_providers(ping: bool = False) -> dict[str, object]:
     statuses = provider_statuses()
+    if ping:
+        ping_results = await ping_providers()
+        for status in statuses:
+            result = ping_results.get(str(status["provider"]))
+            if result is not None:
+                status["ping"] = result
     return {
         "cloudflare": False,
         "runtime": "salad",
         "configured_count": sum(1 for status in statuses if status["configured"]),
+        "ping_executed": ping,
         "providers": statuses,
     }

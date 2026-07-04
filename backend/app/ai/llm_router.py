@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from time import perf_counter
-from typing import Any
+from typing import Any, AsyncIterator
 from urllib.parse import urljoin
 
 import httpx
@@ -96,17 +97,7 @@ class OpenAICompatibleProvider(LLMProvider):
 
     async def complete(self, request: LLMRequest) -> LLMResponse:
         started = perf_counter()
-        payload = {
-            "model": self.model,
-            "messages": [
-                {"role": "system", "content": request.system_prompt or DEFAULT_SYSTEM_PROMPT},
-                {"role": "user", "content": request.prompt},
-            ],
-            "max_tokens": request.max_tokens or self.max_tokens,
-            "temperature": (
-                request.temperature if request.temperature is not None else self.temperature
-            ),
-        }
+        payload = self._build_payload(request)
         headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
@@ -127,6 +118,47 @@ class OpenAICompatibleProvider(LLMProvider):
             latency_ms=latency_ms,
             degraded=False,
         )
+
+    def _build_payload(self, request: LLMRequest) -> dict[str, Any]:
+        return {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": request.system_prompt or DEFAULT_SYSTEM_PROMPT},
+                {"role": "user", "content": request.prompt},
+            ],
+            "max_tokens": request.max_tokens or self.max_tokens,
+            "temperature": (
+                request.temperature if request.temperature is not None else self.temperature
+            ),
+        }
+
+    async def stream(self, request: LLMRequest) -> AsyncIterator[str]:
+        """Streamt Antwort-Deltas ueber die OpenAI-kompatible SSE-Schnittstelle.
+
+        Wirft bei Fehlern; der Router faellt dann auf den naechsten Provider
+        bzw. auf die nicht-streamende complete()-Antwort zurueck.
+        """
+        payload = {**self._build_payload(request), "stream": True}
+        headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            async with client.stream(
+                "POST", self.chat_completions_url, headers=headers, json=payload
+            ) as response:
+                response.raise_for_status()
+                async for line in response.aiter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    data = line[5:].strip()
+                    if data == "[DONE]":
+                        return
+                    try:
+                        chunk = json.loads(data)
+                    except ValueError:
+                        continue
+                    choices = chunk.get("choices") or [{}]
+                    delta = (choices[0].get("delta") or {}).get("content")
+                    if delta:
+                        yield delta
 
     async def _post_with_retry(
         self,
@@ -621,3 +653,111 @@ class LLMRouter:
         if last_error:
             raise last_error
         raise RuntimeError("No LLM providers configured")
+
+    async def stream(self, request: LLMRequest) -> AsyncIterator[dict[str, Any]]:
+        """Streamt Antwort-Deltas mit derselben Fallback-Kette wie complete().
+
+        Events: {"type": "delta", "text": ...} pro Fragment, abschliessend
+        {"type": "done", "provider": ..., "model": ..., "text": ..., "degraded": ...}.
+        Bricht ein Provider MITTEN im Stream ab, folgt {"type": "error"} —
+        der Client faellt dann auf den nicht-streamenden Endpoint zurueck.
+        Provider ohne stream()-Support liefern die komplette Antwort als ein Delta.
+        """
+        started = perf_counter()
+        for provider in self.providers:
+            is_local = isinstance(provider, LocalDeterministicProvider)
+            if self.total_deadline_seconds is not None and not is_local:
+                if self.total_deadline_seconds - (perf_counter() - started) <= 0:
+                    logger.warning(
+                        "llm deadline of %.1fs exhausted, skipping provider '%s' (stream)",
+                        self.total_deadline_seconds,
+                        provider.name,
+                    )
+                    continue
+            stream_fn = getattr(provider, "stream", None)
+            if stream_fn is None:
+                try:
+                    response = await provider.complete(request)
+                except Exception as exc:
+                    logger.warning(
+                        "llm provider '%s' failed in stream mode (%s: %s), trying next",
+                        provider.name,
+                        type(exc).__name__,
+                        exc,
+                    )
+                    continue
+                yield {"type": "delta", "text": response.text}
+                yield {
+                    "type": "done",
+                    "provider": response.provider,
+                    "model": response.model,
+                    "text": response.text,
+                    "degraded": response.degraded,
+                }
+                return
+            parts: list[str] = []
+            try:
+                async for delta in stream_fn(request):
+                    parts.append(delta)
+                    yield {"type": "delta", "text": delta}
+            except Exception as exc:
+                logger.warning(
+                    "llm provider '%s' stream failed (%s: %s)",
+                    provider.name,
+                    type(exc).__name__,
+                    exc,
+                )
+                if parts:
+                    yield {"type": "error", "provider": provider.name}
+                    return
+                continue
+            if parts:
+                yield {
+                    "type": "done",
+                    "provider": provider.name,
+                    "model": provider.model,
+                    "text": "".join(parts),
+                    "degraded": is_local,
+                }
+                return
+        yield {"type": "error", "provider": "none"}
+
+
+PING_PROMPT = "Reply with the single word: pong"
+
+
+async def ping_providers(
+    settings: Settings | None = None, timeout_seconds: float = 8.0
+) -> dict[str, dict[str, object]]:
+    """Testet jeden konfigurierten Provider mit einem Mini-Prompt (parallel).
+
+    Liefert je Provider {"ok": bool, "latency_ms": int, "error": str | None}.
+    Nur auf Anfrage aufrufen (kostet je einen minimalen API-Call).
+    """
+    active_settings = settings or get_settings()
+    router = build_default_router(active_settings)
+    request = LLMRequest(prompt=PING_PROMPT, system_prompt="", max_tokens=8, temperature=0.0)
+    remote_providers = [
+        provider
+        for provider in router.providers
+        if not isinstance(provider, LocalDeterministicProvider)
+    ]
+
+    async def _ping(provider: LLMProvider) -> tuple[str, dict[str, object]]:
+        started = perf_counter()
+        try:
+            await asyncio.wait_for(provider.complete(request), timeout=timeout_seconds)
+            return provider.name, {
+                "ok": True,
+                "latency_ms": int((perf_counter() - started) * 1000),
+                "error": None,
+            }
+        except Exception as exc:
+            return provider.name, {
+                "ok": False,
+                "latency_ms": int((perf_counter() - started) * 1000),
+                "error": f"{type(exc).__name__}",
+            }
+
+    results = await asyncio.gather(*(_ping(provider) for provider in remote_providers))
+    return dict(results)

@@ -1797,9 +1797,23 @@ function SmystStartPage({
         setChatId(nextChatId)
         setChatProfileKey(twinChatKey)
       }
-      const reply = await twinMvp.sendTwinMessage(nextChatId, fullMessage)
+      const reply = await twinMvp.sendTwinMessageStream(nextChatId, fullMessage, (partial) => {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
+          ),
+        )
+      })
       if (!reply?.message?.content) throw new Error('Keine Antwort vom Profil erhalten.')
-      await streamText(assistantId, reply.message.content)
+      if (reply.streamed) {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: reply.message.content, streaming: false } : entry,
+          ),
+        )
+      } else {
+        await streamText(assistantId, reply.message.content)
+      }
       if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false), twin.name)) {
         setIsSpeaking(true)
       }
@@ -6272,9 +6286,23 @@ function TwinChatView({
         setChatId(nextChatId)
       }
 
-      const reply = await twinMvp.sendTwinMessage(nextChatId, message)
+      const reply = await twinMvp.sendTwinMessageStream(nextChatId, message, (partial) => {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
+          ),
+        )
+      })
       if (!reply?.message) throw new Error('Keine Antwort vom Chat erhalten.')
-      await streamAssistantMessage(assistantId, reply.message.content)
+      if (reply.streamed) {
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, content: reply.message.content, streaming: false } : entry,
+          ),
+        )
+      } else {
+        await streamAssistantMessage(assistantId, reply.message.content)
+      }
       if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false))) {
         setIsSpeaking(true)
       }
