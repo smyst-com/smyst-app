@@ -1,5 +1,14 @@
 # Memory Bank
 
+## Update 2026-07-04 VI: Restliste abgeschlossen — Urheber-Klarnamen (PR #78+#81) + Kachel-onError-Fix (PR #79), alles live
+
+- URHEBER-KLARNAME (PR #78, gemergt): merge-pipeline-published.mjs holt jetzt in EINEM gebatchten Commons-API-Call (action=query prop=imageinfo iiprop=extmetadata, max 50 Titel) Artist + LicenseShortName fuer alle Pipeline-Bilder. imageCredit z.B. 'Bild: Orren Jack Turner — Wikimedia Commons (Public domain) — Quelle: <File-Seite>'. Fallback bei API-Fehler: bisheriger Quellseiten-Link, Build scheitert NIE.
+- FOLGE-FIX (PR #81, gemergt): Commons liefert teils woertlich 'missing name' als Artist (z.B. Hokusai-Selbstportraet) — Platzhalter (missing name/unknown/anonymous/unbekannt/n/a/none) werden gefiltert, dann bleibt der Quellseiten-Link. LIVE VERIFIZIERT: 13 Pipeline-Profile, 0 fehlerhafte Credits.
+- KACHEL-FALLE ENTSCHAERFT (PR #79, gemergt, Browser-E2E gruen): App.tsx removeProfileWithBrokenImage ENTFERNT bei Bild-Ladefehler nicht mehr das Profil, sondern setzt nur imageUrl='' -> Initialen-Fallback rendert (Kachel + Detailansicht). Editiert via GitHub-Web-Editor Suchen/Ersetzen (nur 2 Zeilen, kein Auto-Indent-Risiko). Startseiten-Smoke-Test live ok (113 Profile, Kategorien, Kacheln).
+- Browser-E2E-Check ist NACHWEISLICH flaky (PR #72 und #81 jeweils nach Re-run gruen bei nicht-UI-Aenderungen) — bei rotem 'Current UI browser E2E' immer erst Re-run failed jobs.
+- Paralleler Agent hat PR #80 (claude/seo-landing...) gemergt; Deploy #116 wurde dadurch von #117 ueberholt (beide Aenderungen in #117 live) — normales Verhalten, kein Fehler.
+- RESTLISTE-STATUS: (erledigt) Duplikat-Aufraeumen, Rechtsanalyse, works-Regel Kunst>1950, CC-BY-Attribution inkl. Klarname, Kachel-onError. (bewusst NICHT beim Betreuungs-Agenten) /en/-i18n: liegt beim parallelen Codex-Agenten (Branch codex/llm-multi-provider, 'i18n: expand to 15 languages' in Arbeit — NICHT doppelt anfassen); KI-Portrait-GENERIERUNG: bewusst manuell/offen — braucht Provider-/Kostenentscheidung von Adam und ist laut Rechtsanalyse hoeheres Taeuschungsrisiko; Profile ohne Bild funktionieren mit Initialen sauber. Tageslimit-Erhoehung: technisch bereit, wartet nur auf anwaltliche Bestaetigung der Rechtsanalyse.
+
 ## Update 2026-07-04 V: Beide Pipeline-Fixes aus der Rechtsanalyse umgesetzt (PR #75 + #76)
 
 - FIX 1 (PR #75, gemergt, Checks gruen): risk_checks.py — neue Regel ART_WORKS_RESTRICTED_AFTER_YEAR=1950: Kategorie Kunst + Sterbejahr > 1950 -> works=restricted (Werke koennen jurisdiktionsabhaengig noch geschuetzt sein, 70 J. p.m.a.), auch wenn max_death_year-Cutoff (1955) PASS ergaebe. Neuer Test test_artist_death_after_1950_marks_works_restricted (Matisse restricted, van Gogh pass, Nicht-Kunst 1954 pass). Alle 12 risk-Tests lokal + CI gruen. Wirkt nur auf KUENFTIGE Risk-Laeufe; bereits publizierte Profile (Matisse) unveraendert — bei Bedarf Re-Assessment.
