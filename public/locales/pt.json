@@ -89,7 +89,7 @@
     "changeTwin": "Alterar twin selecionado",
     "chooseTwin": "Escolher twin",
     "emptyText": "Escolhe um nome acima ou escreve diretamente. O twin selecionado fica fixo no canto superior direito.",
-    "messagePlaceholder": "Mensagem para {{name}}",
+    "messagePlaceholder": "Mensagem para {{name}}", "discoveryLabel": "Descoberta de perfis", "discoveryText": "{{count}} perfis de IA reais prontos. Escolha um e comece a escrever.", "recommendedLabel": "Recomendados", "newLabel": "Novos",
     "addFile": "Adicionar ficheiro",
     "voiceInput": "Entrada de voz",
     "send": "Enviar mensagem",

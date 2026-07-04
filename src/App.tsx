@@ -1420,7 +1420,7 @@ function SmystStartPage({
   const renderProfileLoadingState = () => (
     <div className="smyst-glass-panel min-h-[260px] border-b border-white/[0.08] px-4 py-5 sm:min-h-[320px] sm:px-6">
       <div className="mb-4">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">Profilentdeckung</p>
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilentdeckung' : t.start.discoveryLabel}</p>
         <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
           Echte KI-Profile werden geladen...
         </p>
@@ -2268,7 +2268,7 @@ function SmystStartPage({
               aria-expanded={namePickerOpen}
             >
               <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
-              <span className="whitespace-nowrap">Profil wählen</span>
+              <span className="whitespace-nowrap">{lang === DEFAULT_LANG ? 'Profil wählen' : t.start.chooseTwin}</span>
             </button>
           </div>
           {visibleCategories.length > 0 && (
@@ -2320,14 +2320,14 @@ function SmystStartPage({
           {!selectedTwin && !showNamePicker && realStartTwins.length > 0 && (
             <div className="smyst-glass-panel min-h-[260px] border-b border-white/[0.08] sm:min-h-[320px]">
               <div className="border-b border-white/[0.08] px-4 py-3">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">Profilentdeckung</p>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilentdeckung' : t.start.discoveryLabel}</p>
                 <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
-                  {realStartTwins.length} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.
+                  {lang === DEFAULT_LANG ? `${realStartTwins.length} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.` : t.start.discoveryText.replace('{{count}}', String(realStartTwins.length))}
                 </p>
               </div>
-              {renderDiscoveryRail('Empfohlen', recommendedTwins)}
+              {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Empfohlen' : t.start.recommendedLabel, recommendedTwins)}
               {renderDiscoveryRail('Beliebt', popularTwins)}
-              {renderDiscoveryRail('Neu', freshTwins)}
+              {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Neu' : t.start.newLabel, freshTwins)}
               {renderDiscoveryRail('Kürzlich genutzt', recentTwins)}
             </div>
           )}

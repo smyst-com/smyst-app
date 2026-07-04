@@ -89,7 +89,7 @@
     "changeTwin": "تغيير الـ Twin المحدد",
     "chooseTwin": "اختر Twin",
     "emptyText": "اختر اسما من الأعلى أو ابدأ بالكتابة مباشرة. يبقى الـ Twin المحدد مثبتا في الأعلى يمينا.",
-    "messagePlaceholder": "رسالة إلى {{name}}",
+    "messagePlaceholder": "رسالة إلى {{name}}", "discoveryLabel": "اكتشاف الملفات", "discoveryText": "{{count}} ملفات ذكاء اصطناعي حقيقية جاهزة. اختر ملفًا وابدأ الكتابة مباشرة.", "recommendedLabel": "موصى به", "newLabel": "جديد",
     "addFile": "إضافة ملف",
     "voiceInput": "إدخال صوتي",
     "send": "إرسال الرسالة",

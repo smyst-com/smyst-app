@@ -12,7 +12,7 @@
     "changeTwin": "Ausgewähltes Profil ändern",
     "chooseTwin": "Profil wählen",
     "emptyText": "Wähle oben ein KI-Profil oder schreibe direkt. Das ausgewählte Profil bleibt oben fixiert.",
-    "messagePlaceholder": "Nachricht an {{name}}",
+    "messagePlaceholder": "Nachricht an {{name}}", "discoveryLabel": "Profilentdeckung", "discoveryText": "{{count}} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.", "recommendedLabel": "Empfohlen", "newLabel": "Neu",
     "addFile": "Datei hinzufügen",
     "voiceInput": "Spracheingabe",
     "send": "Nachricht senden",

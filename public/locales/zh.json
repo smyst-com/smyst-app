@@ -89,7 +89,7 @@
     "changeTwin": "更改所选 Twin",
     "chooseTwin": "选择 Twin",
     "emptyText": "在上方选择姓名，或直接开始输入。所选 Twin 会固定在右上角。",
-    "messagePlaceholder": "给 {{name}} 发消息",
+    "messagePlaceholder": "给 {{name}} 发消息", "discoveryLabel": "档案发现", "discoveryText": "{{count}} 个真实 AI 档案已就绪。选择一个即可直接开始。", "recommendedLabel": "推荐", "newLabel": "新",
     "addFile": "添加文件",
     "voiceInput": "语音输入",
     "send": "发送消息",
