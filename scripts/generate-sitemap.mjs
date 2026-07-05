@@ -16,7 +16,7 @@ const ROOT = resolve(__dirname, '..');
 const PUBLIC_DIR = resolve(ROOT, 'public');
 const HOST = process.env.VITE_CANONICAL_HOST || 'https://smyst.com';
 
-const LANGS = ['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko'];
+const LANGS = ['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko', 'ru', 'it', 'hi', 'id', 'bn'];
 const PAGES = [
   { loc: '/', priority: '1.0', changefreq: 'daily' },
   ...LANGS.map((lang) => ({
