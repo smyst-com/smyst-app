@@ -613,3 +613,88 @@ def support_report(request: Request, payload: SupportReport) -> Any:
     user_store.save_user_doc(sub, doc)
     return {"ok": True, "reportId": report["id"], "message": "Danke, dein Bericht ist eingegangen."}
 
+
+# --- Eigene Stimme (Voice-Profil, Phase 1) -------------------------------
+# Privacy by Design: Stimmaufnahme nur mit expliziter Zustimmung, privat im
+# Object Brain, nur fuer die eigenen Twins des Kontos wirksam, jederzeit
+# widerrufbar. Zustimmungshistorie wird protokolliert (ohne Audiodaten).
+
+VOICE_IDS = {
+    "de-thorsten", "de-karlsson", "de-pavoque",
+    "de-kerstin", "de-ramona", "de-eva",
+    "en-ryan", "en-joe", "en-lessac", "en-hfc-male",
+    "en-amy", "en-hfc-female", "tr-dfki",
+}
+
+
+class VoiceProfileUpdate(BaseModel):
+    consent: bool
+    voiceId: str | None = None
+    sampleKey: str | None = None
+    sampleUploadId: str | None = None
+    sampleFilename: str | None = None
+
+
+def _voice_names(doc: dict[str, Any]) -> list[str]:
+    """Namen, fuer die die eigene Stimme gilt: Anzeigename + eigene Twins."""
+    names: list[str] = []
+    display = _clean_text(doc["profile"].get("displayName"), 120).lower()
+    if display:
+        names.append(display)
+    for twin in doc["twins"]:
+        name = _clean_text(twin.get("name"), 120).lower()
+        if name and name not in names:
+            names.append(name)
+    return names
+
+
+def _voice_response(doc: dict[str, Any]) -> dict[str, Any]:
+    voice = doc.get("voiceProfile")
+    return {
+        "voice": voice if isinstance(voice, dict) else None,
+        "names": _voice_names(doc),
+    }
+
+
+@router.get("/voice/profile")
+def get_voice_profile(request: Request) -> Any:
+    sub, err = _require_sub(request)
+    if err:
+        return err
+    doc = _load_doc(sub)
+    return _voice_response(doc)
+
+
+@router.post("/voice/profile")
+def set_voice_profile(request: Request, payload: VoiceProfileUpdate) -> Any:
+    sub, err = _require_sub(request)
+    if err:
+        return err
+    doc = _load_doc(sub)
+    history = doc.get("voiceConsentHistory")
+    if not isinstance(history, list):
+        history = []
+    now = _now_ms()
+    if not payload.consent:
+        doc["voiceProfile"] = None
+        history.append({"action": "revoked", "at": now})
+        doc["voiceConsentHistory"] = history[-50:]
+        user_store.save_user_doc(sub, doc)
+        return _voice_response(doc)
+    if not payload.voiceId or payload.voiceId not in VOICE_IDS:
+        return _error(422, "voice_invalid", "Bitte eine gueltige Stimme auswaehlen.")
+    doc["voiceProfile"] = {
+        "consent": True,
+        "consentAt": now,
+        "voiceId": payload.voiceId,
+        "sampleKey": _clean_text(payload.sampleKey, 400),
+        "sampleUploadId": _clean_text(payload.sampleUploadId, 120),
+        "sampleFilename": _clean_text(payload.sampleFilename, 200),
+        "status": "ready" if payload.sampleKey else "voice-only",
+        "scope": "own-twins-only",
+        "updatedAt": now,
+    }
+    history.append({"action": "granted", "at": now, "voiceId": payload.voiceId})
+    doc["voiceConsentHistory"] = history[-50:]
+    user_store.save_user_doc(sub, doc)
+    return _voice_response(doc)
