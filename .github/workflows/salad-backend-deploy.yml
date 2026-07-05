@@ -69,6 +69,14 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Derive voice worker token (deterministisch, nie geloggt)
+        env:
+          AUTH_SESSION_SECRET: ${{ secrets.AUTH_SESSION_SECRET }}
+        run: |
+          TOKEN=$(printf '%s' "voice-worker:$AUTH_SESSION_SECRET" | sha256sum | head -c 48)
+          echo "::add-mask::$TOKEN"
+          echo "WORKER_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+
       - name: Create/update Salad container group
         run: node scripts/deploy-salad-backend.mjs --skip-build
         env:
@@ -109,6 +117,8 @@ jobs:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
+          VOICE_WORKER_URL: ${{ vars.VOICE_WORKER_URL }}
+          VOICE_WORKER_TOKEN: ${{ env.WORKER_TOKEN }}
           HEALTH_REQUIRE_POSTGRES: "false"
           HEALTH_REQUIRE_REDIS: "false"
           # Falls GHCR-Package privat bleibt: PAT mit read:packages als GHCR_PULL_TOKEN setzen.

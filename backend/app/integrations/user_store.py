@@ -135,3 +135,18 @@ def save_voice_sample(user_sub: str, data: bytes, content_type: str) -> str | No
     except Exception as exc:
         logger.warning("voice sample write failed (%s)", type(exc).__name__)
         return None
+
+
+def presign_voice_sample(key: str, expires_in: int = 300) -> str | None:
+    """Zeitlich begrenzte GET-URL fuer eine eigene Stimmprobe (Klon-Worker)."""
+    if not storage_configured() or not key or not key.startswith(VOICE_SAMPLE_PREFIX):
+        return None
+    try:
+        return _client().generate_presigned_url(
+            "get_object",
+            Params={"Bucket": settings.idrive_e2_bucket, "Key": key},
+            ExpiresIn=expires_in,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("voice sample presign failed (%s)", type(exc).__name__)
+        return None

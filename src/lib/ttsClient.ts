@@ -72,7 +72,10 @@ export async function playRemoteSpeech(
           let url = audioCache.get(cacheKey)
           if (!url) {
                   const controller = new AbortController()
-                  const timer = window.setTimeout(() => controller.abort(), 6000)
+                  const timer = window.setTimeout(
+                    () => controller.abort(),
+                    effectiveVoiceId === 'de-own' ? 45000 : 6000,
+                  )
                   const response = await fetch(buildServiceUrl('/api/tts'), {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
