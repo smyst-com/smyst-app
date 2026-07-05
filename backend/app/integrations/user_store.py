@@ -107,3 +107,31 @@ def delete_user_doc_from_cache(user_sub: str) -> None:
     """Entfernt das Dokument nur aus dem RAM-Cache (e2 bleibt unberuehrt)."""
     _MEMORY.pop(user_sub, None)
 
+VOICE_SAMPLE_PREFIX = "voice-samples/"
+
+
+def save_voice_sample(user_sub: str, data: bytes, content_type: str) -> str | None:
+    """Speichert die private Stimmprobe des Nutzers im Object Brain.
+
+    Rueckgabe: Objekt-Key oder None (nicht konfiguriert/Fehler).
+    Es wird nur geschrieben, nie geloescht (neue Probe ueberschreibt die alte).
+    """
+    if not user_sub or not data:
+        return None
+    if not storage_configured():
+        return None
+    safe = "".join(ch for ch in user_sub if ch.isalnum() or ch in "-_:")[:160]
+    safe = safe.replace(":", "__")
+    extension = "webm" if "webm" in (content_type or "") else "wav"
+    key = f"{VOICE_SAMPLE_PREFIX}{safe}.{extension}"
+    try:
+        _client().put_object(
+            Bucket=settings.idrive_e2_bucket,
+            Key=key,
+            Body=data,
+            ContentType=content_type or "audio/webm",
+        )
+        return key
+    except Exception as exc:
+        logger.warning("voice sample write failed (%s)", type(exc).__name__)
+        return None
