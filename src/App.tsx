@@ -1419,7 +1419,7 @@ function SmystStartPage({
       <div className="mb-4">
         <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilentdeckung' : t.start.discoveryLabel}</p>
         <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
-          Echte KI-Profile werden geladen...
+          {lang === DEFAULT_LANG ? 'Echte KI-Profile werden geladen...' : t.start.profilesLoading}
         </p>
       </div>
       <div className="grid gap-3">
@@ -2385,17 +2385,17 @@ function SmystStartPage({
                 </p>
               </div>
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Empfohlen' : t.start.recommendedLabel, recommendedTwins)}
-              {renderDiscoveryRail('Beliebt', popularTwins)}
+              {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Beliebt' : t.start.popularLabel, popularTwins)}
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Neu' : t.start.newLabel, freshTwins)}
-              {renderDiscoveryRail('Kürzlich genutzt', recentTwins)}
+              {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Kürzlich genutzt' : t.start.recentLabel, recentTwins)}
             </div>
           )}
           {!selectedTwin && !showNamePicker && profilesLoaded && profilesLoadError && (
             <div className="grid min-h-[260px] place-items-center px-5 py-10 text-center sm:min-h-[320px]">
               <div className="max-w-[30rem]">
-                <p className="text-base font-bold text-[#d5dbe5]">Profile konnten gerade nicht geladen werden</p>
+                <p className="text-base font-bold text-[#d5dbe5]">{lang === DEFAULT_LANG ? 'Profile konnten gerade nicht geladen werden' : t.start.profilesErrorTitle}</p>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-[#8e97a8]">
-                  Bitte Verbindung prüfen oder gleich eine Nachricht schreiben. Die App bleibt bedienbar.
+                  {lang === DEFAULT_LANG ? 'Bitte Verbindung prüfen oder gleich eine Nachricht schreiben. Die App bleibt bedienbar.' : t.start.profilesErrorBody}
                 </p>
               </div>
             </div>
@@ -2403,9 +2403,9 @@ function SmystStartPage({
           {!selectedTwin && !showNamePicker && profilesLoaded && realStartTwins.length === 0 && !profilesLoadError && (
             <div className="grid min-h-[260px] place-items-center px-5 py-10 text-center sm:min-h-[320px]">
               <div className="max-w-[28rem]">
-                <p className="text-base font-bold text-[#d5dbe5]">Noch keine echten KI-Profile sichtbar</p>
+                <p className="text-base font-bold text-[#d5dbe5]">{lang === DEFAULT_LANG ? 'Noch keine echten KI-Profile sichtbar' : t.start.profilesEmptyTitle}</p>
                 <p className="mt-2 text-sm font-medium leading-relaxed text-[#8e97a8]">
-                  Sobald echte freigegebene Profile vorhanden sind, erscheinen sie hier mit Suche, Kategorien und direktem Chat.
+                  {lang === DEFAULT_LANG ? 'Sobald echte freigegebene Profile vorhanden sind, erscheinen sie hier mit Suche, Kategorien und direktem Chat.' : t.start.profilesEmptyBody}
                 </p>
               </div>
             </div>
