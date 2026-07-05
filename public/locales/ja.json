@@ -89,7 +89,7 @@
     "changeTwin": "選択中の Twin を変更",
     "chooseTwin": "Twin を選択",
     "emptyText": "上で名前を選ぶか、そのまま入力してください。選択した Twin は右上に固定されます。",
-    "messagePlaceholder": "{{name}} へのメッセージ", "discoveryLabel": "プロフィール発見", "discoveryText": "{{count}} 件の本物のAIプロフィールが利用可能。1つ選んですぐに始めましょう。", "recommendedLabel": "おすすめ", "newLabel": "新着",
+    "messagePlaceholder": "{{name}} へのメッセージ", "popularLabel": "人気", "recentLabel": "最近使用", "profilesLoading": "本物のAIプロフィールを読み込んでいます...", "profilesErrorTitle": "現在プロフィールを読み込めません", "profilesErrorBody": "接続を確認するか、そのままメッセージを書き始めてください。アプリは引き続き利用できます。", "profilesEmptyTitle": "まだ表示できる本物のAIプロフィールがありません", "profilesEmptyBody": "承認された本物のプロフィールが利用可能になると、検索・カテゴリー・直接チャットとともにここに表示されます。", "discoveryLabel": "プロフィール発見", "discoveryText": "{{count}} 件の本物のAIプロフィールが利用可能。1つ選んですぐに始めましょう。", "recommendedLabel": "おすすめ", "newLabel": "新着",
     "addFile": "ファイルを追加",
     "voiceInput": "音声入力",
     "send": "メッセージを送信",
