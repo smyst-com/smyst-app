@@ -61,3 +61,8 @@ export function userVoiceIdFor(voiceKey: string | undefined): string | undefined
   return overrideNames.has(voiceKey.trim().toLowerCase()) ? overrideVoiceId : undefined
 }
 
+// Beim App-Start im Hintergrund laden, damit bereits die ERSTE Sprachausgabe
+// nach dem Seitenaufruf die eigene Stimme nutzt (kein Lazy-Miss).
+if (typeof window !== 'undefined') {
+  primeUserVoice()
+}
