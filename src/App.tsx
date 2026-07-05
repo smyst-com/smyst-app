@@ -17,6 +17,7 @@ import {
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
+import { userVoiceIdFor } from '@/lib/userVoice'
 import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
@@ -33,6 +34,7 @@ const EmailAuthForm = lazy(() => import('@/components/EmailAuthForm'))
 const MobileNav = lazy(() => import('@/components/MobileNav'))
 import AccountPrivacyActions from '@/components/AccountPrivacyActions'
 import PasswordResetGate from '@/components/PasswordResetGate'
+import UserVoiceCard from '@/components/UserVoiceCard'
 
 type IconProps = SVGProps<SVGSVGElement>
 
@@ -326,7 +328,7 @@ function speakText(text: string, lang: string, onDone: () => void, voiceKey?: st
   if (!cleanText) return false
   if ('speechSynthesis' in window) window.speechSynthesis.cancel()
   stopRemoteSpeech()
-  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, remoteVoiceIdFor(voiceKey, lang)).then((started) => {
+  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, userVoiceIdFor(voiceKey) ?? remoteVoiceIdFor(voiceKey, lang)).then((started) => {
     if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
   })
   return true
@@ -3540,6 +3542,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
             </div>
           </Card>
 
+          <UserVoiceCard />
+
           <Card className="p-6 lg:col-span-2">
             <h3 className="mb-2 text-lg font-semibold">Chatverlauf suchen</h3>
             <p className="mb-4 text-sm text-[#555b64]">Suche in deinen privaten Chat-Summaries und gespeicherten MVP-Nachrichten.</p>
@@ -6450,7 +6454,7 @@ function TwinChatView({
       } else {
         await streamAssistantMessage(assistantId, reply.message.content)
       }
-      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false))) {
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false), activeTwin?.name)) {
         setIsSpeaking(true)
       }
       return reply.message.content
@@ -6499,7 +6503,7 @@ function TwinChatView({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
+    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false), activeTwin?.name)
     if (started) setIsSpeaking(true)
   }
 
