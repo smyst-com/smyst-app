@@ -1,0 +1,124 @@
+{
+  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile (Audit 05.07.2026, Befund 5). 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet.",
+  "profiles": {
+    "carl-von-linne": {
+      "roles": "Naturforscher, Botaniker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Bildung"
+      ]
+    },
+    "alfred-nobel": {
+      "roles": "Chemiker, Erfinder",
+      "categories": [
+        "Wissenschaft",
+        "Technologie",
+        "Wirtschaft"
+      ]
+    },
+    "david-hilbert": {
+      "roles": "Mathematiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft",
+        "Bildung"
+      ]
+    },
+    "diego-velazquez": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst",
+        "Geschichte"
+      ]
+    },
+    "william-blake": {
+      "roles": "Maler, Dichter",
+      "categories": [
+        "Kunst",
+        "Literatur"
+      ]
+    },
+    "khalil-gibran": {
+      "roles": "Dichter, Maler",
+      "categories": [
+        "Literatur",
+        "Kunst",
+        "Philosophie"
+      ]
+    },
+    "francisco-de-goya": {
+      "roles": "Maler, Grafiker",
+      "categories": [
+        "Kunst",
+        "Geschichte"
+      ]
+    },
+    "vincent-van-gogh": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "katsushika-hokusai": {
+      "roles": "Maler, Holzschnittmeister",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "henri-matisse": {
+      "roles": "Maler, Bildhauer",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "mohandas-karamchand-gandhi": {
+      "roles": "Freiheitskämpfer, Staatsmann",
+      "categories": [
+        "Politik",
+        "Ethik",
+        "Geschichte",
+        "Führung"
+      ]
+    },
+    "ludwik-lejzer-zamenhof": {
+      "roles": "Augenarzt, Sprachschöpfer",
+      "categories": [
+        "Medizin",
+        "Bildung",
+        "Literatur"
+      ]
+    },
+    "william-james": {
+      "roles": "Psychologe, Philosoph",
+      "categories": [
+        "Philosophie",
+        "Wissenschaft",
+        "Bildung"
+      ]
+    },
+    "francois-rabelais": {
+      "roles": "Schriftsteller, Arzt",
+      "categories": [
+        "Literatur",
+        "Medizin"
+      ]
+    },
+    "friedrich-schiller": {
+      "roles": "Dichter, Dramatiker",
+      "categories": [
+        "Literatur",
+        "Geschichte",
+        "Philosophie"
+      ]
+    },
+    "louis-daguerre": {
+      "roles": "Fotopionier, Maler",
+      "categories": [
+        "Kunst",
+        "Technologie",
+        "Forschung"
+      ]
+    }
+  }
+}
