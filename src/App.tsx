@@ -1131,14 +1131,7 @@ function SmystStartPage({
   const messageInputLabel = selectedTwin
     ? t.start.messagePlaceholder.replace('{{name}}', selectedTwin.name)
     : genericMessageLabel || DEFAULT_TRANSLATIONS.start.messagePlaceholder.replace(/\s*an\s*\{\{name\}\}/i, '').trim()
-  const liveVoiceLabel =
-    voiceState === 'idle'
-      ? t.start.liveVoiceStart
-      : voiceState === 'listening'
-        ? t.start.liveVoicePause
-        : voiceState === 'paused'
-          ? t.start.liveVoiceResume
-          : t.start.liveVoiceStop
+  const liveVoiceLabel = voiceState === 'idle' ? t.start.liveVoiceStart : t.start.liveVoiceStop
   const canSend = input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')
   const canSpeak = latestAssistantText.length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
@@ -1584,9 +1577,25 @@ function SmystStartPage({
   const startDictation = (options: { live?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
-      if (options.live) setSpeechOutputEnabled(false)
+      if (options.live) {
+        liveVoiceActiveRef.current = false
+        setSpeechOutputEnabled(false)
+      }
       addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
+    }
+    if (!options.live) {
+      // Mikro-Button: beendet aktiven Live-Modus, wirkt als Diktat-Toggle und stoppt jede Sprachausgabe
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      if (voiceState === 'listening' && recognitionRef.current) {
+        recognitionRef.current.stop()
+        setVoiceState('idle')
+        return
+      }
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
     }
     recognitionRef.current?.abort()
     const recognition = new Recognition()
@@ -1649,13 +1658,18 @@ function SmystStartPage({
             recognition.stop()
             setVoiceState('replying')
             void handleSend(message, [], { forceSpeech: true }).finally(() => {
-              const resumeListening = () => {
+              const resumeListening = (quietChecks = 0) => {
                 if (!liveVoiceActiveRef.current) {
                   setVoiceState('idle')
                   return
                 }
                 if (window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()) {
-                  window.setTimeout(resumeListening, 350)
+                  window.setTimeout(() => resumeListening(0), 350)
+                  return
+                }
+                // Doppelt pruefen: Remote-Audio kann kurze Luecken haben - sonst hoert die App ihre eigene Stimme
+                if (quietChecks < 2) {
+                  window.setTimeout(() => resumeListening(quietChecks + 1), 400)
                   return
                 }
                 startDictation({ live: true })
@@ -1674,25 +1688,36 @@ function SmystStartPage({
     } catch {
       recognitionRef.current = null
       setVoiceState('idle')
-      if (options.live) setSpeechOutputEnabled(false)
+      if (options.live) {
+        liveVoiceActiveRef.current = false
+        setSpeechOutputEnabled(false)
+      }
       addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
     }
   }
 
   const handleToggleLiveVoice = () => {
     unlockAudioPlayback()
-    if (voiceState === 'listening') {
+    const liveTtsActive =
+      window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()
+    if (voiceState !== 'idle' || liveVoiceActiveRef.current || isSpeaking || liveTtsActive) {
+      // EIN Klick stoppt ALLES: Mikro, lokale und Remote-Sprachausgabe, Timer, Draft, Live-Modus
       liveVoiceActiveRef.current = false
       clearLiveVoiceTimer()
-      recognitionRef.current?.stop()
-      setVoiceState('paused')
-      addNotice('Live-Sprachmodus pausiert.')
+      liveVoiceDraftRef.current = ''
+      recognitionRef.current?.abort()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setVoiceState('idle')
+      setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
+      addNotice('Live-Sprachmodus beendet.')
       return
     }
-    if (voiceState === 'paused' || voiceState === 'idle') {
+    {
       liveVoiceActiveRef.current = true
       setSpeechOutputEnabled(true)
-      if (voiceState === 'idle') {
+      {
         liveVoiceDraftRef.current = ''
         const twinName = (selectedTwin ?? activeTwin)?.name?.trim()
         const greeting =
@@ -1716,17 +1741,7 @@ function SmystStartPage({
         }
         return
       }
-      startDictation({ live: true })
-      return
     }
-    liveVoiceActiveRef.current = false
-    clearLiveVoiceTimer()
-    liveVoiceDraftRef.current = ''
-    recognitionRef.current?.abort()
-    window.speechSynthesis.cancel()
-    setVoiceState('idle')
-    setIsSpeaking(false)
-    setSpeechOutputEnabled(false)
   }
 
   const handleSend = async (
@@ -1838,10 +1853,15 @@ function SmystStartPage({
   const handleSpeakInput = () => {
     unlockAudioPlayback()
     if (speechOutputEnabled || isSpeaking) {
+      // Aus: beendet Vorlesen UND einen evtl. aktiven Live-Modus sauber
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      recognitionRef.current?.abort()
       window.speechSynthesis.cancel()
       stopRemoteSpeech()
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
+      setVoiceState('idle')
       return
     }
     if (!latestAssistantText) {
@@ -1852,6 +1872,8 @@ function SmystStartPage({
       addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
       return
     }
+    // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
+    recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
     const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
     if (started) setIsSpeaking(true)
@@ -5833,6 +5855,8 @@ function TwinChatView({
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
   const liveVoiceDraftRef = useRef('')
   const liveVoiceSendTimerRef = useRef<number | null>(null)
+  // true solange der Live-Sprachmodus aktiv ist (Half-Duplex-Schutz gegen Echo-Loop)
+  const liveVoiceActiveRef = useRef(false)
   const { lang } = useLanguage({ reloadOnChange: false })
   const auth = useAuth()
   const twinMvp = useTwinMvp()
@@ -6146,9 +6170,25 @@ function TwinChatView({
   const startDictation = (options: { live?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
-      if (options.live) setSpeechOutputEnabled(false)
+      if (options.live) {
+        liveVoiceActiveRef.current = false
+        setSpeechOutputEnabled(false)
+      }
       addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
       return
+    }
+    if (!options.live) {
+      // Mikro-Button: beendet aktiven Live-Modus, wirkt als Diktat-Toggle und stoppt jede Sprachausgabe
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      if (voiceState === 'listening' && recognitionRef.current) {
+        recognitionRef.current.stop()
+        setVoiceState('idle')
+        return
+      }
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
     }
     recognitionRef.current?.abort()
     const recognition = new Recognition()
@@ -6158,7 +6198,10 @@ function TwinChatView({
     recognition.onstart = () => setVoiceState('listening')
     recognition.onerror = (event) => {
       setVoiceState('idle')
-      if (options.live) setSpeechOutputEnabled(false)
+      if (options.live) {
+        liveVoiceActiveRef.current = false
+        setSpeechOutputEnabled(false)
+      }
       const error = event.error ?? ''
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
@@ -6168,7 +6211,7 @@ function TwinChatView({
     }
     recognition.onend = () => {
       if (recognitionRef.current === recognition) recognitionRef.current = null
-      setVoiceState((current) => (current === 'paused' ? 'paused' : 'idle'))
+      setVoiceState((current) => (current === 'replying' ? 'replying' : 'idle'))
     }
     recognition.onresult = (event) => {
       let finalText = ''
@@ -6193,10 +6236,26 @@ function TwinChatView({
             const message = liveVoiceDraftRef.current.trim()
             if (!message) return
             liveVoiceDraftRef.current = ''
-            recognition.stop()
+            // Mikro sofort hart aus, BEVOR die Antwort gesprochen wird (kein Echo der TTS)
+            recognition.abort()
             setVoiceState('replying')
             void handleSend(message, [], { forceSpeech: true }).finally(() => {
-              setVoiceState('idle')
+              const resumeListening = (quietChecks = 0) => {
+                if (!liveVoiceActiveRef.current) {
+                  setVoiceState('idle')
+                  return
+                }
+                if (window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()) {
+                  window.setTimeout(() => resumeListening(0), 350)
+                  return
+                }
+                if (quietChecks < 2) {
+                  window.setTimeout(() => resumeListening(quietChecks + 1), 400)
+                  return
+                }
+                startDictation({ live: true })
+              }
+              window.setTimeout(resumeListening, 500)
             })
           }, 1600)
         }
@@ -6210,33 +6269,35 @@ function TwinChatView({
     } catch {
       recognitionRef.current = null
       setVoiceState('idle')
-      if (options.live) setSpeechOutputEnabled(false)
+      if (options.live) {
+        liveVoiceActiveRef.current = false
+        setSpeechOutputEnabled(false)
+      }
       addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
     }
   }
 
   const handleToggleLiveVoice = () => {
-    if (voiceState === 'listening') {
+    const liveTtsActive =
+      window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()
+    if (voiceState !== 'idle' || liveVoiceActiveRef.current || isSpeaking || liveTtsActive) {
+      // EIN Klick stoppt ALLES: Mikro, lokale und Remote-Sprachausgabe, Timer, Draft, Live-Modus
+      liveVoiceActiveRef.current = false
       clearLiveVoiceTimer()
-      recognitionRef.current?.stop()
-      setVoiceState('paused')
-      addNotice('Live-Sprachmodus pausiert.')
+      liveVoiceDraftRef.current = ''
+      recognitionRef.current?.abort()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setVoiceState('idle')
+      setIsSpeaking(false)
+      setSpeechOutputEnabled(false)
+      addNotice('Live-Sprachmodus beendet.')
       return
     }
-    if (voiceState === 'paused' || voiceState === 'idle') {
-      if (voiceState === 'idle') liveVoiceDraftRef.current = ''
-      setSpeechOutputEnabled(true)
-      startDictation({ live: true })
-      return
-    }
-    clearLiveVoiceTimer()
+    liveVoiceActiveRef.current = true
     liveVoiceDraftRef.current = ''
-    recognitionRef.current?.abort()
-    window.speechSynthesis.cancel()
-    stopRemoteSpeech()
-    setVoiceState('idle')
-    setIsSpeaking(false)
-    setSpeechOutputEnabled(false)
+    setSpeechOutputEnabled(true)
+    startDictation({ live: true })
   }
 
   const handleSend = async (
@@ -6328,10 +6389,15 @@ function TwinChatView({
 
   const handleSpeakInput = () => {
     if (speechOutputEnabled || isSpeaking) {
+      // Aus: beendet Vorlesen UND einen evtl. aktiven Live-Modus sauber
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      recognitionRef.current?.abort()
       window.speechSynthesis.cancel()
       stopRemoteSpeech()
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
+      setVoiceState('idle')
       return
     }
     if (!latestAssistantText) {
@@ -6342,6 +6408,8 @@ function TwinChatView({
       addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
       return
     }
+    // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
+    recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
     const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false))
     if (started) setIsSpeaking(true)
@@ -6772,8 +6840,8 @@ function TwinChatView({
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
                   voiceState !== 'idle' ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
-                aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Live-Sprachmodus pausieren' : 'Live-Sprachmodus fortsetzen'}
-                title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : voiceState === 'listening' ? 'Pausieren' : voiceState === 'paused' ? 'Fortsetzen' : 'Beenden'}
+                aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
+                title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
               >
                 <Waveform className="h-4 w-4" />
               </button>
