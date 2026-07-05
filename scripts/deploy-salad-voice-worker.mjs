@@ -132,9 +132,14 @@ const result = existing
 
 let started = false;
 const status = result?.current_state?.status || existing?.current_state?.status || 'unknown';
-if (!noStart && !['running', 'deploying'].includes(status)) {
-  await salad(`${itemPath}/start`, { method: 'POST', headers: {} });
-  started = true;
+if (!noStart && ['stopped', 'failed'].includes(status)) {
+  try {
+    await salad(`${itemPath}/start`, { method: 'POST', headers: {} });
+    started = true;
+  } catch (exc) {
+    // Pending/preparing: Salad startet die Gruppe automatisch (autostart_policy).
+    console.log(`Start uebersprungen: ${exc.message}`);
+  }
 }
 
 const networking = result?.networking || existing?.networking || {};
