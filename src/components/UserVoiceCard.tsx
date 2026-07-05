@@ -330,7 +330,7 @@ export default function UserVoiceCard() {
           disabled={!consentChecked || !selectedVoiceId || saving || recording}
           className="rounded-md border border-white/20 bg-white/[0.08] px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/[0.14] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? 'Speichert …' : 'Stimmprofil speichern'}
+          {saving ? 'Speichert …' : 'Stimme aktivieren'}
         </button>
         {active && (
           <button
