@@ -2795,7 +2795,7 @@ function TwinProfileView({
 
   if (isPrivate && auth.status === 'anonymous') {
     return (
-      <div className="pt-[72px]">
+      <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
           <h1 className="mb-2 text-2xl font-bold">Privates Twin-Profil</h1>
           <p className="mb-5 text-sm text-[#555b64]">Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.</p>
@@ -2809,7 +2809,7 @@ function TwinProfileView({
 
   if (!profile && !loaded) {
     return (
-      <div className="pt-[72px]">
+      <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
           <h1 className="mb-2 text-2xl font-bold">Profil wird geladen</h1>
           <p className="text-sm text-[#555b64]">Profil und Inhalte werden vorbereitet.</p>
@@ -2820,7 +2820,7 @@ function TwinProfileView({
 
   if (!profile) {
     return (
-      <div className="pt-[72px]">
+      <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
           <h1 className="mb-2 text-2xl font-bold">Twin-Profil nicht gefunden</h1>
           <p className="text-sm text-[#555b64]">Dieses Profil ist nicht öffentlich indexierbar oder existiert nicht.</p>
@@ -2831,7 +2831,7 @@ function TwinProfileView({
 
   if (!profile.imageUrl || profileImageBroken) {
     return (
-      <div className="pt-[72px]">
+      <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
           <h1 className="mb-2 text-2xl font-bold">Twin-Profil nicht vollständig</h1>
           <p className="text-sm text-[#555b64]">Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.</p>
@@ -2875,7 +2875,7 @@ function TwinProfileView({
   }
 
   return (
-    <div className="pt-[72px]">
+    <div className="pt-6">
       <section className="mx-auto max-w-[980px]">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <button onClick={() => onNavigate('landing')} className="font-smyst-logo text-2xl">
@@ -3147,7 +3147,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
       >
         {busy ? 'Bitte warten…' : mode === 'register' ? 'Konto erstellen' : 'Mit E-Mail einloggen'}
       </button>
-      <div className="flex items-center justify-between text-xs text-[#555b64]">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#555b64]">
         <button
           type="button"
           onClick={() => {
@@ -3349,10 +3349,10 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   }
 
   return (
-    <div className="pt-[72px]">
-      <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Mein Profil</h1>
-        <p className="text-base text-[#555b64]">Account, Session und Datenschutzstatus für deinen smyst-Zugang.</p>
+    <div className="pt-6">
+      <div className="mb-5">
+        <h1 className="mb-1 text-2xl font-bold tracking-tight">Mein Profil</h1>
+        <p className="text-sm text-[#555b64]">Account, Session und Datenschutzstatus für deinen smyst-Zugang.</p>
       </div>
 
       {auth.status !== 'authenticated' ? (
@@ -3600,11 +3600,11 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   }, [auth.status])
 
   return (
-    <div className="pt-[72px]">
+    <div className="pt-6">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="mb-2 text-4xl font-bold tracking-tight">{t.myTwins.title}</h1>
-          <p className="text-base text-[#555b64]">{t.myTwins.subtitle}</p>
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">{t.myTwins.title}</h1>
+          <p className="text-sm text-[#555b64]">{t.myTwins.subtitle}</p>
         </div>
         <Button onClick={() => onNavigate('twin-builder')}>{t.myTwins.createButton}</Button>
       </div>
@@ -3703,10 +3703,10 @@ function SettingsView({
   }
 
   return (
-    <div className="pt-[72px]">
-      <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Einstellungen</h1>
-        <p className="text-base text-[#555b64]">Datenschutz, Sicherheit und Account-Aktionen.</p>
+    <div className="pt-6">
+      <div className="mb-5">
+        <h1 className="mb-1 text-2xl font-bold tracking-tight">Einstellungen</h1>
+        <p className="text-sm text-[#555b64]">Datenschutz, Sicherheit und Account-Aktionen.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -3859,10 +3859,10 @@ function TrustView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   ]
 
   return (
-    <div className="pt-[72px]">
+    <div className="pt-6">
       <div className="mb-8">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Trust Center</p>
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">{t.trust.title}</h1>
+        <h1 className="mb-1 text-2xl font-bold tracking-tight">{t.trust.title}</h1>
         <p className="max-w-[760px] text-base text-[#9aa6b7]">
           {t.trust.intro}
         </p>
@@ -3934,10 +3934,10 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   }[kind]
 
   return (
-    <div className="pt-[72px]">
+    <div className="pt-6">
       <Card className="mx-auto max-w-[860px] p-6 sm:p-8">
         <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Rechtliches</p>
-        <h1 className="mb-3 text-4xl font-bold tracking-tight">{content.title}</h1>
+        <h1 className="mb-1 text-2xl font-bold tracking-tight">{content.title}</h1>
         <p className="mb-6 text-sm leading-relaxed text-[#9aa6b7]">{content.intro}</p>
         <div className="space-y-3">
           {content.points.map((point) => (
@@ -5228,7 +5228,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
     { key: 'create', title: 'Create Twin', subtitle: t.dashboard.actionCreateSubtitle, dot: '#f59e0b', target: 'twin-builder' },
   ]
   return (
-    <div className="pt-[72px]">
+    <div className="pt-6">
       <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-[18px] sm:p-8">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{t.dashboard.heroTitle}</h2>
         <p className="mt-1 text-sm text-[#555b64] sm:text-base">{t.dashboard.heroSubtitle}</p>
@@ -5256,11 +5256,11 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
         </div>
       </div>
 
-      <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">
+      <div className="mb-5">
+        <h1 className="mb-1 text-2xl font-bold tracking-tight">
           {isAuthenticated ? t.dashboard.welcomeBack.replace('{{name}}', displayName) : t.dashboard.readyTitle}
         </h1>
-        <p className="text-base text-[#555b64]">
+        <p className="text-sm text-[#555b64]">
           {isAuthenticated
             ? t.dashboard.introAuthed
             : t.dashboard.introGuest}
@@ -5411,10 +5411,10 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
   }
 
   return (
-    <div className="pt-[72px]">
-      <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Twin Builder</h1>
-        <p className="text-base text-[#555b64]">Erstelle deinen digitalen Zwilling in wenigen Schritten.</p>
+    <div className="pt-6">
+      <div className="mb-5">
+        <h1 className="mb-1 text-2xl font-bold tracking-tight">Twin Builder</h1>
+        <p className="text-sm text-[#555b64]">Erstelle deinen digitalen Zwilling in wenigen Schritten.</p>
       </div>
 
       {/* Sign-In Prompt: nur wenn nicht eingeloggt */}
@@ -5694,10 +5694,10 @@ function MemoryUploadView() {
   }
 
   return (
-    <div className="pt-[72px]">
-      <div className="mb-8">
-        <h1 className="mb-2 text-4xl font-bold tracking-tight">Memory Upload</h1>
-        <p className="text-base text-[#555b64]">Lade deine Erinnerungen hoch und mache sie lebendig.</p>
+    <div className="pt-6">
+      <div className="mb-5">
+        <h1 className="mb-1 text-2xl font-bold tracking-tight">Memory Upload</h1>
+        <p className="text-sm text-[#555b64]">Lade deine Erinnerungen hoch und mache sie lebendig.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
