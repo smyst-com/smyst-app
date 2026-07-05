@@ -57,6 +57,7 @@ class Settings(BaseSettings):
     google_oauth_redirect_uri: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_REDIRECT_URI")
     smyst_owner_emails_raw: str = Field(default="", validation_alias="SMYST_OWNER_EMAILS")
     smyst_admin_emails_raw: str = Field(default="", validation_alias="SMYST_ADMIN_EMAILS")
+    resend_api_key: str | None = Field(default=None, validation_alias="RESEND_API_KEY")
 
     openrouter_api_key: str | None = Field(default=None, validation_alias="OPENROUTER_API_KEY")
     openai_api_key: str | None = Field(default=None, validation_alias="OPENAI_API_KEY")
