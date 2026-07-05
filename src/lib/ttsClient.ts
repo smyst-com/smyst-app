@@ -55,6 +55,9 @@ export async function playRemoteSpeech(
     voiceId?: string,
   ): Promise<boolean> {
     stopRemoteSpeech()
+    // Sofort als aktiv markieren: auch waehrend die Stimme generiert/geladen wird,
+    // darf das Mikro nicht wieder aufmachen - sonst Echo-Loop in der Ladeluecke.
+    active = true
     try {
           const cleanText = text.slice(0, 800)
           // Sprach-Korrektur: Antworten koennen von der UI-Sprache abweichen
@@ -82,9 +85,15 @@ export async function playRemoteSpeech(
                             signal: controller.signal,
                   })
                   window.clearTimeout(timer)
-                  if (!response.ok) return false
+                  if (!response.ok) {
+                        active = false
+                        return false
+                  }
                   const blob = await response.blob()
-                  if (blob.size < 100) return false
+                  if (blob.size < 100) {
+                        active = false
+                        return false
+                  }
                   url = URL.createObjectURL(blob)
                   if (audioCache.size >= 24) {
                             for (const [oldKey, oldUrl] of audioCache) {
@@ -103,8 +112,9 @@ export async function playRemoteSpeech(
           }
           audio.onended = finish
           audio.onerror = finish
+          // Wurde waehrend des Ladens gestoppt? Dann nicht mehr abspielen.
+          if (!active) return false
           audio.src = url
-          active = true
           await audio.play()
           return true
     } catch {
