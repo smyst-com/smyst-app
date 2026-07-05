@@ -5228,11 +5228,32 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
   const t = useStaticTranslations(lang)
   const auth = useAuth()
   const isAuthenticated = auth.status === 'authenticated'
+  const twinMvp = useTwinMvp()
+  const [dashStats, setDashStats] = useState<{ quality: number; twins: number; memories: number } | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      if (auth.status !== 'authenticated') return
+      const profileResult = await twinMvp.getProfile()
+      const ownTwins = await twinMvp.listTwins()
+      if (cancelled) return
+      setDashStats({
+        quality: profileResult?.profile?.qualityScore ?? 0,
+        twins: ownTwins?.length ?? 0,
+        memories: profileResult?.profile?.memoryCount ?? 0,
+      })
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.status])
   const displayName = auth.user?.name || auth.user?.email?.split('@')[0] || 'zurück'
   const startActions: { key: string; title: string; subtitle: string; dot: string; target: AppView }[] = [
-    { key: 'choose', title: 'Choose a Twin', subtitle: t.dashboard.actionChooseSubtitle, dot: '#59C7FF', target: 'my-twins' },
-    { key: 'ask', title: 'Ask anything', subtitle: t.dashboard.actionAskSubtitle, dot: '#22c55e', target: 'twin-chat' },
-    { key: 'create', title: 'Create Twin', subtitle: t.dashboard.actionCreateSubtitle, dot: '#f59e0b', target: 'twin-builder' },
+    { key: 'choose', title: 'Twin wählen', subtitle: t.dashboard.actionChooseSubtitle, dot: '#59C7FF', target: 'my-twins' },
+    { key: 'ask', title: 'Einfach fragen', subtitle: t.dashboard.actionAskSubtitle, dot: '#22c55e', target: 'twin-chat' },
+    { key: 'create', title: 'Twin erstellen', subtitle: t.dashboard.actionCreateSubtitle, dot: '#f59e0b', target: 'twin-builder' },
   ]
   return (
     <div className="pt-6">
@@ -5256,7 +5277,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
           ))}
         </div>
         <div className="mt-4 rounded-xl border border-white/20 bg-white/8 p-4">
-          <p className="text-base font-semibold text-[#16181b]">Private by default</p>
+          <p className="text-base font-semibold text-[#16181b]">Privat als Standard</p>
           <p className="mt-0.5 text-sm text-[#555b64]">
             {t.dashboard.privateByDefaultText}
           </p>
@@ -5316,35 +5337,28 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
         </Card>
 
         <Card>
-          <h3 className="mb-4 text-lg font-semibold">Twin Status</h3>
+          <h3 className="mb-4 text-lg font-semibold">Dein Status</h3>
           <div className="space-y-4">
             <div>
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">{t.dashboard.profileCompleteness}</span>
-                <span className="text-sm font-bold">86%</span>
+                <span className="text-sm font-medium">Profilqualität</span>
+                <span className="text-sm font-bold">{dashStats ? dashStats.quality + '%' : '–'}</span>
               </div>
               <div className="h-2 w-full rounded-full bg-white/20">
-                <div className="h-2 w-[86%] rounded-full bg-[#59C7FF]"></div>
+                <div className="h-2 rounded-full bg-[#59C7FF]" style={{ width: (dashStats?.quality ?? 0) + '%' }}></div>
               </div>
             </div>
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">Memory Health</span>
-                <span className="text-sm font-bold">92%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-white/20">
-                <div className="h-2 w-[92%] rounded-full bg-[#8B7CFF]"></div>
-              </div>
+            <div className="flex items-center justify-between rounded-lg bg-white/10 p-3">
+              <span className="text-sm font-medium">Eigene Twins</span>
+              <span className="text-sm font-bold">{dashStats ? dashStats.twins : '–'}</span>
             </div>
-            <div>
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">{t.dashboard.conversationQuality}</span>
-                <span className="text-sm font-bold">88%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-white/20">
-                <div className="h-2 w-[88%] rounded-full bg-[#112041]"></div>
-              </div>
+            <div className="flex items-center justify-between rounded-lg bg-white/10 p-3">
+              <span className="text-sm font-medium">Memories</span>
+              <span className="text-sm font-bold">{dashStats ? dashStats.memories : '–'}</span>
             </div>
+            {!isAuthenticated && (
+              <p className="text-xs text-[#767d87]">Melde dich an, um deinen echten Status zu sehen.</p>
+            )}
           </div>
         </Card>
       </div>
@@ -5778,7 +5792,7 @@ function MemoryUploadView() {
                     status: 'processed',
                   }))
                 : [
-                    { name: 'Noch keine Datei hochgeladen', type: 'document', date: 'Bereit', status: 'processing' },
+                    { name: 'Noch keine Datei hochgeladen', type: 'info', date: 'Deine Uploads erscheinen hier', status: 'empty' },
                   ]
               ).map((file, idx) => (
                 <div key={idx} className="flex items-center justify-between rounded-lg bg-white/12 p-3">
@@ -5792,9 +5806,9 @@ function MemoryUploadView() {
                     </div>
                   </div>
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    file.status === 'processed' ? 'bg-green-500/20 text-green-700' : 'bg-yellow-500/20 text-yellow-700'
+                    file.status === 'processed' ? 'bg-green-500/20 text-green-700' : file.status === 'empty' ? 'bg-white/10 text-[#8e97a8]' : 'bg-yellow-500/20 text-yellow-700'
                   }`}>
-                    {file.status === 'processed' ? '✓ Verarbeitet' : '⏳ Wird verarbeitet'}
+                    {file.status === 'processed' ? '✓ Verarbeitet' : file.status === 'empty' ? 'Bereit' : '⏳ Wird verarbeitet'}
                   </span>
                 </div>
               ))}
