@@ -1110,6 +1110,8 @@ function SmystStartPage({
   const recognitionRef = useRef<BrowserSpeechRecognition | null>(null)
   const liveVoiceDraftRef = useRef('')
   const liveVoiceActiveRef = useRef(false)
+  // Merkt sich, welcher Twin in dieser Session schon begruesst wurde
+  const liveGreetedRef = useRef<string | null>(null)
   // Diktat-Modus: bleibt aktiv bis zum zweiten Mikro-Klick; Text wird angehaengt
   const dictationActiveRef = useRef(false)
   const dictationBaseRef = useRef('')
@@ -1748,6 +1750,14 @@ function SmystStartPage({
       {
         liveVoiceDraftRef.current = ''
         const twinName = (selectedTwin ?? activeTwin)?.name?.trim()
+        // Begruessung nur beim ersten Start pro Twin und in neuem Chat - danach direkt zuhoeren
+        const greetKey = twinName ?? 'twin'
+        if (liveGreetedRef.current === greetKey || messages.some((entry) => entry.role === 'user')) {
+          liveGreetedRef.current = greetKey
+          startDictation({ live: true })
+          return
+        }
+        liveGreetedRef.current = greetKey
         const greeting =
           lang === 'de'
             ? twinName
