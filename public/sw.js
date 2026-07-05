@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'smyst-v6';
+const CACHE_VERSION = 'smyst-v7';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
@@ -16,7 +16,7 @@ const APP_SHELL = [
   '/sitemap.xml',
   '/llms.txt',
   '/ai.txt',
-  '/.well-known/security.txt',
+  '/security.txt',
   '/locales/de.json',
   '/locales/en.json',
   '/locales/tr.json',
@@ -36,7 +36,7 @@ const PUBLIC_API_PREFIXES = ['/api/public/twins'];
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(APP_CACHE)
-      .then((cache) => cache.addAll(APP_SHELL))
+      .then((cache) => Promise.allSettled(APP_SHELL.map((url) => cache.add(url))))
       .then(() => self.skipWaiting()),
   );
 });
