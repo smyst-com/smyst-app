@@ -33,12 +33,12 @@ async function loadOnce(): Promise<void> {
           return
         }
         const data = (await response.json()) as {
-          voice?: { consent?: boolean; voiceId?: string } | null
+          voice?: { consent?: boolean; voiceId?: string; sampleKey?: string } | null
           names?: string[]
         }
         applyUserVoiceProfile(
           data?.names,
-          data?.voice?.consent ? data.voice.voiceId : undefined,
+          data?.voice?.consent ? (data.voice.sampleKey ? 'de-own' : data.voice.voiceId) : undefined,
         )
       } catch {
         loaded = true
