@@ -25,6 +25,18 @@ const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
 const HOST = (process.env.VITE_CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
 const INDEX_FILE = process.env.PIPELINE_PUBLISHED_INDEX || resolve(ROOT, 'pipeline-published-index.json');
+const CORRECTIONS_FILE = resolve(__dirname, 'pipeline-profile-corrections.json');
+// Kuratierte Anzeige-Korrekturen (Audit 05.07.2026, Befund 5): korrigiert
+// Rollen-Text und Kategorien einzelner Pipeline-Profile rein im Build.
+// Fehlt die Datei oder ist sie unlesbar, aendert sich NICHTS am Verhalten.
+let PROFILE_CORRECTIONS = {};
+if (existsSync(CORRECTIONS_FILE)) {
+  try {
+    PROFILE_CORRECTIONS = JSON.parse(readFileSync(CORRECTIONS_FILE, 'utf8')).profiles || {};
+  } catch (error) {
+    console.warn(`merge-pipeline-published: Korrekturdatei unlesbar, wird ignoriert: ${error.message}`);
+  }
+}
 
 if (!existsSync(INDEX_FILE)) {
   console.log('merge-pipeline-published: kein Publish-Index gefunden — nichts zu tun (ok).');
@@ -250,6 +262,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
   const publishedAt = Date.parse(record.published_at || '') || Date.now();
   const description = cardDescription(record);
   const seo = record.seo || {};
+  const corr = PROFILE_CORRECTIONS[record.slug] || {};
   return {
     id: `pipeline-${record.slug}`,
     name: record.name,
@@ -259,7 +272,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     imageCredit: generatedImage
       ? 'KI-generierte, stilisierte Darstellung (keine Fotografie der Person)'
       : imageCreditText(record, imageUrl, attribution),
-    categories: [record.category].filter(Boolean),
+    categories: (Array.isArray(corr.categories) && corr.categories.length ? corr.categories : [record.category]).filter(Boolean),
     languages: [record.language_default || 'de'],
     visibility: 'public',
     style: 'neutral',
@@ -278,7 +291,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
       'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.',
     rightsPosture:
       'Autopilot-Pipeline: Quellen dokumentiert, Vier-Stufen-Risiko-Check und QA bestanden, menschlich freigegeben.',
-    mainCategory: record.category || '',
+    mainCategory: corr.roles || record.category || '',
     birthDate: record.birth_date || undefined,
     deathDate: record.death_date || undefined,
     birthYear: record.birth_date ? Number(String(record.birth_date).slice(0, 4)) : undefined,
@@ -286,7 +299,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     birthLabel: record.birth_date || '',
     deathLabel: record.death_date || '',
     exampleQuestions: [],
-    searchIndex: [record.name, record.slug, record.category, description].filter(Boolean).join(' '),
+    searchIndex: [record.name, record.slug, record.category, ...(Array.isArray(corr.categories) ? corr.categories : []), corr.roles, description].filter(Boolean).join(' '),
     sources: record.sources || [],
     quality: imageUrl
       ? { ok: true, issues: [] }
