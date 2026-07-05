@@ -57,7 +57,7 @@ export default function UserVoiceCard() {
         setVoice(data.voice ?? null)
         if (data.voice?.voiceId) setSelectedVoiceId(data.voice.voiceId)
         if (data.voice?.consent) setConsentChecked(true)
-        applyUserVoiceProfile(data.names, data.voice?.consent ? data.voice.voiceId : undefined)
+        applyUserVoiceProfile(data.names, data.voice?.consent ? (data.voice.sampleKey ? 'de-own' : data.voice.voiceId) : undefined)
       } catch {
         // Karte bleibt nutzbar; Speichern zeigt Fehler transparent an.
       }
@@ -213,7 +213,7 @@ export default function UserVoiceCard() {
         return
       }
       setVoice(data?.voice ?? null)
-      applyUserVoiceProfile(data?.names, data?.voice?.consent ? data?.voice?.voiceId : undefined)
+      applyUserVoiceProfile(data?.names, data?.voice?.consent ? (data?.voice?.sampleKey ? 'de-own' : data?.voice?.voiceId) : undefined)
       setStatus('Stimmprofil gespeichert. Dein Twin spricht jetzt mit dieser Stimme.')
     } catch {
       setStatus('Speichern gerade nicht möglich. Bitte später erneut versuchen.')
