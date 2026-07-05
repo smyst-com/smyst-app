@@ -78,6 +78,7 @@ export async function playRemoteSpeech(
                   )
                   const response = await fetch(buildServiceUrl('/api/tts'), {
                             method: 'POST',
+          credentials: 'include',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                         text: cleanText,
