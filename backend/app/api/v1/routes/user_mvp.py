@@ -698,3 +698,39 @@ def set_voice_profile(request: Request, payload: VoiceProfileUpdate) -> Any:
     doc["voiceConsentHistory"] = history[-50:]
     user_store.save_user_doc(sub, doc)
     return _voice_response(doc)
+
+
+
+class VoiceSampleUpload(BaseModel):
+    audioBase64: str = Field(min_length=100, max_length=14_000_000)
+    contentType: str | None = None
+    filename: str | None = None
+
+
+@router.post("/voice/sample")
+def upload_voice_sample(request: Request, payload: VoiceSampleUpload) -> Any:
+    """Nimmt die Stimmprobe direkt entgegen (base64) und legt sie privat ab.
+
+    Bewusst ohne presigned URLs: kleine Audiodatei (max ~10 MB), kein
+    Bucket-CORS noetig, Sample landet ausschliesslich im privaten Bucket.
+    """
+    sub, err = _require_sub(request)
+    if err:
+        return err
+    content_type = _clean_text(payload.contentType, 80) or "audio/webm"
+    if not content_type.startswith("audio/"):
+        return _error(422, "voice_sample_type", "Nur Audio-Aufnahmen sind erlaubt.")
+    import base64
+
+    try:
+        data = base64.b64decode(payload.audioBase64, validate=True)
+    except Exception:
+        return _error(422, "voice_sample_invalid", "Aufnahme konnte nicht gelesen werden.")
+    if len(data) < 1000:
+        return _error(422, "voice_sample_short", "Aufnahme ist zu kurz.")
+    if len(data) > 10 * 1024 * 1024:
+        return _error(413, "voice_sample_large", "Aufnahme ist zu gross (max. 10 MB).")
+    key = user_store.save_voice_sample(sub, data, content_type)
+    if not key:
+        return _error(503, "voice_sample_storage", "Speicher gerade nicht verfuegbar. Bitte spaeter erneut versuchen.")
+    return {"ok": True, "sampleKey": key, "size": len(data)}

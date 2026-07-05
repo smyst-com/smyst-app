@@ -35,6 +35,7 @@ const MobileNav = lazy(() => import('@/components/MobileNav'))
 import AccountPrivacyActions from '@/components/AccountPrivacyActions'
 import PasswordResetGate from '@/components/PasswordResetGate'
 import UserVoiceCard from '@/components/UserVoiceCard'
+import SocialLinksCard from '@/components/SocialLinksCard'
 
 type IconProps = SVGProps<SVGSVGElement>
 
@@ -3543,6 +3544,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           </Card>
 
           <UserVoiceCard />
+
+          <SocialLinksCard />
 
           <Card className="p-6 lg:col-span-2">
             <h3 className="mb-2 text-lg font-semibold">Chatverlauf suchen</h3>
