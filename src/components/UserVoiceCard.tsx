@@ -4,7 +4,6 @@
 // jederzeit widerrufbar. Phase 2 (echte Klon-Stimme) nutzt die Aufnahme.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { buildServiceUrl, fetchService } from '@/lib/serviceEndpoints'
-import { useMemoryUpload } from '@/lib/useMemoryUpload'
 import { applyUserVoiceProfile } from '@/lib/userVoice'
 
 const VOICE_CHOICES: Array<{ id: string; label: string }> = [
@@ -29,7 +28,6 @@ interface VoiceProfileState {
 }
 
 export default function UserVoiceCard() {
-  const upload = useMemoryUpload()
   const [voice, setVoice] = useState<VoiceProfileState | null>(null)
   const [consentChecked, setConsentChecked] = useState(false)
   const [selectedVoiceId, setSelectedVoiceId] = useState('')
@@ -164,18 +162,35 @@ export default function UserVoiceCard() {
       let sampleFilename: string | undefined
       if (sampleBlob) {
         const extension = sampleBlob.type.includes('webm') ? 'webm' : 'wav'
-        const file = new File([sampleBlob], `stimmprobe-${Date.now()}.${extension}`, {
-          type: sampleBlob.type || 'audio/webm',
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => {
+            const value = String(reader.result ?? '')
+            resolve(value.includes(',') ? value.slice(value.indexOf(',') + 1) : value)
+          }
+          reader.onerror = () => reject(new Error('read failed'))
+          reader.readAsDataURL(sampleBlob)
         })
-        const uploaded = await upload.upload(file, 'audio')
-        if (!uploaded) {
-          setStatus(upload.error ?? 'Stimmprobe konnte nicht hochgeladen werden.')
+        const uploadResponse = await fetchService('/api/voice/sample', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+          body: JSON.stringify({
+            audioBase64: base64,
+            contentType: sampleBlob.type || 'audio/webm',
+            filename: `stimmprobe-${Date.now()}.${extension}`,
+          }),
+        })
+        const uploadData = (await uploadResponse.json().catch(() => null)) as
+          | { ok?: boolean; sampleKey?: string; error?: { message?: string } }
+          | null
+        if (!uploadResponse.ok || !uploadData?.sampleKey) {
+          setStatus(uploadData?.error?.message ?? 'Stimmprobe konnte nicht hochgeladen werden.')
           setSaving(false)
           return
         }
-        sampleKey = uploaded.key
-        sampleUploadId = uploaded.uploadId
-        sampleFilename = file.name
+        sampleKey = uploadData.sampleKey
+        sampleFilename = `stimmprobe-${Date.now()}.${extension}`
       }
       const response = await fetchService('/api/voice/profile', {
         method: 'POST',
@@ -204,7 +219,7 @@ export default function UserVoiceCard() {
       setStatus('Speichern gerade nicht möglich. Bitte später erneut versuchen.')
     }
     setSaving(false)
-  }, [consentChecked, selectedVoiceId, sampleBlob, upload])
+  }, [consentChecked, selectedVoiceId, sampleBlob])
 
   const revoke = useCallback(async () => {
     setSaving(true)
@@ -269,8 +284,8 @@ export default function UserVoiceCard() {
               <audio controls src={sampleUrl} className="h-9 max-w-full" />
             )}
           </div>
-          {upload.uploading && (
-            <p className="mt-2 text-xs text-[#767d87]">Stimmprobe wird hochgeladen … {upload.progress?.percentage ?? 0}%</p>
+          {saving && sampleBlob && (
+            <p className="mt-2 text-xs text-[#767d87]">Stimmprobe wird hochgeladen …</p>
           )}
         </div>
 
@@ -347,4 +362,3 @@ export default function UserVoiceCard() {
     </section>
   )
 }
-
