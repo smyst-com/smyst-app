@@ -198,9 +198,9 @@ function MenuGlyph(props: IconProps) {
 
 function SmystLockup() {
   return (
-    <div className="inline-flex flex-col items-center text-center" aria-label="smyst Create Your AI Twin">
+    <div className="inline-flex flex-col items-center text-center" aria-label="smyst.com Create Your AI Twin">
       <span className="font-smyst-logo text-[48px] font-medium leading-none tracking-normal text-white sm:text-[70px]">
-        smyst
+        smyst<span className="text-[0.78em]">.com</span>
       </span>
       <span className="mt-1 whitespace-nowrap text-[13px] font-semibold leading-none text-[#9aa6b7] sm:text-lg">
         Create Your AI Twin

@@ -76,7 +76,7 @@ test.describe("Smyst current app", () => {
 
     await page.goto("/");
 
-    const logo = page.getByLabel("smyst Create Your AI Twin");
+    const logo = page.getByLabel("smyst.com Create Your AI Twin");
     await expect(logo).toBeVisible();
     await expect(logo.getByText("Create Your AI Twin")).toBeVisible();
     await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
