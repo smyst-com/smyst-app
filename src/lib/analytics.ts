@@ -53,6 +53,7 @@ function readStoredConsent(): ConsentState | null {
 function writeStoredConsent(state: ConsentState): void {
   try {
     localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(state));
+    window.dispatchEvent(new CustomEvent('smyst:consent-changed', { detail: state }));
   } catch {
     /* localStorage blockiert — egal, Defaults bleiben denied */
   }
@@ -85,6 +86,19 @@ export function setConsent(opts: {
     version: CONSENT_VERSION,
   };
   writeStoredConsent(next);
+}
+
+export function getConsentState(): ConsentState {
+  return readStoredConsent() ?? DEFAULT_DENIED;
+}
+
+export function hasMarketingConsent(): boolean {
+  const state = getConsentState();
+  return (
+    state.ad_storage === 'granted' &&
+    state.ad_user_data === 'granted' &&
+    state.ad_personalization === 'granted'
+  );
 }
 
 /**
