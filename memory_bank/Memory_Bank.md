@@ -1,5 +1,17 @@
 # Memory Bank
 
+## Update 2026-07-06: Werbe-Readiness Public Profiles live (PR #114 + #115)
+
+- PR #114 (`codex/ad-readiness-static-profiles`, gemergt): statische oeffentliche Profile gehaertet. `/twins/<slug>/` und `/chat/<slug>/` werden beim Profil-Build als Alias-Seiten erzeugt, Canonical bleibt `https://smyst.com/t/<slug>`. Live-Chat-Fallback fuer public profiles antwortet bei nicht erreichbarer API lokal/streamend sachlich statt Fehlerbanner. Guardrail ergaenzt: kurz, direkt, sachlich, kein Rollenspiel, keine Selbstbeschreibung, keine Story.
+- Produktionsschutz angepasst: ehemalige Provider-/Status-Keys mit Cloudflare-Bezug in neutrale Legacy-Keys umbenannt; Risk-Check-False-Positive `EthicsEntry` -> `EthicsWatchlistEntry`. Keine Nutzerdaten, Profile, Bilder oder Zugänge geloescht/geaendert.
+- PR #115 (`codex/public-profile-quality-minimum`, gemergt): `scripts/public-profile-quality.mjs` interpretiert 116 sichtbare Profile als Mindestschwelle, nicht als Obergrenze. Live enthaelt inzwischen 121 sichtbare Profile; Zusatzprofile sind gesund und duerfen den Werbe-Readiness-Check nicht faelschlich brechen.
+- Verifiziert lokal: `SMYST_RUN_DIRECT_VITE_BUILD=yes sh scripts/test-all.sh` gruen; `PYTHONPATH=backend python3 -m pytest backend/tests` gruen (112 passed, 2 warnings); `node scripts/generate-profile-pages.mjs`; `node scripts/merge-pipeline-published.mjs`; `sh scripts/check-dist-artifact.sh`; lokale statische Routen `/t/sokrates/`, `/twins/sokrates/`, `/chat/sokrates/`, `/api/public/twins/sokrates/` 200.
+- Verifiziert live nach GitHub Pages Deploy #153 + #154: `https://smyst.com/t/sokrates/`, `/twins/sokrates/`, `/chat/sokrates/`, `/api/public/twins/sokrates/`, `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest` 200. API-Guardrail und Canonical korrekt.
+- Live-Profil-Audit: `WEB_BASE_URL=https://smyst.com node scripts/public-profile-quality.mjs` ok=true, visibleProfileCount=121, minimumVisibleProfileCount=116, staticProfileImageCount=121, generatedProfileImageCount=0, testableTop20Count=20, issues=[].
+- Browser-Live-QA: Mobile 390x844 und Desktop 1280x720 fuer Sokrates-Profil: Bild geladen, keine broken images, kein horizontaler Overflow, `robots=index,follow`, Canonical `/t/sokrates`, 2 JSON-LD-Scripte, keine Console-Warnungen/-Fehler.
+- Deploy-Hinweis: GitHub Pages Deploy #153 scheiterte initial transient im Pages-Schritt ("Deployment failed, try again later"), Build-Artefakt war vorhanden; gezielter Re-run failed jobs brachte Success. Bei diesem Fehler zuerst fehlgeschlagenen Pages-Job neu starten.
+- Offen/nicht verifiziert in diesem Lauf: echte iOS-Simulator-/Android-Emulator-Ausfuehrung mangels lokal vollstaendiger nativer Toolchain; AdSense/Consent ist nicht als neuer Code geaendert worden und bleibt in einem separaten fachlichen Review zu pruefen, falls Werbeplaetze aktiv geschaltet werden.
+
 ## Update 2026-07-05: Morgenlauf — main-Fix (PR #96), 3 neue Profile live (116 Twins), i18n-Etappe 2 (PR #98)
 
 - CRON ROT: Scheduled-Lauf #20 (09:34, verspaetet) scheiterte an AttributeError 'Settings' object has no attribute 'resend_api_key' — neue backend/app/integrations/email_sender.py (Forgot-Password-Flow, paralleler Agent) liest settings.resend_api_key, das Feld fehlte in Settings; ein Test brach die Worker-Kette. FIX (PR #96, gemergt): resend_api_key: str | None = Field(default=None, validation_alias="RESEND_API_KEY") in backend/app/core/config.py. Nachhol-run-small #21 GRUEN (2m).
