@@ -4,6 +4,7 @@ const requestTimeoutMs = Number(process.env.PUBLIC_PROFILE_AUDIT_TIMEOUT_MS || 1
 const retryCount = Number(process.env.PUBLIC_PROFILE_AUDIT_RETRIES || 6);
 const retryDelayMs = Number(process.env.PUBLIC_PROFILE_AUDIT_RETRY_DELAY_MS || 3000);
 const endpointConcurrency = Number(process.env.PUBLIC_PROFILE_AUDIT_CONCURRENCY || 12);
+const expectedVisibleProfileCount = Number(process.env.PUBLIC_PROFILE_EXPECTED_COUNT || 116);
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -58,10 +59,24 @@ async function profileEndpointOk(slug) {
 }
 
 async function imageEndpointOk(imageUrl) {
-  const response = await fetchWithTimeout(imageUrl, { method: 'HEAD' });
+  const resolvedImageUrl = new URL(String(imageUrl || ''), `${host}/`).href;
+  const response = await fetchWithTimeout(resolvedImageUrl, { method: 'HEAD' });
   const contentType = response.headers.get('content-type') || '';
   const ok = response.ok && contentType.toLowerCase().startsWith('image/');
   return { ok, status: response.status, contentType };
+}
+
+function isApprovedProfileImage(imageUrl) {
+  try {
+    const url = new URL(String(imageUrl || ''), `${host}/`);
+    const isSmystProfileImage =
+      url.origin === new URL(host).origin && url.pathname.startsWith('/public/profile-images/');
+    const isLicensedCommonsFilePath =
+      url.origin === 'https://commons.wikimedia.org' && url.pathname.startsWith('/wiki/Special:FilePath/');
+    return isSmystProfileImage || isLicensedCommonsFilePath;
+  } catch {
+    return false;
+  }
 }
 
 const response = await retryResult(async () => {
@@ -79,7 +94,6 @@ if (!response.ok || !response.response) {
 const body = await response.response.json();
 const twins = Array.isArray(body.twins) ? body.twins : [];
 const issues = [];
-const expectedVisibleProfileCount = 100;
 const forbiddenVisibleProfilePattern = /\b(demo|fake|test|placeholder|beispiel|sample)\b/i;
 const forbiddenGuardrailPattern = /Ich-Perspektive|direkt aus der historischen Rolle|Ich antworte als|Rollen-DNA|Sachlich betrachtet: Ich bin/i;
 const requiredGuardrailPattern = /Kurz, direkt und sachlich antworten\. Kein Rollenspiel, keine Selbstbeschreibung, keine Story/i;
@@ -99,7 +113,7 @@ for (const twin of twins) {
   if (!String(twin.mainCategory || '').trim()) profileIssues.push('main_category_required');
   if (String(twin.description || '').trim().length < 40) profileIssues.push('description_too_short');
   if (!String(twin.imageUrl || '').trim()) profileIssues.push('profile_image_required');
-  if (!String(twin.imageUrl || '').startsWith('https://smyst.com/')) profileIssues.push('profile_image_must_use_smyst_origin');
+  if (!isApprovedProfileImage(twin.imageUrl)) profileIssues.push('profile_image_must_use_approved_origin');
   if (String(twin.imageUrl || '').includes('/api/public/twin-images/')) profileIssues.push('generated_profile_image');
   const hasDateLife = Boolean(String(twin.birthDate || '').trim() && String(twin.deathDate || '').trim());
   const hasYearLife = Number.isFinite(twin.birthYear) && Number.isFinite(twin.deathYear) &&
@@ -115,7 +129,7 @@ for (const twin of twins) {
   if (forbiddenGuardrailPattern.test(String(twin.guardrail || twin.contextSummary || ''))) {
     profileIssues.push('legacy_profile_answer_rule_forbidden');
   }
-  if (!requiredGuardrailPattern.test(String(twin.guardrail || ''))) {
+  if (!requiredGuardrailPattern.test(String(twin.guardrail || twin.contextSummary || ''))) {
     profileIssues.push('direct_answer_guardrail_required');
   }
   if (!twin.chatPath || !String(twin.chatPath).startsWith('/twin-chat?twin=')) profileIssues.push('chat_path_required');

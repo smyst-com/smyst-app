@@ -28,7 +28,7 @@ def _n(name: str) -> str:
 
 
 @dataclass(frozen=True)
-class EthicsEntry:
+class EthicsWatchlistEntry:
     name: str
     result: RiskResult
     reason: str
@@ -37,20 +37,20 @@ class EthicsEntry:
 
 #: Ethik-Watchlist. block = niemals veroeffentlichen; manual_review = nur mit
 #: menschlicher Freigabe. Bewusst konservativ; Erweiterung im Review-Prozess.
-ETHICS_WATCHLIST: tuple[EthicsEntry, ...] = (
-    EthicsEntry("Adolf Hitler", RiskResult.BLOCK, "NS-Haupttaeter; Chat-Verkoerperung ausgeschlossen", "Q352"),
-    EthicsEntry("Heinrich Himmler", RiskResult.BLOCK, "NS-Haupttaeter", "Q43067"),
-    EthicsEntry("Joseph Goebbels", RiskResult.BLOCK, "NS-Haupttaeter", "Q44331"),
-    EthicsEntry("Hermann Goering", RiskResult.BLOCK, "NS-Haupttaeter"),
-    EthicsEntry("Reinhard Heydrich", RiskResult.BLOCK, "NS-Haupttaeter"),
-    EthicsEntry("Adolf Eichmann", RiskResult.BLOCK, "NS-Haupttaeter"),
-    EthicsEntry("Josef Stalin", RiskResult.BLOCK, "Massenverbrechen; Chat-Verkoerperung ausgeschlossen", "Q855"),
-    EthicsEntry("Benito Mussolini", RiskResult.BLOCK, "faschistischer Diktator", "Q23559"),
-    EthicsEntry("Mohammed", RiskResult.BLOCK, "Darstellungs-/Verkoerperungsverbot; religioes hochsensibel", "Q9458"),
-    EthicsEntry("Jesus Christus", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur; nur mit Freigabe und klaren Regeln", "Q302"),
-    EthicsEntry("Moses", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur"),
-    EthicsEntry("Siddhartha Gautama", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur (Buddha)", "Q9441"),
-    EthicsEntry("Buddha", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur"),
+ETHICS_WATCHLIST: tuple[EthicsWatchlistEntry, ...] = (
+    EthicsWatchlistEntry("Adolf Hitler", RiskResult.BLOCK, "NS-Haupttaeter; Chat-Verkoerperung ausgeschlossen", "Q352"),
+    EthicsWatchlistEntry("Heinrich Himmler", RiskResult.BLOCK, "NS-Haupttaeter", "Q43067"),
+    EthicsWatchlistEntry("Joseph Goebbels", RiskResult.BLOCK, "NS-Haupttaeter", "Q44331"),
+    EthicsWatchlistEntry("Hermann Goering", RiskResult.BLOCK, "NS-Haupttaeter"),
+    EthicsWatchlistEntry("Reinhard Heydrich", RiskResult.BLOCK, "NS-Haupttaeter"),
+    EthicsWatchlistEntry("Adolf Eichmann", RiskResult.BLOCK, "NS-Haupttaeter"),
+    EthicsWatchlistEntry("Josef Stalin", RiskResult.BLOCK, "Massenverbrechen; Chat-Verkoerperung ausgeschlossen", "Q855"),
+    EthicsWatchlistEntry("Benito Mussolini", RiskResult.BLOCK, "faschistischer Diktator", "Q23559"),
+    EthicsWatchlistEntry("Mohammed", RiskResult.BLOCK, "Darstellungs-/Verkoerperungsverbot; religioes hochsensibel", "Q9458"),
+    EthicsWatchlistEntry("Jesus Christus", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur; nur mit Freigabe und klaren Regeln", "Q302"),
+    EthicsWatchlistEntry("Moses", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur"),
+    EthicsWatchlistEntry("Siddhartha Gautama", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur (Buddha)", "Q9441"),
+    EthicsWatchlistEntry("Buddha", RiskResult.MANUAL_REVIEW, "religioese Zentralfigur"),
 )
 
 _ETHICS_BY_QID = {e.qid: e for e in ETHICS_WATCHLIST if e.qid}
