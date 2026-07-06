@@ -10,6 +10,7 @@
     "deploy:idrive:dry-run": "node scripts/deploy-idrive-static.mjs --dry-run",
     "deploy:salad:backend": "node scripts/deploy-salad-backend.mjs",
     "check:live": "sh scripts/live-test.sh",
+    "check:ad-readiness": "node scripts/ad-readiness-audit.mjs",
     "check:provider-exit": "python3 scripts/check-provider-exit.py",
     "preview": "vite preview",
     "app:assets": "node scripts/generate-app-assets.mjs",

@@ -33,6 +33,7 @@ const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
 const EmailAuthForm = lazy(() => import('@/components/EmailAuthForm'))
 const MobileNav = lazy(() => import('@/components/MobileNav'))
 import AccountPrivacyActions from '@/components/AccountPrivacyActions'
+import AdSlot from '@/components/AdSlot'
 import PasswordResetGate from '@/components/PasswordResetGate'
 import UserVoiceCard from '@/components/UserVoiceCard'
 import SocialLinksCard from '@/components/SocialLinksCard'
@@ -3047,6 +3048,7 @@ function TwinProfileView({
             </div>
           </div>
         </Card>
+        {profile.visibility === 'public' && <AdSlot placement="profile-footer" />}
       </section>
     </div>
   )
@@ -3939,7 +3941,7 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
         'Ohne Konto verarbeiten wir technische Zugriffsdaten (IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser- und Geraetetyp) fuer Betrieb, Stabilitaet und Missbrauchsabwehr (Art. 6 Abs. 1 lit. f DSGVO). Chat-Anfragen an oeffentliche KI-Profile werden zur Beantwortung an unser Backend uebertragen; ohne Anmeldung wird kein Chat-Verlauf dauerhaft gespeichert.',
         'Mit Konto verarbeiten wir E-Mail-Adresse, Name (optional), Passwort ausschliesslich als kryptografischen Hash (scrypt), Profilinhalte, erstellte AI-Twins, hochgeladene Dateien (Dokumente, Bilder, Audio, Video), Chat-Verlaeufe sowie Einstellungs- und Sitzungsdaten zur Bereitstellung deines Kontos und der Kernfunktionen (Art. 6 Abs. 1 lit. b DSGVO).',
         'Bei Google-Login erhalten wir nur die Google-Konto-Basisdaten (E-Mail-Adresse, Name, Profilbild-URL). Dein Google-Passwort wird nicht an uns uebertragen.',
-        'Technisch notwendige lokale Speicherung (Session-Cookie bzw. signiertes Token, Sprach- und Design-Einstellung, Consent-Status) erfolgt nach Par. 25 Abs. 2 TDDDG bzw. Art. 6 Abs. 1 lit. b/f DSGVO. Optionale anonyme Nutzungsstatistik nur nach Einwilligung ueber das Consent-Banner, jederzeit widerrufbar. Keine Werbe-Tracker von Drittanbietern.',
+        'Technisch notwendige lokale Speicherung (Session-Cookie bzw. signiertes Token, Sprach- und Design-Einstellung, Consent-Status) erfolgt nach Par. 25 Abs. 2 TDDDG bzw. Art. 6 Abs. 1 lit. b/f DSGVO. Optionale anonyme Nutzungsstatistik und optionale Werbespeicherung werden standardmaessig abgelehnt und nur nach aktiver Einwilligung ueber das Consent-Banner freigegeben; jede Einwilligung ist jederzeit widerrufbar.',
         'Dienstleister: IDrive Inc. (USA, Objektspeicher und Auslieferung der Website-Dateien), Salad Technologies (USA, Backend fuer Login, API und KI-Antworten), GitHub Inc. (USA, Code-Hosting), Google LLC (USA, nur bei Google-Login), Spaceship/Namecheap-Gruppe (Domain, DNS, E-Mail-Weiterleitung an s@smyst.com).',
         'Drittlandbezug: Die Verarbeitung findet ueberwiegend in den USA statt, gestuetzt auf das EU-US Data Privacy Framework, soweit Anbieter zertifiziert sind, andernfalls auf EU-Standardvertragsklauseln bzw. die Standard-Datenschutzvereinbarungen der Anbieter (Art. 44 ff. DSGVO).',
         'Speicherdauer: Kontodaten bleiben gespeichert, solange dein Konto besteht. Nach Konto-Loeschung werden personenbezogene Daten zweistufig entfernt (sofortige Sperrung, anschliessend endgueltige Loeschung der Datenobjekte). Technische Logs nur so lange, wie fuer Betrieb und Sicherheit erforderlich. Chats ohne Konto werden nicht dauerhaft gespeichert.',
@@ -3958,6 +3960,7 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
         'AI-Twins sind digitale Profile und dürfen nicht als echte Person ausgegeben werden.',
         'Öffentliche Twins können indexiert werden; private Twins bleiben privat und noindex.',
         'Uploads, Speicher und API-Nutzung haben Schutz- und Missbrauchsgrenzen.',
+        'Werbung darf nicht manipuliert, automatisiert geklickt, verdeckt, über Inhalt gelegt oder zur Erzeugung ungueltiger Zugriffe missbraucht werden.',
       ],
     },
     imprint: {

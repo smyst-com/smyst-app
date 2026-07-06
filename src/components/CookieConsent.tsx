@@ -171,7 +171,7 @@ export default function CookieConsent() {
                   <div className="min-w-0">
                     <h3 className="text-sm font-semibold text-white">Marketing</h3>
                     <p className="mt-0.5 text-xs text-[#aeb6c4]">
-                      Werbe-Personalisierung. Aktuell nicht aktiv genutzt — nur als Vorsorge gelistet.
+                      Werbung und Werbe-Personalisierung. Wird nur nach aktiver Einwilligung und technischer Freigabe geladen.
                     </p>
                   </div>
                   <input
