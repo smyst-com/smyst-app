@@ -55,7 +55,7 @@ async def production_readiness(settings: Settings | None = None) -> dict[str, An
             "storage": "idrive_e2",
             "dns": "spaceship",
             "code": "github",
-            "cloudflare_active": False,
+            "legacy_edge_active": False,
             "salad_public_base_url": active_settings.salad_public_base_url,
         },
         "gates": {

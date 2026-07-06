@@ -21,7 +21,7 @@ async def ai_providers(ping: bool = False) -> dict[str, object]:
             if result is not None:
                 status["ping"] = result
     return {
-        "cloudflare": False,
+        "legacy_edge": False,
         "runtime": "salad",
         "configured_count": sum(1 for status in statuses if status["configured"]),
         "ping_executed": ping,

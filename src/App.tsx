@@ -860,6 +860,30 @@ function profileLifeLine(profile: {
   return 'Lebensdaten nicht hinterlegt'
 }
 
+function staticPublicTwinReply(profile: {
+  name: string
+  description?: string
+  mainCategory?: string
+  categories?: string[]
+  birthDate?: string
+  deathDate?: string
+  birthYear?: number
+  deathYear?: number
+  birthLabel?: string
+  deathLabel?: string
+  lifeLine?: string
+}, question: string): string {
+  const topic = question.trim().replace(/\s+/g, ' ').slice(0, 120) || 'deine Frage'
+  const category = profile.mainCategory || profile.categories?.slice(0, 2).join(', ') || 'KI-Profil'
+  const life = profile.lifeLine || profileLifeLine(profile)
+  const description = profile.description || 'kuratiertes öffentliches Profilwissen mit dokumentierten Quellen'
+  return [
+    `Kurz gesagt: Eine gute erste Frage zu "${topic}" ist: Welche Annahme steckt dahinter und woran wuerde ich eine bessere Antwort erkennen?`,
+    `Bei ${profile.name}, ${category} (${life}), ist der nuetzliche Einstieg: Begriffe klaeren, Gegenbeispiele suchen und erst danach eine Schlussfolgerung ziehen. Grundlage ist das kuratierte öffentliche Profil: ${description}.`,
+    'Diese Antwort nutzt den kostenlosen statischen Public-Profile-Fallback; gespeicherter Verlauf und serverseitige KI-Antworten starten, sobald die Chat-API erreichbar ist.',
+  ].join('\n\n')
+}
+
 function hasLifeDates(profile: {
   birthDate?: string
   deathDate?: string
@@ -1003,7 +1027,7 @@ function curatedPublicProfileToPublicTwinProfile(spec: CuratedPublicTwinSpec, in
     mediaCount: imageUrl ? 1 : 0,
     knowledgeCount: 1,
     contextSummary: `${spec.name}: ${spec.knowledge}`,
-    guardrail: 'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.',
+    guardrail: 'Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story. Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.',
     rightsPosture: spec.rightsPosture,
     mainCategory: spec.mainCategory,
     birthDate: spec.birthDate,
@@ -1882,6 +1906,14 @@ function SmystStartPage({
       }
       return reply.message.content
     } catch (err) {
+      if (twin.publicProfile) {
+        const reply = staticPublicTwinReply(twin, fullMessage)
+        await streamText(assistantId, reply)
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, lang, () => setIsSpeaking(false), twin.name)) {
+          setIsSpeaking(true)
+        }
+        return reply
+      }
       const message = err instanceof Error ? err.message : 'Der Chat ist gerade nicht erreichbar.'
       setMessages((current) =>
         current.map((item) =>
@@ -6476,6 +6508,23 @@ function TwinChatView({
       }
       return reply.message.content
     } catch (err) {
+      if (activeTwin.publicProfile) {
+        const reply = staticPublicTwinReply(
+          {
+            name: activeTwin.name,
+            mainCategory: activeTwin.branch,
+            categories: [activeTwin.label].filter(Boolean),
+            description: `${activeTwin.branch} (${activeTwin.lifeLine})`,
+            lifeLine: activeTwin.lifeLine,
+          },
+          message,
+        )
+        await streamAssistantMessage(assistantId, reply)
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, lang, () => setIsSpeaking(false), activeTwin.name)) {
+          setIsSpeaking(true)
+        }
+        return reply
+      }
       const text = err instanceof Error ? err.message : 'Der Chat ist gerade nicht erreichbar.'
       setMessages((current) =>
         current.map((item) =>

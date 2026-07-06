@@ -21,6 +21,8 @@ const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
 const HOST = (process.env.VITE_CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
 const EXPECTED_PROFILE_COUNT = 100;
+const DIRECT_ANSWER_GUARDRAIL =
+  'Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story.';
 
 const templatePath = resolve(DIST, 'index.html');
 if (!existsSync(templatePath)) {
@@ -162,7 +164,7 @@ function toPublicTwinProfile(spec, index) {
     knowledgeCount: 1,
     contextSummary: `${spec.name}: ${spec.knowledge}`,
     guardrail:
-      'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.',
+      `${DIRECT_ANSWER_GUARDRAIL} Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.`,
     rightsPosture: spec.rightsPosture,
     mainCategory: spec.mainCategory,
     birthDate: spec.birthDate,
@@ -212,3 +214,14 @@ if (apiWritten !== EXPECTED_PROFILE_COUNT) {
 }
 console.log(`generate-profile-pages: Public-JSON-API mit ${apiWritten} Profilen unter dist/api/public/twins/ erzeugt.`);
 
+let aliasWritten = 0;
+for (const spec of CURATED_PUBLIC_TWIN_SPECS) {
+  const html = renderPage(spec);
+  for (const route of ['twins', 'chat']) {
+    const dir = resolve(DIST, route, spec.slug);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(resolve(dir, 'index.html'), html, 'utf8');
+    aliasWritten += 1;
+  }
+}
+console.log(`generate-profile-pages: ${aliasWritten} Legacy-/Chat-Alias-Routen erzeugt.`);

@@ -26,6 +26,8 @@ const DIST = resolve(ROOT, 'dist');
 const HOST = (process.env.VITE_CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
 const INDEX_FILE = process.env.PIPELINE_PUBLISHED_INDEX || resolve(ROOT, 'pipeline-published-index.json');
 const CORRECTIONS_FILE = resolve(__dirname, 'pipeline-profile-corrections.json');
+const DIRECT_ANSWER_GUARDRAIL =
+  'Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story.';
 // Kuratierte Anzeige-Korrekturen (Audit 05.07.2026, Befund 5): korrigiert
 // Rollen-Text und Kategorien einzelner Pipeline-Profile rein im Build.
 // Fehlt die Datei oder ist sie unlesbar, aendert sich NICHTS am Verhalten.
@@ -263,6 +265,9 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
   const description = cardDescription(record);
   const seo = record.seo || {};
   const corr = PROFILE_CORRECTIONS[record.slug] || {};
+  const baseGuardrail =
+    record.ai_disclosure ||
+    'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.';
   return {
     id: `pipeline-${record.slug}`,
     name: record.name,
@@ -286,9 +291,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     mediaCount: imageUrl ? 1 : 0,
     knowledgeCount: 1,
     contextSummary: `${record.name}: ${description}`,
-    guardrail:
-      record.ai_disclosure ||
-      'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.',
+    guardrail: `${DIRECT_ANSWER_GUARDRAIL} ${baseGuardrail}`,
     rightsPosture:
       'Autopilot-Pipeline: Quellen dokumentiert, Vier-Stufen-Risiko-Check und QA bestanden, menschlich freigegeben.',
     mainCategory: corr.roles || record.category || '',
@@ -309,7 +312,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     seo: {
       title: seo.title || `${record.name} KI-Profil | smyst.com`,
       description: seo.description || description,
-      canonical: seo.canonical || `${HOST}/t/${record.slug}`,
+      canonical: `${HOST}/t/${record.slug}`,
       robots: 'index,follow',
       schema: seo.json_ld || {},
     },
@@ -391,6 +394,12 @@ for (const record of eligible) {
   const pageDir = resolve(DIST, 't', profile.slug);
   mkdirSync(pageDir, { recursive: true });
   writeFileSync(resolve(pageDir, 'index.html'), renderPage(profile), 'utf8');
+
+  for (const aliasRoute of ['twins', 'chat']) {
+    const aliasDir = resolve(DIST, aliasRoute, profile.slug);
+    mkdirSync(aliasDir, { recursive: true });
+    writeFileSync(resolve(aliasDir, 'index.html'), renderPage(profile), 'utf8');
+  }
 
   newUrls.push(`${HOST}/t/${profile.slug}`);
   merged += 1;
