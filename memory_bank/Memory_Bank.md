@@ -1,5 +1,19 @@
 # Memory Bank
 
+## Update 2026-07-06 II: Consent-gated Ad-Readiness live (PR #117)
+
+- PR #117 (`codex/ad-consent-readiness`, gemergt): AdSense-/Werbe-Readiness vorbereitet, aber externe Werbung bleibt standardmaessig deaktiviert. Neuer `src/lib/ads.ts` laedt AdSense nur, wenn `VITE_ADSENSE_ENABLED=true`, `VITE_ADSENSE_CLIENT` gueltig ist, ein Slot gesetzt ist und Marketing-Consent aktiv ist. Ohne diese Freigaben werden keine Google-/AdSense-Skripte geladen.
+- Neuer `src/components/AdSlot.tsx`: optionaler, stabil reservierter Profil-Footer-Slot fuer oeffentliche Profile; Fehler beim Anzeigenladen brechen Profilseiten nie. Aktuell live unsichtbar, weil kein AdSense-Client/Slot aktiviert ist.
+- Consent/Legal: Cookie-Einstellungen nennen Marketing/Werbung korrekt; Datenschutztext beschreibt optionale Werbespeicherung als default-denied und widerrufbar; Nutzungsbedingungen enthalten Invalid-Traffic-/Manipulationsverbot.
+- Neuer Audit: `scripts/ad-readiness-audit.mjs` + `npm run check:ad-readiness` pruefen Legal-Routen, Consent-Gates, default-denied, explizite AdSense-Env-Aktivierung, keine AdSense-Skripte im Basis-HTML und keine Google-Ad-CSP-Oeffnung ohne separate Freigabe.
+- Verifiziert lokal: `node scripts/ad-readiness-audit.mjs` ok=true; `SMYST_RUN_DIRECT_VITE_BUILD=yes sh scripts/test-all.sh` gruen; `PYTHONPATH=backend python3 -m pytest backend/tests` gruen (112 passed, 2 warnings); `node scripts/generate-profile-pages.mjs`; `node scripts/merge-pipeline-published.mjs`; `sh scripts/check-dist-artifact.sh`.
+- Browser-QA lokal: Profilroute `/t/sokrates/`, Consent-Einstellungen via Footer `App-Daten`, Mobile 390x844; keine AdSense-Skripte, keine kaputten Bilder, kein horizontaler Overflow. Lokale `/auth/me`-Warnungen kamen nur vom statischen Testserver ohne API.
+- Live nach Pages Deploy #156 (Commit `34f572b`): `/t/sokrates/`, `/privacy/`, `/manifest.webmanifest`, `/robots.txt` 200; Browser-live: keine AdSense-/DoubleClick-Skripte, keine kaputten Bilder, kein Overflow, keine Console-Warnungen/-Fehler fuer `https://smyst.com`.
+- Live-Profil-Audit weiter gruen: visibleProfileCount=121, minimumVisibleProfileCount=116, staticProfileImageCount=121, issues=[].
+- Einfache Live-Ladezeitmessung `/t/sokrates/`: status=200, TTFB ca. 39 ms, total ca. 40 ms (curl aus Berlin-nahem Cache).
+- Sicherheitshinweis: CSP fuer Google-Ad-Domains wurde bewusst NICHT geoeffnet; das braucht vor echter AdSense-Aktivierung eine separate schriftliche Freigabe plus erneuten Security-/Consent-/Layout-Test.
+- Native Status unveraendert blockiert: kein `simctl`, kein `adb`, keine Java Runtime, kein Android Studio/Xcode in `/Applications`; echte iOS-/Android-Emulator-Tests sind erst nach Toolchain-Installation moeglich.
+
 ## Update 2026-07-06: Werbe-Readiness Public Profiles live (PR #114 + #115)
 
 - PR #114 (`codex/ad-readiness-static-profiles`, gemergt): statische oeffentliche Profile gehaertet. `/twins/<slug>/` und `/chat/<slug>/` werden beim Profil-Build als Alias-Seiten erzeugt, Canonical bleibt `https://smyst.com/t/<slug>`. Live-Chat-Fallback fuer public profiles antwortet bei nicht erreichbarer API lokal/streamend sachlich statt Fehlerbanner. Guardrail ergaenzt: kurz, direkt, sachlich, kein Rollenspiel, keine Selbstbeschreibung, keine Story.
