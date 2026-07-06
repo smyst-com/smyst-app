@@ -3,7 +3,7 @@
  *
  * Mobile-First Navigation:
  *  - 44 px Touch-Targets (WCAG 2.2 AA)
- *  - Off-Canvas Drawer als Smyst Control Center
+ *  - Off-Canvas Drawer als smyst.com Control Center
  *  - Trap focus innerhalb des Drawers
  *  - Schließt bei ESC, Backdrop-Klick und Sprach-Wechsel
  *  - Body-Scroll-Lock im offenen Zustand
@@ -108,7 +108,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
         ref={drawerRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Smyst Control Center"
+        aria-label="smyst.com Control Center"
         aria-hidden={!open}
         className={`fixed top-0 ${drawerSide} z-50 flex h-[100dvh] w-[min(88vw,380px)] flex-col border-r border-white/10 bg-[rgba(11,16,24,0.96)] text-[#f4f7fb] shadow-2xl backdrop-blur-2xl ${transitionClass} ${
           open ? 'translate-x-0' : closedTransform
@@ -121,7 +121,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
               <span className="font-smyst-logo block text-2xl leading-none tracking-tight text-white">
                 smyst<span className="text-[0.78em]">.com</span>
               </span>
-              <span className="mt-1 block text-xs font-semibold text-[#59C7FF]">Smyst Control Center</span>
+              <span className="mt-1 block text-xs font-semibold text-[#59C7FF]">smyst.com Control Center</span>
             </div>
             <div className="flex items-center gap-2">
               <LangSwitcher variant="compact" />

@@ -6771,7 +6771,7 @@ function TwinChatView({
               <div className="max-w-[28rem]">
                 <p className="text-base font-bold text-[#16181b]">Kein KI-Profil ausgewählt</p>
                 <p className="mt-1 text-sm text-[#555b64]">
-                  Smyst ist kein Messenger: Wähle eine KI-Persönlichkeit aus und stelle deine Frage direkt.
+                  smyst.com ist kein Messenger: Wähle eine KI-Persönlichkeit aus und stelle deine Frage direkt.
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-2">
                   <button
