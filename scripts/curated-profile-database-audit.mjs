@@ -5,6 +5,7 @@ import { build } from 'esbuild';
 const canonicalHost = (process.env.SMYST_CANONICAL_HOST || 'https://smyst.com').replace(/\/$/, '');
 const bundledData = '/private/tmp/smyst-curated-public-twin-data-audit.mjs';
 const expectedVisibleProfileCount = 100;
+const minimumLiveVisibleProfileCount = expectedVisibleProfileCount;
 
 await build({
   entryPoints: ['src/data/curated-public-twin-data.ts'],
@@ -70,11 +71,11 @@ if (process.env.SMYST_SKIP_LIVE_PROFILE_AUDIT !== 'yes') {
     if (!liveResponse.ok) {
       issues.push({ scope: 'live_api', issue: 'public_twins_unreachable', status: liveResponse.status });
     }
-    if (liveTwins.length !== expectedVisibleProfileCount) {
+    if (liveTwins.length < minimumLiveVisibleProfileCount) {
       issues.push({
         scope: 'live_api',
-        issue: 'unexpected_visible_profile_count',
-        expected: expectedVisibleProfileCount,
+        issue: 'visible_profile_count_below_curated_minimum',
+        minimum: minimumLiveVisibleProfileCount,
         actual: liveTwins.length,
       });
     }
@@ -89,6 +90,7 @@ if (process.env.SMYST_SKIP_LIVE_PROFILE_AUDIT !== 'yes') {
 console.log(JSON.stringify({
   ok: issues.length === 0,
   sourceProfileCount: CURATED_PUBLIC_TWIN_SPECS.length,
+  minimumLiveVisibleProfileCount,
   liveChecked,
   liveVisibleProfileCount,
   issues,

@@ -192,4 +192,4 @@ check_body_contains "$API_BASE_URL/api/v1/health/live" "\"status\":\"live\""
 check_body_contains "$API_BASE_URL/api/v1/health/ready" "\"status\":\"ready\""
 check_status_content_type "GET" "$API_BASE_URL/api/v1/auth/me" "200" "application/json"
 
-echo "Smyst live smoke tests passed"
+echo "smyst.com live smoke tests passed"

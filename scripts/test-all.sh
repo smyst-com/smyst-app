@@ -39,6 +39,15 @@ fi
 if command -v node >/dev/null 2>&1; then
   echo "== Bottom icon regression protection =="
   node scripts/check-bottom-icon-regression.mjs
+
+  echo "== Ad readiness audit =="
+  node scripts/ad-readiness-audit.mjs
+
+  echo "== Performance and PWA audit =="
+  node scripts/performance-pwa-audit.mjs
+
+  echo "== Native toolchain audit =="
+  node scripts/native-toolchain-audit.mjs
 fi
 
 echo "test-all completed"

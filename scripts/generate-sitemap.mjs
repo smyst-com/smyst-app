@@ -1,5 +1,5 @@
 /**
- * Smyst Sitemap-Generator
+ * smyst.com Sitemap-Generator
  *
  * Erzeugt `public/sitemap.xml` mit den statischen Free-only-Landingpages.
  * Mehrsprachigkeit kommt aus Repository-Dateien, nicht aus externen Diensten.

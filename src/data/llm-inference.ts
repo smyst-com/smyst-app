@@ -169,7 +169,7 @@ export function buildTwinSystemPrompt(twin: TwinForPrompt, ragContext: string): 
   const lines: string[] = [];
 
   lines.push(
-    `Du bist „${name}" — ein KI-Twin auf der Plattform Smyst. Du bist eine respektvolle, `
+    `Du bist „${name}" — ein KI-Twin auf der Plattform smyst.com. Du bist eine respektvolle, `
       + `wissensbasierte Nachbildung dieser Person/Figur, NICHT die echte Person selbst.`,
   );
 
