@@ -93,6 +93,12 @@ for (const k of [
   'VOICE_WORKER_TOKEN',
   'RESEND_API_KEY',
   'MAIL_FROM',
+  'WEB_RESEARCH_ENABLED',
+  'WEB_SEARCH_PROVIDER',
+  'BRAVE_SEARCH_API_KEY',
+  'SEARXNG_BASE_URL',
+  'WEB_RESEARCH_BUDGET_PER_USER_DAY',
+  'WEB_RESEARCH_BUDGET_PER_PROFILE_DAY',
 ]) {
   if (process.env[k]) env[k] = process.env[k];
 }
@@ -197,7 +203,16 @@ const result = existing
 
 let started = false;
 const status = result?.current_state?.status || existing?.current_state?.status || 'unknown';
-if (!noStart && !['running', 'deploying'].includes(status)) {
+let restarted = false;
+if (!noStart && existing && ['running', 'deploying'].includes(status)) {
+  try {
+    await salad(`${itemPath}/stop`, { method: 'POST', headers: {} });
+    restarted = true;
+  } catch (exc) {
+    console.log(`Stop uebersprungen: ${exc.message}`);
+  }
+}
+if (!noStart && (!['running', 'deploying'].includes(status) || restarted)) {
   await salad(`${itemPath}/start`, { method: 'POST', headers: {} });
   started = true;
 }
@@ -214,6 +229,7 @@ console.log(JSON.stringify({
   image,
   statusBeforeStart: status,
   started,
+  restarted,
   endpoint: dns ? `https://${dns}` : '(URL erscheint im Salad-Portal, sobald deployed)',
   health: dns ? `https://${dns}/api/v1/health/live` : null,
   readiness: dns ? `https://${dns}/api/v1/health/ready` : null,
