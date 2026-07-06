@@ -2,7 +2,7 @@
 set -eu
 
 WEB_BASE_URL="${WEB_BASE_URL:-https://smyst.com}"
-API_BASE_URL="${API_BASE_URL:-https://api.smyst.com}"
+API_BASE_URL="${API_BASE_URL:-https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud}"
 TMP_OUT="${TMPDIR:-/tmp}/smyst-live-test.out"
 TMP_HEADERS="${TMPDIR:-/tmp}/smyst-live-test.headers"
 LIVE_TEST_RETRIES="${SMYST_LIVE_TEST_RETRIES:-6}"
