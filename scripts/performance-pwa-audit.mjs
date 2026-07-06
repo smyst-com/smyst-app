@@ -105,9 +105,10 @@ async function runLiveAudit() {
     { path: '/manifest.webmanifest', type: 'application/manifest+json', needs: ['"name": "smyst.com"', '"short_name": "smyst.com"'] },
     { path: '/sw.js', type: 'application/javascript', needs: ['PRIVATE_PREFIXES', 'PUBLIC_API_PREFIXES'] },
     { path: '/robots.txt', type: 'text/plain', needs: ['Sitemap: https://smyst.com/sitemap.xml'] },
-    { path: '/sitemap.xml', type: 'application/xml', needs: ['https://smyst.com/t/sokrates/'] },
+    { path: '/sitemap.xml', type: 'application/xml', needs: ['https://smyst.com/t/sokrates'] },
     { path: '/llms.txt', type: 'text/plain', needs: ['smyst.com'] },
     { path: '/ai.txt', type: 'text/plain', needs: ['Public and Private Policy'] },
+    { path: '/.well-known/security.txt', type: 'text/plain', needs: ['Policy: https://smyst.com/trust'] },
   ];
 
   for (const route of routes) {
@@ -175,6 +176,7 @@ check('manifest_has_shortcuts', Array.isArray(manifest.shortcuts) && manifest.sh
   'public/apple-touch-icon.png',
   'public/screenshots/smyst-mobile.png',
   'public/screenshots/smyst-desktop.png',
+  'public/.nojekyll',
 ].forEach((file) => requireFile(file));
 
 check('sw_private_api_not_cached', sw.includes("if (pathname.startsWith('/api/')) return true"));

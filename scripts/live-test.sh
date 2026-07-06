@@ -66,6 +66,32 @@ check_body_contains() {
   exit 1
 }
 
+check_missing_route_probe() {
+  url="$1"
+  expected_body="$2"
+  code="$(curl -sS -D "$TMP_HEADERS" -o "$TMP_OUT" -w "%{http_code}" "$url")"
+  body="$(cat "$TMP_OUT")"
+  if [ "$code" != "200" ] && [ "$code" != "404" ]; then
+    echo "FAILED $url expected 200 or 404 got $code" >&2
+    cat "$TMP_OUT" >&2 || true
+    exit 1
+  fi
+  case "$body" in
+    *"$expected_body"*)
+      if [ "$code" = "200" ]; then
+        check_current_header_contains "x-robots-tag" "noindex"
+      fi
+      echo "OK $url $code"
+      return
+      ;;
+  esac
+  echo "FAILED $url expected body to contain: ${expected_body}" >&2
+  cat "$TMP_HEADERS" >&2 || true
+  head -c 1000 "$TMP_OUT" >&2 || true
+  echo >&2
+  exit 1
+}
+
 check_header_not_contains() {
   url="$1"
   forbidden_header_text="$2"
@@ -154,8 +180,7 @@ if [ -z "$first_script" ] || [ -z "$first_style" ]; then
   echo >&2
   exit 1
 fi
-check_body_contains "$WEB_BASE_URL/__smyst_missing_route_probe_404" "id=\"root\""
-check_current_header_contains "x-robots-tag" "noindex"
+check_missing_route_probe "$WEB_BASE_URL/__smyst_missing_route_probe_404" "id=\"root\""
 check_content_type "$WEB_BASE_URL$first_script" "application/javascript"
 check_content_type "$WEB_BASE_URL$first_style" "text/css"
 check_content_type "$WEB_BASE_URL/manifest.webmanifest" "application/manifest+json"

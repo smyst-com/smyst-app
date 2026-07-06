@@ -79,6 +79,15 @@ function isApprovedProfileImage(imageUrl) {
   }
 }
 
+function isExternalImageRateLimit(imageUrl, status) {
+  try {
+    const url = new URL(String(imageUrl || ''), `${host}/`);
+    return status === 429 && url.origin === 'https://commons.wikimedia.org';
+  } catch {
+    return false;
+  }
+}
+
 const response = await retryResult(async () => {
   const res = await fetchWithTimeout(`${host}/api/public/twins`, {
     headers: { accept: 'application/json' },
@@ -94,6 +103,7 @@ if (!response.ok || !response.response) {
 const body = await response.response.json();
 const twins = Array.isArray(body.twins) ? body.twins : [];
 const issues = [];
+const warnings = [];
 const forbiddenVisibleProfilePattern = /\b(demo|fake|test|placeholder|beispiel|sample)\b/i;
 const forbiddenGuardrailPattern = /Ich-Perspektive|direkt aus der historischen Rolle|Ich antworte als|Rollen-DNA|Sachlich betrachtet: Ich bin/i;
 const requiredGuardrailPattern = /Kurz, direkt und sachlich antworten\. Kein Rollenspiel, keine Selbstbeschreibung, keine Story/i;
@@ -142,8 +152,10 @@ for (const twin of twins) {
 }
 
 const liveEndpointIssues = [];
+const liveEndpointWarnings = [];
 const liveResults = await mapLimit(twins, endpointConcurrency, async (twin) => {
   const resultIssues = [];
+  const resultWarnings = [];
   const endpoint = await retryResult(() => profileEndpointOk(twin.slug));
   if (!endpoint.ok) {
     resultIssues.push({ slug: twin.slug, issue: 'profile_endpoint_failed', status: endpoint.status, error: endpoint.error });
@@ -151,20 +163,27 @@ const liveResults = await mapLimit(twins, endpointConcurrency, async (twin) => {
 
   const image = await retryResult(() => imageEndpointOk(twin.imageUrl));
   if (!image.ok) {
-    resultIssues.push({
+    const imageIssue = {
       slug: twin.slug,
       issue: 'profile_image_endpoint_failed',
       status: image.status,
       contentType: image.contentType,
       error: image.error,
       imageUrl: twin.imageUrl,
-    });
+    };
+    if (isExternalImageRateLimit(twin.imageUrl, image.status)) {
+      resultWarnings.push({ ...imageIssue, issue: 'external_profile_image_rate_limited' });
+    } else {
+      resultIssues.push(imageIssue);
+    }
   }
-  return resultIssues;
+  return { issues: resultIssues, warnings: resultWarnings };
 });
-liveEndpointIssues.push(...liveResults.flat());
+liveEndpointIssues.push(...liveResults.flatMap((result) => result.issues));
+liveEndpointWarnings.push(...liveResults.flatMap((result) => result.warnings));
 
 issues.push(...liveEndpointIssues);
+warnings.push(...liveEndpointWarnings);
 
 const top20 = twins.slice(0, 20).map((twin) => ({
   slug: twin.slug,
@@ -189,6 +208,7 @@ console.log(JSON.stringify({
   blockedReason: twins.length === 0 ? 'no_visible_approved_public_profiles' : null,
   top20,
   issues,
+  warnings,
 }, null, 2));
 
 if (issues.length) process.exit(1);
