@@ -60,6 +60,7 @@ require_file "apple-touch-icon.png"
 require_file "screenshots/smyst-mobile.png"
 require_file "screenshots/smyst-desktop.png"
 require_file ".well-known/security.txt"
+require_file ".nojekyll"
 require_file "_headers"
 
 echo "dist artifact checks passed"
