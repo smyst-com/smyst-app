@@ -535,7 +535,7 @@ export default function App() {
   }, [nameSortMode])
 
   useEffect(() => {
-    if (currentView !== 'start' && currentView !== 'twin-profile') {
+    if (currentView !== 'landing' && currentView !== 'twin-profile') {
       document.title = 'smyst.com | KI-Zwillinge, digitale Profile und Twin Chat'
     }
   }, [currentView])
