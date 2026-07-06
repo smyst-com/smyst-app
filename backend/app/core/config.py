@@ -89,6 +89,19 @@ class Settings(BaseSettings):
     rate_limit_requests: int = Field(default=120, validation_alias="RATE_LIMIT_REQUESTS")
     rate_limit_window_seconds: int = Field(default=60, validation_alias="RATE_LIMIT_WINDOW_SECONDS")
 
+    web_research_enabled: bool = Field(default=False, validation_alias="WEB_RESEARCH_ENABLED")
+    web_search_provider: str = Field(default="disabled", validation_alias="WEB_SEARCH_PROVIDER")
+    brave_search_api_key: str | None = Field(default=None, validation_alias="BRAVE_SEARCH_API_KEY")
+    searxng_base_url: str | None = Field(default=None, validation_alias="SEARXNG_BASE_URL")
+    web_research_budget_per_user_day: int = Field(
+        default=20,
+        validation_alias="WEB_RESEARCH_BUDGET_PER_USER_DAY",
+    )
+    web_research_budget_per_profile_day: int = Field(
+        default=10,
+        validation_alias="WEB_RESEARCH_BUDGET_PER_PROFILE_DAY",
+    )
+
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origin_raw.split(",") if origin.strip()]

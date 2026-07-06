@@ -294,3 +294,12 @@ Naechster empfohlener Schritt:
 4. Danach Android-Debug-Build erneut ausfuehren: `cd android && ./gradlew assembleDebug`.
 5. Wenn Android stabil laeuft, iOS-Projekt in Xcode oeffnen und im Simulator testen. Dafuer ist ein vollstaendiges Xcode erforderlich; aktuell sind nur Command Line Tools installiert.
 6. Erst danach native Plugins einzeln einbauen.
+
+## Verified Web Research Layer (2026-07-06, lokal validiert)
+
+- Additive Backend-Schicht fuer smyst.com gebaut: `backend/app/ai/web_research.py` mit Search Decision Engine, Privacy Query Rewriter, Provider-Abstraktion (`openai|brave|searxng|disabled`), IDrivee2.com-kompatiblem Cache, TTL-Regeln, Prompt-Injection-Markierung und Public-Knowledge-Vorschlaegen.
+- API ergaenzt: `/api/v1/web-research/preview`, `/run`, `/public-profile-suggestions`. Internetnutzung wird mit `Ich habe im Internet gesucht.` markiert und liefert bis zu 3 Quellen.
+- Sichere Defaults: `WEB_RESEARCH_ENABLED=false`, `WEB_SEARCH_PROVIDER=disabled`; keine API-Keys im Code; private Memory, private Dokumente, Twin Capsules und sensible Daten blockieren Websuche ohne Public-Research-Freigabe.
+- Public Knowledge bleibt getrennt von Private Memory: Profilupdates werden nur als `discovered` mit `reviewRequired=true` vorgeschlagen und nicht automatisch uebernommen.
+- Validierung: neue Research-Tests 9/9 gruen, komplette Backend-Suite 121/121 gruen, Ruff fuer neue Dateien gruen, `tsc -b` gruen, Vite Production Build gruen, Change/Surface/Backup-Protection gruen.
+- Naechster sicherer Schritt: sauberer PR nur mit Research-Layer-Dateien, danach Staging/Salad-Deploy und Live-Smoke.
