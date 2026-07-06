@@ -303,3 +303,12 @@ Naechster empfohlener Schritt:
 - Public Knowledge bleibt getrennt von Private Memory: Profilupdates werden nur als `discovered` mit `reviewRequired=true` vorgeschlagen und nicht automatisch uebernommen.
 - Validierung: neue Research-Tests 9/9 gruen, komplette Backend-Suite 121/121 gruen, Ruff fuer neue Dateien gruen, `tsc -b` gruen, Vite Production Build gruen, Change/Surface/Backup-Protection gruen.
 - Naechster sicherer Schritt: sauberer PR nur mit Research-Layer-Dateien, danach Staging/Salad-Deploy und Live-Smoke.
+
+## Verified Web Research Layer (2026-07-06, live validiert)
+
+- PR #122 (`Add verified web research layer`) wurde nach gruenen lokalen Tests gemerged. PR #124 (`Restart Salad backend after image update`) wurde nach gruenen GitHub-Checks gemerged, damit Salad-Deploys laufende Backend-Replicas nach Image-Updates kontrolliert neu starten.
+- Salad Backend Deploy #53 auf `main` (`b8720a6`) wurde erfolgreich ausgefuehrt. Nach den zusaetzlichen Backend-Startfixes (`--host ::` und exec-form `CMD`) sind die Live-Health-Endpunkte wieder stabil: `/api/v1/health/live` HTTP 200 und `/api/v1/health/ready` HTTP 200.
+- Live-OpenAPI enthaelt die Web-Research-Routen: `/web-research/preview`, `/web-research/run`, `/web-research/public-profile-suggestions`.
+- Live-Smoke bestaetigt sichere Defaults: aktuelle oeffentliche Frage ergibt `required_search`, aber `webResearchEnabled=false`, `provider=disabled`, `canCallProvider=false`; private Memory-Frage fuehrt zu `searched=false`; Public-Profile-Suggestion schreibt nichts dauerhaft und meldet bei disabled Provider keine automatische Aktualisierung.
+- smyst.com Frontend bleibt erreichbar (HTTP 200). Keine DNS-, Secrets- oder Produktionsdatenbank-Aenderungen wurden vorgenommen.
+- Naechster sicherer Schritt: echte Provider-Aktivierung nur mit expliziter Freigabe fuer ENV/Secrets, kleinem Budgetlimit und erneutem Staging-/Live-Smoke; danach UI-Review-Queue fuer Public Knowledge anbinden.
