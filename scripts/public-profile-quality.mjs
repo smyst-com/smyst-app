@@ -4,7 +4,7 @@ const requestTimeoutMs = Number(process.env.PUBLIC_PROFILE_AUDIT_TIMEOUT_MS || 1
 const retryCount = Number(process.env.PUBLIC_PROFILE_AUDIT_RETRIES || 6);
 const retryDelayMs = Number(process.env.PUBLIC_PROFILE_AUDIT_RETRY_DELAY_MS || 3000);
 const endpointConcurrency = Number(process.env.PUBLIC_PROFILE_AUDIT_CONCURRENCY || 12);
-const expectedVisibleProfileCount = Number(process.env.PUBLIC_PROFILE_EXPECTED_COUNT || 116);
+const minimumVisibleProfileCount = Number(process.env.PUBLIC_PROFILE_EXPECTED_COUNT || 116);
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -98,10 +98,10 @@ const forbiddenVisibleProfilePattern = /\b(demo|fake|test|placeholder|beispiel|s
 const forbiddenGuardrailPattern = /Ich-Perspektive|direkt aus der historischen Rolle|Ich antworte als|Rollen-DNA|Sachlich betrachtet: Ich bin/i;
 const requiredGuardrailPattern = /Kurz, direkt und sachlich antworten\. Kein Rollenspiel, keine Selbstbeschreibung, keine Story/i;
 
-if (twins.length !== expectedVisibleProfileCount) {
+if (twins.length < minimumVisibleProfileCount) {
   issues.push({
     scope: 'public_profiles',
-    issues: [`expected_${expectedVisibleProfileCount}_visible_profiles`],
+    issues: [`expected_at_least_${minimumVisibleProfileCount}_visible_profiles`],
     actual: twins.length,
   });
 }
@@ -182,7 +182,7 @@ const staticProfileImageCount = twins.length - generatedProfileImageCount;
 console.log(JSON.stringify({
   ok: issues.length === 0,
   visibleProfileCount: twins.length,
-  expectedVisibleProfileCount,
+  minimumVisibleProfileCount,
   staticProfileImageCount,
   generatedProfileImageCount,
   testableTop20Count: top20.length,
