@@ -3276,6 +3276,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   const [chatQuery, setChatQuery] = useState('')
   const [publicKnowledgeSuggestion, setPublicKnowledgeSuggestion] = useState<PublicKnowledgeSuggestion | null>(null)
   const [publicKnowledgeLoading, setPublicKnowledgeLoading] = useState(false)
+  const [accountDeleteWord, setAccountDeleteWord] = useState('')
+  const [memoryDeleteCandidate, setMemoryDeleteCandidate] = useState<MemoryRecord | null>(null)
 
   const splitDraftList = (value: string) =>
     value
@@ -3360,11 +3362,10 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   }
 
   const deleteMemory = async (memory: MemoryRecord) => {
-    const confirmed = window.confirm('Diese Memory wirklich löschen?')
-    if (!confirmed) return
     const result = await twinMvp.deleteMemory(memory.id)
     if (!result) return
     setMemories((current) => current.filter((item) => item.id !== memory.id))
+    setMemoryDeleteCandidate(null)
     setPrivacyStatus('Memory gelöscht.')
   }
 
@@ -3442,10 +3443,10 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   }
 
   const deleteAccount = async () => {
-    const confirmed = window.confirm('Account, Chats, Twins und bekannte Dateien wirklich löschen?')
-    if (!confirmed) return
+    if (accountDeleteWord.trim().toUpperCase() !== 'LÖSCHEN') return
     const result = await twinMvp.deleteAccount()
     if (!result) return
+    setAccountDeleteWord('')
     setPrivacyStatus('Account-Löschung ausgeführt. Du wirst abgemeldet.')
     window.setTimeout(() => {
       window.location.href = '/'
@@ -3716,9 +3717,28 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
               <Button className="w-full justify-center" variant="secondary" onClick={() => void exportAccount()}>
                 Daten exportieren
               </Button>
-              <Button className="w-full justify-center border-red-200 bg-red-50 text-red-700 hover:bg-red-100" variant="secondary" onClick={() => void deleteAccount()}>
-                Account löschen
-              </Button>
+              <details className="rounded-lg border border-red-200/60 bg-red-50/70 p-3 text-red-900">
+                <summary className="cursor-pointer text-sm font-bold">Gefährliche Aktionen</summary>
+                <p className="mt-3 text-xs leading-relaxed">
+                  Account-Löschung entfernt bekannte Account-, Chat-, Twin- und Upload-Daten. Zum Schutz vor Versehen ist eine Bestätigung erforderlich.
+                </p>
+                <label className="mt-3 grid gap-1 text-xs font-semibold">
+                  Zur Bestätigung LÖSCHEN eingeben
+                  <input
+                    value={accountDeleteWord}
+                    onChange={(event) => setAccountDeleteWord(event.target.value)}
+                    className="rounded-md border border-red-200 bg-white px-3 py-2 text-sm text-red-900 outline-none focus:border-red-400"
+                  />
+                </label>
+                <Button
+                  className="mt-3 w-full justify-center border-red-200 bg-red-100 text-red-800 hover:bg-red-200"
+                  variant="secondary"
+                  onClick={() => void deleteAccount()}
+                  disabled={accountDeleteWord.trim().toUpperCase() !== 'LÖSCHEN'}
+                >
+                  Account endgültig löschen
+                </Button>
+              </details>
             </div>
             {(privacyStatus || twinMvp.error) && (
               <p className="mt-4 rounded-lg bg-white/18 p-3 text-sm text-[#555b64]">
@@ -3830,11 +3850,31 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                         {memory.status === 'confirmed' ? 'bestätigt' : 'zu prüfen'} · privat · Sicherheit {Math.round(memory.confidence * 100)}%
                       </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {memory.status !== 'confirmed' && (
                         <Button size="sm" variant="secondary" onClick={() => void confirmMemory(memory)}>Bestätigen</Button>
                       )}
-                      <Button size="sm" variant="secondary" onClick={() => void deleteMemory(memory)}>Löschen</Button>
+                      {memoryDeleteCandidate?.id === memory.id ? (
+                        <>
+                          <Button size="sm" variant="secondary" onClick={() => void deleteMemory(memory)}>Wirklich löschen</Button>
+                          <Button size="sm" variant="ghost" onClick={() => setMemoryDeleteCandidate(null)}>Abbrechen</Button>
+                        </>
+                      ) : (
+                        <details className="relative">
+                          <summary className="list-none rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold hover:bg-white/10">
+                            Weitere Optionen
+                          </summary>
+                          <div className="absolute right-0 z-10 mt-2 w-48 rounded-lg border border-white/14 bg-[#101722] p-2 shadow-xl">
+                            <button
+                              type="button"
+                              onClick={() => setMemoryDeleteCandidate(memory)}
+                              className="w-full rounded-md px-3 py-2 text-left text-xs font-semibold text-red-300 hover:bg-red-500/12"
+                            >
+                              Löschen vorbereiten
+                            </button>
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </div>
                 </div>

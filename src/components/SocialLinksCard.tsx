@@ -3,6 +3,7 @@
 // (OpenGraph/Meta), kein Login-Bypass, kein aggressives Scraping. Der Nutzer
 // kann alles jederzeit ansehen, bearbeiten, neu pruefen und loeschen.
 import { useCallback, useEffect, useState } from 'react'
+import { Check, MoreHorizontal, Pencil, RotateCw, Trash2, X } from 'lucide-react'
 import { fetchService } from '@/lib/serviceEndpoints'
 
 interface SocialLink {
@@ -65,6 +66,9 @@ export default function SocialLinksCard() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')
   const [editCategory, setEditCategory] = useState('person')
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
+  const [undoLink, setUndoLink] = useState<SocialLink | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -138,18 +142,64 @@ export default function SocialLinksCard() {
     setBusyId(null)
   }, [])
 
-  const remove = useCallback(async (id: string) => {
-    if (!window.confirm('Diesen Social-Media-Link wirklich entfernen?')) return
+  const restoreRemovedLink = useCallback(async () => {
+    if (!undoLink) return
+    const linkToRestore = undoLink
+    setUndoLink(null)
+    setBusy(true)
+    setStatus('Link wird wiederhergestellt …')
+    try {
+      const response = await fetchService('/api/social/links', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ url: linkToRestore.url }),
+      })
+      const data = (await response.json().catch(() => null)) as { link?: SocialLink; error?: { message?: string } } | null
+      if (!response.ok || !data?.link) {
+        setLinks((current) => current.some((item) => item.url === linkToRestore.url) ? current : [...current, linkToRestore])
+        setStatus(data?.error?.message ?? 'Link lokal wieder angezeigt. Bitte später erneut speichern.')
+        return
+      }
+      const restored = data.link as SocialLink
+      const patchResponse = await fetchService(`/api/social/links/${encodeURIComponent(restored.id)}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({
+          displayName: linkToRestore.displayName ?? '',
+          category: linkToRestore.category ?? 'person',
+          bio: linkToRestore.bio ?? '',
+          topics: linkToRestore.topics ?? [],
+          summary: linkToRestore.summary ?? '',
+        }),
+      })
+      const patchData = (await patchResponse.json().catch(() => null)) as { link?: SocialLink } | null
+      setLinks((current) => [...current, patchResponse.ok && patchData?.link ? patchData.link : restored])
+      setStatus('Link wiederhergestellt.')
+    } catch {
+      setLinks((current) => current.some((item) => item.url === linkToRestore.url) ? current : [...current, linkToRestore])
+      setStatus('Link lokal wieder angezeigt. Bitte Verbindung prüfen.')
+    } finally {
+      setBusy(false)
+    }
+  }, [undoLink])
+
+  const remove = useCallback(async (link: SocialLink) => {
+    const id = link.id
+    setConfirmRemoveId(null)
+    setMenuOpenId(null)
     setBusyId(id)
     try {
       const response = await fetchService(`/api/social/links/${encodeURIComponent(id)}`, {
         method: 'DELETE',
         credentials: 'include',
-        headers: { 'X-Smyst-CSRF': '1' },
+        headers: { 'X-Smyst-CSRF': '1', 'X-Smyst-Delete-Confirm': 'delete-social-link' },
       })
       if (response.ok) {
         setLinks((current) => current.filter((item) => item.id !== id))
-        setStatus('Link entfernt.')
+        setUndoLink(link)
+        setStatus('Link entfernt. Rückgängig ist kurz möglich.')
       } else {
         setStatus(`Entfernen fehlgeschlagen (${response.status}).`)
       }
@@ -227,18 +277,70 @@ export default function SocialLinksCard() {
           const badge = STATUS_BADGES[link.status] ?? STATUS_BADGES.pending
           return (
             <div key={link.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-semibold">
-                  {PLATFORM_LABELS[link.platform] ?? link.platform}
-                </span>
-                {link.username && <span className="text-sm text-[#8e97a8]">@{link.username}</span>}
-                <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}>
-                  {badge.label}
-                </span>
-                {link.category && (
-                  <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-[#8e97a8]">
-                    {link.category}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  <span className="text-sm font-semibold">
+                    {PLATFORM_LABELS[link.platform] ?? link.platform}
                   </span>
+                  {link.username && <span className="text-sm text-[#8e97a8]">@{link.username}</span>}
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                  {link.category && (
+                    <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-[#8e97a8]">
+                      {link.category}
+                    </span>
+                  )}
+                </div>
+                {editingId !== link.id && (
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmRemoveId(null)
+                        setMenuOpenId((current) => (current === link.id ? null : link.id))
+                      }}
+                      aria-label="Weitere Optionen"
+                      title="Weitere Optionen"
+                      className="grid h-9 w-9 place-items-center rounded-md border border-white/20 bg-white/[0.04] text-[#8e97a8] transition-colors hover:bg-white/[0.1] hover:text-white"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </button>
+                    {menuOpenId === link.id && (
+                      <div className="absolute right-0 z-10 mt-2 w-56 rounded-lg border border-white/14 bg-[#101722] p-2 shadow-xl">
+                        <button
+                          type="button"
+                          onClick={() => void recheck(link.id)}
+                          disabled={busyId === link.id}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-[#d8dee8] hover:bg-white/10 disabled:opacity-50"
+                        >
+                          <RotateCw className="h-4 w-4" />
+                          {busyId === link.id ? 'Prüft …' : 'Neu prüfen'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingId(link.id)
+                            setEditName(link.displayName ?? '')
+                            setEditCategory(link.category && CATEGORY_OPTIONS.includes(link.category) ? link.category : 'person')
+                            setMenuOpenId(null)
+                          }}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-[#d8dee8] hover:bg-white/10"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Bearbeiten
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmRemoveId(link.id)}
+                          className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-red-300 hover:bg-red-500/12"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Entfernen vorbereiten
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
               <a
@@ -291,40 +393,54 @@ export default function SocialLinksCard() {
                   </button>
                 </div>
               ) : (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void recheck(link.id)}
-                    disabled={busyId === link.id}
-                    className="rounded-md border border-white/20 px-3 py-1.5 text-xs hover:bg-white/[0.08] disabled:opacity-50"
-                  >
-                    {busyId === link.id ? 'Prüft …' : 'Neu prüfen'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingId(link.id)
-                      setEditName(link.displayName ?? '')
-                      setEditCategory(link.category && CATEGORY_OPTIONS.includes(link.category) ? link.category : 'person')
-                    }}
-                    className="rounded-md border border-white/20 px-3 py-1.5 text-xs hover:bg-white/[0.08]"
-                  >
-                    Bearbeiten
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void remove(link.id)}
-                    disabled={busyId === link.id}
-                    className="rounded-md border border-red-500/30 px-3 py-1.5 text-xs text-red-400 hover:bg-red-500/10 disabled:opacity-50"
-                  >
-                    Entfernen
-                  </button>
-                </div>
+                confirmRemoveId === link.id && (
+                  <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 p-3">
+                    <p className="text-xs font-semibold text-red-200">
+                      Diesen Link entfernen? Die Verbindung wird aus deinem Profilbereich gelöscht.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void remove(link)}
+                        disabled={busyId === link.id}
+                        className="inline-flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/14 px-3 py-1.5 text-xs font-semibold text-red-100 hover:bg-red-500/22 disabled:opacity-50"
+                      >
+                        <Check className="h-4 w-4" />
+                        Ja, entfernen
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmRemoveId(null)
+                          setMenuOpenId(null)
+                        }}
+                        className="inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/[0.08]"
+                      >
+                        <X className="h-4 w-4" />
+                        Abbrechen
+                      </button>
+                    </div>
+                  </div>
+                )
               )}
             </div>
           )
         })}
       </div>
+
+      {undoLink && (
+        <div className="mt-4 flex flex-col gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-100 sm:flex-row sm:items-center sm:justify-between">
+          <span>„{PLATFORM_LABELS[undoLink.platform] ?? undoLink.platform}“ wurde entfernt.</span>
+          <button
+            type="button"
+            onClick={() => void restoreRemovedLink()}
+            disabled={busy}
+            className="rounded-md border border-emerald-400/30 px-3 py-1.5 text-xs font-semibold hover:bg-emerald-400/10 disabled:opacity-50"
+          >
+            Rückgängig
+          </button>
+        </div>
+      )}
 
       <p className="mt-4 text-xs text-[#767d87]">
         Es werden nur öffentlich sichtbare Informationen (Meta-Angaben) gelesen — kein Login,
@@ -334,4 +450,3 @@ export default function SocialLinksCard() {
     </section>
   )
 }
-

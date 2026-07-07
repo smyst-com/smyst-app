@@ -43,6 +43,8 @@ FETCH_TIMEOUT_SECONDS = 6.0
 MAX_FETCH_BYTES = 512 * 1024
 AI_DEADLINE_SECONDS = 14.0
 USER_AGENT = "smyst.com LinkCheck/1.0 (+https://smyst.com)"
+DELETE_CONFIRM_HEADER = "X-Smyst-Delete-Confirm"
+DELETE_CONFIRM_VALUE = "delete-social-link"
 
 PLATFORM_HOSTS: list[tuple[str, list[str]]] = [
     ("instagram", ["instagram.com"]),
@@ -472,6 +474,8 @@ def delete_social_link(request: Request, link_id: str) -> Any:
     sub, err = _require_sub(request)
     if err:
         return err
+    if request.headers.get(DELETE_CONFIRM_HEADER) != DELETE_CONFIRM_VALUE:
+        return _error(403, "delete_confirmation_required", "Entfernen muss bewusst bestätigt werden.")
     doc = _load_doc(sub)
     links = _links_of(doc)
     remaining = [item for item in links if item.get("id") != link_id]
@@ -480,4 +484,3 @@ def delete_social_link(request: Request, link_id: str) -> Any:
     doc["socialLinks"] = remaining
     user_store.save_user_doc(sub, doc)
     return {"ok": True}
-
