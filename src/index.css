@@ -89,8 +89,8 @@
     @apply bg-background text-foreground;
     font-family: var(--font-app);
     font-weight: 400;
-    /* iOS Safari overscroll-bg fix */
-    overscroll-behavior-y: none;
+    /* Keep normal vertical scrolling available in browser and PWA shells. */
+    overscroll-behavior-y: auto;
     /* Min-height für Mobile inkl. Toolbar */
     min-height: 100vh;
     min-height: 100dvh;
