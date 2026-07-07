@@ -95,7 +95,7 @@ class Settings(BaseSettings):
     web_research_enabled: bool = Field(default=False, validation_alias="WEB_RESEARCH_ENABLED")
     web_search_provider: str = Field(default="disabled", validation_alias="WEB_SEARCH_PROVIDER")
     openai_web_search_model: str = Field(
-        default="gpt-5.5",
+        default="gpt-4.1-mini",
         validation_alias="OPENAI_WEB_SEARCH_MODEL",
     )
     brave_search_api_key: str | None = Field(default=None, validation_alias="BRAVE_SEARCH_API_KEY")
