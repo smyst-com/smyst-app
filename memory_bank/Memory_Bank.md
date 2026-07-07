@@ -326,3 +326,14 @@ Naechster empfohlener Schritt:
 - Frontend-Fallback verbessert: kuratierte Public-Twin-Fallbacks setzen keinen falschen globalen Fehler mehr, wenn ein optionaler Public-API-Request fehlt; lokale Preview-Origin `http://127.0.0.1:4173` ist in den lokalen Default-CORS-Origins enthalten.
 - Validierung: `ruff check backend` gruen; komplette Backend-Suite 123/123 gruen; Research/Chat-Research-Tests 11/11 gruen; TypeScript `tsc --noEmit` gruen; Vite Production Build gruen; lokale API-Smokes fuer health/live, web-research preview/run und public-profile-suggestions bestanden; Chrome-Preview fuer `/chat?twin=albert-einstein` ohne Console-Errors, ohne sichtbares Fetch-Banner und ohne horizontalen Overflow.
 - Schutzstatus: keine Migration, keine DNS-Aenderung, keine Secrets, keine Produktionsdaten geloescht oder geaendert. Local ready-health bleibt ohne Storage-Secrets erwartbar `not_ready`.
+
+## Update 2026-07-07: Verified Web Research live aktiviert und Salad-Backend stabilisiert
+
+- Live-Freischaltung: `WEB_RESEARCH_ENABLED=true`, `WEB_SEARCH_PROVIDER=openai` ueber bestehenden GitHub-Actions-/Salad-Deploy-Prozess; keine API-Keys im Code, keine DNS- oder Datenbank-Migration.
+- Backend-Control-Server verschlankt: Piper-Binary und Voice-Modelle aus `backend/Dockerfile` entfernt. Voice-Synthese bleibt Worker-/Consent-Thema; `/api/v1/tts/voices` liefert live kontrolliert `ready:false`, statt grosse Modelldateien im Control-Server zu speichern.
+- Provider-Diagnose gehaertet: `/api/v1/ai/providers?ping=true` gibt nur redaktierte Felder `error`, `status_code`, `category` aus; keine Header, Keys oder Provider-Response-Bodies.
+- Web-Research-Fail-Closed: Providerfehler oder IDrivee2.com-Cache-Schreibfehler koennen Chat/API nicht mehr mit 500 crashen. Erfolgreiche Research-Antworten bleiben nutzbar, Cache ist best-effort.
+- Deploys: PR #144 (Slim Salad backend image) und PR #146 (Web-Research Fail-Closed) gemergt; Salad Backend Deploy #69 erfolgreich auf Commit `d730e3a`; Salad Portal zeigt Version 62 mit `1 / 1 Replica Running`.
+- Live-Validierung: `scripts/live-test.sh` gegen `https://smyst.com` und Salad API bestanden; `/api/health/live` 200, `/api/health/ready` 200; private Web-Research-Preview bleibt `decision=no_search`, `canCallProvider=false`, `redacted=true`; oeffentlicher Web-Research-Run liefert 200, `Ich habe im Internet gesucht.` und Quellen.
+- Providerstand live: 7 Keys/Provider konfiguriert; aktiv pingbar sind OpenRouter und Groq. OpenAI-Web-Research funktioniert, OpenAI-Chat-Ping ist aktuell `429/rate_limited`; Anthropic/Gemini/xAI melden `400/invalid_request`; DeepSeek meldet `402/http_error`. Keine kostenpflichtige Aktivierung vorgenommen.
+- Schutzstatus: keine Nutzerdaten, Medien, Profile, Chatdaten oder Memories geloescht; keine Secrets offengelegt; keine DNS-/Domain-Aenderung; Rollback ueber Revert der PRs #144/#146 oder letzten erfolgreichen Salad-Backend-Deploy moeglich.
