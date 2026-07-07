@@ -145,13 +145,12 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
             </p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
-                ['72', 'Profil'],
-                ['12', 'Chats'],
-                ['38', 'Memories'],
-              ].map(([value, label]) => (
+                'Profil',
+                'Twin',
+                'Daten',
+              ].map((label) => (
                 <div key={label} className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
-                  <p className="text-lg font-bold leading-none text-white">{value}</p>
-                  <p className="mt-1 text-[11px] font-semibold text-[#8e97a8]">{label}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#d5dbe5]">{label}</p>
                 </div>
               ))}
             </div>
@@ -186,7 +185,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
 
           <div className="mt-5 grid gap-2 border-t border-white/10 px-1 pt-5">
             {[
-              ['Sicher angemeldet', 'Deine Sitzung bleibt geschützt und klar getrennt.'],
+              ['Sicherer Login', 'Deine Sitzung wird klar geschützt und getrennt.'],
               ['Privat bleibt privat', 'Private Profile werden nicht öffentlich angezeigt.'],
               ['Export & Löschung', 'Datenkontrolle im Profilbereich.'],
             ].map(([title, text]) => (
