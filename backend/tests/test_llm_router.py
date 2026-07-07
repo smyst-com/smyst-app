@@ -8,6 +8,7 @@ from app.ai.llm_router import (
     LLMRouter,
     LocalDeterministicProvider,
     OpenAICompatibleProvider,
+    ping_providers,
     provider_statuses,
 )
 from app.ai.models import LLMRequest, LLMResponse
@@ -212,3 +213,20 @@ def test_provider_statuses_do_not_expose_secret_values() -> None:
     assert manus["configured"] is False
     assert manus["supported"] is True
     assert manus["key_name"] == "MANUS_API_KEY"
+
+
+@pytest.mark.asyncio
+async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> None:
+    FakeAsyncClient.posts = []
+    FakeAsyncClient.responses = [FakeResponse({"error": "secret provider body"}, status_code=403)]
+    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+
+    settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
+    result = await ping_providers(settings)
+
+    assert result["openai"]["ok"] is False
+    assert result["openai"]["error"] == "HTTPStatusError"
+    assert result["openai"]["status_code"] == 403
+    assert result["openai"]["category"] == "auth_failed"
+    assert "secret-openai" not in str(result)
+    assert "secret provider body" not in str(result)

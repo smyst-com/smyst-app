@@ -726,6 +726,46 @@ class LLMRouter:
 PING_PROMPT = "Reply with the single word: pong"
 
 
+def _provider_error_diagnostics(exc: Exception) -> dict[str, object]:
+    """Return safe provider diagnostics without headers, keys, or response bodies."""
+    if isinstance(exc, httpx.HTTPStatusError):
+        status_code = exc.response.status_code
+        if status_code in {401, 403}:
+            category = "auth_failed"
+        elif status_code == 404:
+            category = "not_found"
+        elif status_code in {400, 422}:
+            category = "invalid_request"
+        elif status_code == 429:
+            category = "rate_limited"
+        elif 500 <= status_code <= 599:
+            category = "provider_unavailable"
+        else:
+            category = "http_error"
+        return {
+            "error": type(exc).__name__,
+            "status_code": status_code,
+            "category": category,
+        }
+    if isinstance(exc, TimeoutError | asyncio.TimeoutError):
+        return {
+            "error": type(exc).__name__,
+            "status_code": None,
+            "category": "timeout",
+        }
+    if isinstance(exc, httpx.RequestError):
+        return {
+            "error": type(exc).__name__,
+            "status_code": None,
+            "category": "network_error",
+        }
+    return {
+        "error": type(exc).__name__,
+        "status_code": None,
+        "category": "provider_error",
+    }
+
+
 async def ping_providers(
     settings: Settings | None = None, timeout_seconds: float = 8.0
 ) -> dict[str, dict[str, object]]:
@@ -753,10 +793,11 @@ async def ping_providers(
                 "error": None,
             }
         except Exception as exc:
+            diagnostics = _provider_error_diagnostics(exc)
             return provider.name, {
                 "ok": False,
                 "latency_ms": int((perf_counter() - started) * 1000),
-                "error": f"{type(exc).__name__}",
+                **diagnostics,
             }
 
     results = await asyncio.gather(*(_ping(provider) for provider in remote_providers))
