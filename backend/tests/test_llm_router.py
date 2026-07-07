@@ -52,7 +52,10 @@ class FakeAsyncClient:
 
     async def get(self, url: str, *, headers: dict) -> FakeResponse:
         self.gets.append({"url": url, "headers": headers})
-        return self.responses.pop(0)
+        response = self.responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
 
 
 class FailingProvider(LLMProvider):
@@ -222,6 +225,19 @@ def test_provider_statuses_do_not_expose_secret_values() -> None:
     assert manus["key_name"] == "MANUS_API_KEY"
 
 
+def test_provider_statuses_normalize_stale_model_overrides() -> None:
+    settings = Settings(
+        GEMINI_API_KEY="secret-gemini",
+        LLM_PROVIDER_ORDER="gemini",
+        LLM_DEFAULT_MODELS="gemini=gemini-2.5-flash",
+    )
+
+    statuses = provider_statuses(settings)
+
+    gemini = next(status for status in statuses if status["provider"] == "gemini")
+    assert gemini["model"] == "gemini-3.5-flash"
+
+
 @pytest.mark.asyncio
 async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> None:
     FakeAsyncClient.posts = []
@@ -256,6 +272,31 @@ async def test_ping_providers_uses_credential_model_check(monkeypatch) -> None:
     assert result["openai"]["mode"] == "credential_model_check"
     assert FakeAsyncClient.posts == []
     assert FakeAsyncClient.gets[0]["headers"]["Authorization"] == "Bearer secret-openai"
+
+
+@pytest.mark.asyncio
+async def test_ping_providers_falls_back_when_model_check_times_out(monkeypatch) -> None:
+    FakeAsyncClient.posts = []
+    FakeAsyncClient.gets = []
+    FakeAsyncClient.responses = [
+        httpx.TimeoutException("slow models endpoint"),
+        FakeResponse(
+            {
+                "model": "gpt-4o",
+                "choices": [{"message": {"content": "pong"}}],
+                "usage": {},
+            }
+        ),
+    ]
+    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+
+    settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
+    result = await ping_providers(settings)
+
+    assert result["openai"]["ok"] is True
+    assert result["openai"]["mode"] == "generation_ping"
+    assert len(FakeAsyncClient.gets) == 1
+    assert len(FakeAsyncClient.posts) == 1
 
 
 @pytest.mark.asyncio

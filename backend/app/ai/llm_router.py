@@ -10,7 +10,12 @@ from urllib.parse import urljoin
 
 import httpx
 from app.ai.models import LLMRequest, LLMResponse
-from app.ai.provider_catalog import DEFAULT_PROVIDER_ORDER, PROVIDER_ALIASES, PROVIDER_CONFIGS
+from app.ai.provider_catalog import (
+    DEFAULT_PROVIDER_ORDER,
+    PROVIDER_ALIASES,
+    PROVIDER_CONFIGS,
+    STALE_MODEL_ALIASES,
+)
 from app.core.config import Settings, get_settings
 
 logger = logging.getLogger("smyst.ai.llm_router")
@@ -215,11 +220,15 @@ class OpenAICompatibleProvider(LLMProvider):
 
     async def healthcheck(self, request: LLMRequest) -> dict[str, object]:
         headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
-        async with httpx.AsyncClient(timeout=min(self.timeout, 8.0)) as client:
-            response = await client.get(self.models_url, headers=headers)
-            response.raise_for_status()
-        self._assert_model_available(response.json())
-        return {"mode": "credential_model_check"}
+        try:
+            async with httpx.AsyncClient(timeout=min(self.timeout, 2.5)) as client:
+                response = await client.get(self.models_url, headers=headers)
+                response.raise_for_status()
+            self._assert_model_available(response.json())
+            return {"mode": "credential_model_check"}
+        except (httpx.TimeoutException, httpx.RequestError):
+            await LLMProvider.healthcheck(self, request)
+            return {"mode": "generation_ping"}
 
     def _assert_model_available(self, data: dict[str, Any]) -> None:
         raw_models = data.get("data")
@@ -304,11 +313,15 @@ class AnthropicProvider(OpenAICompatibleProvider):
             "x-api-key": self.api_key,
             "anthropic-version": "2023-06-01",
         }
-        async with httpx.AsyncClient(timeout=min(self.timeout, 8.0)) as client:
-            response = await client.get(urljoin(self.base_url, "models"), headers=headers)
-            response.raise_for_status()
-        self._assert_model_available(response.json())
-        return {"mode": "credential_model_check"}
+        try:
+            async with httpx.AsyncClient(timeout=min(self.timeout, 2.5)) as client:
+                response = await client.get(urljoin(self.base_url, "models"), headers=headers)
+                response.raise_for_status()
+            self._assert_model_available(response.json())
+            return {"mode": "credential_model_check"}
+        except (httpx.TimeoutException, httpx.RequestError):
+            await LLMProvider.healthcheck(self, request)
+            return {"mode": "generation_ping"}
 
 
 class ManusProvider(LLMProvider):
@@ -438,6 +451,15 @@ def _provider_order(settings: Settings) -> list[str]:
     return [name for name in order if name in PROVIDER_CONFIGS]
 
 
+def _model_for_provider(
+    provider_name: str,
+    config_default: str,
+    model_overrides: dict[str, str],
+) -> str:
+    configured_model = model_overrides.get(provider_name, config_default)
+    return STALE_MODEL_ALIASES.get((provider_name, configured_model), configured_model)
+
+
 def provider_statuses(settings: Settings | None = None) -> list[dict[str, object]]:
     active_settings = settings or get_settings()
     model_overrides = {
@@ -463,7 +485,7 @@ def provider_statuses(settings: Settings | None = None) -> list[dict[str, object
                 "key_name": config.api_key_attr.upper(),
                 "configured": bool(key_value),
                 "supported": True,
-                "model": model_overrides.get(provider_name, config.default_model),
+                "model": _model_for_provider(provider_name, config.default_model, model_overrides),
                 "base_url": config.base_url,
             }
         )
@@ -488,7 +510,7 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
         api_key = getattr(active_settings, config.api_key_attr, None)
         if not api_key:
             continue
-        model = model_overrides.get(provider_name, config.default_model)
+        model = _model_for_provider(provider_name, config.default_model, model_overrides)
         provider_cls = (
             AnthropicProvider if provider_name == "anthropic" else OpenAICompatibleProvider
         )
