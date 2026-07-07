@@ -3220,32 +3220,13 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
   )
 }
 
-const SIGN_IN_RULES = [
-  'Chat darf sofort sichtbar sein',
-  'Private Daten erst nach Login speichern',
-  'Fehlertext sagt immer, was zu tun ist',
-  'Login bleibt geschützt und klar getrennt',
-  'Export/Löschung direkt auffindbar',
-  'Bot-Schutz an, ohne dass Login stört',
-]
-
-function SignInRequiredCard({ title, text, returnTo, compact = false }: { title: string; text: string; returnTo: string; compact?: boolean }) {
+function SignInRequiredCard({ title, text, returnTo }: { title: string; text: string; returnTo: string; compact?: boolean }) {
   return (
     <Card className="p-6 sm:p-8">
       <CardContent className="flex flex-col items-start gap-4 p-0 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-xl font-bold tracking-tight">{title}</h2>
           <p className="mt-1 text-sm text-[#555b64]">{text}</p>
-          {!compact && (
-            <ul className="mt-4 space-y-1.5">
-              {SIGN_IN_RULES.map((rule) => (
-                <li key={rule} className="flex items-center gap-2 text-sm text-[#555b64]">
-                  <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#22c55e]/15 text-[10px] font-bold text-[#0b7a3b]">✓</span>
-                  {rule}
-                </li>
-              ))}
-            </ul>
-          )}
         </div>
         <div className="w-full sm:w-auto sm:min-w-[260px]">
           <Suspense fallback={null}>

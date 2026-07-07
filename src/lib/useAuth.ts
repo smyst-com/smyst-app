@@ -69,6 +69,52 @@ const JSON_POST_HEADERS = {
   'X-Smyst-CSRF': '1',
 } as const;
 
+let sharedAuthState: AuthState = { status: 'loading', user: null };
+let sharedAuthRequest: Promise<void> | null = null;
+let authTokenCaptured = false;
+const authListeners = new Set<(state: AuthState) => void>();
+
+function setSharedAuthState(next: AuthState) {
+  sharedAuthState = next;
+  authListeners.forEach((listener) => listener(next));
+}
+
+function subscribeAuth(listener: (state: AuthState) => void) {
+  authListeners.add(listener);
+  listener(sharedAuthState);
+  return () => authListeners.delete(listener);
+}
+
+async function refreshSharedAuth(enabled: boolean, force = false) {
+  if (!enabled) return;
+  if (sharedAuthRequest && !force) return sharedAuthRequest;
+  sharedAuthRequest = (async () => {
+    try {
+      const res = await fetchAuth('/me', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) {
+        setSharedAuthState({ status: 'anonymous', user: null });
+        return;
+      }
+      const data = (await res.json()) as MeResponse;
+      if (data.authenticated && data.user) {
+        setSharedAuthState({ status: 'authenticated', user: data.user });
+      } else {
+        setSharedAuthState({ status: 'anonymous', user: null });
+      }
+    } catch (err) {
+      console.warn('[auth] /auth/me failed', err);
+      setSharedAuthState({ status: 'anonymous', user: null });
+    } finally {
+      sharedAuthRequest = null;
+    }
+  })();
+  return sharedAuthRequest;
+}
+
 async function postEmailAuth(path: string, payload: Record<string, unknown>): Promise<EmailAuthResult> {
   try {
     const res = await fetchAuth(path, {
@@ -99,33 +145,10 @@ async function postEmailAuth(path: string, payload: Record<string, unknown>): Pr
 
 export function useAuth(options: { enabled?: boolean } = {}) {
   const enabled = options.enabled ?? true;
-  const [state, setState] = useState<AuthState>({ status: 'loading', user: null });
+  const [state, setState] = useState<AuthState>(() => (enabled ? sharedAuthState : { status: 'anonymous', user: null }));
 
   const fetchMe = useCallback(async () => {
-    if (!enabled) {
-      setState({ status: 'anonymous', user: null });
-      return;
-    }
-    try {
-      const res = await fetchAuth('/me', {
-        method: 'GET',
-        credentials: 'include',
-        headers: { Accept: 'application/json' },
-      });
-      if (!res.ok) {
-        setState({ status: 'anonymous', user: null });
-        return;
-      }
-      const data = (await res.json()) as MeResponse;
-      if (data.authenticated && data.user) {
-        setState({ status: 'authenticated', user: data.user });
-      } else {
-        setState({ status: 'anonymous', user: null });
-      }
-    } catch (err) {
-      console.warn('[auth] /auth/me failed', err);
-      setState({ status: 'anonymous', user: null });
-    }
+    await refreshSharedAuth(enabled);
   }, [enabled]);
 
   useEffect(() => {
@@ -133,17 +156,24 @@ export function useAuth(options: { enabled?: boolean } = {}) {
       setState({ status: 'anonymous', user: null });
       return;
     }
+    const unsubscribe = subscribeAuth(setState);
     // Nach dem OAuth-Callback steht die Session als Token im URL-Fragment
     // (#smyst_auth=...), weil Cross-Site-Cookies (salad.cloud -> smyst.com)
     // von Browsern blockiert werden. Einmalig auslesen, speichern, URL saeubern.
-    captureAuthTokenFromLocation();
+    if (!authTokenCaptured) {
+      captureAuthTokenFromLocation();
+      authTokenCaptured = true;
+    }
     fetchMe();
     // Re-prüfe bei Tab-Fokus (User könnte in einem anderen Tab eingeloggt haben)
     const onVisibility = () => {
       if (!document.hidden) fetchMe();
     };
     document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      unsubscribe();
+    };
   }, [enabled, fetchMe]);
 
   const signInWithGoogle = useCallback((returnTo?: string) => {
@@ -161,17 +191,19 @@ export function useAuth(options: { enabled?: boolean } = {}) {
   const signInWithEmail = useCallback(
     async (email: string, password: string): Promise<EmailAuthResult> => {
       const result = await postEmailAuth('/email/login', { email, password });
-      if (result.ok) await fetchMe();
+      if (result.ok) await refreshSharedAuth(enabled, true);
       return result;
     },
-    [fetchMe],
+    [enabled],
   );
 
   const registerWithEmail = useCallback(
     async (email: string, password: string, name?: string): Promise<EmailAuthResult> => {
-      return postEmailAuth('/email/register', { email, password, name });
+      const result = await postEmailAuth('/email/register', { email, password, name });
+      if (result.ok) await refreshSharedAuth(enabled, true);
+      return result;
     },
-    [],
+    [enabled],
   );
 
   const requestPasswordReset = useCallback(
@@ -192,7 +224,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
       console.warn('[auth] logout failed', err);
     }
     clearStoredAuthToken();
-    setState({ status: 'anonymous', user: null });
+    setSharedAuthState({ status: 'anonymous', user: null });
     // Reload, damit alle authentifizierten Komponenten neu gerendert werden
     window.location.href = '/';
   }, []);
@@ -208,7 +240,7 @@ export function useAuth(options: { enabled?: boolean } = {}) {
       console.warn('[auth] logout-all failed', err);
     }
     clearStoredAuthToken();
-    setState({ status: 'anonymous', user: null });
+    setSharedAuthState({ status: 'anonymous', user: null });
     window.location.href = '/';
   }, []);
 
