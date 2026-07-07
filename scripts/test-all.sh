@@ -40,6 +40,9 @@ if command -v node >/dev/null 2>&1; then
   echo "== Bottom icon regression protection =="
   node scripts/check-bottom-icon-regression.mjs
 
+  echo "== Safe destructive actions protection =="
+  node scripts/check-safe-destructive-actions.mjs
+
   echo "== Ad readiness audit =="
   node scripts/ad-readiness-audit.mjs
 
