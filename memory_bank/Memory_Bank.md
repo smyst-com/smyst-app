@@ -1,5 +1,20 @@
 # Memory Bank
 
+## Update 2026-07-07 II: Verified Web Research live aktiviert + Salad Deploy-Schutz
+
+- Verified Web Research fuer smyst.com wurde live aktiviert: GitHub Actions Secret `OPENAI_API_KEY` gesetzt, Salad Backend Deploy nutzt `WEB_RESEARCH_ENABLED=true` und `WEB_SEARCH_PROVIDER=openai`; keine Secrets wurden im Code gespeichert oder ausgegeben.
+- PR #132 gemergt: Verified-Web-Research-Layer mit Search Decision Engine, Privacy Query Rewriter, Provider-Abstraktion, IDrivee2.com-cache-first, Public-Knowledge-Reviewstatus, Prompt-Injection-Schutz und Chat/UI-Quellenanzeige.
+- PR #134 gemergt: OpenAI Responses `web_search`-Payload auf aktuelle Form gehaertet (`search_context_size=low`, kein `external_web_access` im Tool-Payload); Provider-Mock-Test ergaenzt.
+- PR #136 gemergt: konservativer OpenAI-Web-Search-Default wieder `gpt-4.1-mini`; Payload-Fix blieb aktiv. Deploy #59 erfolgreich, Salad brauchte nach dem GitHub-Erfolg noch mehrere Minuten fuer Image Download/Readiness.
+- PR #137 gemergt: `scripts/deploy-salad-backend.mjs` wartet kuenftig bis `/api/health/live` und `/api/health/ready` wirklich 200 liefern, bevor Deploys als gesund gelten; `OPENAI_WEB_SEARCH_MODEL` wird in die Salad-Runtime-Env uebernommen; `scripts/live-test.sh` nutzt die echten `/api/...`-Pfade.
+- Live verifiziert 2026-07-07: `GET /api/health/live` 200, `GET /api/health/ready` 200 mit `storage_configured=true`, `GET /api/auth/me` 200 `authenticated:false`.
+- Live Datenschutztest: private/sensible Memory-Frage an `/api/web-research/run` liefert `searched:false` und fuehrt keine Websuche aus.
+- Live Aktivierungstest: oeffentliche aktuelle Frage an `/api/web-research/preview` liefert `required_search`, Kategorie `news`, Provider `openai`, `canCallProvider:true`.
+- Live Provider-/Cache-Test: `/api/web-research/run` liefert `searched:true`, Hinweis `Ich habe im Internet gesucht.`, Quellen und danach bei gleicher Anfrage `fromCache:true`.
+- Verifiziert lokal fuer die finalen Aenderungen: `pytest backend/tests` 126/126 gruen, Research/Chat-Research 14/14 gruen, `ruff check backend` gruen, TypeScript `tsc --noEmit` gruen, Vite Production Build gruen, `node --check scripts/deploy-salad-backend.mjs` gruen, `sh -n scripts/live-test.sh` gruen.
+- Betriebslehre: Salad-GitHub-Deploy-Erfolg bedeutet nicht automatisch Gateway-Readiness; System Events koennen `DOWNLOADING`, `STARTING`, `READY` zeigen. Kuenftige Deploys muessen auf Health warten oder im Portal `1 / 1 Replica Running` bestaetigen.
+- Schutzstatus: keine Datenbankmigration, keine DNS-Aenderung, keine Produktionsdaten geloescht; Websuche bleibt cache-first, redacted-query-first und Public-Knowledge-Updates bleiben reviewpflichtig.
+
 ## Update 2026-07-06 II: Consent-gated Ad-Readiness live (PR #117)
 
 - PR #117 (`codex/ad-consent-readiness`, gemergt): AdSense-/Werbe-Readiness vorbereitet, aber externe Werbung bleibt standardmaessig deaktiviert. Neuer `src/lib/ads.ts` laedt AdSense nur, wenn `VITE_ADSENSE_ENABLED=true`, `VITE_ADSENSE_CLIENT` gueltig ist, ein Slot gesetzt ist und Marketing-Consent aktiv ist. Ohne diese Freigaben werden keine Google-/AdSense-Skripte geladen.
