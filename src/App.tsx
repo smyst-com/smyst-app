@@ -702,7 +702,7 @@ export default function App() {
         {currentView === 'account-profile' && <AccountProfileView onNavigate={navigateTo} />}
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
-        {currentView === 'memory-upload' && <MemoryUploadView />}
+        {currentView === 'memory-upload' && <MemoryUploadView onNavigate={navigateTo} />}
         {currentView === 'twin-chat' && <TwinChatView initialTwinId={profileSlug} onNavigate={navigateTo} />}
         {currentView === 'settings' && (
           <SettingsView
@@ -2926,7 +2926,7 @@ function TwinProfileView({
             smyst<span className="text-[0.78em]">.com</span>
           </button>
           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
-            {profile.visibility === 'public' ? 'Öffentlich indexierbar' : 'Privat · noindex'}
+            {profile.visibility === 'public' ? 'Öffentlich sichtbar' : 'Privat · nicht öffentlich'}
           </span>
         </div>
 
@@ -3260,6 +3260,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   const [profile, setProfile] = useState<UserProfileRecord | null>(null)
   const [memories, setMemories] = useState<MemoryRecord[]>([])
   const [chatResults, setChatResults] = useState<ChatSearchResult[]>([])
+  const [profileTwinCount, setProfileTwinCount] = useState(0)
   const [profileDraft, setProfileDraft] = useState({
     displayName: '',
     headline: '',
@@ -3297,15 +3298,17 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   }
 
   const refreshProfileData = async () => {
-    const [profileResponse, memoryResponse] = await Promise.all([
+    const [profileResponse, memoryResponse, twinsResponse] = await Promise.all([
       twinMvp.getProfile(),
       twinMvp.listMemories(),
+      twinMvp.listTwins(),
     ])
     if (profileResponse?.profile) {
       setProfile(profileResponse.profile)
       hydrateProfileDraft(profileResponse.profile)
     }
     if (memoryResponse?.memories) setMemories(memoryResponse.memories)
+    setProfileTwinCount(twinsResponse?.length ?? 0)
   }
 
   useEffect(() => {
@@ -3458,6 +3461,37 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     { label: 'Sprache', done: splitDraftList(profileDraft.languages).length > 0 },
   ]
   const completedProfileItems = profileChecklist.filter((item) => item.done).length
+  const guidedProfileSteps = [
+    {
+      label: 'Profil',
+      detail: `${completedProfileItems}/${profileChecklist.length} Angaben fertig`,
+      done: completedProfileItems === profileChecklist.length || qualityScore >= 70,
+      target: 'account-profile' as AppView,
+      action: 'Profil prüfen',
+    },
+    {
+      label: 'Twin',
+      detail: profileTwinCount > 0 ? `${profileTwinCount} Twin${profileTwinCount === 1 ? '' : 's'} angelegt` : 'Noch keinen Twin angelegt',
+      done: profileTwinCount > 0,
+      target: 'twin-builder' as AppView,
+      action: 'Twin erstellen',
+    },
+    {
+      label: 'Erinnerungen',
+      detail: `${profile?.memoryCount ?? memories.length} Eintrag${(profile?.memoryCount ?? memories.length) === 1 ? '' : 'e'} gespeichert`,
+      done: (profile?.memoryCount ?? memories.length) > 0,
+      target: 'memory-upload' as AppView,
+      action: 'Daten hochladen',
+    },
+    {
+      label: 'Datenkontrolle',
+      detail: 'Export und Löschung erreichbar',
+      done: true,
+      target: 'trust' as AppView,
+      action: 'Datenschutz öffnen',
+    },
+  ]
+  const nextGuidedProfileStep = guidedProfileSteps.find((step) => !step.done) ?? guidedProfileSteps[guidedProfileSteps.length - 1]
 
   return (
     <div className="pt-6">
@@ -3470,18 +3504,69 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           </p>
         </div>
         {auth.status === 'authenticated' && (
-          <Button variant="secondary" onClick={() => onNavigate('dashboard')}>Zur Übersicht</Button>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="secondary" onClick={() => onNavigate('onboarding')}>Start-Assistent</Button>
+            <Button onClick={() => onNavigate(nextGuidedProfileStep.target)}>{nextGuidedProfileStep.action}</Button>
+          </div>
         )}
       </div>
 
       {auth.status !== 'authenticated' ? (
-        <SignInRequiredCard
-          title="Anmelden oder registrieren"
-          text="Melde dich an, damit private Daten geschützt bleiben und nur für dich sichtbar sind."
-          returnTo="/profile"
-        />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <Card className="p-5 sm:p-6 lg:col-span-2">
+            <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Geführter Ablauf</p>
+            <h2 className="text-xl font-bold tracking-tight">Was als Nächstes wirklich zählt</h2>
+            <p className="mt-1 text-sm text-[#555b64]">
+              Erst anmelden, dann Profil sichern, Twin erstellen, Erinnerungen hochladen und Datenschutz prüfen.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {['Profil sichern', 'Twin erstellen', 'Erinnerungen hinzufügen', 'Daten kontrollieren'].map((step, index) => (
+                <div key={step} className="rounded-lg border border-white/20 bg-white/12 p-4">
+                  <p className="text-xs font-bold text-[#667085]">Schritt {index + 1}</p>
+                  <p className="mt-1 text-sm font-bold">{step}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+          <SignInRequiredCard
+            title="Anmelden oder registrieren"
+            text="Melde dich an, damit private Daten geschützt bleiben und nur für dich sichtbar sind."
+            returnTo="/profile"
+          />
+        </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+          <Card className="p-5 sm:p-6 lg:col-span-2">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Geführter Ablauf</p>
+                <h2 className="text-xl font-bold tracking-tight">Was als Nächstes wirklich zählt</h2>
+                <p className="mt-1 text-sm text-[#555b64]">
+                  smyst.com führt dich von Profil zu Twin, Erinnerungen und Datenschutz, ohne unnötige technische Schritte.
+                </p>
+              </div>
+              <Button className="w-full justify-center lg:w-auto" onClick={() => onNavigate(nextGuidedProfileStep.target)}>
+                {nextGuidedProfileStep.action}
+              </Button>
+            </div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {guidedProfileSteps.map((step) => (
+                <button
+                  key={step.label}
+                  type="button"
+                  onClick={() => onNavigate(step.target)}
+                  className="rounded-lg border border-white/20 bg-white/12 p-4 text-left transition-colors hover:bg-white/18"
+                >
+                  <span className={`mb-3 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${step.done ? 'bg-emerald-500/18 text-emerald-800' : 'bg-amber-400/20 text-amber-900'}`}>
+                    {step.done ? 'OK' : 'Offen'}
+                  </span>
+                  <span className="block text-sm font-bold">{step.label}</span>
+                  <span className="mt-1 block text-xs leading-relaxed text-[#667085]">{step.detail}</span>
+                </button>
+              ))}
+            </div>
+          </Card>
+
           <Card className="p-6 sm:p-8">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-5">
@@ -3517,7 +3602,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
               </div>
               <div className="rounded-lg bg-white/16 p-4">
                 <p className="text-xs text-[#667085]">Twins</p>
-                <p className="mt-1 text-sm font-semibold">Bereich Meine Twins</p>
+                <p className="mt-1 text-sm font-semibold">{profileTwinCount}</p>
               </div>
               <div className="rounded-lg bg-white/16 p-4">
                 <p className="text-xs text-[#667085]">Memories</p>
@@ -3607,7 +3692,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           <Card className="p-6">
             <h3 className="mb-4 text-lg font-semibold">Nächste beste Aktion</h3>
             <div className="space-y-3">
-              <Button className="w-full justify-center" onClick={() => onNavigate('twin-builder')}>Twin erstellen</Button>
+              <Button className="w-full justify-center" onClick={() => onNavigate(nextGuidedProfileStep.target)}>{nextGuidedProfileStep.action}</Button>
+              <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('onboarding')}>Start-Assistent</Button>
               <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
               <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('settings')}>Einstellungen</Button>
             </div>
@@ -3644,8 +3730,9 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           <Card className="p-6 lg:col-span-2">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h3 className="text-lg font-semibold">Public Knowledge</h3>
-                <p className="text-sm text-[#555b64]">Öffentliche Profilinformationen bleiben getrennt von privaten Memories.</p>
+                <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Optional</p>
+                <h3 className="text-lg font-semibold">Öffentliche Angaben prüfen</h3>
+                <p className="text-sm text-[#555b64]">Nur verwenden, wenn du bewusst öffentliche Profilinformationen vorbereiten willst.</p>
               </div>
               <Button
                 variant="secondary"
@@ -3657,17 +3744,17 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
             </div>
             <div className="grid gap-3 lg:grid-cols-4">
               <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Private Memory</p>
+                <p className="text-sm font-semibold">Private Erinnerungen</p>
                 <p className="mt-1 text-xs text-[#667085]">{memories.length} private Einträge, nicht für Websuche freigegeben.</p>
               </div>
               <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Public Knowledge</p>
+                <p className="text-sm font-semibold">Öffentliche Angaben</p>
                 <p className="mt-1 text-xs text-[#667085]">
                   {profileDraft.publicBio.trim() || profileDraft.headline.trim() || 'Noch keine öffentliche Bio gepflegt.'}
                 </p>
               </div>
               <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Pending Research Updates</p>
+                <p className="text-sm font-semibold">Offene Vorschläge</p>
                 <p className="mt-1 text-xs text-[#667085]">
                   {publicKnowledgeSuggestion?.suggested
                     ? `${publicKnowledgeSuggestion.status ?? 'discovered'} · Review erforderlich`
@@ -3675,7 +3762,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 </p>
               </div>
               <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Approved Sources</p>
+                <p className="text-sm font-semibold">Geprüfte Quellen</p>
                 <p className="mt-1 text-xs text-[#667085]">
                   {publicKnowledgeSuggestion?.status === 'approved'
                     ? `${publicKnowledgeSuggestion.sources?.length ?? 0} Quellen akzeptiert`
@@ -3763,6 +3850,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           <SocialLinksCard />
 
           <Card className="p-6 lg:col-span-2">
+            <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Optional</p>
             <h3 className="mb-2 text-lg font-semibold">Chatverlauf suchen</h3>
             <p className="mb-4 text-sm text-[#555b64]">Optional: finde ältere Gespräche, ohne durch technische Archivdaten zu müssen.</p>
             <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
@@ -3801,6 +3889,8 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
   const twinMvp = useTwinMvp()
   const [profile, setProfile] = useState<UserProfileRecord | null>(null)
   const [twinCount, setTwinCount] = useState(0)
+  const [memoryCount, setMemoryCount] = useState(0)
+  const [chatCount, setChatCount] = useState(0)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -3809,13 +3899,17 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
       if (auth.status !== 'authenticated') return
       setLoading(true)
       try {
-        const [profileResult, twins] = await Promise.all([
+        const [profileResult, twins, memories, chats] = await Promise.all([
           twinMvp.getProfile(),
           twinMvp.listTwins(),
+          twinMvp.listMemories(),
+          twinMvp.listTwinChats(),
         ])
         if (cancelled) return
         setProfile(profileResult?.profile ?? null)
         setTwinCount(twins?.length ?? 0)
+        setMemoryCount(profileResult?.profile?.memoryCount ?? memories?.memories?.length ?? 0)
+        setChatCount(profileResult?.profile?.chatCount ?? chats?.length ?? 0)
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -3828,8 +3922,14 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
   }, [auth.status])
 
   const quality = profile?.qualityScore ?? 0
-  const memoryCount = profile?.memoryCount ?? 0
-  const chatCount = profile?.chatCount ?? 0
+  const onboardingPreviewSteps = [
+    'Konto sichern',
+    'Profil vervollständigen',
+    'Twin erstellen',
+    'Erinnerungen hinzufügen',
+    'Twin testen',
+    'Datenkontrolle prüfen',
+  ]
   const steps: Array<{
     id: string
     title: string
@@ -3906,6 +4006,14 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
           text="Private Profile, Memories und Chats werden erst nach Login dauerhaft gespeichert."
           returnTo="/onboarding"
         />
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {onboardingPreviewSteps.map((step, index) => (
+            <Card key={step} className="p-4">
+              <p className="text-xs font-bold text-[#667085]">Schritt {index + 1}</p>
+              <p className="mt-1 text-sm font-bold">{step}</p>
+            </Card>
+          ))}
+        </div>
       </div>
     )
   }
@@ -3936,6 +4044,7 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
             <p className="text-sm text-[#555b64]">
               {completed} von {steps.length} Schritten erledigt. Nächster Schritt: {nextStep.title}.
             </p>
+            {loading && <p className="text-xs font-semibold text-[#667085]">Status wird gerade aktualisiert.</p>}
           </div>
         </div>
       </div>
@@ -4349,7 +4458,7 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
         'Nutzer dürfen nur Daten hochladen, für die sie Rechte und Einwilligungen haben.',
         'Missbrauch, Spam, illegale Inhalte und Verletzungen von Persönlichkeitsrechten sind verboten.',
         'AI-Twins sind digitale Profile und dürfen nicht als echte Person ausgegeben werden.',
-        'Öffentliche Twins können indexiert werden; private Twins bleiben privat und noindex.',
+        'Öffentliche Twins können sichtbar werden; private Twins bleiben geschützt und werden nicht öffentlich angezeigt.',
         'Uploads, Speicher und API-Nutzung haben Schutz- und Missbrauchsgrenzen.',
         'Werbung darf nicht manipuliert, automatisiert geklickt, verdeckt, über Inhalt gelegt oder zur Erzeugung ungueltiger Zugriffe missbraucht werden.',
       ],
@@ -5860,10 +5969,11 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
 
   return (
     <div className="pt-6">
-      <div className="mb-5">
-        <h1 className="mb-1 text-2xl font-bold tracking-tight">Twin Builder</h1>
-        <p className="text-sm text-[#555b64]">Erstelle deinen digitalen Zwilling in wenigen Schritten.</p>
-      </div>
+        <div className="mb-5">
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">Twin Builder</h1>
+          <p className="text-sm text-[#555b64]">Erstelle deinen digitalen Zwilling in wenigen Schritten.</p>
+          <p className="mt-1 text-sm text-[#555b64]">Private Profilseiten werden nicht öffentlich angezeigt.</p>
+        </div>
 
       {/* Sign-In Prompt: nur wenn nicht eingeloggt */}
       {auth.status === 'anonymous' && (
@@ -6050,7 +6160,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
                   className="sr-only"
                 />
                 <p className="text-sm font-semibold">Privat</p>
-                <p className="mt-1 text-xs text-[#767d87]">Nur angemeldet sichtbar. Profilseiten bekommen automatisch noindex.</p>
+                <p className="mt-1 text-xs text-[#767d87]">Nur angemeldet sichtbar. Private Profilseiten werden nicht öffentlich angezeigt.</p>
               </label>
 
               <label className={`rounded-lg border p-4 transition-colors ${visibility === 'public' ? 'border-[#59C7FF] bg-[#59C7FF]/12' : 'border-white/26 bg-white/12'}`}>
@@ -6117,7 +6227,7 @@ function inferMemoryCategory(file: File): MemoryCategory {
   return 'document'
 }
 
-function MemoryUploadView() {
+function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const auth = useAuth()
   const memoryUpload = useMemoryUpload()
@@ -6137,6 +6247,12 @@ function MemoryUploadView() {
     acc[file.category] = (acc[file.category] ?? 0) + 1
     return acc
   }, {})
+  const uploadSafetyChecks = [
+    ['Du darfst es nutzen', 'Keine fremden privaten Daten ohne Erlaubnis hochladen.'],
+    ['Es hilft deinem Twin', 'Nur Wissen, Erinnerungen oder Medien hochladen, die später wirklich gebraucht werden.'],
+    ['Es ist nicht öffentlich', 'Uploads bleiben accountgebunden und werden nicht automatisch geteilt.'],
+    ['Du kannst es entfernen', 'Export und Löschung bleiben über dein Profil erreichbar.'],
+  ]
 
   const handleFiles = async (files: FileList | File[]) => {
     if (auth.status !== 'authenticated') return
@@ -6158,6 +6274,29 @@ function MemoryUploadView() {
         <h1 className="mb-1 text-2xl font-bold tracking-tight">Memory Upload</h1>
         <p className="text-sm text-[#555b64]">Lade nur Dateien hoch, die dein Twin wirklich verwenden darf.</p>
       </div>
+
+      <Card className="mb-6 p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Vor dem Upload</p>
+            <h2 className="text-xl font-bold tracking-tight">Vier einfache Fragen</h2>
+            <p className="mt-1 max-w-2xl text-sm text-[#555b64]">
+              Wenn alle Punkte passen, ist der Upload sinnvoll. Wenn nicht, Datei weglassen oder vorher klären.
+            </p>
+          </div>
+          <Button variant="secondary" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            Prüfung ansehen
+          </Button>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {uploadSafetyChecks.map(([title, text]) => (
+            <div key={title} className="rounded-lg border border-white/20 bg-white/12 p-4">
+              <p className="text-sm font-bold">{title}</p>
+              <p className="mt-1 text-xs leading-relaxed text-[#667085]">{text}</p>
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -6254,11 +6393,25 @@ function MemoryUploadView() {
               ))}
             </div>
           </Card>
+          <Card className="mt-6 p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Nächster Schritt</h3>
+                <p className="mt-1 text-sm text-[#555b64]">
+                  Nach dem Upload kannst du den Twin erstellen oder direkt testen.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button variant="secondary" onClick={() => onNavigate('onboarding')}>Assistent</Button>
+                <Button onClick={() => onNavigate('twin-chat')}>Chat testen</Button>
+              </div>
+            </div>
+          </Card>
         </div>
 
         <div>
           <Card>
-            <h3 className="mb-4 text-lg font-semibold">Memory Kategorien</h3>
+            <h3 className="mb-4 text-lg font-semibold">Upload-Arten</h3>
             <div className="space-y-2">
               {(['profile_image', 'image', 'audio', 'video', 'document', 'backup', 'twin_data'] as MemoryCategory[]).map((category) => (
                 <div key={category} className="flex items-center justify-between rounded-lg bg-white/12 p-3">
@@ -6270,7 +6423,7 @@ function MemoryUploadView() {
           </Card>
 
           <Card className="mt-6">
-            <h3 className="mb-4 text-lg font-semibold">Statistiken</h3>
+            <h3 className="mb-4 text-lg font-semibold">Heute hochgeladen</h3>
             <div className="space-y-4">
               <div>
                 <p className="mb-1 text-sm text-[#767d87]">Gesamte Memories</p>
