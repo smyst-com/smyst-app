@@ -64,6 +64,24 @@ class MockProvider:
         )
 
 
+class FailingProvider:
+    name = "failing"
+
+    async def search(
+        self,
+        query: str,
+        *,
+        category: QueryCategory,
+        max_results: int = 3,
+    ) -> WebSearchResponse:
+        raise RuntimeError("provider unavailable")
+
+
+class FailingWriteCache(InMemoryResearchCacheStore):
+    async def put_json(self, key: str, data: dict) -> None:
+        raise RuntimeError("cache unavailable")
+
+
 def enabled_settings() -> Settings:
     return Settings(WEB_RESEARCH_ENABLED=True, WEB_SEARCH_PROVIDER="brave", BRAVE_SEARCH_API_KEY="x")
 
@@ -182,6 +200,34 @@ async def test_expired_cache_calls_provider() -> None:
     assert response is not None
     assert response.from_cache is False
     assert len(provider.calls) == 1
+
+
+@pytest.mark.asyncio
+async def test_provider_failure_does_not_crash_research() -> None:
+    service = VerifiedWebResearchService(
+        provider=FailingProvider(),
+        cache_store=InMemoryResearchCacheStore(),
+        active_settings=enabled_settings(),
+    )
+
+    response = await service.research("Bitte online aktuelle News zu Open Source KI suchen.")
+
+    assert response is None
+
+
+@pytest.mark.asyncio
+async def test_cache_write_failure_keeps_provider_response() -> None:
+    service = VerifiedWebResearchService(
+        provider=MockProvider(),
+        cache_store=FailingWriteCache(),
+        active_settings=enabled_settings(),
+    )
+
+    response = await service.research("Bitte online aktuelle News zu Open Source KI suchen.")
+
+    assert response is not None
+    assert response.provider == "mock"
+    assert response.sources
 
 
 def test_prompt_injection_is_flagged_as_untrusted_web_content() -> None:

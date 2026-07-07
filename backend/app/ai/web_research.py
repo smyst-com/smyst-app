@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
@@ -13,6 +14,8 @@ from urllib.parse import urlparse
 import httpx
 
 from app.core.config import Settings, settings
+
+logger = logging.getLogger("smyst.ai.web_research")
 
 
 class SearchDecision(str, Enum):
@@ -774,9 +777,28 @@ class VerifiedWebResearchService:
         budget = await self.check_and_increment_budget(context)
         if not budget.allowed:
             return None
-        response = await self.provider.search(rewrite.query, category=decision.category, max_results=max_results)
+        try:
+            response = await self.provider.search(
+                rewrite.query,
+                category=decision.category,
+                max_results=max_results,
+            )
+        except Exception as exc:  # noqa: BLE001 - Providerfehler duerfen Chat/API nicht crashen.
+            logger.warning(
+                "web research provider '%s' failed (%s)",
+                self.provider.name,
+                type(exc).__name__,
+            )
+            return None
         expires_at = (datetime.now(UTC) + ttl_for_category(decision.category)).replace(microsecond=0).isoformat()
-        await self.cache_store.put_json(key, response_to_cache_payload(response, expires_at))
+        try:
+            await self.cache_store.put_json(key, response_to_cache_payload(response, expires_at))
+        except Exception as exc:  # noqa: BLE001 - Cache ist best effort; Antwort bleibt nutzbar.
+            logger.warning(
+                "web research cache write failed for provider '%s' (%s)",
+                self.provider.name,
+                type(exc).__name__,
+            )
         return response
 
     async def suggest_public_profile_update(
