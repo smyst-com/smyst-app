@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
+import httpx
 from fastapi.testclient import TestClient
 
 from app.ai.web_research import (
@@ -72,7 +73,7 @@ def openai_enabled_settings() -> Settings:
         WEB_RESEARCH_ENABLED=True,
         WEB_SEARCH_PROVIDER="openai",
         OPENAI_API_KEY="test-key",
-        OPENAI_WEB_SEARCH_MODEL="gpt-4.1-mini",
+        OPENAI_WEB_SEARCH_MODEL="gpt-5.5",
     )
 
 
@@ -195,7 +196,68 @@ def test_openai_provider_is_selected_with_configured_model() -> None:
     provider = build_web_search_provider(openai_enabled_settings())
 
     assert isinstance(provider, OpenAIWebSearchProvider)
-    assert provider.model == "gpt-4.1-mini"
+    assert provider.model == "gpt-5.5"
+
+
+@pytest.mark.asyncio
+async def test_openai_provider_uses_current_web_search_payload(monkeypatch) -> None:
+    captured: dict[str, object] = {}
+
+    class FakeResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, object]:
+            return {
+                "output": [
+                    {
+                        "type": "message",
+                        "content": [
+                            {
+                                "type": "output_text",
+                                "text": "Verified public fact.",
+                                "annotations": [
+                                    {
+                                        "type": "url_citation",
+                                        "url": "https://example.com/source",
+                                        "title": "Source",
+                                    }
+                                ],
+                            }
+                        ],
+                    }
+                ]
+            }
+
+    class FakeClient:
+        def __init__(self, timeout: float) -> None:
+            captured["timeout"] = timeout
+
+        async def __aenter__(self) -> "FakeClient":
+            return self
+
+        async def __aexit__(self, *args: object) -> None:
+            return None
+
+        async def post(self, url: str, *, headers: dict[str, str], json: dict[str, object]) -> FakeResponse:
+            captured["url"] = url
+            captured["headers"] = headers
+            captured["json"] = json
+            return FakeResponse()
+
+    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
+    provider = OpenAIWebSearchProvider("test-key", model="gpt-5.5")
+
+    response = await provider.search("latest public news", category=QueryCategory.NEWS)
+
+    payload = captured["json"]
+    assert isinstance(payload, dict)
+    assert payload["model"] == "gpt-5.5"
+    assert payload["tools"] == [{"type": "web_search", "search_context_size": "low"}]
+    assert payload["tool_choice"] == "required"
+    assert payload["include"] == ["web_search_call.action.sources"]
+    assert "external_web_access" not in str(payload)
+    assert response.sources[0].url == "https://example.com/source"
 
 
 def test_openai_response_parser_extracts_citations_and_sources() -> None:

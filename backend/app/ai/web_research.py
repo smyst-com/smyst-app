@@ -486,7 +486,7 @@ class SearxngSearchProvider:
 class OpenAIWebSearchProvider:
     name = "openai"
 
-    def __init__(self, api_key: str, *, model: str = "gpt-4.1-mini", timeout: float = 12.0) -> None:
+    def __init__(self, api_key: str, *, model: str = "gpt-5.5", timeout: float = 12.0) -> None:
         self.api_key = api_key
         self.model = model
         self.timeout = timeout
@@ -540,7 +540,7 @@ class OpenAIWebSearchProvider:
         retrieved_at = utc_now_iso()
         payload = {
             "model": self.model,
-            "tools": [{"type": "web_search", "external_web_access": True}],
+            "tools": [{"type": "web_search", "search_context_size": "low"}],
             "tool_choice": "required",
             "include": ["web_search_call.action.sources"],
             "input": (
