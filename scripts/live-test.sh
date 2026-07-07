@@ -213,8 +213,8 @@ grep -F "Policy: https://smyst.com/trust" "$TMP_OUT" >/dev/null 2>&1 || {
   cat "$TMP_OUT" >&2 || true
   exit 1
 }
-check_body_contains "$API_BASE_URL/api/v1/health/live" "\"status\":\"live\""
-check_body_contains "$API_BASE_URL/api/v1/health/ready" "\"status\":\"ready\""
-check_status_content_type "GET" "$API_BASE_URL/api/v1/auth/me" "200" "application/json"
+check_body_contains "$API_BASE_URL/api/health/live" "\"status\":\"live\""
+check_body_contains "$API_BASE_URL/api/health/ready" "\"status\":\"ready\""
+check_status_content_type "GET" "$API_BASE_URL/api/auth/me" "200" "application/json"
 
 echo "smyst.com live smoke tests passed"

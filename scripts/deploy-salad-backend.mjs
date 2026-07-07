@@ -95,6 +95,7 @@ for (const k of [
   'MAIL_FROM',
   'WEB_RESEARCH_ENABLED',
   'WEB_SEARCH_PROVIDER',
+  'OPENAI_WEB_SEARCH_MODEL',
   'BRAVE_SEARCH_API_KEY',
   'SEARXNG_BASE_URL',
   'WEB_RESEARCH_BUDGET_PER_USER_DAY',
@@ -116,6 +117,37 @@ if (missing.length) {
 function sh(cmd, args) {
   console.log(`$ ${cmd} ${args.join(' ')}`);
   execFileSync(cmd, args, { stdio: 'inherit' });
+}
+
+async function waitForHealthy(endpoint) {
+  const waitSeconds = Number(process.env.SALAD_DEPLOY_HEALTH_WAIT_SECONDS || 900);
+  const intervalMs = Number(process.env.SALAD_DEPLOY_HEALTH_INTERVAL_MS || 10000);
+  const deadline = Date.now() + waitSeconds * 1000;
+  const liveUrl = `${endpoint}/api/health/live`;
+  const readyUrl = `${endpoint}/api/health/ready`;
+  let last = 'not checked yet';
+
+  while (Date.now() < deadline) {
+    try {
+      const [live, ready] = await Promise.all([
+        fetch(liveUrl, { signal: AbortSignal.timeout(8000) }),
+        fetch(readyUrl, { signal: AbortSignal.timeout(8000) }),
+      ]);
+      const liveText = await live.text();
+      const readyText = await ready.text();
+      last = `live=${live.status} ${liveText.slice(0, 180)} ready=${ready.status} ${readyText.slice(0, 180)}`;
+      if (live.ok && ready.ok && liveText.includes('"status":"live"') && readyText.includes('"status":"ready"')) {
+        console.log(`Salad backend healthy: ${liveUrl} and ${readyUrl}`);
+        return { liveUrl, readyUrl, last };
+      }
+    } catch (exc) {
+      last = exc instanceof Error ? exc.message : String(exc);
+    }
+    console.log(`Waiting for Salad backend health: ${last}`);
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+
+  throw new Error(`Salad backend did not become healthy within ${waitSeconds}s. Last check: ${last}`);
 }
 
 // ---- 1+2) Build & Push ----
@@ -219,6 +251,12 @@ if (!noStart && (!['running', 'deploying'].includes(status) || restarted)) {
 
 const networking = result?.networking || existing?.networking || {};
 const dns = networking.dns || networking.host || null;
+const endpoint = dns ? `https://${dns}` : null;
+let healthCheck = null;
+
+if (!noStart && endpoint) {
+  healthCheck = await waitForHealthy(endpoint);
+}
 
 console.log(JSON.stringify({
   ok: true,
@@ -230,8 +268,9 @@ console.log(JSON.stringify({
   statusBeforeStart: status,
   started,
   restarted,
-  endpoint: dns ? `https://${dns}` : '(URL erscheint im Salad-Portal, sobald deployed)',
-  health: dns ? `https://${dns}/api/v1/health/live` : null,
-  readiness: dns ? `https://${dns}/api/v1/health/ready` : null,
+  endpoint: endpoint || '(URL erscheint im Salad-Portal, sobald deployed)',
+  health: endpoint ? `${endpoint}/api/health/live` : null,
+  readiness: endpoint ? `${endpoint}/api/health/ready` : null,
+  healthCheck,
   next: 'App: VITE_AUTH_BASE_URL should use the Salad endpoint until api.smyst.com is accepted as a custom gateway host.',
 }, null, 2));
