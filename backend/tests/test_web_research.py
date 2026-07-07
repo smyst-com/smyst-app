@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.ai.web_research import (
     InMemoryResearchCacheStore,
+    OpenAIWebSearchProvider,
     PublicKnowledgeSuggestion,
     QueryCategory,
     ResearchContext,
@@ -14,6 +15,7 @@ from app.ai.web_research import (
     VerifiedWebResearchService,
     WebSearchResponse,
     WebSource,
+    build_web_search_provider,
     cache_key,
     decide_search,
     detect_prompt_injection,
@@ -63,6 +65,15 @@ class MockProvider:
 
 def enabled_settings() -> Settings:
     return Settings(WEB_RESEARCH_ENABLED=True, WEB_SEARCH_PROVIDER="brave", BRAVE_SEARCH_API_KEY="x")
+
+
+def openai_enabled_settings() -> Settings:
+    return Settings(
+        WEB_RESEARCH_ENABLED=True,
+        WEB_SEARCH_PROVIDER="openai",
+        OPENAI_API_KEY="test-key",
+        OPENAI_WEB_SEARCH_MODEL="gpt-4.1-mini",
+    )
 
 
 def test_private_question_does_not_trigger_web_search() -> None:
@@ -178,6 +189,59 @@ def test_prompt_injection_is_flagged_as_untrusted_web_content() -> None:
     )
 
     assert warnings == ("untrusted_web_content_contains_instruction_override",)
+
+
+def test_openai_provider_is_selected_with_configured_model() -> None:
+    provider = build_web_search_provider(openai_enabled_settings())
+
+    assert isinstance(provider, OpenAIWebSearchProvider)
+    assert provider.model == "gpt-4.1-mini"
+
+
+def test_openai_response_parser_extracts_citations_and_sources() -> None:
+    output_text, sources = OpenAIWebSearchProvider._extract_text_and_sources(
+        {
+            "output": [
+                {
+                    "type": "web_search_call",
+                    "action": {
+                        "type": "search",
+                        "sources": [
+                            {
+                                "type": "url_citation",
+                                "url": "https://example.com/source-a",
+                                "title": "Source A",
+                            }
+                        ],
+                    },
+                },
+                {
+                    "type": "message",
+                    "content": [
+                        {
+                            "type": "output_text",
+                            "text": "Verified public fact.",
+                            "annotations": [
+                                {
+                                    "type": "url_citation",
+                                    "url_citation": {
+                                        "url": "https://example.com/source-b",
+                                        "title": "Source B",
+                                    },
+                                }
+                            ],
+                        }
+                    ],
+                },
+            ]
+        }
+    )
+
+    assert output_text == "Verified public fact."
+    assert [source.url for source in sources] == [
+        "https://example.com/source-a",
+        "https://example.com/source-b",
+    ]
 
 
 @pytest.mark.asyncio
