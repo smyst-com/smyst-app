@@ -650,7 +650,6 @@ export default function App() {
             >
               {appTheme === 'dark' ? 'Heller' : 'Dunkler'}
             </button>
-            <a href="mailto:s@smyst.com" className="hidden text-sm text-[#9aa6b7] transition-colors hover:text-white lg:block">s@smyst.com</a>
             {/* Auth-Action: Avatar wenn eingeloggt, sonst Sign-In/Early-Access */}
             {auth.status === 'authenticated' ? (
               <button
@@ -666,7 +665,7 @@ export default function App() {
                 )}
               </button>
             ) : (
-              <Button size="sm" onClick={() => navigateTo('landing')}>
+              <Button size="sm" onClick={() => navigateTo('account-profile')}>
                 Einloggen
               </Button>
             )}
@@ -1980,17 +1979,21 @@ function SmystStartPage({
     void handleSend()
   }
 
-  const menuItems: Array<{ label: string; view: AppView; detail: string }> = [
+  const menuItems: Array<{ label: string; view: AppView; detail: string; adminOnly?: boolean }> = [
     { label: 'Start-Assistent', view: 'onboarding', detail: 'Schritt für Schritt zum fertigen Twin' },
     { label: 'Mein Profil', view: 'account-profile', detail: 'Identität, Bio, Rollen und Profilqualität' },
     { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persönlichkeit, Wissen und Sichtbarkeit' },
     { label: 'Meine Twins', view: 'my-twins', detail: 'Private und öffentliche AI Twins' },
     { label: 'Memories', view: 'memory-upload', detail: 'Dateien, Wissen und Erinnerungen hochladen' },
     { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespräche und Twin-Auswahl' },
-    { label: 'Admin', view: 'admin', detail: 'User, Werbung, Umsatz, Sicherheit und Betrieb' },
+    { label: 'Admin', view: 'admin', detail: 'User, Werbung, Umsatz, Sicherheit und Betrieb', adminOnly: true },
     { label: 'Datenschutz', view: 'trust', detail: 'Privatsphäre, Export und Löschung' },
     { label: 'Einstellungen', view: 'settings', detail: 'Sprache, Theme, Account und Logout' },
   ]
+  const canSeeAdmin = Boolean(
+    auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
+  )
+  const visibleMenuItems = menuItems.filter((item) => !item.adminOnly || canSeeAdmin)
 
   const goFromMenu = (view: AppView) => {
     setMenuOpen(false)
@@ -2182,7 +2185,7 @@ function SmystStartPage({
           </div>
 
           <ul className="space-y-1">
-            {menuItems.map((item) => (
+            {visibleMenuItems.map((item) => (
               <li key={item.label}>
                 <button
                   type="button"
