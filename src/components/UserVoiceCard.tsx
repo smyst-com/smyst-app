@@ -162,6 +162,7 @@ export default function UserVoiceCard() {
       let sampleFilename: string | undefined
       if (sampleBlob) {
         const extension = sampleBlob.type.includes('webm') ? 'webm' : 'wav'
+        const filename = `stimmprobe-${Date.now()}.${extension}`
         const base64 = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
           reader.onload = () => {
@@ -178,7 +179,7 @@ export default function UserVoiceCard() {
           body: JSON.stringify({
             audioBase64: base64,
             contentType: sampleBlob.type || 'audio/webm',
-            filename: `stimmprobe-${Date.now()}.${extension}`,
+            filename,
           }),
         })
         const uploadData = (await uploadResponse.json().catch(() => null)) as
@@ -190,7 +191,7 @@ export default function UserVoiceCard() {
           return
         }
         sampleKey = uploadData.sampleKey
-        sampleFilename = `stimmprobe-${Date.now()}.${extension}`
+        sampleFilename = filename
       }
       const response = await fetchService('/api/voice/profile', {
         method: 'POST',
@@ -248,14 +249,19 @@ export default function UserVoiceCard() {
 
   const active = Boolean(voice?.consent && voice?.voiceId)
   const activeLabel = VOICE_CHOICES.find((choice) => choice.id === voice?.voiceId)?.label
+  const voiceStatusItems = [
+    ['Stimmprobe', voice?.sampleKey || sampleBlob ? 'vorhanden' : 'optional'],
+    ['Geltung', 'nur eigene Twins'],
+    ['Freigabe', active ? 'aktiv' : 'offen'],
+  ]
 
   return (
-    <section className="rounded-xl border border-white/12 bg-white/[0.05] p-6 lg:col-span-2">
+    <section className="rounded-lg border border-white/12 bg-white/[0.05] p-6 lg:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="mb-1 text-lg font-semibold">Meine Stimme</h3>
           <p className="text-sm text-[#555b64]">
-            Dein Twin antwortet mit deiner gewählten Stimme — nur für deine eigenen Profile.
+            Dein Twin spricht mit deiner gewählten Stimme, sobald du mit deinen eigenen Profilen chattest.
           </p>
         </div>
         {active && (
@@ -265,12 +271,21 @@ export default function UserVoiceCard() {
         )}
       </div>
 
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        {voiceStatusItems.map(([label, value]) => (
+          <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#667085]">{label}</p>
+            <p className="mt-1 text-sm font-semibold">{value}</p>
+          </div>
+        ))}
+      </div>
+
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <p className="text-sm font-semibold">1. Stimmprobe aufnehmen (empfohlen)</p>
+          <p className="text-sm font-semibold">1. Stimmprobe aufnehmen</p>
           <p className="mt-1 text-xs text-[#767d87]">
-            Sprich 10–30 Sekunden frei, z. B. wer du bist und was dir wichtig ist. Die Aufnahme
-            bleibt privat gespeichert und wird für deine kommende Klon-Stimme (Phase 2) genutzt.
+            Sprich 10–30 Sekunden frei. Die Aufnahme bleibt privat gespeichert und vorbereitet,
+            damit dein eigener Twin später natürlicher klingen kann.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
@@ -292,8 +307,8 @@ export default function UserVoiceCard() {
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
           <p className="text-sm font-semibold">2. Twin-Stimme wählen</p>
           <p className="mt-1 text-xs text-[#767d87]">
-            Phase 1: Wähle die smyst-Stimme, die deiner am nächsten kommt. Mit „Anhören" kannst du
-            jede Stimme testen.
+            Wähle die smyst.com-Stimme, die deiner am nächsten kommt. Mit „Anhören" kannst du jede
+            Stimme kurz testen.
           </p>
           <div className="mt-3 grid gap-2">
             {VOICE_CHOICES.map((choice) => (
@@ -333,8 +348,8 @@ export default function UserVoiceCard() {
         />
         <span className="text-[#8e97a8]">
           Ich stimme zu, dass smyst.com meine Stimmaufnahme privat speichert, um mein persönliches
-          Stimmprofil zu erstellen. Es gilt nur für meine eigenen Twins und ich kann die Zustimmung
-          jederzeit widerrufen.
+          Stimmprofil zu erstellen. Es gilt nur für meine eigenen Twins, wird nicht öffentlich
+          geteilt und ich kann die Zustimmung jederzeit widerrufen.
         </span>
       </label>
 
