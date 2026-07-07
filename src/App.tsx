@@ -1978,7 +1978,7 @@ function SmystStartPage({
     { label: 'Memories', view: 'memory-upload', detail: 'Dateien, Wissen und Erinnerungen hochladen' },
     { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespräche und Twin-Auswahl' },
     { label: 'Admin', view: 'admin', detail: 'User, Werbung, Umsatz, Sicherheit und Betrieb' },
-    { label: 'Datenschutz', view: 'trust', detail: 'Private Defaults, noindex, Export und Löschung' },
+    { label: 'Datenschutz', view: 'trust', detail: 'Privatsphäre, Export und Löschung' },
     { label: 'Einstellungen', view: 'settings', detail: 'Sprache, Theme, Account und Logout' },
   ]
 
@@ -2008,7 +2008,7 @@ function SmystStartPage({
     ['Identität', 'Name, Rollen, Expertise und Bio sauber pflegen.'],
     ['AI Twin', 'Persönlichkeit, Wissen und Sichtbarkeit steuern.'],
     ['Memories', 'Uploads, Quellen und Erinnerungen als Kontext verwalten.'],
-    ['Datenschutz', 'Export, Löschung, noindex und private Defaults.'],
+    ['Datenschutz', 'Freigaben, Export, Löschung und private Standards.'],
   ]
 
   return (
@@ -2149,7 +2149,7 @@ function SmystStartPage({
                 </div>
               )}
               <div className="mt-3 grid grid-cols-3 gap-2">
-                {['HttpOnly', 'Noindex', 'Export'].map((label) => (
+                {['Sicher', 'Privat', 'Kontrolle'].map((label) => (
                   <span key={label} className="rounded-lg border border-white/10 bg-white/[0.04] px-2 py-2 text-center text-[11px] font-bold text-[#d5dbe5]">
                     {label}
                   </span>
@@ -2192,8 +2192,8 @@ function SmystStartPage({
 
           <div className="mt-5 grid gap-2 border-t border-white/10 px-2 pt-5">
             {[
-              ['HttpOnly Session', 'Login bleibt serverseitig geschützt.'],
-              ['Private Inhalte noindex', 'Private Profile werden nicht indexiert.'],
+              ['Sichere Anmeldung', 'Dein Login bleibt geschützt.'],
+              ['Private Inhalte', 'Private Profile bleiben privat.'],
               ['Export & Löschung', 'Datenkontrolle bleibt im Profilbereich.'],
             ].map(([title, text]) => (
               <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
