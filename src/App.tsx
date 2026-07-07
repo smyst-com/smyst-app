@@ -20,7 +20,7 @@ import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voice
 import { userVoiceIdFor } from '@/lib/userVoice'
 import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
-import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord } from '@/lib/useTwinMvp'
+import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
 import {
   CURATED_PUBLIC_TWIN_BASE_TIME,
   CURATED_PUBLIC_TWIN_LANGUAGES,
@@ -3265,6 +3265,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   })
   const [memoryDraft, setMemoryDraft] = useState('')
   const [chatQuery, setChatQuery] = useState('')
+  const [publicKnowledgeSuggestion, setPublicKnowledgeSuggestion] = useState<PublicKnowledgeSuggestion | null>(null)
+  const [publicKnowledgeLoading, setPublicKnowledgeLoading] = useState(false)
 
   const splitDraftList = (value: string) =>
     value
@@ -3359,6 +3361,60 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     const result = await twinMvp.searchTwinChats(chatQuery)
     if (!result) return
     setChatResults(result.results)
+  }
+
+  const requestPublicKnowledgeSuggestion = async () => {
+    if (!profile && !profileDraft.displayName.trim()) return
+    setPublicKnowledgeLoading(true)
+    setPrivacyStatus(null)
+    try {
+      const publicIdentity = [
+        profileDraft.displayName,
+        profileDraft.headline,
+        profileDraft.publicBio,
+        profileDraft.roles,
+        profileDraft.expertise,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 700)
+      const suggestion = await twinMvp.suggestPublicKnowledge({
+        profileId: profile?.id ?? 'default',
+        question: `Bitte recherchiere aktuelle öffentliche Profilinformationen und Quellen zu ${publicIdentity || 'diesem öffentlichen Profil'}.`,
+        maxResults: 3,
+      })
+      setPublicKnowledgeSuggestion(suggestion)
+      setPrivacyStatus(
+        suggestion?.suggested
+          ? 'Public-Knowledge-Vorschlag erstellt. Bitte prüfen, bevor etwas übernommen wird.'
+          : suggestion?.message ?? 'Keine Public-Knowledge-Aktualisierung vorgeschlagen.',
+      )
+    } finally {
+      setPublicKnowledgeLoading(false)
+    }
+  }
+
+  const approvePublicKnowledgeSuggestion = async () => {
+    if (!publicKnowledgeSuggestion?.fact) return
+    const nextPublicBio = [profileDraft.publicBio.trim(), publicKnowledgeSuggestion.fact.trim()]
+      .filter(Boolean)
+      .join('\n\n')
+    const result = await twinMvp.updateProfile({
+      publicBio: nextPublicBio,
+      visibility: 'private',
+    })
+    if (!result?.profile) return
+    setProfile(result.profile)
+    hydrateProfileDraft(result.profile)
+    setPublicKnowledgeSuggestion((current) => current ? { ...current, status: 'approved' } : current)
+    setPrivacyStatus('Public Knowledge nach Review übernommen.')
+  }
+
+  const rejectPublicKnowledgeSuggestion = () => {
+    setPublicKnowledgeSuggestion((current) => current ? { ...current, status: 'rejected' } : current)
+    setPrivacyStatus('Public-Knowledge-Vorschlag abgelehnt.')
   }
 
   const exportAccount = async () => {
@@ -3538,7 +3594,82 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           <Card className="p-6 lg:col-span-2">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h3 className="text-lg font-semibold">Memory</h3>
+                <h3 className="text-lg font-semibold">Public Knowledge</h3>
+                <p className="text-sm text-[#555b64]">Öffentliche Profilinformationen bleiben getrennt von privaten Memories.</p>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={() => void requestPublicKnowledgeSuggestion()}
+                disabled={publicKnowledgeLoading}
+              >
+                {publicKnowledgeLoading ? 'Prüfung läuft…' : 'Öffentlich prüfen'}
+              </Button>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-4">
+              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                <p className="text-sm font-semibold">Private Memory</p>
+                <p className="mt-1 text-xs text-[#667085]">{memories.length} private Einträge, nicht für Websuche freigegeben.</p>
+              </div>
+              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                <p className="text-sm font-semibold">Public Knowledge</p>
+                <p className="mt-1 text-xs text-[#667085]">
+                  {profileDraft.publicBio.trim() || profileDraft.headline.trim() || 'Noch keine öffentliche Bio gepflegt.'}
+                </p>
+              </div>
+              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                <p className="text-sm font-semibold">Pending Research Updates</p>
+                <p className="mt-1 text-xs text-[#667085]">
+                  {publicKnowledgeSuggestion?.suggested
+                    ? `${publicKnowledgeSuggestion.status ?? 'discovered'} · Review erforderlich`
+                    : 'Keine offenen Vorschläge.'}
+                </p>
+              </div>
+              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                <p className="text-sm font-semibold">Approved Sources</p>
+                <p className="mt-1 text-xs text-[#667085]">
+                  {publicKnowledgeSuggestion?.status === 'approved'
+                    ? `${publicKnowledgeSuggestion.sources?.length ?? 0} Quellen akzeptiert`
+                    : 'Noch keine geprüften Quellen übernommen.'}
+                </p>
+              </div>
+            </div>
+            {publicKnowledgeSuggestion?.suggested && (
+              <div className="mt-4 rounded-lg border border-white/20 bg-white/12 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-sm font-semibold">Vorschlag · {publicKnowledgeSuggestion.status ?? 'discovered'}</p>
+                    <p className="mt-2 text-sm text-[#555b64]">{publicKnowledgeSuggestion.fact}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {(publicKnowledgeSuggestion.sources ?? []).slice(0, 3).map((source) => (
+                        <a
+                          key={source.url}
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="max-w-full truncate rounded-md border border-white/30 bg-white/18 px-2.5 py-1 text-xs font-medium text-[#0b1c44] transition-colors hover:bg-white/34"
+                        >
+                          {source.publisher || source.title}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => void rejectPublicKnowledgeSuggestion()}>
+                      Ablehnen
+                    </Button>
+                    <Button size="sm" onClick={() => void approvePublicKnowledgeSuggestion()}>
+                      Akzeptieren
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-6 lg:col-span-2">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Private Memory</h3>
                 <p className="text-sm text-[#555b64]">Bestätigte Informationen bleiben privat im Profil und können später pro Twin genutzt werden.</p>
               </div>
               <Button variant="secondary" onClick={() => void refreshProfileData()}>Aktualisieren</Button>
@@ -5901,6 +6032,7 @@ function TwinChatView({
     content: string
     streaming?: boolean
     speakable?: boolean
+    webResearch?: WebResearchMeta
   }
   type ChatTwinSummary = {
     id: string
@@ -6042,6 +6174,7 @@ function TwinChatView({
           id: message.id,
           role: message.role === 'assistant' ? 'ai' : 'user',
           content: message.content,
+          webResearch: message.webResearch,
         })),
       )
     } else {
@@ -6500,11 +6633,18 @@ function TwinChatView({
       if (reply.streamed) {
         setMessages((current) =>
           current.map((entry) =>
-            entry.id === assistantId ? { ...entry, content: reply.message.content, streaming: false } : entry,
+            entry.id === assistantId
+              ? { ...entry, content: reply.message.content, streaming: false, webResearch: reply.message.webResearch }
+              : entry,
           ),
         )
       } else {
         await streamAssistantMessage(assistantId, reply.message.content)
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === assistantId ? { ...entry, webResearch: reply.message.webResearch } : entry,
+          ),
+        )
       }
       if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false), activeTwin?.name)) {
         setIsSpeaking(true)
@@ -6819,6 +6959,31 @@ function TwinChatView({
                     <span className="ml-0.5 inline-block h-4 w-1 translate-y-0.5 animate-pulse rounded-full bg-[#59C7FF] align-middle"></span>
                   )}
                 </div>
+                {msg.role === 'ai' && !msg.streaming && msg.webResearch?.searched && (
+                  <div className="mt-1 max-w-[calc(100%-8px)] rounded-md border border-white/24 bg-white/16 px-3 py-2 text-xs text-[#555b64] sm:max-w-[94%]">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-[#16181b]">{msg.webResearch.notice}</span>
+                      <span>{msg.webResearch.category}</span>
+                      <span>{msg.webResearch.fromCache ? 'Cache' : msg.webResearch.provider}</span>
+                    </div>
+                    {msg.webResearch.sources.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {msg.webResearch.sources.slice(0, 3).map((source) => (
+                          <a
+                            key={source.url}
+                            href={source.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="max-w-full truncate rounded-md border border-white/30 bg-white/20 px-2 py-1 font-medium text-[#0b1c44] transition-colors hover:bg-white/36"
+                            title={source.title}
+                          >
+                            {source.publisher || source.title}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {msg.role === 'ai' && !msg.streaming && msg.content.trim().length > 0 && hasUserTurn && (
                   <div className="mt-1 flex flex-wrap gap-1">
                     <button

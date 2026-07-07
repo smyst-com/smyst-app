@@ -303,3 +303,11 @@ Naechster empfohlener Schritt:
 - Public Knowledge bleibt getrennt von Private Memory: Profilupdates werden nur als `discovered` mit `reviewRequired=true` vorgeschlagen und nicht automatisch uebernommen.
 - Validierung: neue Research-Tests 9/9 gruen, komplette Backend-Suite 121/121 gruen, Ruff fuer neue Dateien gruen, `tsc -b` gruen, Vite Production Build gruen, Change/Surface/Backup-Protection gruen.
 - Naechster sicherer Schritt: sauberer PR nur mit Research-Layer-Dateien, danach Staging/Salad-Deploy und Live-Smoke.
+
+## Update 2026-07-07: Verified Web Research Product-Integration lokal validiert
+
+- Chat-Integration ergaenzt: aktuelle oeffentliche Fragen koennen den Verified-Web-Research-Service cache-first nutzen; LLM-Prompt bekommt nur bereinigte `untrusted_web_content`-Evidenz und Quellenmetadaten, keine rohen Web-Snippets. Private Fragen laufen ohne Websuche weiter.
+- UI ergaenzt: Twin Chat zeigt bei tatsaechlicher Recherche `Ich habe im Internet gesucht.` plus maximal 3 klickbare Quellen; Profilseite trennt `Private Memory`, `Public Knowledge`, `Pending Research Updates` und `Approved Sources` mit Review-Aktionen. Public Knowledge wird nur nach Nutzerklick uebernommen, nicht automatisch.
+- Frontend-Fallback verbessert: kuratierte Public-Twin-Fallbacks setzen keinen falschen globalen Fehler mehr, wenn ein optionaler Public-API-Request fehlt; lokale Preview-Origin `http://127.0.0.1:4173` ist in den lokalen Default-CORS-Origins enthalten.
+- Validierung: `ruff check backend` gruen; komplette Backend-Suite 123/123 gruen; Research/Chat-Research-Tests 11/11 gruen; TypeScript `tsc --noEmit` gruen; Vite Production Build gruen; lokale API-Smokes fuer health/live, web-research preview/run und public-profile-suggestions bestanden; Chrome-Preview fuer `/chat?twin=albert-einstein` ohne Console-Errors, ohne sichtbares Fetch-Banner und ohne horizontalen Overflow.
+- Schutzstatus: keine Migration, keine DNS-Aenderung, keine Secrets, keine Produktionsdaten geloescht oder geaendert. Local ready-health bleibt ohne Storage-Secrets erwartbar `not_ready`.

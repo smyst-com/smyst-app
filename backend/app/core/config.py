@@ -83,7 +83,10 @@ class Settings(BaseSettings):
         default=45.0, validation_alias="LLM_TOTAL_DEADLINE_SECONDS"
     )
 
-    cors_origin_raw: str = Field(default="http://localhost:3000", validation_alias="CORS_ORIGINS")
+    cors_origin_raw: str = Field(
+        default="http://localhost:3000,http://localhost:5173,http://127.0.0.1:4173",
+        validation_alias="CORS_ORIGINS",
+    )
     csp_report_only: bool = Field(default=False, validation_alias="CSP_REPORT_ONLY")
     csp_report_uri: str = Field(default="/api/v1/security/csp-report", validation_alias="CSP_REPORT_URI")
     rate_limit_requests: int = Field(default=120, validation_alias="RATE_LIMIT_REQUESTS")
