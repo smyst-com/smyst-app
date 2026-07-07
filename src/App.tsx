@@ -692,8 +692,8 @@ export default function App() {
           currentView === 'twin-chat'
             ? 'min-h-[calc(100dvh-80px)] w-full px-0 pb-0 sm:min-h-[calc(100dvh-92px)]'
             : currentView === 'admin'
-              ? 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1520px] px-3 pb-10 sm:px-5'
-            : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-10 sm:px-6'
+              ? 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1520px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-5'
+            : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6'
         }
       >
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
