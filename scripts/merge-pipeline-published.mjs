@@ -180,8 +180,8 @@ async function mirrorCommonsImage(record, slug) {
     writeFileSync(resolve(dir, file), Buffer.from(await res.arrayBuffer()));
     return { imageUrl: `/public/profile-images/${file}` };
   } catch (error) {
-    console.warn(`merge-pipeline-published: Bild-Mirror fuer '${slug}' fehlgeschlagen (${error.message}) — nutze Commons-URL.`);
-    return { imageUrl: remote };
+    console.warn(`merge-pipeline-published: Bild-Mirror fuer '${slug}' fehlgeschlagen (${error.message}) — nutze lokale Profilkarte.`);
+    return { imageUrl: null, mirrorFailed: true };
   }
 }
 
@@ -275,7 +275,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     description,
     imageUrl,
     imageCredit: generatedImage
-      ? 'KI-generierte, stilisierte Darstellung (keine Fotografie der Person)'
+      ? 'Lokal generierte, stilisierte smyst.com Profilkarte (keine Fotografie der Person)'
       : imageCreditText(record, imageUrl, attribution),
     categories: (Array.isArray(corr.categories) && corr.categories.length ? corr.categories : [record.category]).filter(Boolean),
     languages: [record.language_default || 'de'],
