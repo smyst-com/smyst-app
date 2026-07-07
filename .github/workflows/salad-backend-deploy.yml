@@ -42,11 +42,13 @@ jobs:
           SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
           GOOGLE_OAUTH_CLIENT_SECRET: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
           AUTH_SESSION_SECRET: ${{ secrets.AUTH_SESSION_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           test "$APPROVAL" = "Ja OK" || { echo "approval must be exactly 'Ja OK'"; exit 1; }
           test -n "$SALAD_API_KEY" || { echo "missing secret SALAD_API_KEY"; exit 1; }
           test -n "$GOOGLE_OAUTH_CLIENT_SECRET" || { echo "missing secret GOOGLE_OAUTH_CLIENT_SECRET"; exit 1; }
           test -n "$AUTH_SESSION_SECRET" || { echo "missing secret AUTH_SESSION_SECRET"; exit 1; }
+          test -n "$OPENAI_API_KEY" || { echo "missing secret OPENAI_API_KEY for enabled web research"; exit 1; }
 
       - uses: actions/checkout@v4
 
@@ -102,6 +104,11 @@ jobs:
           IDRIVE_E2_PUBLIC_ACCESS_ENABLED: ${{ vars.IDRIVE_E2_PUBLIC_ACCESS_ENABLED || 'false' }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_WEB_SEARCH_MODEL: ${{ vars.OPENAI_WEB_SEARCH_MODEL || 'gpt-4.1-mini' }}
+          WEB_RESEARCH_ENABLED: "true"
+          WEB_SEARCH_PROVIDER: openai
+          WEB_RESEARCH_BUDGET_PER_USER_DAY: ${{ vars.WEB_RESEARCH_BUDGET_PER_USER_DAY || '10' }}
+          WEB_RESEARCH_BUDGET_PER_PROFILE_DAY: ${{ vars.WEB_RESEARCH_BUDGET_PER_PROFILE_DAY || '5' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
