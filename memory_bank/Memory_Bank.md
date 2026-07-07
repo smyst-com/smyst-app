@@ -337,3 +337,13 @@ Naechster empfohlener Schritt:
 - Live-Validierung: `scripts/live-test.sh` gegen `https://smyst.com` und Salad API bestanden; `/api/health/live` 200, `/api/health/ready` 200; private Web-Research-Preview bleibt `decision=no_search`, `canCallProvider=false`, `redacted=true`; oeffentlicher Web-Research-Run liefert 200, `Ich habe im Internet gesucht.` und Quellen.
 - Providerstand live: 7 Keys/Provider konfiguriert; aktiv pingbar sind OpenRouter und Groq. OpenAI-Web-Research funktioniert, OpenAI-Chat-Ping ist aktuell `429/rate_limited`; Anthropic/Gemini/xAI melden `400/invalid_request`; DeepSeek meldet `402/http_error`. Keine kostenpflichtige Aktivierung vorgenommen.
 - Schutzstatus: keine Nutzerdaten, Medien, Profile, Chatdaten oder Memories geloescht; keine Secrets offengelegt; keine DNS-/Domain-Aenderung; Rollback ueber Revert der PRs #144/#146 oder letzten erfolgreichen Salad-Backend-Deploy moeglich.
+
+## Update 2026-07-07: Provider-Health-Fallback und Web-Research-Live-Smoke abgeschlossen
+
+- Provider-Health-Fallback live gemergt und deployed: PR #151 auf Commit `be19c3a`, Salad Backend Deploy #72 erfolgreich, Salad Portal Version 65.
+- Providerdiagnose nutzt kurze `/models`-Credential-Checks und faellt bei Netzwerk-Timeout auf Generation-Ping zurueck. Ergebnis live: OpenRouter, OpenAI und Groq `ok:true`; alte Secret-Modellnamen werden intern normalisiert (`claude-haiku-4-5`, `gemini-3.5-flash`, `grok-4.3`), ohne Secrets im Code zu speichern.
+- E2E-Schutz aktualisiert: `frontend/e2e/smyst.spec.ts` mockt den aktuellen Chat-Streaming-Endpunkt deterministisch; GitHub PR-Checks fuer #151: 6 erfolgreich, 2 erwartbar uebersprungen, keine Konflikte.
+- Live-Validierung nach Deploy: `https://smyst.com` Smoke-Test bestanden; PWA-Dateien, SEO/AIO-Dateien, `security.txt`, Backend `live`/`ready` und `auth/me` alle 200.
+- Web-Research-Live-Test: oeffentliche aktuelle Frage liefert `required_search`, Provider `openai`, `Ich habe im Internet gesucht.` und 3 Quellen; private/sensible Frage bleibt `no_search`, `canCallProvider=false`, `redacted=true`.
+- Browserpruefung: smyst.com laedt mit Titel `smyst.com | KI-Zwillinge, digitale Profile und Twin Chat`, keine Console-Errors, kein horizontaler Overflow im Desktop-Viewport.
+- Schutzstatus: keine Datenbankmigration, keine DNS-Aenderung, keine Secret-Aenderung, keine kostenpflichtigen Anbieter aktiviert, keine Nutzerdaten geloescht. Rollback: Revert PR #151 oder erneuter Salad-Deploy der vorherigen stabilen Version.
