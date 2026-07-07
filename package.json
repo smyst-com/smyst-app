@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-sitemap.mjs && tsc --noEmit && vite build",
+    "build": "node scripts/generate-sitemap.mjs && tsc --noEmit && vite build && node scripts/generate-spa-route-fallbacks.mjs",
     "deploy:idrive": "node scripts/deploy-idrive-static.mjs",
     "deploy:idrive:dry-run": "node scripts/deploy-idrive-static.mjs --dry-run",
     "deploy:salad:backend": "node scripts/deploy-salad-backend.mjs",
