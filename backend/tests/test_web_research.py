@@ -73,7 +73,7 @@ def openai_enabled_settings() -> Settings:
         WEB_RESEARCH_ENABLED=True,
         WEB_SEARCH_PROVIDER="openai",
         OPENAI_API_KEY="test-key",
-        OPENAI_WEB_SEARCH_MODEL="gpt-5.5",
+        OPENAI_WEB_SEARCH_MODEL="gpt-4.1-mini",
     )
 
 
@@ -196,7 +196,7 @@ def test_openai_provider_is_selected_with_configured_model() -> None:
     provider = build_web_search_provider(openai_enabled_settings())
 
     assert isinstance(provider, OpenAIWebSearchProvider)
-    assert provider.model == "gpt-5.5"
+    assert provider.model == "gpt-4.1-mini"
 
 
 @pytest.mark.asyncio
@@ -246,13 +246,13 @@ async def test_openai_provider_uses_current_web_search_payload(monkeypatch) -> N
             return FakeResponse()
 
     monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
-    provider = OpenAIWebSearchProvider("test-key", model="gpt-5.5")
+    provider = OpenAIWebSearchProvider("test-key", model="gpt-4.1-mini")
 
     response = await provider.search("latest public news", category=QueryCategory.NEWS)
 
     payload = captured["json"]
     assert isinstance(payload, dict)
-    assert payload["model"] == "gpt-5.5"
+    assert payload["model"] == "gpt-4.1-mini"
     assert payload["tools"] == [{"type": "web_search", "search_context_size": "low"}]
     assert payload["tool_choice"] == "required"
     assert payload["include"] == ["web_search_call.action.sources"]

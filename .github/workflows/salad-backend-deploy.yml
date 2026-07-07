@@ -104,7 +104,7 @@ jobs:
           IDRIVE_E2_PUBLIC_ACCESS_ENABLED: ${{ vars.IDRIVE_E2_PUBLIC_ACCESS_ENABLED || 'false' }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          OPENAI_WEB_SEARCH_MODEL: ${{ vars.OPENAI_WEB_SEARCH_MODEL || 'gpt-5.5' }}
+          OPENAI_WEB_SEARCH_MODEL: ${{ vars.OPENAI_WEB_SEARCH_MODEL || 'gpt-4.1-mini' }}
           WEB_RESEARCH_ENABLED: "true"
           WEB_SEARCH_PROVIDER: openai
           WEB_RESEARCH_BUDGET_PER_USER_DAY: ${{ vars.WEB_RESEARCH_BUDGET_PER_USER_DAY || '10' }}
