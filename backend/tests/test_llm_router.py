@@ -8,6 +8,8 @@ from app.ai.llm_router import (
     LLMRouter,
     LocalDeterministicProvider,
     OpenAICompatibleProvider,
+    ProviderHealthError,
+    _provider_error_diagnostics,
     ping_providers,
     provider_statuses,
 )
@@ -32,6 +34,7 @@ class FakeResponse:
 
 class FakeAsyncClient:
     posts: list[dict] = []
+    gets: list[dict] = []
     responses: list[FakeResponse] = []
 
     def __init__(self, timeout: float) -> None:
@@ -45,6 +48,10 @@ class FakeAsyncClient:
 
     async def post(self, url: str, *, headers: dict, json: dict) -> FakeResponse:
         self.posts.append({"url": url, "headers": headers, "json": json})
+        return self.responses.pop(0)
+
+    async def get(self, url: str, *, headers: dict) -> FakeResponse:
+        self.gets.append({"url": url, "headers": headers})
         return self.responses.pop(0)
 
 
@@ -218,6 +225,7 @@ def test_provider_statuses_do_not_expose_secret_values() -> None:
 @pytest.mark.asyncio
 async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> None:
     FakeAsyncClient.posts = []
+    FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"error": "secret provider body"}, status_code=403)]
     monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
 
@@ -230,3 +238,56 @@ async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> 
     assert result["openai"]["category"] == "auth_failed"
     assert "secret-openai" not in str(result)
     assert "secret provider body" not in str(result)
+    assert FakeAsyncClient.posts == []
+    assert FakeAsyncClient.gets[0]["url"] == "https://api.openai.com/v1/models"
+
+
+@pytest.mark.asyncio
+async def test_ping_providers_uses_credential_model_check(monkeypatch) -> None:
+    FakeAsyncClient.posts = []
+    FakeAsyncClient.gets = []
+    FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "gpt-4o"}]})]
+    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+
+    settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
+    result = await ping_providers(settings)
+
+    assert result["openai"]["ok"] is True
+    assert result["openai"]["mode"] == "credential_model_check"
+    assert FakeAsyncClient.posts == []
+    assert FakeAsyncClient.gets[0]["headers"]["Authorization"] == "Bearer secret-openai"
+
+
+@pytest.mark.asyncio
+async def test_ping_providers_reports_model_unavailable_without_secret(monkeypatch) -> None:
+    FakeAsyncClient.posts = []
+    FakeAsyncClient.gets = []
+    FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "other-model"}]})]
+    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+
+    settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
+    result = await ping_providers(settings)
+
+    assert result["openai"]["ok"] is False
+    assert result["openai"]["error"] == "ProviderHealthError"
+    assert result["openai"]["status_code"] == 200
+    assert result["openai"]["category"] == "model_unavailable"
+    assert "secret-openai" not in str(result)
+
+
+def test_provider_health_error_diagnostics_stay_safe() -> None:
+    exc = ProviderHealthError("hidden detail", category="model_unavailable", status_code=200)
+
+    assert exc.category == "model_unavailable"
+    assert exc.status_code == 200
+
+
+def test_payment_required_diagnostics_are_explicit() -> None:
+    request = httpx.Request("POST", "https://example.test/chat/completions")
+    response = httpx.Response(402, request=request)
+    exc = httpx.HTTPStatusError("payment required", request=request, response=response)
+
+    diagnostics = _provider_error_diagnostics(exc)
+
+    assert diagnostics["status_code"] == 402
+    assert diagnostics["category"] == "payment_required"
