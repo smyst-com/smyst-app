@@ -46,6 +46,9 @@ if command -v node >/dev/null 2>&1; then
   echo "== Profile cockpit UX protection =="
   node scripts/check-profile-cockpit-ux.mjs
 
+  echo "== Memory media voice UX protection =="
+  node scripts/check-memory-media-voice-ux.mjs
+
   echo "== Ad readiness audit =="
   node scripts/ad-readiness-audit.mjs
 

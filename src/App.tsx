@@ -20,6 +20,7 @@ import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voice
 import { userVoiceIdFor } from '@/lib/userVoice'
 import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
+import { fetchService } from '@/lib/serviceEndpoints'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
 import {
   CURATED_PUBLIC_TWIN_BASE_TIME,
@@ -128,6 +129,46 @@ function FileIcon(props: IconProps) {
       <path d="M14 2v5h5" />
       <path d="M9 13h6" />
       <path d="M9 17h4" />
+    </svg>
+  )
+}
+
+function VideoIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <rect x="3" y="5" width="14" height="14" rx="2" />
+      <path d="m17 9 4-2.5v11L17 15" />
+      <path d="m9 10 4 2-4 2Z" />
+    </svg>
+  )
+}
+
+function AudioIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </svg>
+  )
+}
+
+function EyeIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+}
+
+function ArchiveIcon(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <path d="M3 7h18" />
+      <path d="M5 7v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7" />
+      <path d="M8 3h8l2 4H6Z" />
+      <path d="M10 12h4" />
     </svg>
   )
 }
@@ -6210,6 +6251,27 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
 }
 
 // Memory Upload View
+const MEMORY_LIBRARY_STORAGE_KEY = 'smyst.com.memoryUpload.library.v1'
+const MEMORY_HIDDEN_STORAGE_KEY = 'smyst.com.memoryUpload.hidden.v1'
+const MEMORY_UPLOAD_CATEGORIES: readonly MemoryCategory[] = [
+  'profile_image',
+  'image',
+  'audio',
+  'video',
+  'document',
+  'backup',
+  'twin_data',
+]
+
+type MemoryLibraryItem = UploadResult & {
+  name: string
+  category: MemoryCategory
+  uploadedAt: number
+  status?: string
+  visibility?: string
+  signedUrlExpiresIn?: number
+}
+
 function inferMemoryCategory(file: File): MemoryCategory {
   if (file.type.startsWith('image/')) return 'image'
   if (file.type.startsWith('video/')) return 'video'
@@ -6217,11 +6279,97 @@ function inferMemoryCategory(file: File): MemoryCategory {
   return 'document'
 }
 
+function inferMemoryCategoryFromContentType(contentType: string): MemoryCategory {
+  if (contentType.startsWith('image/')) return 'image'
+  if (contentType.startsWith('video/')) return 'video'
+  if (contentType.startsWith('audio/')) return 'audio'
+  return 'document'
+}
+
+function safeMemoryCategory(category: unknown, contentType: string): MemoryCategory {
+  return typeof category === 'string' && (MEMORY_UPLOAD_CATEGORIES as readonly string[]).includes(category)
+    ? category as MemoryCategory
+    : inferMemoryCategoryFromContentType(contentType)
+}
+
+function formatMemorySize(size: number): string {
+  if (!Number.isFinite(size) || size <= 0) return '0 KB'
+  if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`
+  return `${(size / 1024 / 1024).toFixed(1)} MB`
+}
+
+function memoryUploadIdentity(file: Pick<MemoryLibraryItem, 'uploadId' | 'key'>): string {
+  return file.uploadId || file.key
+}
+
+function normalizeMemoryUpload(raw: unknown): MemoryLibraryItem | null {
+  if (!raw || typeof raw !== 'object') return null
+  const row = raw as Record<string, unknown>
+  const uploadId = String(row.uploadId ?? '')
+  const key = String(row.key ?? '')
+  if (!uploadId || !key) return null
+  const contentType = String(row.contentType ?? '')
+  return {
+    uploadId,
+    key,
+    getUrl: String(row.getUrl ?? ''),
+    contentType,
+    size: Number(row.size ?? 0),
+    name: String(row.name ?? 'Datei'),
+    category: safeMemoryCategory(row.category, contentType),
+    uploadedAt: Number(row.uploadedAt ?? Date.now()),
+    status: String(row.status ?? 'ready'),
+    visibility: String(row.visibility ?? 'private'),
+    signedUrlExpiresIn: Number(row.signedUrlExpiresIn ?? 0),
+  }
+}
+
+function mergeMemoryLibrary(incoming: MemoryLibraryItem[], current: MemoryLibraryItem[]): MemoryLibraryItem[] {
+  const byId = new Map<string, MemoryLibraryItem>()
+  for (const item of [...incoming, ...current]) {
+    const id = memoryUploadIdentity(item)
+    const existing = byId.get(id)
+    byId.set(id, {
+      ...existing,
+      ...item,
+      getUrl: item.getUrl || existing?.getUrl || '',
+      name: item.name || existing?.name || 'Datei',
+    })
+  }
+  return Array.from(byId.values()).sort((a, b) => b.uploadedAt - a.uploadedAt)
+}
+
+function MemoryMediaPreview({ file }: { file: MemoryLibraryItem }) {
+  const kind = file.category === 'profile_image' ? 'image' : file.category
+  const baseClass = 'h-full w-full rounded-lg border border-white/12 bg-black/20 object-cover'
+  if (file.getUrl && kind === 'image') {
+    return <img src={file.getUrl} alt={file.name} loading="lazy" className={baseClass} />
+  }
+  if (file.getUrl && kind === 'video') {
+    return <video src={file.getUrl} controls preload="metadata" className={baseClass} />
+  }
+  if (file.getUrl && kind === 'audio') {
+    return (
+      <div className="flex h-full w-full flex-col justify-center rounded-lg border border-white/12 bg-white/8 p-4">
+        <AudioIcon className="mb-4 h-8 w-8 text-[#59C7FF]" />
+        <audio controls src={file.getUrl} className="w-full" />
+      </div>
+    )
+  }
+  const Icon = kind === 'video' ? VideoIcon : kind === 'audio' ? AudioIcon : kind === 'image' ? ImageIcon : FileIcon
+  return (
+    <div className="grid h-full min-h-[150px] place-items-center rounded-lg border border-white/12 bg-white/8 text-[#8e97a8]">
+      <Icon className="h-10 w-10" />
+    </div>
+  )
+}
+
 function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const auth = useAuth()
   const memoryUpload = useMemoryUpload()
-  const [uploaded, setUploaded] = useState<Array<UploadResult & { name: string; category: MemoryCategory; uploadedAt: number }>>([])
+  const [uploaded, setUploaded] = useState<MemoryLibraryItem[]>([])
+  const [hiddenUploads, setHiddenUploads] = useState<string[]>([])
   const categoryLabels: Partial<Record<MemoryCategory, string>> = {
     profile_image: 'Profilbild',
     image: 'Bilder',
@@ -6233,10 +6381,16 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
   }
   const categoryLabel = (category: MemoryCategory | string) =>
     (categoryLabels[category as MemoryCategory] ?? category.replace(/_/g, ' '))
-  const uploadCategoryCounts = uploaded.reduce<Record<string, number>>((acc, file) => {
+  const hiddenUploadSet = useMemo(() => new Set(hiddenUploads), [hiddenUploads])
+  const visibleUploads = useMemo(
+    () => uploaded.filter((file) => !hiddenUploadSet.has(memoryUploadIdentity(file))),
+    [hiddenUploadSet, uploaded],
+  )
+  const uploadCategoryCounts = visibleUploads.reduce<Record<string, number>>((acc, file) => {
     acc[file.category] = (acc[file.category] ?? 0) + 1
     return acc
   }, {})
+  const usedBytes = visibleUploads.reduce((sum, file) => sum + file.size, 0)
   const uploadSafetyChecks = [
     ['Du darfst es nutzen', 'Keine fremden privaten Daten ohne Erlaubnis hochladen.'],
     ['Es hilft deinem Twin', 'Nur Wissen, Erinnerungen oder Medien hochladen, die später wirklich gebraucht werden.'],
@@ -6244,18 +6398,105 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
     ['Du kannst es entfernen', 'Export und Löschung bleiben über dein Profil erreichbar.'],
   ]
 
+  useEffect(() => {
+    try {
+      const hidden = JSON.parse(window.localStorage.getItem(MEMORY_HIDDEN_STORAGE_KEY) ?? '[]')
+      if (Array.isArray(hidden)) setHiddenUploads(hidden.filter((item): item is string => typeof item === 'string'))
+    } catch {
+      setHiddenUploads([])
+    }
+  }, [])
+
+  useEffect(() => {
+    if (auth.status !== 'authenticated') {
+      setUploaded([])
+      return
+    }
+    let cancelled = false
+    const persist = (items: MemoryLibraryItem[]) => {
+      try {
+        window.localStorage.setItem(MEMORY_LIBRARY_STORAGE_KEY, JSON.stringify(items.slice(0, 100)))
+      } catch {
+        // Speicher ist nur Komfort; Backend bleibt Quelle der Wahrheit.
+      }
+    }
+    const load = async () => {
+      try {
+        const cached = JSON.parse(window.localStorage.getItem(MEMORY_LIBRARY_STORAGE_KEY) ?? '[]')
+        const cachedItems = Array.isArray(cached)
+          ? cached.map(normalizeMemoryUpload).filter((item): item is MemoryLibraryItem => Boolean(item))
+          : []
+        if (!cancelled && cachedItems.length) setUploaded((current) => mergeMemoryLibrary(cachedItems, current))
+      } catch {
+        // Ohne Browser-Cache laden wir einfach vom Backend weiter.
+      }
+      try {
+        const response = await fetchService('/storage/uploads?limit=100', {
+          credentials: 'include',
+          headers: { Accept: 'application/json' },
+        })
+        if (!response.ok || cancelled) return
+        const data = (await response.json()) as { uploads?: unknown[] }
+        const serverItems = Array.isArray(data.uploads)
+          ? data.uploads.map(normalizeMemoryUpload).filter((item): item is MemoryLibraryItem => Boolean(item))
+          : []
+        if (cancelled) return
+        setUploaded((current) => {
+          const next = mergeMemoryLibrary(serverItems, current)
+          persist(next)
+          return next
+        })
+      } catch {
+        // Die lokale Liste bleibt sichtbar, falls der Index kurz nicht erreichbar ist.
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [auth.status])
+
   const handleFiles = async (files: FileList | File[]) => {
     if (auth.status !== 'authenticated') return
     for (const file of Array.from(files)) {
       const category = inferMemoryCategory(file)
       const result = await memoryUpload.upload(file, category)
       if (result) {
-        setUploaded((current) => [
-          { ...result, name: file.name, category, uploadedAt: Date.now() },
-          ...current,
-        ])
+        const item: MemoryLibraryItem = { ...result, name: file.name, category, uploadedAt: Date.now(), status: 'ready', visibility: 'private' }
+        setUploaded((current) => {
+          const next = mergeMemoryLibrary([item], current)
+          try {
+            window.localStorage.setItem(MEMORY_LIBRARY_STORAGE_KEY, JSON.stringify(next.slice(0, 100)))
+          } catch {
+            // Backend-Metadaten wurden bereits geschrieben.
+          }
+          return next
+        })
+        setHiddenUploads((current) => {
+          const id = memoryUploadIdentity(item)
+          const next = current.filter((entry) => entry !== id)
+          try {
+            window.localStorage.setItem(MEMORY_HIDDEN_STORAGE_KEY, JSON.stringify(next))
+          } catch {
+            // Nur lokale Ansicht.
+          }
+          return next
+        })
       }
     }
+  }
+
+  const hideUploadFromView = (file: MemoryLibraryItem) => {
+    const id = memoryUploadIdentity(file)
+    setHiddenUploads((current) => {
+      const next = current.includes(id) ? current : [...current, id]
+      try {
+        window.localStorage.setItem(MEMORY_HIDDEN_STORAGE_KEY, JSON.stringify(next))
+      } catch {
+        // Nur lokale Ansicht.
+      }
+      return next
+    })
   }
 
   return (
@@ -6351,38 +6592,90 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
           </Card>
 
           <Card className="mt-6">
-            <h3 className="mb-4 text-lg font-semibold">Kürzlich hochgeladen</h3>
-            <div className="space-y-3">
-              {(uploaded.length
-                ? uploaded.map((file) => ({
-                    name: file.name,
-                    type: categoryLabel(file.category),
-                    date: new Date(file.uploadedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
-                    status: 'processed',
-                  }))
-                : [
-                    { name: 'Noch keine Datei hochgeladen', type: 'Dokumente', date: 'Deine Uploads erscheinen hier', status: 'empty' },
-                  ]
-              ).map((file, idx) => (
-                <div key={idx} className="flex items-center justify-between rounded-lg bg-white/12 p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/18 text-[#0b1c44]">
-                      <FileIcon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{file.name}</p>
-                      <p className="text-xs text-[#767d87]">{categoryLabel(file.type)} · {file.date}</p>
-                    </div>
-                  </div>
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                    file.status === 'processed' ? 'bg-green-500/20 text-green-700' : file.status === 'empty' ? 'bg-white/10 text-[#8e97a8]' : 'bg-yellow-500/20 text-yellow-700'
-                  }`}>
-                    {file.status === 'processed' ? 'Verarbeitet' : file.status === 'empty' ? 'Bereit' : 'Wird verarbeitet'}
-                  </span>
-                </div>
-              ))}
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Meine Memory-Mediathek</h3>
+                <p className="mt-1 text-sm text-[#555b64]">
+                  Bilder, Videos, Audio und Dokumente bleiben privat und sind hier direkt prüfbar.
+                </p>
+              </div>
+              <span className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-500">
+                <ArchiveIcon className="h-3.5 w-3.5" />
+                Kein Direkt-Löschen
+              </span>
             </div>
+            {visibleUploads.length ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {visibleUploads.map((file) => {
+                  const uploadedTime = file.uploadedAt
+                    ? new Date(file.uploadedAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
+                    : 'Zeitpunkt unbekannt'
+                  return (
+                    <article key={memoryUploadIdentity(file)} className="rounded-lg border border-white/14 bg-white/8 p-3">
+                      <div className="aspect-video overflow-hidden rounded-lg">
+                        <MemoryMediaPreview file={file} />
+                      </div>
+                      <div className="mt-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold" title={file.name}>{file.name}</p>
+                            <p className="mt-1 text-xs text-[#767d87]">
+                              {categoryLabel(file.category)} · {formatMemorySize(file.size)} · {uploadedTime}
+                            </p>
+                          </div>
+                          <span className="shrink-0 rounded-full bg-green-500/20 px-2.5 py-1 text-xs font-semibold text-green-700">
+                            Für Twin bereit
+                          </span>
+                        </div>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {file.getUrl && (
+                            <a
+                              href={file.getUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold transition-colors hover:bg-white/16"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                              Ansehen
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => hideUploadFromView(file)}
+                            className="inline-flex items-center gap-2 rounded-md border border-white/14 px-3 py-2 text-xs font-semibold text-[#8e97a8] transition-colors hover:bg-white/10"
+                            title="Blendet die Datei nur in dieser Ansicht aus. Es wird nichts gelöscht."
+                          >
+                            <ArchiveIcon className="h-4 w-4" />
+                            Aus Ansicht ausblenden
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="rounded-lg border border-dashed border-white/22 bg-white/8 p-6 text-center">
+                <FileIcon className="mx-auto mb-3 h-9 w-9 text-[#8e97a8]" />
+                <p className="text-sm font-semibold">Noch keine sichtbaren Uploads</p>
+                <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-[#767d87]">
+                  Nach dem Hochladen erscheint jede Datei hier mit Vorschau, Größe und sicherem Privatstatus.
+                </p>
+              </div>
+            )}
           </Card>
+          <div className="mt-6">
+            {auth.status === 'authenticated' ? (
+              <UserVoiceCard />
+            ) : (
+              <Card className="p-5">
+                <h3 className="mb-1 text-lg font-semibold">Meine Stimme</h3>
+                <p className="text-sm text-[#555b64]">
+                  Nach dem Einloggen kannst du hier deine private Stimmprobe aufnehmen und fuer deine eigenen Twins aktivieren.
+                </p>
+              </Card>
+            )}
+          </div>
           <Card className="mt-6 p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -6417,15 +6710,15 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
             <div className="space-y-4">
               <div>
                 <p className="mb-1 text-sm text-[#767d87]">Gesamte Memories</p>
-                <p className="text-2xl font-bold">{uploaded.length}</p>
+                <p className="text-2xl font-bold">{visibleUploads.length}</p>
               </div>
               <div>
                 <p className="mb-1 text-sm text-[#767d87]">Verarbeitete Dateien</p>
-                <p className="text-2xl font-bold">{uploaded.length}</p>
+                <p className="text-2xl font-bold">{visibleUploads.length}</p>
               </div>
               <div>
                 <p className="mb-1 text-sm text-[#767d87]">Speicher verwendet</p>
-                <p className="text-2xl font-bold">{(uploaded.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024).toFixed(1)} MB</p>
+                <p className="text-2xl font-bold">{formatMemorySize(usedBytes)}</p>
               </div>
             </div>
           </Card>

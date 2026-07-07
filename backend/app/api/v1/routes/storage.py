@@ -189,6 +189,14 @@ def _require_session(request: Request, detail: str) -> dict[str, Any]:
     return session
 
 
+def _filename_from_key(key: str, upload_id: str) -> str:
+    filename = key.rsplit("/", 1)[-1] if key else "Datei"
+    prefix = f"{upload_id}-" if upload_id else ""
+    if prefix and filename.startswith(prefix):
+        filename = filename[len(prefix) :]
+    return filename or "Datei"
+
+
 @router.get("/capabilities")
 async def storage_capabilities() -> dict[str, object]:
     return {
@@ -202,6 +210,79 @@ async def storage_capabilities() -> dict[str, object]:
         "publicRead": False,
         "privateSignedFiles": True,
         "uploadUrlStatus": "ready" if _storage_ready() else "not_configured",
+    }
+
+
+@router.get("/uploads")
+def list_uploads(
+    request: Request,
+    category: str | None = None,
+    limit: int = 100,
+) -> dict[str, object]:
+    """Liefert die private Upload-Mediathek des angemeldeten Nutzers.
+
+    Es werden nur kleine, bereits protokollierte Metadaten aus dem
+    Nutzerdokument gelesen. Die eigentlichen Dateien bleiben im Object Brain;
+    fuer die Vorschau erzeugen wir jeweils eine frische signierte GET-URL.
+    """
+    session = _require_session(request, "auth_required_for_uploads")
+    sub = str(session.get("sub", ""))
+    prefix = f"user-uploads/{_sub_segment(sub)}/"
+    safe_limit = max(1, min(int(limit or 100), 200))
+    try:
+        from app.api.v1.routes.user_mvp import _load_doc
+
+        doc = _load_doc(sub)
+    except Exception as exc:
+        logger.warning("upload metadata load failed (%s)", type(exc).__name__)
+        doc = {}
+    uploads = doc.get("uploads")
+    if not isinstance(uploads, list):
+        uploads = []
+
+    items: list[dict[str, object]] = []
+    for raw in reversed(uploads):
+        if not isinstance(raw, dict):
+            continue
+        key = str(raw.get("key") or "")
+        if not key.startswith(prefix):
+            continue
+        upload_category = str(raw.get("category") or "")
+        if category and upload_category != category:
+            continue
+        upload_id = str(raw.get("uploadId") or "")
+        get_url = ""
+        if _storage_ready():
+            try:
+                get_url = _client().generate_presigned_url(
+                    "get_object",
+                    Params={"Bucket": settings.idrive_e2_bucket, "Key": key},
+                    ExpiresIn=DOWNLOAD_URL_TTL_SECONDS,
+                )
+            except Exception as exc:
+                logger.warning("upload presign failed (%s)", type(exc).__name__)
+        items.append(
+            {
+                "uploadId": upload_id,
+                "key": key,
+                "name": _filename_from_key(key, upload_id),
+                "size": int(raw.get("size") or 0),
+                "contentType": str(raw.get("contentType") or ""),
+                "category": upload_category,
+                "uploadedAt": int(raw.get("uploadedAt") or 0),
+                "getUrl": get_url,
+                "signedUrlExpiresIn": DOWNLOAD_URL_TTL_SECONDS if get_url else 0,
+                "visibility": "private",
+                "status": "ready",
+            }
+        )
+        if len(items) >= safe_limit:
+            break
+    return {
+        "ok": True,
+        "uploads": items,
+        "privateSignedFiles": True,
+        "deleteLocked": True,
     }
 
 
