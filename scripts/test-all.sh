@@ -43,6 +43,9 @@ if command -v node >/dev/null 2>&1; then
   echo "== Safe destructive actions protection =="
   node scripts/check-safe-destructive-actions.mjs
 
+  echo "== Profile cockpit UX protection =="
+  node scripts/check-profile-cockpit-ux.mjs
+
   echo "== Ad readiness audit =="
   node scripts/ad-readiness-audit.mjs
 

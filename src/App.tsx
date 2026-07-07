@@ -527,6 +527,9 @@ export default function App() {
     return isNameSortMode(stored) ? stored : 'famous'
   })
   const auth = useAuth()
+  const canSeeAdmin = Boolean(
+    auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
+  )
 
   useEffect(() => {
     window.localStorage.setItem('smyst-theme', appTheme)
@@ -575,7 +578,7 @@ export default function App() {
       : [
           { label: 'Dashboard', onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
           { label: 'Start-Assistent', onClick: () => navigateTo('onboarding'), active: currentView === 'onboarding' },
-          { label: 'Admin', onClick: () => navigateTo('admin'), active: currentView === 'admin' },
+          ...(canSeeAdmin ? [{ label: 'Admin', onClick: () => navigateTo('admin'), active: currentView === 'admin' }] : []),
           { label: 'Mein Profil', onClick: () => navigateTo('account-profile'), active: currentView === 'account-profile' },
           { label: 'Meine Twins', onClick: () => navigateTo('my-twins'), active: currentView === 'my-twins' },
           { label: 'Twin Builder', onClick: () => navigateTo('twin-builder'), active: currentView === 'twin-builder' },
@@ -627,7 +630,7 @@ export default function App() {
           <nav className="hidden items-center gap-5 md:flex" aria-label="Hauptnavigation">
             <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Dashboard</button>
             <button onClick={() => navigateTo('onboarding')} className={`text-sm ${currentView === 'onboarding' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Assistent</button>
-            <button onClick={() => navigateTo('admin')} className={`text-sm ${currentView === 'admin' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Admin</button>
+            {canSeeAdmin && <button onClick={() => navigateTo('admin')} className={`text-sm ${currentView === 'admin' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Admin</button>}
             <button onClick={() => navigateTo('account-profile')} className={`text-sm ${currentView === 'account-profile' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Profil</button>
             <button onClick={() => navigateTo('my-twins')} className={`text-sm ${currentView === 'my-twins' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Twins</button>
             <button onClick={() => navigateTo('twin-builder')} className={`text-sm ${currentView === 'twin-builder' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Erstellen</button>
@@ -664,7 +667,7 @@ export default function App() {
               </button>
             ) : (
               <Button size="sm" onClick={() => navigateTo('landing')}>
-                Zurück zum Start
+                Einloggen
               </Button>
             )}
           </div>
@@ -680,7 +683,7 @@ export default function App() {
           primaryAction={
             auth.status === 'authenticated'
               ? { label: 'Zum Dashboard', onClick: () => navigateTo('dashboard') }
-              : { label: 'Early Access starten', onClick: () => navigateTo('twin-builder') }
+              : { label: 'Einloggen', onClick: () => navigateTo('account-profile') }
           }
         />
       </Suspense>
@@ -736,7 +739,7 @@ export default function App() {
               <button onClick={() => navigateTo('twin-builder')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Builder</button>
               <button onClick={() => navigateTo('memory-upload')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Memory Upload</button>
               <button onClick={() => navigateTo('twin-chat')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Twin Chat</button>
-              <button onClick={() => navigateTo('admin')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Admin</button>
+              {canSeeAdmin && <button onClick={() => navigateTo('admin')} className="inline-flex min-h-8 items-center text-left text-sm text-[#9aa6b7] transition-colors hover:text-white">Admin</button>}
             </div>
             <div className="flex flex-col gap-2.5">
               <h4 className="mb-2 text-sm font-bold uppercase tracking-wider">{ft.footer.columnCompany}</h4>
@@ -3223,21 +3226,23 @@ const SIGN_IN_RULES = [
   'Bot-Schutz an, ohne dass Login stört',
 ]
 
-function SignInRequiredCard({ title, text, returnTo }: { title: string; text: string; returnTo: string }) {
+function SignInRequiredCard({ title, text, returnTo, compact = false }: { title: string; text: string; returnTo: string; compact?: boolean }) {
   return (
     <Card className="p-6 sm:p-8">
       <CardContent className="flex flex-col items-start gap-4 p-0 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-xl font-bold tracking-tight">{title}</h2>
           <p className="mt-1 text-sm text-[#555b64]">{text}</p>
-          <ul className="mt-4 space-y-1.5">
-            {SIGN_IN_RULES.map((rule) => (
-              <li key={rule} className="flex items-center gap-2 text-sm text-[#555b64]">
-                <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#22c55e]/15 text-[10px] font-bold text-[#0b7a3b]">✓</span>
-                {rule}
-              </li>
-            ))}
-          </ul>
+          {!compact && (
+            <ul className="mt-4 space-y-1.5">
+              {SIGN_IN_RULES.map((rule) => (
+                <li key={rule} className="flex items-center gap-2 text-sm text-[#555b64]">
+                  <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-[#22c55e]/15 text-[10px] font-bold text-[#0b7a3b]">✓</span>
+                  {rule}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <div className="w-full sm:w-auto sm:min-w-[260px]">
           <Suspense fallback={null}>
@@ -3501,74 +3506,35 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Privater Profilbereich</p>
           <h1 className="mb-1 text-2xl font-bold tracking-tight">Mein Profil</h1>
           <p className="max-w-2xl text-sm text-[#555b64]">
-            Alles Wichtige an einem Ort: Profil bearbeiten, Erinnerungen speichern und deine Daten kontrollieren.
+            Dein einfaches Cockpit für Profil, Twin, Erinnerungen und Datenschutz.
           </p>
         </div>
         {auth.status === 'authenticated' && (
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => onNavigate('onboarding')}>Start-Assistent</Button>
             <Button onClick={() => onNavigate(nextGuidedProfileStep.target)}>{nextGuidedProfileStep.action}</Button>
           </div>
         )}
       </div>
 
-      {auth.status !== 'authenticated' ? (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <Card className="p-5 sm:p-6 lg:col-span-2">
-            <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Geführter Ablauf</p>
-            <h2 className="text-xl font-bold tracking-tight">Was als Nächstes wirklich zählt</h2>
-            <p className="mt-1 text-sm text-[#555b64]">
-              Erst anmelden, dann Profil sichern, Twin erstellen, Erinnerungen hochladen und Datenschutz prüfen.
-            </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {['Profil sichern', 'Twin erstellen', 'Erinnerungen hinzufügen', 'Daten kontrollieren'].map((step, index) => (
-                <div key={step} className="rounded-lg border border-white/20 bg-white/12 p-4">
-                  <p className="text-xs font-bold text-[#667085]">Schritt {index + 1}</p>
-                  <p className="mt-1 text-sm font-bold">{step}</p>
-                </div>
-              ))}
-            </div>
-          </Card>
+      {auth.status === 'loading' ? (
+        <Card className="p-6 sm:p-8">
+          <h2 className="text-xl font-bold tracking-tight">Sitzung wird geprüft</h2>
+          <p className="mt-1 text-sm text-[#555b64]">
+            smyst.com prüft gerade, ob du bereits angemeldet bist.
+          </p>
+        </Card>
+      ) : auth.status !== 'authenticated' ? (
+        <div className="grid gap-6">
           <SignInRequiredCard
-            title="Anmelden oder registrieren"
-            text="Melde dich an, damit private Daten geschützt bleiben und nur für dich sichtbar sind."
+            title="Profil geschützt"
+            text="Bitte melde dich kurz an. Danach kommst du direkt zurück zu deinem Profil."
             returnTo="/profile"
+            compact
           />
         </div>
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-          <Card className="p-5 sm:p-6 lg:col-span-2">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Geführter Ablauf</p>
-                <h2 className="text-xl font-bold tracking-tight">Was als Nächstes wirklich zählt</h2>
-                <p className="mt-1 text-sm text-[#555b64]">
-                  smyst.com führt dich von Profil zu Twin, Erinnerungen und Datenschutz, ohne unnötige technische Schritte.
-                </p>
-              </div>
-              <Button className="w-full justify-center lg:w-auto" onClick={() => onNavigate(nextGuidedProfileStep.target)}>
-                {nextGuidedProfileStep.action}
-              </Button>
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {guidedProfileSteps.map((step) => (
-                <button
-                  key={step.label}
-                  type="button"
-                  onClick={() => onNavigate(step.target)}
-                  className="rounded-lg border border-white/20 bg-white/12 p-4 text-left transition-colors hover:bg-white/18"
-                >
-                  <span className={`mb-3 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${step.done ? 'bg-emerald-500/18 text-emerald-800' : 'bg-amber-400/20 text-amber-900'}`}>
-                    {step.done ? 'OK' : 'Offen'}
-                  </span>
-                  <span className="block text-sm font-bold">{step.label}</span>
-                  <span className="mt-1 block text-xs leading-relaxed text-[#667085]">{step.detail}</span>
-                </button>
-              ))}
-            </div>
-          </Card>
-
-          <Card className="p-6 sm:p-8">
+          <Card className="p-6 sm:p-8 lg:col-span-2" data-smyst-profile-cockpit="true">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-5">
                 <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e7f6ff] text-2xl font-bold text-[#0b1c44] ring-1 ring-white/50">
@@ -3596,26 +3562,26 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
               </div>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-4">
-              <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">Profil</p>
-                <p className="mt-1 text-sm font-semibold">{completedProfileItems}/{profileChecklist.length} erledigt</p>
-              </div>
-              <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">Twins</p>
-                <p className="mt-1 text-sm font-semibold">{profileTwinCount}</p>
-              </div>
-              <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">Memories</p>
-                <p className="mt-1 text-sm font-semibold">{profile?.memoryCount ?? memories.length}</p>
-              </div>
-              <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">Chats</p>
-                <p className="mt-1 text-sm font-semibold">{profile?.chatCount ?? 0}</p>
-              </div>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {guidedProfileSteps.map((step) => (
+                <button
+                  key={step.label}
+                  type="button"
+                  onClick={() => onNavigate(step.target)}
+                  className="rounded-lg border border-white/20 bg-white/12 p-4 text-left transition-colors hover:bg-white/18"
+                >
+                  <span className={`mb-3 inline-flex rounded-full px-2.5 py-1 text-xs font-bold ${step.done ? 'bg-emerald-500/18 text-emerald-800' : 'bg-amber-400/20 text-amber-900'}`}>
+                    {step.done ? 'OK' : 'Offen'}
+                  </span>
+                  <span className="block text-sm font-bold">{step.action}</span>
+                  <span className="mt-1 block text-xs leading-relaxed text-[#667085]">{step.detail}</span>
+                </button>
+              ))}
             </div>
+          </Card>
 
-            <div className="mt-8 grid gap-4">
+          <Card className="p-6 sm:p-8">
+            <div className="grid gap-4">
               <div>
                 <h3 className="text-xl font-bold">Profil bearbeiten</h3>
                 <p className="mt-1 text-sm text-[#555b64]">
@@ -3694,9 +3660,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
             <h3 className="mb-4 text-lg font-semibold">Nächste beste Aktion</h3>
             <div className="space-y-3">
               <Button className="w-full justify-center" onClick={() => onNavigate(nextGuidedProfileStep.target)}>{nextGuidedProfileStep.action}</Button>
-              <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('onboarding')}>Start-Assistent</Button>
-              <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
-              <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('settings')}>Einstellungen</Button>
+              <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('twin-chat')}>Twin testen</Button>
             </div>
             <div className="mt-5 space-y-2">
               {profileChecklist.map((item) => (
@@ -3747,81 +3711,84 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
             )}
           </Card>
 
-          <Card className="p-6 lg:col-span-2">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Optional</p>
-                <h3 className="text-lg font-semibold">Öffentliche Angaben prüfen</h3>
-                <p className="text-sm text-[#555b64]">Nur verwenden, wenn du bewusst öffentliche Profilinformationen vorbereiten willst.</p>
+          <details className="rounded-lg border border-white/16 bg-white/10 p-6 lg:col-span-2">
+            <summary className="cursor-pointer text-lg font-semibold">Optionale öffentliche Angaben</summary>
+            <div className="mt-4">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Nur bei bewusster Freigabe</p>
+                  <h3 className="text-lg font-semibold">Öffentliche Angaben prüfen</h3>
+                  <p className="text-sm text-[#555b64]">Dieser Bereich bleibt eingeklappt, bis du öffentliches Profilwissen vorbereiten willst.</p>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={() => void requestPublicKnowledgeSuggestion()}
+                  disabled={publicKnowledgeLoading}
+                >
+                  {publicKnowledgeLoading ? 'Prüfung läuft…' : 'Öffentlich prüfen'}
+                </Button>
               </div>
-              <Button
-                variant="secondary"
-                onClick={() => void requestPublicKnowledgeSuggestion()}
-                disabled={publicKnowledgeLoading}
-              >
-                {publicKnowledgeLoading ? 'Prüfung läuft…' : 'Öffentlich prüfen'}
-              </Button>
-            </div>
-            <div className="grid gap-3 lg:grid-cols-4">
-              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Private Erinnerungen</p>
-                <p className="mt-1 text-xs text-[#667085]">{memories.length} private Einträge, nicht für Websuche freigegeben.</p>
-              </div>
-              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Öffentliche Angaben</p>
-                <p className="mt-1 text-xs text-[#667085]">
-                  {profileDraft.publicBio.trim() || profileDraft.headline.trim() || 'Noch keine öffentliche Bio gepflegt.'}
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Offene Vorschläge</p>
-                <p className="mt-1 text-xs text-[#667085]">
-                  {publicKnowledgeSuggestion?.suggested
-                    ? `${publicKnowledgeSuggestion.status ?? 'discovered'} · Review erforderlich`
-                    : 'Keine offenen Vorschläge.'}
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/20 bg-white/12 p-4">
-                <p className="text-sm font-semibold">Geprüfte Quellen</p>
-                <p className="mt-1 text-xs text-[#667085]">
-                  {publicKnowledgeSuggestion?.status === 'approved'
-                    ? `${publicKnowledgeSuggestion.sources?.length ?? 0} Quellen akzeptiert`
-                    : 'Noch keine geprüften Quellen übernommen.'}
-                </p>
-              </div>
-            </div>
-            {publicKnowledgeSuggestion?.suggested && (
-              <div className="mt-4 rounded-lg border border-white/20 bg-white/12 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-sm font-semibold">Vorschlag · {publicKnowledgeSuggestion.status ?? 'discovered'}</p>
-                    <p className="mt-2 text-sm text-[#555b64]">{publicKnowledgeSuggestion.fact}</p>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {(publicKnowledgeSuggestion.sources ?? []).slice(0, 3).map((source) => (
-                        <a
-                          key={source.url}
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="max-w-full truncate rounded-md border border-white/30 bg-white/18 px-2.5 py-1 text-xs font-medium text-[#0b1c44] transition-colors hover:bg-white/34"
-                        >
-                          {source.publisher || source.title}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => void rejectPublicKnowledgeSuggestion()}>
-                      Ablehnen
-                    </Button>
-                    <Button size="sm" onClick={() => void approvePublicKnowledgeSuggestion()}>
-                      Akzeptieren
-                    </Button>
-                  </div>
+              <div className="grid gap-3 lg:grid-cols-4">
+                <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                  <p className="text-sm font-semibold">Private Erinnerungen</p>
+                  <p className="mt-1 text-xs text-[#667085]">{memories.length} private Einträge, nicht für Websuche freigegeben.</p>
+                </div>
+                <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                  <p className="text-sm font-semibold">Öffentliche Angaben</p>
+                  <p className="mt-1 text-xs text-[#667085]">
+                    {profileDraft.publicBio.trim() || profileDraft.headline.trim() || 'Noch keine öffentliche Bio gepflegt.'}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                  <p className="text-sm font-semibold">Offene Vorschläge</p>
+                  <p className="mt-1 text-xs text-[#667085]">
+                    {publicKnowledgeSuggestion?.suggested
+                      ? `${publicKnowledgeSuggestion.status ?? 'discovered'} · Review erforderlich`
+                      : 'Keine offenen Vorschläge.'}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-white/20 bg-white/12 p-4">
+                  <p className="text-sm font-semibold">Geprüfte Quellen</p>
+                  <p className="mt-1 text-xs text-[#667085]">
+                    {publicKnowledgeSuggestion?.status === 'approved'
+                      ? `${publicKnowledgeSuggestion.sources?.length ?? 0} Quellen akzeptiert`
+                      : 'Noch keine geprüften Quellen übernommen.'}
+                  </p>
                 </div>
               </div>
-            )}
-          </Card>
+              {publicKnowledgeSuggestion?.suggested && (
+                <div className="mt-4 rounded-lg border border-white/20 bg-white/12 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">Vorschlag · {publicKnowledgeSuggestion.status ?? 'discovered'}</p>
+                      <p className="mt-2 text-sm text-[#555b64]">{publicKnowledgeSuggestion.fact}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {(publicKnowledgeSuggestion.sources ?? []).slice(0, 3).map((source) => (
+                          <a
+                            key={source.url}
+                            href={source.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="max-w-full truncate rounded-md border border-white/30 bg-white/18 px-2.5 py-1 text-xs font-medium text-[#0b1c44] transition-colors hover:bg-white/34"
+                          >
+                            {source.publisher || source.title}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 gap-2">
+                      <Button size="sm" variant="secondary" onClick={() => void rejectPublicKnowledgeSuggestion()}>
+                        Ablehnen
+                      </Button>
+                      <Button size="sm" onClick={() => void approvePublicKnowledgeSuggestion()}>
+                        Akzeptieren
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </details>
 
           <Card className="p-6 lg:col-span-2">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -3889,11 +3856,10 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
 
           <SocialLinksCard />
 
-          <Card className="p-6 lg:col-span-2">
-            <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Optional</p>
-            <h3 className="mb-2 text-lg font-semibold">Chatverlauf suchen</h3>
-            <p className="mb-4 text-sm text-[#555b64]">Optional: finde ältere Gespräche, ohne durch technische Archivdaten zu müssen.</p>
-            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+          <details className="rounded-lg border border-white/16 bg-white/10 p-6 lg:col-span-2">
+            <summary className="cursor-pointer text-lg font-semibold">Chatverlauf suchen</summary>
+            <p className="mt-2 text-sm text-[#555b64]">Finde ältere Gespräche nur dann, wenn du sie brauchst.</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
               <input
                 value={chatQuery}
                 onChange={(event) => setChatQuery(event.target.value)}
@@ -3917,7 +3883,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 <div className="rounded-lg bg-white/12 p-4 text-sm text-[#555b64]">Keine Treffer.</div>
               )}
             </div>
-          </Card>
+          </details>
         </div>
       )}
     </div>
