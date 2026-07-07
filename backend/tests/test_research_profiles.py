@@ -1,7 +1,6 @@
 from datetime import date
 
 from app.ai.research_profiles import (
-    ResearchDocument,
     SourceRef,
     check_consistency,
     evaluate_research,

@@ -104,6 +104,7 @@ export interface TwinChatMessage {
   role: 'user' | 'assistant'
   content: string
   createdAt: number
+  webResearch?: WebResearchMeta
 }
 
 export interface AccountExportBundle {
@@ -142,6 +143,39 @@ export type ProfileVisibility = 'private' | 'shared' | 'public_snapshot' | 'dele
 export type SensitivityLevel = 'normal' | 'personal' | 'sensitive'
 export type MemoryStatus = 'pending' | 'confirmed' | 'edited' | 'rejected'
 export type MemoryType = 'fact' | 'preference' | 'goal' | 'relationship' | 'project' | 'style' | 'decision' | 'warning' | 'sensitive'
+
+export interface WebResearchSource {
+  title: string
+  url: string
+  snippet?: string
+  publisher?: string
+  retrieved_at?: string
+  trust_score?: number
+}
+
+export interface WebResearchMeta {
+  searched: boolean
+  notice: string
+  provider: string
+  fromCache: boolean
+  category: string
+  searchedAt?: string
+  trustStatus: string
+  injectionWarnings: string[]
+  sources: WebResearchSource[]
+}
+
+export interface PublicKnowledgeSuggestion {
+  suggested: boolean
+  message?: string
+  status?: 'discovered' | 'reviewed' | 'approved' | 'rejected' | 'stale'
+  reviewRequired?: boolean
+  profileId?: string
+  fact?: string
+  retrievedAt?: string
+  trustScore?: number
+  sources?: WebResearchSource[]
+}
 
 export interface UserProfileRecord {
   id: 'default'
@@ -243,6 +277,14 @@ async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T
 }
 
+async function publicApiJson<T>(path: string): Promise<T | null> {
+  try {
+    return await apiJson<T>(path)
+  } catch {
+    return null
+  }
+}
+
 export function useTwinMvp() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -284,8 +326,8 @@ export function useTwinMvp() {
       run(async () => {
         const body =
           (await staticPublicJson<{ twin: PublicTwinProfile }>(`/api/public/twins/${encodeURIComponent(slug)}/`)) ??
-          (await apiJson<{ twin: PublicTwinProfile }>(`/api/public/twins/${encodeURIComponent(slug)}`))
-        return body.twin
+          (await publicApiJson<{ twin: PublicTwinProfile }>(`/api/public/twins/${encodeURIComponent(slug)}`))
+        return body?.twin ?? null
       }),
     [run],
   )
@@ -295,8 +337,8 @@ export function useTwinMvp() {
       run(async () => {
         const body =
           (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
-          (await apiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
-        return body.twins
+          (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
+        return body?.twins ?? []
       }),
     [run],
   )
@@ -517,6 +559,28 @@ export function useTwinMvp() {
     [run],
   )
 
+  const suggestPublicKnowledge = useCallback(
+    (input: { profileId?: string; question: string; maxResults?: number }) =>
+      run(async () => {
+        return apiJson<PublicKnowledgeSuggestion>('/api/web-research/public-profile-suggestions', {
+          method: 'POST',
+          body: JSON.stringify({
+            profile_id: input.profileId ?? 'default',
+            question: input.question,
+            max_results: input.maxResults ?? 3,
+            context: {
+              profile_id: input.profileId ?? 'default',
+              context_type: 'public_profile',
+              public_profile_mode: true,
+              public_research_allowed: true,
+              user_explicitly_requested_search: true,
+            },
+          }),
+        })
+      }),
+    [run],
+  )
+
   const listMemories = useCallback(
     (filters: { status?: MemoryStatus; twinId?: string } = {}) =>
       run(async () => {
@@ -649,6 +713,7 @@ export function useTwinMvp() {
     searchTwinChats,
     getProfile,
     updateProfile,
+    suggestPublicKnowledge,
     listMemories,
     createMemory,
     updateMemory,
