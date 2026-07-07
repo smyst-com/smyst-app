@@ -4,13 +4,13 @@ import asyncio
 import json
 import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from time import perf_counter
 from typing import Any, AsyncIterator
 from urllib.parse import urljoin
 
 import httpx
 from app.ai.models import LLMRequest, LLMResponse
+from app.ai.provider_catalog import DEFAULT_PROVIDER_ORDER, PROVIDER_ALIASES, PROVIDER_CONFIGS
 from app.core.config import Settings, get_settings
 
 logger = logging.getLogger("smyst.ai.llm_router")
@@ -27,14 +27,6 @@ RETRY_BACKOFF_SECONDS = 0.15
 RATE_LIMIT_BACKOFF_SECONDS = 1.0
 
 
-@dataclass(frozen=True)
-class ProviderConfig:
-    name: str
-    base_url: str
-    api_key_attr: str
-    default_model: str
-
-
 class LLMProvider(ABC):
     name: str
     model: str
@@ -42,6 +34,23 @@ class LLMProvider(ABC):
     @abstractmethod
     async def complete(self, request: LLMRequest) -> LLMResponse:
         raise NotImplementedError
+
+    async def healthcheck(self, request: LLMRequest) -> dict[str, object]:
+        await self.complete(request)
+        return {"mode": "generation_ping"}
+
+
+class ProviderHealthError(RuntimeError):
+    def __init__(
+        self,
+        message: str,
+        *,
+        category: str,
+        status_code: int | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.category = category
+        self.status_code = status_code
 
 
 class LocalDeterministicProvider(LLMProvider):
@@ -94,6 +103,10 @@ class OpenAICompatibleProvider(LLMProvider):
     @property
     def chat_completions_url(self) -> str:
         return urljoin(self.base_url, "chat/completions")
+
+    @property
+    def models_url(self) -> str:
+        return urljoin(self.base_url, "models")
 
     async def complete(self, request: LLMRequest) -> LLMResponse:
         started = perf_counter()
@@ -200,6 +213,30 @@ class OpenAICompatibleProvider(LLMProvider):
                 await asyncio.sleep(RETRY_BACKOFF_SECONDS)
         raise RuntimeError(f"LLM provider '{self.name}' returned no response")
 
+    async def healthcheck(self, request: LLMRequest) -> dict[str, object]:
+        headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
+        async with httpx.AsyncClient(timeout=min(self.timeout, 8.0)) as client:
+            response = await client.get(self.models_url, headers=headers)
+            response.raise_for_status()
+        self._assert_model_available(response.json())
+        return {"mode": "credential_model_check"}
+
+    def _assert_model_available(self, data: dict[str, Any]) -> None:
+        raw_models = data.get("data")
+        if not isinstance(raw_models, list):
+            return
+        model_ids = {
+            item.get("id") if isinstance(item, dict) else item
+            for item in raw_models
+            if isinstance(item, dict | str)
+        }
+        if model_ids and self.model not in model_ids:
+            raise ProviderHealthError(
+                "configured model is not available for this provider",
+                category="model_unavailable",
+                status_code=200,
+            )
+
     def _parse_text(self, data: dict[str, Any]) -> str:
         choices = data.get("choices") or []
         if not choices:
@@ -261,6 +298,17 @@ class AnthropicProvider(OpenAICompatibleProvider):
             latency_ms=latency_ms,
             degraded=False,
         )
+
+    async def healthcheck(self, request: LLMRequest) -> dict[str, object]:
+        headers = {
+            "x-api-key": self.api_key,
+            "anthropic-version": "2023-06-01",
+        }
+        async with httpx.AsyncClient(timeout=min(self.timeout, 8.0)) as client:
+            response = await client.get(urljoin(self.base_url, "models"), headers=headers)
+            response.raise_for_status()
+        self._assert_model_available(response.json())
+        return {"mode": "credential_model_check"}
 
 
 class ManusProvider(LLMProvider):
@@ -373,130 +421,6 @@ class ManusProvider(LLMProvider):
                 if isinstance(status, str):
                     return status
         return None
-
-
-PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
-    "openrouter": ProviderConfig(
-        name="openrouter",
-        base_url="https://openrouter.ai/api/v1",
-        api_key_attr="openrouter_api_key",
-        default_model="openai/gpt-4o",
-    ),
-    "openai": ProviderConfig(
-        name="openai",
-        base_url="https://api.openai.com/v1",
-        api_key_attr="openai_api_key",
-        default_model="gpt-4o",
-    ),
-    "anthropic": ProviderConfig(
-        name="anthropic",
-        base_url="https://api.anthropic.com/v1",
-        api_key_attr="anthropic_api_key",
-        default_model="claude-3-7-sonnet-latest",
-    ),
-    "gemini": ProviderConfig(
-        name="gemini",
-        base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-        api_key_attr="gemini_api_key",
-        default_model="gemini-2.5-flash",
-    ),
-    "xai": ProviderConfig(
-        name="xai",
-        base_url="https://api.x.ai/v1",
-        api_key_attr="xai_api_key",
-        default_model="grok-3",
-    ),
-    "deepseek": ProviderConfig(
-        name="deepseek",
-        base_url="https://api.deepseek.com",
-        api_key_attr="deepseek_api_key",
-        default_model="deepseek-chat",
-    ),
-    "moonshot": ProviderConfig(
-        name="moonshot",
-        base_url="https://api.moonshot.ai/v1",
-        api_key_attr="moonshot_api_key",
-        default_model="kimi-k2-0711-preview",
-    ),
-    "manus": ProviderConfig(
-        name="manus",
-        base_url="https://api.manus.ai/v2",
-        api_key_attr="manus_api_key",
-        default_model="manus-1.6-lite",
-    ),
-    "zhipu": ProviderConfig(
-        name="zhipu",
-        base_url="https://api.z.ai/api/paas/v4",
-        api_key_attr="zhipu_api_key",
-        default_model="glm-4.6",
-    ),
-    "dashscope": ProviderConfig(
-        name="dashscope",
-        base_url="https://dashscope-intl.aliyun.com/compatible-mode/v1",
-        api_key_attr="dashscope_api_key",
-        default_model="qwen-plus",
-    ),
-    "mistral": ProviderConfig(
-        name="mistral",
-        base_url="https://api.mistral.ai/v1",
-        api_key_attr="mistral_api_key",
-        default_model="mistral-large-latest",
-    ),
-    "groq": ProviderConfig(
-        name="groq",
-        base_url="https://api.groq.com/openai/v1",
-        api_key_attr="groq_api_key",
-        default_model="llama-3.3-70b-versatile",
-    ),
-    "together": ProviderConfig(
-        name="together",
-        base_url="https://api.together.xyz/v1",
-        api_key_attr="together_api_key",
-        default_model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
-    ),
-    "cohere": ProviderConfig(
-        name="cohere",
-        base_url="https://api.cohere.ai/compatibility/v1",
-        api_key_attr="cohere_api_key",
-        default_model="command-a-03-2025",
-    ),
-    "perplexity": ProviderConfig(
-        name="perplexity",
-        base_url="https://api.perplexity.ai",
-        api_key_attr="perplexity_api_key",
-        default_model="sonar-pro",
-    ),
-}
-
-PROVIDER_ALIASES = {
-    "claude": "anthropic",
-    "grok": "xai",
-    "kimi": "moonshot",
-    "moonshotai": "moonshot",
-    "manusai": "manus",
-    "glm": "zhipu",
-    "zai": "zhipu",
-    "qwen": "dashscope",
-    "alibaba": "dashscope",
-}
-
-DEFAULT_PROVIDER_ORDER = [
-    "openrouter",
-    "openai",
-    "anthropic",
-    "gemini",
-    "xai",
-    "deepseek",
-    "moonshot",
-    "manus",
-    "zhipu",
-    "dashscope",
-    "mistral",
-    "groq",
-    "together",
-    "cohere",
-    "perplexity",
-]
 
 
 def _canonical_provider_name(name: str) -> str:
@@ -728,10 +652,18 @@ PING_PROMPT = "Reply with the single word: pong"
 
 def _provider_error_diagnostics(exc: Exception) -> dict[str, object]:
     """Return safe provider diagnostics without headers, keys, or response bodies."""
+    if isinstance(exc, ProviderHealthError):
+        return {
+            "error": type(exc).__name__,
+            "status_code": exc.status_code,
+            "category": exc.category,
+        }
     if isinstance(exc, httpx.HTTPStatusError):
         status_code = exc.response.status_code
         if status_code in {401, 403}:
             category = "auth_failed"
+        elif status_code == 402:
+            category = "payment_required"
         elif status_code == 404:
             category = "not_found"
         elif status_code in {400, 422}:
@@ -786,11 +718,12 @@ async def ping_providers(
     async def _ping(provider: LLMProvider) -> tuple[str, dict[str, object]]:
         started = perf_counter()
         try:
-            await asyncio.wait_for(provider.complete(request), timeout=timeout_seconds)
+            details = await asyncio.wait_for(provider.healthcheck(request), timeout=timeout_seconds)
             return provider.name, {
                 "ok": True,
                 "latency_ms": int((perf_counter() - started) * 1000),
                 "error": None,
+                **details,
             }
         except Exception as exc:
             diagnostics = _provider_error_diagnostics(exc)
