@@ -211,6 +211,7 @@ function SmystLockup() {
 
 type AppView =
   | 'landing'
+  | 'onboarding'
   | 'account-profile'
   | 'my-twins'
   | 'twin-builder'
@@ -445,6 +446,7 @@ function contactsToText(contacts: BrowserContact[]) {
 
 const viewPaths: Record<Exclude<AppView, 'twin-profile' | 'not-found'>, string> = {
   landing: '/',
+  onboarding: '/onboarding',
   'account-profile': '/profile',
   'my-twins': '/twins',
   'twin-builder': '/twin-builder',
@@ -489,6 +491,7 @@ function initialRoute(): { view: AppView; profileSlug: string | null; privateTwi
   if (path.startsWith('/private/twins/')) {
     return { view: 'twin-profile', profileSlug: null, privateTwinId: decodeURIComponent(path.slice('/private/twins/'.length)) }
   }
+  if (path === '/onboarding' || path === '/start') return { view: 'onboarding', profileSlug: null, privateTwinId: null }
   if (path === '/profile') return { view: 'account-profile', profileSlug: null, privateTwinId: null }
   if (path === '/twins') return { view: 'my-twins', profileSlug: null, privateTwinId: null }
   if (path === '/twin-builder' || path === '/builder') return { view: 'twin-builder', profileSlug: null, privateTwinId: null }
@@ -571,6 +574,7 @@ export default function App() {
         ]
       : [
           { label: 'Dashboard', onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
+          { label: 'Start-Assistent', onClick: () => navigateTo('onboarding'), active: currentView === 'onboarding' },
           { label: 'Admin', onClick: () => navigateTo('admin'), active: currentView === 'admin' },
           { label: 'Mein Profil', onClick: () => navigateTo('account-profile'), active: currentView === 'account-profile' },
           { label: 'Meine Twins', onClick: () => navigateTo('my-twins'), active: currentView === 'my-twins' },
@@ -622,6 +626,7 @@ export default function App() {
 
           <nav className="hidden items-center gap-5 md:flex" aria-label="Hauptnavigation">
             <button onClick={() => navigateTo('dashboard')} className={`text-sm ${currentView === 'dashboard' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Dashboard</button>
+            <button onClick={() => navigateTo('onboarding')} className={`text-sm ${currentView === 'onboarding' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Assistent</button>
             <button onClick={() => navigateTo('admin')} className={`text-sm ${currentView === 'admin' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Admin</button>
             <button onClick={() => navigateTo('account-profile')} className={`text-sm ${currentView === 'account-profile' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Profil</button>
             <button onClick={() => navigateTo('my-twins')} className={`text-sm ${currentView === 'my-twins' ? 'font-semibold text-white' : 'text-[#9aa6b7]'} transition-colors hover:text-white`}>Twins</button>
@@ -692,6 +697,7 @@ export default function App() {
         }
       >
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
+        {currentView === 'onboarding' && <GuidedOnboardingView onNavigate={navigateTo} />}
         {currentView === 'admin' && <AdminControlCenterView />}
         {currentView === 'account-profile' && <AccountProfileView onNavigate={navigateTo} />}
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
@@ -1972,6 +1978,7 @@ function SmystStartPage({
   }
 
   const menuItems: Array<{ label: string; view: AppView; detail: string }> = [
+    { label: 'Start-Assistent', view: 'onboarding', detail: 'Schritt für Schritt zum fertigen Twin' },
     { label: 'Mein Profil', view: 'account-profile', detail: 'Identität, Bio, Rollen und Profilqualität' },
     { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persönlichkeit, Wissen und Sichtbarkeit' },
     { label: 'Meine Twins', view: 'my-twins', detail: 'Private und öffentliche AI Twins' },
@@ -1999,6 +2006,7 @@ function SmystStartPage({
   ]
 
   const profileQuickActions = [
+    { label: 'Start-Assistent', view: 'onboarding' as const },
     { label: 'Profil öffnen', view: 'account-profile' as const },
     { label: 'Twin erstellen', view: 'twin-builder' as const },
     { label: 'Daten hochladen', view: 'memory-upload' as const },
@@ -3210,7 +3218,7 @@ const SIGN_IN_RULES = [
   'Chat darf sofort sichtbar sein',
   'Private Daten erst nach Login speichern',
   'Fehlertext sagt immer, was zu tun ist',
-  'HttpOnly-Session statt Token im Browser',
+  'Login bleibt geschützt und klar getrennt',
   'Export/Löschung direkt auffindbar',
   'Bot-Schutz an, ohne dass Login stört',
 ]
@@ -3784,6 +3792,210 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           </Card>
         </div>
       )}
+    </div>
+  )
+}
+
+function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+  const auth = useAuth()
+  const twinMvp = useTwinMvp()
+  const [profile, setProfile] = useState<UserProfileRecord | null>(null)
+  const [twinCount, setTwinCount] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      if (auth.status !== 'authenticated') return
+      setLoading(true)
+      try {
+        const [profileResult, twins] = await Promise.all([
+          twinMvp.getProfile(),
+          twinMvp.listTwins(),
+        ])
+        if (cancelled) return
+        setProfile(profileResult?.profile ?? null)
+        setTwinCount(twins?.length ?? 0)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    void load()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.status])
+
+  const quality = profile?.qualityScore ?? 0
+  const memoryCount = profile?.memoryCount ?? 0
+  const chatCount = profile?.chatCount ?? 0
+  const steps: Array<{
+    id: string
+    title: string
+    text: string
+    done: boolean
+    action: string
+    target: AppView
+  }> = [
+    {
+      id: 'account',
+      title: 'Konto sichern',
+      text: 'Melde dich an, damit Profil, Twin, Uploads und Chats deinem Account gehören.',
+      done: auth.status === 'authenticated',
+      action: auth.status === 'authenticated' ? 'Profil öffnen' : 'Anmelden',
+      target: 'account-profile',
+    },
+    {
+      id: 'profile',
+      title: 'Profil vervollständigen',
+      text: 'Name, Kurzbeschreibung, Ziele und Sprache geben deinem Twin eine klare Grundlage.',
+      done: quality >= 70,
+      action: 'Profil bearbeiten',
+      target: 'account-profile',
+    },
+    {
+      id: 'twin',
+      title: 'Twin erstellen',
+      text: 'Erstelle mindestens einen privaten Twin, bevor du Erinnerungen und Chats dauerhaft nutzt.',
+      done: twinCount > 0,
+      action: 'Twin erstellen',
+      target: 'twin-builder',
+    },
+    {
+      id: 'memory',
+      title: 'Erinnerungen hinzufügen',
+      text: 'Lade nur Dateien und Fakten hoch, die dein Twin wirklich verwenden darf.',
+      done: memoryCount > 0,
+      action: 'Daten hochladen',
+      target: 'memory-upload',
+    },
+    {
+      id: 'chat',
+      title: 'Twin testen',
+      text: 'Starte einen kurzen Test-Chat und prüfe, ob der Twin verständlich und respektvoll antwortet.',
+      done: chatCount > 0,
+      action: 'Chat starten',
+      target: 'twin-chat',
+    },
+    {
+      id: 'privacy',
+      title: 'Datenkontrolle prüfen',
+      text: 'Export, Löschung und private Standards bleiben erreichbar, bevor Inhalte geteilt werden.',
+      done: true,
+      action: 'Datenschutz prüfen',
+      target: 'trust',
+    },
+  ]
+  const completed = steps.filter((step) => step.done).length
+  const progress = Math.round((completed / steps.length) * 100)
+  const nextStep = steps.find((step) => !step.done) ?? steps[steps.length - 1]
+
+  if (auth.status !== 'authenticated') {
+    return (
+      <div className="pt-6">
+        <div className="mb-5">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Geführter Start</p>
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">Dein Twin-Assistent</h1>
+          <p className="max-w-2xl text-sm text-[#555b64]">
+            smyst.com führt dich Schritt für Schritt vom Konto zum ersten sicheren KI-Zwilling.
+          </p>
+        </div>
+        <SignInRequiredCard
+          title="Erst anmelden, dann speichern"
+          text="Private Profile, Memories und Chats werden erst nach Login dauerhaft gespeichert."
+          returnTo="/onboarding"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="pt-6">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Geführter Start</p>
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">Dein Twin-Assistent</h1>
+          <p className="max-w-2xl text-sm text-[#555b64]">
+            Eine klare Reihenfolge: Profil sichern, Twin erstellen, Erinnerungen hinzufügen und danach testen.
+          </p>
+        </div>
+        <Button onClick={() => onNavigate(nextStep.target)}>{nextStep.action}</Button>
+      </div>
+
+      <div className="mb-6 rounded-lg border border-white/24 bg-white/14 p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[#555b64]">Fortschritt</p>
+            <p className="mt-1 text-3xl font-bold tracking-tight">{progress}%</p>
+          </div>
+          <div className="grid gap-2 sm:min-w-[320px]">
+            <div className="h-2 w-full rounded-full bg-white/24">
+              <div className="h-2 rounded-full bg-[#59C7FF]" style={{ width: `${progress}%` }}></div>
+            </div>
+            <p className="text-sm text-[#555b64]">
+              {completed} von {steps.length} Schritten erledigt. Nächster Schritt: {nextStep.title}.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        {steps.map((step, index) => (
+          <Card key={step.id} className="p-5">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-white/18 text-sm font-bold text-[#0b1c44]">
+                {index + 1}
+              </span>
+              <span className={`rounded-full px-3 py-1 text-xs font-bold ${step.done ? 'bg-emerald-500/18 text-emerald-800' : 'bg-white/18 text-[#555b64]'}`}>
+                {step.done ? 'Erledigt' : 'Offen'}
+              </span>
+            </div>
+            <h2 className="text-lg font-bold tracking-tight">{step.title}</h2>
+            <p className="mt-2 min-h-[54px] text-sm leading-relaxed text-[#555b64]">{step.text}</p>
+            <Button className="mt-5 w-full justify-center" variant={step.done ? 'secondary' : 'default'} onClick={() => onNavigate(step.target)}>
+              {step.action}
+            </Button>
+          </Card>
+        ))}
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <Card className="p-5">
+          <h2 className="text-lg font-bold">Dein aktueller Stand</h2>
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center justify-between rounded-lg bg-white/12 px-3 py-2 text-sm">
+              <span>Profilqualität</span>
+              <span className="font-bold">{loading ? 'lädt…' : `${quality}/100`}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-white/12 px-3 py-2 text-sm">
+              <span>Eigene Twins</span>
+              <span className="font-bold">{loading ? 'lädt…' : twinCount}</span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-white/12 px-3 py-2 text-sm">
+              <span>Memories</span>
+              <span className="font-bold">{loading ? 'lädt…' : memoryCount}</span>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="p-5 lg:col-span-2">
+          <h2 className="text-lg font-bold">Sicherheitsregeln für deinen Twin</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {[
+              ['Privat zuerst', 'Neue Profile, Uploads und Chats starten kontrolliert und nicht öffentlich.'],
+              ['Nur erlaubte Inhalte', 'Lade nur Daten hoch, die du nutzen darfst und wirklich im Twin brauchst.'],
+              ['KI bleibt KI', 'Der Twin darf nicht als echte Person täuschen oder Freigaben umgehen.'],
+              ['Kontrolle bleibt bei dir', 'Export, Löschung und Widerruf bleiben erreichbar.'],
+            ].map(([title, text]) => (
+              <div key={title} className="rounded-lg border border-white/20 bg-white/12 p-4">
+                <p className="text-sm font-bold">{title}</p>
+                <p className="mt-1 text-sm text-[#555b64]">{text}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
     </div>
   )
 }
@@ -5465,6 +5677,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
   }, [auth.status])
   const displayName = auth.user?.name || auth.user?.email?.split('@')[0] || 'zurück'
   const startActions: { key: string; title: string; subtitle: string; dot: string; target: AppView }[] = [
+    { key: 'guide', title: 'Assistent starten', subtitle: 'Schritt für Schritt fertig werden', dot: '#0b1c44', target: 'onboarding' },
     { key: 'choose', title: 'Twin wählen', subtitle: t.dashboard.actionChooseSubtitle, dot: '#59C7FF', target: 'my-twins' },
     { key: 'ask', title: 'Einfach fragen', subtitle: t.dashboard.actionAskSubtitle, dot: '#22c55e', target: 'twin-chat' },
     { key: 'create', title: 'Twin erstellen', subtitle: t.dashboard.actionCreateSubtitle, dot: '#f59e0b', target: 'twin-builder' },
@@ -5474,7 +5687,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
       <div className="mb-8 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-[18px] sm:p-8">
         <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">{t.dashboard.heroTitle}</h2>
         <p className="mt-1 text-sm text-[#555b64] sm:text-base">{t.dashboard.heroSubtitle}</p>
-        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {startActions.map((action) => (
             <button
               key={action.key}

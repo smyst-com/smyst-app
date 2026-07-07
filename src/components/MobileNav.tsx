@@ -186,8 +186,8 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
 
           <div className="mt-5 grid gap-2 border-t border-white/10 px-1 pt-5">
             {[
-              ['HttpOnly Cookie', 'Session bleibt sicher serverseitig.'],
-              ['Private Inhalte noindex', 'Private Profile werden nicht indexiert.'],
+              ['Sicher angemeldet', 'Deine Sitzung bleibt geschützt und klar getrennt.'],
+              ['Privat bleibt privat', 'Private Profile werden nicht öffentlich angezeigt.'],
               ['Export & Löschung', 'Datenkontrolle im Profilbereich.'],
             ].map(([title, text]) => (
               <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
