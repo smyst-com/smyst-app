@@ -3441,11 +3441,29 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     }, 800)
   }
 
+  const qualityScore = profile?.qualityScore ?? 0
+  const profileChecklist = [
+    { label: 'Name', done: Boolean(profileDraft.displayName.trim() || auth.user?.name) },
+    { label: 'Kurzbeschreibung', done: Boolean(profileDraft.headline.trim()) },
+    { label: 'Private Bio', done: Boolean(profileDraft.privateBio.trim()) },
+    { label: 'Ziele', done: splitDraftList(profileDraft.goals).length > 0 },
+    { label: 'Sprache', done: splitDraftList(profileDraft.languages).length > 0 },
+  ]
+  const completedProfileItems = profileChecklist.filter((item) => item.done).length
+
   return (
     <div className="pt-6">
-      <div className="mb-5">
-        <h1 className="mb-1 text-2xl font-bold tracking-tight">Mein Profil</h1>
-        <p className="text-sm text-[#555b64]">Account, Session und Datenschutzstatus für deinen smyst-Zugang.</p>
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Privater Profilbereich</p>
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">Mein Profil</h1>
+          <p className="max-w-2xl text-sm text-[#555b64]">
+            Alles Wichtige an einem Ort: Profil bearbeiten, Erinnerungen speichern und deine Daten kontrollieren.
+          </p>
+        </div>
+        {auth.status === 'authenticated' && (
+          <Button variant="secondary" onClick={() => onNavigate('dashboard')}>Zur Übersicht</Button>
+        )}
       </div>
 
       {auth.status !== 'authenticated' ? (
@@ -3455,49 +3473,61 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           returnTo="/profile"
         />
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
           <Card className="p-6 sm:p-8">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e7f6ff] text-2xl font-bold text-[#0b1c44] ring-1 ring-white/50">
-                {auth.user?.picture ? (
-                  <img src={auth.user.picture} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  (auth.user?.name?.[0] ?? auth.user?.email?.[0] ?? 'S').toUpperCase()
-                )}
-              </div>
-              <div className="min-w-0">
-                <h2 className="truncate text-2xl font-bold">{auth.user?.name ?? 'smyst Nutzer'}</h2>
-                <p className="mt-1 truncate text-sm text-[#555b64]">{auth.user?.email}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {(auth.user?.roles ?? ['member']).map((role) => (
-                    <span key={role} className="rounded-full bg-white/24 px-3 py-1 text-xs font-semibold text-[#0b1c44]">
-                      {role}
-                    </span>
-                  ))}
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-5">
+                <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e7f6ff] text-2xl font-bold text-[#0b1c44] ring-1 ring-white/50">
+                  {auth.user?.picture ? (
+                    <img src={auth.user.picture} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    (auth.user?.name?.[0] ?? auth.user?.email?.[0] ?? 'S').toUpperCase()
+                  )}
                 </div>
+                <div className="min-w-0">
+                  <h2 className="truncate text-2xl font-bold">{auth.user?.name ?? 'smyst Nutzer'}</h2>
+                  <p className="mt-1 truncate text-sm text-[#555b64]">{auth.user?.email}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {(auth.user?.roles ?? ['member']).map((role) => (
+                      <span key={role} className="rounded-full bg-white/24 px-3 py-1 text-xs font-semibold text-[#0b1c44]">
+                        {role}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-lg bg-[#111722] px-4 py-3 text-white">
+                <p className="text-xs font-semibold text-[#c6ceda]">Profilqualität</p>
+                <p className="text-2xl font-bold">{qualityScore}/100</p>
               </div>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <div className="mt-8 grid gap-3 sm:grid-cols-4">
               <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">User Sub</p>
-                <p className="mt-1 break-all text-sm font-semibold">{auth.user?.sub}</p>
+                <p className="text-xs text-[#667085]">Profil</p>
+                <p className="mt-1 text-sm font-semibold">{completedProfileItems}/{profileChecklist.length} erledigt</p>
               </div>
               <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">Session</p>
-                <p className="mt-1 text-sm font-semibold">HttpOnly Cookie</p>
+                <p className="text-xs text-[#667085]">Twins</p>
+                <p className="mt-1 text-sm font-semibold">Bereich Meine Twins</p>
               </div>
               <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">Datenschutz</p>
-                <p className="mt-1 text-sm font-semibold">Private Inhalte standardmäßig noindex</p>
+                <p className="text-xs text-[#667085]">Memories</p>
+                <p className="mt-1 text-sm font-semibold">{profile?.memoryCount ?? memories.length}</p>
               </div>
               <div className="rounded-lg bg-white/16 p-4">
-                <p className="text-xs text-[#667085]">Speicher</p>
-                <p className="mt-1 text-sm font-semibold">Dateien und Medien geschützt</p>
+                <p className="text-xs text-[#667085]">Chats</p>
+                <p className="mt-1 text-sm font-semibold">{profile?.chatCount ?? 0}</p>
               </div>
             </div>
 
             <div className="mt-8 grid gap-4">
+              <div>
+                <h3 className="text-xl font-bold">Profil bearbeiten</h3>
+                <p className="mt-1 text-sm text-[#555b64]">
+                  Diese Angaben helfen deinem Twin, dich klarer und persönlicher zu vertreten. Private Angaben bleiben privat.
+                </p>
+              </div>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm font-semibold">
                   Anzeigename
@@ -3525,15 +3555,6 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                   className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
                 />
               </label>
-              <label className="grid gap-1 text-sm font-semibold">
-                Öffentliche Bio
-                <textarea
-                  value={profileDraft.publicBio}
-                  onChange={(event) => setProfileDraft((current) => ({ ...current, publicBio: event.target.value }))}
-                  rows={3}
-                  className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
-                />
-              </label>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="grid gap-1 text-sm font-semibold">
                   Rollen
@@ -3552,10 +3573,23 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                   <input value={profileDraft.languages} onChange={(event) => setProfileDraft((current) => ({ ...current, languages: event.target.value }))} className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]" />
                 </label>
               </div>
+              <details className="rounded-lg border border-white/20 bg-white/10 p-4">
+                <summary className="cursor-pointer text-sm font-bold">Erweiterte öffentliche Angaben</summary>
+                <label className="mt-4 grid gap-1 text-sm font-semibold">
+                  Öffentliche Bio
+                  <textarea
+                    value={profileDraft.publicBio}
+                    onChange={(event) => setProfileDraft((current) => ({ ...current, publicBio: event.target.value }))}
+                    rows={3}
+                    className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+                  />
+                </label>
+                <p className="mt-2 text-xs text-[#667085]">Nur verwenden, wenn du später bewusst etwas öffentlich freigibst.</p>
+              </details>
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white/14 p-4">
                 <div>
-                  <p className="text-sm font-semibold">Profilqualität {profile?.qualityScore ?? 0}/100</p>
-                  <p className="text-xs text-[#667085]">{profile?.chatCount ?? 0} Chats · {profile?.memoryCount ?? 0} Memories</p>
+                  <p className="text-sm font-semibold">Profilqualität {qualityScore}/100</p>
+                  <p className="text-xs text-[#667085]">Speichern aktualisiert dein privates Profil und die Twin-Grundlage.</p>
                 </div>
                 <Button onClick={() => void saveProfile()}>Profil speichern</Button>
               </div>
@@ -3563,11 +3597,19 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
           </Card>
 
           <Card className="p-6">
-            <h3 className="mb-4 text-lg font-semibold">Nächste Schritte</h3>
+            <h3 className="mb-4 text-lg font-semibold">Nächste beste Aktion</h3>
             <div className="space-y-3">
               <Button className="w-full justify-center" onClick={() => onNavigate('twin-builder')}>Twin erstellen</Button>
               <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('memory-upload')}>Daten hochladen</Button>
               <Button className="w-full justify-center" variant="secondary" onClick={() => onNavigate('settings')}>Einstellungen</Button>
+            </div>
+            <div className="mt-5 space-y-2">
+              {profileChecklist.map((item) => (
+                <div key={item.label} className="flex items-center justify-between gap-3 rounded-lg bg-white/12 px-3 py-2 text-sm">
+                  <span>{item.label}</span>
+                  <span className={`text-xs font-bold ${item.done ? 'text-emerald-700' : 'text-[#667085]'}`}>{item.done ? 'OK' : 'offen'}</span>
+                </div>
+              ))}
             </div>
           </Card>
 
@@ -3670,7 +3712,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h3 className="text-lg font-semibold">Private Memory</h3>
-                <p className="text-sm text-[#555b64]">Bestätigte Informationen bleiben privat im Profil und können später pro Twin genutzt werden.</p>
+                <p className="text-sm text-[#555b64]">Speichere nur klare Fakten, die dein Twin wirklich wissen soll.</p>
               </div>
               <Button variant="secondary" onClick={() => void refreshProfileData()}>Aktualisieren</Button>
             </div>
@@ -3690,7 +3732,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                     <div>
                       <p className="text-sm font-semibold">{memory.text || 'Gelöschte Memory'}</p>
                       <p className="mt-1 text-xs text-[#667085]">
-                        {memory.type} · {memory.status} · {memory.sensitivity} · Confidence {Math.round(memory.confidence * 100)}%
+                        {memory.status === 'confirmed' ? 'bestätigt' : 'zu prüfen'} · privat · Sicherheit {Math.round(memory.confidence * 100)}%
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -3714,7 +3756,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
 
           <Card className="p-6 lg:col-span-2">
             <h3 className="mb-2 text-lg font-semibold">Chatverlauf suchen</h3>
-            <p className="mb-4 text-sm text-[#555b64]">Suche in deinen privaten Chat-Summaries und gespeicherten MVP-Nachrichten.</p>
+            <p className="mb-4 text-sm text-[#555b64]">Optional: finde ältere Gespräche, ohne durch technische Archivdaten zu müssen.</p>
             <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
               <input
                 value={chatQuery}
@@ -3733,7 +3775,6 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 >
                   <p className="text-sm font-semibold">{chat.title}</p>
                   <p className="mt-1 text-sm text-[#555b64]">{chat.summary}</p>
-                  <p className="mt-2 break-all text-xs text-[#667085]">{chat.archiveObjectKey}</p>
                 </button>
               ))}
               {!chatResults.length && chatQuery && (
@@ -3754,6 +3795,13 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const twinMvp = useTwinMvp()
   const [twins, setTwins] = useState<TwinRecord[]>([])
   const [loaded, setLoaded] = useState(false)
+  const styleLabels: Record<TwinStyle, string> = {
+    warm: 'Warm',
+    direct: 'Direkt',
+    humorous: 'Locker',
+    wise: 'Bedacht',
+    neutral: 'Neutral',
+  }
 
   useEffect(() => {
     let alive = true
@@ -3805,7 +3853,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
                   <p className="mt-1 text-sm text-[#555b64]">{twin.description || t.myTwins.noDescription}</p>
                 </div>
                 <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${twin.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
-                  {twin.visibility === 'public' ? 'Public' : 'Private'}
+                  {twin.visibility === 'public' ? 'Öffentlich' : 'Privat'}
                 </span>
               </div>
               <div className="mb-5 grid grid-cols-3 gap-2 text-center">
@@ -3818,7 +3866,7 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
                   <p className="text-xs text-[#667085]">{t.myTwins.statMedia}</p>
                 </div>
                 <div className="rounded-lg bg-white/16 p-3">
-                  <p className="text-sm font-bold capitalize">{twin.style}</p>
+                  <p className="text-sm font-bold">{styleLabels[twin.style] ?? 'Neutral'}</p>
                   <p className="text-xs text-[#667085]">{t.myTwins.statStyle}</p>
                 </div>
               </div>
@@ -5861,6 +5909,17 @@ function MemoryUploadView() {
   const auth = useAuth()
   const memoryUpload = useMemoryUpload()
   const [uploaded, setUploaded] = useState<Array<UploadResult & { name: string; category: MemoryCategory; uploadedAt: number }>>([])
+  const categoryLabels: Partial<Record<MemoryCategory, string>> = {
+    profile_image: 'Profilbild',
+    image: 'Bilder',
+    audio: 'Audio',
+    video: 'Videos',
+    document: 'Dokumente',
+    backup: 'Backups',
+    twin_data: 'Twin-Daten',
+  }
+  const categoryLabel = (category: MemoryCategory | string) =>
+    (categoryLabels[category as MemoryCategory] ?? category.replace(/_/g, ' '))
   const uploadCategoryCounts = uploaded.reduce<Record<string, number>>((acc, file) => {
     acc[file.category] = (acc[file.category] ?? 0) + 1
     return acc
@@ -5884,7 +5943,7 @@ function MemoryUploadView() {
     <div className="pt-6">
       <div className="mb-5">
         <h1 className="mb-1 text-2xl font-bold tracking-tight">Memory Upload</h1>
-        <p className="text-sm text-[#555b64]">Lade deine Erinnerungen hoch und mache sie lebendig.</p>
+        <p className="text-sm text-[#555b64]">Lade nur Dateien hoch, die dein Twin wirklich verwenden darf.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -5906,15 +5965,17 @@ function MemoryUploadView() {
                 void handleFiles(e.dataTransfer.files)
               }}
             >
-              <div className="mb-4 text-6xl">📤</div>
+              <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-white/18 text-[#0b1c44]">
+                <FileIcon className="h-8 w-8" />
+              </div>
               <h3 className="mb-2 text-xl font-semibold">Dateien hierher ziehen</h3>
               <p className="mb-4 text-sm text-[#767d87]">oder klicke zum Auswählen</p>
-	              <input
-	                ref={inputRef}
-	                type="file"
-	                multiple
-	                accept="image/*,video/*,audio/*,.pdf,.txt,.md,.markdown,.csv,.docx,.xlsx,.pptx"
-	                className="hidden"
+              <input
+                ref={inputRef}
+                type="file"
+                multiple
+                accept="image/*,video/*,audio/*,.pdf,.txt,.md,.markdown,.csv,.docx,.xlsx,.pptx"
+                className="hidden"
                 onChange={(event) => {
                   if (event.target.files) void handleFiles(event.target.files)
                   event.currentTarget.value = ''
@@ -5924,7 +5985,7 @@ function MemoryUploadView() {
                 Dateien auswählen
               </Button>
               <p className="mt-4 text-xs text-[#767d87]">
-	                Unterstützt: PDF, DOCX, TXT, MP3, WAV, JPG, PNG, MP4 (max. 50 MB pro Datei)
+                Unterstützt: PDF, DOCX, TXT, MP3, WAV, JPG, PNG, MP4 (max. 50 MB pro Datei)
               </p>
             </div>
 
@@ -5953,28 +6014,28 @@ function MemoryUploadView() {
               {(uploaded.length
                 ? uploaded.map((file) => ({
                     name: file.name,
-                    type: file.category,
+                    type: categoryLabel(file.category),
                     date: new Date(file.uploadedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }),
                     status: 'processed',
                   }))
                 : [
-                    { name: 'Noch keine Datei hochgeladen', type: 'info', date: 'Deine Uploads erscheinen hier', status: 'empty' },
+                    { name: 'Noch keine Datei hochgeladen', type: 'Dokumente', date: 'Deine Uploads erscheinen hier', status: 'empty' },
                   ]
               ).map((file, idx) => (
                 <div key={idx} className="flex items-center justify-between rounded-lg bg-white/12 p-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/18 text-xl">
-                      {file.type === 'image' ? '🖼️' : file.type === 'audio' ? '🎵' : file.type === 'video' ? '🎬' : '📄'}
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/18 text-[#0b1c44]">
+                      <FileIcon className="h-5 w-5" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">{file.name}</p>
-                      <p className="text-xs text-[#767d87]">{file.date}</p>
+                      <p className="text-xs text-[#767d87]">{categoryLabel(file.type)} · {file.date}</p>
                     </div>
                   </div>
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${
                     file.status === 'processed' ? 'bg-green-500/20 text-green-700' : file.status === 'empty' ? 'bg-white/10 text-[#8e97a8]' : 'bg-yellow-500/20 text-yellow-700'
                   }`}>
-                    {file.status === 'processed' ? '✓ Verarbeitet' : file.status === 'empty' ? 'Bereit' : '⏳ Wird verarbeitet'}
+                    {file.status === 'processed' ? 'Verarbeitet' : file.status === 'empty' ? 'Bereit' : 'Wird verarbeitet'}
                   </span>
                 </div>
               ))}
@@ -5988,7 +6049,7 @@ function MemoryUploadView() {
             <div className="space-y-2">
               {(['profile_image', 'image', 'audio', 'video', 'document', 'backup', 'twin_data'] as MemoryCategory[]).map((category) => (
                 <div key={category} className="flex items-center justify-between rounded-lg bg-white/12 p-3">
-                  <span className="text-sm font-medium">{category.replace('_', ' ')}</span>
+                  <span className="text-sm font-medium">{categoryLabel(category)}</span>
                   <span className="text-xs font-semibold">{uploadCategoryCounts[category] ?? 0}</span>
                 </div>
               ))}
