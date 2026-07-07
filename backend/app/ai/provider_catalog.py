@@ -133,3 +133,9 @@ DEFAULT_PROVIDER_ORDER = [
     "cohere",
     "perplexity",
 ]
+
+STALE_MODEL_ALIASES: dict[tuple[str, str], str] = {
+    ("anthropic", "claude-3-7-sonnet-latest"): "claude-haiku-4-5",
+    ("gemini", "gemini-2.5-flash"): "gemini-3.5-flash",
+    ("xai", "grok-3"): "grok-4.3",
+}

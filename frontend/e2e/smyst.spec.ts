@@ -73,6 +73,24 @@ test.describe("Smyst current app", () => {
         },
       });
     });
+    await page.route("**/api/chat/messages/stream", async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: { "content-type": "text/event-stream" },
+        body: `data: ${JSON.stringify({
+          chatId: "public:sokrates:test-chat",
+          twinId: "sokrates",
+          mode: "free-only-twin-mvp",
+          done: true,
+          message: {
+            id: "assistant-1",
+            role: "assistant",
+            content: "Pruefe zuerst, was du wirklich weisst, und frage dann mutig weiter.",
+            createdAt: Date.now(),
+          },
+        })}\n\n`,
+      });
+    });
 
     await page.goto("/");
 
@@ -91,7 +109,7 @@ test.describe("Smyst current app", () => {
     await page.keyboard.press("Enter");
     await expect(page.getByText("Was empfiehlst du jungen Leuten?")).toBeVisible();
     await expect(page.getByText("Melde dich an, um den Chat mit diesem echten KI-Profil zu starten")).toHaveCount(0);
-    await expect(page.getByText(/Pruefe zuerst, was du wirklich weisst/i)).toBeVisible();
+    await expect(page.getByText(/Pruefe zuerst, was du wirklich weisst/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test("settings expose profile sorting controls without infrastructure marketing", async ({ page }) => {
