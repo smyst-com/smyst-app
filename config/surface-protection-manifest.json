@@ -1,5 +1,5 @@
 {
-  "version": "2026-06-15",
+  "version": "2026-07-08",
   "policy": {
     "paidServicesAllowed": false,
     "autoBillingServicesAllowed": false,
@@ -7,12 +7,15 @@
     "centralObjectStorage": "idrive-e2",
     "designChangesRequireExplicitTask": true,
     "cssChangesRequireExplicitTask": true,
+    "voiceWaveChangesRequireWrittenApproval": true,
     "apiDeleteRoutesRequireConfirmation": true,
     "githubActionsNode20WarningsAllowed": false
   },
   "protectedSurfaces": {
     "designAndCss": [
       "src/App.tsx",
+      "src/lib/voiceLanguage.ts",
+      "src/lib/voiceProfiles.ts",
       "src/index.css",
       "styles.css",
       "tailwind.config.ts",
@@ -31,7 +34,15 @@
       "backend/app/api/v1/router.py",
       "backend/app/security/middleware.py",
       "backend/app/api/v1/routes/auth.py",
-      "backend/app/api/v1/routes/health.py"
+      "backend/app/api/v1/routes/health.py",
+      "src/lib/useTwinMvp.ts"
+    ],
+    "voiceWave": [
+      "src/App.tsx",
+      "src/lib/voiceLanguage.ts",
+      "src/lib/voiceProfiles.ts",
+      "src/lib/useTwinMvp.ts",
+      "scripts/check-voice-wave-regression.mjs"
     ],
     "githubActions": [
       ".github/workflows/deploy.yml",

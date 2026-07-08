@@ -16,6 +16,13 @@ import {
 } from '@/lib/profileDiscovery'
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
+import {
+  detectVoiceLanguage,
+  preferredVoiceLanguage,
+  speechLangForVoice,
+  voiceLanguageInstruction,
+  type VoiceLang,
+} from '@/lib/voiceLanguage'
 import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
 import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
@@ -338,17 +345,7 @@ function isNameSortMode(value: string | null): value is NameSortMode {
 }
 
 function speechLangFor(lang?: string) {
-  if (!lang) return 'de-DE'
-  if (lang === 'en') return 'en-US'
-  if (lang === 'tr') return 'tr-TR'
-  if (lang === 'fr') return 'fr-FR'
-  if (lang === 'es') return 'es-ES'
-  if (lang === 'pt') return 'pt-PT'
-  if (lang === 'ar') return 'ar-SA'
-  if (lang === 'zh') return 'zh-CN'
-  if (lang === 'ja') return 'ja-JP'
-  if (lang === 'ko') return 'ko-KR'
-  return 'de-DE'
+  return speechLangForVoice(lang)
 }
 
 function speakLocal(text: string, lang: string, onDone: () => void, voiceKey?: string) {
@@ -922,16 +919,65 @@ function staticPublicTwinReply(profile: {
   birthLabel?: string
   deathLabel?: string
   lifeLine?: string
-}, question: string): string {
+}, question: string, responseLang: VoiceLang = DEFAULT_LANG): string {
   const topic = question.trim().replace(/\s+/g, ' ').slice(0, 120) || 'deine Frage'
   const category = profile.mainCategory || profile.categories?.slice(0, 2).join(', ') || 'KI-Profil'
   const life = profile.lifeLine || profileLifeLine(profile)
   const description = profile.description || 'kuratiertes öffentliches Profilwissen mit dokumentierten Quellen'
-  return [
-    `Kurz gesagt: Eine gute erste Frage zu "${topic}" ist: Welche Annahme steckt dahinter und woran wuerde ich eine bessere Antwort erkennen?`,
-    `Bei ${profile.name}, ${category} (${life}), ist der nuetzliche Einstieg: Begriffe klaeren, Gegenbeispiele suchen und erst danach eine Schlussfolgerung ziehen. Grundlage ist das kuratierte öffentliche Profil: ${description}.`,
-    'Diese Antwort nutzt den kostenlosen statischen Public-Profile-Fallback; gespeicherter Verlauf und serverseitige KI-Antworten starten, sobald die Chat-API erreichbar ist.',
-  ].join('\n\n')
+  const localizedReplies: Partial<Record<VoiceLang, string[]>> = {
+    tr: [
+      `Kısaca: "${topic}" için iyi bir ilk soru şu olur: Bunun arkasındaki varsayım ne ve daha iyi bir cevabı nasıl tanırım?`,
+      `${profile.name}, ${category} (${life}) için yararlı başlangıç: kavramları netleştirmek, karşı örnekleri aramak ve ancak sonra sonuç çıkarmaktır. Dayanak: ${description}.`,
+      'Bu cevap ücretsiz statik public-profile yedeğini kullanıyor; kayıtlı geçmiş ve sunucu taraflı KI cevapları Chat API erişilebilir olduğunda başlar.',
+    ],
+    en: [
+      `In short: a good first question about "${topic}" is: what assumption sits underneath it, and how would I recognize a better answer?`,
+      `For ${profile.name}, ${category} (${life}), the useful start is to clarify terms, look for counterexamples, and only then draw a conclusion. Basis: ${description}.`,
+      'This answer uses the free static public-profile fallback; saved history and server-side AI replies start once the Chat API is reachable.',
+    ],
+    fr: [
+      `En bref : une bonne premiere question sur "${topic}" est : quelle hypothese se cache derriere, et comment reconnaitre une meilleure reponse ?`,
+      `Pour ${profile.name}, ${category} (${life}), le bon depart consiste a clarifier les termes, chercher des contre-exemples, puis conclure. Base : ${description}.`,
+      "Cette reponse utilise le fallback statique gratuit du profil public ; l'historique et les reponses IA serveur demarrent quand l'API Chat est disponible.",
+    ],
+    es: [
+      `En resumen: una buena primera pregunta sobre "${topic}" es: que supuesto hay detras y como reconoceria una respuesta mejor?`,
+      `Con ${profile.name}, ${category} (${life}), el inicio util es aclarar conceptos, buscar contraejemplos y solo despues concluir. Base: ${description}.`,
+      'Esta respuesta usa el respaldo estatico gratuito del perfil publico; el historial guardado y las respuestas de IA del servidor comienzan cuando la API de chat este disponible.',
+    ],
+    ar: [
+      `باختصار: السؤال الاول الجيد حول "${topic}" هو: ما الافتراض الكامن خلفه، وكيف اعرف ان الاجابة اصبحت افضل؟`,
+      `مع ${profile.name}، ${category} (${life})، البداية المفيدة هي توضيح المفاهيم والبحث عن امثلة مضادة ثم الاستنتاج. الاساس: ${description}.`,
+      'تستخدم هذه الاجابة النسخة الاحتياطية الثابتة المجانية للملف العام؛ يبدأ السجل المحفوظ واجابات الذكاء الاصطناعي من الخادم عندما تتاح واجهة الدردشة.',
+    ],
+    zh: [
+      `简而言之：关于"${topic}"，好的第一个问题是：它背后有什么假设，我如何判断答案变得更好？`,
+      `对 ${profile.name}，${category}（${life}）来说，有用的起点是先澄清概念，寻找反例，然后再下结论。依据：${description}。`,
+      '此回复使用免费的静态公开资料备用模式；当聊天 API 可用时，将启用保存历史和服务器端 AI 回复。',
+    ],
+    ru: [
+      `Коротко: хороший первый вопрос о "${topic}" такой: какое предположение за этим стоит и как я узнаю более точный ответ?`,
+      `Для ${profile.name}, ${category} (${life}), полезное начало — уточнить понятия, найти контрпримеры и только потом делать вывод. Основа: ${description}.`,
+      'Этот ответ использует бесплатный статический резерв публичного профиля; сохраненная история и серверные AI-ответы начнутся, когда Chat API будет доступен.',
+    ],
+    hi: [
+      `संक्षेप में: "${topic}" पर पहला अच्छा सवाल है: इसके पीछे कौन-सी धारणा है, और बेहतर उत्तर को मैं कैसे पहचानूंगा?`,
+      `${profile.name}, ${category} (${life}), के लिए उपयोगी शुरुआत है: शब्दों को स्पष्ट करना, विपरीत उदाहरण ढूंढना और फिर निष्कर्ष निकालना। आधार: ${description}.`,
+      'यह उत्तर मुफ्त स्थिर public-profile fallback का उपयोग कर रहा है; Chat API उपलब्ध होते ही सहेजा गया इतिहास और server-side AI उत्तर शुरू होंगे।',
+    ],
+    bn: [
+      `সংক্ষেপে: "${topic}" নিয়ে প্রথম ভালো প্রশ্ন হলো: এর পেছনে কোন অনুমান আছে, আর ভালো উত্তর আমি কীভাবে চিনব?`,
+      `${profile.name}, ${category} (${life}), এর জন্য দরকারি শুরু হলো: ধারণাগুলো পরিষ্কার করা, বিপরীত উদাহরণ খোঁজা, তারপর সিদ্ধান্তে যাওয়া। ভিত্তি: ${description}.`,
+      'এই উত্তরটি বিনামূল্যের static public-profile fallback ব্যবহার করছে; Chat API চালু থাকলে সংরক্ষিত ইতিহাস এবং server-side AI উত্তর শুরু হবে।',
+    ],
+  }
+  return (
+    localizedReplies[responseLang] ?? [
+      `Kurz gesagt: Eine gute erste Frage zu "${topic}" ist: Welche Annahme steckt dahinter und woran wuerde ich eine bessere Antwort erkennen?`,
+      `Bei ${profile.name}, ${category} (${life}), ist der nuetzliche Einstieg: Begriffe klaeren, Gegenbeispiele suchen und erst danach eine Schlussfolgerung ziehen. Grundlage ist das kuratierte öffentliche Profil: ${description}.`,
+      'Diese Antwort nutzt den kostenlosen statischen Public-Profile-Fallback; gespeicherter Verlauf und serverseitige KI-Antworten starten, sobald die Chat-API erreichbar ist.',
+    ]
+  ).join('\n\n')
 }
 
 function hasLifeDates(profile: {
@@ -1176,6 +1222,7 @@ function SmystStartPage({
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
   const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
+  const [lastVoiceLang, setLastVoiceLang] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
   const [composerMenuOpen, setComposerMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
@@ -1194,6 +1241,10 @@ function SmystStartPage({
   const dictationBaseRef = useRef('')
   const dictationSessionRef = useRef('')
   const liveVoiceSendTimerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    setLastVoiceLang(preferredVoiceLanguage(lang))
+  }, [lang])
 
   const latestAssistantText =
     [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
@@ -1689,7 +1740,7 @@ function SmystStartPage({
     }
     recognitionRef.current?.abort()
     const recognition = new Recognition()
-    recognition.lang = speechLangFor(lang)
+    recognition.lang = speechLangFor(lastVoiceLang || lang)
     recognition.interimResults = true
     recognition.continuous = true
     recognition.onstart = () => setVoiceState('listening')
@@ -1744,9 +1795,12 @@ function SmystStartPage({
       }
       const nextText = (finalText || interimText).trim()
       if (!nextText) return
+      const detectedLang = detectVoiceLanguage(nextText, lastVoiceLang || lang)
+      setLastVoiceLang(detectedLang)
       if (options.live) {
         const finalChunk = finalText.trim()
         if (finalChunk) {
+          setLastVoiceLang(detectVoiceLanguage(finalChunk, detectedLang))
           liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
         }
         if (finalChunk) {
@@ -1862,7 +1916,7 @@ function SmystStartPage({
   const handleSend = async (
     overrideText?: string,
     overrideAttachments?: ChatAttachment[],
-    options: { forceSpeech?: boolean } = {},
+    options: { forceSpeech?: boolean; voiceLang?: VoiceLang } = {},
   ): Promise<string | null> => {
     if (dictationActiveRef.current) {
       // Senden beendet das Diktat sauber
@@ -1875,6 +1929,8 @@ function SmystStartPage({
     const sendAttachments = overrideAttachments ?? attachments
     const fullMessage = composeMessageWithAttachments(text, sendAttachments)
     if (!fullMessage) return null
+    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLang || lang)
+    setLastVoiceLang(messageVoiceLang)
     if (sendAttachments.some((attachment) => attachment.status === 'uploading')) {
       addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
       return null
@@ -1934,13 +1990,14 @@ function SmystStartPage({
         setChatId(nextChatId)
         setChatProfileKey(twinChatKey)
       }
-      const reply = await twinMvp.sendTwinMessageStream(nextChatId, fullMessage, (partial) => {
+      const messageForModel = voiceLanguageInstruction(fullMessage, messageVoiceLang)
+      const reply = await twinMvp.sendTwinMessageStream(nextChatId, messageForModel, (partial) => {
         setMessages((current) =>
           current.map((entry) =>
             entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
           ),
         )
-      })
+      }, messageVoiceLang)
       if (!reply?.message?.content) throw new Error('Keine Antwort vom Profil erhalten.')
       if (reply.streamed) {
         setMessages((current) =>
@@ -1951,15 +2008,15 @@ function SmystStartPage({
       } else {
         await streamText(assistantId, reply.message.content)
       }
-      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false), twin.name)) {
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, messageVoiceLang, () => setIsSpeaking(false), twin.name)) {
         setIsSpeaking(true)
       }
       return reply.message.content
     } catch (err) {
       if (twin.publicProfile) {
-        const reply = staticPublicTwinReply(twin, fullMessage)
+        const reply = staticPublicTwinReply(twin, fullMessage, messageVoiceLang)
         await streamText(assistantId, reply)
-        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, lang, () => setIsSpeaking(false), twin.name)) {
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), twin.name)) {
           setIsSpeaking(true)
         }
         return reply
@@ -2007,7 +2064,7 @@ function SmystStartPage({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
+    const started = speakText(latestAssistantText, lastVoiceLang || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
     if (started) setIsSpeaking(true)
   }
 
@@ -6812,6 +6869,7 @@ function TwinChatView({
   const memoryUpload = useMemoryUpload()
   const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
   const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
+  const [lastVoiceLang, setLastVoiceLang] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
   const [composerMenuOpen, setComposerMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
@@ -6820,6 +6878,10 @@ function TwinChatView({
   const [noteText, setNoteText] = useState('')
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteStatus, setNoteStatus] = useState('')
+
+  useEffect(() => {
+    setLastVoiceLang(preferredVoiceLanguage(lang))
+  }, [lang])
 
   const hasUserTurn = messages.some((message) => message.role === 'user')
   const latestAssistantText =
@@ -7149,7 +7211,7 @@ function TwinChatView({
     }
     recognitionRef.current?.abort()
     const recognition = new Recognition()
-    recognition.lang = speechLangFor(lang)
+    recognition.lang = speechLangFor(lastVoiceLang || lang)
     recognition.interimResults = true
     recognition.continuous = true
     recognition.onstart = () => setVoiceState('listening')
@@ -7196,9 +7258,12 @@ function TwinChatView({
       }
       const nextText = (finalText || interimText).trim()
       if (!nextText) return
+      const detectedLang = detectVoiceLanguage(nextText, lastVoiceLang || lang)
+      setLastVoiceLang(detectedLang)
       if (options.live) {
         const finalChunk = finalText.trim()
         if (finalChunk) {
+          setLastVoiceLang(detectVoiceLanguage(finalChunk, detectedLang))
           liveVoiceDraftRef.current = [liveVoiceDraftRef.current.trim(), finalChunk].filter(Boolean).join(' ')
         }
         if (finalChunk) {
@@ -7281,7 +7346,7 @@ function TwinChatView({
   const handleSend = async (
     overrideText?: string,
     overrideAttachments?: ChatAttachment[],
-    options: { forceSpeech?: boolean } = {},
+    options: { forceSpeech?: boolean; voiceLang?: VoiceLang } = {},
   ): Promise<string | null> => {
     if (dictationActiveRef.current) {
       // Senden beendet das Diktat sauber
@@ -7293,6 +7358,8 @@ function TwinChatView({
     const message = composeMessageWithAttachments((overrideText ?? input).trim(), overrideAttachments ?? attachments)
     const canChatWithActiveTwin = auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)
     if (!message || !canChatWithActiveTwin || isReplying) return null
+    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLang || lang)
+    setLastVoiceLang(messageVoiceLang)
     if ((overrideAttachments ?? attachments).some((attachment) => attachment.status === 'uploading')) {
       addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
       return null
@@ -7332,13 +7399,14 @@ function TwinChatView({
         setChatId(nextChatId)
       }
 
-      const reply = await twinMvp.sendTwinMessageStream(nextChatId, message, (partial) => {
+      const messageForModel = voiceLanguageInstruction(message, messageVoiceLang)
+      const reply = await twinMvp.sendTwinMessageStream(nextChatId, messageForModel, (partial) => {
         setMessages((current) =>
           current.map((entry) =>
             entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
           ),
         )
-      })
+      }, messageVoiceLang)
       if (!reply?.message) throw new Error('Keine Antwort vom Chat erhalten.')
       if (reply.streamed) {
         setMessages((current) =>
@@ -7356,7 +7424,7 @@ function TwinChatView({
           ),
         )
       }
-      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, lang, () => setIsSpeaking(false), activeTwin?.name)) {
+      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, messageVoiceLang, () => setIsSpeaking(false), activeTwin?.name)) {
         setIsSpeaking(true)
       }
       return reply.message.content
@@ -7371,9 +7439,10 @@ function TwinChatView({
             lifeLine: activeTwin.lifeLine,
           },
           message,
+          messageVoiceLang,
         )
         await streamAssistantMessage(assistantId, reply)
-        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, lang, () => setIsSpeaking(false), activeTwin.name)) {
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), activeTwin.name)) {
           setIsSpeaking(true)
         }
         return reply
@@ -7422,7 +7491,7 @@ function TwinChatView({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lang, () => setIsSpeaking(false), activeTwin?.name)
+    const started = speakText(latestAssistantText, lastVoiceLang || lang, () => setIsSpeaking(false), activeTwin?.name)
     if (started) setIsSpeaking(true)
   }
 

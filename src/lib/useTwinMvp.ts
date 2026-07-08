@@ -435,13 +435,13 @@ export function useTwinMvp() {
   )
 
   const sendTwinMessage = useCallback(
-    (chatId: string, message: string) =>
+    (chatId: string, message: string, language?: string) =>
       run(async () => {
         const body = await apiJson<{ chatId: string; twinId: string | null; message: TwinChatMessage; mode: string }>(
           '/api/chat/messages',
           {
             method: 'POST',
-            body: JSON.stringify({ chatId, message }),
+            body: JSON.stringify({ chatId, message, language }),
           },
         )
         return body
@@ -450,7 +450,7 @@ export function useTwinMvp() {
   )
 
   const sendTwinMessageStream = useCallback(
-    (chatId: string, message: string, onPartial: (text: string) => void) =>
+    (chatId: string, message: string, onPartial: (text: string) => void, language?: string) =>
       run(async () => {
         type ChatReply = { chatId: string; twinId: string | null; message: TwinChatMessage; mode: string }
         try {
@@ -461,7 +461,7 @@ export function useTwinMvp() {
             method: 'POST',
             credentials: 'include',
             headers,
-            body: JSON.stringify({ chatId, message }),
+            body: JSON.stringify({ chatId, message, language }),
           })
           if (!res.ok || !res.body) throw new Error(`stream failed (${res.status})`)
           const reader = res.body.getReader()

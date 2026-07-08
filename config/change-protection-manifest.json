@@ -1,7 +1,7 @@
 {
-  "version": "2026-06-24",
-  "lastVerifiedDate": "2026-06-24",
-  "lastVerifiedScope": "curated public profile images, light theme profile contrast, CI release guard and live smyst.com profile image API",
+  "version": "2026-07-08",
+  "lastVerifiedDate": "2026-07-08",
+  "lastVerifiedScope": "curated public profile images, light theme profile contrast, CI release guard, live smyst.com profile image API and multilingual voice wave regression guard",
   "policy": {
     "protectedProductionMode": true,
     "productionDeployRequiresManualApproval": true,
@@ -49,6 +49,7 @@
     "Do not delete profiles, chats, images, videos or user data without explicit destructive approval",
     "Do not remove curated profile image files, imageFile metadata or public profile visibility without written approval",
     "Do not weaken light theme profile text contrast without written approval and visual verification",
+    "Do not remove or weaken multilingual voice wave ASR/TTS language detection, answer-language binding, Turkish-only response protection or the 15 required voice languages without written approval",
     "Do not perform risky migrations without explicit approval and rollback evidence",
     "Do not change design, CSS or product behavior without a clear task",
     "If billion-user/day scale is unrealistic on free-only limits, optimize and measure free-only instead of adding paid infrastructure"
@@ -75,6 +76,7 @@
     "public/sw.js",
     "scripts/check-backup-recovery.py",
     "scripts/check-bottom-icon-regression.mjs",
+    "scripts/check-voice-wave-regression.mjs",
     "scripts/check-change-protection.py",
     "scripts/check-dist-artifact.sh",
     "scripts/check-final-readiness.py",
@@ -89,6 +91,8 @@
     "src/index.css",
     "src/lib/useMemoryUpload.ts",
     "src/lib/useTwinMvp.ts",
+    "src/lib/voiceLanguage.ts",
+    "src/lib/voiceProfiles.ts",
     "src/main.tsx",
     "src/data/curated-public-twin-data.ts",
     "backend/app/main.py",
@@ -149,6 +153,7 @@
   "configurationProtections": [
     "validate-foundation.py enforces free-only architecture",
     "check-profile-image-design-guard.py blocks missing curated profile images and light theme contrast regressions",
+    "check-voice-wave-regression.mjs protects the multilingual voice wave language map, auto-detection, answer-language binding and Turkish fallback",
     "check-backup-recovery.py enforces backup/restore contract",
     "check-bottom-icon-regression.mjs protects bottom chat icon actions and fallbacks",
     "check-surface-protection.py enforces design, CSS, database, API and GitHub Actions guardrails",
