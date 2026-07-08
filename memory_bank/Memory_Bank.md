@@ -1,5 +1,18 @@
 # Memory Bank
 
+## Update 2026-07-08 II: Sprachwelle Worker-ASR/TTS live, Bengali Restore und Deploy-Schutz
+
+- PR #155 gemergt: Backend-ASR `/api/asr/status` + `/api/asr/transcribe`, Voice-Worker `/transcribe` mit faster-whisper, normaler Worker-TTS-Pfad `/synthesize`, Frontend-Server-ASR-Fallback per MediaRecorder, erweiterte Voice-QA und Schutzmanifeste.
+- PR #156 gemergt: Voice-Worker-Endpoint `https://nectarine-spinach-iss2y28nt89sv94k.salad.cloud` als Backend-Deploy-Fallback, weil GitHub `gh variable set VOICE_WORKER_URL` mit 403 blockierte; Workflow scheitert daran nicht mehr.
+- PR #157/#160 gemergt: Bengali-TTS liefert stabil Audio via `espeak-ng-bn`, nachdem Chatterbox mit `bn` 503 lieferte. PR #158 MMS-Bengali-TTS war zu schwer fuer Salad und wurde zurueckgerollt; kuenftige natuerlichere Bengali-TTS braucht separates Modell-/Image-Budget und Startzeit-Review.
+- PR #159/#160 Deploy-Schutz: Voice-Worker-Deploy stoppt/startet laufende Salad-Container nach Image-Update und wartet auf echten Bengali-TTS-Livecheck; Backend-Deploy wartet bei Voice-Releases auf `/api/asr/status`, nicht nur Health.
+- Live-Deploys: GitHub Pages/Backend/Voice-Worker deployt; Voice Worker Deploy #7 erfolgreich, Backend Deploy #73 erfolgreich. Salad braucht nach GitHub-Erfolg teils mehrere Minuten bis `1 / 1 Replicas Running`; Health kann vorher noch 503 liefern.
+- Live verifiziert: `scripts/live-test.sh` gegen `https://smyst.com` gruen; `/api/asr/status` 200 mit 15 Sprachen `ar bn de en es fr hi id it ja ko pt ru tr zh`, `storage=transient`; `/api/tts/voices` 200 mit `workerConfigured=true`, `ready=true`.
+- Live TTS verifiziert fuer priorisierte Sprachen: `tr`, `bn`, `ar`, `fr`, `es`, `zh`, `ru`, `hi` jeweils 200 und Audio >1 KB; Engines: Chatterbox multilingual fuer alle ausser Bengali, Bengali aktuell `espeak-ng-bn`.
+- Live TTS+ASR-Loop verifiziert: `tr`, `en`, `de`, `ar`, `fr`, `es`, `zh`, `ru`, `hi` mit korrektem Sprachlabel und faster-whisper 200 nach initialem ASR-Lazy-Load. Bengali-TTS 200, Bengali-ASR-Loop mit synthetischer espeak-Stimme liefert 200 aber inhaltlich keine saubere Bengali-Transkription; echte Bengali-ASR muss mit menschlicher Aufnahme separat geraeteseitig getestet werden.
+- Browser-QA live: `https://smyst.com` laedt ohne Console-Errors, Voice-Buttons sichtbar (`Spracheingabe`, `Live-Sprachmodus starten`, `Antworten vorlesen`). Codex/Chrome-Automationskontext stellt MediaRecorder/SpeechRecognition/SpeechSynthesis nicht verlaesslich bereit; echte Mikrofon-, iPhone-, Android- und PWA-Install-Tests bleiben nur auf realen Geraeten abschliessend.
+- Schutzstatus: keine Nutzerdaten, Profile, Medien, Chats, Memories oder Datenbankinhalte geloescht; keine DNS-Aenderung. Voice-Wave- und Deploy-Aenderungen sind in Regression-, Surface- und Change-Protection-Guards abgedeckt.
+
 ## Update 2026-07-08: Multilinguale Sprachwelle live + Schutz aktiviert (PR #153)
 
 - PR #153 (`codex/voice-wave-global-2026-07-08`) gemergt; GitHub Pages Deploy #194 fuer Merge-Commit `370cd59` erfolgreich.
