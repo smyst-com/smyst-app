@@ -3,13 +3,13 @@
 FROM python:3.11-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ffmpeg libsndfile1 git \
+    && apt-get install -y --no-install-recommends ffmpeg libsndfile1 libgomp1 git \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # chatterbox-tts bringt torch/torchaudio als Abhaengigkeit mit (CUDA-Wheels).
-RUN pip install --no-cache-dir chatterbox-tts "fastapi>=0.115" "uvicorn[standard]>=0.32" "httpx>=0.27"
+RUN pip install --no-cache-dir chatterbox-tts faster-whisper "fastapi>=0.115" "uvicorn[standard]>=0.32" "httpx>=0.27"
 
 COPY app.py /app/app.py
 
@@ -19,4 +19,3 @@ ENV HF_HOME=/tmp/hf \
 
 EXPOSE 8000
 CMD ["uvicorn", "app:app", "--host", "::", "--port", "8000"]
-

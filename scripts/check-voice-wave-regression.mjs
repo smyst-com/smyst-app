@@ -5,7 +5,12 @@ const root = process.cwd();
 const app = readFileSync(resolve(root, 'src/App.tsx'), 'utf8');
 const language = readFileSync(resolve(root, 'src/lib/voiceLanguage.ts'), 'utf8');
 const profiles = readFileSync(resolve(root, 'src/lib/voiceProfiles.ts'), 'utf8');
+const serverAsr = readFileSync(resolve(root, 'src/lib/serverAsrClient.ts'), 'utf8');
 const api = readFileSync(resolve(root, 'src/lib/useTwinMvp.ts'), 'utf8');
+const backendAsr = readFileSync(resolve(root, 'backend/app/api/v1/routes/asr.py'), 'utf8');
+const backendTts = readFileSync(resolve(root, 'backend/app/api/v1/routes/tts.py'), 'utf8');
+const voiceWorker = readFileSync(resolve(root, 'voice-worker/app.py'), 'utf8');
+const voiceQa = readFileSync(resolve(root, 'qa/voice_qa_daily.py'), 'utf8');
 
 const requiredLanguages = [
   'en',
@@ -82,10 +87,29 @@ requireAtLeast(app, /speechLangFor\(lastVoiceLang \|\| lang\)/g, 2, 'ASR locale 
 requireAtLeast(app, /voiceLanguageInstruction\(/g, 2, 'LLM language instruction callsites');
 requireAtLeast(app, /sendTwinMessageStream\(nextChatId, messageForModel/g, 2, 'streaming chat uses language-bound message');
 requireAtLeast(app, /messageVoiceLang/g, 8, 'per-turn language is reused for chat, TTS and fallback');
+requireAtLeast(app, /startServerAsrDictation\(options\)/g, 2, 'server ASR fallback in both chat surfaces');
+requireAtLeast(app, /recordAndTranscribeOnce\(speechLangFor\(lastVoiceLang \|\| lang\)/g, 2, 'server ASR uses current voice language');
 requireIncludes(app, 'Kısaca:', 'Turkish static fallback must stay Turkish');
 requireIncludes(app, 'সংক্ষেপে:', 'Bengali static fallback must stay Bengali');
 
 requireIncludes(api, 'language?: string', 'optional chat message language parameter');
 requireIncludes(api, 'JSON.stringify({ chatId, message, language })', 'chat API sends detected language');
+
+requireIncludes(serverAsr, "fetchService('/api/asr/transcribe'", 'frontend server ASR endpoint');
+requireIncludes(serverAsr, 'MediaRecorder', 'browser audio recording fallback');
+requireIncludes(serverAsr, 'echoCancellation: true', 'echo cancellation for live voice fallback');
+
+for (const lang of requiredLanguages) {
+  requireIncludes(backendAsr, `"${lang}"`, `backend ASR language ${lang}`);
+  requireIncludes(voiceQa, `"${lang}"`, `voice QA language ${lang}`);
+}
+requireIncludes(backendAsr, 'VOICE_WORKER_URL', 'ASR stays on worker layer');
+requireIncludes(backendAsr, 'storage": "transient"', 'ASR status declares transient storage');
+requireIncludes(backendAsr, 'audioBase64', 'ASR accepts transient encoded audio');
+requireIncludes(backendTts, '_try_worker_tts', 'TTS worker fallback');
+requireIncludes(backendTts, 'workerConfigured', 'TTS status exposes worker readiness');
+requireIncludes(voiceWorker, '@app.post("/transcribe")', 'voice worker ASR endpoint');
+requireIncludes(voiceWorker, '@app.post("/synthesize")', 'voice worker neural TTS endpoint');
+requireIncludes(voiceWorker, 'faster_whisper', 'voice worker uses faster-whisper for ASR');
 
 console.log('voice wave regression validation passed');
