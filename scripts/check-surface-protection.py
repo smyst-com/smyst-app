@@ -91,11 +91,12 @@ def main() -> None:
     require(policy.get("centralObjectStorage") == "idrive-e2", "central object storage must remain idrive-e2")
     require(policy.get("designChangesRequireExplicitTask") is True, "design changes must require explicit task")
     require(policy.get("cssChangesRequireExplicitTask") is True, "CSS changes must require explicit task")
+    require(policy.get("voiceWaveChangesRequireWrittenApproval") is True, "voice wave changes must require written approval")
     require(policy.get("apiDeleteRoutesRequireConfirmation") is True, "API DELETE routes must require confirmation")
     require(policy.get("githubActionsNode20WarningsAllowed") is False, "GitHub Actions Node 20 warnings must remain blocked")
 
     protected = data.get("protectedSurfaces", {})
-    for group in ["designAndCss", "productionData", "api", "githubActions"]:
+    for group in ["designAndCss", "productionData", "api", "githubActions", "voiceWave"]:
         for rel_path in protected.get(group, []):
             require((ROOT / rel_path).exists(), f"protected surface missing: {rel_path}")
 

@@ -1,6 +1,7 @@
 // Kuratierte Stimmen-Metadaten pro Profil (Stufe 2a).
 // Quelle der Regeln: docs/voice-profiles.md - nur synthetische Stimmen,
 // keine Klone realer Personen; Auswahl passend zu Sprache, Geschlecht und Charakter.
+import { detectVoiceLanguage } from '@/lib/voiceLanguage'
 
 export type VoiceGender = 'female' | 'male'
 
@@ -69,37 +70,10 @@ export function remoteVoiceIdFor(voiceKey: string | undefined, lang: string | un
     return pool[hashSeed(key) % pool.length]
 }
 
-// Erkennt die Sprache eines Antworttexts fuer die Stimmenwahl (Piper-Sprachen).
-// Hintergrund: `lang` ist die UI-Sprache; Antworten koennen davon abweichen
-// (z. B. tuerkische Antwort bei deutscher UI). Ohne Erkennung liest sonst eine
-// deutsche/englische Stimme tuerkischen Text vor.
-const LANG_MARKERS: Array<{ lang: string; words: string[] }> = [
-  { lang: 'tr', words: ['bir', 've', 'bu', 'için', 'çok', 'değil', 'ben', 'gibi', 'daha', 'ama', 'olarak', 'her', 'ile', 'ne', 'olan', 'var', 'sen', 'biz', 'evet', 'nasıl'] },
-  { lang: 'de', words: ['der', 'die', 'das', 'und', 'ist', 'nicht', 'ich', 'ein', 'eine', 'zu', 'mit', 'auf', 'für', 'sich', 'auch', 'wir', 'sie', 'aber', 'werden', 'oder'] },
-  { lang: 'en', words: ['the', 'and', 'is', 'of', 'to', 'in', 'that', 'it', 'you', 'for', 'with', 'was', 'are', 'not', 'this', 'have', 'but', 'they', 'from', 'what'] },
-  ]
-
 export function detectTextLang(text: string): string | undefined {
-    const sample = text.slice(0, 600)
-    const words = sample
-      .toLowerCase()
-      .replace(/[^\p{L}\s]/gu, ' ')
-      .split(/\s+/)
-      .filter(Boolean)
-    if (words.length === 0) return undefined
-    let bestLang: string | undefined
-    let bestScore = 0
-    for (const entry of LANG_MARKERS) {
-          const set = new Set(entry.words)
-          let score = words.reduce((acc, word) => (set.has(word) ? acc + 1 : acc), 0)
-          if (entry.lang === 'tr' && /[ığş]/.test(sample)) score += 3
-          if (entry.lang === 'de' && /ß/.test(sample)) score += 2
-          if (score > bestScore) {
-                  bestScore = score
-                  bestLang = entry.lang
-          }
-    }
-    return bestScore >= 2 ? bestLang : undefined
+    const sample = text.slice(0, 600).trim()
+    if (!sample) return undefined
+    return detectVoiceLanguage(sample)
 }
 
 // Effektive Sprache fuer die Sprachausgabe: erkannte Textsprache vor UI-Sprache.

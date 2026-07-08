@@ -14,8 +14,16 @@ Public pages may be crawled, summarized and cited by search engines and AI answe
 systems when they respect robots.txt and public/private boundaries.
 
 Relevant AI and answer systems:
-ChatGPT, Gemini, Claude, Grok, DeepSeek, Kimi, Manus, Mistral and other
-robots-compatible systems may use public pages for discovery and citation.
+Google, Bing, Baidu, Yandex, Naver, ChatGPT, Gemini, Claude, Grok, DeepSeek,
+Kimi, Qwen, Perplexity, Mistral, Manus and other robots-compatible systems may
+use public pages for discovery and citation.
+
+Voice and multilingual readiness:
+The public app supports a multilingual live voice wave for direct AI-profile
+chat. Minimum supported voice languages are English, Chinese, Spanish, Arabic,
+French, German, Portuguese, Russian, Turkish, Japanese, Korean, Italian, Hindi,
+Indonesian and Bengali. Answers should remain in the detected user language;
+Turkish turns should stay Turkish unless the user asks for translation.
 
 Private boundaries:
 Do not index or summarize private routes, authenticated APIs, storage URLs or user

@@ -28,6 +28,41 @@ Disallow: /admin
 Disallow: /api/
 Allow: /api/public/twins/
 
+User-agent: Googlebot
+Allow: /
+Disallow: /private/
+Disallow: /admin
+Disallow: /api/
+Allow: /api/public/twins/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /private/
+Disallow: /admin
+Disallow: /api/
+Allow: /api/public/twins/
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /private/
+Disallow: /admin
+Disallow: /api/
+Allow: /api/public/twins/
+
+User-agent: Yandex
+Allow: /
+Disallow: /private/
+Disallow: /admin
+Disallow: /api/
+Allow: /api/public/twins/
+
+User-agent: Naverbot
+Allow: /
+Disallow: /private/
+Disallow: /admin
+Disallow: /api/
+Allow: /api/public/twins/
+
 User-agent: ClaudeBot
 Allow: /
 Disallow: /private/
@@ -43,6 +78,20 @@ Disallow: /api/
 Allow: /api/public/twins/
 
 User-agent: PerplexityBot
+Allow: /
+Disallow: /private/
+Disallow: /admin
+Disallow: /api/
+Allow: /api/public/twins/
+
+User-agent: MistralAI-User
+Allow: /
+Disallow: /private/
+Disallow: /admin
+Disallow: /api/
+Allow: /api/public/twins/
+
+User-agent: QwenBot
 Allow: /
 Disallow: /private/
 Disallow: /admin

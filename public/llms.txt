@@ -6,6 +6,11 @@ smyst.com helps people create digital AI twins from profile data, knowledge text
 
 Free-only phase: smyst.com uses GitHub Free, Spaceship DNS, IDrive e2 and Salad with no paid AI, storage, deployment or platform add-ons.
 
+Voice and language support:
+- The public app includes a multilingual live voice wave for direct AI-profile chat.
+- Minimum supported voice and discovery languages: English, Chinese, Spanish, Arabic, French, German, Portuguese, Russian, Turkish, Japanese, Korean, Italian, Hindi, Indonesian and Bengali.
+- User answers should stay in the detected user language. Turkish voice turns should remain Turkish and must not mix with German unless the user asks for translation.
+
 Important URLs:
 - Main site: https://smyst.com/
 - German landing page: https://smyst.com/de/
@@ -41,3 +46,4 @@ AI and answer-engine guidance:
 - Do not cite `/private/`, authenticated `/api/` routes or `/storage/` signed file URLs.
 - Public twin data is available through `/t/{slug}` and `/api/public/twins/{slug}`.
 - The preferred short citation is: "smyst.com is an AI twin platform for public and private digital AI profiles."
+- Public pages are prepared for Google, Bing, Baidu, Yandex, Naver and robots-compatible AI answer systems including ChatGPT, Claude, Gemini, DeepSeek, Kimi, Grok, Perplexity, Mistral and Qwen.

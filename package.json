@@ -14,6 +14,7 @@
     "check:performance-pwa": "node scripts/performance-pwa-audit.mjs",
     "check:native-toolchain": "node scripts/native-toolchain-audit.mjs",
     "check:provider-exit": "python3 scripts/check-provider-exit.py",
+    "check:voice-wave": "node scripts/check-voice-wave-regression.mjs",
     "preview": "vite preview",
     "app:assets": "node scripts/generate-app-assets.mjs",
     "app:sync": "npm run build && npm run app:assets && cap sync",
