@@ -101,11 +101,14 @@ requireIncludes(api, 'JSON.stringify({ chatId, message, language })', 'chat API 
 requireIncludes(serverAsr, "fetchService('/api/asr/transcribe'", 'frontend server ASR endpoint');
 requireIncludes(serverAsr, 'MediaRecorder', 'browser audio recording fallback');
 requireIncludes(serverAsr, 'echoCancellation: true', 'echo cancellation for live voice fallback');
+requireIncludes(serverAsr, 'SILENCE_STOP_MS', 'server ASR stops after natural pause');
+requireIncludes(serverAsr, 'getFloatTimeDomainData', 'server ASR uses microphone level for pause detection');
 
 for (const lang of requiredLanguages) {
   requireIncludes(backendAsr, `"${lang}"`, `backend ASR language ${lang}`);
   requireIncludes(voiceQa, `"${lang}"`, `voice QA language ${lang}`);
 }
+requireAtLeast(voiceQa, /expect_voice_prefixes/g, 15, 'voice QA active TTS smoke tests for all 15 languages');
 requireIncludes(backendAsr, 'VOICE_WORKER_URL', 'ASR stays on worker layer');
 requireIncludes(backendAsr, 'storage": "transient"', 'ASR status declares transient storage');
 requireIncludes(backendAsr, 'audioBase64', 'ASR accepts transient encoded audio');
@@ -114,6 +117,8 @@ requireIncludes(backendTts, 'workerConfigured', 'TTS status exposes worker readi
 requireIncludes(voiceWorker, '@app.post("/transcribe")', 'voice worker ASR endpoint');
 requireIncludes(voiceWorker, '@app.post("/synthesize")', 'voice worker neural TTS endpoint');
 requireIncludes(voiceWorker, 'faster_whisper', 'voice worker uses faster-whisper for ASR');
+requireIncludes(voiceWorker, 'VOICE_WORKER_PRELOAD_ASR', 'voice worker preloads ASR to avoid first-turn delay');
+requireIncludes(voiceWorker, 'asrPreload', 'voice worker reports ASR preload status');
 requireIncludes(voiceWorker, 'ESPEAK_FALLBACK_VOICES', 'voice worker Bengali fallback map');
 requireIncludes(voiceWorker, '"bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn")', 'Bengali TTS fallback voice');
 requireIncludes(voiceWorker, '_fallback_tts(text, lang)', 'Bengali TTS fallback callsite');

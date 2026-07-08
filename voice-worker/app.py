@@ -35,6 +35,7 @@ logger = logging.getLogger("smyst.voice_worker")
 MAX_TEXT = 800
 MAX_SAMPLE_BYTES = 12 * 1024 * 1024
 SUPPORTED_LANGS = {"de", "en", "tr", "fr", "es", "it", "pt", "nl", "pl", "ru", "ar", "zh", "ja", "ko", "hi", "id", "bn"}
+PRELOAD_ASR = os.environ.get("VOICE_WORKER_PRELOAD_ASR", "true").strip().lower() not in {"0", "false", "no", "off"}
 
 _model = None
 _model_kind = ""
@@ -164,6 +165,8 @@ app = FastAPI(title="smyst-voice-worker", docs_url=None, redoc_url=None)
 @app.on_event("startup")
 def warmup() -> None:
     threading.Thread(target=_load_model, daemon=True).start()
+    if PRELOAD_ASR:
+        threading.Thread(target=_load_asr_model, daemon=True).start()
 
 
 @app.get("/health/live")
@@ -181,6 +184,7 @@ def ready() -> dict[str, object]:
         "asrReady": _asr_model is not None,
         "asrLoading": _asr_loading,
         "asrError": _asr_error[:200],
+        "asrPreload": PRELOAD_ASR,
     }
 
 

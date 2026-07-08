@@ -14,6 +14,11 @@ const MIME_CANDIDATES = [
   'audio/wav',
 ]
 
+const DEFAULT_MAX_RECORDING_MS = 5200
+const MIN_RECORDING_MS = 900
+const SILENCE_STOP_MS = 1250
+const SILENCE_RMS_THRESHOLD = 0.012
+
 function pickMimeType(): string | undefined {
   if (typeof MediaRecorder === 'undefined') return undefined
   return MIME_CANDIDATES.find((mime) => {
@@ -55,6 +60,17 @@ export async function recordAndTranscribeOnce(lang: string, maxMs = 5200): Promi
   const chunks: BlobPart[] = []
   const mimeType = pickMimeType()
   const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
+  const audioContext = new AudioContext()
+  const source = audioContext.createMediaStreamSource(stream)
+  const analyser = audioContext.createAnalyser()
+  analyser.fftSize = 1024
+  analyser.smoothingTimeConstant = 0.2
+  source.connect(analyser)
+  const samples = new Float32Array(analyser.fftSize)
+  const startedAt = performance.now()
+  let heardSpeech = false
+  let silentSince = 0
+  let silenceTimer = 0
   try {
     const stopped = new Promise<void>((resolve, reject) => {
       recorder.ondataavailable = (event) => {
@@ -64,11 +80,40 @@ export async function recordAndTranscribeOnce(lang: string, maxMs = 5200): Promi
       recorder.onstop = () => resolve()
     })
     recorder.start(250)
-    window.setTimeout(() => {
+    const stopRecorder = () => {
       if (recorder.state !== 'inactive') recorder.stop()
-    }, maxMs)
+    }
+    const checkSilence = () => {
+      analyser.getFloatTimeDomainData(samples)
+      let sum = 0
+      for (const sample of samples) {
+        const centered = sample - 0
+        sum += centered * centered
+      }
+      const rms = Math.sqrt(sum / samples.length)
+      const elapsed = performance.now() - startedAt
+      if (rms > SILENCE_RMS_THRESHOLD) {
+        heardSpeech = true
+        silentSince = 0
+      } else if (heardSpeech && elapsed > MIN_RECORDING_MS) {
+        silentSince = silentSince || performance.now()
+      }
+      if (silentSince && performance.now() - silentSince >= SILENCE_STOP_MS) {
+        stopRecorder()
+        return
+      }
+      if (elapsed >= Math.max(maxMs, DEFAULT_MAX_RECORDING_MS)) {
+        stopRecorder()
+        return
+      }
+      silenceTimer = window.setTimeout(checkSilence, 120)
+    }
+    silenceTimer = window.setTimeout(checkSilence, 120)
     await stopped
   } finally {
+    if (silenceTimer) window.clearTimeout(silenceTimer)
+    source.disconnect()
+    await audioContext.close().catch(() => undefined)
     stream.getTracks().forEach((track) => track.stop())
   }
   const blob = new Blob(chunks, { type: recorder.mimeType || mimeType || 'audio/webm' })
