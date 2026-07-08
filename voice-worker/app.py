@@ -48,10 +48,6 @@ _lock = threading.Lock()
 ESPEAK_FALLBACK_VOICES = {
     "bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn"),
 }
-MMS_TTS_MODELS = {
-    "bn": os.environ.get("MMS_BENGALI_TTS_MODEL", "facebook/mms-tts-ben"),
-}
-_mms_tts_models: dict[str, tuple[object, object]] = {}
 
 
 def _load_model() -> None:
@@ -113,38 +109,6 @@ def _load_asr_model() -> None:
 
 
 def _fallback_tts(text: str, lang: str) -> Response | None:
-    mms_model_id = MMS_TTS_MODELS.get(lang)
-    if mms_model_id:
-        try:
-            import torch
-            import torchaudio
-            from transformers import AutoTokenizer, VitsModel
-
-            with _lock:
-                cached = _mms_tts_models.get(lang)
-            if cached is None:
-                tokenizer = AutoTokenizer.from_pretrained(mms_model_id)
-                model = VitsModel.from_pretrained(mms_model_id)
-                model.eval()
-                with _lock:
-                    _mms_tts_models[lang] = (tokenizer, model)
-            else:
-                tokenizer, model = cached
-            inputs = tokenizer(text, return_tensors="pt")
-            with torch.no_grad():
-                waveform = model(**inputs).waveform
-            buffer = io.BytesIO()
-            torchaudio.save(buffer, waveform.cpu(), model.config.sampling_rate, format="wav")
-            audio = buffer.getvalue()
-            if len(audio) > 1000:
-                return Response(
-                    content=audio,
-                    media_type="audio/wav",
-                    headers={"X-Voice-Engine": f"mms-tts-{lang}", "X-Voice-Lang": lang},
-                )
-        except Exception as exc:  # noqa: BLE001
-            logger.error("mms fallback tts failed: %s", exc)
-
     voice = ESPEAK_FALLBACK_VOICES.get(lang)
     if not voice:
         return None

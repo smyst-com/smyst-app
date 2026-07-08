@@ -115,15 +115,11 @@ requireIncludes(voiceWorker, '@app.post("/transcribe")', 'voice worker ASR endpo
 requireIncludes(voiceWorker, '@app.post("/synthesize")', 'voice worker neural TTS endpoint');
 requireIncludes(voiceWorker, 'faster_whisper', 'voice worker uses faster-whisper for ASR');
 requireIncludes(voiceWorker, 'ESPEAK_FALLBACK_VOICES', 'voice worker Bengali fallback map');
-requireIncludes(voiceWorker, 'MMS_TTS_MODELS', 'voice worker Bengali MMS fallback map');
-requireIncludes(voiceWorker, 'facebook/mms-tts-ben', 'Bengali MMS TTS model');
 requireIncludes(voiceWorker, '"bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn")', 'Bengali TTS fallback voice');
-requireIncludes(voiceWorker, 'VitsModel.from_pretrained', 'MMS Bengali TTS model loader');
 requireIncludes(voiceWorker, '_fallback_tts(text, lang)', 'Bengali TTS fallback callsite');
 requireIncludes(voiceWorkerDockerfile, 'espeak-ng', 'voice worker image includes Bengali fallback TTS engine');
-requireIncludes(voiceWorkerDockerfile, 'transformers', 'voice worker image includes MMS Bengali TTS dependencies');
 requireIncludes(voiceWorkerDeploy, 'VOICE_DEPLOY_EXPECT_BENGALI_TTS: "true"', 'voice worker deploy expects Bengali TTS feature check');
 requireIncludes(voiceWorkerDeployScript, 'restarted = true', 'voice worker deploy restarts running containers');
-requireIncludes(voiceWorkerDeployScript, "engine.includes('mms-tts')", 'voice worker deploy verifies MMS Bengali TTS live');
+requireIncludes(voiceWorkerDeployScript, "engine.includes('espeak-ng') || engine.includes('mms-tts')", 'voice worker deploy verifies Bengali TTS live');
 
 console.log('voice wave regression validation passed');
