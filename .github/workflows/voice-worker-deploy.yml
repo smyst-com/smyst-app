@@ -86,4 +86,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VOICE_WORKER_URL: ${{ steps.deploy_voice_worker.outputs.endpoint }}
-        run: gh variable set VOICE_WORKER_URL --body "$VOICE_WORKER_URL"
+        run: |
+          gh variable set VOICE_WORKER_URL --body "$VOICE_WORKER_URL" || {
+            echo "::warning::Could not persist VOICE_WORKER_URL with GITHUB_TOKEN; backend deploy uses its checked fallback endpoint."
+          }
