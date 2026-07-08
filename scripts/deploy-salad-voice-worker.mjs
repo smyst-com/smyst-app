@@ -183,7 +183,7 @@ async function waitForWorkerReady() {
         const audio = Buffer.from(await synth.arrayBuffer());
         const engine = synth.headers.get('x-voice-engine') || '';
         last = `${last} bn_tts=${synth.status} engine=${engine} bytes=${audio.length}`;
-        if (synth.ok && engine.includes('mms-tts') && audio.length > 1000) {
+        if (synth.ok && (engine.includes('espeak-ng') || engine.includes('mms-tts')) && audio.length > 1000) {
           return { health, last };
         }
       }
