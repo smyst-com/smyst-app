@@ -117,7 +117,8 @@ requireIncludes(backendTts, 'workerConfigured', 'TTS status exposes worker readi
 requireIncludes(voiceWorker, '@app.post("/transcribe")', 'voice worker ASR endpoint');
 requireIncludes(voiceWorker, '@app.post("/synthesize")', 'voice worker neural TTS endpoint');
 requireIncludes(voiceWorker, 'faster_whisper', 'voice worker uses faster-whisper for ASR');
-requireIncludes(voiceWorker, 'VOICE_WORKER_PRELOAD_ASR', 'voice worker preloads ASR to avoid first-turn delay');
+requireIncludes(voiceWorker, 'VOICE_WORKER_PRELOAD_ASR', 'voice worker has guarded ASR preload switch');
+requireIncludes(voiceWorker, '"false"', 'voice worker ASR preload defaults to safe opt-in');
 requireIncludes(voiceWorker, 'asrPreload', 'voice worker reports ASR preload status');
 requireIncludes(voiceWorker, 'ESPEAK_FALLBACK_VOICES', 'voice worker Bengali fallback map');
 requireIncludes(voiceWorker, '"bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn")', 'Bengali TTS fallback voice');
