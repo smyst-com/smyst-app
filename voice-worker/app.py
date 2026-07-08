@@ -35,7 +35,7 @@ logger = logging.getLogger("smyst.voice_worker")
 MAX_TEXT = 800
 MAX_SAMPLE_BYTES = 12 * 1024 * 1024
 SUPPORTED_LANGS = {"de", "en", "tr", "fr", "es", "it", "pt", "nl", "pl", "ru", "ar", "zh", "ja", "ko", "hi", "id", "bn"}
-PRELOAD_ASR = os.environ.get("VOICE_WORKER_PRELOAD_ASR", "true").strip().lower() not in {"0", "false", "no", "off"}
+PRELOAD_ASR = os.environ.get("VOICE_WORKER_PRELOAD_ASR", "false").strip().lower() in {"1", "true", "yes", "on"}
 
 _model = None
 _model_kind = ""
