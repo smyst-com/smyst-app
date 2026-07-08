@@ -9,7 +9,7 @@ RUN apt-get update \
 WORKDIR /app
 
 # chatterbox-tts bringt torch/torchaudio als Abhaengigkeit mit (CUDA-Wheels).
-RUN pip install --no-cache-dir chatterbox-tts faster-whisper "fastapi>=0.115" "uvicorn[standard]>=0.32" "httpx>=0.27"
+RUN pip install --no-cache-dir chatterbox-tts faster-whisper transformers scipy sentencepiece "fastapi>=0.115" "uvicorn[standard]>=0.32" "httpx>=0.27"
 
 COPY app.py /app/app.py
 
