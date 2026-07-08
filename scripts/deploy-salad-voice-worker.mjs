@@ -160,7 +160,9 @@ const health = dns ? `${endpoint}/health/ready` : '';
 
 async function waitForWorkerReady() {
   if (!endpoint) return null;
-  const waitSeconds = Number(process.env.SALAD_VOICE_HEALTH_WAIT_SECONDS || 900);
+  // Salad kann grosse GPU-Images noch lange nach erfolgreichem GHCR-Push laden.
+  // 45 Minuten verhindert falsch rote Deploys, ohne die Feature-Pruefung zu lockern.
+  const waitSeconds = Number(process.env.SALAD_VOICE_HEALTH_WAIT_SECONDS || 2700);
   const intervalMs = Number(process.env.SALAD_VOICE_HEALTH_INTERVAL_MS || 10000);
   const deadline = Date.now() + waitSeconds * 1000;
   let last = 'not checked yet';
