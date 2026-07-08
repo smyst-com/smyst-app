@@ -19,6 +19,7 @@ import binascii
 import io
 import logging
 import os
+import subprocess
 import tempfile
 import threading
 import time
@@ -43,6 +44,10 @@ _asr_model = None
 _asr_error = ""
 _asr_loading = False
 _lock = threading.Lock()
+
+ESPEAK_FALLBACK_VOICES = {
+    "bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn"),
+}
 
 
 def _load_model() -> None:
@@ -101,6 +106,39 @@ def _load_asr_model() -> None:
         logger.error("asr model load failed: %s", _asr_error)
     finally:
         globals()["_asr_loading"] = False
+
+
+def _fallback_tts(text: str, lang: str) -> Response | None:
+    voice = ESPEAK_FALLBACK_VOICES.get(lang)
+    if not voice:
+        return None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".wav") as handle:
+            completed = subprocess.run(
+                ["espeak-ng", "-v", voice, "-s", "145", "-w", handle.name, text],
+                capture_output=True,
+                timeout=40,
+                check=False,
+            )
+            if completed.returncode != 0:
+                logger.error(
+                    "fallback tts failed (%s): %s",
+                    completed.returncode,
+                    completed.stderr.decode("utf-8", errors="ignore")[:300],
+                )
+                return None
+            handle.seek(0)
+            audio = handle.read()
+        if len(audio) <= 1000:
+            return None
+        return Response(
+            content=audio,
+            media_type="audio/wav",
+            headers={"X-Voice-Engine": f"espeak-ng-{voice}", "X-Voice-Lang": lang},
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error("fallback tts crashed: %s", exc)
+        return None
 
 
 class CloneRequest(BaseModel):
@@ -215,17 +253,20 @@ def synthesize(body: SynthesizeRequest, x_worker_token: str | None = Header(defa
     expected = (os.environ.get("WORKER_TOKEN") or "").strip()
     if not expected or x_worker_token != expected:
         raise HTTPException(status_code=401, detail="unauthorized")
-    if _model is None:
-        if not _loading and _model_error:
-            raise HTTPException(status_code=503, detail="model_failed")
-        threading.Thread(target=_load_model, daemon=True).start()
-        raise HTTPException(status_code=503, detail="model_loading")
     lang = (body.lang or "de").lower()[:2]
     if lang not in SUPPORTED_LANGS:
         lang = "de"
     text = body.text.strip()[:MAX_TEXT]
     if not text:
         raise HTTPException(status_code=422, detail="empty_text")
+    if _model is None:
+        fallback = _fallback_tts(text, lang)
+        if fallback is not None:
+            return fallback
+        if not _loading and _model_error:
+            raise HTTPException(status_code=503, detail="model_failed")
+        threading.Thread(target=_load_model, daemon=True).start()
+        raise HTTPException(status_code=503, detail="model_loading")
     try:
         import torchaudio
 
@@ -237,6 +278,9 @@ def synthesize(body: SynthesizeRequest, x_worker_token: str | None = Header(defa
         torchaudio.save(buffer, wav.cpu(), _model.sr, format="wav")
     except Exception as exc:  # noqa: BLE001
         logger.error("worker synthesis failed: %s", exc)
+        fallback = _fallback_tts(text, lang)
+        if fallback is not None:
+            return fallback
         raise HTTPException(status_code=500, detail="synthesis_failed") from exc
 
     return Response(
