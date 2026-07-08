@@ -51,6 +51,10 @@ ESPEAK_FALLBACK_VOICES = {
     "id": os.environ.get("ESPEAK_INDONESIAN_VOICE", "id"),
 }
 
+CHATTERBOX_LANGUAGE_ALIASES = {
+    "id": "ms",
+}
+
 
 def _load_model() -> None:
     global _model, _model_kind, _model_error, _loading
@@ -235,7 +239,11 @@ def clone_tts(body: CloneRequest, x_worker_token: str | None = Header(default=No
             handle.write(sample.content)
             handle.flush()
             if _model_kind == "multilingual":
-                wav = _model.generate(text, language_id=lang, audio_prompt_path=handle.name)
+                wav = _model.generate(
+                    text,
+                    language_id=CHATTERBOX_LANGUAGE_ALIASES.get(lang, lang),
+                    audio_prompt_path=handle.name,
+                )
             else:
                 wav = _model.generate(text, audio_prompt_path=handle.name)
         buffer = io.BytesIO()
@@ -276,7 +284,7 @@ def synthesize(body: SynthesizeRequest, x_worker_token: str | None = Header(defa
         import torchaudio
 
         if _model_kind == "multilingual":
-            wav = _model.generate(text, language_id=lang)
+            wav = _model.generate(text, language_id=CHATTERBOX_LANGUAGE_ALIASES.get(lang, lang))
         else:
             wav = _model.generate(text)
         buffer = io.BytesIO()
