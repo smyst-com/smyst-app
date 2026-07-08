@@ -126,6 +126,7 @@ jobs:
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
           VOICE_WORKER_URL: ${{ vars.VOICE_WORKER_URL || 'https://nectarine-spinach-iss2y28nt89sv94k.salad.cloud' }}
           VOICE_WORKER_TOKEN: ${{ env.WORKER_TOKEN }}
+          SALAD_DEPLOY_EXPECT_ASR_STATUS: "true"
           HEALTH_REQUIRE_POSTGRES: "false"
           HEALTH_REQUIRE_REDIS: "false"
           # Falls GHCR-Package privat bleibt: PAT mit read:packages als GHCR_PULL_TOKEN setzen.

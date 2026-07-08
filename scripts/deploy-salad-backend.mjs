@@ -125,18 +125,30 @@ async function waitForHealthy(endpoint) {
   const deadline = Date.now() + waitSeconds * 1000;
   const liveUrl = `${endpoint}/api/health/live`;
   const readyUrl = `${endpoint}/api/health/ready`;
+  const asrUrl = `${endpoint}/api/asr/status`;
   let last = 'not checked yet';
 
   while (Date.now() < deadline) {
     try {
-      const [live, ready] = await Promise.all([
+      const [live, ready, asr] = await Promise.all([
         fetch(liveUrl, { signal: AbortSignal.timeout(8000) }),
         fetch(readyUrl, { signal: AbortSignal.timeout(8000) }),
+        process.env.SALAD_DEPLOY_EXPECT_ASR_STATUS === 'true'
+          ? fetch(asrUrl, { signal: AbortSignal.timeout(8000) })
+          : Promise.resolve(null),
       ]);
       const liveText = await live.text();
       const readyText = await ready.text();
-      last = `live=${live.status} ${liveText.slice(0, 180)} ready=${ready.status} ${readyText.slice(0, 180)}`;
-      if (live.ok && ready.ok && liveText.includes('"status":"live"') && readyText.includes('"status":"ready"')) {
+      const asrText = asr ? await asr.text() : '';
+      const asrOk = !asr || (asr.ok && asrText.includes('"engine":"voice-worker"'));
+      last = `live=${live.status} ${liveText.slice(0, 180)} ready=${ready.status} ${readyText.slice(0, 180)} asr=${asr ? `${asr.status} ${asrText.slice(0, 180)}` : 'not-required'}`;
+      if (
+        live.ok &&
+        ready.ok &&
+        asrOk &&
+        liveText.includes('"status":"live"') &&
+        readyText.includes('"status":"ready"')
+      ) {
         console.log(`Salad backend healthy: ${liveUrl} and ${readyUrl}`);
         return { liveUrl, readyUrl, last };
       }

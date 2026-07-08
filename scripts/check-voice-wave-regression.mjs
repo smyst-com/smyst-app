@@ -10,6 +10,7 @@ const api = readFileSync(resolve(root, 'src/lib/useTwinMvp.ts'), 'utf8');
 const backendAsr = readFileSync(resolve(root, 'backend/app/api/v1/routes/asr.py'), 'utf8');
 const backendTts = readFileSync(resolve(root, 'backend/app/api/v1/routes/tts.py'), 'utf8');
 const voiceWorker = readFileSync(resolve(root, 'voice-worker/app.py'), 'utf8');
+const voiceWorkerDockerfile = readFileSync(resolve(root, 'voice-worker/Dockerfile'), 'utf8');
 const voiceQa = readFileSync(resolve(root, 'qa/voice_qa_daily.py'), 'utf8');
 
 const requiredLanguages = [
@@ -111,5 +112,9 @@ requireIncludes(backendTts, 'workerConfigured', 'TTS status exposes worker readi
 requireIncludes(voiceWorker, '@app.post("/transcribe")', 'voice worker ASR endpoint');
 requireIncludes(voiceWorker, '@app.post("/synthesize")', 'voice worker neural TTS endpoint');
 requireIncludes(voiceWorker, 'faster_whisper', 'voice worker uses faster-whisper for ASR');
+requireIncludes(voiceWorker, 'ESPEAK_FALLBACK_VOICES', 'voice worker Bengali fallback map');
+requireIncludes(voiceWorker, '"bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn")', 'Bengali TTS fallback voice');
+requireIncludes(voiceWorker, '_fallback_tts(text, lang)', 'Bengali TTS fallback callsite');
+requireIncludes(voiceWorkerDockerfile, 'espeak-ng', 'voice worker image includes Bengali fallback TTS engine');
 
 console.log('voice wave regression validation passed');
