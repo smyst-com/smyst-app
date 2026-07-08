@@ -38,15 +38,20 @@ REQUIRED_LANGUAGES = {
 }
 
 SMOKE_TESTS = [
-    {"name": "Deutsch", "payload": {"text": "Die Republik ist eine Staatsform des Volkes.", "lang": "de", "gender": "male"}, "expect_voice_prefixes": ("de-", "worker-de")},
-    {"name": "Tuerkisch", "payload": {"text": "Cumhuriyet, milletin egemenligine dayanan bir yonetim seklidir.", "lang": "tr", "gender": "male"}, "expect_voice_prefixes": ("tr-", "worker-tr")},
     {"name": "Englisch", "payload": {"text": "The republic is a form of government for the people.", "lang": "en", "gender": "female"}, "expect_voice_prefixes": ("en-", "worker-en")},
+    {"name": "Chinesisch", "payload": {"text": "你好，这是一个简短的语音测试。", "lang": "zh"}, "expect_voice_prefixes": ("worker-zh",)},
+    {"name": "Spanisch", "payload": {"text": "Hola, esta es una prueba breve de voz natural.", "lang": "es"}, "expect_voice_prefixes": ("worker-es",)},
     {"name": "Arabisch", "payload": {"text": "مرحبا، هذا اختبار صوتي قصير لمنصة smyst.com.", "lang": "ar"}, "expect_voice_prefixes": ("worker-ar",)},
     {"name": "Franzoesisch", "payload": {"text": "Bonjour, ceci est un court test vocal naturel.", "lang": "fr"}, "expect_voice_prefixes": ("worker-fr",)},
-    {"name": "Spanisch", "payload": {"text": "Hola, esta es una prueba breve de voz natural.", "lang": "es"}, "expect_voice_prefixes": ("worker-es",)},
-    {"name": "Chinesisch", "payload": {"text": "你好，这是一个简短的语音测试。", "lang": "zh"}, "expect_voice_prefixes": ("worker-zh",)},
+    {"name": "Deutsch", "payload": {"text": "Die Republik ist eine Staatsform des Volkes.", "lang": "de", "gender": "male"}, "expect_voice_prefixes": ("de-", "worker-de")},
+    {"name": "Portugiesisch", "payload": {"text": "Ola, este e um breve teste de voz natural.", "lang": "pt"}, "expect_voice_prefixes": ("worker-pt",)},
     {"name": "Russisch", "payload": {"text": "Здравствуйте, это короткий тест голосового режима.", "lang": "ru"}, "expect_voice_prefixes": ("worker-ru",)},
+    {"name": "Tuerkisch", "payload": {"text": "Cumhuriyet, milletin egemenligine dayanan bir yonetim seklidir.", "lang": "tr", "gender": "male"}, "expect_voice_prefixes": ("tr-", "worker-tr")},
+    {"name": "Japanisch", "payload": {"text": "こんにちは、これは短い音声テストです。", "lang": "ja"}, "expect_voice_prefixes": ("worker-ja",)},
+    {"name": "Koreanisch", "payload": {"text": "안녕하세요, 이것은 짧은 음성 테스트입니다.", "lang": "ko"}, "expect_voice_prefixes": ("worker-ko",)},
+    {"name": "Italienisch", "payload": {"text": "Ciao, questo e un breve test vocale naturale.", "lang": "it"}, "expect_voice_prefixes": ("worker-it",)},
     {"name": "Hindi", "payload": {"text": "नमस्ते, यह एक छोटा आवाज परीक्षण है।", "lang": "hi"}, "expect_voice_prefixes": ("worker-hi",)},
+    {"name": "Indonesisch", "payload": {"text": "Halo, ini adalah tes suara singkat yang alami.", "lang": "id"}, "expect_voice_prefixes": ("worker-id",)},
     {"name": "Bengalisch", "payload": {"text": "নমস্কার, এটি একটি ছোট ভয়েস পরীক্ষা।", "lang": "bn"}, "expect_voice_prefixes": ("worker-bn",)},
 ]
 

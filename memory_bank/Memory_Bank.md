@@ -1,5 +1,13 @@
 # Memory Bank
 
+## Update 2026-07-08 III: Sprachwelle Live-Dialog-Haertung
+
+- Voice Worker laedt ASR nun beim Start im Hintergrund vor (`VOICE_WORKER_PRELOAD_ASR=true` als Default) und meldet `asrPreload` in `/health/ready`; dadurch soll der erste Live-Dialog-Turn nicht mehr am bisherigen Lazy-Load-503 haengen.
+- Browser-Server-ASR-Fallback nutzt Web-Audio-Pegel und stoppt nach erkannter Sprechpause, statt nur starr mehrere Sekunden aufzunehmen. Echo-Cancellation, Noise-Suppression und Auto-Gain bleiben aktiv; Audio wird weiterhin transient an `/api/asr/transcribe` gesendet.
+- Voice-QA testet TTS jetzt aktiv fuer alle 15 Pflichtsprachen: `en zh es ar fr de pt ru tr ja ko it hi id bn`. Der Regressionsschutz verlangt diese 15 aktiven Smoke-Tests, ASR-Warmstart und Pause-Erkennung.
+- Lokal verifiziert: Python-Syntax fuer Worker/QA, Voice-Wave-Regressionscheck, TypeScript `tsc --noEmit`, Vite Production Build, Dist-Artefaktcheck, ASR-Routentests und komplette Backend-Suite `141 passed`.
+- Keine Nutzerdaten, Profile, Medien, Chats, Memories, Datenbankinhalte, Secrets oder DNS-Eintraege wurden geaendert oder geloescht.
+
 ## Update 2026-07-08 II: Sprachwelle Worker-ASR/TTS live, Bengali Restore und Deploy-Schutz
 
 - PR #155 gemergt: Backend-ASR `/api/asr/status` + `/api/asr/transcribe`, Voice-Worker `/transcribe` mit faster-whisper, normaler Worker-TTS-Pfad `/synthesize`, Frontend-Server-ASR-Fallback per MediaRecorder, erweiterte Voice-QA und Schutzmanifeste.
