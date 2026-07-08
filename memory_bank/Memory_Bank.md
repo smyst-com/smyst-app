@@ -5,6 +5,7 @@
 - Voice Worker hat einen sicheren ASR-Warmstart-Schalter (`VOICE_WORKER_PRELOAD_ASR`), bleibt aber default `false`, weil paralleles GPU-Laden von TTS und ASR nach Live-Deploy #8 den Salad-Container instabil machte. `asrPreload` wird in `/health/ready` gemeldet.
 - Browser-Server-ASR-Fallback nutzt Web-Audio-Pegel und stoppt nach erkannter Sprechpause, statt nur starr mehrere Sekunden aufzunehmen. Echo-Cancellation, Noise-Suppression und Auto-Gain bleiben aktiv; Audio wird weiterhin transient an `/api/asr/transcribe` gesendet.
 - Voice-QA testet TTS jetzt aktiv fuer alle 15 Pflichtsprachen: `en zh es ar fr de pt ru tr ja ko it hi id bn`. Der Regressionsschutz verlangt diese 15 aktiven Smoke-Tests, ASR-Warmstart und Pause-Erkennung.
+- Live-QA nach Deploy #9 zeigte Indonesisch (`id`) als echten 503-Stabilitaetsfall; Worker-Fallback `espeak-ng-id` wurde als Schutz analog zu Bengali ergaenzt.
 - Lokal verifiziert: Python-Syntax fuer Worker/QA, Voice-Wave-Regressionscheck, TypeScript `tsc --noEmit`, Vite Production Build, Dist-Artefaktcheck, ASR-Routentests und komplette Backend-Suite `141 passed`.
 - Keine Nutzerdaten, Profile, Medien, Chats, Memories, Datenbankinhalte, Secrets oder DNS-Eintraege wurden geaendert oder geloescht.
 

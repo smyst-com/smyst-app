@@ -48,6 +48,7 @@ _lock = threading.Lock()
 
 ESPEAK_FALLBACK_VOICES = {
     "bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn"),
+    "id": os.environ.get("ESPEAK_INDONESIAN_VOICE", "id"),
 }
 
 

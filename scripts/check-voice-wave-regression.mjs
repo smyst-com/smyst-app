@@ -122,6 +122,7 @@ requireIncludes(voiceWorker, '"false"', 'voice worker ASR preload defaults to sa
 requireIncludes(voiceWorker, 'asrPreload', 'voice worker reports ASR preload status');
 requireIncludes(voiceWorker, 'ESPEAK_FALLBACK_VOICES', 'voice worker Bengali fallback map');
 requireIncludes(voiceWorker, '"bn": os.environ.get("ESPEAK_BENGALI_VOICE", "bn")', 'Bengali TTS fallback voice');
+requireIncludes(voiceWorker, '"id": os.environ.get("ESPEAK_INDONESIAN_VOICE", "id")', 'Indonesian TTS fallback voice');
 requireIncludes(voiceWorker, '_fallback_tts(text, lang)', 'Bengali TTS fallback callsite');
 requireIncludes(voiceWorkerDockerfile, 'espeak-ng', 'voice worker image includes Bengali fallback TTS engine');
 requireIncludes(voiceWorkerDeploy, 'VOICE_DEPLOY_EXPECT_BENGALI_TTS: "true"', 'voice worker deploy expects Bengali TTS feature check');
