@@ -11,6 +11,8 @@ const backendAsr = readFileSync(resolve(root, 'backend/app/api/v1/routes/asr.py'
 const backendTts = readFileSync(resolve(root, 'backend/app/api/v1/routes/tts.py'), 'utf8');
 const voiceWorker = readFileSync(resolve(root, 'voice-worker/app.py'), 'utf8');
 const voiceWorkerDockerfile = readFileSync(resolve(root, 'voice-worker/Dockerfile'), 'utf8');
+const voiceWorkerDeploy = readFileSync(resolve(root, '.github/workflows/voice-worker-deploy.yml'), 'utf8');
+const voiceWorkerDeployScript = readFileSync(resolve(root, 'scripts/deploy-salad-voice-worker.mjs'), 'utf8');
 const voiceQa = readFileSync(resolve(root, 'qa/voice_qa_daily.py'), 'utf8');
 
 const requiredLanguages = [
@@ -120,5 +122,8 @@ requireIncludes(voiceWorker, 'VitsModel.from_pretrained', 'MMS Bengali TTS model
 requireIncludes(voiceWorker, '_fallback_tts(text, lang)', 'Bengali TTS fallback callsite');
 requireIncludes(voiceWorkerDockerfile, 'espeak-ng', 'voice worker image includes Bengali fallback TTS engine');
 requireIncludes(voiceWorkerDockerfile, 'transformers', 'voice worker image includes MMS Bengali TTS dependencies');
+requireIncludes(voiceWorkerDeploy, 'VOICE_DEPLOY_EXPECT_BENGALI_TTS: "true"', 'voice worker deploy expects Bengali TTS feature check');
+requireIncludes(voiceWorkerDeployScript, 'restarted = true', 'voice worker deploy restarts running containers');
+requireIncludes(voiceWorkerDeployScript, "engine.includes('mms-tts')", 'voice worker deploy verifies MMS Bengali TTS live');
 
 console.log('voice wave regression validation passed');

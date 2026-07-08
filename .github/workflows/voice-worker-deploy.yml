@@ -80,6 +80,7 @@ jobs:
           WORKER_TOKEN: ${{ env.WORKER_TOKEN }}
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ secrets.GHCR_PULL_TOKEN }}
+          VOICE_DEPLOY_EXPECT_BENGALI_TTS: "true"
 
       - name: Persist voice worker endpoint for backend deploy
         if: ${{ steps.deploy_voice_worker.outputs.endpoint != '' }}

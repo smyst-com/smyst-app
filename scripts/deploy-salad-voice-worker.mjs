@@ -134,7 +134,16 @@ const result = existing
 
 let started = false;
 const status = result?.current_state?.status || existing?.current_state?.status || 'unknown';
-if (!noStart && ['stopped', 'failed'].includes(status)) {
+let restarted = false;
+if (!noStart && existing && ['running', 'deploying'].includes(status)) {
+  try {
+    await salad(`${itemPath}/stop`, { method: 'POST', headers: {} });
+    restarted = true;
+  } catch (exc) {
+    console.log(`Stop uebersprungen: ${exc.message}`);
+  }
+}
+if (!noStart && (['stopped', 'failed'].includes(status) || restarted)) {
   try {
     await salad(`${itemPath}/start`, { method: 'POST', headers: {} });
     started = true;
@@ -149,6 +158,46 @@ const dns = networking.dns || networking.host || null;
 const endpoint = dns ? `https://${dns}` : '';
 const health = dns ? `${endpoint}/health/ready` : '';
 
+async function waitForWorkerReady() {
+  if (!endpoint) return null;
+  const waitSeconds = Number(process.env.SALAD_VOICE_HEALTH_WAIT_SECONDS || 900);
+  const intervalMs = Number(process.env.SALAD_VOICE_HEALTH_INTERVAL_MS || 10000);
+  const deadline = Date.now() + waitSeconds * 1000;
+  let last = 'not checked yet';
+  while (Date.now() < deadline) {
+    try {
+      const ready = await fetch(health, { signal: AbortSignal.timeout(10000) });
+      const readyText = await ready.text();
+      last = `ready=${ready.status} ${readyText.slice(0, 180)}`;
+      if (ready.ok) {
+        if (process.env.VOICE_DEPLOY_EXPECT_BENGALI_TTS !== 'true') return { health, last };
+        const synth = await fetch(`${endpoint}/synthesize`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'X-Worker-Token': workerToken,
+          },
+          body: JSON.stringify({ lang: 'bn', text: 'হ্যালো, আজ আমরা ভয়েস ওয়েভ পরীক্ষা করছি।' }),
+          signal: AbortSignal.timeout(60000),
+        });
+        const audio = Buffer.from(await synth.arrayBuffer());
+        const engine = synth.headers.get('x-voice-engine') || '';
+        last = `${last} bn_tts=${synth.status} engine=${engine} bytes=${audio.length}`;
+        if (synth.ok && engine.includes('mms-tts') && audio.length > 1000) {
+          return { health, last };
+        }
+      }
+    } catch (exc) {
+      last = exc instanceof Error ? exc.message : String(exc);
+    }
+    console.log(`Waiting for voice worker readiness: ${last}`);
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  throw new Error(`Voice worker did not become ready within ${waitSeconds}s. Last check: ${last}`);
+}
+
+const readinessCheck = !noStart ? await waitForWorkerReady() : null;
+
 if (process.env.GITHUB_OUTPUT) {
   appendFileSync(process.env.GITHUB_OUTPUT, `endpoint=${endpoint}\n`);
   appendFileSync(process.env.GITHUB_OUTPUT, `health=${health}\n`);
@@ -162,8 +211,10 @@ console.log(JSON.stringify({
   gpuClass: chosen.name,
   statusBeforeStart: status,
   started,
+  restarted,
   endpoint: endpoint || '(URL erscheint im Salad-Portal, sobald deployed)',
   health: health || null,
+  readinessCheck,
   next: endpoint
     ? 'Repo-Variable VOICE_WORKER_URL wird vom Workflow automatisch gesetzt; danach Salad Backend Deploy ausfuehren.'
     : 'VOICE_WORKER_URL setzen, sobald Salad DNS den Endpoint anzeigt; danach Salad Backend Deploy ausfuehren.',
