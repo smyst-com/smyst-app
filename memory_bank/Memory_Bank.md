@@ -1,5 +1,18 @@
 # Memory Bank
 
+## Update 2026-07-08: Multilinguale Sprachwelle live + Schutz aktiviert (PR #153)
+
+- PR #153 (`codex/voice-wave-global-2026-07-08`) gemergt; GitHub Pages Deploy #194 fuer Merge-Commit `370cd59` erfolgreich.
+- Sprachwelle gehaertet: gemeinsame 15-Sprachen-Erkennung fuer `en zh es ar fr de pt ru tr ja ko it hi id bn`, Speech-Locale-Routing, Antwortsprache passend zur Nutzersprache und spezielle tuerkische Fallbacks ohne Deutsch/Tuerkisch-Mischsprache.
+- API/Frontend: erkannte Voice-Sprache wird an Twin-MVP-Requests weitergegeben; bestehendes Streaming, Piper/Remote-TTS und lokaler Speech-Fallback blieben erhalten.
+- SEO/GEO/AEO/AIO: `index.html`, `robots.txt`, `llms.txt`, `ai.txt` und Sitemap fuer globale Such-/AI-Agenten erweitert, inkl. Google, Bing, Baidu, Yandex, Naver, ChatGPT, Claude, Gemini, DeepSeek, Kimi, Grok, Perplexity, Mistral und Qwen.
+- Schutz: `src/lib/voiceLanguage.ts`, `src/lib/voiceProfiles.ts`, `src/lib/useTwinMvp.ts`, Voice-Wave-Regressionscheck und Schutzmanifeste markieren Voice-Wave-Aenderungen als schriftlich freigabepflichtig.
+- Lokal validiert: `node scripts/check-voice-wave-regression.mjs`, `python3 scripts/check-change-protection.py`, `python3 scripts/check-surface-protection.py`, TypeScript `tsc --noEmit`, Production Build, `scripts/test-all.sh`, `sh scripts/check-dist-artifact.sh`.
+- Browser-QA lokal: Desktop, Mobile 390x844, PWA/Manifest, Sprachrouten `/tr/`, `/ar/`, `/bn/`, `/hi/`; `/ar/` rendert RTL.
+- Live validiert: `scripts/live-test.sh` gegen `https://smyst.com` gruen; Root liefert Bundle `/assets/index-WERlA8cv.js`, Live-Bundle enthaelt `tr-TR`, `hi-IN`, `bn-BD`, `Kısaca:` und bengalischen Fallback; `/robots.txt`, `/llms.txt`, `/ai.txt` 200 und erweitert.
+- Einschraenkung: Die Codex-Browserumgebung stellt keine echte `SpeechRecognition`-/`speechSynthesis`-/Mikrofonfunktion bereit; echte gesprochene Audio-ASR/TTS konnte dort nicht mit realem Mikrofon getestet werden. Die Verifikation deckt Codepfad, UI, Locale-Routing, Bundle, PWA/Live-Smoke und Regression-Schutz ab.
+- Schutzstatus: keine Datenbankmigration, keine DNS-Aenderung, keine Nutzerdaten, Medien, Profile, Chatdaten oder Memories geloescht; Rollback ueber Revert von PR #153 oder vorherigen GitHub-Pages-Deploy moeglich.
+
 ## Update 2026-07-07 II: Verified Web Research live aktiviert + Salad Deploy-Schutz
 
 - Verified Web Research fuer smyst.com wurde live aktiviert: GitHub Actions Secret `OPENAI_API_KEY` gesetzt, Salad Backend Deploy nutzt `WEB_RESEARCH_ENABLED=true` und `WEB_SEARCH_PROVIDER=openai`; keine Secrets wurden im Code gespeichert oder ausgegeben.
