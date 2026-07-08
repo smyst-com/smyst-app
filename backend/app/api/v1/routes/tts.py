@@ -124,6 +124,39 @@ def _try_clone_tts(request: Request, text: str, lang: str | None) -> tuple[Respo
     return None, fallback_voice
 
 
+def _try_worker_tts(text: str, lang: str | None) -> Response | None:
+    """Normale neuronale TTS ueber den stateless Voice-Worker.
+
+    Der Control Server speichert keine Audio-Artefakte und besitzt keine Modelle.
+    Jeder Fehler fuehrt zum Piper-/Browser-Fallback.
+    """
+    worker_url = (os.environ.get("VOICE_WORKER_URL") or "").strip().rstrip("/")
+    worker_token = (os.environ.get("VOICE_WORKER_TOKEN") or "").strip()
+    if not worker_url or not worker_token:
+        return None
+    try:
+        worker_response = httpx.post(
+            f"{worker_url}/synthesize",
+            json={"text": text, "lang": (lang or "de")},
+            headers={"X-Worker-Token": worker_token},
+            timeout=45.0,
+        )
+        if worker_response.status_code == 200 and len(worker_response.content) > 1000:
+            return Response(
+                content=worker_response.content,
+                media_type="audio/wav",
+                headers={
+                    "Cache-Control": "no-store",
+                    "X-Voice-Id": f"worker-{(lang or 'de').lower()[:2]}",
+                    "X-Voice-Engine": worker_response.headers.get("X-Voice-Engine", "chatterbox"),
+                },
+            )
+        logger.info("worker tts declined (%s), falling back", worker_response.status_code)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("worker tts failed (%s), falling back", type(exc).__name__)
+    return None
+
+
 class TtsRequest(BaseModel):
     text: str = Field(min_length=1, max_length=800)
     voiceId: str | None = Field(default=None, max_length=32)
@@ -138,11 +171,14 @@ def list_voices() -> dict[str, object]:
         for voice_id, file_name in VOICE_FILES.items()
         if os.path.exists(os.path.join(VOICES_DIR, file_name))
     )
+    worker_configured = bool((os.environ.get("VOICE_WORKER_URL") or "").strip())
+    piper_ready = os.path.exists(PIPER_BIN) and len(available) > 0
     return {
         "voices": available,
-        "engine": "piper",
-        "cloneConfigured": bool((os.environ.get("VOICE_WORKER_URL") or "").strip()),
-        "ready": os.path.exists(PIPER_BIN) and len(available) > 0,
+        "engine": "worker+piper" if worker_configured else "piper",
+        "cloneConfigured": worker_configured,
+        "workerConfigured": worker_configured,
+        "ready": piper_ready or worker_configured,
     }
 
 
@@ -162,7 +198,13 @@ def synthesize(request: Request, body: TtsRequest) -> Response:
 
     voice_id = _resolve_voice_id(effective_voice_id, body.lang, body.gender)
     model_path = os.path.join(VOICES_DIR, VOICE_FILES[voice_id])
-    if not os.path.exists(PIPER_BIN) or not os.path.exists(model_path):
+    piper_ready = os.path.exists(PIPER_BIN) and os.path.exists(model_path)
+    lang_base = (body.lang or "").lower()[:2]
+    if lang_base not in {"de", "en", "tr"} or not piper_ready:
+        worker_response = _try_worker_tts(text, body.lang)
+        if worker_response is not None:
+            return worker_response
+    if not piper_ready:
         raise HTTPException(status_code=503, detail="TTS engine not available")
 
     with tempfile.TemporaryDirectory() as tmp_dir:

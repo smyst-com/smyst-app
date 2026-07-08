@@ -25,6 +25,7 @@ import {
 } from '@/lib/voiceLanguage'
 import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
+import { recordAndTranscribeOnce, serverAsrSupported } from '@/lib/serverAsrClient'
 import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { fetchService } from '@/lib/serviceEndpoints'
@@ -1708,14 +1709,75 @@ function SmystStartPage({
     liveVoiceSendTimerRef.current = null
   }
 
-  const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
-    const Recognition = speechRecognitionConstructor()
-    if (!Recognition) {
+  const resumeLiveVoiceAfterSpeech = () => {
+    const resumeListening = (quietChecks = 0) => {
+      if (!liveVoiceActiveRef.current) {
+        setVoiceState('idle')
+        return
+      }
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()) {
+        window.setTimeout(() => resumeListening(0), 350)
+        return
+      }
+      if (quietChecks < 2) {
+        window.setTimeout(() => resumeListening(quietChecks + 1), 400)
+        return
+      }
+      startDictation({ live: true })
+    }
+    window.setTimeout(resumeListening, 500)
+  }
+
+  const startServerAsrDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
+    if (!serverAsrSupported()) {
       if (options.live) {
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
       addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
+      return
+    }
+    if (!options.live && !options.resume) {
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
+      dictationActiveRef.current = true
+      dictationBaseRef.current = input.trim()
+      dictationSessionRef.current = ''
+    }
+    setVoiceState('listening')
+    void recordAndTranscribeOnce(speechLangFor(lastVoiceLang || lang), options.live ? 5200 : 6500)
+      .then((result) => {
+        const transcript = result.text.trim()
+        const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLang || lang)
+        setLastVoiceLang(detectedLang)
+        if (options.live) {
+          setVoiceState('replying')
+          return handleSend(transcript, [], { forceSpeech: true, voiceLang: detectedLang }).finally(resumeLiveVoiceAfterSpeech)
+        }
+        resizeInput([dictationBaseRef.current, transcript].filter(Boolean).join(' '))
+        dictationActiveRef.current = false
+        dictationSessionRef.current = ''
+        setVoiceState('idle')
+        return null
+      })
+      .catch(() => {
+        if (options.live && liveVoiceActiveRef.current) {
+          window.setTimeout(() => startServerAsrDictation({ live: true, resume: true }), 700)
+          return
+        }
+        dictationActiveRef.current = false
+        setVoiceState('idle')
+        addNotice('Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.')
+      })
+  }
+
+  const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
+    const Recognition = speechRecognitionConstructor()
+    if (!Recognition) {
+      startServerAsrDictation(options)
       return
     }
     if (!options.live && !options.resume) {
@@ -7069,6 +7131,71 @@ function TwinChatView({
     window.setTimeout(() => setComposerNotice((current) => (current === notice ? '' : current)), 4200)
   }
 
+  const resumeLiveVoiceAfterSpeech = () => {
+    const resumeListening = (quietChecks = 0) => {
+      if (!liveVoiceActiveRef.current) {
+        setVoiceState('idle')
+        return
+      }
+      if (window.speechSynthesis.speaking || window.speechSynthesis.pending || isRemoteSpeechActive()) {
+        window.setTimeout(() => resumeListening(0), 350)
+        return
+      }
+      if (quietChecks < 2) {
+        window.setTimeout(() => resumeListening(quietChecks + 1), 400)
+        return
+      }
+      startDictation({ live: true })
+    }
+    window.setTimeout(resumeListening, 500)
+  }
+
+  const startServerAsrDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
+    if (!serverAsrSupported()) {
+      if (options.live) {
+        liveVoiceActiveRef.current = false
+        setSpeechOutputEnabled(false)
+      }
+      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
+      return
+    }
+    if (!options.live && !options.resume) {
+      liveVoiceActiveRef.current = false
+      clearLiveVoiceTimer()
+      window.speechSynthesis.cancel()
+      stopRemoteSpeech()
+      setIsSpeaking(false)
+      dictationActiveRef.current = true
+      dictationBaseRef.current = input.trim()
+      dictationSessionRef.current = ''
+    }
+    setVoiceState('listening')
+    void recordAndTranscribeOnce(speechLangFor(lastVoiceLang || lang), options.live ? 5200 : 6500)
+      .then((result) => {
+        const transcript = result.text.trim()
+        const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLang || lang)
+        setLastVoiceLang(detectedLang)
+        if (options.live) {
+          setVoiceState('replying')
+          return handleSend(transcript, [], { forceSpeech: true, voiceLang: detectedLang }).finally(resumeLiveVoiceAfterSpeech)
+        }
+        resizeInput([dictationBaseRef.current, transcript].filter(Boolean).join(' '))
+        dictationActiveRef.current = false
+        dictationSessionRef.current = ''
+        setVoiceState('idle')
+        return null
+      })
+      .catch(() => {
+        if (options.live && liveVoiceActiveRef.current) {
+          window.setTimeout(() => startServerAsrDictation({ live: true, resume: true }), 700)
+          return
+        }
+        dictationActiveRef.current = false
+        setVoiceState('idle')
+        addNotice('Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.')
+      })
+  }
+
   const handleFilesSelected = async (files: FileList | null) => {
     const selected = Array.from(files ?? [])
     if (!selected.length) return
@@ -7182,11 +7309,7 @@ function TwinChatView({
   const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     if (!Recognition) {
-      if (options.live) {
-        liveVoiceActiveRef.current = false
-        setSpeechOutputEnabled(false)
-      }
-      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
+      startServerAsrDictation(options)
       return
     }
     if (!options.live && !options.resume) {

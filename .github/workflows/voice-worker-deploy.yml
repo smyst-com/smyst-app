@@ -25,6 +25,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/smyst-voice-worker:${{ github.sha }}
     steps:
@@ -38,7 +39,7 @@ jobs:
           test -n "$SALAD_API_KEY" || { echo "missing secret SALAD_API_KEY"; exit 1; }
           test -n "$AUTH_SESSION_SECRET" || { echo "missing secret AUTH_SESSION_SECRET"; exit 1; }
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -55,7 +56,7 @@ jobs:
           tags: ${{ env.IMAGE }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 
@@ -68,6 +69,7 @@ jobs:
           echo "WORKER_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
       - name: Create/update Salad voice worker group
+        id: deploy_voice_worker
         run: node scripts/deploy-salad-voice-worker.mjs
         env:
           IMAGE: ${{ env.IMAGE }}
@@ -79,3 +81,9 @@ jobs:
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ secrets.GHCR_PULL_TOKEN }}
 
+      - name: Persist voice worker endpoint for backend deploy
+        if: ${{ steps.deploy_voice_worker.outputs.endpoint != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VOICE_WORKER_URL: ${{ steps.deploy_voice_worker.outputs.endpoint }}
+        run: gh variable set VOICE_WORKER_URL --body "$VOICE_WORKER_URL"

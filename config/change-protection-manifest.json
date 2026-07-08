@@ -1,7 +1,7 @@
 {
   "version": "2026-07-08",
   "lastVerifiedDate": "2026-07-08",
-  "lastVerifiedScope": "curated public profile images, light theme profile contrast, CI release guard, live smyst.com profile image API and multilingual voice wave regression guard",
+  "lastVerifiedScope": "curated public profile images, light theme profile contrast, CI release guard, live smyst.com profile image API, multilingual voice wave regression guard and worker ASR/TTS contracts",
   "policy": {
     "protectedProductionMode": true,
     "productionDeployRequiresManualApproval": true,
@@ -83,12 +83,15 @@
     "scripts/check-profile-image-design-guard.py",
     "scripts/check-provider-exit.py",
     "scripts/check-surface-protection.py",
+    "scripts/deploy-salad-backend.mjs",
+    "scripts/deploy-salad-voice-worker.mjs",
     "scripts/live-test.sh",
     "scripts/preflight-release.sh",
     "scripts/test-all.sh",
     "scripts/validate-foundation.py",
     "src/App.tsx",
     "src/index.css",
+    "src/lib/serverAsrClient.ts",
     "src/lib/useMemoryUpload.ts",
     "src/lib/useTwinMvp.ts",
     "src/lib/voiceLanguage.ts",
@@ -97,6 +100,11 @@
     "src/data/curated-public-twin-data.ts",
     "backend/app/main.py",
     "backend/app/api/v1/router.py",
+    "backend/app/api/v1/routes/asr.py",
+    "backend/app/api/v1/routes/tts.py",
+    "voice-worker/app.py",
+    "voice-worker/Dockerfile",
+    "qa/voice_qa_daily.py",
     "backend/app/security/middleware.py"
   ],
   "destructiveRoutes": [
@@ -153,7 +161,7 @@
   "configurationProtections": [
     "validate-foundation.py enforces free-only architecture",
     "check-profile-image-design-guard.py blocks missing curated profile images and light theme contrast regressions",
-    "check-voice-wave-regression.mjs protects the multilingual voice wave language map, auto-detection, answer-language binding and Turkish fallback",
+    "check-voice-wave-regression.mjs protects the multilingual voice wave language map, auto-detection, answer-language binding, Turkish fallback, server ASR fallback and worker ASR/TTS contracts",
     "check-backup-recovery.py enforces backup/restore contract",
     "check-bottom-icon-regression.mjs protects bottom chat icon actions and fallbacks",
     "check-surface-protection.py enforces design, CSS, database, API and GitHub Actions guardrails",

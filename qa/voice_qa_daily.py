@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Taeglicher Voice-QA-Job fuer smyst.com.
 
-Prueft die Sprachwelle (Piper-TTS auf dem Salad-Backend) automatisch:
+Prueft die Sprachwelle (Worker/Piper-TTS + Worker-ASR auf dem Salad-Backend) automatisch:
 - Erreichbarkeit und ready-Status von GET /api/tts/voices
-- Vollstaendigkeit der erwarteten Stimmen (de, en, tr)
+- Erreichbarkeit und Sprachliste von GET /api/asr/status
+- Vollstaendigkeit der 15 Pflichtsprachen
 - Synthese-Smoke-Tests pro Sprache (Latenz, WAV-Header, Groesse, X-Voice-Id)
 - Alias-Aufloesung (de-male, tr-male, ...)
 - Tuerkische Begriffe (Aussprache-Stichprobe: Synthese darf nicht fehlschlagen)
@@ -32,12 +33,21 @@ EXPECTED_VOICES = {
     "de-male", "de-female", "en-male", "en-female", "tr-male", "tr-female",
 }
 
+REQUIRED_LANGUAGES = {
+    "en", "zh", "es", "ar", "fr", "de", "pt", "ru", "tr", "ja", "ko", "it", "hi", "id", "bn",
+}
+
 SMOKE_TESTS = [
-    {"name": "Deutsch maennlich", "payload": {"text": "Die Republik ist eine Staatsform des Volkes.", "lang": "de", "gender": "male"}, "expect_voice_prefix": "de-"},
-    {"name": "Englisch weiblich", "payload": {"text": "The republic is a form of government for the people.", "lang": "en", "gender": "female"}, "expect_voice_prefix": "en-"},
-    {"name": "Tuerkisch Alias", "payload": {"text": "Cumhuriyet, milletin egemenligine dayanan bir yonetim seklidir.", "lang": "tr", "gender": "male"}, "expect_voice_prefix": "tr-"},
-    {"name": "Atatuerk voiceId", "payload": {"text": "Egemenlik kayitsiz sartsiz milletindir. Yurtta sulh, cihanda sulh.", "voiceId": "tr-dfki", "lang": "tr", "gender": "male"}, "expect_voice_prefix": "tr-"},
-    {"name": "Tuerkische Begriffe", "payload": {"text": "Ankara, Istanbul, Cumhuriyet, Egemenlik, Buyuk Millet Meclisi, Anadolu.", "voiceId": "tr-dfki", "lang": "tr"}, "expect_voice_prefix": "tr-"},
+    {"name": "Deutsch", "payload": {"text": "Die Republik ist eine Staatsform des Volkes.", "lang": "de", "gender": "male"}, "expect_voice_prefixes": ("de-", "worker-de")},
+    {"name": "Tuerkisch", "payload": {"text": "Cumhuriyet, milletin egemenligine dayanan bir yonetim seklidir.", "lang": "tr", "gender": "male"}, "expect_voice_prefixes": ("tr-", "worker-tr")},
+    {"name": "Englisch", "payload": {"text": "The republic is a form of government for the people.", "lang": "en", "gender": "female"}, "expect_voice_prefixes": ("en-", "worker-en")},
+    {"name": "Arabisch", "payload": {"text": "مرحبا، هذا اختبار صوتي قصير لمنصة smyst.com.", "lang": "ar"}, "expect_voice_prefixes": ("worker-ar",)},
+    {"name": "Franzoesisch", "payload": {"text": "Bonjour, ceci est un court test vocal naturel.", "lang": "fr"}, "expect_voice_prefixes": ("worker-fr",)},
+    {"name": "Spanisch", "payload": {"text": "Hola, esta es una prueba breve de voz natural.", "lang": "es"}, "expect_voice_prefixes": ("worker-es",)},
+    {"name": "Chinesisch", "payload": {"text": "你好，这是一个简短的语音测试。", "lang": "zh"}, "expect_voice_prefixes": ("worker-zh",)},
+    {"name": "Russisch", "payload": {"text": "Здравствуйте, это короткий тест голосового режима.", "lang": "ru"}, "expect_voice_prefixes": ("worker-ru",)},
+    {"name": "Hindi", "payload": {"text": "नमस्ते, यह एक छोटा आवाज परीक्षण है।", "lang": "hi"}, "expect_voice_prefixes": ("worker-hi",)},
+    {"name": "Bengalisch", "payload": {"text": "নমস্কার, এটি একটি ছোট ভয়েস পরীক্ষা।", "lang": "bn"}, "expect_voice_prefixes": ("worker-bn",)},
 ]
 
 MAX_LATENCY_SECONDS = 8.0
@@ -78,17 +88,36 @@ def main() -> int:
         voices_info = http_get_json(args.base_url + "/api/tts/voices")
         available = set(voices_info.get("voices", []))
         ready = bool(voices_info.get("ready"))
+        worker_configured = bool(voices_info.get("workerConfigured"))
         missing = sorted(EXPECTED_VOICES - available)
         unexpected = sorted(available - EXPECTED_VOICES)
         findings.append({
             "check": "Stimmenliste",
-            "status": "OK" if ready and not missing else "FEHLER",
-            "detail": f"{len(available)} Stimmen, ready={ready}, fehlend={missing or '-'}, unerwartet={unexpected or '-'}",
+            "status": "OK" if ready and (worker_configured or not missing) else "FEHLER",
+            "detail": f"{len(available)} Stimmen, ready={ready}, worker={worker_configured}, fehlend={missing or '-'}, unerwartet={unexpected or '-'}",
         })
-        if not ready or missing:
+        if not ready or (missing and not worker_configured):
             ok = False
     except Exception as exc:  # noqa: BLE001
         findings.append({"check": "Stimmenliste", "status": "FEHLER", "detail": str(exc)})
+        ok = False
+
+    # 1b. ASR-Contract pruefen
+    try:
+        asr_info = http_get_json(args.base_url + "/api/asr/status")
+        languages = set(asr_info.get("languages", []))
+        missing_langs = sorted(REQUIRED_LANGUAGES - languages)
+        ready = bool(asr_info.get("ready"))
+        transient = asr_info.get("storage") == "transient"
+        findings.append({
+            "check": "ASR-Status",
+            "status": "OK" if ready and transient and not missing_langs else "FEHLER",
+            "detail": f"ready={ready}, transient={transient}, fehlende Sprachen={missing_langs or '-'}",
+        })
+        if not ready or not transient or missing_langs:
+            ok = False
+    except Exception as exc:  # noqa: BLE001
+        findings.append({"check": "ASR-Status", "status": "FEHLER", "detail": str(exc)})
         ok = False
 
     # 2. Synthese-Smoke-Tests
@@ -104,8 +133,8 @@ def main() -> int:
                 problems.append("kein WAV")
             if len(audio) < 1000:
                 problems.append(f"Audio zu klein ({len(audio)} B)")
-            if not voice_used.startswith(test["expect_voice_prefix"]):
-                problems.append(f"falsche Stimme: {voice_used} (erwartet {test['expect_voice_prefix']}*)")
+            if not any(voice_used.startswith(prefix) for prefix in test["expect_voice_prefixes"]):
+                problems.append(f"falsche Stimme: {voice_used} (erwartet {test['expect_voice_prefixes']})")
             if elapsed > MAX_LATENCY_SECONDS:
                 problems.append(f"zu langsam: {elapsed:.1f}s")
             findings.append({

@@ -32,6 +32,8 @@
     "api": [
       "backend/app/main.py",
       "backend/app/api/v1/router.py",
+      "backend/app/api/v1/routes/asr.py",
+      "backend/app/api/v1/routes/tts.py",
       "backend/app/security/middleware.py",
       "backend/app/api/v1/routes/auth.py",
       "backend/app/api/v1/routes/health.py",
@@ -39,15 +41,26 @@
     ],
     "voiceWave": [
       "src/App.tsx",
+      "src/lib/serverAsrClient.ts",
       "src/lib/voiceLanguage.ts",
       "src/lib/voiceProfiles.ts",
       "src/lib/useTwinMvp.ts",
+      "backend/app/api/v1/routes/asr.py",
+      "backend/app/api/v1/routes/tts.py",
+      "voice-worker/app.py",
+      "voice-worker/Dockerfile",
+      "qa/voice_qa_daily.py",
+      "scripts/deploy-salad-backend.mjs",
+      "scripts/deploy-salad-voice-worker.mjs",
       "scripts/check-voice-wave-regression.mjs"
     ],
     "githubActions": [
       ".github/workflows/deploy.yml",
       ".github/workflows/e2e-deployment.yml",
-      ".github/workflows/foundation-ci.yml"
+      ".github/workflows/foundation-ci.yml",
+      ".github/workflows/salad-backend-deploy.yml",
+      ".github/workflows/voice-qa-daily.yml",
+      ".github/workflows/voice-worker-deploy.yml"
     ]
   },
   "forbiddenProductionServices": [
