@@ -83,6 +83,8 @@
     "scripts/check-profile-image-design-guard.py",
     "scripts/check-provider-exit.py",
     "scripts/check-surface-protection.py",
+    "scripts/deploy-salad-backend.mjs",
+    "scripts/deploy-salad-voice-worker.mjs",
     "scripts/live-test.sh",
     "scripts/preflight-release.sh",
     "scripts/test-all.sh",

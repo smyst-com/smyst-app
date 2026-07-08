@@ -25,6 +25,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/smyst-voice-worker:${{ github.sha }}
     steps:
@@ -68,6 +69,7 @@ jobs:
           echo "WORKER_TOKEN=$TOKEN" >> "$GITHUB_ENV"
 
       - name: Create/update Salad voice worker group
+        id: deploy_voice_worker
         run: node scripts/deploy-salad-voice-worker.mjs
         env:
           IMAGE: ${{ env.IMAGE }}
@@ -78,3 +80,10 @@ jobs:
           WORKER_TOKEN: ${{ env.WORKER_TOKEN }}
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ secrets.GHCR_PULL_TOKEN }}
+
+      - name: Persist voice worker endpoint for backend deploy
+        if: ${{ steps.deploy_voice_worker.outputs.endpoint != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VOICE_WORKER_URL: ${{ steps.deploy_voice_worker.outputs.endpoint }}
+        run: gh variable set VOICE_WORKER_URL --body "$VOICE_WORKER_URL"

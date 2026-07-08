@@ -50,7 +50,7 @@ jobs:
           test -n "$AUTH_SESSION_SECRET" || { echo "missing secret AUTH_SESSION_SECRET"; exit 1; }
           test -n "$OPENAI_API_KEY" || { echo "missing secret OPENAI_API_KEY for enabled web research"; exit 1; }
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -67,7 +67,7 @@ jobs:
           tags: ${{ env.IMAGE }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 

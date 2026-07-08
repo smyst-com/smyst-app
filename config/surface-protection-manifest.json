@@ -50,12 +50,15 @@
       "voice-worker/app.py",
       "voice-worker/Dockerfile",
       "qa/voice_qa_daily.py",
+      "scripts/deploy-salad-backend.mjs",
+      "scripts/deploy-salad-voice-worker.mjs",
       "scripts/check-voice-wave-regression.mjs"
     ],
     "githubActions": [
       ".github/workflows/deploy.yml",
       ".github/workflows/e2e-deployment.yml",
       ".github/workflows/foundation-ci.yml",
+      ".github/workflows/salad-backend-deploy.yml",
       ".github/workflows/voice-qa-daily.yml",
       ".github/workflows/voice-worker-deploy.yml"
     ]

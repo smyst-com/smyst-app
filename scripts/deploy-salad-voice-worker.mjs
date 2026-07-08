@@ -7,6 +7,8 @@
 // via API — dann fallen keine Kosten mehr an; das Backend faellt automatisch
 // auf die Piper-Stimmen (Phase 1) zurueck.
 
+import { appendFileSync } from 'node:fs';
+
 const argv = new Set(process.argv.slice(2));
 const noStart = argv.has('--no-start');
 
@@ -144,6 +146,13 @@ if (!noStart && ['stopped', 'failed'].includes(status)) {
 
 const networking = result?.networking || existing?.networking || {};
 const dns = networking.dns || networking.host || null;
+const endpoint = dns ? `https://${dns}` : '';
+const health = dns ? `${endpoint}/health/ready` : '';
+
+if (process.env.GITHUB_OUTPUT) {
+  appendFileSync(process.env.GITHUB_OUTPUT, `endpoint=${endpoint}\n`);
+  appendFileSync(process.env.GITHUB_OUTPUT, `health=${health}\n`);
+}
 
 console.log(JSON.stringify({
   ok: true,
@@ -153,8 +162,9 @@ console.log(JSON.stringify({
   gpuClass: chosen.name,
   statusBeforeStart: status,
   started,
-  endpoint: dns ? `https://${dns}` : '(URL erscheint im Salad-Portal, sobald deployed)',
-  health: dns ? `https://${dns}/health/ready` : null,
-  next: 'Repo-Variable VOICE_WORKER_URL auf den endpoint setzen und Salad Backend Deploy erneut ausfuehren.',
+  endpoint: endpoint || '(URL erscheint im Salad-Portal, sobald deployed)',
+  health: health || null,
+  next: endpoint
+    ? 'Repo-Variable VOICE_WORKER_URL wird vom Workflow automatisch gesetzt; danach Salad Backend Deploy ausfuehren.'
+    : 'VOICE_WORKER_URL setzen, sobald Salad DNS den Endpoint anzeigt; danach Salad Backend Deploy ausfuehren.',
 }, null, 2));
-
