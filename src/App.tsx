@@ -908,6 +908,8 @@ function profileLifeLine(profile: {
   return 'Lebensdaten nicht hinterlegt'
 }
 
+// Statischer Public-Profile-Fallback: antwortet kurz, in der Ich-Perspektive der Person,
+// nur aus den kuratierten Profildaten. Keine Meta-Kommentare, keine technischen Interna.
 function staticPublicTwinReply(profile: {
   name: string
   description?: string
@@ -920,65 +922,120 @@ function staticPublicTwinReply(profile: {
   birthLabel?: string
   deathLabel?: string
   lifeLine?: string
-}, question: string, responseLang: VoiceLang = DEFAULT_LANG): string {
-  const topic = question.trim().replace(/\s+/g, ' ').slice(0, 120) || 'deine Frage'
-  const category = profile.mainCategory || profile.categories?.slice(0, 2).join(', ') || 'KI-Profil'
-  const life = profile.lifeLine || profileLifeLine(profile)
-  const description = profile.description || 'kuratiertes öffentliches Profilwissen mit dokumentierten Quellen'
-  const localizedReplies: Partial<Record<VoiceLang, string[]>> = {
-    tr: [
-      `Kısaca: "${topic}" için iyi bir ilk soru şu olur: Bunun arkasındaki varsayım ne ve daha iyi bir cevabı nasıl tanırım?`,
-      `${profile.name}, ${category} (${life}) için yararlı başlangıç: kavramları netleştirmek, karşı örnekleri aramak ve ancak sonra sonuç çıkarmaktır. Dayanak: ${description}.`,
-      'Bu cevap ücretsiz statik public-profile yedeğini kullanıyor; kayıtlı geçmiş ve sunucu taraflı KI cevapları Chat API erişilebilir olduğunda başlar.',
-    ],
-    en: [
-      `In short: a good first question about "${topic}" is: what assumption sits underneath it, and how would I recognize a better answer?`,
-      `For ${profile.name}, ${category} (${life}), the useful start is to clarify terms, look for counterexamples, and only then draw a conclusion. Basis: ${description}.`,
-      'This answer uses the free static public-profile fallback; saved history and server-side AI replies start once the Chat API is reachable.',
-    ],
-    fr: [
-      `En bref : une bonne premiere question sur "${topic}" est : quelle hypothese se cache derriere, et comment reconnaitre une meilleure reponse ?`,
-      `Pour ${profile.name}, ${category} (${life}), le bon depart consiste a clarifier les termes, chercher des contre-exemples, puis conclure. Base : ${description}.`,
-      "Cette reponse utilise le fallback statique gratuit du profil public ; l'historique et les reponses IA serveur demarrent quand l'API Chat est disponible.",
-    ],
-    es: [
-      `En resumen: una buena primera pregunta sobre "${topic}" es: que supuesto hay detras y como reconoceria una respuesta mejor?`,
-      `Con ${profile.name}, ${category} (${life}), el inicio util es aclarar conceptos, buscar contraejemplos y solo despues concluir. Base: ${description}.`,
-      'Esta respuesta usa el respaldo estatico gratuito del perfil publico; el historial guardado y las respuestas de IA del servidor comienzan cuando la API de chat este disponible.',
-    ],
-    ar: [
-      `باختصار: السؤال الاول الجيد حول "${topic}" هو: ما الافتراض الكامن خلفه، وكيف اعرف ان الاجابة اصبحت افضل؟`,
-      `مع ${profile.name}، ${category} (${life})، البداية المفيدة هي توضيح المفاهيم والبحث عن امثلة مضادة ثم الاستنتاج. الاساس: ${description}.`,
-      'تستخدم هذه الاجابة النسخة الاحتياطية الثابتة المجانية للملف العام؛ يبدأ السجل المحفوظ واجابات الذكاء الاصطناعي من الخادم عندما تتاح واجهة الدردشة.',
-    ],
-    zh: [
-      `简而言之：关于"${topic}"，好的第一个问题是：它背后有什么假设，我如何判断答案变得更好？`,
-      `对 ${profile.name}，${category}（${life}）来说，有用的起点是先澄清概念，寻找反例，然后再下结论。依据：${description}。`,
-      '此回复使用免费的静态公开资料备用模式；当聊天 API 可用时，将启用保存历史和服务器端 AI 回复。',
-    ],
-    ru: [
-      `Коротко: хороший первый вопрос о "${topic}" такой: какое предположение за этим стоит и как я узнаю более точный ответ?`,
-      `Для ${profile.name}, ${category} (${life}), полезное начало — уточнить понятия, найти контрпримеры и только потом делать вывод. Основа: ${description}.`,
-      'Этот ответ использует бесплатный статический резерв публичного профиля; сохраненная история и серверные AI-ответы начнутся, когда Chat API будет доступен.',
-    ],
-    hi: [
-      `संक्षेप में: "${topic}" पर पहला अच्छा सवाल है: इसके पीछे कौन-सी धारणा है, और बेहतर उत्तर को मैं कैसे पहचानूंगा?`,
-      `${profile.name}, ${category} (${life}), के लिए उपयोगी शुरुआत है: शब्दों को स्पष्ट करना, विपरीत उदाहरण ढूंढना और फिर निष्कर्ष निकालना। आधार: ${description}.`,
-      'यह उत्तर मुफ्त स्थिर public-profile fallback का उपयोग कर रहा है; Chat API उपलब्ध होते ही सहेजा गया इतिहास और server-side AI उत्तर शुरू होंगे।',
-    ],
-    bn: [
-      `সংক্ষেপে: "${topic}" নিয়ে প্রথম ভালো প্রশ্ন হলো: এর পেছনে কোন অনুমান আছে, আর ভালো উত্তর আমি কীভাবে চিনব?`,
-      `${profile.name}, ${category} (${life}), এর জন্য দরকারি শুরু হলো: ধারণাগুলো পরিষ্কার করা, বিপরীত উদাহরণ খোঁজা, তারপর সিদ্ধান্তে যাওয়া। ভিত্তি: ${description}.`,
-      'এই উত্তরটি বিনামূল্যের static public-profile fallback ব্যবহার করছে; Chat API চালু থাকলে সংরক্ষিত ইতিহাস এবং server-side AI উত্তর শুরু হবে।',
-    ],
+}, _question: string, responseLang: VoiceLang = DEFAULT_LANG): string {
+  const branch = profile.mainCategory || profile.categories?.slice(0, 2).join(', ') || ''
+  // Lebensdaten: bevorzugt direkte Profilfelder, sonst aus der lifeLine ("76 Jahre • 14.03.1879 – 18.04.1955")
+  let birth = profile.birthLabel || formatIsoDate(profile.birthDate) || ''
+  let death = profile.deathLabel || formatIsoDate(profile.deathDate) || ''
+  let age = ageAtDeath(profile) !== null ? String(ageAtDeath(profile)) : ''
+  if ((!birth || !death) && profile.lifeLine && profile.lifeLine !== 'Lebensdaten nicht hinterlegt') {
+    const lifeMatch = profile.lifeLine.match(/(\S+)\s*[–-]\s*(\S+)\s*$/)
+    birth = birth || lifeMatch?.[1] || ''
+    death = death || lifeMatch?.[2] || ''
+    age = age || profile.lifeLine.match(/^(\d+)\s/)?.[1] || ''
   }
-  return (
-    localizedReplies[responseLang] ?? [
-      `Kurz gesagt: Eine gute erste Frage zu "${topic}" ist: Welche Annahme steckt dahinter und woran wuerde ich eine bessere Antwort erkennen?`,
-      `Bei ${profile.name}, ${category} (${life}), ist der nuetzliche Einstieg: Begriffe klaeren, Gegenbeispiele suchen und erst danach eine Schlussfolgerung ziehen. Grundlage ist das kuratierte öffentliche Profil: ${description}.`,
-      'Diese Antwort nutzt den kostenlosen statischen Public-Profile-Fallback; gespeicherter Verlauf und serverseitige KI-Antworten starten, sobald die Chat-API erreichbar ist.',
-    ]
-  ).join('\n\n')
+  // Kuratierte Beschreibung ohne interne Zusätze wie "— Historisches KI-Profil ..."
+  const description = (profile.description ?? '')
+    .replace(/\s*[—–-]{1,2}\s*(Historisches KI-Profil|Historical AI profile)[^.]*\.*\s*$/i, '')
+    .replace(/\.+$/, '')
+    .trim()
+
+  type FallbackTexts = {
+    intro: string
+    life: string
+    lifeWithAge: string
+    about: string
+    invite: string
+  }
+
+  const texts: Partial<Record<VoiceLang, FallbackTexts>> = {
+    en: {
+      intro: 'I am {name}{branch}.',
+      life: 'I lived from {birth} to {death}.',
+      lifeWithAge: 'I lived from {birth} to {death} and reached the age of {age}.',
+      about: 'People remember me like this: {description}.',
+      invite: 'Feel free to ask me more about my life and work.',
+    },
+    tr: {
+      intro: 'Ben {name}{branch}.',
+      life: '{birth} ile {death} arasında yaşadım.',
+      lifeWithAge: '{birth} ile {death} arasında {age} yıl yaşadım.',
+      about: 'Beni şöyle hatırlarlar: {description}.',
+      invite: 'Hayatım ve çalışmalarım hakkında daha fazlasını sorabilirsin.',
+    },
+    fr: {
+      intro: 'Je suis {name}{branch}.',
+      life: "J'ai vécu de {birth} à {death}.",
+      lifeWithAge: "J'ai vécu de {birth} à {death} et j'ai atteint l'âge de {age} ans.",
+      about: 'On se souvient de moi ainsi : {description}.',
+      invite: "N'hésite pas à me poser d'autres questions sur ma vie et mon œuvre.",
+    },
+    es: {
+      intro: 'Soy {name}{branch}.',
+      life: 'Viví de {birth} a {death}.',
+      lifeWithAge: 'Viví de {birth} a {death} y llegué a los {age} años.',
+      about: 'Así me recuerdan: {description}.',
+      invite: 'Pregúntame más sobre mi vida y mi obra.',
+    },
+    ar: {
+      intro: 'أنا {name}{branch}.',
+      life: 'عشت من {birth} إلى {death}.',
+      lifeWithAge: 'عشت من {birth} إلى {death} وبلغت من العمر {age} عامًا.',
+      about: 'هكذا يتذكرني الناس: {description}.',
+      invite: 'اسألني المزيد عن حياتي وأعمالي.',
+    },
+    zh: {
+      intro: '我是{name}{branch}。',
+      life: '我生活在{birth}至{death}之间。',
+      lifeWithAge: '我生活在{birth}至{death}之间，享年{age}岁。',
+      about: '人们这样记住我：{description}。',
+      invite: '欢迎继续问我关于我的生平和工作。',
+    },
+    ru: {
+      intro: 'Я {name}{branch}.',
+      life: 'Я жил с {birth} по {death}.',
+      lifeWithAge: 'Я жил с {birth} по {death} и прожил {age} лет.',
+      about: 'Меня помнят так: {description}.',
+      invite: 'Спрашивай меня о моей жизни и работе.',
+    },
+    hi: {
+      intro: 'मैं {name}{branch} हूं।',
+      life: 'मैं {birth} से {death} तक जीवित रहा।',
+      lifeWithAge: 'मैं {birth} से {death} तक जीवित रहा और {age} वर्ष की आयु तक पहुंचा।',
+      about: 'लोग मुझे ऐसे याद करते हैं: {description}।',
+      invite: 'मेरे जीवन और काम के बारे में और पूछ सकते हैं।',
+    },
+    bn: {
+      intro: 'আমি {name}{branch}।',
+      life: 'আমি {birth} থেকে {death} পর্যন্ত বেঁচে ছিলাম।',
+      lifeWithAge: 'আমি {birth} থেকে {death} পর্যন্ত বেঁচে ছিলাম এবং {age} বছর বয়সে পৌঁছেছি।',
+      about: 'মানুষ আমাকে এভাবে মনে রাখে: {description}।',
+      invite: 'আমার জীবন ও কাজ নিয়ে আরও প্রশ্ন করতে পারো।',
+    },
+  }
+
+  const t: FallbackTexts = texts[responseLang] ?? {
+    intro: 'Ich bin {name}{branch}.',
+    life: 'Ich lebte von {birth} bis {death}.',
+    lifeWithAge: 'Ich lebte von {birth} bis {death} und wurde {age} Jahre alt.',
+    about: 'Man erinnert sich so an mich: {description}.',
+    invite: 'Frag mich gern mehr über mein Leben und meine Arbeit.',
+  }
+
+  const fill = (template: string): string =>
+    template
+      .replace('{name}', profile.name)
+      .replace('{branch}', branch && branch !== 'KI-Profil' ? ` – ${branch}` : '')
+      .replace('{birth}', birth)
+      .replace('{death}', death)
+      .replace('{age}', age)
+      .replace('{description}', description)
+
+  const parts: string[] = [fill(t.intro)]
+  if (birth && death) parts.push(fill(age ? t.lifeWithAge : t.life))
+  if (description) parts.push(fill(t.about))
+  parts.push(t.invite)
+  return parts.join(' ')
 }
 
 function hasLifeDates(profile: {
@@ -7558,7 +7615,6 @@ function TwinChatView({
             name: activeTwin.name,
             mainCategory: activeTwin.branch,
             categories: [activeTwin.label].filter(Boolean),
-            description: `${activeTwin.branch} (${activeTwin.lifeLine})`,
             lifeLine: activeTwin.lifeLine,
           },
           message,
