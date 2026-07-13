@@ -376,6 +376,16 @@ function speakText(text: string, lang: string, onDone: () => void, voiceKey?: st
   return true
 }
 
+// Filtert typische STT-Artefakte bei Stille/Hintergrundrauschen: dasselbe Wort
+// x-fach wiederholt (z. B. "yaskin yaskin yaskin ...") wird nicht als Turn gesendet.
+function isLikelySpeech(text: string): boolean {
+  const words = text.trim().split(/\s+/).filter(Boolean)
+  if (!words.length) return false
+  const unique = new Set(words.map((word) => word.toLowerCase()))
+  if (words.length >= 3 && unique.size === 1) return false
+  return true
+}
+
 function speechRecognitionConstructor(): BrowserSpeechRecognitionConstructor | null {
   const candidate = window as Window & {
     SpeechRecognition?: BrowserSpeechRecognitionConstructor
@@ -1280,7 +1290,14 @@ function SmystStartPage({
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
   const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
-  const [lastVoiceLang, setLastVoiceLang] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
+  const [lastVoiceLang, setLastVoiceLangState] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
+  // Ref parallel zum State: Live-Loop-Callbacks (Timer/TTS-Resume) lesen sonst eine veraltete
+  // Sprache, wodurch die Spracherkennung dauerhaft mit dem alten Sprachmodell weiterlief.
+  const lastVoiceLangRef = useRef<VoiceLang>(lastVoiceLang)
+  const setLastVoiceLang = (value: VoiceLang) => {
+    lastVoiceLangRef.current = value
+    setLastVoiceLangState(value)
+  }
   const [composerMenuOpen, setComposerMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
@@ -1805,12 +1822,17 @@ function SmystStartPage({
       dictationSessionRef.current = ''
     }
     setVoiceState('listening')
-    void recordAndTranscribeOnce(speechLangFor(lastVoiceLang || lang), options.live ? 5200 : 6500)
+    void recordAndTranscribeOnce(speechLangFor(lastVoiceLangRef.current || lang), options.live ? 5200 : 6500)
       .then((result) => {
         const transcript = result.text.trim()
-        const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLang || lang)
+        const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLangRef.current || lang)
         setLastVoiceLang(detectedLang)
         if (options.live) {
+          // Rausch-Guard: Artefakte aus Stille nicht als Turn senden, Live-Loop fortsetzen
+          if (!transcript || !isLikelySpeech(transcript)) {
+            resumeLiveVoiceAfterSpeech()
+            return
+          }
           setVoiceState('replying')
           return handleSend(transcript, [], { forceSpeech: true, voiceLang: detectedLang }).finally(resumeLiveVoiceAfterSpeech)
         }
@@ -1859,7 +1881,7 @@ function SmystStartPage({
     }
     recognitionRef.current?.abort()
     const recognition = new Recognition()
-    recognition.lang = speechLangFor(lastVoiceLang || lang)
+    recognition.lang = speechLangFor(lastVoiceLangRef.current || lang)
     recognition.interimResults = true
     recognition.continuous = true
     recognition.onstart = () => setVoiceState('listening')
@@ -1914,7 +1936,7 @@ function SmystStartPage({
       }
       const nextText = (finalText || interimText).trim()
       if (!nextText) return
-      const detectedLang = detectVoiceLanguage(nextText, lastVoiceLang || lang)
+      const detectedLang = detectVoiceLanguage(nextText, lastVoiceLangRef.current || lang)
       setLastVoiceLang(detectedLang)
       if (options.live) {
         const finalChunk = finalText.trim()
@@ -1927,6 +1949,11 @@ function SmystStartPage({
           liveVoiceSendTimerRef.current = window.setTimeout(() => {
             const message = liveVoiceDraftRef.current.trim()
             if (!message) return
+            // Rausch-Guard: Stille erzeugt Wortwiederholungs-Artefakte - nicht senden, weiter zuhoeren
+            if (!isLikelySpeech(message)) {
+              liveVoiceDraftRef.current = ''
+              return
+            }
             liveVoiceDraftRef.current = ''
             recognition.stop()
             setVoiceState('replying')
@@ -2048,7 +2075,7 @@ function SmystStartPage({
     const sendAttachments = overrideAttachments ?? attachments
     const fullMessage = composeMessageWithAttachments(text, sendAttachments)
     if (!fullMessage) return null
-    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLang || lang)
+    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if (sendAttachments.some((attachment) => attachment.status === 'uploading')) {
       addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
@@ -2183,7 +2210,7 @@ function SmystStartPage({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lastVoiceLang || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
+    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
     if (started) setIsSpeaking(true)
   }
 
@@ -6988,7 +7015,14 @@ function TwinChatView({
   const memoryUpload = useMemoryUpload()
   const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
   const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
-  const [lastVoiceLang, setLastVoiceLang] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
+  const [lastVoiceLang, setLastVoiceLangState] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
+  // Ref parallel zum State: Live-Loop-Callbacks (Timer/TTS-Resume) lesen sonst eine veraltete
+  // Sprache, wodurch die Spracherkennung dauerhaft mit dem alten Sprachmodell weiterlief.
+  const lastVoiceLangRef = useRef<VoiceLang>(lastVoiceLang)
+  const setLastVoiceLang = (value: VoiceLang) => {
+    lastVoiceLangRef.current = value
+    setLastVoiceLangState(value)
+  }
   const [composerMenuOpen, setComposerMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
@@ -7227,12 +7261,17 @@ function TwinChatView({
       dictationSessionRef.current = ''
     }
     setVoiceState('listening')
-    void recordAndTranscribeOnce(speechLangFor(lastVoiceLang || lang), options.live ? 5200 : 6500)
+    void recordAndTranscribeOnce(speechLangFor(lastVoiceLangRef.current || lang), options.live ? 5200 : 6500)
       .then((result) => {
         const transcript = result.text.trim()
-        const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLang || lang)
+        const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLangRef.current || lang)
         setLastVoiceLang(detectedLang)
         if (options.live) {
+          // Rausch-Guard: Artefakte aus Stille nicht als Turn senden, Live-Loop fortsetzen
+          if (!transcript || !isLikelySpeech(transcript)) {
+            resumeLiveVoiceAfterSpeech()
+            return
+          }
           setVoiceState('replying')
           return handleSend(transcript, [], { forceSpeech: true, voiceLang: detectedLang }).finally(resumeLiveVoiceAfterSpeech)
         }
@@ -7391,7 +7430,7 @@ function TwinChatView({
     }
     recognitionRef.current?.abort()
     const recognition = new Recognition()
-    recognition.lang = speechLangFor(lastVoiceLang || lang)
+    recognition.lang = speechLangFor(lastVoiceLangRef.current || lang)
     recognition.interimResults = true
     recognition.continuous = true
     recognition.onstart = () => setVoiceState('listening')
@@ -7438,7 +7477,7 @@ function TwinChatView({
       }
       const nextText = (finalText || interimText).trim()
       if (!nextText) return
-      const detectedLang = detectVoiceLanguage(nextText, lastVoiceLang || lang)
+      const detectedLang = detectVoiceLanguage(nextText, lastVoiceLangRef.current || lang)
       setLastVoiceLang(detectedLang)
       if (options.live) {
         const finalChunk = finalText.trim()
@@ -7451,6 +7490,11 @@ function TwinChatView({
           liveVoiceSendTimerRef.current = window.setTimeout(() => {
             const message = liveVoiceDraftRef.current.trim()
             if (!message) return
+            // Rausch-Guard: Stille erzeugt Wortwiederholungs-Artefakte - nicht senden, weiter zuhoeren
+            if (!isLikelySpeech(message)) {
+              liveVoiceDraftRef.current = ''
+              return
+            }
             liveVoiceDraftRef.current = ''
             // Mikro sofort hart aus, BEVOR die Antwort gesprochen wird (kein Echo der TTS)
             recognition.abort()
@@ -7538,7 +7582,7 @@ function TwinChatView({
     const message = composeMessageWithAttachments((overrideText ?? input).trim(), overrideAttachments ?? attachments)
     const canChatWithActiveTwin = auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)
     if (!message || !canChatWithActiveTwin || isReplying) return null
-    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLang || lang)
+    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if ((overrideAttachments ?? attachments).some((attachment) => attachment.status === 'uploading')) {
       addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
@@ -7670,7 +7714,7 @@ function TwinChatView({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lastVoiceLang || lang, () => setIsSpeaking(false), activeTwin?.name)
+    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), activeTwin?.name)
     if (started) setIsSpeaking(true)
   }
 
