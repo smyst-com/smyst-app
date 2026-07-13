@@ -61,11 +61,11 @@ const WORD_MARKERS: Record<VoiceLang, readonly string[]> = {
   zh: [],
   es: ['que', 'como', 'por', 'para', 'hola', 'gracias', 'usted', 'quiero', 'esta'],
   ar: [],
-  fr: ['bonjour', 'merci', 'comment', 'pourquoi', 'avec', 'vous', 'etre', 'dans'],
-  de: ['ich', 'du', 'der', 'die', 'das', 'und', 'nicht', 'bitte', 'danke', 'warum'],
-  pt: ['ola', 'obrigado', 'obrigada', 'como', 'porque', 'voce', 'para', 'com'],
+  fr: ['bonjour', 'merci', 'comment', 'pourquoi', 'avec', 'vous', 'etre', 'dans', 'est', 'oui', 'très', 'ça'],
+  de: ['ich', 'du', 'der', 'die', 'das', 'und', 'nicht', 'bitte', 'danke', 'warum', 'ist', 'was', 'wie', 'ein', 'eine', 'mit', 'auch', 'für', 'über', 'schön', 'aber'],
+  pt: ['ola', 'obrigado', 'obrigada', 'como', 'porque', 'voce', 'para', 'com', 'muito', 'não', 'sim'],
   ru: [],
-  tr: ['merhaba', 'tesekkur', 'ederim', 'nasilsin', 'nasıl', 'ben', 'bir', 'icin', 'için', 'degil', 'değil', 'lutfen', 'lütfen'],
+  tr: ['merhaba', 'tesekkur', 'ederim', 'nasilsin', 'nasıl', 'ben', 'bir', 'icin', 'için', 'degil', 'değil', 'lutfen', 'lütfen', 'çok', 'neden', 'güzel', 'önemli', 'kadar', 'evet', 'nedir', 'teşekkürler'],
   ja: [],
   ko: [],
   it: ['ciao', 'grazie', 'come', 'perche', 'perchè', 'sono', 'voglio', 'con'],
@@ -108,11 +108,18 @@ export function detectVoiceLanguage(text: string, fallback: string = DEFAULT_LAN
   if (/[\u0600-\u06ff]/.test(value)) return 'ar'
   if (/[\u0980-\u09ff]/.test(value)) return 'bn'
   if (/[\u0900-\u097f]/.test(value)) return 'hi'
-  if (/[\u4e00-\u9fff]/.test(value)) return 'zh'
+  // Kana zuerst: Japanisch enthält fast immer Hiragana/Katakana, aber auch Kanji (CJK).
+  // Der CJK-Check zuerst würde japanische Sätze fälschlich als Chinesisch einstufen.
   if (/[\u3040-\u30ff]/.test(value)) return 'ja'
+  if (/[\u4e00-\u9fff]/.test(value)) return 'zh'
   if (/[\uac00-\ud7af]/.test(value)) return 'ko'
   if (/[\u0400-\u04ff]/.test(value)) return 'ru'
-  if (/[çğıöşüİĞŞ]/.test(value)) return 'tr'
+  // Nur eindeutig türkische Buchstaben (ı/İ ohne/mit Punkt, ğ, ş).
+  // ç/ö/ü sind mehrdeutig (Deutsch, Französisch, Portugiesisch) und führten zu
+  // falscher Türkisch-Erkennung, z. B. bei "schön", "für" oder "ça".
+  if (/[ğışİĞŞ]/.test(value)) return 'tr'
+  // ß existiert nur im Deutschen
+  if (/[ßẞ]/.test(value)) return 'de'
 
   let bestLang = toVoiceLang(fallback)
   let bestScore = 0
