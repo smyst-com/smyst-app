@@ -17,7 +17,12 @@ export type SupportedLang =
   | 'ar'
   | 'zh'
   | 'ja'
-  | 'ko';
+  | 'ko'
+  | 'ru'
+  | 'it'
+  | 'hi'
+  | 'id'
+  | 'bn';
 
 export const DEFAULT_LANG: SupportedLang = 'de';
 
@@ -49,6 +54,11 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: 'zh', englishName: 'Chinese',    nativeName: '中文',               region: 'CN', rtl: false, provider: 'static' },
   { code: 'ja', englishName: 'Japanese',   nativeName: '日本語',             region: 'JP', rtl: false, provider: 'static' },
   { code: 'ko', englishName: 'Korean',     nativeName: '한국어',             region: 'KR', rtl: false, provider: 'static' },
+  { code: 'ru', englishName: 'Russian',    nativeName: 'Русский',           region: 'RU', rtl: false, provider: 'static' },
+  { code: 'it', englishName: 'Italian',    nativeName: 'Italiano',          region: 'IT', rtl: false, provider: 'static' },
+  { code: 'hi', englishName: 'Hindi',      nativeName: 'हिन्दी',             region: 'IN', rtl: false, provider: 'static' },
+  { code: 'id', englishName: 'Indonesian', nativeName: 'Bahasa Indonesia',  region: 'ID', rtl: false, provider: 'static' },
+  { code: 'bn', englishName: 'Bengali',    nativeName: 'বাংলা',              region: 'BD', rtl: false, provider: 'static' },
 ];
 
 /** Reine Code-Liste für Iteration (z. B. Sitemap-Generierung). */
