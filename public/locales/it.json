@@ -1,0 +1,40 @@
+{
+  "locale": "it",
+  "dir": "ltr",
+  "seo": {
+    "title": "smyst.com | Gemelli IA, profili digitali e Twin Chat",
+    "description": "smyst.com è una piattaforma per gemelli IA pubblici e privati, conoscenze, ricordi e chat rapide con i twin.",
+    "keywords": "gemello IA, AI twin, gemello digitale, profilo di conoscenza, ricordi, smyst"
+  },
+  "start": {
+    "searchLabel": "Cerca twin",
+    "searchPlaceholder": "Cerca per nome o twin",
+    "changeTwin": "Cambia il twin selezionato",
+    "chooseTwin": "Scegli twin",
+    "emptyText": "Scegli un nome sopra o inizia a scrivere. Il twin selezionato resta fissato in alto.",
+    "messagePlaceholder": "Messaggio a {{name}}",
+    "addFile": "Aggiungi file",
+    "voiceInput": "Input vocale",
+    "voiceInputUnsupported": "Input vocale non supportato",
+    "liveVoiceStart": "Avvia la modalità vocale live",
+    "liveVoicePause": "Metti in pausa la modalità vocale live",
+    "liveVoiceResume": "Riprendi la modalità vocale live",
+    "liveVoiceStop": "Termina la modalità vocale live",
+    "speechOutputOn": "Leggi le risposte ad alta voce",
+    "speechOutputOff": "Disattiva l'output vocale",
+    "send": "Invia messaggio",
+    "freeOnlyNotice": "I profili pubblici e privati restano chiaramente separati. Decidi tu con chi chattare."
+  },
+  "chat": {
+    "replyIntro": "Ti rispondo direttamente dal mio ruolo.",
+    "replyMvp": "Lo guarderei con calma: il mondo è pieno di velocità, conoscenza e inquietudine allo stesso tempo.",
+    "replyQuestion": "Sulla tua domanda: \"{{question}}\"",
+    "replyNextStep": "L'importante è osservare con attenzione, restare curiosi e unire progresso e responsabilità."
+  },
+  "profile": {
+    "publicProfile": "Profilo twin pubblico",
+    "privateProfile": "Profilo twin privato",
+    "chatButton": "Chatta con il twin",
+    "noindex": "I profili privati non vengono indicizzati."
+  }
+}

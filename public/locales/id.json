@@ -1,0 +1,40 @@
+{
+  "locale": "id",
+  "dir": "ltr",
+  "seo": {
+    "title": "smyst.com | AI Twin, Profil Digital, dan Twin Chat",
+    "description": "smyst.com adalah platform untuk AI twin publik dan privat, pengetahuan, kenangan, dan chat twin yang cepat.",
+    "keywords": "AI twin, twin digital, profil pengetahuan, kenangan, smyst"
+  },
+  "start": {
+    "searchLabel": "Cari twin",
+    "searchPlaceholder": "Cari nama atau twin",
+    "changeTwin": "Ganti twin yang dipilih",
+    "chooseTwin": "Pilih twin",
+    "emptyText": "Pilih nama di atas atau langsung mulai menulis. Twin yang dipilih tetap terpasang di atas.",
+    "messagePlaceholder": "Pesan untuk {{name}}",
+    "addFile": "Tambah berkas",
+    "voiceInput": "Input suara",
+    "voiceInputUnsupported": "Input suara tidak didukung",
+    "liveVoiceStart": "Mulai mode suara langsung",
+    "liveVoicePause": "Jeda mode suara langsung",
+    "liveVoiceResume": "Lanjutkan mode suara langsung",
+    "liveVoiceStop": "Hentikan mode suara langsung",
+    "speechOutputOn": "Bacakan balasan",
+    "speechOutputOff": "Matikan output suara",
+    "send": "Kirim pesan",
+    "freeOnlyNotice": "Profil publik dan privat tetap terpisah dengan jelas. Anda yang menentukan dengan siapa ingin mengobrol."
+  },
+  "chat": {
+    "replyIntro": "Saya menjawab Anda langsung dari peran saya.",
+    "replyMvp": "Saya akan melihatnya dengan tenang: dunia penuh kecepatan, pengetahuan, dan kegelisahan sekaligus.",
+    "replyQuestion": "Tentang pertanyaan Anda: \"{{question}}\"",
+    "replyNextStep": "Yang penting adalah mengamati dengan cermat, tetap ingin tahu, dan menghubungkan kemajuan dengan tanggung jawab."
+  },
+  "profile": {
+    "publicProfile": "Profil twin publik",
+    "privateProfile": "Profil twin privat",
+    "chatButton": "Chat dengan twin",
+    "noindex": "Profil privat tidak diindeks."
+  }
+}

@@ -1,6 +1,6 @@
 import { DEFAULT_LANG, type SupportedLang } from './i18n'
 
-export type VoiceLang = SupportedLang | 'ru' | 'it' | 'hi' | 'id' | 'bn'
+export type VoiceLang = SupportedLang
 
 export const REQUIRED_VOICE_LANGUAGES: readonly VoiceLang[] = [
   'en',
