@@ -1,6 +1,6 @@
-import { DEFAULT_LANG, SUPPORTED_LANGS, type SupportedLang } from './i18n'
+import { DEFAULT_LANG, type SupportedLang } from './i18n'
 
-export type VoiceLang = SupportedLang
+export type VoiceLang = SupportedLang | 'ru' | 'it' | 'hi' | 'id' | 'bn'
 
 export const REQUIRED_VOICE_LANGUAGES: readonly VoiceLang[] = [
   'en',
@@ -76,7 +76,7 @@ const WORD_MARKERS: Record<VoiceLang, readonly string[]> = {
 
 export function toVoiceLang(value: string | null | undefined): VoiceLang {
   const normalized = (value || '').toLowerCase().split(/[-_]/)[0] as VoiceLang
-  return SUPPORTED_LANGS.includes(normalized) ? normalized : DEFAULT_LANG
+  return REQUIRED_VOICE_LANGUAGES.includes(normalized) ? normalized : DEFAULT_LANG
 }
 
 export function speechLangForVoice(lang?: string): string {
