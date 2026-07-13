@@ -323,7 +323,7 @@ def transcribe(body: TranscribeRequest, x_worker_token: str | None = Header(defa
         raise HTTPException(status_code=422, detail="invalid_audio_size")
 
     lang = (body.lang or "").lower().split("-")[0].split("_")[0]
-    language = lang if lang in SUPPORTED_LANGS else None
+    language_hint = lang if lang in SUPPORTED_LANGS else None
     suffix = ".webm"
     lowered_type = (body.contentType or "").lower()
     if "mp4" in lowered_type or "m4a" in lowered_type:
@@ -336,13 +336,30 @@ def transcribe(body: TranscribeRequest, x_worker_token: str | None = Header(defa
         with tempfile.NamedTemporaryFile(suffix=suffix) as handle:
             handle.write(audio)
             handle.flush()
+            # Sprache IMMER automatisch erkennen - Sprachwechsel muss sofort greifen.
+            # Erzwungener Sprach-Hint erzeugte Halluzinationen (z. B. tuerkisches Audio
+            # mit de-Hint wurde als erfundener deutscher Satz transkribiert).
             segments, info = _asr_model.transcribe(
                 handle.name,
-                language=language,
+                language=None,
                 vad_filter=True,
                 beam_size=5,
             )
             text = " ".join(segment.text.strip() for segment in segments).strip()
+            detected_probability = float(getattr(info, "language_probability", 0.0) or 0.0)
+            if (
+                language_hint
+                and getattr(info, "language", None) != language_hint
+                and detected_probability < 0.5
+            ):
+                # Nur bei sehr unsicherer Auto-Erkennung auf den Client-Hint zurueckfallen
+                segments, info = _asr_model.transcribe(
+                    handle.name,
+                    language=language_hint,
+                    vad_filter=True,
+                    beam_size=5,
+                )
+                text = " ".join(segment.text.strip() for segment in segments).strip()
     except Exception as exc:  # noqa: BLE001
         logger.error("transcription failed: %s", exc)
         raise HTTPException(status_code=500, detail="transcription_failed") from exc
@@ -350,7 +367,7 @@ def transcribe(body: TranscribeRequest, x_worker_token: str | None = Header(defa
         raise HTTPException(status_code=422, detail="empty_transcript")
     return {
         "text": text[:4000],
-        "language": getattr(info, "language", None) or language or "unknown",
+        "language": getattr(info, "language", None) or language_hint or "unknown",
         "durationMs": round((time.monotonic() - started) * 1000),
         "engine": "faster-whisper",
     }
