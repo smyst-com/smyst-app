@@ -130,5 +130,8 @@ requireIncludes(voiceWorkerDockerfile, 'espeak-ng', 'voice worker image includes
 requireIncludes(voiceWorkerDeploy, 'VOICE_DEPLOY_EXPECT_BENGALI_TTS: "true"', 'voice worker deploy expects Bengali TTS feature check');
 requireIncludes(voiceWorkerDeployScript, 'restarted = true', 'voice worker deploy restarts running containers');
 requireIncludes(voiceWorkerDeployScript, "engine.includes('espeak-ng') || engine.includes('mms-tts')", 'voice worker deploy verifies Bengali TTS live');
+requireIncludes(voiceWorkerDeployScript, "VOICE_WORKER_PRELOAD_ASR: 'true'", 'voice worker deploy preloads whisper (asr cold start fix)');
+requireIncludes(voiceWorkerDeployScript, 'VOICE_DEPLOY_EXPECT_ASR_PRELOAD', 'voice worker deploy readiness verifies asr preload');
+requireIncludes(voiceWorkerDeploy, 'VOICE_DEPLOY_EXPECT_ASR_PRELOAD: "true"', 'voice worker deploy workflow enables asr preload check');
 
 console.log('voice wave regression validation passed');
