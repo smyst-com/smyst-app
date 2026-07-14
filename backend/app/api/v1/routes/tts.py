@@ -4,6 +4,8 @@ import logging
 import os
 import subprocess
 import tempfile
+import threading
+import time
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request
@@ -17,7 +19,8 @@ logger = logging.getLogger("smyst.api.tts")
 router = APIRouter(prefix="/tts", tags=["tts"])
 
 # Kuratierte, rein synthetische Piper-Stimmen (keine Klone realer Personen).
-# Binary und Modelle werden beim Docker-Build installiert; Worker bleibt stateless.
+# Option A (Freigabe Adam King 14.07.2026): Die Stimmen liegen gebundelt im
+# Voice-Worker; der Control Server bleibt schlank und reicht Anfragen durch.
 VOICES_DIR = os.environ.get("PIPER_VOICES_DIR", "/voices")
 PIPER_BIN = os.environ.get("PIPER_BIN", "/opt/piper/piper")
 
@@ -50,6 +53,49 @@ VOICE_FILES: dict[str, str] = {
     "tr-female": "tr_TR-dfki-medium.onnx",
     "tr-dfki": "tr_TR-dfki-medium.onnx",
 }
+
+# Wiederverwendeter HTTP-Client (Connection-Reuse spart pro Synthese
+# TLS-/Verbindungsaufbau ueber die Cloudflare-Hops zum Worker).
+_worker_http: httpx.Client | None = None
+_worker_http_lock = threading.Lock()
+
+# Kurzer Cache fuer die Worker-Stimmenliste (aendert sich nur per Deploy).
+_worker_voices_cache: tuple[float, list[str]] = (0.0, [])
+_WORKER_VOICES_TTL_SECONDS = 300.0
+
+
+def _worker_client() -> httpx.Client:
+    global _worker_http
+    with _worker_http_lock:
+        if _worker_http is None:
+            _worker_http = httpx.Client(timeout=45.0)
+        return _worker_http
+
+
+def _worker_voice_list() -> list[str]:
+    """Holt die gebundelten Piper-Voice-IDs vom Voice-Worker (mit Cache)."""
+    global _worker_voices_cache
+    worker_url = (os.environ.get("VOICE_WORKER_URL") or "").strip().rstrip("/")
+    worker_token = (os.environ.get("VOICE_WORKER_TOKEN") or "").strip()
+    if not worker_url or not worker_token:
+        return []
+    cached_at, cached = _worker_voices_cache
+    if cached and time.monotonic() - cached_at < _WORKER_VOICES_TTL_SECONDS:
+        return cached
+    try:
+        response = _worker_client().get(
+            f"{worker_url}/voices",
+            headers={"X-Worker-Token": worker_token},
+            timeout=8.0,
+        )
+        if response.status_code == 200:
+            voices = [str(voice) for voice in response.json().get("voices", [])]
+            if voices:
+                _worker_voices_cache = (time.monotonic(), voices)
+                return voices
+    except Exception as exc:  # noqa: BLE001 - Stimmenliste darf nie brechen
+        logger.warning("worker voices failed (%s)", type(exc).__name__)
+    return _worker_voices_cache[1]
 
 
 def _resolve_voice_id(voice_id: str | None, lang: str | None, gender: str | None) -> str:
@@ -99,7 +145,7 @@ def _try_clone_tts(request: Request, text: str, lang: str | None) -> tuple[Respo
         sample_url = user_store.presign_voice_sample(sample_key)
         if not sample_url:
             return None, fallback_voice
-        worker_response = httpx.post(
+        worker_response = _worker_client().post(
             f"{worker_url}/clone-tts",
             json={"text": text, "sampleUrl": sample_url, "lang": (lang or "de")},
             headers={"X-Worker-Token": worker_token},
@@ -124,8 +170,13 @@ def _try_clone_tts(request: Request, text: str, lang: str | None) -> tuple[Respo
     return None, fallback_voice
 
 
-def _try_worker_tts(text: str, lang: str | None) -> Response | None:
-    """Normale neuronale TTS ueber den stateless Voice-Worker.
+def _try_worker_tts(
+    text: str,
+    lang: str | None,
+    voice_id: str | None = None,
+    gender: str | None = None,
+) -> Response | None:
+    """Normale Standard-TTS ueber den stateless Voice-Worker (Piper, Option A).
 
     Der Control Server speichert keine Audio-Artefakte und besitzt keine Modelle.
     Jeder Fehler fuehrt zum Piper-/Browser-Fallback.
@@ -135,9 +186,9 @@ def _try_worker_tts(text: str, lang: str | None) -> Response | None:
     if not worker_url or not worker_token:
         return None
     try:
-        worker_response = httpx.post(
+        worker_response = _worker_client().post(
             f"{worker_url}/synthesize",
-            json={"text": text, "lang": (lang or "de")},
+            json={"text": text, "lang": (lang or "de"), "voiceId": voice_id, "gender": gender},
             headers={"X-Worker-Token": worker_token},
             timeout=45.0,
         )
@@ -147,8 +198,9 @@ def _try_worker_tts(text: str, lang: str | None) -> Response | None:
                 media_type="audio/wav",
                 headers={
                     "Cache-Control": "no-store",
-                    "X-Voice-Id": f"worker-{(lang or 'de').lower()[:2]}",
-                    "X-Voice-Engine": worker_response.headers.get("X-Voice-Engine", "chatterbox"),
+                    "X-Voice-Id": worker_response.headers.get("X-Voice-Id")
+                    or f"worker-{(lang or 'de').lower()[:2]}",
+                    "X-Voice-Engine": worker_response.headers.get("X-Voice-Engine", "piper"),
                 },
             )
         logger.info("worker tts declined (%s), falling back", worker_response.status_code)
@@ -166,13 +218,16 @@ class TtsRequest(BaseModel):
 
 @router.get("/voices")
 def list_voices() -> dict[str, object]:
-    available = sorted(
+    local_available = sorted(
         voice_id
         for voice_id, file_name in VOICE_FILES.items()
         if os.path.exists(os.path.join(VOICES_DIR, file_name))
     )
     worker_configured = bool((os.environ.get("VOICE_WORKER_URL") or "").strip())
-    piper_ready = os.path.exists(PIPER_BIN) and len(available) > 0
+    piper_ready = os.path.exists(PIPER_BIN) and len(local_available) > 0
+    available = local_available
+    if not available and worker_configured:
+        available = sorted(_worker_voice_list())
     return {
         "voices": available,
         "engine": "worker+piper" if worker_configured else "piper",
@@ -201,7 +256,7 @@ def synthesize(request: Request, body: TtsRequest) -> Response:
     piper_ready = os.path.exists(PIPER_BIN) and os.path.exists(model_path)
     lang_base = (body.lang or "").lower()[:2]
     if lang_base not in {"de", "en", "tr"} or not piper_ready:
-        worker_response = _try_worker_tts(text, body.lang)
+        worker_response = _try_worker_tts(text, body.lang, effective_voice_id, body.gender)
         if worker_response is not None:
             return worker_response
     if not piper_ready:
