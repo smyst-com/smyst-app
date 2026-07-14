@@ -1,8 +1,13 @@
-"""smyst.com Voice-Worker (Phase 2): Klon-TTS mit Chatterbox (MIT-Lizenz).
+"""smyst.com Voice-Worker (Phase 2): Piper-Standard-TTS + Chatterbox-Klon-TTS.
 
-Stateless GPU-Worker auf SaladCloud. Er erhaelt vom API-Backend eine
-zeitlich begrenzte, signierte Sample-URL (der Worker besitzt KEINE
-Speicher-Schluessel) und synthetisiert den Text in der Stimme des Samples.
+Stateless Worker auf SaladCloud mit zwei Pfaden (Option A, Freigabe Adam King
+14.07.2026):
+- Standard-/Sprachwellen-TTS (/synthesize) laeuft ueber Piper (CPU,
+  echtzeitfaehig, ins Image gebundelte rein synthetische Stimmen).
+- Klon-TTS (/clone-tts) laeuft weiter ueber Chatterbox (GPU): Der Worker
+  erhaelt vom API-Backend eine zeitlich begrenzte, signierte Sample-URL
+  (der Worker besitzt KEINE Speicher-Schluessel) und synthetisiert den Text
+  in der Stimme des Samples.
 
 Sicherheit & Datenschutz:
 - Jeder Aufruf braucht den geteilten X-Worker-Token (nur Backend kennt ihn).
@@ -53,6 +58,53 @@ ESPEAK_FALLBACK_VOICES = {
 
 CHATTERBOX_LANGUAGE_ALIASES = {
     "id": "ms",
+}
+
+# ---- Piper-Standard-TTS (Option A, Freigabe Adam King 14.07.2026) ----
+# Kuratierte, rein synthetische Piper-Stimmen (keine Klone realer Personen).
+# Binary und Modelle werden beim Docker-Build ins Image gebundelt.
+PIPER_BIN = os.environ.get("PIPER_BIN", "/opt/piper/piper")
+PIPER_VOICES_DIR = os.environ.get("PIPER_VOICES_DIR", "/voices")
+
+PIPER_VOICE_FILES: dict[str, str] = {
+    "de-male": "de_DE-thorsten-medium.onnx",
+    "de-female": "de_DE-kerstin-low.onnx",
+    "en-male": "en_US-ryan-medium.onnx",
+    "en-female": "en_US-amy-medium.onnx",
+    "de-thorsten": "de_DE-thorsten-medium.onnx",
+    "de-karlsson": "de_DE-karlsson-low.onnx",
+    "de-pavoque": "de_DE-pavoque-low.onnx",
+    "de-kerstin": "de_DE-kerstin-low.onnx",
+    "de-ramona": "de_DE-ramona-low.onnx",
+    "de-eva": "de_DE-eva_k-x_low.onnx",
+    "en-ryan": "en_US-ryan-medium.onnx",
+    "en-joe": "en_US-joe-medium.onnx",
+    "en-lessac": "en_US-lessac-medium.onnx",
+    "en-hfc-male": "en_US-hfc_male-medium.onnx",
+    "en-amy": "en_US-amy-medium.onnx",
+    "en-hfc-female": "en_US-hfc_female-medium.onnx",
+    # Tuerkisch: einzige verfuegbare tr-Piper-Stimme (rhasspy/piper-voices,
+    # fahrettin/fettah wurden upstream entfernt). Aliase zeigen auf dfki.
+    "tr-male": "tr_TR-dfki-medium.onnx",
+    "tr-female": "tr_TR-dfki-medium.onnx",
+    "tr-dfki": "tr_TR-dfki-medium.onnx",
+}
+
+# Eine Piper-Standardstimme je weiterer Sprache; ja/ko/bn (und fehlende
+# Modelle) laufen ueber den espeak-ng-Fallback.
+PIPER_LANG_VOICES: dict[str, str] = {
+    "de": "de_DE-thorsten-medium.onnx",
+    "en": "en_US-amy-medium.onnx",
+    "tr": "tr_TR-dfki-medium.onnx",
+    "fr": "fr_FR-siwis-medium.onnx",
+    "es": "es_ES-sharvard-medium.onnx",
+    "it": "it_IT-paola-medium.onnx",
+    "pt": "pt_BR-faber-medium.onnx",
+    "ru": "ru_RU-irina-medium.onnx",
+    "ar": "ar_JO-kareem-medium.onnx",
+    "zh": "zh_CN-huayan-medium.onnx",
+    "hi": "hi_IN-pratham-medium.onnx",
+    "id": "id_ID-news_tts-medium.onnx",
 }
 
 
@@ -114,8 +166,69 @@ def _load_asr_model() -> None:
         globals()["_asr_loading"] = False
 
 
+def _available_piper_voice_ids() -> list[str]:
+    return sorted(
+        voice_id
+        for voice_id, file_name in PIPER_VOICE_FILES.items()
+        if os.path.exists(os.path.join(PIPER_VOICES_DIR, file_name))
+    )
+
+
+def _resolve_piper_voice(voice_id: str | None, lang: str, gender: str | None) -> tuple[str | None, str | None]:
+    """Loest voiceId/lang/gender auf (verwendete Voice-ID, Modell-Datei)."""
+    if voice_id and voice_id in PIPER_VOICE_FILES:
+        return voice_id, PIPER_VOICE_FILES[voice_id]
+    if lang in {"de", "en", "tr"}:
+        suffix = "female" if (gender or "").lower() == "female" else "male"
+        alias = f"{lang}-{suffix}"
+        return alias, PIPER_VOICE_FILES[alias]
+    file_name = PIPER_LANG_VOICES.get(lang)
+    if file_name:
+        return f"worker-{lang}", file_name
+    return None, None
+
+
+def _piper_tts(text: str, voice_id: str | None, lang: str, gender: str | None) -> Response | None:
+    """Standard-TTS ueber Piper (CPU). Jeder Fehler fuehrt zum espeak-Fallback."""
+    used_id, file_name = _resolve_piper_voice(voice_id, lang, gender)
+    if not used_id or not file_name:
+        return None
+    model_path = os.path.join(PIPER_VOICES_DIR, file_name)
+    if not os.path.exists(PIPER_BIN) or not os.path.exists(model_path):
+        return None
+    try:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            output_path = os.path.join(tmp_dir, "out.wav")
+            completed = subprocess.run(
+                [PIPER_BIN, "--model", model_path, "--output_file", output_path],
+                input=text.encode("utf-8"),
+                capture_output=True,
+                timeout=40,
+                check=False,
+            )
+            if completed.returncode != 0 or not os.path.exists(output_path):
+                logger.error(
+                    "piper tts failed (%s): %s",
+                    completed.returncode,
+                    completed.stderr.decode("utf-8", errors="ignore")[:300],
+                )
+                return None
+            with open(output_path, "rb") as wav_file:
+                audio = wav_file.read()
+    except Exception as exc:  # noqa: BLE001
+        logger.error("piper tts crashed: %s", exc)
+        return None
+    if len(audio) <= 1000:
+        return None
+    return Response(
+        content=audio,
+        media_type="audio/wav",
+        headers={"X-Voice-Engine": "piper", "X-Voice-Id": used_id, "X-Voice-Lang": lang},
+    )
+
+
 def _fallback_tts(text: str, lang: str) -> Response | None:
-    voice = ESPEAK_FALLBACK_VOICES.get(lang)
+    voice = ESPEAK_FALLBACK_VOICES.get(lang, lang)
     if not voice:
         return None
     try:
@@ -156,6 +269,8 @@ class CloneRequest(BaseModel):
 class SynthesizeRequest(BaseModel):
     text: str = Field(min_length=1, max_length=MAX_TEXT)
     lang: str | None = Field(default="de", max_length=16)
+    voiceId: str | None = Field(default=None, max_length=32)
+    gender: str | None = Field(default=None, max_length=8)
 
 
 class TranscribeRequest(BaseModel):
@@ -181,6 +296,7 @@ def live() -> dict[str, object]:
 
 @app.get("/health/ready")
 def ready() -> dict[str, object]:
+    piper_voices = _available_piper_voice_ids()
     return {
         "ready": _model is not None,
         "loading": _loading,
@@ -190,6 +306,21 @@ def ready() -> dict[str, object]:
         "asrLoading": _asr_loading,
         "asrError": _asr_error[:200],
         "asrPreload": PRELOAD_ASR,
+        "piperReady": os.path.exists(PIPER_BIN) and len(piper_voices) > 0,
+        "piperVoices": len(piper_voices),
+    }
+
+
+@app.get("/voices")
+def voices(x_worker_token: str | None = Header(default=None)) -> dict[str, object]:
+    expected = (os.environ.get("WORKER_TOKEN") or "").strip()
+    if not expected or x_worker_token != expected:
+        raise HTTPException(status_code=401, detail="unauthorized")
+    available = _available_piper_voice_ids()
+    return {
+        "voices": available,
+        "engine": "piper",
+        "ready": os.path.exists(PIPER_BIN) and len(available) > 0,
     }
 
 
@@ -272,35 +403,18 @@ def synthesize(body: SynthesizeRequest, x_worker_token: str | None = Header(defa
     text = body.text.strip()[:MAX_TEXT]
     if not text:
         raise HTTPException(status_code=422, detail="empty_text")
-    if _model is None:
-        fallback = _fallback_tts(text, lang)
-        if fallback is not None:
-            return fallback
-        if not _loading and _model_error:
-            raise HTTPException(status_code=503, detail="model_failed")
-        threading.Thread(target=_load_model, daemon=True).start()
-        raise HTTPException(status_code=503, detail="model_loading")
-    try:
-        import torchaudio
 
-        if _model_kind == "multilingual":
-            wav = _model.generate(text, language_id=CHATTERBOX_LANGUAGE_ALIASES.get(lang, lang))
-        else:
-            wav = _model.generate(text)
-        buffer = io.BytesIO()
-        torchaudio.save(buffer, wav.cpu(), _model.sr, format="wav")
-    except Exception as exc:  # noqa: BLE001
-        logger.error("worker synthesis failed: %s", exc)
-        fallback = _fallback_tts(text, lang)
-        if fallback is not None:
-            return fallback
-        raise HTTPException(status_code=500, detail="synthesis_failed") from exc
-
-    return Response(
-        content=buffer.getvalue(),
-        media_type="audio/wav",
-        headers={"X-Voice-Engine": f"chatterbox-{_model_kind}", "X-Voice-Lang": lang},
-    )
+    # Option A (Freigabe Adam King, 14.07.2026): Standard-TTS laeuft ueber
+    # Piper (CPU, echtzeitfaehig). Chatterbox bleibt NUR fuer /clone-tts —
+    # die neuronale Synthese war fuer den Live-Loop strukturell zu langsam
+    # (3-6 s Sampling + Overhead auf RTX 3060, QA-Schwelle 8 s).
+    piper = _piper_tts(text, body.voiceId, lang, body.gender)
+    if piper is not None:
+        return piper
+    fallback = _fallback_tts(text, lang)
+    if fallback is not None:
+        return fallback
+    raise HTTPException(status_code=503, detail="tts_unavailable")
 
 
 @app.post("/transcribe")
