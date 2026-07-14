@@ -122,7 +122,10 @@ jobs:
           TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
           COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
-          LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
+          # Groq zuerst (Freigabe Adam King 14.07.2026, Runde 37): beantwortet heute
+          # alle Anfragen; die Provider davor schlagen live fehl und kosteten ~3 s
+          # Fall-Through pro Turn. Secret LLM_PROVIDER_ORDER behaelt Vorrang.
+          LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER || 'groq,openrouter,openai,anthropic,gemini,xai,deepseek' }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
           VOICE_WORKER_URL: ${{ vars.VOICE_WORKER_URL || 'https://nectarine-spinach-iss2y28nt89sv94k.salad.cloud' }}
           VOICE_WORKER_TOKEN: ${{ env.WORKER_TOKEN }}
