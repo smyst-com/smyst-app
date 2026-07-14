@@ -12,7 +12,7 @@
     "changeTwin": "Ganti twin yang dipilih",
     "chooseTwin": "Pilih twin",
     "emptyText": "Pilih nama di atas atau langsung mulai menulis. Twin yang dipilih tetap terpasang di atas.",
-    "messagePlaceholder": "Pesan untuk {{name}}",
+    "messagePlaceholder": "Pesan untuk {{name}}", "relatedLabel": "Profil serupa", "pickerNoMatches": "Tidak ada profil asli yang cocok. Cari berdasarkan nama, topik, atau kategori.", "pickerEmptyCreate": "Belum ada profil asli. Buat twin terlebih dahulu.", "pickerLogin": "Masuk untuk memuat profil asli.", "pickerLoading": "Memuat profil asli...",
     "addFile": "Tambah berkas",
     "voiceInput": "Input suara",
     "voiceInputUnsupported": "Input suara tidak didukung",
