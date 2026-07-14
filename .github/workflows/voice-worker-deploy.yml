@@ -81,6 +81,7 @@ jobs:
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ secrets.GHCR_PULL_TOKEN }}
           VOICE_DEPLOY_EXPECT_BENGALI_TTS: "true"
+          VOICE_DEPLOY_EXPECT_ASR_PRELOAD: "true"
 
       - name: Persist voice worker endpoint for backend deploy
         if: ${{ steps.deploy_voice_worker.outputs.endpoint != '' }}
