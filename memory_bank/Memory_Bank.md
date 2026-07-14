@@ -1,5 +1,14 @@
 # Memory Bank
 
+## Update 2026-07-14: Morgenlauf — Cron 8/8 Tage gruen (45 published, 145 Twins live), i18n-Etappe 3 (PR #171)
+
+- CRON: Seit 06.07. taeglich gruen (#26-#33, Ankunft 08:21-10:37 statt 06:00). Gestern #33 (13.07.): 1 published — Q60684 Novalis (slug novalis, Commons-Portrait Franz Gareis PD); 11 reviewed-Duplikate kuratierter Profile korrekt abgelehnt (Jefferson, Chopin, Bach, Vivaldi, Wagner, Mozart, Beethoven, Napoleon, Pasteur, Goethe, Rousseau — bleiben reviewed und werden jede Nacht erneut abgelehnt; bei Gelegenheit rejecten). Heutiger Cron stand um 07:30 noch aus (uebliches Verspaetungsfenster) — kein Nachholen noetig, gestriger Stand verifiziert.
+- STATUS (Run #34, mode=status, 13.07.): published 45, reviewed 11 (nur Duplikate), candidate 53, rejected 15, unpublished 2, generated 2.
+- LIVE: /api/public/twins/?cb= = 145 Twins (100 kuratiert + 45 Pipeline), 0 ohne imageUrl; /t/novalis rendert komplett (Portrait, Lebensdaten, KI-Kennzeichnung). Randnotiz: Novalis traegt Kategorie 'Technik' (Ingest-Rotation) — inhaltlich diskutabel, kein Fehler.
+- i18n-ETAPPE 3 (PR #171, Branch claude/i18n-etappe-3-picker-related, 17 Dateien, gemergt, Deploy #217 gruen): neue start-Keys relatedLabel, pickerNoMatches, pickerEmptyCreate, pickerLogin, pickerLoading in staticTranslations.ts (Interface einzeilig am messagePlaceholder-Anker + deutsche Defaults) und ALLEN 15 Locale-JSONs (inkl. ru/it/hi/id/bn aus PR #168); App.tsx: Suchfeld-Placeholder nutzt jetzt existierenden searchPlaceholder-Key, Picker-Leer-/Login-/Ladezustaende und Rail 'Aehnliche Profile' auf Muster lang === DEFAULT_LANG ? '<de>' : t.start.<key>. E2E-Pin getByPlaceholder('Profil suchen') bleibt erfuellt (DE-Root unveraendert). LIVE VERIFIZIERT: /locales/en.json liefert die neuen Keys; ?lang=en zeigt englischen Message-Placeholder. Hinweis: Rail 'Kuerzlich genutzt' im ausgewaehlten Zustand war bereits umgestellt (nur noch 1 Vorkommen in App.tsx, uebersetzt).
+- VERBLEIBENDE i18n-ETAPPEN: (a) Kategorien-Chips/'Alle' (Content-Mapping noetig), (b) Sortier-Labels (selectedSortOption.label) + Profil-Zaehler '{n} Profil(e)' im Picker, (c) Drawer/Login/Chat-Detailtexte, (d) addNotice-Meldungen u.a. (~150 Treffer in App.tsx).
+- HINWEIS BETRIEB: Kein Morgenlauf 06.-13.07. (Claude-App war zu; Cron hat alles selbst erledigt — Automatik traegt). Lokale Memory-Bank-Kopie im Drive-Ordner war dadurch 9 Tage stale; Repo-Stand ist fuehrend und wurde lokal nachgezogen. Parallele Agenten mergten 06.-13.07. u.a. Werbe-Readiness (PR #114/#115/#117), Verified Web Research, Sprachwelle/15-Sprachen-Ausbau (PR #150-#170).
+
 ## Update 2026-07-08 III: Sprachwelle Live-Dialog-Haertung
 
 - Voice Worker hat einen sicheren ASR-Warmstart-Schalter (`VOICE_WORKER_PRELOAD_ASR`), bleibt aber default `false`, weil paralleles GPU-Laden von TTS und ASR nach Live-Deploy #8 den Salad-Container instabil machte. `asrPreload` wird in `/health/ready` gemeldet.
