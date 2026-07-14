@@ -12,7 +12,7 @@
     "changeTwin": "Cambia il twin selezionato",
     "chooseTwin": "Scegli twin",
     "emptyText": "Scegli un nome sopra o inizia a scrivere. Il twin selezionato resta fissato in alto.",
-    "messagePlaceholder": "Messaggio a {{name}}",
+    "messagePlaceholder": "Messaggio a {{name}}", "relatedLabel": "Profili simili", "pickerNoMatches": "Nessun profilo reale corrispondente trovato. Cerca per nome, tema o categoria.", "pickerEmptyCreate": "Ancora nessun profilo reale. Crea prima un twin.", "pickerLogin": "Accedi per caricare i profili reali.", "pickerLoading": "Caricamento dei profili reali...",
     "addFile": "Aggiungi file",
     "voiceInput": "Input vocale",
     "voiceInputUnsupported": "Input vocale non supportato",
