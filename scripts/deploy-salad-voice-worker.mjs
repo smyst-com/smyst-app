@@ -84,6 +84,9 @@ const containerSpec = {
   environment_variables: {
     WORKER_TOKEN: workerToken,
     HF_HOME: '/tmp/hf',
+    // Whisper beim Start vorladen - verhindert 503 asr_worker_failed beim
+    // ersten /api/asr/transcribe nach Idle (Kaltstart-Fix Runde 37).
+    VOICE_WORKER_PRELOAD_ASR: 'true',
   },
   resources: {
     cpu: Number(process.env.SALAD_CPU || 4),
@@ -172,21 +175,31 @@ async function waitForWorkerReady() {
       const readyText = await ready.text();
       last = `ready=${ready.status} ${readyText.slice(0, 180)}`;
       if (ready.ok) {
-        if (process.env.VOICE_DEPLOY_EXPECT_BENGALI_TTS !== 'true') return { health, last };
-        const synth = await fetch(`${endpoint}/synthesize`, {
-          method: 'POST',
-          headers: {
-            'content-type': 'application/json',
-            'X-Worker-Token': workerToken,
-          },
-          body: JSON.stringify({ lang: 'bn', text: 'হ্যালো, আজ আমরা ভয়েস ওয়েভ পরীক্ষা করছি।' }),
-          signal: AbortSignal.timeout(60000),
-        });
-        const audio = Buffer.from(await synth.arrayBuffer());
-        const engine = synth.headers.get('x-voice-engine') || '';
-        last = `${last} bn_tts=${synth.status} engine=${engine} bytes=${audio.length}`;
-        if (synth.ok && (engine.includes('espeak-ng') || engine.includes('mms-tts')) && audio.length > 1000) {
+        // Neues Image muss "asrPreload":true melden - sonst antwortet noch der alte
+        // Container und der Wartecheck waere falsch-positiv gruen (Befund Runde 35).
+        const preloadOk =
+          process.env.VOICE_DEPLOY_EXPECT_ASR_PRELOAD !== 'true' ||
+          readyText.replace(/\s+/g, '').includes('"asrPreload":true');
+        if (!preloadOk) {
+          last = `${last} asrPreload=missing`;
+        } else if (process.env.VOICE_DEPLOY_EXPECT_BENGALI_TTS !== 'true') {
           return { health, last };
+        } else {
+          const synth = await fetch(`${endpoint}/synthesize`, {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'X-Worker-Token': workerToken,
+            },
+            body: JSON.stringify({ lang: 'bn', text: 'হ্যালো, আজ আমরা ভয়েস ওয়েভ পরীক্ষা করছি।' }),
+            signal: AbortSignal.timeout(60000),
+          });
+          const audio = Buffer.from(await synth.arrayBuffer());
+          const engine = synth.headers.get('x-voice-engine') || '';
+          last = `${last} bn_tts=${synth.status} engine=${engine} bytes=${audio.length}`;
+          if (synth.ok && (engine.includes('espeak-ng') || engine.includes('mms-tts')) && audio.length > 1000) {
+            return { health, last };
+          }
         }
       }
     } catch (exc) {
