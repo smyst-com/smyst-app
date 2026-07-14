@@ -15,7 +15,7 @@ export interface StaticTranslations {
     changeTwin: string
     chooseTwin: string
     emptyText: string
-    messagePlaceholder: string; discoveryLabel: string; discoveryText: string; recommendedLabel: string; newLabel: string; popularLabel: string; recentLabel: string; profilesLoading: string; profilesErrorTitle: string; profilesErrorBody: string; profilesEmptyTitle: string; profilesEmptyBody: string
+    messagePlaceholder: string; relatedLabel: string; pickerNoMatches: string; pickerEmptyCreate: string; pickerLogin: string; pickerLoading: string; discoveryLabel: string; discoveryText: string; recommendedLabel: string; newLabel: string; popularLabel: string; recentLabel: string; profilesLoading: string; profilesErrorTitle: string; profilesErrorBody: string; profilesEmptyTitle: string; profilesEmptyBody: string
     addFile: string
     voiceInput: string
     voiceInputUnsupported: string
@@ -134,7 +134,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     changeTwin: 'Ausgewähltes Profil ändern',
     chooseTwin: 'Profil wählen',
     emptyText: 'Wähle oben ein KI-Profil oder schreibe direkt. Das ausgewählte Profil bleibt oben fixiert.',
-    messagePlaceholder: 'Nachricht an {{name}}', discoveryLabel: 'Profilentdeckung', discoveryText: '{{count}} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.', recommendedLabel: 'Empfohlen', newLabel: 'Neu', popularLabel: 'Beliebt', recentLabel: 'Kürzlich genutzt', profilesLoading: 'Echte KI-Profile werden geladen...', profilesErrorTitle: 'Profile konnten gerade nicht geladen werden', profilesErrorBody: 'Bitte Verbindung prüfen oder gleich eine Nachricht schreiben. Die App bleibt bedienbar.', profilesEmptyTitle: 'Noch keine echten KI-Profile sichtbar', profilesEmptyBody: 'Sobald echte freigegebene Profile vorhanden sind, erscheinen sie hier mit Suche, Kategorien und direktem Chat.',
+    messagePlaceholder: 'Nachricht an {{name}}', relatedLabel: 'Ähnliche Profile', pickerNoMatches: 'Keine passenden echten Profile gefunden. Suche nach Name, Thema oder Kategorie.', pickerEmptyCreate: 'Noch kein echtes Profil vorhanden. Erstelle zuerst einen Twin.', pickerLogin: 'Melde dich an, um echte Profile zu laden.', pickerLoading: 'Echte Profile werden geladen...', discoveryLabel: 'Profilentdeckung', discoveryText: '{{count}} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.', recommendedLabel: 'Empfohlen', newLabel: 'Neu', popularLabel: 'Beliebt', recentLabel: 'Kürzlich genutzt', profilesLoading: 'Echte KI-Profile werden geladen...', profilesErrorTitle: 'Profile konnten gerade nicht geladen werden', profilesErrorBody: 'Bitte Verbindung prüfen oder gleich eine Nachricht schreiben. Die App bleibt bedienbar.', profilesEmptyTitle: 'Noch keine echten KI-Profile sichtbar', profilesEmptyBody: 'Sobald echte freigegebene Profile vorhanden sind, erscheinen sie hier mit Suche, Kategorien und direktem Chat.',
     addFile: 'Datei hinzufügen',
     voiceInput: 'Spracheingabe',
     voiceInputUnsupported: 'Spracheingabe nicht unterstützt',
