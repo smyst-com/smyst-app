@@ -1828,6 +1828,11 @@ function SmystStartPage({
         const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLangRef.current || lang)
         setLastVoiceLang(detectedLang)
         if (options.live) {
+          if (!liveVoiceActiveRef.current) {
+            // Sprachwelle wurde waehrend der Aufnahme gestoppt - nichts mehr senden
+            setVoiceState('idle')
+            return
+          }
           // Rausch-Guard: Artefakte aus Stille nicht als Turn senden, Live-Loop fortsetzen
           if (!transcript || !isLikelySpeech(transcript)) {
             resumeLiveVoiceAfterSpeech()
@@ -1855,6 +1860,13 @@ function SmystStartPage({
 
   const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
+    // Sprachwelle (Live-Modus): Server-ASR (Whisper) zuerst - erkennt die gesprochene
+    // Sprache automatisch schon im ersten Satz und wechselt sie pro Turn (DE/TR/EN, ...).
+    // Browser-Erkennung bleibt fuer das Diktat und als Fallback ohne Server-ASR.
+    if (options.live && serverAsrSupported()) {
+      startServerAsrDictation(options)
+      return
+    }
     if (!Recognition) {
       startServerAsrDictation(options)
       return
@@ -7267,6 +7279,11 @@ function TwinChatView({
         const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLangRef.current || lang)
         setLastVoiceLang(detectedLang)
         if (options.live) {
+          if (!liveVoiceActiveRef.current) {
+            // Sprachwelle wurde waehrend der Aufnahme gestoppt - nichts mehr senden
+            setVoiceState('idle')
+            return
+          }
           // Rausch-Guard: Artefakte aus Stille nicht als Turn senden, Live-Loop fortsetzen
           if (!transcript || !isLikelySpeech(transcript)) {
             resumeLiveVoiceAfterSpeech()
@@ -7404,6 +7421,13 @@ function TwinChatView({
 
   const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
+    // Sprachwelle (Live-Modus): Server-ASR (Whisper) zuerst - erkennt die gesprochene
+    // Sprache automatisch schon im ersten Satz und wechselt sie pro Turn (DE/TR/EN, ...).
+    // Browser-Erkennung bleibt fuer das Diktat und als Fallback ohne Server-ASR.
+    if (options.live && serverAsrSupported()) {
+      startServerAsrDictation(options)
+      return
+    }
     if (!Recognition) {
       startServerAsrDictation(options)
       return
