@@ -6,6 +6,7 @@ const app = readFileSync(resolve(root, 'src/App.tsx'), 'utf8');
 const language = readFileSync(resolve(root, 'src/lib/voiceLanguage.ts'), 'utf8');
 const profiles = readFileSync(resolve(root, 'src/lib/voiceProfiles.ts'), 'utf8');
 const serverAsr = readFileSync(resolve(root, 'src/lib/serverAsrClient.ts'), 'utf8');
+const ttsClient = readFileSync(resolve(root, 'src/lib/ttsClient.ts'), 'utf8');
 const api = readFileSync(resolve(root, 'src/lib/useTwinMvp.ts'), 'utf8');
 const backendAsr = readFileSync(resolve(root, 'backend/app/api/v1/routes/asr.py'), 'utf8');
 const backendTts = readFileSync(resolve(root, 'backend/app/api/v1/routes/tts.py'), 'utf8');
@@ -77,24 +78,30 @@ requireIncludes(language, 'voiceLanguageInstruction', 'turn-level answer languag
 requireIncludes(language, 'Answer only in', 'strict answer language directive');
 requireIncludes(language, "tr: 'Turkish'", 'Turkish language metadata');
 requireIncludes(language, "tr: 'tr-TR'", 'Turkish ASR/TTS locale');
-requireIncludes(language, '/[çğıöşüİĞŞ]/', 'Turkish character detection');
+requireIncludes(language, '/[ğışİĞŞ]/', 'Turkish character detection');
 requireIncludes(language, '/[\\u0980-\\u09ff]/', 'Bengali script detection');
 requireIncludes(language, '/[\\u0900-\\u097f]/', 'Hindi script detection');
 
 requireIncludes(profiles, "import { detectVoiceLanguage } from '@/lib/voiceLanguage'", 'TTS text language resolver uses shared detector');
 requireIncludes(profiles, 'return detectVoiceLanguage(sample)', 'voiceProfiles 15-language text detection');
 
-requireAtLeast(app, /const \[lastVoiceLang, setLastVoiceLang\]/g, 2, 'voice language state in both chat surfaces');
+requireAtLeast(app, /const \[lastVoiceLang, setLastVoiceLangState\]/g, 2, 'voice language state in both chat surfaces');
 requireAtLeast(app, /detectVoiceLanguage\(/g, 4, 'voice language detection callsites');
-requireAtLeast(app, /speechLangFor\(lastVoiceLang \|\| lang\)/g, 2, 'ASR locale binding');
+requireAtLeast(app, /speechLangFor\(lastVoiceLangRef\.current \|\| lang\)/g, 2, 'ASR locale binding');
 requireAtLeast(app, /voiceLanguageInstruction\(/g, 2, 'LLM language instruction callsites');
 requireAtLeast(app, /sendTwinMessageStream\(nextChatId, messageForModel/g, 2, 'streaming chat uses language-bound message');
 requireAtLeast(app, /messageVoiceLang/g, 8, 'per-turn language is reused for chat, TTS and fallback');
 requireAtLeast(app, /startServerAsrDictation\(options\)/g, 2, 'server ASR fallback in both chat surfaces');
-requireAtLeast(app, /recordAndTranscribeOnce\(speechLangFor\(lastVoiceLang \|\| lang\)/g, 2, 'server ASR uses current voice language');
-requireIncludes(app, 'Kısaca:', 'Turkish static fallback must stay Turkish');
-requireIncludes(app, 'সংক্ষেপে:', 'Bengali static fallback must stay Bengali');
+requireAtLeast(app, /recordAndTranscribeOnce\(speechLangFor\(lastVoiceLangRef\.current \|\| lang\)/g, 2, 'server ASR uses current voice language');
+requireAtLeast(app, /staticPublicTwinReply\(/g, 3, 'static fallback reply used in both chat surfaces');
+requireIncludes(app, 'responseLang: VoiceLang', 'static fallback reply is language-bound');
 
+requireAtLeast(app, /startSentenceSpeech\(/g, 2, 'sentence-streaming TTS in both chat surfaces');
+requireAtLeast(app, /liveSpeech\?\.feed\(partial\)/g, 2, 'chat stream feeds sentence TTS queue');
+requireAtLeast(app, /liveSpeech\?\.cancel\(\)/g, 2, 'chat error path cancels sentence TTS queue');
+requireIncludes(ttsClient, 'export function startSentenceSpeech', 'ttsClient exposes sentence-level streaming TTS');
+requireIncludes(ttsClient, 'activeSentenceQueue', 'stopRemoteSpeech cancels the sentence queue');
+requireIncludes(ttsClient, 'function nextSentenceEnd', 'ttsClient sentence boundary detection');
 requireIncludes(api, 'language?: string', 'optional chat message language parameter');
 requireIncludes(api, 'JSON.stringify({ chatId, message, language })', 'chat API sends detected language');
 

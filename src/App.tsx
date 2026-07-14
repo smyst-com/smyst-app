@@ -26,7 +26,7 @@ import {
 import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
 import { recordAndTranscribeOnce, serverAsrSupported } from '@/lib/serverAsrClient'
-import { isRemoteSpeechActive, playRemoteSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
+import { isRemoteSpeechActive, playRemoteSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { fetchService } from '@/lib/serviceEndpoints'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
@@ -2138,6 +2138,16 @@ function SmystStartPage({
     resizeInput('')
     setAttachments([])
 
+    // Streaming-TTS (Runde 37): fertige Saetze der gestreamten Antwort sofort
+    // synthetisieren und ohne Ueberlappung abspielen; Stopp bricht die Queue ab.
+    const liveSpeech = (speechOutputEnabled || options.forceSpeech)
+      ? startSentenceSpeech(
+          messageVoiceLang,
+          voiceGenderFor(twin.name),
+          userVoiceIdFor(twin.name) ?? remoteVoiceIdFor(twin.name, messageVoiceLang),
+          () => setIsSpeaking(false),
+        )
+      : null
     try {
       const twinChatKey = twin.publicProfile && twin.profileSlug ? twin.profileSlug : twin.id
       let nextChatId = chatProfileKey === twinChatKey ? chatId : null
@@ -2150,6 +2160,7 @@ function SmystStartPage({
       }
       const messageForModel = voiceLanguageInstruction(fullMessage, messageVoiceLang)
       const reply = await twinMvp.sendTwinMessageStream(nextChatId, messageForModel, (partial) => {
+        liveSpeech?.feed(partial)
         setMessages((current) =>
           current.map((entry) =>
             entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
@@ -2166,11 +2177,13 @@ function SmystStartPage({
       } else {
         await streamText(assistantId, reply.message.content)
       }
-      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, messageVoiceLang, () => setIsSpeaking(false), twin.name)) {
-        setIsSpeaking(true)
+      if (liveSpeech) {
+        liveSpeech.finish(reply.message.content)
+        if (liveSpeech.active()) setIsSpeaking(true)
       }
       return reply.message.content
     } catch (err) {
+      liveSpeech?.cancel()
       if (twin.publicProfile) {
         const reply = staticPublicTwinReply(twin, fullMessage, messageVoiceLang)
         await streamText(assistantId, reply)
@@ -7638,6 +7651,16 @@ function TwinChatView({
     setAttachments([])
     setIsReplying(true)
 
+    // Streaming-TTS (Runde 37): fertige Saetze der gestreamten Antwort sofort
+    // synthetisieren und ohne Ueberlappung abspielen; Stopp bricht die Queue ab.
+    const liveSpeech = (speechOutputEnabled || options.forceSpeech)
+      ? startSentenceSpeech(
+          messageVoiceLang,
+          voiceGenderFor(activeTwin?.name),
+          userVoiceIdFor(activeTwin?.name) ?? remoteVoiceIdFor(activeTwin?.name, messageVoiceLang),
+          () => setIsSpeaking(false),
+        )
+      : null
     try {
       let nextChatId = chatId
       if (!nextChatId) {
@@ -7649,6 +7672,7 @@ function TwinChatView({
 
       const messageForModel = voiceLanguageInstruction(message, messageVoiceLang)
       const reply = await twinMvp.sendTwinMessageStream(nextChatId, messageForModel, (partial) => {
+        liveSpeech?.feed(partial)
         setMessages((current) =>
           current.map((entry) =>
             entry.id === assistantId ? { ...entry, content: partial, streaming: true } : entry,
@@ -7672,11 +7696,13 @@ function TwinChatView({
           ),
         )
       }
-      if ((speechOutputEnabled || options.forceSpeech) && speakText(reply.message.content, messageVoiceLang, () => setIsSpeaking(false), activeTwin?.name)) {
-        setIsSpeaking(true)
+      if (liveSpeech) {
+        liveSpeech.finish(reply.message.content)
+        if (liveSpeech.active()) setIsSpeaking(true)
       }
       return reply.message.content
     } catch (err) {
+      liveSpeech?.cancel()
       if (activeTwin.publicProfile) {
         const reply = staticPublicTwinReply(
           {
