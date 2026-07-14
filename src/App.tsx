@@ -2619,7 +2619,7 @@ function SmystStartPage({
                   event.preventDefault()
                   selectTwin(twin)
                 }}
-                placeholder="Profil suchen"
+                placeholder={lang === DEFAULT_LANG ? 'Profil suchen' : t.start.searchPlaceholder}
                 className="smyst-glass-control min-w-0 flex-1 rounded-none border-0 px-5 pr-12 text-[20px] font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
               />
             </label>
@@ -2727,10 +2727,10 @@ function SmystStartPage({
                     {profilesLoaded
                       ? auth.status === 'authenticated'
                         ? query.trim() || activeCategory
-                          ? 'Keine passenden echten Profile gefunden. Suche nach Name, Thema oder Kategorie.'
-                          : 'Noch kein echtes Profil vorhanden. Erstelle zuerst einen Twin.'
-                        : 'Melde dich an, um echte Profile zu laden.'
-                      : 'Echte Profile werden geladen...'}
+                          ? (lang === DEFAULT_LANG ? 'Keine passenden echten Profile gefunden. Suche nach Name, Thema oder Kategorie.' : t.start.pickerNoMatches)
+                          : (lang === DEFAULT_LANG ? 'Noch kein echtes Profil vorhanden. Erstelle zuerst einen Twin.' : t.start.pickerEmptyCreate)
+                        : (lang === DEFAULT_LANG ? 'Melde dich an, um echte Profile zu laden.' : t.start.pickerLogin)
+                      : (lang === DEFAULT_LANG ? 'Echte Profile werden geladen...' : t.start.pickerLoading)}
                   </div>
                 )}
               </div>
@@ -2738,7 +2738,7 @@ function SmystStartPage({
           )}
           {selectedTwin && messages.length === 0 && relatedTwins.length > 0 && (
             <div className="smyst-glass-panel border-b border-white/[0.08]">
-              {renderDiscoveryRail('Ähnliche Profile', relatedTwins)}
+              {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Ähnliche Profile' : t.start.relatedLabel, relatedTwins)}
             </div>
           )}
           {messages.length > 0 && (
