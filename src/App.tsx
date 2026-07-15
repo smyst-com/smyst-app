@@ -909,13 +909,14 @@ function profileLifeLine(profile: {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
-}): string {
+}, labels?: { years: string; unknown: string }): string {
   const age = ageAtDeath(profile)
   const birth = profile.birthLabel || formatIsoDate(profile.birthDate)
   const death = profile.deathLabel || formatIsoDate(profile.deathDate)
-  if (age !== null && birth && death) return `${age} Jahre • ${birth} – ${death}`
+  const yearsWord = labels?.years || 'Jahre'
+  if (age !== null && birth && death) return `${age} ${yearsWord} • ${birth} – ${death}`
   if (birth && death) return `${birth} – ${death}`
-  return 'Lebensdaten nicht hinterlegt'
+  return labels?.unknown || 'Lebensdaten nicht hinterlegt'
 }
 
 // Statischer Public-Profile-Fallback: antwortet kurz, in der Ich-Perspektive der Person,
@@ -1597,7 +1598,7 @@ function SmystStartPage({
             {profileMainCategory(twin)}
           </span>
           <span className={`${compact ? 'text-[12px]' : 'text-sm'} mt-1 block truncate font-medium leading-tight text-[#8e97a8]`}>
-            {profileLifeLine(twin)}
+            {profileLifeLine(twin, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel, unknown: t.start.lifeDatesUnknown })}
           </span>
         </span>
       </span>
@@ -2596,7 +2597,7 @@ function SmystStartPage({
               <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
                 <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{selectedTwin.name}</span>
                 <span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>
-                <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileLifeLine(selectedTwin)}</span>
+                <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileLifeLine(selectedTwin, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel, unknown: t.start.lifeDatesUnknown })}</span>
               </span>
             </div>
           </div>
