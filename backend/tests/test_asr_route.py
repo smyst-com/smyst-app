@@ -79,11 +79,12 @@ def test_tts_uses_worker_when_piper_is_not_available(monkeypatch) -> None:
         content = b"RIFF" + (b"2" * 1600)
         headers = {"X-Voice-Engine": "chatterbox-multilingual"}
 
-    def fake_post(url: str, **kwargs):
-        calls.append({"url": url, **kwargs})
-        return FakeResponse()
+    class FakeClient:
+        def post(self, url: str, **kwargs):
+            calls.append({"url": url, **kwargs})
+            return FakeResponse()
 
-    monkeypatch.setattr(tts_route.httpx, "post", fake_post)
+    monkeypatch.setattr(tts_route, "_worker_client", lambda: FakeClient())
 
     response = client.post("/tts", json={"text": "Bonjour, je parle francais.", "lang": "fr"})
 
