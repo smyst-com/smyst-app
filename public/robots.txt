@@ -99,5 +99,5 @@ Disallow: /api/
 Allow: /api/public/twins/
 
 Sitemap: https://smyst.com/sitemap.xml
-AI-Policy: https://smyst.com/ai.txt
+# AI-Policy: https://smyst.com/ai.txt
 Host: https://smyst.com
