@@ -4728,9 +4728,9 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
       intro: 'Angaben zum Betreiber von smyst.com.',
       points: [
         'Betreiber: iMild LLC',
-        'Anschrift: 1401 21st St, Ste R, Sacramento, CA 95811, USA', 'Postanschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA', 'Registereintrag: California Secretary of State, File No. B20260312817', 'Vertretungsberechtigter Manager: Müslüm Akdeniz',
+        'Anschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA',
         'E-Mail: s@smyst.com',
-        'Domain: smyst.com',
+        
       ],
     },
   }[kind]
