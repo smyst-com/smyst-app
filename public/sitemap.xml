@@ -4,7 +4,7 @@
   xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://smyst.com/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <!-- sitemap-image: primary app preview -->
@@ -32,691 +32,691 @@
   </url>
   <url>
     <loc>https://smyst.com/de/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://smyst.com/en/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://smyst.com/tr/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/fr/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/es/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/pt/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/ar/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/zh/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/ja/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/ko/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/ru/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/it/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/hi/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/id/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/bn/</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/albert-einstein</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/leonardo-da-vinci</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/isaac-newton</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/william-shakespeare</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/aristoteles</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/sokrates</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/platon</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/napoleon-bonaparte</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/konfuzius</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/julius-caesar</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/alexander-der-grosse</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/mustafa-kemal-atatuerk</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/nikola-tesla</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/marie-curie</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/charles-darwin</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/galileo-galilei</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/archimedes</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/sun-tzu</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/michelangelo</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/johann-wolfgang-von-goethe</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/wolfgang-amadeus-mozart</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/ludwig-van-beethoven</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/dante-alighieri</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/saladin</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/hannibal</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/otto-von-bismarck</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/niccolo-machiavelli</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/adam-smith</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/ibn-khaldun</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/karl-marx</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/friedrich-nietzsche</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/immanuel-kant</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/leonardo-fibonacci</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/pythagoras</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/johannes-kepler</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/nikolaus-kopernikus</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/michael-faraday</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/james-clerk-maxwell</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/carl-friedrich-gauss</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/ada-lovelace</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/gregor-mendel</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/louis-pasteur</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/dmitri-mendelejew</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/leonhard-euler</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/bernhard-riemann</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/blaise-pascal</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/rene-descartes</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/gottfried-wilhelm-leibniz</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/john-locke</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/david-hume</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/voltaire</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/jean-jacques-rousseau</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/arthur-schopenhauer</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/georg-wilhelm-friedrich-hegel</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/max-weber</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/ibn-sina</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/al-khwarizmi</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/benjamin-franklin</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/thomas-jefferson</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/marcus-aurelius</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/seneca</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/epiktet</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/cicero</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/herodot</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/thukydides</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/homer</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/miguel-de-cervantes</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/victor-hugo</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/leo-tolstoi</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/fjodor-dostojewski</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/charles-dickens</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/mark-twain</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/franz-kafka</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/jules-verne</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/h-g-wells</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/edgar-allan-poe</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/jane-austen</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/mary-shelley</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/oscar-wilde</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/hans-christian-andersen</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/raphael</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/johann-sebastian-bach</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/frederic-chopin</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/franz-schubert</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/giuseppe-verdi</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/antonio-vivaldi</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/richard-wagner</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/claude-debussy</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/pjotr-tschaikowski</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/omar-khayyam</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/rumi</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/al-farabi</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/al-biruni</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/hippokrates</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/euklid</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/sophokles</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/euripides</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/vergil</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/mimar-sinan</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://smyst.com/t/laotse</loc>
-    <lastmod>2026-07-08</lastmod>
+    <lastmod>2026-07-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
