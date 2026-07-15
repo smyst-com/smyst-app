@@ -4696,7 +4696,7 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   const content = {
     privacy: {
       title: 'Datenschutz',
-      intro: 'Verantwortlich: AUS2001 LLC, 30 N Gould St Ste R, Sheridan, WY 82801, USA. E-Mail: s@smyst.com. Stand: 4. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
+      intro: 'Verantwortlich: iMild LLC, 1401 21st St, Ste R, Sacramento, CA 95811, USA. E-Mail: s@smyst.com. Stand: 15. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
       points: [
         'Ohne Konto verarbeiten wir technische Zugriffsdaten (IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser- und Geraetetyp) fuer Betrieb, Stabilitaet und Missbrauchsabwehr (Art. 6 Abs. 1 lit. f DSGVO). Chat-Anfragen an oeffentliche KI-Profile werden zur Beantwortung an unser Backend uebertragen; ohne Anmeldung wird kein Chat-Verlauf dauerhaft gespeichert.',
         'Mit Konto verarbeiten wir E-Mail-Adresse, Name (optional), Passwort ausschliesslich als kryptografischen Hash (scrypt), Profilinhalte, erstellte AI-Twins, hochgeladene Dateien (Dokumente, Bilder, Audio, Video), Chat-Verlaeufe sowie Einstellungs- und Sitzungsdaten zur Bereitstellung deines Kontos und der Kernfunktionen (Art. 6 Abs. 1 lit. b DSGVO).',
@@ -4727,8 +4727,8 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
       title: 'Impressum',
       intro: 'Angaben zum Betreiber von smyst.com.',
       points: [
-        'Betreiber: AUS2001 LLC',
-        'Anschrift: 30 N Gould St Ste R, Sheridan, WY 82801, USA',
+        'Betreiber: iMild LLC',
+        'Anschrift: 1401 21st St, Ste R, Sacramento, CA 95811, USA', 'Postanschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA', 'Registereintrag: California Secretary of State, File No. B20260312817', 'Vertretungsberechtigter Manager: Müslüm Akdeniz',
         'E-Mail: s@smyst.com',
         'Domain: smyst.com',
       ],
