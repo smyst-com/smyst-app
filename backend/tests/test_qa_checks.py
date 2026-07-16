@@ -191,3 +191,42 @@ def test_qa_one_keeps_generated_without_chat_provider() -> None:
     assert saved["status"] == "generated"
     assert saved["qa_passed"] is False
     assert saved["qa_report"]["checks"]["chat_smoke_test"] == "skipped"
+
+
+def test_run_qa_batch_prioritizes_untested_candidates() -> None:
+    """Queue-Fairness: ungetestete Kandidaten vor bereits durchgefallenen.
+
+    Ohne den Fix belegen QA-Verlierer (qa_report vorhanden) bei limit=N die
+    vorderen Queue-Plaetze (QID-Sortierung) und ungetestete kommen nie dran.
+    """
+    from app.workers.build_capsules import CAPSULE_PREFIX
+    from app.workers.qa_candidates import run_qa_batch
+
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    for qid, name in (("Q1035", "Charles Darwin"), ("Q1339", "Johann Sebastian Bach")):
+        candidate = HistoricalCandidate(
+            wikidata_qid=qid, name=name, death_date=date(1882, 4, 19),
+            category="Wissenschaft", sitelink_count=250, source_count=3,
+        )
+        store.save_candidate(candidate)
+        doc = store.load_candidate_document(qid)
+        doc.update(CANDIDATE_DOC, status="generated")
+        doc["wikidata_qid"] = qid
+        doc["name"] = name
+        store.save_candidate_document(qid, doc)
+        store._client.put_object(
+            Bucket="smyst-memories", Key=f"{CAPSULE_PREFIX}{qid}/capsule.json",
+            Body=json.dumps(CAPSULE_DOC).encode(), ContentType="application/json",
+        )
+
+    # Q1035 (per QID-Sortierung vorn) ist bereits durchgefallen
+    failed = store.load_candidate_document("Q1035")
+    failed["qa_report"] = {"passed": False, "issues": ["Chat-Test identity"], "checks": {}}
+    failed["qa_passed"] = False
+    store.save_candidate_document("Q1035", failed)
+
+    report = run_qa_batch(
+        store=store, config=CONFIG, limit=1, dry_run=True,
+        run_date=date(2026, 7, 17), chat_fn_factory=lambda capsule: chat_ok,
+    )
+    assert list(report["results"]) == ["Q1339"]
