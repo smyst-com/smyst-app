@@ -3,6 +3,7 @@ from __future__ import annotations
 import httpx
 import pytest
 
+from app.ai.degraded_messages import DEGRADED_FALLBACK_MESSAGES
 from app.ai.llm_router import (
     LLMProvider,
     LLMRouter,
@@ -142,7 +143,47 @@ async def test_router_can_fall_back_to_local_deterministic_provider() -> None:
 
     assert response.provider == "local"
     assert response.degraded is True
-    assert "Smyst memory context" in response.text
+    # Kein Prompt-Echo: Prompt-/Kontext-Interna duerfen nie an Endnutzer gehen.
+    assert "Because memory says so" not in response.text
+    assert "Question: Why?" not in response.text
+    assert "memory context" not in response.text
+    assert response.text == DEGRADED_FALLBACK_MESSAGES["en"]
+
+
+@pytest.mark.asyncio
+async def test_local_fallback_uses_voice_language_marker_from_prompt() -> None:
+    request = LLMRequest(
+        system_prompt="Answer with care.",
+        prompt=(
+            "Twin/profile: Carl Benz\n"
+            "Curated public profile knowledge:\nName: Carl Benz\n"
+            "User message: [Voice language: German (de). Answer only in German.] "
+            "Warum hast du dein Auto Mercedes genannt?\n"
+            "Answer in the same language as the user. Keep it concise."
+        ),
+        max_tokens=220,
+        temperature=0.2,
+    )
+
+    response = await LocalDeterministicProvider().complete(request)
+
+    assert response.degraded is True
+    assert response.text == DEGRADED_FALLBACK_MESSAGES["de"]
+    assert "Carl Benz" not in response.text
+    assert "Voice language" not in response.text
+
+
+@pytest.mark.asyncio
+async def test_local_fallback_prefers_metadata_language() -> None:
+    request = LLMRequest(
+        system_prompt="",
+        prompt="User message: Merhaba, nasilsin?",
+        metadata={"language": "tr"},
+    )
+
+    response = await LocalDeterministicProvider().complete(request)
+
+    assert response.text == DEGRADED_FALLBACK_MESSAGES["tr"]
 
 
 @pytest.mark.asyncio
