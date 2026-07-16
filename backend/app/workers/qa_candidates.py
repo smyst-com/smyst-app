@@ -162,7 +162,16 @@ def run_qa_batch(
     *, store: CandidateStore, config: PipelineConfig, limit: int, dry_run: bool, run_date: date,
     chat_fn_factory: Callable[[dict], Callable[[str], str] | None] = build_chat_fn,
 ) -> dict:
-    documents = store.candidate_documents_by_status(PipelineStatus.GENERATED.value, limit=limit)
+    # Queue-Fairness: erst ALLE generated-Kandidaten laden, dann ungetestete
+    # (ohne qa_report) nach vorn sortieren und bereits durchgefallene ans Ende.
+    # Sonst blockieren Dauer-Wiederholer bei limit=N die restliche Queue
+    # dauerhaft (Befund Runde 38: 88 Kandidaten kamen nie zur QA, weil dieselben
+    # ~45 QA-Verlierer die vorderen Queue-Plaetze belegten). Stabile Sortierung:
+    # innerhalb beider Gruppen bleibt die QID-Reihenfolge erhalten.
+    documents = store.candidate_documents_by_status(PipelineStatus.GENERATED.value)
+    documents.sort(key=lambda doc: bool(doc.get("qa_report")))
+    if limit is not None:
+        documents = documents[: max(limit, 0)]
     report: dict = {
         "worker": "qa_candidates",
         "run_date": run_date.isoformat(),
