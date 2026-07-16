@@ -9,6 +9,7 @@ from typing import Any, AsyncIterator
 from urllib.parse import urljoin
 
 import httpx
+from app.ai.degraded_messages import degraded_fallback_message
 from app.ai.models import LLMRequest, LLMResponse
 from app.ai.provider_catalog import (
     DEFAULT_PROVIDER_ORDER,
@@ -59,18 +60,21 @@ class ProviderHealthError(RuntimeError):
 
 
 class LocalDeterministicProvider(LLMProvider):
+    """Not-Fallback am Ende der Provider-Kette.
+
+    Gibt bewusst NUR eine kurze, lokalisierte Wartemeldung zurueck — niemals
+    Prompt-, System- oder Kontext-Interna. Der fruehere Prompt-Echo hat live
+    System-Prompt-Inhalte in der Chat-Bubble angezeigt (2026-07-17).
+    """
+
     name = "local"
     model = "smyst-local-deterministic-v1"
 
     async def complete(self, request: LLMRequest) -> LLMResponse:
         started = perf_counter()
-        context_marker = "Context:"
-        answer = request.prompt
-        if context_marker in request.prompt:
-            answer = request.prompt.split(context_marker, 1)[-1].strip()
-        answer = (
-            "I can answer from the available Smyst memory context. "
-            + " ".join(answer.split()[:120])
+        answer = degraded_fallback_message(request.prompt, request.metadata)
+        logger.error(
+            "all remote llm providers failed; serving localized degraded fallback message"
         )
         latency_ms = int((perf_counter() - started) * 1000)
         return LLMResponse(
