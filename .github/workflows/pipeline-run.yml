@@ -16,23 +16,19 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run | run-small | status | publish-reviewed | unpublish"
+        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small, status, publish-reviewed, unpublish]
+        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed]
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
         default: ""
-      qids:
-        description: "Optional (publish-reviewed/unpublish): kommagetrennte QIDs — publiziert bzw. unpublisht NUR diese Profile"
+      batch_limit:
+        description: "Kandidaten je Worker-Stufe (nur run-batch; kuratierte Seeds abarbeiten)"
         required: false
-        default: ""
-      reason:
-        description: "Begruendung (nur fuer unpublish; wird im Audit-Trail dokumentiert)"
-        required: false
-        default: ""
+        default: "45"
 
 concurrency:
   group: pipeline-run
@@ -42,15 +38,14 @@ jobs:
   pipeline:
     name: Worker-Kette (${{ inputs.mode }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: read
-      actions: write
+    # run-batch verarbeitet kuratierte Seeds in groesseren Stapeln und darf laenger laufen.
+    timeout-minutes: ${{ inputs.mode == 'run-batch' && 300 || 30 }}
     defaults:
       run:
         working-directory: backend
     env:
       MODE: ${{ inputs.mode || 'run-small' }}
+      BATCH_LIMIT: ${{ inputs.batch_limit || '45' }}
     steps:
       - uses: actions/checkout@v6
 
@@ -83,15 +78,15 @@ jobs:
           if [ -z "${{ inputs.approved_by }}" ]; then
             echo "publish-reviewed erfordert approved_by (Freigabe-E-Mail)."; exit 2
           fi
-          if [ -n "${{ inputs.qids }}" ]; then
-            for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
-              python -m app.workers.publish_profiles publish --qid "$qid" \
-                --approved-by "${{ inputs.approved_by }}" --enabled
-            done
-          else
-            python -m app.workers.publish_profiles publish --all-reviewed \
-              --approved-by "${{ inputs.approved_by }}" --enabled
-          fi
+          python -m app.workers.publish_profiles publish --all-reviewed \
+            --approved-by "${{ inputs.approved_by }}" --enabled
+
+      - name: "Seed: kuratierte Kandidaten einspielen (smyst_179_candidates.json)"
+        if: env.MODE == 'seed'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.seed_candidates --file ../smyst_179_candidates.json --enabled
 
       - name: "Worker 1: Wikidata-Ingest"
         if: env.MODE == 'dry-run' || env.MODE == 'run-small'
@@ -106,43 +101,49 @@ jobs:
           fi
 
       - name: "Worker 2: Research"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.research_candidates --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
             python -m app.workers.research_candidates --enabled --limit 5
           else
             python -m app.workers.research_candidates --dry-run --limit 3
           fi
 
       - name: "Worker 3: Risiko-Check"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.assess_risk --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
             python -m app.workers.assess_risk --enabled --limit 5
           else
             python -m app.workers.assess_risk --dry-run --limit 3
           fi
 
       - name: "Worker 4: Twin-Capsule-Build"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.build_capsules --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
             python -m app.workers.build_capsules --enabled --limit 5
           else
             python -m app.workers.build_capsules --dry-run --limit 3
           fi
 
       - name: "Worker 5: QA (inkl. Chat-Smoke-Test)"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -156,50 +157,16 @@ jobs:
           LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.qa_candidates --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
             python -m app.workers.qa_candidates --enabled --limit 5
           else
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
 
-      # Unpublish entzieht nur die Sichtbarkeit (kein Loeschen, Master Prompt).
-      - name: "Unpublish (nur mit dokumentierter Freigabe)"
-        if: env.MODE == 'unpublish'
-        env:
-          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
-          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-        run: |
-          if [ -z "${{ inputs.approved_by }}" ] || [ -z "${{ inputs.qids }}" ] || [ -z "${{ inputs.reason }}" ]; then
-            echo "unpublish erfordert approved_by, qids und reason."; exit 2
-          fi
-          for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
-            python -m app.workers.publish_profiles unpublish --qid "$qid" \
-              --reason "${{ inputs.reason }}" \
-              --approved-by "${{ inputs.approved_by }}" --enabled
-          done
-
-      # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026):
-      # der naechtliche Cron publiziert alle reviewed-Profile mit bestandener QA
-      # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
-      # reviewed+qa_passed, Tageslimit, Duplikat-Schutz gegen kuratierte
-      # Live-Profile, Audit-Trail mit approved_by.
-      - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04)"
-        if: github.event_name == 'schedule'
-        env:
-          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
-          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-        run: |
-          python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "smyst247@gmail.com" --enabled
-
-      - name: "Auto-Deploy nach Publish (nur Cron)"
-        if: github.event_name == 'schedule'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
-
       - name: Hinweis Publish
-        if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule')
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         run: |
           echo "Kein automatischer Publish. Freigabe durch Menschen:"
           echo "python -m app.workers.publish_profiles publish --qid <QID> --approved-by <email> --enabled"
