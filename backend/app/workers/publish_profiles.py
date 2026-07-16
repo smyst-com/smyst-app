@@ -212,9 +212,17 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser.add_argument("--reason", default="", help="Pflicht bei unpublish")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--enabled", action="store_true", help="pipeline.enabled Override")
+    parser.add_argument(
+        "--daily-limit", type=int, default=None,
+        help="Tageslimit-Override fuer dokumentierte Sonderfreigaben (z. B. kuratierter Seed-Batch); wirkt nur zusammen mit --approved-by",
+    )
     args = parser.parse_args(argv)
 
     config = DEFAULT_CONFIG if not args.enabled else PipelineConfig(enabled=True)
+    if args.daily_limit is not None and args.daily_limit > 0:
+        from dataclasses import replace as _replace
+
+        config = _replace(config, daily_publish_limit=args.daily_limit)
     if args.command == "unpublish" and not args.reason.strip():
         print("unpublish erfordert --reason.", file=sys.stderr)
         return 2
