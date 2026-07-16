@@ -7,28 +7,43 @@ name: Pipeline Run (historische Profile)
 # mode=run-small : echter Kettenlauf mit kleinen Limits — Kandidaten landen in
 #                  IDrive e2 unter pipeline/. KEIN Publish: Veroeffentlichen
 #                  bleibt eine menschliche Handlung (publish_profiles CLI).
+# mode=run-batch : wie run-small, aber mit batch_limit je Worker-Stufe —
+#                  fuer das Abarbeiten kuratierter Seeds (laengeres Timeout).
+# mode=seed      : kuratierte Kandidaten aus smyst_179_candidates.json einspielen.
 
 on:
   # Taeglicher Automatik-Lauf 04:00 UTC = 06:00 Europe/Berlin (Sommerzeit).
-  # Cron laeuft immer als run-small (Ingest bis QA). Publish bleibt manuell.
+  # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
   schedule:
     - cron: "0 4 * * *"
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed"
+        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed]
+        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish]
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
+        required: false
+        default: ""
+      qids:
+        description: "Optional (publish-reviewed/unpublish): kommagetrennte QIDs — publiziert bzw. unpublisht NUR diese Profile"
+        required: false
+        default: ""
+      reason:
+        description: "Begruendung (nur fuer unpublish; wird im Audit-Trail dokumentiert)"
         required: false
         default: ""
       batch_limit:
         description: "Kandidaten je Worker-Stufe (nur run-batch; kuratierte Seeds abarbeiten)"
         required: false
         default: "45"
+      publish_limit:
+        description: "Optional (publish-reviewed): Tageslimit-Override fuer dokumentierte Sonderfreigaben"
+        required: false
+        default: ""
 
 concurrency:
   group: pipeline-run
@@ -40,6 +55,9 @@ jobs:
     runs-on: ubuntu-latest
     # run-batch verarbeitet kuratierte Seeds in groesseren Stapeln und darf laenger laufen.
     timeout-minutes: ${{ inputs.mode == 'run-batch' && 300 || 30 }}
+    permissions:
+      contents: read
+      actions: write
     defaults:
       run:
         working-directory: backend
@@ -78,8 +96,19 @@ jobs:
           if [ -z "${{ inputs.approved_by }}" ]; then
             echo "publish-reviewed erfordert approved_by (Freigabe-E-Mail)."; exit 2
           fi
-          python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "${{ inputs.approved_by }}" --enabled
+          LIMIT_ARGS=""
+          if [ -n "${{ inputs.publish_limit }}" ]; then
+            LIMIT_ARGS="--daily-limit ${{ inputs.publish_limit }}"
+          fi
+          if [ -n "${{ inputs.qids }}" ]; then
+            for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
+              python -m app.workers.publish_profiles publish --qid "$qid" \
+                --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
+            done
+          else
+            python -m app.workers.publish_profiles publish --all-reviewed \
+              --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
+          fi
 
       - name: "Seed: kuratierte Kandidaten einspielen (smyst_179_candidates.json)"
         if: env.MODE == 'seed'
@@ -165,8 +194,44 @@ jobs:
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
 
+      # Unpublish entzieht nur die Sichtbarkeit (kein Loeschen, Master Prompt).
+      - name: "Unpublish (nur mit dokumentierter Freigabe)"
+        if: env.MODE == 'unpublish'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          if [ -z "${{ inputs.approved_by }}" ] || [ -z "${{ inputs.qids }}" ] || [ -z "${{ inputs.reason }}" ]; then
+            echo "unpublish erfordert approved_by, qids und reason."; exit 2
+          fi
+          for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
+            python -m app.workers.publish_profiles unpublish --qid "$qid" \
+              --reason "${{ inputs.reason }}" \
+              --approved-by "${{ inputs.approved_by }}" --enabled
+          done
+
+      # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026):
+      # der naechtliche Cron publiziert alle reviewed-Profile mit bestandener QA
+      # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
+      # reviewed+qa_passed, Tageslimit, Duplikat-Schutz gegen kuratierte
+      # Live-Profile, Audit-Trail mit approved_by.
+      - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04)"
+        if: github.event_name == 'schedule'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          python -m app.workers.publish_profiles publish --all-reviewed \
+            --approved-by "smyst247@gmail.com" --enabled
+
+      - name: "Auto-Deploy nach Publish (nur Cron)"
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+
       - name: Hinweis Publish
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
+        if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule') || env.MODE == 'run-batch'
         run: |
           echo "Kein automatischer Publish. Freigabe durch Menschen:"
           echo "python -m app.workers.publish_profiles publish --qid <QID> --approved-by <email> --enabled"
