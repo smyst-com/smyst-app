@@ -1,6 +1,7 @@
 {
   "locale": "pt",
   "dir": "ltr",
+  "auth": {"tabLogin":"Entrar","tabRegister":"Registrar-se","tabForgot":"Senha?","namePlaceholder":"Nome (opcional)","emailPlaceholder":"Endereço de e-mail","passwordPlaceholder":"Senha","passwordPlaceholderNew":"Senha (mín. 8 caracteres)","submitBusy":"Aguarde…","submitLogin":"Entrar","submitRegister":"Criar conta","submitForgot":"Enviar link","otherOption":"Outras opções de login","errorLogin":"Falha no login.","errorRegister":"Falha no registro.","errorForgot":"Falha na solicitação. Tente novamente mais tarde.","errorNetwork":"Erro de rede. Tente novamente.","forgotSent":"Se existir uma conta, enviamos um e-mail para redefinir a senha."},
   "footer": {
     "columnProduct": "Produto",
     "columnCompany": "Empresa",
