@@ -45,13 +45,15 @@ def _title_for_twin(twin_id: str | None) -> str:
 def _chat_router() -> LLMRouter:
     """Router mit hartem Chat-Zeitbudget (LLM_CHAT_TOTAL_DEADLINE_SECONDS,
     Default 20 s): kein Nutzer wartet laenger auf eine Antwort. Pipeline- und
-    Worker-Laeufe nutzen weiterhin das globale Budget (45 s)."""
+    Worker-Laeufe nutzen weiterhin das globale Budget (45 s).
+
+    getattr statt Direktzugriff: Tests injizieren Fake-Router ohne
+    total_deadline_seconds (Pipeline-Lauf #57 schlug mit AttributeError fehl).
+    """
     llm_router = build_default_router()
     chat_deadline = get_settings().llm_chat_total_deadline_seconds
-    if (
-        llm_router.total_deadline_seconds is None
-        or llm_router.total_deadline_seconds > chat_deadline
-    ):
+    current = getattr(llm_router, "total_deadline_seconds", None)
+    if current is None or current > chat_deadline:
         llm_router.total_deadline_seconds = chat_deadline
     return llm_router
 
