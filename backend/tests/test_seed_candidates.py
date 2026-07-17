@@ -174,3 +174,22 @@ def test_load_seed_file_validates_structure(tmp_path) -> None:
     bad.write_text('{"candidates": [{"name": "A"}]}', encoding="utf-8")
     with pytest.raises(ValueError):
         load_seed_file(bad)
+
+
+def test_resolve_falls_back_to_curated_birth_when_wikidata_missing() -> None:
+    fetch = make_fetch(search_payload("Q8018"), entity("Q8018", "+0430-08-28T00:00:00Z"))
+    resolution = resolve_candidate(
+        seed(name="Augustinus von Hippo", death="0430-08-28", birth_date="0354-11-13"),
+        fetch_json=fetch, sleep=NO_SLEEP)
+    assert resolution["death_date"] == date(430, 8, 28)
+    assert resolution["birth_date"] == date(354, 11, 13)
+
+
+def test_resolve_carries_curated_labels_for_approximate_dates() -> None:
+    fetch = make_fetch(search_payload("Q131805"), entity("Q131805", "+1536-07-12T00:00:00Z"))
+    resolution = resolve_candidate(
+        seed(name="Erasmus von Rotterdam", death="1536-07-12",
+             birth_date=None, birth_label="um 1466"),
+        fetch_json=fetch, sleep=NO_SLEEP)
+    assert resolution["birth_date"] is None
+    assert resolution["birth_label"] == "um 1466"
