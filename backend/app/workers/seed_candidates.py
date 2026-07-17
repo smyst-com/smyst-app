@@ -89,6 +89,15 @@ def death_year_hint(seed: dict) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def _parse_seed_date(iso: str | None) -> date | None:
+    if not iso:
+        return None
+    try:
+        return date.fromisoformat(str(iso)[:10])
+    except ValueError:
+        return None
+
+
 def resolve_candidate(
     seed: dict,
     *,
@@ -141,10 +150,15 @@ def resolve_candidate(
         death = _wb_time_to_date(_first_claim_time(entity, "P570"))
         if death is None or abs(death.year - hint) > DEATH_YEAR_TOLERANCE:
             continue
+        birth = _wb_time_to_date(_first_claim_time(entity, "P569")) or _parse_seed_date(
+            seed.get("birth_date")
+        )
         return {
             "qid": qid,
             "death_date": death,
-            "birth_date": _wb_time_to_date(_first_claim_time(entity, "P569")),
+            "birth_date": birth,
+            "birth_label": seed.get("birth_label"),
+            "death_label": seed.get("death_label"),
             "sitelink_count": len(entity.get("sitelinks", {})),
         }
     return None
@@ -198,6 +212,8 @@ def run_seed(
                 name=seed["name"],
                 death_date=resolution["death_date"],
                 birth_date=resolution["birth_date"],
+                birth_label=resolution.get("birth_label"),
+                death_label=resolution.get("death_label"),
                 category=seed["category"],
                 language=seed.get("language"),
                 sitelink_count=resolution["sitelink_count"],

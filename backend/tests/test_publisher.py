@@ -231,3 +231,27 @@ def test_publish_one_rejects_wrong_status_and_daily_limit() -> None:
     assert publish_one(
         "Q1035", store=store, config=disabled, approved_by="a@smyst.com", dry_run=True
     ).startswith("abgelehnt: Tageslimit")
+
+
+def test_publish_record_prefers_candidate_life_data_and_carries_labels() -> None:
+    cand = {**CANDIDATE_DOC, "wikidata_qid": "Q8018", "name": "Augustinus von Hippo",
+            "birth_date": "0354-11-13", "death_date": "0430-08-28",
+            "birth_label": None, "death_label": None}
+    caps = {**CAPSULE_DOC, "slug": "augustinus-von-hippo", "name": "Augustinus von Hippo",
+            "seo": {"json_ld": {"birthDate": None, "deathDate": "0430-08-28"}}}
+    rec = build_publish_record(cand, caps, approved_by="adam@smyst.com",
+                               now=datetime(2026, 7, 17, tzinfo=timezone.utc))
+    assert rec["birth_date"] == "0354-11-13"
+    assert rec["death_date"] == "0430-08-28"
+
+
+def test_publish_record_keeps_approximate_labels() -> None:
+    cand = {**CANDIDATE_DOC, "wikidata_qid": "Q131805", "name": "Erasmus",
+            "birth_date": None, "death_date": "1536-07-12",
+            "birth_label": "um 1466", "death_label": None}
+    caps = {**CAPSULE_DOC, "slug": "erasmus",
+            "seo": {"json_ld": {"birthDate": None, "deathDate": "1536-07-12"}}}
+    rec = build_publish_record(cand, caps, approved_by="adam@smyst.com",
+                               now=datetime(2026, 7, 17, tzinfo=timezone.utc))
+    assert rec["birth_label"] == "um 1466"
+    assert rec["death_date"] == "1536-07-12"

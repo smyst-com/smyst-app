@@ -86,6 +86,8 @@ class HistoricalCandidate:
     death_date: date
     category: str
     birth_date: date | None = None
+    birth_label: str | None = None
+    death_label: str | None = None
     country: str | None = None
     language: str | None = None
     sitelink_count: int = 0
