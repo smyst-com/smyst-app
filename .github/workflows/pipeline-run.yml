@@ -27,7 +27,8 @@ on:
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
-        default: ""
+        # Admin-/Freigabe-E-Mail als Standard (schriftliche Anweisung Adam King, 17.07.2026)
+        default: "smyst247@gmail.com"
       qids:
         description: "Optional (publish-reviewed/unpublish): kommagetrennte QIDs — publiziert bzw. unpublisht NUR diese Profile"
         required: false
@@ -183,12 +184,14 @@ jobs:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-          # BEWUSST fest verdrahtet (Runde 40): Das Secret LLM_PROVIDER_ORDER ist
-          # fuer das Backend optimiert (groq,openrouter,openai,...) — von diesen
-          # hat der QA-Lauf aber NUR den Groq-Key. Bei Groq-429 fiel die Kette
-          # direkt auf den degradierten Not-Fallback. Hier stehen exakt die
-          # Provider, deren Keys oben uebergeben werden.
-          LLM_PROVIDER_ORDER: "groq,mistral,together,cohere,perplexity,zhipu,dashscope"
+          # Runde 41: OpenRouter/OpenAI ergaenzt — Live-Ping bestaetigt beide
+          # funktionsfaehig; sie fehlten dem QA-Lauf bisher, wodurch Groq-429
+          # direkt in den degradierten Not-Fallback fuehrte.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # BEWUSST fest verdrahtet (Runde 40/41): exakt die Provider, deren
+          # Keys oben uebergeben werden — Reihenfolge nach Live-Ping-Latenz.
+          LLM_PROVIDER_ORDER: "groq,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
           if [ "$MODE" = "run-batch" ]; then
@@ -215,19 +218,21 @@ jobs:
               --approved-by "${{ inputs.approved_by }}" --enabled
           done
 
-      # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026):
-      # der naechtliche Cron publiziert alle reviewed-Profile mit bestandener QA
+      # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026,
+      # erweitert 17.07.2026: Tageslimit aufgehoben — --daily-limit 10000000000
+      # / 10 Milliarden, explizite Anweisung Adam King):
+      # der naechtliche Cron publiziert ALLE reviewed-Profile mit bestandener QA
       # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
-      # reviewed+qa_passed, Tageslimit, Duplikat-Schutz gegen kuratierte
-      # Live-Profile, Audit-Trail mit approved_by.
-      - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04)"
+      # reviewed+qa_passed, Duplikat-Schutz gegen kuratierte Live-Profile,
+      # Audit-Trail mit approved_by. Kein Loeschen.
+      - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04/17)"
         if: github.event_name == 'schedule'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "smyst247@gmail.com" --enabled
+            --approved-by "smyst247@gmail.com" --enabled --daily-limit 10000000000
 
       - name: "Auto-Deploy nach Publish (nur Cron)"
         if: github.event_name == 'schedule'
