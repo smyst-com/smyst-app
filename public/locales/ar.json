@@ -1,6 +1,7 @@
 {
   "locale": "ar",
   "dir": "rtl",
+  "auth": {"tabLogin":"تسجيل الدخول","tabRegister":"إنشاء حساب","tabForgot":"كلمة المرور؟","namePlaceholder":"الاسم (اختياري)","emailPlaceholder":"عنوان البريد الإلكتروني","passwordPlaceholder":"كلمة المرور","passwordPlaceholderNew":"كلمة المرور (8 أحرف على الأقل)","submitBusy":"يرجى الانتظار…","submitLogin":"تسجيل الدخول","submitRegister":"إنشاء حساب","submitForgot":"إرسال الرابط","otherOption":"خيارات تسجيل دخول أخرى","errorLogin":"فشل تسجيل الدخول.","errorRegister":"فشل التسجيل.","errorForgot":"فشل الطلب. يرجى المحاولة لاحقًا.","errorNetwork":"خطأ في الشبكة. يرجى المحاولة مرة أخرى.","forgotSent":"إذا كان هناك حساب، فقد أرسلنا إليك بريدًا إلكترونيًا لإعادة تعيين كلمة المرور."},
   "footer": {
     "columnProduct": "المنتج",
     "columnCompany": "الشركة",
