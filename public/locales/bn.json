@@ -1,6 +1,7 @@
 {
   "locale": "bn",
   "dir": "ltr",
+  "auth": {"tabLogin":"লগ ইন","tabRegister":"নিবন্ধন","tabForgot":"পাসওয়ার্ড?","namePlaceholder":"নাম (ঐচ্ছিক)","emailPlaceholder":"ইমেইল ঠিকানা","passwordPlaceholder":"পাসওয়ার্ড","passwordPlaceholderNew":"পাসওয়ার্ড (কমপক্ষে ৮ অক্ষর)","submitBusy":"অনুগ্রহ করে অপেক্ষা করুন…","submitLogin":"লগ ইন","submitRegister":"অ্যাকাউন্ট তৈরি করুন","submitForgot":"লিংক পাঠান","otherOption":"অন্যান্য লগইন বিকল্প","errorLogin":"লগইন ব্যর্থ হয়েছে।","errorRegister":"নিবন্ধন ব্যর্থ হয়েছে।","errorForgot":"অনুরোধ ব্যর্থ হয়েছে। পরে আবার চেষ্টা করুন।","errorNetwork":"নেটওয়ার্ক ত্রুটি। আবার চেষ্টা করুন।","forgotSent":"অ্যাকাউন্ট থাকলে, পাসওয়ার্ড রিসেট করার জন্য আমরা আপনাকে একটি ইমেইল পাঠিয়েছি।"},
   "seo": {
     "title": "smyst.com | AI টুইন, ডিজিটাল প্রোফাইল ও টুইন চ্যাট",
     "description": "smyst.com আপনাকে নিজস্ব প্রোফাইল, জ্ঞান ও স্মৃতিসহ নিজের ডিজিটাল AI টুইন তৈরি করতে এবং যেকোনো সময় চ্যাট করতে দেয়।",
