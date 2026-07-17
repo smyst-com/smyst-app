@@ -1,6 +1,7 @@
 {
   "locale": "ru",
   "dir": "ltr",
+  "auth": {"tabLogin":"Войти","tabRegister":"Регистрация","tabForgot":"Пароль?","namePlaceholder":"Имя (необязательно)","emailPlaceholder":"Адрес электронной почты","passwordPlaceholder":"Пароль","passwordPlaceholderNew":"Пароль (мин. 8 символов)","submitBusy":"Подождите…","submitLogin":"Войти","submitRegister":"Создать аккаунт","submitForgot":"Отправить ссылку","otherOption":"Другие способы входа","errorLogin":"Не удалось войти.","errorRegister":"Не удалось зарегистрироваться.","errorForgot":"Запрос не выполнен. Повторите попытку позже.","errorNetwork":"Ошибка сети. Повторите попытку.","forgotSent":"Если аккаунт существует, мы отправили вам письмо для сброса пароля."},
   "seo": {
     "title": "smyst.com | ИИ-двойники, цифровые профили и Twin-чат",
     "description": "smyst.com позволяет создать цифрового ИИ-двойника самого себя — с профилем, знаниями и воспоминаниями — и общаться с ним в любое время.",
