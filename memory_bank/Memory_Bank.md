@@ -1,5 +1,14 @@
 # Memory Bank
 
+## Update 2026-07-17: Morgenlauf — Batch-Skalierung durch Parallel-Agent (93 published, 193 Twins), i18n-Etappe 5 EmailAuthForm (PR #201)
+
+- BATCH-SKALIERUNG (Parallel-Agent, 16./17.07., NICHT vom Morgenlauf): Neue Workflow-Modi 'seed' und 'run-batch' mit konfigurierbarem publish_limit (Commits 08bdbde + 94d1fff, 16.07.; 17.07. 5d56396 'QA-Provider-Kette auf verfuegbare Keys ausrichten, Groq-429-Ausweich'). Neuer Step 'Seed: kuratierte Kandidaten einspielen (smyst_179_candidates.json)'. Nacht 17.07.: 19 manuelle Pipeline-Runs (#41-#59, 00:26-04:11), mehrere run-batch a ~21min; #55/#57 rot (Batch-Iterationen), danach mit Fix-Commits gruen. ERGEBNIS Status-Run #59 (04:11, gruen): published 93 (Vortag 49), rejected 30, generated 152, reviewed 16, unpublished 2. Tageslimit 5 gilt im Batch-Modus nicht mehr (publish_limit-Input). PRs #194-#200 vom Parallel-Agenten gemergt. Morgenlauf hat nichts davon angefasst, nur dokumentiert.
+- CRON: Gestriger Scheduled-Lauf #40 (16.07.) GRUEN (2m59s). Heutiger 17.07.-Cron stand um 07:05 (Berlin) noch aus — uebliches Verspaetungsfenster (08:00-10:37), kein Nachholen noetig.
+- LIVE (Cache-Buster, 07:15): 193 Twins (100 kuratiert + 93 Pipeline), 0 ohne imageUrl. NEU: Pipeline-Bilder selbst-gehostet unter /public/profile-images/<slug>.jpg (kein Commons-Hotlink mehr); imageCredit weiterhin mit Commons-Quelle+Lizenz. Stichprobe /t/karl-der-grosse rendert komplett (PD-Muenzportrait, Lebensdaten, KI-Kennzeichnung, Quellen).
+- i18n-ETAPPE 5 (PR #201, 18 Dateien, gemergt 1b53dcd, 8 Checks gruen, Deploy #251 gruen): EmailAuthForm lokalisiert. Neuer auth-Keyblock (17 Keys) in staticTranslations.ts (Interface + DE-Defaults + mergeTranslations-Zeile) + ALLEN 15 Locale-JSONs (einzeilig nach "dir"-Anker). EmailAuthForm: optionaler labels-Prop (StaticTranslations['auth']), alle deutschen Literale als Fallback erhalten -> DE byte-identisch; App.tsx uebergibt labels nur bei lang !== DEFAULT_LANG. LIVE VERIFIZIERT: /locales/en|fr|ar|ja.json liefern auth-Keys. BEFUND: EmailAuthForm wird via lazy(() => import('@/components/EmailAuthForm')) geladen — GitHub-Code-Search findet Alias-Importe NICHT.
+- ARBEITSWEISE NEU (validiert): Commit-Dialog komplett per JS: Button mit textContent 'Commit changes...' klicken, 600ms warten, im dialog[open] Button 'Commit changes' klicken. Kein Doppelklick-/Koordinatenrisiko.
+- VERBLEIBENDE i18n-ETAPPEN: (1) PasswordResetGate.tsx (gleicher auth-Block nutzbar), (2) Kategorien-Chips/'Alle' (Content-Mapping), (3) addNotice-Meldungen (~150 in App.tsx).
+
 ## Update 2026-07-16: Morgenlauf — Cron #38 (15.07.) gruen, Tagore live (149 Twins), i18n-Audit EmailAuthForm (kein Push)
 
 - CRON: Letzter Scheduled-Lauf #38 (15.07., 08:22) GRUEN; er hat 1 neues Profil publiziert (Rabindranath Tagore). Heutiger 16.07.-Cron stand um 07:05 (Berlin) noch aus — uebliches Verspaetungsfenster (Ankunft historisch 08:00–10:37) — kein Nachholen noetig.
