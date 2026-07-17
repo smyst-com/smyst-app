@@ -183,7 +183,12 @@ jobs:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-          LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
+          # BEWUSST fest verdrahtet (Runde 40): Das Secret LLM_PROVIDER_ORDER ist
+          # fuer das Backend optimiert (groq,openrouter,openai,...) — von diesen
+          # hat der QA-Lauf aber NUR den Groq-Key. Bei Groq-429 fiel die Kette
+          # direkt auf den degradierten Not-Fallback. Hier stehen exakt die
+          # Provider, deren Keys oben uebergeben werden.
+          LLM_PROVIDER_ORDER: "groq,mistral,together,cohere,perplexity,zhipu,dashscope"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
           if [ "$MODE" = "run-batch" ]; then
