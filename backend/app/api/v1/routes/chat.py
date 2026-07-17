@@ -230,7 +230,7 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
 async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     """SSE-Variante von /messages: streamt Antwort-Deltas, dann ein done-Event.
 
-    Event-Format (jeweils eine `data:`-Zeile mit JSON):
+    Event-Format (jeweils eine "data:"-Zeile mit JSON):
     - {"delta": "..."}  Text-Fragment
     - {"done": true, "chatId": ..., "twinId": ..., "message": {...}, "mode": ...}
     - {"error": true}   Stream abgebrochen; Client faellt auf /messages zurueck
@@ -243,9 +243,7 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     request = _attach_web_research_evidence(request, research_response)
 
     def _sse(payload: dict[str, object]) -> str:
-        return f"data: {json.dumps(payload, ensure_ascii=False)}
-
-"
+        return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
     async def event_source() -> AsyncIterator[str]:
         try:
