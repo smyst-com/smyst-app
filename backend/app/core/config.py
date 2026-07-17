@@ -82,6 +82,9 @@ class Settings(BaseSettings):
     llm_total_deadline_seconds: float = Field(
         default=45.0, validation_alias="LLM_TOTAL_DEADLINE_SECONDS"
     )
+    llm_chat_total_deadline_seconds: float = Field(
+        default=20.0, validation_alias="LLM_CHAT_TOTAL_DEADLINE_SECONDS"
+    )
 
     cors_origin_raw: str = Field(
         default="http://localhost:3000,http://localhost:5173,http://127.0.0.1:4173",
