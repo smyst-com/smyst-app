@@ -1,6 +1,7 @@
 {
   "locale": "zh",
   "dir": "ltr",
+  "auth": {"tabLogin":"登录","tabRegister":"注册","tabForgot":"密码？","namePlaceholder":"姓名（可选）","emailPlaceholder":"电子邮件地址","passwordPlaceholder":"密码","passwordPlaceholderNew":"密码（至少 8 个字符）","submitBusy":"请稍候…","submitLogin":"登录","submitRegister":"创建账户","submitForgot":"发送链接","otherOption":"其他登录方式","errorLogin":"登录失败。","errorRegister":"注册失败。","errorForgot":"请求失败，请稍后重试。","errorNetwork":"网络错误，请重试。","forgotSent":"如果账户存在，我们已向你发送重置密码的电子邮件。"},
   "footer": {
     "columnProduct": "产品",
     "columnCompany": "公司",

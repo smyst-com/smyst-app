@@ -1,6 +1,7 @@
 {
   "locale": "it",
   "dir": "ltr",
+  "auth": {"tabLogin":"Accedi","tabRegister":"Registrati","tabForgot":"Password?","namePlaceholder":"Nome (facoltativo)","emailPlaceholder":"Indirizzo e-mail","passwordPlaceholder":"Password","passwordPlaceholderNew":"Password (min. 8 caratteri)","submitBusy":"Attendere…","submitLogin":"Accedi","submitRegister":"Crea account","submitForgot":"Invia link","otherOption":"Altre opzioni di accesso","errorLogin":"Accesso non riuscito.","errorRegister":"Registrazione non riuscita.","errorForgot":"Richiesta non riuscita. Riprova più tardi.","errorNetwork":"Errore di rete. Riprova.","forgotSent":"Se esiste un account, ti abbiamo inviato un'e-mail per reimpostare la password."},
   "seo": {
     "title": "smyst.com | Gemelli IA, profili digitali e Twin Chat",
     "description": "smyst.com ti permette di creare un gemello IA digitale di te stesso — con profilo, conoscenze e ricordi — e di chattarci in qualsiasi momento.",

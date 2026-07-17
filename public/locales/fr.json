@@ -1,6 +1,7 @@
 {
   "locale": "fr",
   "dir": "ltr",
+  "auth": {"tabLogin":"Se connecter","tabRegister":"S'inscrire","tabForgot":"Mot de passe ?","namePlaceholder":"Nom (facultatif)","emailPlaceholder":"Adresse e-mail","passwordPlaceholder":"Mot de passe","passwordPlaceholderNew":"Mot de passe (min. 8 caractères)","submitBusy":"Veuillez patienter…","submitLogin":"Se connecter","submitRegister":"Créer un compte","submitForgot":"Envoyer le lien","otherOption":"Autres options de connexion","errorLogin":"Échec de la connexion.","errorRegister":"Échec de l'inscription.","errorForgot":"Échec de la demande. Veuillez réessayer plus tard.","errorNetwork":"Erreur réseau. Veuillez réessayer.","forgotSent":"Si un compte existe, nous vous avons envoyé un e-mail de réinitialisation."},
   "footer": {
     "columnProduct": "Produit",
     "columnCompany": "Entreprise",

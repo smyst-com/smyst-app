@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { fetchAuth, storeAuthToken } from '../lib/authEndpoints';
+import type { StaticTranslations } from '../lib/staticTranslations';
 
 type Mode = 'login' | 'register' | 'forgot';
 
@@ -28,7 +29,7 @@ async function postJson(path: string, body: Record<string, unknown>) {
   return { ok: res.ok, status: res.status, data };
 }
 
-export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
+export default function EmailAuthForm({ onClose, labels }: { onClose?: () => void; labels?: StaticTranslations['auth'] }) {
   const [mode, setMode] = useState<Mode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +54,7 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
           window.location.reload();
           return;
         }
-        setError(data.error?.message ?? 'Anmeldung fehlgeschlagen.');
+        setError(data.error?.message ?? labels?.errorLogin ?? 'Anmeldung fehlgeschlagen.');
       } else if (mode === 'register') {
         const { ok, data } = await postJson('/email/register', { email, password, name });
         if (ok) {
@@ -61,17 +62,17 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
           window.location.reload();
           return;
         }
-        setError(data.error?.message ?? 'Registrierung fehlgeschlagen.');
+        setError(data.error?.message ?? labels?.errorRegister ?? 'Registrierung fehlgeschlagen.');
       } else {
         const { ok, data } = await postJson('/email/forgot', { email });
         if (ok) {
-          setMessage('Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.');
+          setMessage(labels?.forgotSent ?? 'Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.');
         } else {
-          setError(data.error?.message ?? 'Anfrage fehlgeschlagen. Bitte später erneut versuchen.');
+          setError(data.error?.message ?? labels?.errorForgot ?? 'Anfrage fehlgeschlagen. Bitte später erneut versuchen.');
         }
       }
     } catch {
-      setError('Netzwerkfehler. Bitte erneut versuchen.');
+      setError(labels?.errorNetwork ?? 'Netzwerkfehler. Bitte erneut versuchen.');
     } finally {
       setBusy(false);
     }
@@ -98,9 +99,9 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
   return (
     <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3">
       <div className="mb-3 flex gap-1">
-        {tab('login', 'Anmelden')}
-        {tab('register', 'Registrieren')}
-        {tab('forgot', 'Passwort?')}
+        {tab('login', labels?.tabLogin ?? 'Anmelden')}
+        {tab('register', labels?.tabRegister ?? 'Registrieren')}
+        {tab('forgot', labels?.tabForgot ?? 'Passwort?')}
       </div>
 
       <form onSubmit={submit} className="grid gap-2">
@@ -109,7 +110,7 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
             className={inputClass}
             type="text"
             autoComplete="name"
-            placeholder="Name (optional)"
+            placeholder={labels?.namePlaceholder ?? 'Name (optional)'}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -119,7 +120,7 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
           type="email"
           required
           autoComplete="email"
-          placeholder="E-Mail-Adresse"
+          placeholder={labels?.emailPlaceholder ?? 'E-Mail-Adresse'}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -130,7 +131,7 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
             required
             minLength={8}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            placeholder={mode === 'register' ? 'Passwort (min. 8 Zeichen)' : 'Passwort'}
+            placeholder={mode === 'register' ? (labels?.passwordPlaceholderNew ?? 'Passwort (min. 8 Zeichen)') : (labels?.passwordPlaceholder ?? 'Passwort')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -144,13 +145,13 @@ export default function EmailAuthForm({ onClose }: { onClose?: () => void }) {
           disabled={busy}
           className="mt-1 min-h-[44px] rounded-lg bg-white px-3 text-sm font-bold text-[#111722] transition hover:bg-[#eef6ff] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {busy ? 'Bitte warten…' : mode === 'login' ? 'Anmelden' : mode === 'register' ? 'Konto erstellen' : 'Link senden'}
+          {busy ? (labels?.submitBusy ?? 'Bitte warten…') : mode === 'login' ? (labels?.submitLogin ?? 'Anmelden') : mode === 'register' ? (labels?.submitRegister ?? 'Konto erstellen') : (labels?.submitForgot ?? 'Link senden')}
         </button>
       </form>
 
       {onClose && (
         <button type="button" onClick={onClose} className="mt-2 w-full text-center text-xs text-[#8e97a8] hover:text-white">
-          Andere Anmeldeoption
+          {labels?.otherOption ?? 'Andere Anmeldeoption'}
         </button>
       )}
     </div>

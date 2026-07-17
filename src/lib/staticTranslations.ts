@@ -9,6 +9,7 @@ export interface StaticTranslations {
     description: string
     keywords: string
   }
+  auth: { tabLogin: string; tabRegister: string; tabForgot: string; namePlaceholder: string; emailPlaceholder: string; passwordPlaceholder: string; passwordPlaceholderNew: string; submitBusy: string; submitLogin: string; submitRegister: string; submitForgot: string; otherOption: string; errorLogin: string; errorRegister: string; errorForgot: string; errorNetwork: string; forgotSent: string }
   start: {
     searchLabel: string
     searchPlaceholder: string
@@ -128,6 +129,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
       'smyst.com ist eine Plattform für öffentliche und private KI-Zwillinge, Wissen, Erinnerungen und schnelle Twin-Chats.',
     keywords: 'KI-Zwilling, AI Twin, digitaler Zwilling, Wissensprofil, Erinnerungen, smyst',
   },
+  auth: { tabLogin: 'Anmelden', tabRegister: 'Registrieren', tabForgot: 'Passwort?', namePlaceholder: 'Name (optional)', emailPlaceholder: 'E-Mail-Adresse', passwordPlaceholder: 'Passwort', passwordPlaceholderNew: 'Passwort (min. 8 Zeichen)', submitBusy: 'Bitte warten…', submitLogin: 'Anmelden', submitRegister: 'Konto erstellen', submitForgot: 'Link senden', otherOption: 'Andere Anmeldeoption', errorLogin: 'Anmeldung fehlgeschlagen.', errorRegister: 'Registrierung fehlgeschlagen.', errorForgot: 'Anfrage fehlgeschlagen. Bitte später erneut versuchen.', errorNetwork: 'Netzwerkfehler. Bitte erneut versuchen.', forgotSent: 'Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.' },
   start: {
     searchLabel: 'Profil suchen',
     searchPlaceholder: 'Profil suchen',
@@ -248,6 +250,7 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     ...DEFAULT_TRANSLATIONS,
     ...value,
     seo: { ...DEFAULT_TRANSLATIONS.seo, ...value.seo },
+    auth: { ...DEFAULT_TRANSLATIONS.auth, ...value.auth },
     start: { ...DEFAULT_TRANSLATIONS.start, ...value.start },
     chat: { ...DEFAULT_TRANSLATIONS.chat, ...value.chat },
     profile: { ...DEFAULT_TRANSLATIONS.profile, ...value.profile },
