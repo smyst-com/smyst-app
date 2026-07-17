@@ -2428,7 +2428,7 @@ function SmystStartPage({
               {showEmailForm && (
                 <div className="mt-3">
                   <Suspense fallback={null}>
-                    <EmailAuthForm onClose={() => setShowEmailForm(false)} />
+                    <EmailAuthForm onClose={() => setShowEmailForm(false)} labels={lang === DEFAULT_LANG ? undefined : t.auth} />
                   </Suspense>
                 </div>
               )}
