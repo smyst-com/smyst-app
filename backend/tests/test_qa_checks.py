@@ -262,4 +262,6 @@ def test_qa_one_skips_candidate_when_chat_provider_degraded() -> None:
     assert result.startswith("skipped")
     saved = store.load_candidate_document("Q1035")
     assert saved["status"] == "generated"
-    assert "qa_report" not in saved
+    # Basis-Dokument enthaelt den Schluessel ggf. mit leerem Wert — entscheidend
+    # ist, dass der Skip KEINEN Report geschrieben hat.
+    assert not saved.get("qa_report")
