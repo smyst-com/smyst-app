@@ -10,10 +10,11 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from app.ai.llm_router import build_default_router
+from app.ai.llm_router import LLMRouter, build_default_router
 from app.ai.models import LLMRequest
 from app.ai.twin_context import twin_context
 from app.ai.web_research import ResearchContext, VerifiedWebResearchService, WebSearchResponse
+from app.core.config import get_settings
 from app.integrations import chat_store
 from app.security.sanitization import normalize_text
 
@@ -39,6 +40,20 @@ def _title_for_twin(twin_id: str | None) -> str:
     if not twin_id:
         return "Smyst Twin Chat"
     return twin_id.replace("-", " ").replace("_", " ").title()
+
+
+def _chat_router() -> LLMRouter:
+    """Router mit hartem Chat-Zeitbudget (LLM_CHAT_TOTAL_DEADLINE_SECONDS,
+    Default 20 s): kein Nutzer wartet laenger auf eine Antwort. Pipeline- und
+    Worker-Laeufe nutzen weiterhin das globale Budget (45 s)."""
+    llm_router = build_default_router()
+    chat_deadline = get_settings().llm_chat_total_deadline_seconds
+    if (
+        llm_router.total_deadline_seconds is None
+        or llm_router.total_deadline_seconds > chat_deadline
+    ):
+        llm_router.total_deadline_seconds = chat_deadline
+    return llm_router
 
 
 async def _ensure_chat(chat_id: str) -> dict[str, object]:
@@ -192,7 +207,7 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
     llm_request = await _build_llm_request(chat, message)
     research_response = await _research_for_chat(chat, message)
     llm_request = _attach_web_research_evidence(llm_request, research_response)
-    llm_response = await build_default_router().complete(llm_request)
+    llm_response = await _chat_router().complete(llm_request)
     assistant_message = {
         "id": str(uuid4()),
         "role": "assistant",
@@ -222,13 +237,15 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     """
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
-    llm_router = build_default_router()
+    llm_router = _chat_router()
     request = await _build_llm_request(chat, message)
     research_response = await _research_for_chat(chat, message)
     request = _attach_web_research_evidence(request, research_response)
 
     def _sse(payload: dict[str, object]) -> str:
-        return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+        return f"data: {json.dumps(payload, ensure_ascii=False)}
+
+"
 
     async def event_source() -> AsyncIterator[str]:
         try:
