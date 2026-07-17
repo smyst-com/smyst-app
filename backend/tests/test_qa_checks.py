@@ -230,3 +230,36 @@ def test_run_qa_batch_prioritizes_untested_candidates() -> None:
         run_date=date(2026, 7, 17), chat_fn_factory=lambda capsule: chat_ok,
     )
     assert list(report["results"]) == ["Q1339"]
+
+
+def test_run_qa_reraises_degraded_chat_provider() -> None:
+    """Degradierte Chat-Antworten duerfen QA weder bestehen noch scheitern lassen."""
+    from app.ai.qa_checks import ChatProviderDegradedError
+    import pytest
+
+    def degraded_chat(question: str) -> str:
+        raise ChatProviderDegradedError("provider=local model=smyst-local-deterministic-v1")
+
+    with pytest.raises(ChatProviderDegradedError):
+        run_qa(CANDIDATE_DOC, CAPSULE_DOC, [], chat_fn=degraded_chat)
+
+
+def test_qa_one_skips_candidate_when_chat_provider_degraded() -> None:
+    """Provider-Ausfall: Kandidat bleibt unbewertet (kein qa_report, kein Status-Wechsel)."""
+    from app.ai.qa_checks import ChatProviderDegradedError
+    from app.workers.qa_candidates import qa_one
+
+    store = _prepared_store()
+
+    def degraded_chat(question: str) -> str:
+        raise ChatProviderDegradedError("provider=local")
+
+    qid, result = qa_one(
+        store.load_candidate_document("Q1035"), store=store, config=CONFIG,
+        dry_run=False, chat_fn_factory=lambda capsule: degraded_chat,
+    )
+    assert qid == "Q1035"
+    assert result.startswith("skipped")
+    saved = store.load_candidate_document("Q1035")
+    assert saved["status"] == "generated"
+    assert "qa_report" not in saved
