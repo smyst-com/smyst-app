@@ -32,7 +32,7 @@ from app.ai.historical_pipeline import (
     PipelineStatus,
     transition,
 )
-from app.ai.qa_checks import run_qa
+from app.ai.qa_checks import ChatProviderDegradedError, run_qa
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 from app.workers.build_capsules import CAPSULE_PREFIX
 from app.workers.research_candidates import _candidate_from_document
@@ -77,6 +77,13 @@ def build_chat_fn(capsule_doc: dict) -> Callable[[str], str] | None:
                     )
                 )
             )
+            # Not-Fallback-Antworten (degraded=True) sind Wartemeldungen ohne
+            # Bezug zur Capsule — als Provider-Ausfall behandeln, NICHT bewerten
+            # (Befund Runde 39: 111 falsche QA-Fails durch degradierte Antworten).
+            if getattr(response, "degraded", False):
+                raise ChatProviderDegradedError(
+                    f"provider={response.provider} model={response.model}"
+                )
             return response.text
 
         return chat
@@ -104,12 +111,18 @@ def qa_one(
     capsule_doc = load_capsule_document(store, qid)
     published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
 
-    report = run_qa(
-        document,
-        capsule_doc,
-        published,
-        chat_fn=chat_fn_factory(capsule_doc),
-    )
+    try:
+        report = run_qa(
+            document,
+            capsule_doc,
+            published,
+            chat_fn=chat_fn_factory(capsule_doc),
+        )
+    except ChatProviderDegradedError as error:
+        # Provider-Ausfall: Kandidat NICHT anfassen (kein qa_report, kein
+        # Status-Wechsel) — er wird im naechsten Lauf erneut geprueft.
+        print(f"qa_candidates: {qid} uebersprungen — Chat-Provider degradiert ({error})")
+        return qid, f"skipped (Chat-Provider degradiert: {error}) — Kandidat unbewertet"
 
     audit_entry = None
     if report.duplicate:
