@@ -279,6 +279,20 @@ def test_provider_statuses_normalize_stale_model_overrides() -> None:
     assert gemini["model"] == "gemini-3.5-flash"
 
 
+def test_provider_statuses_migrate_retired_deepseek_models() -> None:
+    # deepseek-chat/-reasoner werden am 2026-07-24 abgeschaltet.
+    settings = Settings(
+        DEEPSEEK_API_KEY="secret-deepseek",
+        LLM_PROVIDER_ORDER="deepseek",
+        LLM_DEFAULT_MODELS="deepseek=deepseek-chat",
+    )
+
+    statuses = provider_statuses(settings)
+
+    deepseek = next(status for status in statuses if status["provider"] == "deepseek")
+    assert deepseek["model"] == "deepseek-v4-flash"
+
+
 @pytest.mark.asyncio
 async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> None:
     FakeAsyncClient.posts = []
@@ -338,6 +352,22 @@ async def test_ping_providers_falls_back_when_model_check_times_out(monkeypatch)
     assert result["openai"]["mode"] == "generation_ping"
     assert len(FakeAsyncClient.gets) == 1
     assert len(FakeAsyncClient.posts) == 1
+
+
+@pytest.mark.asyncio
+async def test_ping_providers_accepts_dated_model_id_for_alias(monkeypatch) -> None:
+    # Aliasse wie "claude-haiku-4-5" fehlen in Modell-Listen mit datierten IDs
+    # ("claude-haiku-4-5-20251001") — Prefix-Match darf nicht false-flaggen.
+    FakeAsyncClient.posts = []
+    FakeAsyncClient.gets = []
+    FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "gpt-4o-2024-11-20"}]})]
+    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+
+    settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
+    result = await ping_providers(settings)
+
+    assert result["openai"]["ok"] is True
+    assert result["openai"]["mode"] == "credential_model_check"
 
 
 @pytest.mark.asyncio

@@ -243,12 +243,19 @@ class OpenAICompatibleProvider(LLMProvider):
             for item in raw_models
             if isinstance(item, dict | str)
         }
-        if model_ids and self.model not in model_ids:
-            raise ProviderHealthError(
-                "configured model is not available for this provider",
-                category="model_unavailable",
-                status_code=200,
-            )
+        if not model_ids or self.model in model_ids:
+            return
+        # Aliasse (z. B. "claude-haiku-4-5") fehlen teils in der Modell-Liste,
+        # obwohl sie fuer Completions gueltig sind — die Liste fuehrt datierte
+        # IDs wie "claude-haiku-4-5-20251001". Prefix-Match akzeptieren.
+        prefix = f"{self.model}-"
+        if any(isinstance(mid, str) and mid.startswith(prefix) for mid in model_ids):
+            return
+        raise ProviderHealthError(
+            "configured model is not available for this provider",
+            category="model_unavailable",
+            status_code=200,
+        )
 
     def _parse_text(self, data: dict[str, Any]) -> str:
         choices = data.get("choices") or []
