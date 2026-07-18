@@ -34,6 +34,16 @@ function displayDate(label?: string, isoDate?: string): string {
   return formatIsoDate(label) || formatIsoDate(isoDate) || ''
 }
 
+// Namensschluessel fuer den Abgleich zwischen eigenen Twins und oeffentlichen
+// Profilen. Diakritikfest, damit "Schrödinger" und "Schrodinger" gleich sind.
+export function normalizeLifeKey(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+}
+
 function ageAtDeath(profile: LifeDisplayProfile): number | null {
   if (
     profile.birthDate &&
