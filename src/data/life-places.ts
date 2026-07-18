@@ -3,6 +3,15 @@
 // verifiziert über das Geburtsjahr. Automatisch generiert – 2026-07-18.
 // Anzeige: 4-zeiliges Profilformat (Name – Alter / Geburtsdatum, Ort / Sterbedatum, Ort / Beruf).
 export const LIFE_PLACES: Record<string, { birthPlace?: string; deathPlace?: string }> = {
+  "friedrich-holderlin": { birthPlace: "Lauffen am Neckar, Deutschland", deathPlace: "Tübingen, Deutschland" },
+  "enrico-fermi": { birthPlace: "Rom, Italien", deathPlace: "Chicago, USA" },
+  "henry-ford": { birthPlace: "Springwells Township, USA", deathPlace: "Dearborn, USA" },
+  "joseph-fourier": { birthPlace: "Auxerre, Frankreich", deathPlace: "Paris, Frankreich" },
+  "max-planck": { birthPlace: "Kiel, Deutschland", deathPlace: "Göttingen, Deutschland" },
+  "james-watt": { birthPlace: "Greenock, Vereinigtes Königreich", deathPlace: "Heathfield Hall, Vereinigtes Königreich" },
+  "abraham-lincoln": { birthPlace: "Hodgenville, USA", deathPlace: "Washington, D.C., USA" },
+  "ernest-rutherford": { birthPlace: "Nelson, Neuseeland", deathPlace: "Cambridge, Vereinigtes Königreich" },
+  "konigin-victoria": { birthPlace: "Kensington Palace, Vereinigtes Königreich", deathPlace: "Osborne House, Vereinigtes Königreich" },
   "albert-einstein": { birthPlace: "Ulm, Deutschland", deathPlace: "Princeton, USA" },
   "leonardo-da-vinci": { birthPlace: "Anchiano, Italien", deathPlace: "Schloss Clos Lucé, Frankreich" },
   "isaac-newton": { birthPlace: "Woolsthorpe Manor, Vereinigtes Königreich", deathPlace: "Kensington, Vereinigtes Königreich" },
