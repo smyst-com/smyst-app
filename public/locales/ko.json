@@ -1,6 +1,7 @@
 {
   "locale": "ko",
   "dir": "ltr",
+  "pwreset": {"title":"새 비밀번호 설정","intro":"smyst.com 계정에 사용할 새 비밀번호를 입력하세요(8자 이상).","passwordPlaceholder":"새 비밀번호","repeatPlaceholder":"비밀번호 다시 입력","mismatch":"비밀번호가 일치하지 않습니다.","submitBusy":"저장 중…","submit":"비밀번호 저장 후 로그인","cancel":"취소","errorReset":"재설정에 실패했습니다. 새 링크를 요청해 주세요.","errorNetwork":"연결에 실패했습니다. 다시 시도해 주세요."},
   "auth": {"tabLogin":"로그인","tabRegister":"회원가입","tabForgot":"비밀번호?","namePlaceholder":"이름 (선택)","emailPlaceholder":"이메일 주소","passwordPlaceholder":"비밀번호","passwordPlaceholderNew":"비밀번호 (최소 8자)","submitBusy":"잠시만 기다려 주세요…","submitLogin":"로그인","submitRegister":"계정 만들기","submitForgot":"링크 보내기","otherOption":"다른 로그인 방법","errorLogin":"로그인에 실패했습니다.","errorRegister":"가입에 실패했습니다.","errorForgot":"요청에 실패했습니다. 나중에 다시 시도해 주세요.","errorNetwork":"네트워크 오류입니다. 다시 시도해 주세요.","forgotSent":"계정이 있는 경우 비밀번호 재설정 이메일을 보냈습니다."},
   "footer": {
     "columnProduct": "제품",
