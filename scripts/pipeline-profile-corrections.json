@@ -1,5 +1,5 @@
 {
-  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile (Audit 05.07.2026, Befund 5). 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet.",
+  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet.",
   "profiles": {
     "carl-von-linne": {
       "roles": "Naturforscher, Botaniker",
@@ -118,6 +118,96 @@
         "Kunst",
         "Technologie",
         "Forschung"
+      ]
+    },
+    "abraham-lincoln": {
+      "roles": "Staatsmann, Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte",
+        "Führung"
+      ]
+    },
+    "henri-poincare": {
+      "roles": "Mathematiker, Physiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft",
+        "Philosophie"
+      ]
+    },
+    "srinivasa-ramanujan": {
+      "roles": "Mathematiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "ernest-rutherford": {
+      "roles": "Physiker, Chemiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "max-planck": {
+      "roles": "Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "enrico-fermi": {
+      "roles": "Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "james-watt": {
+      "roles": "Ingenieur, Erfinder",
+      "categories": [
+        "Technologie",
+        "Wissenschaft",
+        "Wirtschaft"
+      ]
+    },
+    "henry-ford": {
+      "roles": "Industrieller, Unternehmer",
+      "categories": [
+        "Wirtschaft",
+        "Technologie",
+        "Führung"
+      ]
+    },
+    "joseph-fourier": {
+      "roles": "Mathematiker, Physiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "friedrich-holderlin": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur",
+        "Philosophie"
+      ]
+    },
+    "konigin-victoria": {
+      "roles": "Königin, Staatsoberhaupt",
+      "categories": [
+        "Politik",
+        "Geschichte",
+        "Führung"
+      ]
+    },
+    "alessandro-volta": {
+      "roles": "Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Technologie"
       ]
     }
   }
