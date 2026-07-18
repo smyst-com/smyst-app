@@ -18,18 +18,28 @@ type LifeDisplayProfile = {
   deathLabel?: string
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
 function formatIsoDate(value?: string): string | null {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
+  if (!value || !ISO_DATE.test(value)) return null
   const [year, month, day] = value.split('-')
   return `${day}.${month}.${year}`
+}
+
+// Manche Profile liefern in birthLabel/deathLabel ein rohes ISO-Datum
+// (z. B. "1887-12-22") statt eines Anzeigetexts. Solche Labels werden
+// formatiert; echte Labels wie "ca. 384 v. Chr." bleiben unveraendert.
+function displayDate(label?: string, isoDate?: string): string {
+  if (label && !ISO_DATE.test(label)) return label
+  return formatIsoDate(label) || formatIsoDate(isoDate) || ''
 }
 
 function ageAtDeath(profile: LifeDisplayProfile): number | null {
   if (
     profile.birthDate &&
     profile.deathDate &&
-    /^\d{4}-\d{2}-\d{2}$/.test(profile.birthDate) &&
-    /^\d{4}-\d{2}-\d{2}$/.test(profile.deathDate)
+    ISO_DATE.test(profile.birthDate) &&
+    ISO_DATE.test(profile.deathDate)
     ) {
     const [birthYear, birthMonth, birthDay] = profile.birthDate.split('-').map(Number)
     const [deathYear, deathMonth, deathDay] = profile.deathDate.split('-').map(Number)
@@ -56,14 +66,14 @@ export function profileNameWithAge(profile: LifeDisplayProfile): string {
 
 // Zeile 2: "Geburtsdatum, Geburtsort" (fehlender Teil wird weggelassen).
 export function profileBirthLine(profile: LifeDisplayProfile): string {
-  const date = profile.birthLabel || formatIsoDate(profile.birthDate) || ''
+  const date = displayDate(profile.birthLabel, profile.birthDate)
   const place = LIFE_PLACES[lifePlaceSlug(profile)]?.birthPlace || ''
   return [date, place].filter(Boolean).join(', ')
 }
 
 // Zeile 3: "Sterbedatum, Sterbeort" (fehlender Teil wird weggelassen).
 export function profileDeathLine(profile: LifeDisplayProfile): string {
-  const date = profile.deathLabel || formatIsoDate(profile.deathDate) || ''
+  const date = displayDate(profile.deathLabel, profile.deathDate)
   const place = LIFE_PLACES[lifePlaceSlug(profile)]?.deathPlace || ''
   return [date, place].filter(Boolean).join(', ')
 }
