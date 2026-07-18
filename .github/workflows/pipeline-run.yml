@@ -219,7 +219,7 @@ jobs:
           done
 
       # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026,
-      # erweitert 17.07.2026: Tageslimit aufgehoben — --daily-limit 10000000000
+      # erweitert 18.07.2026: Tageslimit 100/Tag (schriftliche Freigabe Adam King)
       # / 10 Milliarden, explizite Anweisung Adam King):
       # der naechtliche Cron publiziert ALLE reviewed-Profile mit bestandener QA
       # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
@@ -232,7 +232,7 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "smyst247@gmail.com" --enabled --daily-limit 10000000000
+            --approved-by "smyst247@gmail.com" --enabled --daily-limit 100
 
       - name: "Auto-Deploy nach Publish (nur Cron)"
         if: github.event_name == 'schedule'

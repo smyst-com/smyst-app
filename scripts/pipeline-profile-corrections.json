@@ -1,5 +1,5 @@
 {
-  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet.",
+  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King).",
   "profiles": {
     "carl-von-linne": {
       "roles": "Naturforscher, Botaniker",
@@ -572,7 +572,9 @@
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "birthLabel": "23.09.63 v. Chr.",
+      "birthYear": -61
     },
     "wilhelm-herschel": {
       "roles": "Astronom, Musiker",
