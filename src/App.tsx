@@ -648,7 +648,7 @@ export default function App() {
           nameSortMode={nameSortMode}
           onNameSortModeChange={setNameSortMode}
         />
-		  <PasswordResetGate />
+		  <PasswordResetGate labels={appLang === DEFAULT_LANG ? undefined : ft.pwreset} />
         <Suspense fallback={null}>
           <CookieConsent />
         </Suspense>
