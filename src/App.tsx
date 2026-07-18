@@ -36,6 +36,7 @@ import {
   CURATED_PUBLIC_TWIN_SPECS,
   type CuratedPublicTwinSpec,
 } from './data/curated-public-twin-data'
+import { profileNameWithAge, profileBirthLine, profileDeathLine } from './data/life-display'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
@@ -1591,15 +1592,7 @@ function SmystStartPage({
       </span>
       <span className={`${compact ? 'flex min-w-0 flex-1 flex-col justify-center px-3 py-2' : 'flex min-w-0 flex-1 flex-col justify-center px-4 py-3 sm:px-6'}`}>
         <span className="min-w-0">
-          <span className={`${compact ? 'text-[15px]' : 'text-lg sm:text-2xl'} block truncate font-bold leading-tight text-[#edf4ff]`}>
-            {twin.name}
-          </span>
-          <span className={`${compact ? 'text-[13px]' : 'text-sm sm:text-base'} mt-1 block truncate font-semibold leading-tight text-[#aab4c4]`}>
-            {profileMainCategory(twin)}
-          </span>
-          <span className={`${compact ? 'text-[12px]' : 'text-sm'} mt-1 block truncate font-medium leading-tight text-[#8e97a8]`}>
-            {profileLifeLine(twin, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel, unknown: t.start.lifeDatesUnknown })}
-          </span>
+                    <span className={`${compact ? 'text-[15px]' : 'text-lg sm:text-2xl'} block truncate font-bold leading-tight text-[#edf4ff]`}>{profileNameWithAge(twin)}</span>span>{profileBirthLine(twin) && <span className={`${compact ? 'text-[11px]' : 'text-sm'} mt-0.5 block truncate font-medium leading-tight text-[#8e97a8]`}>{profileBirthLine(twin)}</span>span>}{profileDeathLine(twin) && <span className={`${compact ? 'text-[11px]' : 'text-sm'} block truncate font-medium leading-tight text-[#8e97a8]`}>{profileDeathLine(twin)}</span>span>}<span className={`${compact ? 'text-[12px]' : 'text-sm sm:text-base'} mt-0.5 block truncate font-semibold leading-tight text-[#aab4c4]`}>{profileMainCategory(twin)}</span>span>
         </span>
       </span>
     </button>
@@ -2595,9 +2588,7 @@ function SmystStartPage({
                 )}
               </span>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
-                <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{selectedTwin.name}</span>
-                <span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>
-                <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileLifeLine(selectedTwin, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel, unknown: t.start.lifeDatesUnknown })}</span>
+                <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{profileNameWithAge(selectedTwin)}</span>span>{profileBirthLine(selectedTwin) && <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileBirthLine(selectedTwin)}</span>span>}{profileDeathLine(selectedTwin) && <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileDeathLine(selectedTwin)}</span>span>}<span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>span></span>
               </span>
             </div>
           </div>
@@ -3246,9 +3237,7 @@ function TwinProfileView({
 
             <div className="p-6 sm:p-8">
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">KI-Zwilling Profil</p>
-              <h1 className="text-4xl font-bold tracking-tight">{profile.name}</h1>
-              <p className="text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
-              <p className="mt-1 text-sm font-semibold text-[#667085]">{profileLifeLine(profile)}</p>
+              <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile)}</h1>h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>p>}<p className="mt-1 text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>p></h1>
               <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.'}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
