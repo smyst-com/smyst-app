@@ -209,6 +209,1395 @@
         "Forschung",
         "Technologie"
       ]
+    },
+    "christopher-wren": {
+      "roles": "Architekt, Astronom",
+      "categories": [
+        "Kunst",
+        "Technologie",
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "john-ruskin": {
+      "roles": "Kunstkritiker, Schriftsteller",
+      "categories": [
+        "Kunst",
+        "Literatur"
+      ]
+    },
+    "gustave-eiffel": {
+      "roles": "Ingenieur, Konstrukteur",
+      "categories": [
+        "Kunst",
+        "Technologie",
+        "Wissenschaft"
+      ]
+    },
+    "jean-auguste-dominique-ingres": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "antoni-gaudi": {
+      "roles": "Architekt",
+      "categories": [
+        "Kunst",
+        "Technologie"
+      ]
+    },
+    "alfred-russel-wallace": {
+      "roles": "Naturforscher, Biologe",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "el-greco": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "theodore-roosevelt": {
+      "roles": "Staatsmann, Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "arthur-conan-doyle": {
+      "roles": "Schriftsteller, Arzt",
+      "categories": [
+        "Literatur",
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "alexander-fleming": {
+      "roles": "Bakteriologe, Mediziner",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "wladimir-iljitsch-lenin": {
+      "roles": "Revolutionär, Politiker",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "ulysses-s-grant": {
+      "roles": "General, Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "wilhelm-conrad-rontgen": {
+      "roles": "Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "robert-koch": {
+      "roles": "Mediziner, Bakteriologe",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "edward-jenner": {
+      "roles": "Arzt, Impfpionier",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "guglielmo-marconi": {
+      "roles": "Erfinder, Funkpionier",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Technologie"
+      ]
+    },
+    "thomas-mann": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "carl-benz": {
+      "roles": "Ingenieur, Automobilpionier",
+      "categories": [
+        "Technologie",
+        "Wissenschaft"
+      ]
+    },
+    "jean-baptiste-le-rond-d-alembert": {
+      "roles": "Mathematiker, Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "francis-drake": {
+      "roles": "Seefahrer, Freibeuter",
+      "categories": [
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "heinrich-heine": {
+      "roles": "Dichter, Publizist",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "charles-babbage": {
+      "roles": "Mathematiker, Computerpionier",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "ernst-haeckel": {
+      "roles": "Zoologe, Naturforscher",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "mustafa-kemal-ataturk": {
+      "roles": "Staatsmann, Feldherr",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "rembrandt-van-rijn": {
+      "roles": "Maler, Radierer",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "peter-paul-rubens": {
+      "roles": "Maler, Diplomat",
+      "categories": [
+        "Kunst",
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "sinan": {
+      "roles": "Architekt, Baumeister",
+      "categories": [
+        "Kunst",
+        "Technologie"
+      ]
+    },
+    "matsuo-basho": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "novalis": {
+      "roles": "Dichter, Philosoph",
+      "categories": [
+        "Literatur",
+        "Philosophie"
+      ]
+    },
+    "pjotr-alexejewitsch-kropotkin": {
+      "roles": "Geograph, Sozialtheoretiker",
+      "categories": [
+        "Geschichte",
+        "Forschung",
+        "Philosophie"
+      ]
+    },
+    "alexander-von-humboldt": {
+      "roles": "Naturforscher, Geograph",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Geschichte"
+      ]
+    },
+    "andre-marie-ampere": {
+      "roles": "Physiker, Mathematiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "rabindranath-tagore": {
+      "roles": "Dichter, Komponist",
+      "categories": [
+        "Musik",
+        "Literatur"
+      ]
+    },
+    "george-washington": {
+      "roles": "Staatsmann, General",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "james-cook": {
+      "roles": "Seefahrer, Entdecker",
+      "categories": [
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "mary-wollstonecraft": {
+      "roles": "Schriftstellerin, Philosophin",
+      "categories": [
+        "Literatur",
+        "Philosophie"
+      ]
+    },
+    "harriet-tubman": {
+      "roles": "Fluchthelferin, Aktivistin",
+      "categories": [
+        "Ethik",
+        "Geschichte"
+      ]
+    },
+    "caspar-david-friedrich": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "johann-heinrich-pestalozzi": {
+      "roles": "Pädagoge, Reformer",
+      "categories": [
+        "Bildung"
+      ]
+    },
+    "aryabhata": {
+      "roles": "Mathematiker, Astronom",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "hypatia": {
+      "roles": "Mathematikerin, Philosophin",
+      "categories": [
+        "Philosophie",
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "rudolf-diesel": {
+      "roles": "Ingenieur, Erfinder",
+      "categories": [
+        "Technologie",
+        "Wissenschaft"
+      ]
+    },
+    "charlotte-bronte": {
+      "roles": "Schriftstellerin",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "maimonides": {
+      "roles": "Philosoph, Arzt",
+      "categories": [
+        "Philosophie",
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "hieronymus-bosch": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "maria-montessori": {
+      "roles": "Ärztin, Pädagogin",
+      "categories": [
+        "Medizin",
+        "Wissenschaft",
+        "Bildung"
+      ]
+    },
+    "henry-david-thoreau": {
+      "roles": "Schriftsteller, Philosoph",
+      "categories": [
+        "Literatur",
+        "Philosophie"
+      ]
+    },
+    "maria-theresia": {
+      "roles": "Erzherzogin, Regentin",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "john-dewey": {
+      "roles": "Philosoph, Pädagoge",
+      "categories": [
+        "Philosophie",
+        "Bildung"
+      ]
+    },
+    "plotin": {
+      "roles": "Philosoph",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "augustus": {
+      "roles": "Kaiser, Staatsmann",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "wilhelm-herschel": {
+      "roles": "Astronom, Musiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "santiago-ramon-y-cajal": {
+      "roles": "Mediziner, Histologe",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "robert-louis-stevenson": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "georg-simon-ohm": {
+      "roles": "Physiker, Mathematiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "luigi-galvani": {
+      "roles": "Arzt, Naturforscher",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "william-turner": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "gian-lorenzo-bernini": {
+      "roles": "Bildhauer, Architekt",
+      "categories": [
+        "Kunst",
+        "Technologie"
+      ]
+    },
+    "andreas-vesalius": {
+      "roles": "Anatom, Arzt",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "tokugawa-ieyasu": {
+      "roles": "Feldherr, Shogun",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "mary-cassatt": {
+      "roles": "Malerin",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "filippo-brunelleschi": {
+      "roles": "Architekt, Baumeister",
+      "categories": [
+        "Kunst",
+        "Technologie"
+      ]
+    },
+    "benito-juarez": {
+      "roles": "Staatsmann, Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "sofja-kowalewskaja": {
+      "roles": "Mathematikerin",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "george-bernard-shaw": {
+      "roles": "Dramatiker, Kritiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "susan-b-anthony": {
+      "roles": "Frauenrechtlerin, Reformerin",
+      "categories": [
+        "Bildung",
+        "Ethik",
+        "Geschichte"
+      ]
+    },
+    "utagawa-hiroshige": {
+      "roles": "Maler, Holzschnittmeister",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "evliya-celebi": {
+      "roles": "Reisender, Chronist",
+      "categories": [
+        "Literatur",
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "toussaint-louverture": {
+      "roles": "Freiheitskämpfer, Staatsmann",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "dede-efendi": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "emmeline-pankhurst": {
+      "roles": "Frauenrechtlerin, Aktivistin",
+      "categories": [
+        "Ethik",
+        "Geschichte"
+      ]
+    },
+    "frederick-douglass": {
+      "roles": "Publizist, Reformer",
+      "categories": [
+        "Literatur",
+        "Bildung"
+      ]
+    },
+    "piri-reis": {
+      "roles": "Kartograph, Admiral",
+      "categories": [
+        "Politik",
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "jean-francois-champollion": {
+      "roles": "Ägyptologe, Sprachforscher",
+      "categories": [
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "claude-monet": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "nasir-ad-din-at-tusi": {
+      "roles": "Astronom, Mathematiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "karl-der-grosse": {
+      "roles": "Kaiser, Herrscher",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "sigmund-freud": {
+      "roles": "Neurologe, Psychoanalytiker",
+      "categories": [
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "roald-amundsen": {
+      "roles": "Polarforscher, Entdecker",
+      "categories": [
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "william-harvey": {
+      "roles": "Arzt, Anatom",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "ibn-al-haytham": {
+      "roles": "Physiker, Mathematiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "niels-henrik-abel": {
+      "roles": "Mathematiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "johann-amos-comenius": {
+      "roles": "Pädagoge, Theologe",
+      "categories": [
+        "Philosophie",
+        "Bildung"
+      ]
+    },
+    "harun-ar-raschid": {
+      "roles": "Kalif, Herrscher",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "auguste-rodin": {
+      "roles": "Bildhauer",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "machado-de-assis": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "mehmet-akif-ersoy": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "friedrich-der-grosse": {
+      "roles": "König, Feldherr",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "nam-k-kemal": {
+      "roles": "Dichter, Publizist",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "alexander-graham-bell": {
+      "roles": "Erfinder, Ingenieur",
+      "categories": [
+        "Technologie",
+        "Wissenschaft"
+      ]
+    },
+    "mehmed-ii": {
+      "roles": "Sultan, Feldherr",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "gotthold-ephraim-lessing": {
+      "roles": "Dichter, Dramatiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "gustav-klimt": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "rudyard-kipling": {
+      "roles": "Schriftsteller, Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "paul-cezanne": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "baruch-de-spinoza": {
+      "roles": "Philosoph",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "katharina-die-grosse": {
+      "roles": "Kaiserin, Regentin",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "tycho-brahe": {
+      "roles": "Astronom",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "henrik-ibsen": {
+      "roles": "Dramatiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "donatello": {
+      "roles": "Bildhauer",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "thomas-hobbes": {
+      "roles": "Philosoph, Staatstheoretiker",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "paul-gauguin": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "wang-yangming": {
+      "roles": "Philosoph, Staatsmann",
+      "categories": [
+        "Philosophie",
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "yunus-emre": {
+      "roles": "Dichter, Mystiker",
+      "categories": [
+        "Literatur",
+        "Philosophie"
+      ]
+    },
+    "alexandre-dumas": {
+      "roles": "Schriftsteller, Dramatiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "christiaan-huygens": {
+      "roles": "Physiker, Astronom",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "antoine-lavoisier": {
+      "roles": "Chemiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "ibn-ruschd": {
+      "roles": "Philosoph, Arzt",
+      "categories": [
+        "Philosophie",
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "pierre-auguste-renoir": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "edouard-manet": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "virginia-woolf": {
+      "roles": "Schriftstellerin",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "jonathan-swift": {
+      "roles": "Schriftsteller, Satiriker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "heinrich-hertz": {
+      "roles": "Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "jan-vermeer": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "henri-becquerel": {
+      "roles": "Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "john-dalton": {
+      "roles": "Chemiker, Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "franz-liszt": {
+      "roles": "Komponist, Pianist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "edvard-munch": {
+      "roles": "Maler, Grafiker",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "federico-garcia-lorca": {
+      "roles": "Dichter, Dramatiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "michel-de-montaigne": {
+      "roles": "Philosoph, Essayist",
+      "categories": [
+        "Literatur",
+        "Philosophie"
+      ]
+    },
+    "justinian-i": {
+      "roles": "Kaiser, Gesetzgeber",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "henri-bergson": {
+      "roles": "Philosoph",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "caravaggio": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "thomas-morus": {
+      "roles": "Staatsmann, Humanist",
+      "categories": [
+        "Philosophie",
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "iwan-pawlow": {
+      "roles": "Physiologe, Mediziner",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "pieter-bruegel-der-altere": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "robert-boyle": {
+      "roles": "Chemiker, Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "gustave-flaubert": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "erasmus-von-rotterdam": {
+      "roles": "Humanist, Gelehrter",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "antoni-van-leeuwenhoek": {
+      "roles": "Mikroskopiker, Naturforscher",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "nikolai-gogol": {
+      "roles": "Schriftsteller, Dramatiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "oliver-cromwell": {
+      "roles": "Feldherr, Staatsmann",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "emily-dickinson": {
+      "roles": "Dichterin",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "pierre-simon-laplace": {
+      "roles": "Mathematiker, Astronom",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "edgar-degas": {
+      "roles": "Maler, Bildhauer",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "ibn-arabi": {
+      "roles": "Philosoph, Mystiker",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "edmond-halley": {
+      "roles": "Astronom, Mathematiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "tizian": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "herman-melville": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "john-stuart-mill": {
+      "roles": "Philosoph, Ökonom",
+      "categories": [
+        "Philosophie",
+        "Wirtschaft"
+      ]
+    },
+    "charles-baudelaire": {
+      "roles": "Dichter, Kritiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "emile-zola": {
+      "roles": "Schriftsteller, Publizist",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "giuseppe-garibaldi": {
+      "roles": "Freiheitskämpfer, General",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "sandro-botticelli": {
+      "roles": "Maler",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "lord-byron": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "paul-ehrlich": {
+      "roles": "Mediziner, Immunologe",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "heinrich-schliemann": {
+      "roles": "Archäologe, Kaufmann",
+      "categories": [
+        "Geschichte",
+        "Forschung",
+        "Wirtschaft"
+      ]
+    },
+    "ignaz-semmelweis": {
+      "roles": "Arzt, Geburtshelfer",
+      "categories": [
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "hermann-von-helmholtz": {
+      "roles": "Physiker, Physiologe",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "marco-polo": {
+      "roles": "Kaufmann, Reisender",
+      "categories": [
+        "Geschichte",
+        "Forschung",
+        "Wirtschaft"
+      ]
+    },
+    "wassily-kandinsky": {
+      "roles": "Maler, Kunsttheoretiker",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "hafis": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "s-ren-kierkegaard": {
+      "roles": "Philosoph, Theologe",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "moliere": {
+      "roles": "Dramatiker, Schauspieler",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "james-joyce": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "li-bai": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "evariste-galois": {
+      "roles": "Mathematiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "emmy-noether": {
+      "roles": "Mathematikerin",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "marcel-proust": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "alexander-puschkin": {
+      "roles": "Dichter, Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "elisabeth-i": {
+      "roles": "Königin, Regentin",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "jeanne-d-arc": {
+      "roles": "Feldherrin, Nationalheldin",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "johannes-brahms": {
+      "roles": "Komponist, Pianist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "georg-friedrich-handel": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "ibn-battuta": {
+      "roles": "Reisender, Chronist",
+      "categories": [
+        "Literatur",
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "zheng-he": {
+      "roles": "Admiral, Seefahrer",
+      "categories": [
+        "Politik",
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "joseph-haydn": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "kublai-khan": {
+      "roles": "Großkhan, Herrscher",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "pierre-de-fermat": {
+      "roles": "Mathematiker, Jurist",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft",
+        "Philosophie"
+      ]
+    },
+    "georg-cantor": {
+      "roles": "Mathematiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "rudolf-virchow": {
+      "roles": "Mediziner, Pathologe",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "rainer-maria-rilke": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "meister-eckhart": {
+      "roles": "Theologe, Mystiker",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "friedrich-frobel": {
+      "roles": "Pädagoge, Reformer",
+      "categories": [
+        "Bildung"
+      ]
+    },
+    "ludwig-xiv": {
+      "roles": "König, Herrscher",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "wilhelm-von-humboldt": {
+      "roles": "Gelehrter, Bildungsreformer",
+      "categories": [
+        "Philosophie",
+        "Bildung"
+      ]
+    },
+    "stefan-zweig": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "john-milton": {
+      "roles": "Dichter, Publizist",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "franklin-d-roosevelt": {
+      "roles": "Staatsmann, Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "augustinus-von-hippo": {
+      "roles": "Theologe, Philosoph",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "joseph-louis-lagrange": {
+      "roles": "Mathematiker, Astronom",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Mathematik"
+      ]
+    },
+    "walt-whitman": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "charles-augustin-de-coulomb": {
+      "roles": "Physiker, Ingenieur",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Technologie"
+      ]
+    },
+    "murasaki-shikibu": {
+      "roles": "Schriftstellerin, Hofdame",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "george-berkeley": {
+      "roles": "Philosoph, Theologe",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "john-keats": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "henri-de-toulouse-lautrec": {
+      "roles": "Maler, Grafiker",
+      "categories": [
+        "Kunst"
+      ]
+    },
+    "michail-bulgakow": {
+      "roles": "Schriftsteller, Dramatiker",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "konstantin-der-grosse": {
+      "roles": "Kaiser, Herrscher",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "ludwig-boltzmann": {
+      "roles": "Physiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "suleyman-der-prachtige": {
+      "roles": "Sultan, Gesetzgeber",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "peter-der-grosse": {
+      "roles": "Zar, Reformer",
+      "categories": [
+        "Politik",
+        "Geschichte",
+        "Bildung"
+      ]
+    },
+    "sun-yat-sen": {
+      "roles": "Revolutionär, Staatsmann",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "akbar": {
+      "roles": "Großmogul, Herrscher",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "simon-bolivar": {
+      "roles": "Freiheitskämpfer, Staatsmann",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "thomas-alva-edison": {
+      "roles": "Erfinder, Unternehmer",
+      "categories": [
+        "Technologie",
+        "Wissenschaft",
+        "Wirtschaft"
+      ]
+    },
+    "john-maynard-keynes": {
+      "roles": "Ökonom",
+      "categories": [
+        "Wirtschaft"
+      ]
+    },
+    "ludwig-wittgenstein": {
+      "roles": "Philosoph",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "zhu-xi": {
+      "roles": "Philosoph, Gelehrter",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "thomas-von-aquin": {
+      "roles": "Theologe, Philosoph",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "al-ghazali": {
+      "roles": "Theologe, Philosoph",
+      "categories": [
+        "Philosophie"
+      ]
+    },
+    "ernest-shackleton": {
+      "roles": "Polarforscher, Entdecker",
+      "categories": [
+        "Geschichte",
+        "Forschung"
+      ]
+    },
+    "honore-de-balzac": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "wu-zetian": {
+      "roles": "Kaiserin, Herrscherin",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
     }
   }
 }
