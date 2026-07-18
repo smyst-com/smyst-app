@@ -10,6 +10,7 @@ export interface StaticTranslations {
     keywords: string
   }
   auth: { tabLogin: string; tabRegister: string; tabForgot: string; namePlaceholder: string; emailPlaceholder: string; passwordPlaceholder: string; passwordPlaceholderNew: string; submitBusy: string; submitLogin: string; submitRegister: string; submitForgot: string; otherOption: string; errorLogin: string; errorRegister: string; errorForgot: string; errorNetwork: string; forgotSent: string }
+  pwreset: { title: string; intro: string; passwordPlaceholder: string; repeatPlaceholder: string; mismatch: string; submitBusy: string; submit: string; cancel: string; errorReset: string; errorNetwork: string }
   start: {
     searchLabel: string
     searchPlaceholder: string
@@ -130,6 +131,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     keywords: 'KI-Zwilling, AI Twin, digitaler Zwilling, Wissensprofil, Erinnerungen, smyst',
   },
   auth: { tabLogin: 'Anmelden', tabRegister: 'Registrieren', tabForgot: 'Passwort?', namePlaceholder: 'Name (optional)', emailPlaceholder: 'E-Mail-Adresse', passwordPlaceholder: 'Passwort', passwordPlaceholderNew: 'Passwort (min. 8 Zeichen)', submitBusy: 'Bitte warten…', submitLogin: 'Anmelden', submitRegister: 'Konto erstellen', submitForgot: 'Link senden', otherOption: 'Andere Anmeldeoption', errorLogin: 'Anmeldung fehlgeschlagen.', errorRegister: 'Registrierung fehlgeschlagen.', errorForgot: 'Anfrage fehlgeschlagen. Bitte später erneut versuchen.', errorNetwork: 'Netzwerkfehler. Bitte erneut versuchen.', forgotSent: 'Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.' },
+  pwreset: { title: 'Neues Passwort setzen', intro: 'Wähle ein neues Passwort für dein smyst.com-Konto (mindestens 8 Zeichen).', passwordPlaceholder: 'Neues Passwort', repeatPlaceholder: 'Passwort wiederholen', mismatch: 'Die Passwörter stimmen nicht überein.', submitBusy: 'Speichern…', submit: 'Passwort speichern und anmelden', cancel: 'Abbrechen', errorReset: 'Zurücksetzen fehlgeschlagen. Bitte fordere einen neuen Link an.', errorNetwork: 'Verbindung fehlgeschlagen. Bitte erneut versuchen.' },
   start: {
     searchLabel: 'Profil suchen',
     searchPlaceholder: 'Profil suchen',
@@ -251,6 +253,7 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     ...value,
     seo: { ...DEFAULT_TRANSLATIONS.seo, ...value.seo },
     auth: { ...DEFAULT_TRANSLATIONS.auth, ...value.auth },
+    pwreset: { ...DEFAULT_TRANSLATIONS.pwreset, ...value.pwreset },
     start: { ...DEFAULT_TRANSLATIONS.start, ...value.start },
     chat: { ...DEFAULT_TRANSLATIONS.chat, ...value.chat },
     profile: { ...DEFAULT_TRANSLATIONS.profile, ...value.profile },

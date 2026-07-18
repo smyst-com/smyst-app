@@ -1,6 +1,7 @@
 {
   "locale": "es",
   "dir": "ltr",
+  "pwreset": {"title":"Establecer una nueva contraseña","intro":"Elige una nueva contraseña para tu cuenta de smyst.com (mínimo 8 caracteres).","passwordPlaceholder":"Nueva contraseña","repeatPlaceholder":"Repetir contraseña","mismatch":"Las contraseñas no coinciden.","submitBusy":"Guardando…","submit":"Guardar contraseña e iniciar sesión","cancel":"Cancelar","errorReset":"Error al restablecer. Solicita un nuevo enlace.","errorNetwork":"Error de conexión. Inténtalo de nuevo."},
   "auth": {"tabLogin":"Iniciar sesión","tabRegister":"Registrarse","tabForgot":"¿Contraseña?","namePlaceholder":"Nombre (opcional)","emailPlaceholder":"Correo electrónico","passwordPlaceholder":"Contraseña","passwordPlaceholderNew":"Contraseña (mín. 8 caracteres)","submitBusy":"Espera, por favor…","submitLogin":"Iniciar sesión","submitRegister":"Crear cuenta","submitForgot":"Enviar enlace","otherOption":"Otras opciones de acceso","errorLogin":"Error al iniciar sesión.","errorRegister":"Error en el registro.","errorForgot":"La solicitud falló. Inténtalo de nuevo más tarde.","errorNetwork":"Error de red. Inténtalo de nuevo.","forgotSent":"Si existe una cuenta, te hemos enviado un correo para restablecer la contraseña."},
   "footer": {
     "columnProduct": "Producto",

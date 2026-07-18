@@ -1,6 +1,7 @@
 {
   "locale": "de",
   "dir": "ltr",
+  "pwreset": {"title":"Neues Passwort setzen","intro":"Wähle ein neues Passwort für dein smyst.com-Konto (mindestens 8 Zeichen).","passwordPlaceholder":"Neues Passwort","repeatPlaceholder":"Passwort wiederholen","mismatch":"Die Passwörter stimmen nicht überein.","submitBusy":"Speichern…","submit":"Passwort speichern und anmelden","cancel":"Abbrechen","errorReset":"Zurücksetzen fehlgeschlagen. Bitte fordere einen neuen Link an.","errorNetwork":"Verbindung fehlgeschlagen. Bitte erneut versuchen."},
   "auth": {"tabLogin":"Anmelden","tabRegister":"Registrieren","tabForgot":"Passwort?","namePlaceholder":"Name (optional)","emailPlaceholder":"E-Mail-Adresse","passwordPlaceholder":"Passwort","passwordPlaceholderNew":"Passwort (min. 8 Zeichen)","submitBusy":"Bitte warten…","submitLogin":"Anmelden","submitRegister":"Konto erstellen","submitForgot":"Link senden","otherOption":"Andere Anmeldeoption","errorLogin":"Anmeldung fehlgeschlagen.","errorRegister":"Registrierung fehlgeschlagen.","errorForgot":"Anfrage fehlgeschlagen. Bitte später erneut versuchen.","errorNetwork":"Netzwerkfehler. Bitte erneut versuchen.","forgotSent":"Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt."},
   "seo": {
     "title": "smyst.com | KI-Zwillinge, digitale Profile und Twin Chat",
