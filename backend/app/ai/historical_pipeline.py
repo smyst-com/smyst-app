@@ -88,6 +88,10 @@ class HistoricalCandidate:
     birth_date: date | None = None
     birth_label: str | None = None
     death_label: str | None = None
+    # Geburts-/Sterbeort als "Stadt, Land" (Wikidata P19/P20 + P17) fuer die
+    # Zeilen 2 und 3 des verbindlichen 4-Zeilen-Profilformats.
+    birth_place: str | None = None
+    death_place: str | None = None
     country: str | None = None
     language: str | None = None
     sitelink_count: int = 0

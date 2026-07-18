@@ -85,6 +85,8 @@ export interface PublicTwinProfile {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  birthPlace?: string
+  deathPlace?: string
   exampleQuestions?: string[]
   searchIndex?: string
   sources?: Array<{ title: string; publisher: string; url: string }>

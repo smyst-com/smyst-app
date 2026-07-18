@@ -301,6 +301,10 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     deathYear: record.death_date ? Number(String(record.death_date).slice(0, 4)) : undefined,
     birthLabel: record.birth_label || record.birth_date || '',
     deathLabel: record.death_label || record.death_date || '',
+    // 4-Zeilen-Profilformat: Orte aus der Pipeline (Wikidata P19/P20).
+    // Fehlen sie, greift im Frontend LIFE_PLACES als Fallback.
+    birthPlace: record.birth_place || undefined,
+    deathPlace: record.death_place || undefined,
     exampleQuestions: [],
     searchIndex: [record.name, record.slug, record.category, ...(Array.isArray(corr.categories) ? corr.categories : []), corr.roles, description].filter(Boolean).join(' '),
     sources: record.sources || [],
