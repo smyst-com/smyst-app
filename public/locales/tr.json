@@ -1,6 +1,7 @@
 {
   "locale": "tr",
   "dir": "ltr",
+  "pwreset": {"title":"Yeni şifre belirle","intro":"smyst.com hesabın için yeni bir şifre seç (en az 8 karakter).","passwordPlaceholder":"Yeni şifre","repeatPlaceholder":"Şifreyi tekrarla","mismatch":"Şifreler eşleşmiyor.","submitBusy":"Kaydediliyor…","submit":"Şifreyi kaydet ve giriş yap","cancel":"İptal","errorReset":"Sıfırlama başarısız. Lütfen yeni bir bağlantı iste.","errorNetwork":"Bağlantı kurulamadı. Lütfen tekrar deneyin."},
   "auth": {"tabLogin":"Giriş yap","tabRegister":"Kayıt ol","tabForgot":"Şifre?","namePlaceholder":"İsim (isteğe bağlı)","emailPlaceholder":"E-posta adresi","passwordPlaceholder":"Şifre","passwordPlaceholderNew":"Şifre (en az 8 karakter)","submitBusy":"Lütfen bekleyin…","submitLogin":"Giriş yap","submitRegister":"Hesap oluştur","submitForgot":"Bağlantı gönder","otherOption":"Diğer giriş seçenekleri","errorLogin":"Giriş başarısız.","errorRegister":"Kayıt başarısız.","errorForgot":"İstek başarısız. Lütfen daha sonra tekrar deneyin.","errorNetwork":"Ağ hatası. Lütfen tekrar deneyin.","forgotSent":"Bir hesap varsa, şifrenizi sıfırlamanız için size bir e-posta gönderdik."},
   "footer": {
     "columnProduct": "Ürün",
