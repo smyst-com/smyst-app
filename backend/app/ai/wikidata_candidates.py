@@ -144,41 +144,36 @@ def parse_sparql_bindings(payload: dict, *, category: str) -> list[HistoricalCan
     Zeilen ohne parsebares Sterbedatum werden verworfen (Pflichtfeld).
     """
     # Mehrere P17-Werte je Ort vervielfachen die Zeilen (Francis Bacon kam im
-    # Livetest in vier Varianten). Darum je QID zusammenfassen: erste Zeile
-    # gewinnt fuer die Stammdaten, die Laender werden ueber alle Zeilen gesammelt
-    # und erst danach bewertet.
-    first_row: dict[str, dict] = {}
-    order: list[str] = []
+    # Livetest in vier Varianten). Erster Durchgang sammelt daher nur die Laender
+    # je QID ein; die Kandidaten selbst entstehen unveraendert Zeile fuer Zeile,
+    # damit die In-Lauf-Dublettenerkennung in screen_candidates weiter greift.
     birth_countries: dict[str, set[str]] = {}
     death_countries: dict[str, set[str]] = {}
     for row in payload.get("results", {}).get("bindings", []):
-        if "death" not in row or _parse_wikidata_date(row["death"]["value"]) is None:
-            continue
         qid = _qid_from_uri(row["person"]["value"])
-        if qid not in first_row:
-            first_row[qid] = row
-            order.append(qid)
-            birth_countries[qid] = set()
-            death_countries[qid] = set()
         for key, target in (("birthPlaceCountryLabel", birth_countries),
                             ("deathPlaceCountryLabel", death_countries)):
             country = _label(row, key)
             if country:
-                target[qid].add(country)
+                target.setdefault(qid, set()).add(country)
 
     candidates: list[HistoricalCandidate] = []
-    for qid in order:
-        row = first_row[qid]
+    for row in payload.get("results", {}).get("bindings", []):
+        death = _parse_wikidata_date(row["death"]["value"]) if "death" in row else None
+        if death is None:
+            continue
+        birth = _parse_wikidata_date(row["birth"]["value"]) if "birth" in row else None
+        qid = _qid_from_uri(row["person"]["value"])
         candidates.append(
             HistoricalCandidate(
                 wikidata_qid=qid,
                 name=row.get("personLabel", {}).get("value", ""),
-                death_date=_parse_wikidata_date(row["death"]["value"]),
-                birth_date=_parse_wikidata_date(row["birth"]["value"]) if "birth" in row else None,
+                death_date=death,
+                birth_date=birth,
                 category=category,
                 country=row.get("countryLabel", {}).get("value"),
-                birth_place=_place(_label(row, "birthPlaceLabel"), birth_countries[qid]),
-                death_place=_place(_label(row, "deathPlaceLabel"), death_countries[qid]),
+                birth_place=_place(_label(row, "birthPlaceLabel"), birth_countries.get(qid, set())),
+                death_place=_place(_label(row, "deathPlaceLabel"), death_countries.get(qid, set())),
                 sitelink_count=int(row.get("sitelinks", {}).get("value", 0)),
             )
         )
