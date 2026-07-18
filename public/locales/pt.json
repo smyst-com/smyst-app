@@ -1,6 +1,7 @@
 {
   "locale": "pt",
   "dir": "ltr",
+  "pwreset": {"title":"Definir nova senha","intro":"Escolha uma nova senha para a sua conta smyst.com (pelo menos 8 caracteres).","passwordPlaceholder":"Nova senha","repeatPlaceholder":"Repetir senha","mismatch":"As senhas não coincidem.","submitBusy":"Salvando…","submit":"Salvar senha e entrar","cancel":"Cancelar","errorReset":"Falha ao redefinir. Solicite um novo link.","errorNetwork":"Falha na conexão. Tente novamente."},
   "auth": {"tabLogin":"Entrar","tabRegister":"Registrar-se","tabForgot":"Senha?","namePlaceholder":"Nome (opcional)","emailPlaceholder":"Endereço de e-mail","passwordPlaceholder":"Senha","passwordPlaceholderNew":"Senha (mín. 8 caracteres)","submitBusy":"Aguarde…","submitLogin":"Entrar","submitRegister":"Criar conta","submitForgot":"Enviar link","otherOption":"Outras opções de login","errorLogin":"Falha no login.","errorRegister":"Falha no registro.","errorForgot":"Falha na solicitação. Tente novamente mais tarde.","errorNetwork":"Erro de rede. Tente novamente.","forgotSent":"Se existir uma conta, enviamos um e-mail para redefinir a senha."},
   "footer": {
     "columnProduct": "Produto",
