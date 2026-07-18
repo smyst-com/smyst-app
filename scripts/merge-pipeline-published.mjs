@@ -297,10 +297,15 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     mainCategory: corr.roles || record.category || '',
     birthDate: record.birth_date || undefined,
     deathDate: record.death_date || undefined,
-    birthYear: record.birth_date ? Number(String(record.birth_date).slice(0, 4)) : undefined,
-    deathYear: record.death_date ? Number(String(record.death_date).slice(0, 4)) : undefined,
-    birthLabel: record.birth_label || record.birth_date || '',
-    deathLabel: record.death_label || record.death_date || '',
+    // Kuratierte Lebensdaten-Overrides (Freigabe 18.07.2026): fuer Profile,
+    // deren Quelle kein brauchbares Datum liefert (z. B. Augustus, geboren
+    // 63 v. Chr. - vor-christliche Daten kann der Publish-Record nicht als
+    // ISO transportieren). birthYear/deathYear sind Rechenfelder fuer die
+    // Altersanzeige; Anzeigetext ist immer das Label.
+    birthYear: corr.birthYear ?? (record.birth_date ? Number(String(record.birth_date).slice(0, 4)) : undefined),
+    deathYear: corr.deathYear ?? (record.death_date ? Number(String(record.death_date).slice(0, 4)) : undefined),
+    birthLabel: corr.birthLabel || record.birth_label || record.birth_date || '',
+    deathLabel: corr.deathLabel || record.death_label || record.death_date || '',
     // 4-Zeilen-Profilformat: Orte aus der Pipeline (Wikidata P19/P20).
     // Fehlen sie, greift im Frontend LIFE_PLACES als Fallback.
     birthPlace: record.birth_place || undefined,
