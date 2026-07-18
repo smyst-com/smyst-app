@@ -8,6 +8,7 @@ import { LIFE_PLACES } from './life-places'
 
 type LifeDisplayProfile = {
   name: string
+  lifeSlug?: string
   profileSlug?: string
   slug?: string
   birthDate?: string
@@ -55,7 +56,7 @@ function ageAtDeath(profile: LifeDisplayProfile): number | null {
 }
 
 function lifePlaceSlug(profile: LifeDisplayProfile): string {
-  return profile.profileSlug ?? profile.slug ?? ''
+  return profile.lifeSlug ?? profile.profileSlug ?? profile.slug ?? ''
 }
 
 // Zeile 1: "Name – 76 Jahre" (ohne Alter nur Name).
