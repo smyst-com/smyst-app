@@ -277,6 +277,61 @@ async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T
 }
 
+// Die Twin-API speichert keine Lebensdaten (Geburts-/Sterbedatum, Beruf).
+// Fehlende Felder werden aus dem oeffentlichen Profilkatalog ergaenzt, damit
+// eigene Twins dasselbe 4-Zeilen-Format zeigen wie oeffentliche Profile.
+// Vorhandene Werte werden nie ueberschrieben, der Slug bleibt unveraendert.
+function lifeMatchKey(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+let lifeIndexPromise: Promise<Map<string, PublicTwinProfile>> | null = null
+
+async function loadPublicLifeIndex(): Promise<Map<string, PublicTwinProfile>> {
+  if (!lifeIndexPromise) {
+    lifeIndexPromise = (async () => {
+      const index = new Map<string, PublicTwinProfile>()
+      try {
+        const body =
+          (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
+          (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
+        for (const profile of body?.twins ?? []) {
+          if (profile?.name) index.set(lifeMatchKey(profile.name), profile)
+        }
+      } catch {
+        // Ohne Katalog bleiben die Twins unveraendert - kein harter Fehler.
+      }
+      return index
+    })()
+  }
+  return lifeIndexPromise
+}
+
+async function withPublicLifeData(twins: TwinRecord[]): Promise<TwinRecord[]> {
+  if (!twins.some((twin) => !twin.birthDate && !twin.birthYear)) return twins
+  const index = await loadPublicLifeIndex()
+  if (index.size === 0) return twins
+  return twins.map((twin) => {
+    if (twin.birthDate || twin.birthYear) return twin
+    const match = index.get(lifeMatchKey(twin.name ?? ''))
+    if (!match) return twin
+    return {
+      ...twin,
+      mainCategory: twin.mainCategory ?? match.mainCategory,
+      birthDate: match.birthDate,
+      deathDate: match.deathDate,
+      birthYear: match.birthYear,
+      deathYear: match.deathYear,
+      birthLabel: match.birthLabel,
+      deathLabel: match.deathLabel,
+    }
+  })
+}
+
 async function publicApiJson<T>(path: string): Promise<T | null> {
   try {
     return await apiJson<T>(path)
@@ -307,7 +362,7 @@ export function useTwinMvp() {
     () =>
       run(async () => {
         const body = await apiJson<{ twins: TwinRecord[] }>('/api/twins')
-        return body.twins
+        return await withPublicLifeData(body.twins)
       }),
     [run],
   )
