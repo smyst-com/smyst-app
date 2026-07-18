@@ -44,6 +44,7 @@ export interface TwinRecord {
   knowledgeTexts: TwinKnowledgeItem[]
   mediaRefs: TwinMediaRef[]
   contextSummary: string
+  lifeSlug?: string
   mainCategory?: string
   birthDate?: string
   deathDate?: string
@@ -321,6 +322,7 @@ async function withPublicLifeData(twins: TwinRecord[]): Promise<TwinRecord[]> {
     if (!match) return twin
     return {
       ...twin,
+      lifeSlug: match.slug,
       mainCategory: twin.mainCategory ?? match.mainCategory,
       birthDate: match.birthDate,
       deathDate: match.deathDate,

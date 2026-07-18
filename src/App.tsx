@@ -838,6 +838,7 @@ type StartTwin = {
   initials: string
   tone: string
   manualRank: number
+  lifeSlug?: string
   profileSlug?: string
   imageUrl?: string | null
   categories: string[]
@@ -1109,6 +1110,7 @@ function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsag
     initials: initialsForName(twin.name),
     tone: twin.style,
     manualRank: index + 1,
+    lifeSlug: twin.lifeSlug,
     profileSlug: publicProfile ? twin.slug : undefined,
     imageUrl: twin.imageUrl ?? null,
     categories,
