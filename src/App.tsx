@@ -857,6 +857,8 @@ type StartTwin = {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  birthPlace?: string
+  deathPlace?: string
   searchIndex?: string
 } & DiscoveryProfile
 
@@ -1133,6 +1135,37 @@ function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsag
   }
 }
 
+// Namensschluessel fuer den Dublettenschutz: Akzente, Gross-/Kleinschreibung
+// und Sonderzeichen werden eingeebnet, damit "Henri Poincare" und
+// "Henri Poincaré" als derselbe Mensch gelten.
+function normalizedProfileName(name?: string): string {
+  return (name ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+// Behaelt je Name den informativsten Eintrag: Profile mit Lebensdaten haben
+// Vorrang, sonst gewinnt der erste. Verhindert Doppelkarten auf der Startseite,
+// ohne dass ein Twin verlorengeht — die Twin-Verwaltung zeigt weiterhin alle.
+function dedupeByName(profiles: StartTwin[]): StartTwin[] {
+  const byName = new Map<string, StartTwin>()
+  for (const profile of profiles) {
+    const key = normalizedProfileName(profile.name)
+    const kept = byName.get(key)
+    if (!kept) {
+      byName.set(key, profile)
+      continue
+    }
+    const keptHasLife = Boolean(kept.birthDate || kept.birthYear)
+    const nextHasLife = Boolean(profile.birthDate || profile.birthYear)
+    if (!keptHasLife && nextHasLife) byName.set(key, profile)
+  }
+  return [...byName.values()]
+}
+
 function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usage: ProfileUsage = { chatCount: 0, lastChatAt: 0 }): StartTwin {
   const categories = (profile.categories ?? []).filter(Boolean)
   const languages = (profile.languages ?? []).filter(Boolean)
@@ -1163,6 +1196,8 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
     deathYear: profile.deathYear,
     birthLabel: profile.birthLabel,
     deathLabel: profile.deathLabel,
+    birthPlace: profile.birthPlace,
+    deathPlace: profile.deathPlace,
     searchIndex: profile.searchIndex,
   }
 }
@@ -1424,12 +1459,19 @@ function SmystStartPage({
         ])
         if (!alive) return
         const usage = usageByTwinId(chats)
-        const ownProfiles = (twins ?? [])
-          .filter(isCompleteTwinRecord)
-          .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug)))
+        const ownProfiles = dedupeByName(
+          (twins ?? [])
+            .filter(isCompleteTwinRecord)
+            .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug))),
+        )
+        // Dublettenschutz gegen die oeffentliche Liste: bisher nur ueber den Slug.
+        // Ein zweiter eigener Twin gleichen Namens bekommt aber einen neuen Slug
+        // ("alessandro-volta-2") und rutschte dadurch als Doppelkarte durch.
         const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
+        const ownNames = new Set(ownProfiles.map((profile) => normalizedProfileName(profile.name)))
         const publicStartProfiles = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
-          .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug))
+          .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug)
+            && !ownNames.has(normalizedProfileName(profile.name)))
           .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
         const next = [...ownProfiles, ...publicStartProfiles]
         setRealStartTwins(next)

@@ -3,7 +3,9 @@
 //   Zeile 2: Geburtsdatum, Geburtsort
 //   Zeile 3: Sterbedatum, Sterbeort
 //   Zeile 4: Beruf (profileMainCategory, bleibt in App.tsx)
-// Orte kommen aus LIFE_PLACES (Wikidata-verifiziert, statisch pro Slug).
+// Orte kommen bevorzugt aus dem Profil selbst (die Autopilot-Pipeline liefert
+// birthPlace/deathPlace aus Wikidata P19/P20 mit). Fehlen sie — etwa bei den
+// kuratierten Profilen —, greift LIFE_PLACES als statischer Fallback pro Slug.
 import { LIFE_PLACES } from './life-places'
 
 type LifeDisplayProfile = {
@@ -17,6 +19,8 @@ type LifeDisplayProfile = {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  birthPlace?: string
+  deathPlace?: string
 }
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -24,6 +28,11 @@ const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 function formatIsoDate(value?: string): string | null {
   if (!value || !ISO_DATE.test(value)) return null
   const [year, month, day] = value.split('-')
+  // Jahre unter 1000 kommen aus Wikidata nullgepolstert ("0014-08-19").
+  // Ungefiltert stand auf der Seite "19.08.0014"; ohne Polsterung waere "19.08.14"
+  // mit 1914 verwechselbar. Darum Jahr entpolstern und als n. Chr. ausweisen.
+  const yearNumber = Number(year)
+  if (yearNumber < 1000) return `${day}.${month}.${yearNumber} n. Chr.`
   return `${day}.${month}.${year}`
 }
 
@@ -68,13 +77,13 @@ export function profileNameWithAge(profile: LifeDisplayProfile): string {
 // Zeile 2: "Geburtsdatum, Geburtsort" (fehlender Teil wird weggelassen).
 export function profileBirthLine(profile: LifeDisplayProfile): string {
   const date = displayDate(profile.birthLabel, profile.birthDate)
-  const place = LIFE_PLACES[lifePlaceSlug(profile)]?.birthPlace || ''
+  const place = profile.birthPlace?.trim() || LIFE_PLACES[lifePlaceSlug(profile)]?.birthPlace || ''
   return [date, place].filter(Boolean).join(', ')
 }
 
 // Zeile 3: "Sterbedatum, Sterbeort" (fehlender Teil wird weggelassen).
 export function profileDeathLine(profile: LifeDisplayProfile): string {
   const date = displayDate(profile.deathLabel, profile.deathDate)
-  const place = LIFE_PLACES[lifePlaceSlug(profile)]?.deathPlace || ''
+  const place = profile.deathPlace?.trim() || LIFE_PLACES[lifePlaceSlug(profile)]?.deathPlace || ''
   return [date, place].filter(Boolean).join(', ')
 }

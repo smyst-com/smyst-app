@@ -11,6 +11,7 @@ Sitelink-Anzahl als Bekanntheits-Proxy, nachvollziehbare Quelle.
 
 from __future__ import annotations
 
+import re as _re
 from dataclasses import dataclass
 from datetime import date, datetime
 
@@ -60,7 +61,9 @@ def build_sparql_query(
     values = " ".join(f"wd:{qid}" for qid in occupations)
     limit_value = limit if limit is not None else config.daily_candidate_limit
     return f"""
-SELECT DISTINCT ?person ?personLabel ?birth ?death ?sitelinks ?countryLabel WHERE {{
+SELECT DISTINCT ?person ?personLabel ?birth ?death ?sitelinks ?countryLabel
+       ?birthPlaceLabel ?birthPlaceCountryLabel
+       ?deathPlaceLabel ?deathPlaceCountryLabel WHERE {{
   VALUES ?occupation {{ {values} }}
   ?person wdt:P106 ?occupation ;
           wdt:P31 wd:Q5 ;
@@ -68,6 +71,14 @@ SELECT DISTINCT ?person ?personLabel ?birth ?death ?sitelinks ?countryLabel WHER
           wikibase:sitelinks ?sitelinks .
   OPTIONAL {{ ?person wdt:P569 ?birth . }}
   OPTIONAL {{ ?person wdt:P27 ?country . }}
+  # Geburts-/Sterbeort (P19/P20) samt Staat des Ortes (P17) fuer die Zeilen 2
+  # und 3 des 4-Zeilen-Profilformats. Orte mit mehreren P17-Werten (historische
+  # Gebietswechsel) erzeugen Mehrfachzeilen; die QID-Dedup in screen_candidates
+  # faengt das ab.
+  OPTIONAL {{ ?person wdt:P19 ?birthPlace .
+              OPTIONAL {{ ?birthPlace wdt:P17 ?birthPlaceCountry . }} }}
+  OPTIONAL {{ ?person wdt:P20 ?deathPlace .
+              OPTIONAL {{ ?deathPlace wdt:P17 ?deathPlaceCountry . }} }}
   FILTER(YEAR(?death) >= {death_year_from} && YEAR(?death) <= {config.max_death_year})
   FILTER(?sitelinks >= {config.min_sitelinks})
   SERVICE wikibase:label {{ bd:serviceParam wikibase:language "de,en". }}
@@ -96,25 +107,78 @@ def _parse_wikidata_date(raw: str) -> date | None:
         return None
 
 
+_QID_ONLY = _re.compile(r"^Q\d+$")
+
+
+def _label(row: dict, key: str) -> str | None:
+    """Label aus einer SPARQL-Zeile; roh gebliebene QIDs gelten als fehlend.
+
+    Der Wikidata-Label-Service liefert die QID zurueck, wenn weder de- noch
+    en-Label existiert. Solche Werte sind fuer die Anzeige unbrauchbar.
+    """
+    value = (row.get(key, {}).get("value") or "").strip()
+    if not value or _QID_ONLY.match(value):
+        return None
+    return value
+
+
+def _place(place: str | None, countries: set[str]) -> str | None:
+    """Ort als "Stadt, Land".
+
+    Das Land wird NUR angehaengt, wenn Wikidata genau einen Staat (P17) zum Ort
+    fuehrt. Historische Orte tragen oft mehrere P17-Werte — Thagaste liefert
+    Numidien, Algerien UND Frankreich. Ein beliebiger Treffer daraus waere
+    schlicht falsch, deshalb bleibt der Ort in dem Fall ohne Land stehen.
+    """
+    if not place:
+        return None
+    real = {c for c in countries if c and c != place}
+    if len(real) != 1:
+        return place
+    return f"{place}, {real.pop()}"
+
+
 def parse_sparql_bindings(payload: dict, *, category: str) -> list[HistoricalCandidate]:
     """Wandelt eine SPARQL-JSON-Antwort in HistoricalCandidate-Objekte um.
 
     Zeilen ohne parsebares Sterbedatum werden verworfen (Pflichtfeld).
     """
-    candidates: list[HistoricalCandidate] = []
+    # Mehrere P17-Werte je Ort vervielfachen die Zeilen (Francis Bacon kam im
+    # Livetest in vier Varianten). Darum je QID zusammenfassen: erste Zeile
+    # gewinnt fuer die Stammdaten, die Laender werden ueber alle Zeilen gesammelt
+    # und erst danach bewertet.
+    first_row: dict[str, dict] = {}
+    order: list[str] = []
+    birth_countries: dict[str, set[str]] = {}
+    death_countries: dict[str, set[str]] = {}
     for row in payload.get("results", {}).get("bindings", []):
-        death = _parse_wikidata_date(row["death"]["value"]) if "death" in row else None
-        if death is None:
+        if "death" not in row or _parse_wikidata_date(row["death"]["value"]) is None:
             continue
-        birth = _parse_wikidata_date(row["birth"]["value"]) if "birth" in row else None
+        qid = _qid_from_uri(row["person"]["value"])
+        if qid not in first_row:
+            first_row[qid] = row
+            order.append(qid)
+            birth_countries[qid] = set()
+            death_countries[qid] = set()
+        for key, target in (("birthPlaceCountryLabel", birth_countries),
+                            ("deathPlaceCountryLabel", death_countries)):
+            country = _label(row, key)
+            if country:
+                target[qid].add(country)
+
+    candidates: list[HistoricalCandidate] = []
+    for qid in order:
+        row = first_row[qid]
         candidates.append(
             HistoricalCandidate(
-                wikidata_qid=_qid_from_uri(row["person"]["value"]),
+                wikidata_qid=qid,
                 name=row.get("personLabel", {}).get("value", ""),
-                death_date=death,
-                birth_date=birth,
+                death_date=_parse_wikidata_date(row["death"]["value"]),
+                birth_date=_parse_wikidata_date(row["birth"]["value"]) if "birth" in row else None,
                 category=category,
                 country=row.get("countryLabel", {}).get("value"),
+                birth_place=_place(_label(row, "birthPlaceLabel"), birth_countries[qid]),
+                death_place=_place(_label(row, "deathPlaceLabel"), death_countries[qid]),
                 sitelink_count=int(row.get("sitelinks", {}).get("value", 0)),
             )
         )

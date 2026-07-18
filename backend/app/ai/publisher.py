@@ -47,6 +47,9 @@ def build_publish_record(
         "death_date": candidate_doc.get("death_date") or (seo.get("json_ld") or {}).get("deathDate"),
         "birth_label": candidate_doc.get("birth_label"),
         "death_label": candidate_doc.get("death_label"),
+        # 4-Zeilen-Profilformat: Ort gehoert zu Zeile 2 bzw. 3.
+        "birth_place": candidate_doc.get("birth_place"),
+        "death_place": candidate_doc.get("death_place"),
         "description": (seo.get("json_ld") or {}).get("description"),
         "persona_prompt_key": candidate_doc.get("prompt_key"),
         "capsule_key": f"pipeline/capsules/{candidate_doc['wikidata_qid']}/capsule.json",
