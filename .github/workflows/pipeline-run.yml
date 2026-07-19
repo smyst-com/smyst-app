@@ -12,10 +12,11 @@ name: Pipeline Run (historische Profile)
 # mode=seed      : kuratierte Kandidaten aus smyst_179_candidates.json einspielen.
 
 on:
-  # Taeglicher Automatik-Lauf 04:00 UTC = 06:00 Europe/Berlin (Sommerzeit).
-  # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
+  # Taeglicher Automatik-Lauf 01:23 UTC = 03:23 Europe/Berlin (Sommerzeit).
+    # Off-Peak-Minute statt 04:00 UTC: GitHub verzoegert Crons zur vollen Stunde um 2-4 h.
+    # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "23 1 * * *"
   workflow_dispatch:
     inputs:
       mode:
