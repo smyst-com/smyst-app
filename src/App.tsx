@@ -626,16 +626,16 @@ export default function App() {
           { label: 'Sicherheit', onClick: () => document.getElementById('security')?.scrollIntoView({ behavior: 'smooth' }) },
         ]
       : [
-          { label: 'Dashboard', onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
-          { label: 'Start-Assistent', onClick: () => navigateTo('onboarding'), active: currentView === 'onboarding' },
-          ...(canSeeAdmin ? [{ label: 'Admin', onClick: () => navigateTo('admin'), active: currentView === 'admin' }] : []),
-          { label: 'Mein Profil', onClick: () => navigateTo('account-profile'), active: currentView === 'account-profile' },
-          { label: 'Meine Twins', onClick: () => navigateTo('my-twins'), active: currentView === 'my-twins' },
-          { label: 'Twin Builder', onClick: () => navigateTo('twin-builder'), active: currentView === 'twin-builder' },
-          { label: 'Daten hochladen', onClick: () => navigateTo('memory-upload'), active: currentView === 'memory-upload' },
-          { label: 'Chats', onClick: () => navigateTo('twin-chat'), active: currentView === 'twin-chat' },
-          { label: 'Trust', onClick: () => navigateTo('trust'), active: currentView === 'trust' },
-          { label: 'Einstellungen', onClick: () => navigateTo('settings'), active: currentView === 'settings' },
+          { label: appLang === DEFAULT_LANG ? 'Dashboard' : ft.nav.dashboard, onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
+          { label: appLang === DEFAULT_LANG ? 'Start-Assistent' : ft.nav.onboarding, onClick: () => navigateTo('onboarding'), active: currentView === 'onboarding' },
+          ...(canSeeAdmin ? [{ label: appLang === DEFAULT_LANG ? 'Admin' : ft.nav.admin, onClick: () => navigateTo('admin'), active: currentView === 'admin' }] : []),
+          { label: appLang === DEFAULT_LANG ? 'Mein Profil' : ft.nav.profile, onClick: () => navigateTo('account-profile'), active: currentView === 'account-profile' },
+          { label: appLang === DEFAULT_LANG ? 'Meine Twins' : ft.nav.myTwins, onClick: () => navigateTo('my-twins'), active: currentView === 'my-twins' },
+          { label: appLang === DEFAULT_LANG ? 'Twin Builder' : ft.nav.twinBuilder, onClick: () => navigateTo('twin-builder'), active: currentView === 'twin-builder' },
+          { label: appLang === DEFAULT_LANG ? 'Daten hochladen' : ft.nav.upload, onClick: () => navigateTo('memory-upload'), active: currentView === 'memory-upload' },
+          { label: appLang === DEFAULT_LANG ? 'Chats' : ft.nav.chats, onClick: () => navigateTo('twin-chat'), active: currentView === 'twin-chat' },
+          { label: appLang === DEFAULT_LANG ? 'Trust' : ft.nav.trust, onClick: () => navigateTo('trust'), active: currentView === 'trust' },
+          { label: appLang === DEFAULT_LANG ? 'Einstellungen' : ft.nav.settings, onClick: () => navigateTo('settings'), active: currentView === 'settings' },
         ]
 
   if (currentView === 'landing') {
@@ -2287,15 +2287,15 @@ function SmystStartPage({
   }
 
   const menuItems: Array<{ label: string; view: AppView; detail: string; adminOnly?: boolean }> = [
-    { label: 'Start-Assistent', view: 'onboarding', detail: 'Schritt für Schritt zum fertigen Twin' },
-    { label: 'Mein Profil', view: 'account-profile', detail: 'Identität, Bio, Rollen und Profilqualität' },
-    { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persönlichkeit, Wissen und Sichtbarkeit' },
-    { label: 'Meine Twins', view: 'my-twins', detail: 'Private und öffentliche AI Twins' },
-    { label: 'Memories', view: 'memory-upload', detail: 'Dateien, Wissen und Erinnerungen hochladen' },
-    { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespräche und Twin-Auswahl' },
-    { label: 'Admin', view: 'admin', detail: 'User, Werbung, Umsatz, Sicherheit und Betrieb', adminOnly: true },
-    { label: 'Datenschutz', view: 'trust', detail: 'Privatsphäre, Export und Löschung' },
-    { label: 'Einstellungen', view: 'settings', detail: 'Sprache, Theme, Account und Logout' },
+    { label: lang === DEFAULT_LANG ? 'Start-Assistent' : t.nav.onboarding, view: 'onboarding', detail: lang === DEFAULT_LANG ? 'Schritt für Schritt zum fertigen Twin' : t.nav.onboardingDetail },
+    { label: lang === DEFAULT_LANG ? 'Mein Profil' : t.nav.profile, view: 'account-profile', detail: lang === DEFAULT_LANG ? 'Identität, Bio, Rollen und Profilqualität' : t.nav.profileDetail },
+    { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate, view: 'twin-builder', detail: lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit' : t.nav.twinCreateDetail },
+    { label: lang === DEFAULT_LANG ? 'Meine Twins' : t.nav.myTwins, view: 'my-twins', detail: lang === DEFAULT_LANG ? 'Private und öffentliche AI Twins' : t.nav.myTwinsDetail },
+    { label: lang === DEFAULT_LANG ? 'Memories' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'Dateien, Wissen und Erinnerungen hochladen' : t.nav.memoriesDetail },
+    { label: lang === DEFAULT_LANG ? 'Chats' : t.nav.chats, view: 'twin-chat', detail: lang === DEFAULT_LANG ? 'Letzte Gespräche und Twin-Auswahl' : t.nav.chatsDetail },
+    { label: lang === DEFAULT_LANG ? 'Admin' : t.nav.admin, view: 'admin', detail: lang === DEFAULT_LANG ? 'User, Werbung, Umsatz, Sicherheit und Betrieb' : t.nav.adminDetail, adminOnly: true },
+    { label: lang === DEFAULT_LANG ? 'Datenschutz' : t.nav.privacy, view: 'trust', detail: lang === DEFAULT_LANG ? 'Privatsphäre, Export und Löschung' : t.nav.privacyDetail },
+    { label: lang === DEFAULT_LANG ? 'Einstellungen' : t.nav.settings, view: 'settings', detail: lang === DEFAULT_LANG ? 'Sprache, Theme, Account und Logout' : t.nav.settingsDetail },
   ]
   const canSeeAdmin = Boolean(
     auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
