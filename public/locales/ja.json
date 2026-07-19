@@ -1,6 +1,7 @@
 {
   "locale": "ja",
   "dir": "ltr",
+  "nav": {"dashboard":"ダッシュボード","onboarding":"セットアップアシスタント","admin":"管理","profile":"マイプロフィール","myTwins":"マイツイン","twinBuilder":"Twin Builder","twinCreate":"ツインを作成","upload":"データをアップロード","memories":"メモリー","chats":"チャット","trust":"トラスト","privacy":"プライバシー","settings":"設定","onboardingDetail":"ステップごとにツインを完成","profileDetail":"アイデンティティ、経歴、ロール、プロフィール品質","twinCreateDetail":"性格、知識、公開範囲","myTwinsDetail":"非公開・公開のAIツイン","memoriesDetail":"ファイル・知識・思い出をアップロード","chatsDetail":"最近の会話とツイン選択","adminDetail":"ユーザー、広告、収益、セキュリティ、運用","privacyDetail":"プライバシー、エクスポート、削除","settingsDetail":"言語、テーマ、アカウント、ログアウト"},
   "pwreset": {"title":"新しいパスワードを設定","intro":"smyst.com アカウントの新しいパスワードを入力してください（8文字以上）。","passwordPlaceholder":"新しいパスワード","repeatPlaceholder":"パスワードを再入力","mismatch":"パスワードが一致しません。","submitBusy":"保存中…","submit":"パスワードを保存してログイン","cancel":"キャンセル","errorReset":"リセットに失敗しました。新しいリンクをリクエストしてください。","errorNetwork":"接続に失敗しました。もう一度お試しください。"},
   "auth": {"tabLogin":"ログイン","tabRegister":"新規登録","tabForgot":"パスワード？","namePlaceholder":"名前（任意）","emailPlaceholder":"メールアドレス","passwordPlaceholder":"パスワード","passwordPlaceholderNew":"パスワード（8文字以上）","submitBusy":"お待ちください…","submitLogin":"ログイン","submitRegister":"アカウント作成","submitForgot":"リンクを送信","otherOption":"その他のログイン方法","errorLogin":"ログインに失敗しました。","errorRegister":"登録に失敗しました。","errorForgot":"リクエストに失敗しました。後でもう一度お試しください。","errorNetwork":"ネットワークエラーです。もう一度お試しください。","forgotSent":"アカウントが存在する場合、パスワード再設定用のメールを送信しました。"},
   "footer": {
