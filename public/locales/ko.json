@@ -1,6 +1,7 @@
 {
   "locale": "ko",
   "dir": "ltr",
+  "nav": {"dashboard":"대시보드","onboarding":"설정 도우미","admin":"관리자","profile":"내 프로필","myTwins":"내 트윈","twinBuilder":"Twin Builder","twinCreate":"트윈 만들기","upload":"데이터 업로드","memories":"메모리","chats":"채팅","trust":"신뢰","privacy":"개인정보","settings":"설정","onboardingDetail":"단계별로 완성하는 트윈","profileDetail":"정체성, 소개, 역할, 프로필 품질","twinCreateDetail":"성격, 지식, 공개 범위","myTwinsDetail":"비공개 및 공개 AI 트윈","memoriesDetail":"파일, 지식, 추억 업로드","chatsDetail":"최근 대화와 트윈 선택","adminDetail":"사용자, 광고, 수익, 보안, 운영","privacyDetail":"개인정보, 내보내기, 삭제","settingsDetail":"언어, 테마, 계정, 로그아웃"},
   "pwreset": {"title":"새 비밀번호 설정","intro":"smyst.com 계정에 사용할 새 비밀번호를 입력하세요(8자 이상).","passwordPlaceholder":"새 비밀번호","repeatPlaceholder":"비밀번호 다시 입력","mismatch":"비밀번호가 일치하지 않습니다.","submitBusy":"저장 중…","submit":"비밀번호 저장 후 로그인","cancel":"취소","errorReset":"재설정에 실패했습니다. 새 링크를 요청해 주세요.","errorNetwork":"연결에 실패했습니다. 다시 시도해 주세요."},
   "auth": {"tabLogin":"로그인","tabRegister":"회원가입","tabForgot":"비밀번호?","namePlaceholder":"이름 (선택)","emailPlaceholder":"이메일 주소","passwordPlaceholder":"비밀번호","passwordPlaceholderNew":"비밀번호 (최소 8자)","submitBusy":"잠시만 기다려 주세요…","submitLogin":"로그인","submitRegister":"계정 만들기","submitForgot":"링크 보내기","otherOption":"다른 로그인 방법","errorLogin":"로그인에 실패했습니다.","errorRegister":"가입에 실패했습니다.","errorForgot":"요청에 실패했습니다. 나중에 다시 시도해 주세요.","errorNetwork":"네트워크 오류입니다. 다시 시도해 주세요.","forgotSent":"계정이 있는 경우 비밀번호 재설정 이메일을 보냈습니다."},
   "footer": {
