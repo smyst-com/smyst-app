@@ -1,5 +1,16 @@
 # Memory Bank
 
+## Update 2026-07-19: Morgenlauf — 232 published / 332 Twins live, Tageslimit jetzt 100, i18n-Etappe 7 Navigation/Drawer (PR #222)
+
+- CRON: Gestriger Scheduled-Lauf #71 (18.07., 08:11) GRUEN (1m43s). Heutiger 19.07.-Cron stand um 08:05 (Berlin) noch aus — uebliches Verspaetungsfenster (08:00-10:37), kein Nachholen noetig. ACHTUNG: Durch Tageslimit 100 kann der heutige Cron alle 29 reviewed publizieren.
+- ABEND-AKTIVITAET 18.07. (Parallel-Agent, 14:36-21:51, NICHT vom Morgenlauf): Tageslimit 5 -> 100 pro Nacht (Commit a4b465b, 'Freigabe 18.07.2026'); Soft-Delete/DELETE fuer Twins (4c904d8 + 644a470); Profilformat: Orte aus der Pipeline, antike Jahre lesbar (gestriger Befund 'fuehrende Nullen' damit ERLEDIGT), Beruf statt Themengebiet (1c9a545/6e28a7d). Runs: #72 cancelled + #73 ROT (run-small auf b589d20), danach Fix-Commits bfd4582+e3652c9, #74-#77 GRUEN (#76 publish-reviewed -> +9 Profile, #77 dry-run auf 644a470 gruen). Morgenlauf hat nichts davon angefasst, nur dokumentiert.
+- STATUS (Run #78, mode=status, manuell 19.07. 07:05, GRUEN 50s): published 232, reviewed 29, rejected 30, unpublished 2.
+- LIVE (Cache-Buster, 07:15): 332 Twins (100 kuratiert + 232 Pipeline), 0 ohne imageUrl, alle 232 mit imageCredit (241 selbst-gehostet, 91 Commons-Hotlink). Stichprobe /t/wu-zetian rendert komplett; NEU: '17.02.624 n. Chr.' statt '0624-02-17' + Geburts-/Sterbeorte (Guangyuan/Luoyang) — Abend-Fixes live.
+- i18n-ETAPPE 7 (PR #222, 17 Dateien, squash-gemergt 9fad1b6, 8 Checks gruen inkl. Browser-E2E im 1. Anlauf): Navigation/Drawer lokalisiert. Neuer nav-Keyblock (22 Keys: 13 Labels + 9 Detail-Texte) in staticTranslations.ts (Interface + DE-Defaults + mergeTranslations) + ALLEN 15 Locale-JSONs (einzeilig nach dir-Anker). App.tsx: mobileItems (App-Scope: appLang/ft.nav) + menuItems (SmystStartPage-Scope: lang/t.nav) auf DEFAULT_LANG-Fallback-Muster — DE byte-identisch. Landing-Anker (Vision/Anwendungen/Produkt/Sicherheit) bewusst ausgeklammert. Deploy #276 gruen (~13min; Build spiegelt 232 Profilbilder). LIVE VERIFIZIERT: alle 15 Locales liefern nav-Keys; Drawer unter ?lang=en zeigt 'Setup assistant/My profile/Create twin' inkl. Detailtexten; DE-Root unveraendert.
+- NEUER BEFUND (naechste Etappe): Drawer-OBERTEIL in EN weiter deutsch — Quick-Action-Buttons ('Start-Assistent', 'Profil oeffnen', 'Twin erstellen', 'Daten hochladen') + 'PROFILBEREICH'-Karten (Identitaet/AI Twin/Memories/Datenschutz mit Beschreibungen) sind ein separater hartcodierter Block in App.tsx.
+- OFFENER PR #189 (feat(avatar): Single Source of Truth, Parallel-Agent) — bewusst nicht angefasst.
+- VERBLEIBENDE i18n-ETAPPEN: (1) Drawer-Quick-Actions + Profilbereich-Karten, (2) Kategorien-Chips/"Alle" (Content-Mapping), (3) addNotice-Meldungen (~150 in App.tsx), (4) Landing-Anker/Landing-Seite.
+
 ## Update 2026-07-18: Morgenlauf — 223 published / 323 Twins live, i18n-Etappe 6 PasswordResetGate (PR #208)
 
 - CRON: Letzter Scheduled-Lauf #60 (17.07., 08:23) GRUEN (5m19s). Heutiger 18.07.-Cron stand um 07:35 (Berlin) noch aus — uebliches Verspaetungsfenster (08:00-10:37), kein Nachholen noetig, nichts manuell angestossen.
