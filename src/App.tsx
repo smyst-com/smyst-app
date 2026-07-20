@@ -2319,17 +2319,17 @@ function SmystStartPage({
   ]
 
   const profileQuickActions = [
-    { label: 'Start-Assistent', view: 'onboarding' as const },
-    { label: 'Profil öffnen', view: 'account-profile' as const },
-    { label: 'Twin erstellen', view: 'twin-builder' as const },
-    { label: 'Daten hochladen', view: 'memory-upload' as const },
+    { label: lang === DEFAULT_LANG ? 'Start-Assistent' : t.drawer.quickOnboarding, view: 'onboarding' as const },
+    { label: lang === DEFAULT_LANG ? 'Profil öffnen' : t.drawer.quickProfile, view: 'account-profile' as const },
+    { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.drawer.quickTwinCreate, view: 'twin-builder' as const },
+    { label: lang === DEFAULT_LANG ? 'Daten hochladen' : t.drawer.quickUpload, view: 'memory-upload' as const },
   ]
 
   const profileControlCards = [
-    ['Identität', 'Name, Rollen, Expertise und Bio sauber pflegen.'],
-    ['AI Twin', 'Persönlichkeit, Wissen und Sichtbarkeit steuern.'],
-    ['Memories', 'Uploads, Quellen und Erinnerungen als Kontext verwalten.'],
-    ['Datenschutz', 'Freigaben, Export, Löschung und private Standards.'],
+    [lang === DEFAULT_LANG ? 'Identität' : t.drawer.cardIdentityTitle, lang === DEFAULT_LANG ? 'Name, Rollen, Expertise und Bio sauber pflegen.' : t.drawer.cardIdentityText],
+    [lang === DEFAULT_LANG ? 'AI Twin' : t.drawer.cardTwinTitle, lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit steuern.' : t.drawer.cardTwinText],
+    [lang === DEFAULT_LANG ? 'Memories' : t.drawer.cardMemoriesTitle, lang === DEFAULT_LANG ? 'Uploads, Quellen und Erinnerungen als Kontext verwalten.' : t.drawer.cardMemoriesText],
+    [lang === DEFAULT_LANG ? 'Datenschutz' : t.drawer.cardPrivacyTitle, lang === DEFAULT_LANG ? 'Freigaben, Export, Löschung und private Standards.' : t.drawer.cardPrivacyText],
   ]
 
   return (
@@ -2482,7 +2482,7 @@ function SmystStartPage({
 
         <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Startmenü Navigation">
           <div className="mb-4 grid gap-2 px-2">
-            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Profilbereich</p>
+            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilbereich' : t.drawer.sectionTitle}</p>
             {profileControlCards.map(([title, text]) => (
               <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
                 <p className="text-xs font-bold text-white">{title}</p>
