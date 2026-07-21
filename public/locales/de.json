@@ -1,6 +1,7 @@
 {
   "locale": "de",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"Wissenschaft","Geschichte":"Geschichte","Forschung":"Forschung","Literatur":"Literatur","Kunst":"Kunst","Politik":"Politik","Philosophie":"Philosophie","Bildung":"Bildung","Mathematik":"Mathematik","Ethik":"Ethik","Technologie":"Technologie","Wirtschaft":"Wirtschaft","Medizin":"Medizin","Führung":"Führung","Physik":"Physik","Strategie":"Strategie","Musik":"Musik"},
   "drawer": {"quickOnboarding":"Start-Assistent","quickProfile":"Profil öffnen","quickTwinCreate":"Twin erstellen","quickUpload":"Daten hochladen","sectionTitle":"Profilbereich","cardIdentityTitle":"Identität","cardIdentityText":"Name, Rollen, Expertise und Bio sauber pflegen.","cardTwinTitle":"AI Twin","cardTwinText":"Persönlichkeit, Wissen und Sichtbarkeit steuern.","cardMemoriesTitle":"Memories","cardMemoriesText":"Uploads, Quellen und Erinnerungen als Kontext verwalten.","cardPrivacyTitle":"Datenschutz","cardPrivacyText":"Freigaben, Export, Löschung und private Standards."},
   "nav": {"dashboard":"Dashboard","onboarding":"Start-Assistent","admin":"Admin","profile":"Mein Profil","myTwins":"Meine Twins","twinBuilder":"Twin Builder","twinCreate":"Twin erstellen","upload":"Daten hochladen","memories":"Memories","chats":"Chats","trust":"Trust","privacy":"Datenschutz","settings":"Einstellungen","onboardingDetail":"Schritt für Schritt zum fertigen Twin","profileDetail":"Identität, Bio, Rollen und Profilqualität","twinCreateDetail":"Persönlichkeit, Wissen und Sichtbarkeit","myTwinsDetail":"Private und öffentliche AI Twins","memoriesDetail":"Dateien, Wissen und Erinnerungen hochladen","chatsDetail":"Letzte Gespräche und Twin-Auswahl","adminDetail":"User, Werbung, Umsatz, Sicherheit und Betrieb","privacyDetail":"Privatsphäre, Export und Löschung","settingsDetail":"Sprache, Theme, Account und Logout"},
   "pwreset": {"title":"Neues Passwort setzen","intro":"Wähle ein neues Passwort für dein smyst.com-Konto (mindestens 8 Zeichen).","passwordPlaceholder":"Neues Passwort","repeatPlaceholder":"Passwort wiederholen","mismatch":"Die Passwörter stimmen nicht überein.","submitBusy":"Speichern…","submit":"Passwort speichern und anmelden","cancel":"Abbrechen","errorReset":"Zurücksetzen fehlgeschlagen. Bitte fordere einen neuen Link an.","errorNetwork":"Verbindung fehlgeschlagen. Bitte erneut versuchen."},
@@ -11,6 +12,7 @@
     "keywords": "KI-Zwilling, AI Twin, digitaler Zwilling, Wissensprofil, Erinnerungen, smyst.com"
   },
   "start": {
+    "categoryAll": "Alle",
     "searchLabel": "Profil suchen",
     "searchPlaceholder": "Profil suchen",
     "changeTwin": "Ausgewähltes Profil ändern",
