@@ -2711,7 +2711,7 @@ function SmystStartPage({
                     : 'border-white/12 bg-white/[0.06] text-[#c7d1de]'
                 }`}
               >
-                Alle
+                {lang === DEFAULT_LANG ? 'Alle' : t.start.categoryAll}
               </button>
               {visibleCategories.map((category) => (
                 <button
@@ -2729,7 +2729,7 @@ function SmystStartPage({
                       : 'border-white/12 bg-white/[0.06] text-[#c7d1de]'
                   }`}
                 >
-                  {category.name}
+                  {lang === DEFAULT_LANG ? category.name : (t.cats[category.name] ?? category.name)}
                   <span className="ml-1 opacity-65">{category.count}</span>
                 </button>
               ))}
