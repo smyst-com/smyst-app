@@ -1,6 +1,7 @@
 {
   "locale": "ru",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"Наука","Geschichte":"История","Forschung":"Исследования","Literatur":"Литература","Kunst":"Искусство","Politik":"Политика","Philosophie":"Философия","Bildung":"Образование","Mathematik":"Математика","Ethik":"Этика","Technologie":"Технологии","Wirtschaft":"Экономика","Medizin":"Медицина","Führung":"Лидерство","Physik":"Физика","Strategie":"Стратегия","Musik":"Музыка"},
   "drawer": {"quickOnboarding":"Мастер настройки","quickProfile":"Открыть профиль","quickTwinCreate":"Создать двойника","quickUpload":"Загрузить данные","sectionTitle":"Раздел профиля","cardIdentityTitle":"Идентичность","cardIdentityText":"Держите имя, роли, экспертизу и био в порядке.","cardTwinTitle":"AI Twin","cardTwinText":"Управляйте личностью, знаниями и видимостью.","cardMemoriesTitle":"Воспоминания","cardMemoriesText":"Управляйте загрузками, источниками и воспоминаниями как контекстом.","cardPrivacyTitle":"Конфиденциальность","cardPrivacyText":"Доступы, экспорт, удаление и приватные настройки."},
   "nav": {"dashboard":"Панель","onboarding":"Мастер настройки","admin":"Админ","profile":"Мой профиль","myTwins":"Мои двойники","twinBuilder":"Twin Builder","twinCreate":"Создать двойника","upload":"Загрузить данные","memories":"Воспоминания","chats":"Чаты","trust":"Доверие","privacy":"Конфиденциальность","settings":"Настройки","onboardingDetail":"Шаг за шагом к готовому двойнику","profileDetail":"Личность, био, роли и качество профиля","twinCreateDetail":"Характер, знания и видимость","myTwinsDetail":"Приватные и публичные ИИ-двойники","memoriesDetail":"Загрузка файлов, знаний и воспоминаний","chatsDetail":"Последние беседы и выбор двойника","adminDetail":"Пользователи, реклама, доход, безопасность и эксплуатация","privacyDetail":"Приватность, экспорт и удаление","settingsDetail":"Язык, тема, аккаунт и выход"},
   "pwreset": {"title":"Установить новый пароль","intro":"Выберите новый пароль для вашего аккаунта smyst.com (не менее 8 символов).","passwordPlaceholder":"Новый пароль","repeatPlaceholder":"Повторите пароль","mismatch":"Пароли не совпадают.","submitBusy":"Сохранение…","submit":"Сохранить пароль и войти","cancel":"Отмена","errorReset":"Не удалось сбросить пароль. Запросите новую ссылку.","errorNetwork":"Не удалось подключиться. Повторите попытку."},
@@ -11,6 +12,7 @@
     "keywords": "ИИ-двойник, AI twin, цифровой двойник, профиль знаний, воспоминания, smyst.com"
   },
   "start": {
+    "categoryAll": "Все",
     "searchLabel": "Поиск двойника",
     "searchPlaceholder": "Поиск по имени или двойнику",
     "changeTwin": "Сменить выбранного двойника",
