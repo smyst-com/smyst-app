@@ -1,6 +1,7 @@
 {
   "locale": "id",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"Sains","Geschichte":"Sejarah","Forschung":"Riset","Literatur":"Sastra","Kunst":"Seni","Politik":"Politik","Philosophie":"Filsafat","Bildung":"Pendidikan","Mathematik":"Matematika","Ethik":"Etika","Technologie":"Teknologi","Wirtschaft":"Ekonomi","Medizin":"Kedokteran","Führung":"Kepemimpinan","Physik":"Fisika","Strategie":"Strategi","Musik":"Musik"},
   "drawer": {"quickOnboarding":"Asisten persiapan","quickProfile":"Buka profil","quickTwinCreate":"Buat twin","quickUpload":"Unggah data","sectionTitle":"Area profil","cardIdentityTitle":"Identitas","cardIdentityText":"Jaga nama, peran, keahlian, dan bio tetap rapi.","cardTwinTitle":"AI Twin","cardTwinText":"Kendalikan kepribadian, pengetahuan, dan visibilitas.","cardMemoriesTitle":"Kenangan","cardMemoriesText":"Kelola unggahan, sumber, dan memori sebagai konteks.","cardPrivacyTitle":"Privasi","cardPrivacyText":"Izin, ekspor, penghapusan, dan standar privat."},
   "nav": {"dashboard":"Dasbor","onboarding":"Asisten persiapan","admin":"Admin","profile":"Profil saya","myTwins":"Twin saya","twinBuilder":"Twin Builder","twinCreate":"Buat twin","upload":"Unggah data","memories":"Kenangan","chats":"Obrolan","trust":"Kepercayaan","privacy":"Privasi","settings":"Pengaturan","onboardingDetail":"Langkah demi langkah menuju twin siap pakai","profileDetail":"Identitas, bio, peran, dan kualitas profil","twinCreateDetail":"Kepribadian, pengetahuan, dan visibilitas","myTwinsDetail":"Twin AI privat dan publik","memoriesDetail":"Unggah file, pengetahuan, dan kenangan","chatsDetail":"Percakapan terbaru dan pilihan twin","adminDetail":"Pengguna, iklan, pendapatan, keamanan, dan operasional","privacyDetail":"Privasi, ekspor, dan penghapusan","settingsDetail":"Bahasa, tema, akun, dan keluar"},
   "pwreset": {"title":"Atur kata sandi baru","intro":"Pilih kata sandi baru untuk akun smyst.com Anda (minimal 8 karakter).","passwordPlaceholder":"Kata sandi baru","repeatPlaceholder":"Ulangi kata sandi","mismatch":"Kata sandi tidak cocok.","submitBusy":"Menyimpan…","submit":"Simpan kata sandi dan masuk","cancel":"Batal","errorReset":"Pengaturan ulang gagal. Silakan minta tautan baru.","errorNetwork":"Koneksi gagal. Silakan coba lagi."},
@@ -11,6 +12,7 @@
     "keywords": "AI twin, twin digital, profil pengetahuan, kenangan, smyst.com"
   },
   "start": {
+    "categoryAll": "Semua",
     "searchLabel": "Cari twin",
     "searchPlaceholder": "Cari nama atau twin",
     "changeTwin": "Ganti twin yang dipilih",
