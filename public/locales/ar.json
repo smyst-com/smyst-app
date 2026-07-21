@@ -1,6 +1,7 @@
 {
   "locale": "ar",
   "dir": "rtl",
+  "cats": {"Wissenschaft":"العلوم","Geschichte":"التاريخ","Forschung":"البحث","Literatur":"الأدب","Kunst":"الفن","Politik":"السياسة","Philosophie":"الفلسفة","Bildung":"التعليم","Mathematik":"الرياضيات","Ethik":"الأخلاق","Technologie":"التكنولوجيا","Wirtschaft":"الاقتصاد","Medizin":"الطب","Führung":"القيادة","Physik":"الفيزياء","Strategie":"الاستراتيجية","Musik":"الموسيقى"},
   "drawer": {"quickOnboarding":"مساعد البدء","quickProfile":"فتح الملف الشخصي","quickTwinCreate":"إنشاء توأم","quickUpload":"رفع البيانات","sectionTitle":"قسم الملف الشخصي","cardIdentityTitle":"الهوية","cardIdentityText":"حافظ على تحديث الاسم والأدوار والخبرات والسيرة الذاتية.","cardTwinTitle":"AI Twin","cardTwinText":"تحكم في الشخصية والمعرفة والظهور.","cardMemoriesTitle":"الذكريات","cardMemoriesText":"أدر الملفات المرفوعة والمصادر والذكريات كسياق.","cardPrivacyTitle":"الخصوصية","cardPrivacyText":"الأذونات والتصدير والحذف والمعايير الخاصة."},
   "nav": {"dashboard":"لوحة التحكم","onboarding":"مساعد البدء","admin":"الإدارة","profile":"ملفي الشخصي","myTwins":"توائمي","twinBuilder":"Twin Builder","twinCreate":"إنشاء توأم","upload":"رفع البيانات","memories":"الذكريات","chats":"المحادثات","trust":"الثقة","privacy":"الخصوصية","settings":"الإعدادات","onboardingDetail":"خطوة بخطوة نحو توأمك الجاهز","profileDetail":"الهوية والسيرة والأدوار وجودة الملف","twinCreateDetail":"الشخصية والمعرفة والظهور","myTwinsDetail":"توائم ذكاء اصطناعي خاصة وعامة","memoriesDetail":"رفع الملفات والمعرفة والذكريات","chatsDetail":"أحدث المحادثات واختيار التوأم","adminDetail":"المستخدمون والإعلانات والإيرادات والأمان والتشغيل","privacyDetail":"الخصوصية والتصدير والحذف","settingsDetail":"اللغة والمظهر والحساب وتسجيل الخروج"},
   "pwreset": {"title":"تعيين كلمة مرور جديدة","intro":"اختر كلمة مرور جديدة لحسابك على smyst.com (8 أحرف على الأقل).","passwordPlaceholder":"كلمة المرور الجديدة","repeatPlaceholder":"تأكيد كلمة المرور","mismatch":"كلمتا المرور غير متطابقتين.","submitBusy":"جارٍ الحفظ…","submit":"حفظ كلمة المرور وتسجيل الدخول","cancel":"إلغاء","errorReset":"فشلت إعادة التعيين. يرجى طلب رابط جديد.","errorNetwork":"فشل الاتصال. يرجى المحاولة مرة أخرى."},
@@ -88,6 +89,7 @@
     "keywords": "توأم ذكاء اصطناعي, توأم رقمي, ملف معرفة, ذكريات, smyst.com"
   },
   "start": {
+    "categoryAll": "الكل",
     "searchLabel": "البحث عن Twin",
     "searchPlaceholder": "ابحث بالاسم أو Twin",
     "changeTwin": "تغيير الـ Twin المحدد",
