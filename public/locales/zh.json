@@ -1,6 +1,7 @@
 {
   "locale": "zh",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"科学","Geschichte":"历史","Forschung":"研究","Literatur":"文学","Kunst":"艺术","Politik":"政治","Philosophie":"哲学","Bildung":"教育","Mathematik":"数学","Ethik":"伦理","Technologie":"科技","Wirtschaft":"经济","Medizin":"医学","Führung":"领导力","Physik":"物理","Strategie":"战略","Musik":"音乐"},
   "drawer": {"quickOnboarding":"入门助手","quickProfile":"打开个人资料","quickTwinCreate":"创建分身","quickUpload":"上传数据","sectionTitle":"个人资料区","cardIdentityTitle":"身份","cardIdentityText":"维护好姓名、角色、专长和简介。","cardTwinTitle":"AI Twin","cardTwinText":"管理个性、知识与可见性。","cardMemoriesTitle":"记忆","cardMemoriesText":"将上传内容、来源和记忆作为上下文进行管理。","cardPrivacyTitle":"隐私","cardPrivacyText":"权限、导出、删除与隐私标准。"},
   "nav": {"dashboard":"仪表盘","onboarding":"入门助手","admin":"管理","profile":"我的资料","myTwins":"我的分身","twinBuilder":"Twin Builder","twinCreate":"创建分身","upload":"上传数据","memories":"记忆","chats":"聊天","trust":"信任","privacy":"隐私","settings":"设置","onboardingDetail":"一步步完成你的分身","profileDetail":"身份、简介、角色与资料质量","twinCreateDetail":"性格、知识与可见性","myTwinsDetail":"私密与公开的AI分身","memoriesDetail":"上传文件、知识与记忆","chatsDetail":"最近对话与分身选择","adminDetail":"用户、广告、收入、安全与运营","privacyDetail":"隐私、导出与删除","settingsDetail":"语言、主题、账户与退出登录"},
   "pwreset": {"title":"设置新密码","intro":"请为你的 smyst.com 账户设置新密码（至少 8 个字符）。","passwordPlaceholder":"新密码","repeatPlaceholder":"再次输入密码","mismatch":"两次输入的密码不一致。","submitBusy":"保存中…","submit":"保存密码并登录","cancel":"取消","errorReset":"重置失败，请重新申请链接。","errorNetwork":"连接失败，请重试。"},
@@ -88,6 +89,7 @@
     "keywords": "AI Twin, 数字孪生, 知识档案, 记忆, smyst.com"
   },
   "start": {
+    "categoryAll": "全部",
     "searchLabel": "搜索 Twin",
     "searchPlaceholder": "按姓名或 Twin 搜索",
     "changeTwin": "更改所选 Twin",
