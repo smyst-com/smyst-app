@@ -1,6 +1,7 @@
 {
   "locale": "ja",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"科学","Geschichte":"歴史","Forschung":"研究","Literatur":"文学","Kunst":"芸術","Politik":"政治","Philosophie":"哲学","Bildung":"教育","Mathematik":"数学","Ethik":"倫理","Technologie":"テクノロジー","Wirtschaft":"経済","Medizin":"医学","Führung":"リーダーシップ","Physik":"物理学","Strategie":"戦略","Musik":"音楽"},
   "drawer": {"quickOnboarding":"セットアップアシスタント","quickProfile":"プロフィールを開く","quickTwinCreate":"ツインを作成","quickUpload":"データをアップロード","sectionTitle":"プロフィールエリア","cardIdentityTitle":"アイデンティティ","cardIdentityText":"名前・役割・専門・自己紹介をきちんと管理。","cardTwinTitle":"AI Twin","cardTwinText":"個性・知識・公開範囲をコントロール。","cardMemoriesTitle":"メモリー","cardMemoriesText":"アップロード・出典・メモリーをコンテキストとして管理。","cardPrivacyTitle":"プライバシー","cardPrivacyText":"共有・エクスポート・削除・プライベート設定。"},
   "nav": {"dashboard":"ダッシュボード","onboarding":"セットアップアシスタント","admin":"管理","profile":"マイプロフィール","myTwins":"マイツイン","twinBuilder":"Twin Builder","twinCreate":"ツインを作成","upload":"データをアップロード","memories":"メモリー","chats":"チャット","trust":"トラスト","privacy":"プライバシー","settings":"設定","onboardingDetail":"ステップごとにツインを完成","profileDetail":"アイデンティティ、経歴、ロール、プロフィール品質","twinCreateDetail":"性格、知識、公開範囲","myTwinsDetail":"非公開・公開のAIツイン","memoriesDetail":"ファイル・知識・思い出をアップロード","chatsDetail":"最近の会話とツイン選択","adminDetail":"ユーザー、広告、収益、セキュリティ、運用","privacyDetail":"プライバシー、エクスポート、削除","settingsDetail":"言語、テーマ、アカウント、ログアウト"},
   "pwreset": {"title":"新しいパスワードを設定","intro":"smyst.com アカウントの新しいパスワードを入力してください（8文字以上）。","passwordPlaceholder":"新しいパスワード","repeatPlaceholder":"パスワードを再入力","mismatch":"パスワードが一致しません。","submitBusy":"保存中…","submit":"パスワードを保存してログイン","cancel":"キャンセル","errorReset":"リセットに失敗しました。新しいリンクをリクエストしてください。","errorNetwork":"接続に失敗しました。もう一度お試しください。"},
@@ -88,6 +89,7 @@
     "keywords": "AI Twin, デジタルツイン, 知識プロフィール, 記憶, smyst.com"
   },
   "start": {
+    "categoryAll": "すべて",
     "searchLabel": "Twin を検索",
     "searchPlaceholder": "名前または Twin を検索",
     "changeTwin": "選択中の Twin を変更",

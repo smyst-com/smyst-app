@@ -1,6 +1,7 @@
 {
   "locale": "pt",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"Ciência","Geschichte":"História","Forschung":"Pesquisa","Literatur":"Literatura","Kunst":"Arte","Politik":"Política","Philosophie":"Filosofia","Bildung":"Educação","Mathematik":"Matemática","Ethik":"Ética","Technologie":"Tecnologia","Wirtschaft":"Economia","Medizin":"Medicina","Führung":"Liderança","Physik":"Física","Strategie":"Estratégia","Musik":"Música"},
   "drawer": {"quickOnboarding":"Assistente de início","quickProfile":"Abrir perfil","quickTwinCreate":"Criar gêmeo","quickUpload":"Enviar dados","sectionTitle":"Área do perfil","cardIdentityTitle":"Identidade","cardIdentityText":"Mantenha nome, papéis, especialidades e bio em dia.","cardTwinTitle":"AI Twin","cardTwinText":"Controle personalidade, conhecimento e visibilidade.","cardMemoriesTitle":"Memórias","cardMemoriesText":"Gerencie uploads, fontes e memórias como contexto.","cardPrivacyTitle":"Privacidade","cardPrivacyText":"Permissões, exportação, exclusão e padrões privados."},
   "nav": {"dashboard":"Painel","onboarding":"Assistente de início","admin":"Admin","profile":"Meu perfil","myTwins":"Meus gêmeos","twinBuilder":"Twin Builder","twinCreate":"Criar gêmeo","upload":"Enviar dados","memories":"Memórias","chats":"Conversas","trust":"Confiança","privacy":"Privacidade","settings":"Configurações","onboardingDetail":"Passo a passo até o seu gêmeo","profileDetail":"Identidade, bio, papéis e qualidade do perfil","twinCreateDetail":"Personalidade, conhecimento e visibilidade","myTwinsDetail":"Gêmeos de IA privados e públicos","memoriesDetail":"Enviar arquivos, conhecimentos e memórias","chatsDetail":"Conversas recentes e escolha do gêmeo","adminDetail":"Usuários, anúncios, receita, segurança e operações","privacyDetail":"Privacidade, exportação e exclusão","settingsDetail":"Idioma, tema, conta e logout"},
   "pwreset": {"title":"Definir nova senha","intro":"Escolha uma nova senha para a sua conta smyst.com (pelo menos 8 caracteres).","passwordPlaceholder":"Nova senha","repeatPlaceholder":"Repetir senha","mismatch":"As senhas não coincidem.","submitBusy":"Salvando…","submit":"Salvar senha e entrar","cancel":"Cancelar","errorReset":"Falha ao redefinir. Solicite um novo link.","errorNetwork":"Falha na conexão. Tente novamente."},
@@ -88,6 +89,7 @@
     "keywords": "gémeo de IA, gémeo digital, perfil de conhecimento, memórias, smyst.com"
   },
   "start": {
+    "categoryAll": "Todos",
     "searchLabel": "Pesquisar twin",
     "searchPlaceholder": "Pesquisar por nome ou twin",
     "changeTwin": "Alterar twin selecionado",

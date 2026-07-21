@@ -1,6 +1,7 @@
 {
   "locale": "hi",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"विज्ञान","Geschichte":"इतिहास","Forschung":"अनुसंधान","Literatur":"साहित्य","Kunst":"कला","Politik":"राजनीति","Philosophie":"दर्शन","Bildung":"शिक्षा","Mathematik":"गणित","Ethik":"नैतिकता","Technologie":"प्रौद्योगिकी","Wirtschaft":"अर्थशास्त्र","Medizin":"चिकित्सा","Führung":"नेतृत्व","Physik":"भौतिकी","Strategie":"रणनीति","Musik":"संगीत"},
   "drawer": {"quickOnboarding":"सेटअप सहायक","quickProfile":"प्रोफ़ाइल खोलें","quickTwinCreate":"ट्विन बनाएं","quickUpload":"डेटा अपलोड करें","sectionTitle":"प्रोफ़ाइल क्षेत्र","cardIdentityTitle":"पहचान","cardIdentityText":"नाम, भूमिकाएँ, विशेषज्ञता और बायो व्यवस्थित रखें।","cardTwinTitle":"AI Twin","cardTwinText":"व्यक्तित्व, ज्ञान और दृश्यता नियंत्रित करें।","cardMemoriesTitle":"यादें","cardMemoriesText":"अपलोड, स्रोत और यादों को संदर्भ के रूप में प्रबंधित करें।","cardPrivacyTitle":"गोपनीयता","cardPrivacyText":"अनुमतियाँ, निर्यात, हटाना और निजी मानक।"},
   "nav": {"dashboard":"डैशबोर्ड","onboarding":"सेटअप सहायक","admin":"एडमिन","profile":"मेरी प्रोफ़ाइल","myTwins":"मेरे ट्विन","twinBuilder":"Twin Builder","twinCreate":"ट्विन बनाएं","upload":"डेटा अपलोड करें","memories":"यादें","chats":"चैट","trust":"भरोसा","privacy":"गोपनीयता","settings":"सेटिंग्स","onboardingDetail":"कदम दर कदम तैयार ट्विन तक","profileDetail":"पहचान, बायो, भूमिकाएं और प्रोफ़ाइल गुणवत्ता","twinCreateDetail":"व्यक्तित्व, ज्ञान और दृश्यता","myTwinsDetail":"निजी और सार्वजनिक AI ट्विन","memoriesDetail":"फ़ाइलें, ज्ञान और यादें अपलोड करें","chatsDetail":"हाल की बातचीत और ट्विन चयन","adminDetail":"उपयोगकर्ता, विज्ञापन, राजस्व, सुरक्षा और संचालन","privacyDetail":"गोपनीयता, निर्यात और हटाना","settingsDetail":"भाषा, थीम, खाता और लॉगआउट"},
   "pwreset": {"title":"नया पासवर्ड सेट करें","intro":"अपने smyst.com खाते के लिए नया पासवर्ड चुनें (कम से कम 8 अक्षर)।","passwordPlaceholder":"नया पासवर्ड","repeatPlaceholder":"पासवर्ड दोहराएँ","mismatch":"पासवर्ड मेल नहीं खाते।","submitBusy":"सहेजा जा रहा है…","submit":"पासवर्ड सहेजें और लॉग इन करें","cancel":"रद्द करें","errorReset":"रीसेट विफल रहा। कृपया नया लिंक अनुरोध करें।","errorNetwork":"कनेक्शन विफल। कृपया पुनः प्रयास करें।"},
@@ -11,6 +12,7 @@
     "keywords": "AI ट्विन, डिजिटल ट्विन, ज्ञान प्रोफ़ाइल, यादें, smyst.com"
   },
   "start": {
+    "categoryAll": "सभी",
     "searchLabel": "ट्विन खोजें",
     "searchPlaceholder": "नाम या ट्विन से खोजें",
     "changeTwin": "चुना हुआ ट्विन बदलें",
