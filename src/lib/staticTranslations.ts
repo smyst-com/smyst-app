@@ -13,7 +13,9 @@ export interface StaticTranslations {
   pwreset: { title: string; intro: string; passwordPlaceholder: string; repeatPlaceholder: string; mismatch: string; submitBusy: string; submit: string; cancel: string; errorReset: string; errorNetwork: string }
   nav: { dashboard: string; onboarding: string; admin: string; profile: string; myTwins: string; twinBuilder: string; twinCreate: string; upload: string; memories: string; chats: string; trust: string; privacy: string; settings: string; onboardingDetail: string; profileDetail: string; twinCreateDetail: string; myTwinsDetail: string; memoriesDetail: string; chatsDetail: string; adminDetail: string; privacyDetail: string; settingsDetail: string }
   drawer: { quickOnboarding: string; quickProfile: string; quickTwinCreate: string; quickUpload: string; sectionTitle: string; cardIdentityTitle: string; cardIdentityText: string; cardTwinTitle: string; cardTwinText: string; cardMemoriesTitle: string; cardMemoriesText: string; cardPrivacyTitle: string; cardPrivacyText: string }
+  cats: Record<string, string>
   start: {
+    categoryAll: string
     searchLabel: string
     searchPlaceholder: string
     changeTwin: string
@@ -136,7 +138,9 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
   pwreset: { title: 'Neues Passwort setzen', intro: 'Wähle ein neues Passwort für dein smyst.com-Konto (mindestens 8 Zeichen).', passwordPlaceholder: 'Neues Passwort', repeatPlaceholder: 'Passwort wiederholen', mismatch: 'Die Passwörter stimmen nicht überein.', submitBusy: 'Speichern…', submit: 'Passwort speichern und anmelden', cancel: 'Abbrechen', errorReset: 'Zurücksetzen fehlgeschlagen. Bitte fordere einen neuen Link an.', errorNetwork: 'Verbindung fehlgeschlagen. Bitte erneut versuchen.' },
   nav: { dashboard: 'Dashboard', onboarding: 'Start-Assistent', admin: 'Admin', profile: 'Mein Profil', myTwins: 'Meine Twins', twinBuilder: 'Twin Builder', twinCreate: 'Twin erstellen', upload: 'Daten hochladen', memories: 'Memories', chats: 'Chats', trust: 'Trust', privacy: 'Datenschutz', settings: 'Einstellungen', onboardingDetail: 'Schritt für Schritt zum fertigen Twin', profileDetail: 'Identität, Bio, Rollen und Profilqualität', twinCreateDetail: 'Persönlichkeit, Wissen und Sichtbarkeit', myTwinsDetail: 'Private und öffentliche AI Twins', memoriesDetail: 'Dateien, Wissen und Erinnerungen hochladen', chatsDetail: 'Letzte Gespräche und Twin-Auswahl', adminDetail: 'User, Werbung, Umsatz, Sicherheit und Betrieb', privacyDetail: 'Privatsphäre, Export und Löschung', settingsDetail: 'Sprache, Theme, Account und Logout' },
   drawer: { quickOnboarding: 'Start-Assistent', quickProfile: 'Profil öffnen', quickTwinCreate: 'Twin erstellen', quickUpload: 'Daten hochladen', sectionTitle: 'Profilbereich', cardIdentityTitle: 'Identität', cardIdentityText: 'Name, Rollen, Expertise und Bio sauber pflegen.', cardTwinTitle: 'AI Twin', cardTwinText: 'Persönlichkeit, Wissen und Sichtbarkeit steuern.', cardMemoriesTitle: 'Memories', cardMemoriesText: 'Uploads, Quellen und Erinnerungen als Kontext verwalten.', cardPrivacyTitle: 'Datenschutz', cardPrivacyText: 'Freigaben, Export, Löschung und private Standards.' },
+  cats: { Wissenschaft: 'Wissenschaft', Geschichte: 'Geschichte', Forschung: 'Forschung', Literatur: 'Literatur', Kunst: 'Kunst', Politik: 'Politik', Philosophie: 'Philosophie', Bildung: 'Bildung', Mathematik: 'Mathematik', Ethik: 'Ethik', Technologie: 'Technologie', Wirtschaft: 'Wirtschaft', Medizin: 'Medizin', Führung: 'Führung', Physik: 'Physik', Strategie: 'Strategie', Musik: 'Musik' },
   start: {
+    categoryAll: 'Alle',
     searchLabel: 'Profil suchen',
     searchPlaceholder: 'Profil suchen',
     changeTwin: 'Ausgewähltes Profil ändern',
@@ -260,6 +264,7 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     pwreset: { ...DEFAULT_TRANSLATIONS.pwreset, ...value.pwreset },
     nav: { ...DEFAULT_TRANSLATIONS.nav, ...value.nav },
     drawer: { ...DEFAULT_TRANSLATIONS.drawer, ...value.drawer },
+    cats: { ...DEFAULT_TRANSLATIONS.cats, ...value.cats },
     start: { ...DEFAULT_TRANSLATIONS.start, ...value.start },
     chat: { ...DEFAULT_TRANSLATIONS.chat, ...value.chat },
     profile: { ...DEFAULT_TRANSLATIONS.profile, ...value.profile },
