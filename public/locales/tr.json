@@ -1,6 +1,7 @@
 {
   "locale": "tr",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"Bilim","Geschichte":"Tarih","Forschung":"Araştırma","Literatur":"Edebiyat","Kunst":"Sanat","Politik":"Siyaset","Philosophie":"Felsefe","Bildung":"Eğitim","Mathematik":"Matematik","Ethik":"Etik","Technologie":"Teknoloji","Wirtschaft":"Ekonomi","Medizin":"Tıp","Führung":"Liderlik","Physik":"Fizik","Strategie":"Strateji","Musik":"Müzik"},
   "drawer": {"quickOnboarding":"Kurulum asistanı","quickProfile":"Profili aç","quickTwinCreate":"İkiz oluştur","quickUpload":"Veri yükle","sectionTitle":"Profil alanı","cardIdentityTitle":"Kimlik","cardIdentityText":"Ad, roller, uzmanlık ve biyografiyi düzenli tut.","cardTwinTitle":"AI Twin","cardTwinText":"Kişilik, bilgi ve görünürlüğü yönet.","cardMemoriesTitle":"Anılar","cardMemoriesText":"Yüklemeleri, kaynakları ve anıları bağlam olarak yönet.","cardPrivacyTitle":"Gizlilik","cardPrivacyText":"İzinler, dışa aktarma, silme ve özel standartlar."},
   "nav": {"dashboard":"Panel","onboarding":"Kurulum asistanı","admin":"Yönetici","profile":"Profilim","myTwins":"İkizlerim","twinBuilder":"Twin Builder","twinCreate":"İkiz oluştur","upload":"Veri yükle","memories":"Anılar","chats":"Sohbetler","trust":"Güven","privacy":"Gizlilik","settings":"Ayarlar","onboardingDetail":"Adım adım hazır ikizine","profileDetail":"Kimlik, biyografi, roller ve profil kalitesi","twinCreateDetail":"Kişilik, bilgi ve görünürlük","myTwinsDetail":"Özel ve herkese açık yapay zekâ ikizleri","memoriesDetail":"Dosya, bilgi ve anı yükle","chatsDetail":"Son konuşmalar ve ikiz seçimi","adminDetail":"Kullanıcılar, reklam, gelir, güvenlik ve operasyon","privacyDetail":"Gizlilik, dışa aktarma ve silme","settingsDetail":"Dil, tema, hesap ve çıkış"},
   "pwreset": {"title":"Yeni şifre belirle","intro":"smyst.com hesabın için yeni bir şifre seç (en az 8 karakter).","passwordPlaceholder":"Yeni şifre","repeatPlaceholder":"Şifreyi tekrarla","mismatch":"Şifreler eşleşmiyor.","submitBusy":"Kaydediliyor…","submit":"Şifreyi kaydet ve giriş yap","cancel":"İptal","errorReset":"Sıfırlama başarısız. Lütfen yeni bir bağlantı iste.","errorNetwork":"Bağlantı kurulamadı. Lütfen tekrar deneyin."},
@@ -88,6 +89,7 @@
     "keywords": "AI ikizi, dijital ikiz, bilgi profili, anılar, smyst.com"
   },
   "start": {
+    "categoryAll": "Tümü",
     "searchLabel": "Twin ara",
     "searchPlaceholder": "İsim veya twin ara",
     "changeTwin": "Seçili twin'i değiştir",
