@@ -1,6 +1,7 @@
 {
   "locale": "en",
   "dir": "ltr",
+  "cats": {"Wissenschaft":"Science","Geschichte":"History","Forschung":"Research","Literatur":"Literature","Kunst":"Art","Politik":"Politics","Philosophie":"Philosophy","Bildung":"Education","Mathematik":"Mathematics","Ethik":"Ethics","Technologie":"Technology","Wirtschaft":"Economics","Medizin":"Medicine","Führung":"Leadership","Physik":"Physics","Strategie":"Strategy","Musik":"Music"},
   "drawer": {"quickOnboarding":"Setup assistant","quickProfile":"Open profile","quickTwinCreate":"Create twin","quickUpload":"Upload data","sectionTitle":"Profile area","cardIdentityTitle":"Identity","cardIdentityText":"Keep name, roles, expertise and bio well maintained.","cardTwinTitle":"AI Twin","cardTwinText":"Control personality, knowledge and visibility.","cardMemoriesTitle":"Memories","cardMemoriesText":"Manage uploads, sources and memories as context.","cardPrivacyTitle":"Privacy","cardPrivacyText":"Sharing, export, deletion and private defaults."},
   "nav": {"dashboard":"Dashboard","onboarding":"Setup assistant","admin":"Admin","profile":"My profile","myTwins":"My twins","twinBuilder":"Twin Builder","twinCreate":"Create twin","upload":"Upload data","memories":"Memories","chats":"Chats","trust":"Trust","privacy":"Privacy","settings":"Settings","onboardingDetail":"Step by step to your finished twin","profileDetail":"Identity, bio, roles and profile quality","twinCreateDetail":"Personality, knowledge and visibility","myTwinsDetail":"Private and public AI twins","memoriesDetail":"Upload files, knowledge and memories","chatsDetail":"Recent conversations and twin selection","adminDetail":"Users, ads, revenue, security and operations","privacyDetail":"Privacy, export and deletion","settingsDetail":"Language, theme, account and logout"},
   "pwreset": {"title":"Set a new password","intro":"Choose a new password for your smyst.com account (at least 8 characters).","passwordPlaceholder":"New password","repeatPlaceholder":"Repeat password","mismatch":"The passwords do not match.","submitBusy":"Saving…","submit":"Save password and sign in","cancel":"Cancel","errorReset":"Reset failed. Please request a new link.","errorNetwork":"Connection failed. Please try again."},
@@ -60,6 +61,7 @@
     "keywords": "AI twin, digital twin, knowledge profile, memories, smyst.com"
   },
   "start": {
+    "categoryAll": "All",
     "searchLabel": "Search twin",
     "searchPlaceholder": "Search by name or twin",
     "changeTwin": "Change selected twin",
