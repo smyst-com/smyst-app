@@ -1711,7 +1711,7 @@ function SmystStartPage({
     if (!selected.length) return
     setComposerMenuOpen(false)
     if (auth.status !== 'authenticated') {
-      addNotice('Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.' : t.notices.loginToUpload)
       return
     }
 
@@ -1729,7 +1729,7 @@ function SmystStartPage({
       const uploaded = await memoryUpload.upload(file, mediaCategoryForFile(file))
       if (!uploaded) {
         updateAttachment(id, { status: 'failed' })
-        addNotice(memoryUpload.error || 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.')
+        addNotice(memoryUpload.error || (lang === DEFAULT_LANG ? 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.' : t.notices.uploadFailed))
         continue
       }
       updateAttachment(id, {
@@ -1748,7 +1748,7 @@ function SmystStartPage({
     const contactsApi = (navigator as BrowserNavigatorWithContacts).contacts
     if (!contactsApi?.select) {
       fileInputRef.current?.click()
-      addNotice('Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.' : t.notices.contactUnsupported)
       return
     }
     try {
@@ -1761,7 +1761,7 @@ function SmystStartPage({
       ])
       resizeInput([input, `Kontakt:\n${text}`].filter(Boolean).join('\n\n'))
     } catch {
-      addNotice('Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.' : t.notices.contactCancelled)
     }
   }
 
@@ -1782,16 +1782,16 @@ function SmystStartPage({
           url: url.href,
         },
       ])
-      addNotice('Link wurde angehängt.')
+      addNotice(lang === DEFAULT_LANG ? 'Link wurde angehängt.' : t.notices.linkAttached)
     } catch {
-      addNotice('Bitte einen gültigen http- oder https-Link einfügen.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte einen gültigen http- oder https-Link einfügen.' : t.notices.linkInvalid)
     }
   }
 
   const handleAttachLocation = () => {
     setComposerMenuOpen(false)
     if (!('geolocation' in navigator)) {
-      addNotice('Standort wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Standort wird von diesem Browser nicht unterstützt.' : t.notices.locationUnsupported)
       return
     }
     navigator.geolocation.getCurrentPosition(
@@ -1808,9 +1808,9 @@ function SmystStartPage({
             url,
           },
         ])
-        addNotice('Standort wurde angehängt.')
+        addNotice(lang === DEFAULT_LANG ? 'Standort wurde angehängt.' : t.notices.locationAttached)
       },
-      () => addNotice('Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.'),
+      () => addNotice(lang === DEFAULT_LANG ? 'Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.' : t.notices.locationError),
       { enableHighAccuracy: false, maximumAge: 60_000, timeout: 10_000 },
     )
   }
@@ -1846,7 +1846,7 @@ function SmystStartPage({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.' : t.notices.speechUnsupported)
       return
     }
     if (!options.live && !options.resume) {
@@ -1892,7 +1892,7 @@ function SmystStartPage({
         }
         dictationActiveRef.current = false
         setVoiceState('idle')
-        addNotice('Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.')
+        addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
       })
   }
 
@@ -1946,8 +1946,8 @@ function SmystStartPage({
       }
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
-          ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
-          : 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.',
+          ? (lang === DEFAULT_LANG ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.' : t.notices.micNotAllowed)
+          : (lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed),
       )
     }
     recognition.onend = () => {
@@ -2048,7 +2048,7 @@ function SmystStartPage({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed)
     }
   }
 
@@ -2068,7 +2068,7 @@ function SmystStartPage({
       setVoiceState('idle')
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
-      addNotice('Live-Sprachmodus beendet.')
+      addNotice(lang === DEFAULT_LANG ? 'Live-Sprachmodus beendet.' : t.notices.liveVoiceEnded)
       return
     }
     {
@@ -2128,7 +2128,7 @@ function SmystStartPage({
     const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if (sendAttachments.some((attachment) => attachment.status === 'uploading')) {
-      addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte warten, bis alle Anhänge hochgeladen sind.' : t.notices.attachmentsUploading)
       return null
     }
 
@@ -2262,11 +2262,11 @@ function SmystStartPage({
       return
     }
     if (!latestAssistantText) {
-      addNotice('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.')
+      addNotice(lang === DEFAULT_LANG ? 'Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.' : t.notices.nothingToRead)
       return
     }
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-      addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Vorlesen wird von diesem Browser nicht unterstützt.' : t.notices.readAloudUnsupported)
       return
     }
     // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
@@ -2279,7 +2279,7 @@ function SmystStartPage({
 
   const handleSendButtonClick = () => {
     if (!canSend) {
-      addNotice('Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.')
+      addNotice(lang === DEFAULT_LANG ? 'Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.' : t.notices.messageEmpty)
       textareaRef.current?.focus()
       return
     }
