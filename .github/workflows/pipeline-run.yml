@@ -126,7 +126,7 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.ingest_candidates --enabled
+            python -m app.workers.ingest_candidates --enabled --limit 120
           else
             python -m app.workers.ingest_candidates --dry-run --category Wissenschaft
           fi
@@ -140,7 +140,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.research_candidates --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.research_candidates --enabled --limit 100
+            python -m app.workers.research_candidates --enabled --limit 120
           else
             python -m app.workers.research_candidates --dry-run --limit 3
           fi
@@ -154,7 +154,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.assess_risk --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.assess_risk --enabled --limit 100
+            python -m app.workers.assess_risk --enabled --limit 120
           else
             python -m app.workers.assess_risk --dry-run --limit 3
           fi
@@ -168,7 +168,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.build_capsules --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.build_capsules --enabled --limit 100
+            python -m app.workers.build_capsules --enabled --limit 120
           else
             python -m app.workers.build_capsules --dry-run --limit 3
           fi
@@ -198,7 +198,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.qa_candidates --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.qa_candidates --enabled --limit 100
+            python -m app.workers.qa_candidates --enabled --limit 120
           else
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
