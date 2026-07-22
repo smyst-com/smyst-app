@@ -1,5 +1,13 @@
 # Memory Bank
 
+## Update 2026-07-22: Morgenlauf — Cron gruen (0 neue Profile), i18n-Etappe 10 Chat-Hinweise/addNotice (PR #229)
+
+- CRON: Heutiger Scheduled-Lauf #86 (22.07., 06:41 Berlin, auf 42bfd5f) GRUEN (2m27s). Auto-Publish: 0 published — alle 29 reviewed sind Duplikate kuratierter Profile, korrekt abgelehnt. Auto-Deploy #286 gruen (17m29s). Kein Nachholen noetig. Keine neue Parallel-Agent-Aktivitaet seit 21.07. (main stand vor dem Lauf auf 42bfd5f = Memory-PR #228).
+- STATUS (Run #87, mode=status, manuell 22.07. ~07:05, GRUEN 41s): published 232, reviewed 29 (nur kuratierte Duplikate), rejected 30, unpublished 2 — unveraendert. Seed-Pool abgearbeitet; fuer Wachstum braucht es neuen Seed bzw. erweiterte Ingest-Kategorien (Entscheidung Adam, offen seit 20.07.).
+- LIVE (cb): 332 Twins (100 kuratiert + 232 Pipeline), 0 ohne imageUrl, alle 232 mit imageCredit (47 selbst-gehostet unter /public/profile-images, 185 Commons-Hotlink; Zaehlung nach imageUrl-Praefix nur ueber die 232 Pipeline-Profile — fruehere Zaehlmethode wich ab). Stichprobe /t/carl-von-linne rendert komplett (Portrait, Orte, Beruf, KI-Kennzeichnung).
+- i18n-ETAPPE 10 (PR #229, 17 Dateien, squash 657003f, 8 Checks gruen inkl. Browser-E2E 1. Anlauf): Chat-Hinweise (addNotice) lokalisiert — neuer notices-Keyblock (25 Keys) in staticTranslations.ts (Interface + DE-Defaults + mergeTranslations-Zeile) + ALLEN 15 Locale-JSONs (einzeilig nach dir-Anker, JSON.parse-validiert). App.tsx: ALLE 18 addNotice-Stellen in SmystStartPage (Upload/Kontakt/Link/Standort/Spracheingabe/Vorlesen/Senden inkl. Mikrofon-Ternary mit 2 Zweigen) auf DEFAULT_LANG-Muster — DE byte-identisch. Deploy #287 gruen (16m19s). LIVE VERIFIZIERT: alle 15 Locales liefern 25 notices-Keys; deployter Bundle enthaelt 19 t.notices-Lookups inkl. micNotAllowed, DE-Strings unveraendert.
+- VERBLEIBENDE i18n-ETAPPEN: (1) TwinChatView-addNotice-Stellen (~20 Stellen; Keys liegen bereits im notices-Block — nur App.tsx-Verdrahtung + const t = useStaticTranslations(lang) in TwinChatView ergaenzen), (2) Landing. Offener PR #189 (avatar) nicht angefasst. Memory-Bank-Repo-PR: dieser Commit.
+
 ## Update 2026-07-21: Morgenlauf — Cron gruen (0 neue Profile, Zahlen unveraendert), i18n-Etappe 9 Kategorien-Chips (PR #227)
 
 - CRON: Heutiger Scheduled-Lauf #84 (21.07., 06:37 Berlin, auf 37f1d06) GRUEN (5m9s). Auto-Publish: 0 published — alle 29 reviewed sind Duplikate kuratierter Profile, korrekt abgelehnt. Auto-Deploy #283 gruen. Kein Nachholen noetig. Keine neue Parallel-Agent-Aktivitaet seit 20.07.
