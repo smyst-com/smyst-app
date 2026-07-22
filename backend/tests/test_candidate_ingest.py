@@ -231,3 +231,102 @@ def test_run_ingest_continues_after_category_error(monkeypatch) -> None:
     assert "Kunst" in report["errors"]
     assert report["categories"]["Wissenschaft"]["accepted"] == ["Q1035"]
     assert report["totals"]["accepted"] == 1
+
+
+# --- Ingest-Pagination (Befund 20.07.: OFFSET 0 lieferte nur bekannte Top-Namen) ---
+
+import re
+
+
+def _paged_fetch(monkeypatch, pages: dict[int, dict]):
+    """fetch_bindings-Fake, der je OFFSET eine vorbereitete Seite liefert."""
+    from app.workers import ingest_candidates as worker
+
+    calls: list[int] = []
+
+    def fake_fetch(query, **kwargs):
+        offset = int(re.search(r"OFFSET (\d+)", query).group(1))
+        calls.append(offset)
+        return pages.get(offset, payload())
+
+    monkeypatch.setattr(worker, "fetch_bindings", fake_fetch)
+    return worker, calls
+
+
+def test_ingest_paginates_past_known_top_names(monkeypatch) -> None:
+    # Seite 1 (OFFSET 0) enthaelt nur Namen, die schon im Store sind — genau
+    # das Szenario, das die Pipeline ab 20.07. leerlaufen liess. Der Worker
+    # muss weiterblaettern und die neuen Namen von Seite 2 aufnehmen.
+    pages = {
+        0: payload(
+            binding("Q1", "Alter Bekannter", "1900-01-01T00:00:00Z", 100),
+            binding("Q2", "Auch Bekannt", "1900-01-01T00:00:00Z", 90),
+        ),
+        2: payload(
+            binding("Q3", "Neu Eins", "1900-01-01T00:00:00Z", 80),
+            binding("Q4", "Neu Zwei", "1900-01-01T00:00:00Z", 70),
+        ),
+    }
+    worker, calls = _paged_fetch(monkeypatch, pages)
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    for qid in ("Q1", "Q2"):
+        store.save_candidate(make_candidate(qid))
+
+    config = PipelineConfig(enabled=True, daily_candidate_limit=2, min_sitelinks=15)
+    report = worker.run_ingest(
+        categories=["Wissenschaft"], config=config, store=store,
+        dry_run=False, run_date=date(2026, 7, 21),
+    )
+    assert calls == [0, 2]
+    assert report["categories"]["Wissenschaft"]["accepted"] == ["Q3", "Q4"]
+    assert report["totals"]["accepted"] == 2
+    assert store.existing_qids() >= {"Q1", "Q2", "Q3", "Q4"}
+
+
+def test_ingest_stops_when_category_exhausted(monkeypatch) -> None:
+    # Liefert eine Seite weniger Zeilen als angefragt, ist die Kategorie
+    # ausgeschoepft — es darf keine weitere (leere) Anfrage an WDQS gehen.
+    pages = {
+        0: payload(
+            binding("Q10", "Einziger Neuer", "1900-01-01T00:00:00Z", 60),
+            binding("Q11", "Zweiter Neuer", "1900-01-01T00:00:00Z", 55),
+        ),
+    }
+    worker, calls = _paged_fetch(monkeypatch, pages)
+    store = CandidateStore(FakeS3(), "smyst-memories")
+
+    config = PipelineConfig(enabled=True, daily_candidate_limit=4, min_sitelinks=15)
+    report = worker.run_ingest(
+        categories=["Wissenschaft"], config=config, store=store,
+        dry_run=False, run_date=date(2026, 7, 21),
+    )
+    assert calls == [0]
+    assert report["categories"]["Wissenschaft"]["accepted"] == ["Q10", "Q11"]
+
+
+def test_ingest_respects_page_cap(monkeypatch) -> None:
+    # Volle Seiten ohne einen einzigen neuen Kandidaten: nach
+    # MAX_PAGES_PER_CATEGORY ist Schluss, sonst haemmert der Worker WDQS zu.
+    full_page = payload(
+        binding("Q1", "Alter Bekannter", "1900-01-01T00:00:00Z", 100),
+        binding("Q2", "Auch Bekannt", "1900-01-01T00:00:00Z", 90),
+    )
+    from app.workers.ingest_candidates import MAX_PAGES_PER_CATEGORY
+
+    pages = {
+        offset: full_page
+        for offset in range(0, 2 * MAX_PAGES_PER_CATEGORY + 1, 2)
+    }
+    worker, calls = _paged_fetch(monkeypatch, pages)
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    for qid in ("Q1", "Q2"):
+        store.save_candidate(make_candidate(qid))
+
+    config = PipelineConfig(enabled=True, daily_candidate_limit=2, min_sitelinks=15)
+    report = worker.run_ingest(
+        categories=["Wissenschaft"], config=config, store=store,
+        dry_run=False, run_date=date(2026, 7, 21),
+    )
+    assert len(calls) == MAX_PAGES_PER_CATEGORY
+    assert report["categories"]["Wissenschaft"]["accepted"] == []
+    assert report["categories"]["Wissenschaft"]["pages"] == MAX_PAGES_PER_CATEGORY
