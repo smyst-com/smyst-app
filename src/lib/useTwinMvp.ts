@@ -67,6 +67,9 @@ export interface PublicTwinProfile {
   imageUrl: string | null
   categories: string[]
   languages: string[]
+  // Stimmen-Geschlecht (Wikidata P21) der Pipeline-Profile; kuratierte
+  // Profile beziehen es weiterhin aus den Voice-Hints per Name.
+  voiceGender?: 'female' | 'male'
   visibility: TwinVisibility
   style: TwinStyle
   status: 'draft' | 'ready'
