@@ -7069,6 +7069,7 @@ function TwinChatView({
   const dictationBaseRef = useRef('')
   const dictationSessionRef = useRef('')
   const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const auth = useAuth()
   const twinMvp = useTwinMvp()
   const memoryUpload = useMemoryUpload()
@@ -7306,7 +7307,7 @@ function TwinChatView({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.' : t.notices.speechUnsupported)
       return
     }
     if (!options.live && !options.resume) {
@@ -7352,7 +7353,7 @@ function TwinChatView({
         }
         dictationActiveRef.current = false
         setVoiceState('idle')
-        addNotice('Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.')
+        addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
       })
   }
 
@@ -7361,7 +7362,7 @@ function TwinChatView({
     if (!selected.length) return
     setComposerMenuOpen(false)
     if (auth.status !== 'authenticated') {
-      addNotice('Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.' : t.notices.loginToUpload)
       return
     }
     for (const file of selected.slice(0, 6)) {
@@ -7380,7 +7381,7 @@ function TwinChatView({
       const uploaded = await memoryUpload.upload(file, mediaCategoryForFile(file))
       if (!uploaded) {
         updateAttachment(id, { status: 'failed' })
-        addNotice(memoryUpload.error || 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.')
+        addNotice(memoryUpload.error || (lang === DEFAULT_LANG ? 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.' : t.notices.uploadFailed))
         continue
       }
       updateAttachment(id, {
@@ -7399,7 +7400,7 @@ function TwinChatView({
     const contactsApi = (navigator as BrowserNavigatorWithContacts).contacts
     if (!contactsApi?.select) {
       fileInputRef.current?.click()
-      addNotice('Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.' : t.notices.contactUnsupported)
       return
     }
     try {
@@ -7412,7 +7413,7 @@ function TwinChatView({
       ])
       resizeInput([input, `Kontakt:\n${text}`].filter(Boolean).join('\n\n'))
     } catch {
-      addNotice('Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.' : t.notices.contactCancelled)
     }
   }
 
@@ -7433,16 +7434,16 @@ function TwinChatView({
           url: url.href,
         },
       ])
-      addNotice('Link wurde angehängt.')
+      addNotice(lang === DEFAULT_LANG ? 'Link wurde angehängt.' : t.notices.linkAttached)
     } catch {
-      addNotice('Bitte einen gültigen http- oder https-Link einfügen.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte einen gültigen http- oder https-Link einfügen.' : t.notices.linkInvalid)
     }
   }
 
   const handleAttachLocation = () => {
     setComposerMenuOpen(false)
     if (!('geolocation' in navigator)) {
-      addNotice('Standort wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Standort wird von diesem Browser nicht unterstützt.' : t.notices.locationUnsupported)
       return
     }
     navigator.geolocation.getCurrentPosition(
@@ -7459,9 +7460,9 @@ function TwinChatView({
             url,
           },
         ])
-        addNotice('Standort wurde angehängt.')
+        addNotice(lang === DEFAULT_LANG ? 'Standort wurde angehängt.' : t.notices.locationAttached)
       },
-      () => addNotice('Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.'),
+      () => addNotice(lang === DEFAULT_LANG ? 'Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.' : t.notices.locationError),
       { enableHighAccuracy: false, maximumAge: 60_000, timeout: 10_000 },
     )
   }
@@ -7516,8 +7517,8 @@ function TwinChatView({
       }
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
-          ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
-          : 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.',
+          ? (lang === DEFAULT_LANG ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.' : t.notices.micNotAllowed)
+          : (lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed),
       )
     }
     recognition.onend = () => {
@@ -7610,7 +7611,7 @@ function TwinChatView({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed)
     }
   }
 
@@ -7629,7 +7630,7 @@ function TwinChatView({
       setVoiceState('idle')
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
-      addNotice('Live-Sprachmodus beendet.')
+      addNotice(lang === DEFAULT_LANG ? 'Live-Sprachmodus beendet.' : t.notices.liveVoiceEnded)
       return
     }
     liveVoiceActiveRef.current = true
@@ -7656,7 +7657,7 @@ function TwinChatView({
     const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if ((overrideAttachments ?? attachments).some((attachment) => attachment.status === 'uploading')) {
-      addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte warten, bis alle Anhänge hochgeladen sind.' : t.notices.attachmentsUploading)
       return null
     }
     if (!activeTwin) {
@@ -7787,11 +7788,11 @@ function TwinChatView({
       return
     }
     if (!latestAssistantText) {
-      addNotice('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.')
+      addNotice(lang === DEFAULT_LANG ? 'Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.' : t.notices.nothingToRead)
       return
     }
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-      addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Vorlesen wird von diesem Browser nicht unterstützt.' : t.notices.readAloudUnsupported)
       return
     }
     // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
@@ -7804,7 +7805,7 @@ function TwinChatView({
 
   const handleExplainSimpler = () => {
     if (isReplying || !activeTwin) {
-      if (isReplying) addNotice('Antwort läuft gerade. Bitte kurz warten.')
+      if (isReplying) addNotice(lang === DEFAULT_LANG ? 'Antwort läuft gerade. Bitte kurz warten.' : t.notices.replyRunning)
       return
     }
     void handleSend('Erkläre deine letzte Antwort bitte einfacher – in 2–3 kurzen Sätzen, ohne Fachbegriffe.')
@@ -7812,18 +7813,18 @@ function TwinChatView({
 
   const handleAskFollowUp = () => {
     if (!activeTwin) {
-      addNotice('Wähle zuerst ein KI-Profil aus.')
+      addNotice(lang === DEFAULT_LANG ? 'Wähle zuerst ein KI-Profil aus.' : t.notices.chooseProfileFirst)
       return
     }
     resizeInput('')
     inputRef.current?.focus()
-    addNotice('Stelle direkt deine nächste Frage – der Kontext bleibt erhalten.')
+    addNotice(lang === DEFAULT_LANG ? 'Stelle direkt deine nächste Frage – der Kontext bleibt erhalten.' : t.notices.askNextQuestion)
   }
 
   const handleSaveAnswerToMemory = async (msg: TwinChatUiMessage) => {
     if (msg.role !== 'ai' || !msg.content.trim()) return
     if (auth.status !== 'authenticated') {
-      addNotice('Melde dich an, um Antworten dauerhaft im Memory zu speichern.')
+      addNotice(lang === DEFAULT_LANG ? 'Melde dich an, um Antworten dauerhaft im Memory zu speichern.' : t.notices.loginToSaveMemory)
       return
     }
     if (savedMemoryIds.has(msg.id) || savingMemoryId) return
@@ -7843,12 +7844,12 @@ function TwinChatView({
           next.add(msg.id)
           return next
         })
-        addNotice('Antwort wurde im Memory gespeichert.')
+        addNotice(lang === DEFAULT_LANG ? 'Antwort wurde im Memory gespeichert.' : t.notices.savedToMemory)
       } else {
-        addNotice('Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.')
+        addNotice(lang === DEFAULT_LANG ? 'Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.' : t.notices.saveMemoryFailed)
       }
     } catch {
-      addNotice('Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.')
+      addNotice(lang === DEFAULT_LANG ? 'Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.' : t.notices.saveMemoryFailed)
     } finally {
       setSavingMemoryId(null)
     }
@@ -7886,19 +7887,19 @@ function TwinChatView({
 
   const handleSendButtonClick = () => {
     if (!activeTwin) {
-      addNotice('Wähle zuerst ein KI-Profil aus.')
+      addNotice(lang === DEFAULT_LANG ? 'Wähle zuerst ein KI-Profil aus.' : t.notices.chooseProfileFirst)
       return
     }
     if (auth.status !== 'authenticated' && !activeTwin.publicProfile) {
-      addNotice('Melde dich an, um mit diesem privaten Profil zu chatten.')
+      addNotice(lang === DEFAULT_LANG ? 'Melde dich an, um mit diesem privaten Profil zu chatten.' : t.notices.loginToChatPrivate)
       return
     }
     if (isReplying) {
-      addNotice('Antwort läuft gerade. Bitte kurz warten.')
+      addNotice(lang === DEFAULT_LANG ? 'Antwort läuft gerade. Bitte kurz warten.' : t.notices.replyRunning)
       return
     }
     if (!input.trim() && !attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) {
-      addNotice('Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.')
+      addNotice(lang === DEFAULT_LANG ? 'Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.' : t.notices.messageEmpty)
       inputRef.current?.focus()
       return
     }
