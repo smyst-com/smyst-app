@@ -366,12 +366,20 @@ function speakLocal(text: string, lang: string, onDone: () => void, voiceKey?: s
   return true
 }
 
-function speakText(text: string, lang: string, onDone: () => void, voiceKey?: string) {
+function speakText(
+  text: string,
+  lang: string,
+  onDone: () => void,
+  voiceKey?: string,
+  voiceGender?: 'female' | 'male',
+) {
   const cleanText = text.trim()
   if (!cleanText) return false
   if ('speechSynthesis' in window) window.speechSynthesis.cancel()
   stopRemoteSpeech()
-  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, userVoiceIdFor(voiceKey) ?? remoteVoiceIdFor(voiceKey, lang), remoteRateFor(voiceKey)).then((started) => {
+  // Kuratierter Voice-Hint (per Name) vor Profil-Metadaten (Wikidata P21).
+  const gender = voiceGenderFor(voiceKey) ?? voiceGender
+  void playRemoteSpeech(cleanText, lang, gender, onDone, userVoiceIdFor(voiceKey) ?? remoteVoiceIdFor(voiceKey, lang, gender), remoteRateFor(voiceKey)).then((started) => {
     if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
   })
   return true
@@ -2181,8 +2189,8 @@ function SmystStartPage({
     const liveSpeech = (speechOutputEnabled || options.forceSpeech)
       ? startSentenceSpeech(
           messageVoiceLang,
-          voiceGenderFor(twin.name),
-          userVoiceIdFor(twin.name) ?? remoteVoiceIdFor(twin.name, messageVoiceLang),
+          voiceGenderFor(twin.name) ?? twin.voiceGender,
+          userVoiceIdFor(twin.name) ?? remoteVoiceIdFor(twin.name, messageVoiceLang, voiceGenderFor(twin.name) ?? twin.voiceGender),
           () => setIsSpeaking(false),
           remoteRateFor(twin.name),
         )
@@ -2226,7 +2234,7 @@ function SmystStartPage({
       if (twin.publicProfile) {
         const reply = staticPublicTwinReply(twin, fullMessage, messageVoiceLang)
         await streamText(assistantId, reply)
-        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), twin.name)) {
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), twin.name, twin.voiceGender)) {
           setIsSpeaking(true)
         }
         return reply
@@ -2274,7 +2282,7 @@ function SmystStartPage({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
+    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name, (selectedTwin ?? activeTwin)?.voiceGender)
     if (started) setIsSpeaking(true)
   }
 
@@ -7018,6 +7026,7 @@ function TwinChatView({
     imageUrl?: string | null
     branch: string
     lifeLine: string
+    voiceGender?: 'female' | 'male'
   }
 
   const privateTwinToChatSummary = (twin: TwinRecord): ChatTwinSummary => ({
@@ -7044,6 +7053,7 @@ function TwinChatView({
     imageUrl: profile.imageUrl,
     branch: profileMainCategory(profile),
     lifeLine: profileLifeLine(profile),
+    voiceGender: profile.voiceGender,
   })
 
   const [messages, setMessages] = useState<TwinChatUiMessage[]>([])
@@ -7692,8 +7702,8 @@ function TwinChatView({
     const liveSpeech = (speechOutputEnabled || options.forceSpeech)
       ? startSentenceSpeech(
           messageVoiceLang,
-          voiceGenderFor(activeTwin?.name),
-          userVoiceIdFor(activeTwin?.name) ?? remoteVoiceIdFor(activeTwin?.name, messageVoiceLang),
+          voiceGenderFor(activeTwin?.name) ?? activeTwin?.voiceGender,
+          userVoiceIdFor(activeTwin?.name) ?? remoteVoiceIdFor(activeTwin?.name, messageVoiceLang, voiceGenderFor(activeTwin?.name) ?? activeTwin?.voiceGender),
           () => setIsSpeaking(false),
           remoteRateFor(activeTwin?.name),
         )
@@ -7752,7 +7762,7 @@ function TwinChatView({
           messageVoiceLang,
         )
         await streamAssistantMessage(assistantId, reply)
-        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), activeTwin.name)) {
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), activeTwin.name, activeTwin.voiceGender)) {
           setIsSpeaking(true)
         }
         return reply
@@ -7801,7 +7811,7 @@ function TwinChatView({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), activeTwin?.name)
+    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), activeTwin?.name, activeTwin?.voiceGender)
     if (started) setIsSpeaking(true)
   }
 
