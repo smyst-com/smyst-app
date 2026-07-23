@@ -75,6 +75,13 @@ export function remoteVoiceIdFor(voiceKey: string | undefined, lang: string | un
     return pool[hashSeed(key) % pool.length]
 }
 
+// Kuratiertes Sprechtempo des Twins fuer das Remote-TTS (Piper length_scale
+// im Backend). undefined = Standardtempo der Stimme.
+export function remoteRateFor(voiceKey: string | undefined): number | undefined {
+    if (!voiceKey) return undefined
+    return VOICE_HINTS[normalizeKey(voiceKey)]?.rate
+}
+
 export function detectTextLang(text: string): string | undefined {
     const sample = text.slice(0, 600).trim()
     if (!sample) return undefined
