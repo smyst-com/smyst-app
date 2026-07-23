@@ -1600,6 +1600,725 @@
         "Politik",
         "Geschichte"
       ]
+    },
+    "john-adams": {
+      "roles": "Politiker, 2. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "james-madison": {
+      "roles": "Politiker, 4. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "james-monroe": {
+      "roles": "Politiker, 5. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "john-quincy-adams": {
+      "roles": "Politiker, 6. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "martin-van-buren": {
+      "roles": "Politiker, 8. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "grover-cleveland": {
+      "roles": "Politiker, 22. und 24. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "william-howard-taft": {
+      "roles": "Politiker, 27. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "woodrow-wilson": {
+      "roles": "Politiker, 28. US-Präsident",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "georges-clemenceau": {
+      "roles": "Staatsmann, Ministerpräsident Frankreichs",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "jean-paul-marat": {
+      "roles": "Revolutionär, Publizist",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "leo-trotzki": {
+      "roles": "Revolutionär, Politiker",
+      "categories": [
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "friedrich-engels": {
+      "roles": "Philosoph, Ökonom",
+      "categories": [
+        "Philosophie",
+        "Politik",
+        "Geschichte"
+      ]
+    },
+    "leopold-i": {
+      "roles": "Kaiser des Heiligen Römischen Reiches",
+      "categories": [
+        "Geschichte",
+        "Politik"
+      ]
+    },
+    "abdulaziz": {
+      "roles": "Sultan des Osmanischen Reiches",
+      "categories": [
+        "Geschichte",
+        "Politik"
+      ]
+    },
+    "philip-jaisohn": {
+      "roles": "Unabhängigkeitsaktivist, Arzt",
+      "categories": [
+        "Politik",
+        "Geschichte",
+        "Medizin"
+      ]
+    },
+    "maxim-gorki": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "george-eliot": {
+      "roles": "Schriftstellerin",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "george-orwell": {
+      "roles": "Schriftsteller, Essayist",
+      "categories": [
+        "Literatur",
+        "Politik"
+      ]
+    },
+    "thomas-paine": {
+      "roles": "Schriftsteller, Aufklärer",
+      "categories": [
+        "Literatur",
+        "Politik",
+        "Philosophie"
+      ]
+    },
+    "taras-schewtschenko": {
+      "roles": "Dichter, Maler",
+      "categories": [
+        "Literatur",
+        "Kunst"
+      ]
+    },
+    "octave-mirbeau": {
+      "roles": "Schriftsteller, Kunstkritiker",
+      "categories": [
+        "Literatur",
+        "Kunst"
+      ]
+    },
+    "oliver-goldsmith": {
+      "roles": "Schriftsteller, Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "antoine-de-saint-exupery": {
+      "roles": "Schriftsteller, Pilot",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "lewis-carroll": {
+      "roles": "Schriftsteller, Mathematiker",
+      "categories": [
+        "Literatur",
+        "Mathematik"
+      ]
+    },
+    "william-butler-yeats": {
+      "roles": "Dichter, Nobelpreisträger",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "daniel-defoe": {
+      "roles": "Schriftsteller, Journalist",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "henryk-sienkiewicz": {
+      "roles": "Schriftsteller, Nobelpreisträger",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "anatole-france": {
+      "roles": "Schriftsteller, Nobelpreisträger",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "iwan-sergejewitsch-turgenew": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "selma-lagerlof": {
+      "roles": "Schriftstellerin, Nobelpreisträgerin",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "denis-diderot": {
+      "roles": "Schriftsteller, Philosoph",
+      "categories": [
+        "Literatur",
+        "Philosophie"
+      ]
+    },
+    "william-wordsworth": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "jack-london": {
+      "roles": "Schriftsteller, Journalist",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "romain-rolland": {
+      "roles": "Schriftsteller, Nobelpreisträger",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "andre-gide": {
+      "roles": "Schriftsteller, Nobelpreisträger",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "ralph-waldo-emerson": {
+      "roles": "Philosoph, Essayist",
+      "categories": [
+        "Philosophie",
+        "Literatur"
+      ]
+    },
+    "arthur-rimbaud": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "jean-de-la-fontaine": {
+      "roles": "Fabeldichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "walter-scott": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur",
+        "Geschichte"
+      ]
+    },
+    "guy-de-maupassant": {
+      "roles": "Schriftsteller",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "percy-bysshe-shelley": {
+      "roles": "Dichter",
+      "categories": [
+        "Literatur"
+      ]
+    },
+    "charles-de-secondat-baron-de-montesquieu": {
+      "roles": "Staatsphilosoph, Schriftsteller",
+      "categories": [
+        "Philosophie",
+        "Politik",
+        "Literatur"
+      ]
+    },
+    "vivekananda": {
+      "roles": "Mönch, Philosoph",
+      "categories": [
+        "Philosophie",
+        "Bildung"
+      ]
+    },
+    "e-t-a-hoffmann": {
+      "roles": "Schriftsteller, Komponist",
+      "categories": [
+        "Literatur",
+        "Musik",
+        "Kunst"
+      ]
+    },
+    "isabelle-de-charriere": {
+      "roles": "Schriftstellerin, Komponistin",
+      "categories": [
+        "Literatur",
+        "Musik"
+      ]
+    },
+    "elias-lonnrot": {
+      "roles": "Philologe, Arzt",
+      "categories": [
+        "Literatur",
+        "Medizin",
+        "Bildung"
+      ]
+    },
+    "ronald-ross": {
+      "roles": "Mediziner, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung",
+        "Wissenschaft"
+      ]
+    },
+    "samuel-hahnemann": {
+      "roles": "Arzt, Begründer der Homöopathie",
+      "categories": [
+        "Medizin"
+      ]
+    },
+    "francois-quesnay": {
+      "roles": "Arzt, Ökonom",
+      "categories": [
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "jose-rizal": {
+      "roles": "Schriftsteller, Arzt",
+      "categories": [
+        "Literatur",
+        "Medizin",
+        "Geschichte"
+      ]
+    },
+    "charles-louis-alphonse-laveran": {
+      "roles": "Mediziner, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "allvar-gullstrand": {
+      "roles": "Augenarzt, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "cesare-lombroso": {
+      "roles": "Arzt, Kriminologe",
+      "categories": [
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "claude-bernard": {
+      "roles": "Physiologe",
+      "categories": [
+        "Medizin",
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "charles-scott-sherrington": {
+      "roles": "Neurophysiologe, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "charles-richet": {
+      "roles": "Physiologe, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "johannes-fibiger": {
+      "roles": "Pathologe, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "john-james-rickard-macleod": {
+      "roles": "Physiologe, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "marcello-malpighi": {
+      "roles": "Anatom",
+      "categories": [
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "charles-nicolle": {
+      "roles": "Arzt, Mikrobiologe",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "elizabeth-blackwell": {
+      "roles": "Ärztin, Pionierin der Frauenmedizin",
+      "categories": [
+        "Medizin",
+        "Geschichte"
+      ]
+    },
+    "gustave-le-bon": {
+      "roles": "Psychologe, Soziologe",
+      "categories": [
+        "Wissenschaft",
+        "Philosophie",
+        "Medizin"
+      ]
+    },
+    "florence-nightingale": {
+      "roles": "Begründerin der modernen Krankenpflege",
+      "categories": [
+        "Medizin",
+        "Geschichte"
+      ]
+    },
+    "albrecht-kossel": {
+      "roles": "Mediziner, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "julien-offray-de-la-mettrie": {
+      "roles": "Arzt, Philosoph",
+      "categories": [
+        "Medizin",
+        "Philosophie"
+      ]
+    },
+    "emil-von-behring": {
+      "roles": "Immunologe, erster Medizin-Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "siegbert-tarrasch": {
+      "roles": "Schachmeister, Arzt",
+      "categories": [
+        "Medizin",
+        "Bildung"
+      ]
+    },
+    "robert-barany": {
+      "roles": "Mediziner, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "julius-wagner-jauregg": {
+      "roles": "Psychiater, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "karl-landsteiner": {
+      "roles": "Pathologe, Entdecker der Blutgruppen",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "camillo-golgi": {
+      "roles": "Mediziner, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "august-krogh": {
+      "roles": "Physiologe, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "frederick-banting": {
+      "roles": "Mediziner, Nobelpreisträger",
+      "categories": [
+        "Medizin",
+        "Forschung"
+      ]
+    },
+    "thomas-hunt-morgan": {
+      "roles": "Zoologe, Genetiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung",
+        "Medizin"
+      ]
+    },
+    "daniel-bernoulli": {
+      "roles": "Mathematiker, Physiker",
+      "categories": [
+        "Mathematik",
+        "Physik",
+        "Wissenschaft"
+      ]
+    },
+    "jakob-i-bernoulli": {
+      "roles": "Mathematiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "peter-simon-pallas": {
+      "roles": "Naturforscher, Geograph",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "william-gilbert": {
+      "roles": "Arzt, Naturforscher",
+      "categories": [
+        "Medizin",
+        "Wissenschaft",
+        "Physik"
+      ]
+    },
+    "james-hutton": {
+      "roles": "Geologe, Naturforscher",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "thomas-young": {
+      "roles": "Physiker, Augenarzt",
+      "categories": [
+        "Physik",
+        "Medizin",
+        "Wissenschaft"
+      ]
+    },
+    "hans-fischer": {
+      "roles": "Chemiker, Nobelpreisträger",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "gustav-theodor-fechner": {
+      "roles": "Physiker, Philosoph",
+      "categories": [
+        "Physik",
+        "Philosophie",
+        "Wissenschaft"
+      ]
+    },
+    "fritz-pregl": {
+      "roles": "Chemiker, Nobelpreisträger",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "jean-perrin": {
+      "roles": "Physiker, Nobelpreisträger",
+      "categories": [
+        "Physik",
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "jons-jakob-berzelius": {
+      "roles": "Chemiker",
+      "categories": [
+        "Wissenschaft",
+        "Forschung"
+      ]
+    },
+    "gerard-desargues": {
+      "roles": "Mathematiker",
+      "categories": [
+        "Mathematik",
+        "Wissenschaft"
+      ]
+    },
+    "gaetano-donizetti": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "hector-berlioz": {
+      "roles": "Komponist, Musikkritiker",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "maurice-ravel": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "george-gershwin": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "christoph-willibald-gluck": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "clara-schumann": {
+      "roles": "Pianistin, Komponistin",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "richard-strauss": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "camille-saint-saens": {
+      "roles": "Komponist, Pianist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "arnold-schonberg": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "carl-maria-von-weber": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "giovanni-pierluigi-da-palestrina": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "edward-elgar": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "charles-gounod": {
+      "roles": "Komponist",
+      "categories": [
+        "Musik"
+      ]
+    },
+    "karl-friedrich-schinkel": {
+      "roles": "Architekt, Maler",
+      "categories": [
+        "Architektur",
+        "Kunst"
+      ]
+    },
+    "el-lissitzky": {
+      "roles": "Maler, Architekt",
+      "categories": [
+        "Kunst",
+        "Architektur"
+      ]
+    },
+    "albrecht-altdorfer": {
+      "roles": "Maler, Baumeister",
+      "categories": [
+        "Kunst",
+        "Architektur"
+      ]
+    },
+    "theo-van-doesburg": {
+      "roles": "Maler, Kunsttheoretiker",
+      "categories": [
+        "Kunst",
+        "Architektur"
+      ]
+    },
+    "laszlo-moholy-nagy": {
+      "roles": "Maler, Fotograf",
+      "categories": [
+        "Kunst",
+        "Architektur"
+      ]
+    },
+    "akseli-gallen-kallela": {
+      "roles": "Maler, Architekt",
+      "categories": [
+        "Kunst",
+        "Architektur"
+      ]
     }
   }
 }
