@@ -1,15 +1,19 @@
 // Kuratierte Stimmen-Metadaten pro Profil (Stufe 2a).
 // Quelle der Regeln: docs/voice-profiles.md - nur synthetische Stimmen,
 // keine Klone realer Personen; Auswahl passend zu Sprache, Geschlecht und Charakter.
+// Die Stimmen-Zuordnung pro Twin liegt in src/data/curated-voice-hints.ts.
+import { CURATED_VOICE_HINTS } from '@/data/curated-voice-hints'
 import { detectVoiceLanguage } from '@/lib/voiceLanguage'
 
 export type VoiceGender = 'female' | 'male'
+
+export type RemoteVoiceBase = 'de' | 'en' | 'tr'
 
 export type VoiceProfileHint = {
     gender?: VoiceGender
     pitch?: number
     rate?: number
-    voiceId?: string
+    voiceIds?: Partial<Record<RemoteVoiceBase, string>>
 }
 
 export type VoiceSettings = {
@@ -51,7 +55,7 @@ const REMOTE_VOICES: Record<string, string[]> = {
 }
 
 // Sprachen, fuer die das Salad-Backend eigene Piper-Modelle hat.
-export function remoteBaseFor(lang: string | undefined): string {
+export function remoteBaseFor(lang: string | undefined): RemoteVoiceBase {
     const value = (lang ?? 'de').toLowerCase()
     if (value.startsWith('de')) return 'de'
     if (value.startsWith('tr')) return 'tr'
@@ -63,7 +67,8 @@ export function remoteVoiceIdFor(voiceKey: string | undefined, lang: string | un
     const base = remoteBaseFor(lang)
     const key = normalizeKey(voiceKey)
     const hint: VoiceProfileHint | undefined = VOICE_HINTS[key]
-    if (hint?.voiceId && hint.voiceId.startsWith(base)) return hint.voiceId
+    const curated = hint?.voiceIds?.[base]
+    if (curated) return curated
     const gender = hint?.gender === 'female' ? 'female' : 'male'
     const pool = REMOTE_VOICES[base + '-' + gender] ?? []
         if (pool.length === 0) return undefined
@@ -81,39 +86,17 @@ export function resolveSpeechLang(text: string, lang: string | undefined): strin
     return detectTextLang(text) ?? lang ?? 'de'
 }
 
-// Kuratierte Hinweise fuer bekannte Profile (Schluessel: Name in Kleinschreibung).
-const VOICE_HINTS: Record<string, VoiceProfileHint> = {
-    'albert einstein': { gender: 'male', pitch: 0.88, rate: 0.92, voiceId: 'de-thorsten' },
-    'marie curie': { gender: 'female', pitch: 1.04, rate: 0.94, voiceId: 'de-ramona' },
-    'ada lovelace': { gender: 'female', pitch: 1.08, rate: 0.97, voiceId: 'de-eva' },
-    'jane austen': { gender: 'female', pitch: 1.06, rate: 0.96, voiceId: 'de-kerstin' },
-    'mary shelley': { gender: 'female', pitch: 1.02, rate: 0.95, voiceId: 'de-eva' },
-    'sokrates': { gender: 'male', pitch: 0.86, rate: 0.9, voiceId: 'de-pavoque' },
-    'platon': { gender: 'male', pitch: 0.92, rate: 0.93, voiceId: 'de-karlsson' },
-    'aristoteles': { gender: 'male', pitch: 0.9, rate: 0.92, voiceId: 'de-thorsten' },
-    'leonardo da vinci': { gender: 'male', pitch: 0.98, rate: 0.97, voiceId: 'de-karlsson' },
-    'wolfgang amadeus mozart': { gender: 'male', pitch: 1.06, rate: 1.02, voiceId: 'de-thorsten' },
-    'ludwig van beethoven': { gender: 'male', pitch: 0.84, rate: 0.9, voiceId: 'de-pavoque' },
-    'johann sebastian bach': { gender: 'male', pitch: 0.9, rate: 0.92, voiceId: 'de-karlsson' },
-    'friedrich nietzsche': { gender: 'male', pitch: 0.92, rate: 0.95, voiceId: 'de-pavoque' },
-    'immanuel kant': { gender: 'male', pitch: 0.94, rate: 0.9, voiceId: 'de-karlsson' },
-    'napoleon bonaparte': { gender: 'male', pitch: 0.96, rate: 1.0, voiceId: 'de-thorsten' },
-    'william shakespeare': { gender: 'male', pitch: 1.0, rate: 0.98, voiceId: 'de-karlsson' },
-    'nikola tesla': { gender: 'male', pitch: 0.96, rate: 0.99, voiceId: 'de-thorsten' },
-    'isaac newton': { gender: 'male', pitch: 0.92, rate: 0.93, voiceId: 'de-pavoque' },
-    'johann wolfgang von goethe': { gender: 'male', pitch: 0.95, rate: 0.94, voiceId: 'de-thorsten' },
-    'karl marx': { gender: 'male', pitch: 0.87, rate: 0.94, voiceId: 'de-karlsson' },
-    'charles darwin': { gender: 'male', pitch: 0.9, rate: 0.92, voiceId: 'de-pavoque' },
-    'galileo galilei': { gender: 'male', pitch: 0.93, rate: 0.96, voiceId: 'de-karlsson' },
-    'oscar wilde': { gender: 'male', pitch: 1.04, rate: 1.0, voiceId: 'de-thorsten' },
-    'vincent van gogh': { gender: 'male', pitch: 0.97, rate: 0.95, voiceId: 'de-pavoque' },
-    // Tuerkisch: wuerdevolle, ruhige maennliche Stimme; einzige tr-Piper-Stimme ist tr-dfki.
-    // Rechtlich: Gesetz 5816 (Tuerkei) beachten - keine Imitation, respektvolle Darstellung.
-    'mustafa kemal atatuerk': { gender: 'male', pitch: 0.92, rate: 0.93, voiceId: 'tr-dfki' },
-}
+// Kuratierte Hinweise pro Twin (Schluessel: Name normalisiert per normalizeKey).
+const VOICE_HINTS: Record<string, VoiceProfileHint> = CURATED_VOICE_HINTS
 
+// Kleinschreibung + Diakritika entfernen ("Atatürk" -> "ataturk"), damit
+// Namensvarianten aus Daten oder Pipeline dieselbe Stimme treffen.
 function normalizeKey(value: string): string {
-    return value.trim().toLowerCase()
+    return value
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
 }
 
 function hashSeed(value: string): number {
