@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'smyst-v9';
+const CACHE_VERSION = 'smyst-v10';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
