@@ -23,7 +23,7 @@ import {
   voiceLanguageInstruction,
   type VoiceLang,
 } from '@/lib/voiceLanguage'
-import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
+import { pickVoiceSettings, remoteRateFor, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
 import { recordAndTranscribeOnce, serverAsrSupported } from '@/lib/serverAsrClient'
 import { isRemoteSpeechActive, playRemoteSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
@@ -371,7 +371,7 @@ function speakText(text: string, lang: string, onDone: () => void, voiceKey?: st
   if (!cleanText) return false
   if ('speechSynthesis' in window) window.speechSynthesis.cancel()
   stopRemoteSpeech()
-  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, userVoiceIdFor(voiceKey) ?? remoteVoiceIdFor(voiceKey, lang)).then((started) => {
+  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, userVoiceIdFor(voiceKey) ?? remoteVoiceIdFor(voiceKey, lang), remoteRateFor(voiceKey)).then((started) => {
     if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
   })
   return true
@@ -2184,6 +2184,7 @@ function SmystStartPage({
           voiceGenderFor(twin.name),
           userVoiceIdFor(twin.name) ?? remoteVoiceIdFor(twin.name, messageVoiceLang),
           () => setIsSpeaking(false),
+          remoteRateFor(twin.name),
         )
       : null
     try {
@@ -7694,6 +7695,7 @@ function TwinChatView({
           voiceGenderFor(activeTwin?.name),
           userVoiceIdFor(activeTwin?.name) ?? remoteVoiceIdFor(activeTwin?.name, messageVoiceLang),
           () => setIsSpeaking(false),
+          remoteRateFor(activeTwin?.name),
         )
       : null
     try {
