@@ -1,5 +1,14 @@
 # Memory Bank
 
+## Update 2026-07-23: Morgenlauf — Nachschub-Problem GELOEST (PR #231 wirkt: +74 Profile ueber Nacht, 406 Twins live), i18n-Etappe 11 TwinChatView (PR #232)
+
+- DURCHBRUCH (Parallel-Agent, 22.07. abends): PR #231 (Commit 59edc92) 'Ingest-Pagination + Tagesquote 120' — der seit 20.07. offene Seed-Pool-Engpass ist behoben, Ingest liefert wieder Kandidaten. Nacht-Runs (Parallel-Agent, alle GRUEN): #88 run-small 41m51s (00:09), #89 publish-reviewed 1m26s (00:58), #90 publish-reviewed 2m12s (04:02); Deploys #289/#290/#291 gruen.
+- CRON: Heutiger Scheduled-Lauf #91 (23.07., auf 59edc92) lief zum Berichtszeitpunkt NOCH (>80 min, In progress, kein Fehler). Lange Laufzeit mit Pagination + Tagesquote 120 erwartbar (#88: 42m). Auto-Publish + Auto-Deploy macht der Cron serverseitig; Ergebnis am 24.07. pruefen. Kein Status-Run parallel zum laufenden Cron ausgeloest.
+- LIVE (cb, VOR Cron-#91-Ende): 406 Twins (100 kuratiert + 306 Pipeline; +74 seit gestern), 0 ohne imageUrl, alle 306 mit imageCredit (167 selbst-gehostet, 239 Commons-Hotlink). Stichprobe /t/karl-landsteiner rendert komplett (Portrait, Geburts-/Sterbeort, Beruf, KI-Kennzeichnung, Quellen). Neue Slugs u.a. walter-scott, guy-de-maupassant, percy-bysshe-shelley, robert-barany.
+- i18n-ETAPPE 11 (PR #232, 1 Datei App.tsx +30/-29, squash b2decb6, 8 Checks gruen inkl. Browser-E2E 1. Anlauf): ALLE 28 addNotice-Stellen in TwinChatView auf DEFAULT_LANG-Muster (inkl. Mikrofon-Ternary 2 Zweige + memoryUpload.error-Fallback); neu nur 'const t = useStaticTranslations(lang)' (lang via useLanguage existierte bereits, Z. 7071). Keine neuen Keys — alle 25 notices-Keys seit Etappe 10 vorhanden, alle 15 Locales unveraendert gueltig. DE byte-identisch. Deploy #292 gruen (14m14s). LIVE VERIFIZIERT: Bundle enthaelt 48 .notices.-Lookups (19 SmystStartPage + 29 TwinChatView), alle TwinChat-Keys vorhanden (replyRunning 2x, chooseProfileFirst 2x, saveMemoryFailed 2x, micNotAllowed 2x, speechStartFailed 4x).
+- ARBEITSWEISE-WARNUNG: Beim Massen-Replace traf das Suchfragment des Mikrofon-Ternary-Zweigs auch das INNERE Ternary der bereits konvertierten SmystStartPage-Zeile (Doppelung) — vor Commit erkannt und rueckgebaut. Lehre: Fragment-Replacements vorher auf Substring-Treffer in schon konvertierten Zeilen pruefen; Trefferzahl nach jedem dispatch validieren.
+- VERBLEIBENDE i18n-ETAPPEN: nur noch Landing. Offener PR #189 (avatar) weiter nicht angefasst.
+
 ## Update 2026-07-22: Morgenlauf — Cron gruen (0 neue Profile), i18n-Etappe 10 Chat-Hinweise/addNotice (PR #229)
 
 - CRON: Heutiger Scheduled-Lauf #86 (22.07., 06:41 Berlin, auf 42bfd5f) GRUEN (2m27s). Auto-Publish: 0 published — alle 29 reviewed sind Duplikate kuratierter Profile, korrekt abgelehnt. Auto-Deploy #286 gruen (17m29s). Kein Nachholen noetig. Keine neue Parallel-Agent-Aktivitaet seit 21.07. (main stand vor dem Lauf auf 42bfd5f = Memory-PR #228).
