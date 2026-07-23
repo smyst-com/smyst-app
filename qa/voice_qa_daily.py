@@ -76,7 +76,10 @@ def http_post_tts(url: str, payload: dict, timeout: float = 30.0) -> tuple[int, 
     with urllib.request.urlopen(request, timeout=timeout) as response:
         audio = response.read()
         elapsed = time.monotonic() - started
-        return response.status, audio, dict(response.headers), elapsed
+        # Header-Schluessel normalisieren: ueber HTTP/2 (Cloudflare/Salad) kommen
+        # alle Header kleingeschrieben an, ueber HTTP/1.1 in Originalschreibweise.
+        normalized_headers = {key.lower(): value for key, value in response.headers.items()}
+        return response.status, audio, normalized_headers, elapsed
 
 
 def main() -> int:
@@ -129,7 +132,7 @@ def main() -> int:
     for test in SMOKE_TESTS:
         try:
             status, audio, headers, elapsed = http_post_tts(args.base_url + "/api/tts", test["payload"])
-            voice_used = headers.get("X-Voice-Id", "?")
+            voice_used = headers.get("x-voice-id", "?")
             is_wav = audio[:4] == b"RIFF"
             problems = []
             if status != 200:
