@@ -58,6 +58,7 @@ export async function playRemoteSpeech(
     gender: 'female' | 'male' | undefined,
     onDone: () => void,
     voiceId?: string,
+    rate?: number,
   ): Promise<boolean> {
     stopRemoteSpeech()
     // Sofort als aktiv markieren: auch waehrend die Stimme generiert/geladen wird,
@@ -73,7 +74,7 @@ export async function playRemoteSpeech(
           const effectiveVoiceId =
                   voiceId && voiceId.startsWith(expectedBase + '-') ? voiceId : undefined
           const cacheKey =
-                  (effectiveVoiceId ?? gender ?? 'x') + '|' + effectiveLang + '|' + cleanText
+                  (effectiveVoiceId ?? gender ?? 'x') + '|' + (rate ?? '') + '|' + effectiveLang + '|' + cleanText
           let url = audioCache.get(cacheKey)
           if (!url) {
                   const controller = new AbortController()
@@ -90,6 +91,7 @@ export async function playRemoteSpeech(
                                         lang: effectiveLang,
                                         gender,
                                         voiceId: effectiveVoiceId,
+                                        rate,
                             }),
                             signal: controller.signal,
                   })
@@ -155,6 +157,7 @@ async function fetchSpeechUrl(
     lang: string | undefined,
     gender: 'female' | 'male' | undefined,
     voiceId?: string,
+    rate?: number,
 ): Promise<string | null> {
     try {
         const effectiveLang = resolveSpeechLang(cleanText, lang)
@@ -162,7 +165,7 @@ async function fetchSpeechUrl(
         const effectiveVoiceId =
             voiceId && voiceId.startsWith(expectedBase + '-') ? voiceId : undefined
         const cacheKey =
-            (effectiveVoiceId ?? gender ?? 'x') + '|' + effectiveLang + '|' + cleanText
+            (effectiveVoiceId ?? gender ?? 'x') + '|' + (rate ?? '') + '|' + effectiveLang + '|' + cleanText
         const cached = audioCache.get(cacheKey)
         if (cached) return cached
         const controller = new AbortController()
@@ -179,6 +182,7 @@ async function fetchSpeechUrl(
                 lang: effectiveLang,
                 gender,
                 voiceId: effectiveVoiceId,
+                rate,
             }),
             signal: controller.signal,
         })
@@ -242,6 +246,7 @@ export function startSentenceSpeech(
     gender: 'female' | 'male' | undefined,
     voiceId: string | undefined,
     onDone: () => void,
+    rate?: number,
 ): SentenceSpeech {
     stopRemoteSpeech()
     if ('speechSynthesis' in window) window.speechSynthesis.cancel()
@@ -332,7 +337,7 @@ export function startSentenceSpeech(
         const text = rawText.trim()
         if (!text) return
         for (const part of splitLongSentence(text)) {
-            entries.push({ text: part, job: fetchSpeechUrl(part, lang, gender, voiceId) })
+            entries.push({ text: part, job: fetchSpeechUrl(part, lang, gender, voiceId, rate) })
         }
         void pump()
     }
