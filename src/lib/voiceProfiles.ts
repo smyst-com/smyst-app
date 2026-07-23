@@ -62,14 +62,20 @@ export function remoteBaseFor(lang: string | undefined): RemoteVoiceBase {
     return 'en'
 }
 
-export function remoteVoiceIdFor(voiceKey: string | undefined, lang: string | undefined): string | undefined {
+export function remoteVoiceIdFor(
+    voiceKey: string | undefined,
+    lang: string | undefined,
+    fallbackGender?: VoiceGender,
+): string | undefined {
     if (!voiceKey) return undefined
     const base = remoteBaseFor(lang)
     const key = normalizeKey(voiceKey)
     const hint: VoiceProfileHint | undefined = VOICE_HINTS[key]
     const curated = hint?.voiceIds?.[base]
     if (curated) return curated
-    const gender = hint?.gender === 'female' ? 'female' : 'male'
+    // Kuratierter Hint vor Profil-Metadaten (z. B. Wikidata P21 der
+    // Pipeline-Twins) vor Standard male.
+    const gender = hint?.gender ?? fallbackGender ?? 'male'
     const pool = REMOTE_VOICES[base + '-' + gender] ?? []
         if (pool.length === 0) return undefined
     return pool[hashSeed(key) % pool.length]
