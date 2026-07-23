@@ -1,5 +1,14 @@
 # Memory Bank
 
+## Update 2026-07-23: Voice Stufe 2a + Stufe C live (feste Charakterstimme + Sprechtempo pro Twin)
+
+- Stufe 2a (PR #233, squash `25a7fdb`): alle 100 kuratierten Twins haben eine feste, kuratierte Piper-Stimme pro Sprachbasis (`src/data/curated-voice-hints.ts`, `voiceIds` de/en, tr fuer Atatuerk und Mimar Sinan); `normalizeKey` entfernt Diakritika ("Atatürk" trifft dieselbe Stimme wie "Atatuerk"). Nur synthetische Stimmen, keine Klone realer Personen (Nutzer-Entscheid 22.07.2026).
+- Stufe C (PR #235, squash `d82f9f8`): kuratiertes Sprechtempo (`rate` 0.5-1.5) wirkt im Remote-TTS auf allen Ebenen: Frontend (`remoteRateFor`, playRemoteSpeech/startSentenceSpeech/fetchSpeechUrl) -> Control Server (`backend/app/api/v1/routes/tts.py`, validiert + durchgereicht, lokaler Fallback `--length_scale=1/rate`) -> Voice-Worker (`voice-worker/app.py`, Piper `--length_scale`). Abwaertskompatibel: `rate` ueberall optional.
+- Checks: PR #233 8/8 und PR #235 8/8 gruen (Typecheck, Builds, Browser-E2E, Free-only-Policy). Lokal zusaetzlich: tsc, vite build, py_compile, Pydantic-Grenzwerte (0.9 ok, ohne rate ok, 3.0 abgelehnt); GitHub-Branch vor Merge byte-identisch mit lokal validiertem Stand (git diff leer).
+- Deploys: Frontend automatisch (Bundle `index-BFKLOX3Y.js` live); "Salad Backend Deploy" #79 und "Voice Worker Deploy" #16 (workflow_dispatch, approval "Ja OK") beide erfolgreich.
+- Live-Validierung 23.07.: /api/tts liefert kuratierte Stimmen mit korrektem `X-Voice-Id` (de-thorsten/de-ramona/de-pavoque/tr-dfki, unterschiedliche Audios); gleicher Text rate 0.7/1.0/1.3 -> 169/156/128 KB WAV (monoton fallend); Request ohne rate unveraendert; Startseite 200; Twin-Seiten `/t/<slug>` laden.
+- Schutzstatus: keine Nutzerdaten/Medien/Profile/Chatdaten geloescht, keine DNS-/Secret-/DB-Aenderung, keine kostenpflichtigen Anbieter aktiviert. Rollback: Revert PR #233/#235 + erneuter Lauf der beiden Salad-Deploy-Workflows auf dem vorherigen Stand.
+
 ## Update 2026-07-23: Morgenlauf — Nachschub-Problem GELOEST (PR #231 wirkt: +74 Profile ueber Nacht, 406 Twins live), i18n-Etappe 11 TwinChatView (PR #232)
 
 - DURCHBRUCH (Parallel-Agent, 22.07. abends): PR #231 (Commit 59edc92) 'Ingest-Pagination + Tagesquote 120' — der seit 20.07. offene Seed-Pool-Engpass ist behoben, Ingest liefert wieder Kandidaten. Nacht-Runs (Parallel-Agent, alle GRUEN): #88 run-small 41m51s (00:09), #89 publish-reviewed 1m26s (00:58), #90 publish-reviewed 2m12s (04:02); Deploys #289/#290/#291 gruen.
