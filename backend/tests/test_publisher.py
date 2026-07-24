@@ -41,6 +41,7 @@ CAPSULE_DOC = {
     "seo": {"json_ld": {"name": "Charles Darwin", "deathDate": "1882-04-19",
                         "birthDate": "1809-02-12", "description": "britischer Naturforscher"}},
     "sources": [{"title": "Wikidata"}, {"title": "Wikipedia de"}, {"title": "Wikipedia en"}],
+    "gender": "male",
 }
 
 
@@ -63,6 +64,7 @@ def test_publish_record_contains_disclosure_and_references() -> None:
     assert rec["approved_by"] == "adam@smyst.com"
     assert rec["visible"] is True
     assert rec["birth_date"] == "1809-02-12"
+    assert rec["gender"] == "male"
 
 
 def test_upsert_index_replaces_same_qid_and_blocks_conflicts() -> None:
