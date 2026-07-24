@@ -628,10 +628,10 @@ export default function App() {
   const mobileItems: NavItem[] =
     currentView === 'landing'
       ? [
-          { label: 'Vision', onClick: () => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: 'Anwendungen', onClick: () => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: 'Produkt', onClick: () => document.getElementById('product')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: 'Sicherheit', onClick: () => document.getElementById('security')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Vision' : ft.mnav.vision, onClick: () => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Anwendungen' : ft.mnav.useCases, onClick: () => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Produkt' : ft.mnav.product, onClick: () => document.getElementById('product')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Sicherheit' : ft.mnav.security, onClick: () => document.getElementById('security')?.scrollIntoView({ behavior: 'smooth' }) },
         ]
       : [
           { label: appLang === DEFAULT_LANG ? 'Dashboard' : ft.nav.dashboard, onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
@@ -737,10 +737,11 @@ export default function App() {
           open={mobileNavOpen}
           onClose={() => setMobileNavOpen(false)}
           items={mobileItems}
+          labels={appLang === DEFAULT_LANG ? undefined : ft.mnav}
           primaryAction={
             auth.status === 'authenticated'
-              ? { label: 'Zum Dashboard', onClick: () => navigateTo('dashboard') }
-              : { label: 'Einloggen', onClick: () => navigateTo('account-profile') }
+              ? { label: appLang === DEFAULT_LANG ? 'Zum Dashboard' : ft.mnav.toDashboard, onClick: () => navigateTo('dashboard') }
+              : { label: appLang === DEFAULT_LANG ? 'Einloggen' : ft.mnav.login, onClick: () => navigateTo('account-profile') }
           }
         />
       </Suspense>
