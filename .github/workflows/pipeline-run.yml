@@ -20,11 +20,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish"
+        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish | backfill-gender"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish]
+        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish, backfill-gender]
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
@@ -81,6 +81,13 @@ jobs:
       # ausloesen und die Assertions brechen.
       - name: Unit-Tests (komplette Pipeline-Suite, ohne Provider-Keys)
         run: python -m pytest tests/ -q
+
+      - name: "Gender-Backfill (Bestandsprofile, Wikidata P21 aus Snapshots)"
+        if: env.MODE == 'backfill-gender'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.backfill_gender
 
       - name: "Status-Report (read-only)"
         if: env.MODE == 'status'
