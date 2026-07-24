@@ -46,6 +46,12 @@ on:
         description: "Optional (publish-reviewed): Tageslimit-Override fuer dokumentierte Sonderfreigaben"
         required: false
         default: ""
+      backfill_dry_run:
+        description: "backfill-gender: 'true' = nur Vorschau (Standard, schreibt nichts), 'false' = echter Schreiblauf"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
 
 concurrency:
   group: pipeline-run
@@ -87,7 +93,14 @@ jobs:
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-        run: python -m app.workers.backfill_gender
+        # Standard ist Vorschau (--dry-run): schreibt nichts, zeigt nur, was
+        # sich aendern wuerde. Echter Schreiblauf nur mit backfill_dry_run=false.
+        run: |
+          if [ "${{ inputs.backfill_dry_run }}" = "false" ]; then
+            python -m app.workers.backfill_gender
+          else
+            python -m app.workers.backfill_gender --dry-run
+          fi
 
       - name: "Status-Report (read-only)"
         if: env.MODE == 'status'
