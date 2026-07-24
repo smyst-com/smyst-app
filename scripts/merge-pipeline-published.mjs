@@ -19,6 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deriveRolesAndCategories } from './derive-profile-roles.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -265,6 +266,10 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
   const description = cardDescription(record);
   const seo = record.seo || {};
   const corr = PROFILE_CORRECTIONS[record.slug] || {};
+  // Rollen/Kategorien-Fallback aus der research-verifizierten Beschreibung
+  // (Befund 23.07.2026: Ingest-Topf ist zu grob, z. B. Praesidenten als
+  // "Literatur"). Kuratierte Korrekturen behalten immer Vorrang.
+  const derived = deriveRolesAndCategories(description);
   const baseGuardrail =
     record.ai_disclosure ||
     'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.';
@@ -277,7 +282,11 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     imageCredit: generatedImage
       ? 'KI-generierte, stilisierte Darstellung (keine Fotografie der Person)'
       : imageCreditText(record, imageUrl, attribution),
-    categories: (Array.isArray(corr.categories) && corr.categories.length ? corr.categories : [record.category]).filter(Boolean),
+    categories: (Array.isArray(corr.categories) && corr.categories.length
+      ? corr.categories
+      : derived.categories.length
+        ? derived.categories
+        : [record.category]).filter(Boolean),
     languages: [record.language_default || 'de'],
     // Stimmen-Geschlecht (Wikidata P21) fuer die Sprachwelle; fehlt es,
     // nutzt das Frontend den neutralen Fallback.
@@ -297,7 +306,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     guardrail: `${DIRECT_ANSWER_GUARDRAIL} ${baseGuardrail}`,
     rightsPosture:
       'Autopilot-Pipeline: Quellen dokumentiert, Vier-Stufen-Risiko-Check und QA bestanden, menschlich freigegeben.',
-    mainCategory: corr.roles || record.category || '',
+    mainCategory: corr.roles || derived.roles || record.category || '',
     birthDate: record.birth_date || undefined,
     deathDate: record.death_date || undefined,
     // Kuratierte Lebensdaten-Overrides (Freigabe 18.07.2026): fuer Profile,
@@ -314,7 +323,7 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     birthPlace: record.birth_place || undefined,
     deathPlace: record.death_place || undefined,
     exampleQuestions: [],
-    searchIndex: [record.name, record.slug, record.category, ...(Array.isArray(corr.categories) ? corr.categories : []), corr.roles, description].filter(Boolean).join(' '),
+    searchIndex: [record.name, record.slug, record.category, ...(Array.isArray(corr.categories) ? corr.categories : derived.categories), corr.roles || derived.roles, description].filter(Boolean).join(' '),
     sources: record.sources || [],
     quality: imageUrl
       ? { ok: true, issues: [] }
