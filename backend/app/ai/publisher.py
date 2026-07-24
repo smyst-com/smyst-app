@@ -51,6 +51,8 @@ def build_publish_record(
         "birth_place": candidate_doc.get("birth_place"),
         "death_place": candidate_doc.get("death_place"),
         "description": (seo.get("json_ld") or {}).get("description"),
+        # Stimmen-Geschlecht (Wikidata P21) fuer die Sprachwelle; None = neutral.
+        "gender": capsule_doc.get("gender") if capsule_doc.get("gender") in ("female", "male") else None,
         "persona_prompt_key": candidate_doc.get("prompt_key"),
         "capsule_key": f"pipeline/capsules/{candidate_doc['wikidata_qid']}/capsule.json",
         "image": image,
