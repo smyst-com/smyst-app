@@ -1,4 +1,4 @@
-const SALAD_AUTH_FALLBACK_BASE_URL = 'https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud/auth';
+const SALAD_AUTH_FALLBACK_BASE_URL = 'https://smyst-api.zeabur.app/auth';
 
 function cleanBaseUrl(value: string | undefined, fallback: string) {
   return (value || fallback).replace(/\/$/, '');
