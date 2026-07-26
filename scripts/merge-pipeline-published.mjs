@@ -165,12 +165,28 @@ async function mirrorCommonsImage(record, slug) {
   const remote = commonsImageUrl(record);
   if (!remote) return { imageUrl: null };
   try {
-    let res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
-    if (res.status === 429 || res.status >= 500) {
-      // Commons drosselt Burst-Downloads (429) — einmal geduldig wiederholen.
-      await new Promise((wait) => setTimeout(wait, 5000));
-      res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+    // Commons drosselt anhaltende Download-Serien (429/5xx). Bis zu 4 Versuche
+    // mit ansteigender Wartezeit; ein Retry-After-Header der API hat Vorrang.
+    let res = null;
+    const delaysMs = [0, 5000, 15000, 45000];
+    for (const delayMs of delaysMs) {
+      if (delayMs) await new Promise((wait) => setTimeout(wait, delayMs));
+      try {
+        res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+      } catch {
+        res = null; // Netzwerkfehler/Timeout: wie drosselnde Antwort behandeln
+        continue;
+      }
+      if (res.status === 429 || res.status >= 500) {
+        const retryAfterSec = Number(res.headers.get('retry-after') || 0);
+        if (retryAfterSec > 0 && retryAfterSec <= 120) {
+          await new Promise((wait) => setTimeout(wait, retryAfterSec * 1000));
+        }
+        continue;
+      }
+      break;
     }
+    if (!res) throw new Error('Netzwerkfehler nach mehreren Versuchen');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const type = String(res.headers.get('content-type') || '');
     if (!type.startsWith('image/')) throw new Error(`kein Bild: ${type}`);
@@ -398,6 +414,8 @@ for (const record of eligible) {
     continue;
   }
   const image = await mirrorCommonsImage(record, record.slug);
+  // Kurze Pause zwischen Downloads: haelt die Serie unter dem Commons-Limit.
+  await new Promise((wait) => setTimeout(wait, 150));
   let imageUrl = image.imageUrl;
   let generatedImage = false;
   if (!imageUrl) {
