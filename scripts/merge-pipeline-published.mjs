@@ -157,6 +157,20 @@ function imageCreditText(record, imageUrl, attribution) {
   return creditSource ? `${base} — Quelle: ${creditSource}` : base;
 }
 
+// Gemeinsames Wartezeit-Budget fuer ALLE Bild-Retries eines Builds: bei
+// anhaltender Commons-Drosselung sonst 45s+ pro Bild x hunderte Bilder ->
+// Pages-Job-Timeout 60min (Run #328 cancelled). Nach Verbrauch des Budgets
+// wird jedes Bild nur noch einmal versucht; Fallback bleibt die Commons-URL.
+let retryWaitBudgetMs = 8 * 60 * 1000;
+
+async function waitForRetry(ms) {
+  const wait = Math.min(ms, retryWaitBudgetMs);
+  if (wait <= 0) return false;
+  retryWaitBudgetMs -= wait;
+  await new Promise((done) => setTimeout(done, wait));
+  return true;
+}
+
 async function mirrorCommonsImage(record, slug) {
   // Selbst-Hosting (Freigabe Adam King 2026-07-03): Commons-Bild wird beim
   // Build nach dist/public/profile-images/<slug>.<ext> gespiegelt und lokal
@@ -165,12 +179,12 @@ async function mirrorCommonsImage(record, slug) {
   const remote = commonsImageUrl(record);
   if (!remote) return { imageUrl: null };
   try {
-    // Commons drosselt anhaltende Download-Serien (429/5xx). Bis zu 4 Versuche
-    // mit ansteigender Wartezeit; ein Retry-After-Header der API hat Vorrang.
+    // Commons drosselt anhaltende Download-Serien (429/5xx). Kurzer Backoff
+    // mit globalem Zeitbudget; ein Retry-After-Header (gekappt) hat Vorrang.
     let res = null;
-    const delaysMs = [0, 5000, 15000, 45000];
+    const delaysMs = retryWaitBudgetMs > 0 ? [0, 4000, 12000] : [0];
     for (const delayMs of delaysMs) {
-      if (delayMs) await new Promise((wait) => setTimeout(wait, delayMs));
+      if (delayMs && !(await waitForRetry(delayMs))) break;
       try {
         res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
       } catch {
@@ -179,9 +193,7 @@ async function mirrorCommonsImage(record, slug) {
       }
       if (res.status === 429 || res.status >= 500) {
         const retryAfterSec = Number(res.headers.get('retry-after') || 0);
-        if (retryAfterSec > 0 && retryAfterSec <= 120) {
-          await new Promise((wait) => setTimeout(wait, retryAfterSec * 1000));
-        }
+        if (retryAfterSec > 0) await waitForRetry(Math.min(retryAfterSec, 30) * 1000);
         continue;
       }
       break;
