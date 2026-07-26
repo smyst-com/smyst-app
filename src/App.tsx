@@ -934,6 +934,27 @@ function profileLifeLine(profile: {
 
 // Statischer Public-Profile-Fallback: antwortet kurz, in der Ich-Perspektive der Person,
 // nur aus den kuratierten Profildaten. Keine Meta-Kommentare, keine technischen Interna.
+// Kurze Stoermeldung fuer Folgefragen, wenn der Twin-Chat nicht erreichbar ist -
+// verhindert, dass sich das Profil bei jedem Fehler erneut vorstellt
+// (Rollen-Bug: "Ich bin Albert Einstein ..." als Antwort auf Folgefragen).
+const STATIC_TWIN_RETRY_TEXTS: Partial<Record<VoiceLang, string>> = {
+  de: 'Ich kann gerade nicht auf mein Wissen zugreifen. Bitte versuche es gleich noch einmal.',
+  en: "I can't reach my knowledge right now. Please try again in a moment.",
+  tr: 'Şu anda bilgime ulaşamıyorum. Lütfen birazdan tekrar dene.',
+  es: 'Ahora mismo no puedo acceder a mi conocimiento. Inténtalo de nuevo en un momento.',
+  fr: 'Je ne peux pas accéder à mes connaissances pour le moment. Réessaie dans un instant.',
+  it: 'Al momento non riesco ad accedere alle mie conoscenze. Riprova tra un attimo.',
+  pt: 'Não consigo aceder ao meu conhecimento neste momento. Tenta novamente daqui a pouco.',
+  ru: 'Сейчас я не могу получить доступ к своим знаниям. Пожалуйста, попробуй ещё раз через минуту.',
+  zh: '我现在无法访问我的知识。请稍后再试。',
+  ja: '今は知識にアクセスできません。少し待ってからもう一度お試しください。',
+  ko: '지금은 지식에 접근할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+  ar: 'لا أستطيع الوصول إلى معرفتي الآن. يرجى المحاولة مرة أخرى بعد قليل.',
+  hi: 'मैं अभी अपनी जानकारी तक नहीं पहुँच पा रहा हूँ। कृपया थोड़ी देर में फिर कोशिश करें।',
+  id: 'Saat ini saya tidak dapat mengakses pengetahuan saya. Silakan coba lagi sebentar lagi.',
+  bn: 'এই মুহূর্তে আমি আমার জ্ঞানে পৌঁছাতে পারছি না। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।',
+}
+
 function staticPublicTwinReply(profile: {
   name: string
   description?: string
@@ -946,7 +967,14 @@ function staticPublicTwinReply(profile: {
   birthLabel?: string
   deathLabel?: string
   lifeLine?: string
-}, _question: string, responseLang: VoiceLang = DEFAULT_LANG): string {
+}, _question: string, responseLang: VoiceLang = DEFAULT_LANG, options: { repeat?: boolean } = {}): string {
+  if (options.repeat) {
+    return (
+      STATIC_TWIN_RETRY_TEXTS[responseLang] ??
+      STATIC_TWIN_RETRY_TEXTS.de ??
+      'Ich kann gerade nicht auf mein Wissen zugreifen. Bitte versuche es gleich noch einmal.'
+    )
+  }
   const branch = profile.mainCategory || profile.categories?.slice(0, 2).join(', ') || ''
   // Lebensdaten: bevorzugt direkte Profilfelder, sonst aus der lifeLine ("76 Jahre • 14.03.1879 – 18.04.1955")
   let birth = profile.birthLabel || formatIsoDate(profile.birthDate) || ''
@@ -1364,6 +1392,9 @@ function SmystStartPage({
   const dictationBaseRef = useRef('')
   const dictationSessionRef = useRef('')
   const liveVoiceSendTimerRef = useRef<number | null>(null)
+  // Schutz gegen parallele Sendungen: eine zweite Anfrage waehrend eine Antwort
+  // laeuft wuerde einen zweiten Chat starten und den Kontext zerreissen.
+  const sendActiveRef = useRef(false)
 
   useEffect(() => {
     setLastVoiceLang(preferredVoiceLanguage(lang))
@@ -2158,23 +2189,18 @@ function SmystStartPage({
       addNotice(lang === DEFAULT_LANG ? 'Bitte warten, bis alle Anhänge hochgeladen sind.' : t.notices.attachmentsUploading)
       return null
     }
+    if (sendActiveRef.current) {
+      // Es laeuft schon eine Antwort - keine zweite parallele Anfrage starten.
+      addNotice(lang === DEFAULT_LANG ? 'Antwort läuft gerade. Bitte kurz warten.' : t.notices.replyRunning)
+      return null
+    }
 
-    const twin = selectedTwin ?? filteredTwins[0] ?? activeTwin
+    // Nie stillschweigend ein Profil aus der Liste uebernehmen: ohne explizit
+    // gewaehltes Profil antwortete sonst z. B. "Ich bin Albert Einstein ..."
+    // auf eine allgemeine Frage (Rollen-Bug, live beobachtet 26.07.2026).
+    const twin = selectedTwin ?? activeTwin
     if (!twin) {
-      setMessages((current) => [
-        ...current,
-        { id: crypto.randomUUID(), role: 'user', content: fullMessage },
-        {
-          id: crypto.randomUUID(),
-          role: 'ai',
-          content:
-            auth.status === 'authenticated'
-              ? 'Erstelle zuerst ein echtes Profil. Danach kannst du diese Person direkt anschreiben.'
-              : 'Melde dich an und erstelle ein echtes Profil. Danach kannst du direkt mit diesem Profil chatten.',
-        },
-      ])
-      resizeInput('')
-      setAttachments([])
+      addNotice(lang === DEFAULT_LANG ? 'Wähle zuerst ein KI-Profil aus.' : t.notices.chooseProfileFirst)
       return null
     }
     if (!selectedTwin) selectTwin(twin)
@@ -2194,6 +2220,7 @@ function SmystStartPage({
       return null
     }
 
+    sendActiveRef.current = true
     const assistantId = crypto.randomUUID()
     setMessages((current) => [
       ...current,
@@ -2251,7 +2278,10 @@ function SmystStartPage({
     } catch (err) {
       liveSpeech?.cancel()
       if (twin.publicProfile) {
-        const reply = staticPublicTwinReply(twin, fullMessage, messageVoiceLang)
+        // Vorstellung nur beim ersten Turn - bei Folgefragen stattdessen eine
+        // kurze Stoermeldung, sonst wiederholt der Twin endlos sein Intro.
+        const alreadyIntroduced = messages.some((entry) => entry.role === 'ai' && entry.content.trim().length > 0)
+        const reply = staticPublicTwinReply(twin, fullMessage, messageVoiceLang, { repeat: alreadyIntroduced })
         await streamText(assistantId, reply)
         if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), twin.name, twin.voiceGender)) {
           setIsSpeaking(true)
@@ -2271,6 +2301,8 @@ function SmystStartPage({
         ),
       )
       return null
+    } finally {
+      sendActiveRef.current = false
     }
   }
 
@@ -7788,6 +7820,9 @@ function TwinChatView({
     } catch (err) {
       liveSpeech?.cancel()
       if (activeTwin.publicProfile) {
+        // Vorstellung nur beim ersten Turn - bei Folgefragen stattdessen eine
+        // kurze Stoermeldung, sonst wiederholt der Twin endlos sein Intro.
+        const alreadyIntroduced = messages.some((entry) => entry.role === 'ai' && entry.content.trim().length > 0)
         const reply = staticPublicTwinReply(
           {
             name: activeTwin.name,
@@ -7797,6 +7832,7 @@ function TwinChatView({
           },
           message,
           messageVoiceLang,
+          { repeat: alreadyIntroduced },
         )
         await streamAssistantMessage(assistantId, reply)
         if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), activeTwin.name, activeTwin.voiceGender)) {
