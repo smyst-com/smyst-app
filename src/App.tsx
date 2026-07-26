@@ -25,7 +25,7 @@ import {
 } from '@/lib/voiceLanguage'
 import { pickVoiceSettings, remoteRateFor, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
-import { recordAndTranscribeOnce, serverAsrSupported } from '@/lib/serverAsrClient'
+import { markServerAsrUnavailable, recordAndTranscribeOnce, serverAsrReady, serverAsrSupported } from '@/lib/serverAsrClient'
 import { isRemoteSpeechActive, playRemoteSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { fetchService } from '@/lib/serviceEndpoints'
@@ -1896,7 +1896,17 @@ function SmystStartPage({
       })
       .catch(() => {
         if (options.live && liveVoiceActiveRef.current) {
-          window.setTimeout(() => startServerAsrDictation({ live: true, resume: true }), 700)
+          // Server-ASR nicht erreichbar: fuer diese Session merken und die
+          // Sprachwelle nahtlos mit der Browser-Erkennung fortsetzen.
+          markServerAsrUnavailable()
+          if (speechRecognitionConstructor()) {
+            window.setTimeout(() => startDictation({ live: true, resume: true, forceBrowser: true }), 400)
+            return
+          }
+          liveVoiceActiveRef.current = false
+          setSpeechOutputEnabled(false)
+          setVoiceState('idle')
+          addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
           return
         }
         dictationActiveRef.current = false
@@ -1905,13 +1915,21 @@ function SmystStartPage({
       })
   }
 
-  const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
+  const startDictation = (options: { live?: boolean; resume?: boolean; forceBrowser?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     // Sprachwelle (Live-Modus): Server-ASR (Whisper) zuerst - erkennt die gesprochene
     // Sprache automatisch schon im ersten Satz und wechselt sie pro Turn (DE/TR/EN, ...).
-    // Browser-Erkennung bleibt fuer das Diktat und als Fallback ohne Server-ASR.
-    if (options.live && serverAsrSupported()) {
-      startServerAsrDictation(options)
+    // Browser-Erkennung bleibt fuer das Diktat und als Fallback, wenn kein
+    // Server-ASR bereitsteht (z. B. ohne Voice-Worker auf dem Backend).
+    if (options.live && !options.forceBrowser && serverAsrSupported()) {
+      if (!Recognition) {
+        startServerAsrDictation(options)
+        return
+      }
+      void serverAsrReady().then((ready) => {
+        if (ready) startServerAsrDictation(options)
+        else startDictation({ ...options, forceBrowser: true })
+      })
       return
     }
     if (!Recognition) {
@@ -7360,7 +7378,17 @@ function TwinChatView({
       })
       .catch(() => {
         if (options.live && liveVoiceActiveRef.current) {
-          window.setTimeout(() => startServerAsrDictation({ live: true, resume: true }), 700)
+          // Server-ASR nicht erreichbar: fuer diese Session merken und die
+          // Sprachwelle nahtlos mit der Browser-Erkennung fortsetzen.
+          markServerAsrUnavailable()
+          if (speechRecognitionConstructor()) {
+            window.setTimeout(() => startDictation({ live: true, resume: true, forceBrowser: true }), 400)
+            return
+          }
+          liveVoiceActiveRef.current = false
+          setSpeechOutputEnabled(false)
+          setVoiceState('idle')
+          addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
           return
         }
         dictationActiveRef.current = false
@@ -7479,13 +7507,21 @@ function TwinChatView({
     )
   }
 
-  const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
+  const startDictation = (options: { live?: boolean; resume?: boolean; forceBrowser?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     // Sprachwelle (Live-Modus): Server-ASR (Whisper) zuerst - erkennt die gesprochene
     // Sprache automatisch schon im ersten Satz und wechselt sie pro Turn (DE/TR/EN, ...).
-    // Browser-Erkennung bleibt fuer das Diktat und als Fallback ohne Server-ASR.
-    if (options.live && serverAsrSupported()) {
-      startServerAsrDictation(options)
+    // Browser-Erkennung bleibt fuer das Diktat und als Fallback, wenn kein
+    // Server-ASR bereitsteht (z. B. ohne Voice-Worker auf dem Backend).
+    if (options.live && !options.forceBrowser && serverAsrSupported()) {
+      if (!Recognition) {
+        startServerAsrDictation(options)
+        return
+      }
+      void serverAsrReady().then((ready) => {
+        if (ready) startServerAsrDictation(options)
+        else startDictation({ ...options, forceBrowser: true })
+      })
       return
     }
     if (!Recognition) {
