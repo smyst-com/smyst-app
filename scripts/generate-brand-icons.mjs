@@ -14,7 +14,7 @@ const ASSETS = [
   ['icon-512.png.b64', 24075, ['public/icons/icon-512.png', 'public/icons/maskable-512.png']],
   ['apple-touch-icon.png.b64', 7043, ['public/apple-touch-icon.png']],
   ['og-image.png.b64', 46605, ['public/og-image.png']],
-  ['favicon.ico.b64', 472, ['public/favicon.ico']],
+  ['favicon.ico.b64', 2720, ['public/favicon.ico']],
 ];
 
 for (const [src, expectedBytes, targets] of ASSETS) {
