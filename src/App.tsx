@@ -3304,7 +3304,10 @@ function TwinProfileView({
         <Card className="overflow-hidden p-0">
           <div className="grid gap-0 lg:grid-cols-[340px_1fr]">
             <div className="border-b border-white/30 bg-white/18 p-6 lg:border-b-0 lg:border-r">
-              <div className="aspect-square overflow-hidden rounded-[18px] border border-white/40 bg-white/28">
+              {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
+                  quadratische Portrait bildschirmhoch und schiebt Name, Daten und
+                  den Chat-Button unter die Falz. */}
+              <div className="mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-[18px] border border-white/40 bg-white/28 lg:max-w-none">
                 <img
                   src={profile.imageUrl}
                   alt={profile.name}
