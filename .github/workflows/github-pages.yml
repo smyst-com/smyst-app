@@ -78,10 +78,35 @@ jobs:
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 \
             || echo "Kein Publish-Index in IDrive e2 (ok) — Site bleibt unveraendert."
 
+      # Bild-Cache aus dem Object Brain (IDrive e2) vorladen: Commons drosselt
+      # Serien-Downloads, deshalb zieht jeder Build nur noch die NEUEN Bilder.
+      # Fehlt der Ordner (erster Lauf), ist das ein No-op.
+      - name: Restore mirrored profile images from IDrive e2 (optional)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          mkdir -p dist/public/profile-images
+          aws s3 sync s3://smyst-memories/profile-images/ dist/public/profile-images/ \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 --only-show-errors \
+            || echo "Kein Bild-Cache in IDrive e2 (ok) — Bilder werden neu gespiegelt."
+          echo "Bilder im Cache: $(ls -1 dist/public/profile-images 2>/dev/null | wc -l)"
+
       - name: Merge published pipeline profiles
         run: node scripts/merge-pipeline-published.mjs
         env:
           VITE_CANONICAL_HOST: https://smyst.com
+
+      # Neu gespiegelte Bilder zurueck in den Cache. Nur hinzufuegen, niemals
+      # loeschen (kein --delete): bestehende Bilder bleiben unangetastet.
+      - name: Persist mirrored profile images to IDrive e2 (optional)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          aws s3 sync dist/public/profile-images/ s3://smyst-memories/profile-images/ \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 --only-show-errors \
+            || echo "Bild-Cache konnte nicht geschrieben werden (ok) — naechster Build spiegelt erneut."
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

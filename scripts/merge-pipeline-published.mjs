@@ -178,6 +178,16 @@ async function mirrorCommonsImage(record, slug) {
   // Commons-URL der Fallback — der Build scheitert dadurch NIE.
   const remote = commonsImageUrl(record);
   if (!remote) return { imageUrl: null };
+  // Bild-Cache (IDrive e2, Object Brain): Der Workflow spiegelt den Bucket-Ordner
+  // profile-images/ vor dem Merge nach dist/. Was dort schon liegt, wird NICHT
+  // erneut von Commons geladen — das ist der eigentliche Schutz gegen die
+  // Drosselung, weil jeder Build nur noch die wirklich neuen Bilder zieht.
+  const cachedDir = resolve(DIST, 'public', 'profile-images');
+  for (const ext of ['.jpg', '.png', '.svg']) {
+    if (existsSync(resolve(cachedDir, `${slug}${ext}`))) {
+      return { imageUrl: `/public/profile-images/${slug}${ext}` };
+    }
+  }
   try {
     // Commons drosselt anhaltende Download-Serien (429/5xx). Kurzer Backoff
     // mit globalem Zeitbudget; ein Retry-After-Header (gekappt) hat Vorrang.

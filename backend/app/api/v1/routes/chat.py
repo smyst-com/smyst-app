@@ -30,6 +30,10 @@ class StartChatRequest(BaseModel):
 class SendMessageRequest(BaseModel):
     chatId: str = Field(min_length=1, max_length=120)
     message: str = Field(min_length=1, max_length=4000)
+    # Das Frontend kennt die UI-/Sprechsprache sicher (Umschalter, Voice-Turn) und
+    # sendet sie seit jeher mit. Ohne Auswertung musste das Modell die Sprache aus
+    # dem Text raten und antwortete z. B. auf umlautlose deutsche Saetze englisch.
+    language: str | None = Field(default=None, max_length=16)
 
 
 def _now_ms() -> int:
@@ -90,7 +94,37 @@ def _schedule_archive(chat: dict[str, object]) -> None:
         pass
 
 
-async def _build_llm_request(chat: dict[str, object], message: str) -> LLMRequest:
+# Die 15 Sprachen der Voice-/UI-Matrix (src/lib/voiceLanguage.ts). Alles andere
+# wird verworfen, damit kein fremder Freitext in den Prompt gelangt.
+_LANGUAGE_NAMES: dict[str, str] = {
+    "en": "English",
+    "zh": "Chinese",
+    "es": "Spanish",
+    "ar": "Arabic",
+    "fr": "French",
+    "de": "German",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "tr": "Turkish",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "it": "Italian",
+    "hi": "Hindi",
+    "id": "Indonesian",
+    "bn": "Bengali",
+}
+
+
+def _language_name(language: str | None) -> str | None:
+    if not language:
+        return None
+    base = str(language).strip().lower().replace("_", "-").split("-", 1)[0]
+    return _LANGUAGE_NAMES.get(base)
+
+
+async def _build_llm_request(
+    chat: dict[str, object], message: str, language: str | None = None
+) -> LLMRequest:
     twin_id = chat.get("twinId")
     context = await twin_context(twin_id if isinstance(twin_id, str) else None)
     system_prompt = (
@@ -98,14 +132,21 @@ async def _build_llm_request(chat: dict[str, object], message: str) -> LLMReques
         "person, in the persona's voice, tone and perspective. Never speak about the persona "
         "in the third person. You are a transparent AI twin, not the real person: never claim "
         "real-time experiences, and acknowledge being an AI twin if asked directly. Answer "
-        "briefly, helpfully and clearly."
+        "briefly, helpfully and clearly. Write plain readable prose: no LaTeX delimiters "
+        r"(\( \), \[ \], $...$) and no markup around formulas — write E=mc^2, not \(E=mc^2\)."
     )
     context_block = f"Curated public profile knowledge:\n{context}\n" if context else ""
+    language_line = (
+        f"Answer strictly in this language: {_language_name(language)}. Do not switch languages.\n"
+        if _language_name(language)
+        else "Answer in the same language as the user.\n"
+    )
     prompt = (
         f"Twin/profile: {_title_for_twin(twin_id if isinstance(twin_id, str) else None)}\n"
         + context_block
         + f"User message: {message}\n"
-        "Answer in the same language as the user. Keep it concise."
+        + language_line
+        + "Keep it concise."
     )
     return LLMRequest(prompt=prompt, system_prompt=system_prompt, max_tokens=220, temperature=0.2)
 
@@ -206,7 +247,7 @@ async def start_chat(body: StartChatRequest) -> dict[str, object]:
 async def send_message(body: SendMessageRequest) -> dict[str, object]:
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
-    llm_request = await _build_llm_request(chat, message)
+    llm_request = await _build_llm_request(chat, message, body.language)
     research_response = await _research_for_chat(chat, message)
     llm_request = _attach_web_research_evidence(llm_request, research_response)
     llm_response = await _chat_router().complete(llm_request)
@@ -240,7 +281,7 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
     llm_router = _chat_router()
-    request = await _build_llm_request(chat, message)
+    request = await _build_llm_request(chat, message, body.language)
     research_response = await _research_for_chat(chat, message)
     request = _attach_web_research_evidence(request, research_response)
 
