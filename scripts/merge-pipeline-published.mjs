@@ -161,7 +161,13 @@ function imageCreditText(record, imageUrl, attribution) {
 // anhaltender Commons-Drosselung sonst 45s+ pro Bild x hunderte Bilder ->
 // Pages-Job-Timeout 60min (Run #328 cancelled). Nach Verbrauch des Budgets
 // wird jedes Bild nur noch einmal versucht; Fallback bleibt die Commons-URL.
-let retryWaitBudgetMs = 8 * 60 * 1000;
+//
+// 8 -> 25 Minuten (26.07.): Seit der IDrive-Bild-Cache greift, ueberspringt der
+// Merge bereits gespiegelte Bilder komplett — die Restlaufzeit gehoert damit
+// den noch fehlenden. Der Job-Timeout (60 min) bleibt mit Build + Prerender
+// (~12 min) deutlich unterschritten, und pro Lauf kommen mehr Bilder dauerhaft
+// in den Cache (Lauf 1: 156, Lauf 2: 203).
+let retryWaitBudgetMs = 25 * 60 * 1000;
 
 async function waitForRetry(ms) {
   const wait = Math.min(ms, retryWaitBudgetMs);
@@ -178,6 +184,16 @@ async function mirrorCommonsImage(record, slug) {
   // Commons-URL der Fallback — der Build scheitert dadurch NIE.
   const remote = commonsImageUrl(record);
   if (!remote) return { imageUrl: null };
+  // Bild-Cache (IDrive e2, Object Brain): Der Workflow spiegelt den Bucket-Ordner
+  // profile-images/ vor dem Merge nach dist/. Was dort schon liegt, wird NICHT
+  // erneut von Commons geladen — das ist der eigentliche Schutz gegen die
+  // Drosselung, weil jeder Build nur noch die wirklich neuen Bilder zieht.
+  const cachedDir = resolve(DIST, 'public', 'profile-images');
+  for (const ext of ['.jpg', '.png', '.svg']) {
+    if (existsSync(resolve(cachedDir, `${slug}${ext}`))) {
+      return { imageUrl: `/public/profile-images/${slug}${ext}` };
+    }
+  }
   try {
     // Commons drosselt anhaltende Download-Serien (429/5xx). Kurzer Backoff
     // mit globalem Zeitbudget; ein Retry-After-Header (gekappt) hat Vorrang.
