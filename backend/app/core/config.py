@@ -1,7 +1,11 @@
+import hashlib
+import hmac
 from functools import lru_cache
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+AUTH_SESSION_SECRET_PLACEHOLDER = "replace-with-48-byte-random-secret"
 
 
 class Settings(BaseSettings):
@@ -115,6 +119,28 @@ class Settings(BaseSettings):
     @property
     def cors_origins(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origin_raw.split(",") if origin.strip()]
+
+    @property
+    def effective_auth_session_secret(self) -> str | None:
+        """Signier-Secret fuer Session-Tokens.
+
+        Bevorzugt AUTH_SESSION_SECRET (falls gesetzt, kein Platzhalter und
+        mindestens 32 Bytes). Fehlt es, wird deterministisch ein Subkey aus
+        OPENROUTER_API_KEY abgeleitet (HMAC-SHA256 mit festem Kontext-Label,
+        one-way): ueberlebt Neustarts ohne zusaetzliche Konfiguration und
+        rotiert nur, wenn der Master-Key rotiert.
+        """
+        configured = (self.auth_session_secret or "").strip()
+        if (
+            configured
+            and configured != AUTH_SESSION_SECRET_PLACEHOLDER
+            and len(configured.encode("utf-8")) >= 32
+        ):
+            return configured
+        master = (self.openrouter_api_key or "").strip()
+        if master:
+            return hmac.new(master.encode("utf-8"), b"smyst-auth-session-v1", hashlib.sha256).hexdigest()
+        return None
 
     @property
     def google_redirect_uri(self) -> str:
