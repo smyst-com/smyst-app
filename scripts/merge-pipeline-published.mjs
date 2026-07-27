@@ -161,7 +161,13 @@ function imageCreditText(record, imageUrl, attribution) {
 // anhaltender Commons-Drosselung sonst 45s+ pro Bild x hunderte Bilder ->
 // Pages-Job-Timeout 60min (Run #328 cancelled). Nach Verbrauch des Budgets
 // wird jedes Bild nur noch einmal versucht; Fallback bleibt die Commons-URL.
-let retryWaitBudgetMs = 8 * 60 * 1000;
+//
+// 8 -> 25 Minuten (26.07.): Seit der IDrive-Bild-Cache greift, ueberspringt der
+// Merge bereits gespiegelte Bilder komplett — die Restlaufzeit gehoert damit
+// den noch fehlenden. Der Job-Timeout (60 min) bleibt mit Build + Prerender
+// (~12 min) deutlich unterschritten, und pro Lauf kommen mehr Bilder dauerhaft
+// in den Cache (Lauf 1: 156, Lauf 2: 203).
+let retryWaitBudgetMs = 25 * 60 * 1000;
 
 async function waitForRetry(ms) {
   const wait = Math.min(ms, retryWaitBudgetMs);
