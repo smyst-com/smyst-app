@@ -56,19 +56,23 @@ const SPEECH_LANGS: Record<VoiceLang, string> = {
   bn: 'bn-BD',
 }
 
+// Nur Woerter aufnehmen, die innerhalb dieser 15 Sprachen eindeutig sind —
+// countMatches() strippt Diakritika, also zaehlt z. B. 'erzähl' als 'erzahl'.
+// Mehrdeutige Kurzwoerter ('was' de/en, 'me' es/en, 'in' de/en) gehoeren nur
+// in die Liste EINER Sprache, sonst kippt der Tie-Break zur erstgelisteten.
 const WORD_MARKERS: Record<VoiceLang, readonly string[]> = {
-  en: ['the', 'and', 'please', 'what', 'how', 'why', 'hello', 'thanks', 'you'],
+  en: ['the', 'and', 'please', 'what', 'how', 'why', 'hello', 'hi', 'hey', 'thanks', 'you', 'your', 'is', 'are', 'does', 'did', 'can', 'could', 'will', 'would', 'should', 'my', 'of', 'to', 'this', 'that', 'tell', 'about', 'who', 'which', 'have', 'has', 'not', 'it'],
   zh: [],
-  es: ['que', 'como', 'por', 'para', 'hola', 'gracias', 'usted', 'quiero', 'esta'],
+  es: ['que', 'como', 'por', 'para', 'hola', 'gracias', 'usted', 'quiero', 'esta', 'quien', 'cuando', 'donde', 'dime', 'cuentame', 'puedes', 'eres', 'soy', 'muy', 'tambien'],
   ar: [],
-  fr: ['bonjour', 'merci', 'comment', 'pourquoi', 'avec', 'vous', 'etre', 'dans', 'est', 'oui', 'très', 'ça'],
-  de: ['ich', 'du', 'der', 'die', 'das', 'und', 'nicht', 'bitte', 'danke', 'warum', 'ist', 'was', 'wie', 'ein', 'eine', 'mit', 'auch', 'für', 'über', 'schön', 'aber'],
-  pt: ['ola', 'obrigado', 'obrigada', 'como', 'porque', 'voce', 'para', 'com', 'muito', 'não', 'sim'],
+  fr: ['bonjour', 'merci', 'comment', 'pourquoi', 'avec', 'vous', 'etre', 'dans', 'est', 'oui', 'très', 'ça', 'salut', 'quel', 'quelle', 'quoi', 'moi', 'toi', 'votre', 'notre', 'raconte', 'parle', 'peux', 'suis'],
+  de: ['ich', 'du', 'der', 'die', 'das', 'und', 'nicht', 'bitte', 'danke', 'warum', 'ist', 'was', 'wie', 'ein', 'eine', 'mit', 'auch', 'für', 'über', 'schön', 'aber', 'hallo', 'erzähl', 'erzähle', 'erklär', 'erkläre', 'sag', 'mir', 'dir', 'mich', 'dich', 'wer', 'wo', 'wann', 'wieso', 'weshalb', 'welche', 'welcher', 'kann', 'kannst', 'bist', 'sind', 'hast', 'habe', 'haben', 'dein', 'deine', 'deiner', 'mein', 'meine', 'sehr', 'heute', 'jetzt', 'noch', 'schon', 'dann', 'oder', 'vom', 'zum', 'zur', 'auf', 'aus', 'bei', 'nach', 'von', 'wichtigste', 'wichtig'],
+  pt: ['ola', 'obrigado', 'obrigada', 'como', 'porque', 'voce', 'para', 'com', 'muito', 'não', 'sim', 'quem', 'onde', 'conte', 'pode', 'sou', 'fale', 'falar'],
   ru: [],
   tr: ['merhaba', 'tesekkur', 'ederim', 'nasilsin', 'nasıl', 'ben', 'bir', 'icin', 'için', 'degil', 'değil', 'lutfen', 'lütfen', 'çok', 'neden', 'güzel', 'önemli', 'kadar', 'evet', 'nedir', 'teşekkürler'],
   ja: [],
   ko: [],
-  it: ['ciao', 'grazie', 'come', 'perche', 'perchè', 'sono', 'voglio', 'con'],
+  it: ['ciao', 'grazie', 'come', 'perche', 'perchè', 'sono', 'voglio', 'con', 'chi', 'dove', 'cosa', 'sei', 'dimmi', 'puoi', 'raccontami', 'parlami'],
   hi: [],
   id: ['halo', 'terima', 'kasih', 'bagaimana', 'saya', 'untuk', 'dengan', 'tidak'],
   bn: [],
@@ -133,11 +137,14 @@ export function detectVoiceLanguage(text: string, fallback: string = DEFAULT_LAN
   return bestLang
 }
 
+// Startsprache fuer Chat/Voice = die Sprache, in der die Seite gerade angezeigt
+// wird. navigator.language darf hier NICHT gewinnen: die Seite liefert unter
+// smyst.com immer die deutsche UI aus, viele Geraete stehen aber auf Englisch —
+// der alte navigator-Vorrang machte 'en' zum Fallback, und sobald die
+// Wortmarker-Erkennung einen deutschen Satz nicht erkannte, ging
+// "Answer only in English" an das Modell (alle Antworten englisch, 27.07.).
 export function preferredVoiceLanguage(current: string = DEFAULT_LANG): VoiceLang {
-  const currentLang = toVoiceLang(current)
-  if (typeof navigator === 'undefined') return currentLang
-  const browserLanguages = [navigator.language, ...(navigator.languages ?? [])]
-  return browserLanguages.map(toVoiceLang).find((lang) => REQUIRED_VOICE_LANGUAGES.includes(lang)) ?? currentLang
+  return toVoiceLang(current)
 }
 
 export function voiceLanguageInstruction(message: string, lang: string): string {
