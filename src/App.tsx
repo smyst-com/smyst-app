@@ -4828,13 +4828,13 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   const content = {
     privacy: {
       title: 'Datenschutz',
-      intro: 'Verantwortlich: iMild LLC, 1401 21st St, Ste R, Sacramento, CA 95811, USA. E-Mail: s@smyst.com. Stand: 15. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
+      intro: 'Verantwortlich: iMild LLC, 1401 21st St, Ste R, Sacramento, CA 95811, USA. E-Mail: s@smyst.com. Stand: 27. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
       points: [
         'Ohne Konto verarbeiten wir technische Zugriffsdaten (IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser- und Geraetetyp) fuer Betrieb, Stabilitaet und Missbrauchsabwehr (Art. 6 Abs. 1 lit. f DSGVO). Chat-Anfragen an oeffentliche KI-Profile werden zur Beantwortung an unser Backend uebertragen; ohne Anmeldung wird kein Chat-Verlauf dauerhaft gespeichert.',
         'Mit Konto verarbeiten wir E-Mail-Adresse, Name (optional), Passwort ausschliesslich als kryptografischen Hash (scrypt), Profilinhalte, erstellte AI-Twins, hochgeladene Dateien (Dokumente, Bilder, Audio, Video), Chat-Verlaeufe sowie Einstellungs- und Sitzungsdaten zur Bereitstellung deines Kontos und der Kernfunktionen (Art. 6 Abs. 1 lit. b DSGVO).',
         'Bei Google-Login erhalten wir nur die Google-Konto-Basisdaten (E-Mail-Adresse, Name, Profilbild-URL). Dein Google-Passwort wird nicht an uns uebertragen.',
         'Technisch notwendige lokale Speicherung (Session-Cookie bzw. signiertes Token, Sprach- und Design-Einstellung, Consent-Status) erfolgt nach Par. 25 Abs. 2 TDDDG bzw. Art. 6 Abs. 1 lit. b/f DSGVO. Optionale anonyme Nutzungsstatistik und optionale Werbespeicherung werden standardmaessig abgelehnt und nur nach aktiver Einwilligung ueber das Consent-Banner freigegeben; jede Einwilligung ist jederzeit widerrufbar.',
-        'Dienstleister: IDrive Inc. (USA, Objektspeicher und Auslieferung der Website-Dateien), Salad Technologies (USA, Backend fuer Login, API und KI-Antworten), GitHub Inc. (USA, Code-Hosting), Google LLC (USA, nur bei Google-Login), Spaceship/Namecheap-Gruppe (Domain, DNS, E-Mail-Weiterleitung an s@smyst.com).',
+        'Dienstleister: IDrive Inc. (USA, Objektspeicher und Auslieferung von Medien-Dateien), Zeabur (App-Hosting und Backend fuer Login und API), OpenRouter Inc. (USA, KI-Modell-Verarbeitung fuer Twin-Antworten), GitHub Inc. (USA, Code-Hosting und Website-Auslieferung), Google LLC (USA, nur bei Google-Login), Spaceship/Namecheap-Gruppe (Domain, DNS, E-Mail-Weiterleitung an s@smyst.com).',
         'Drittlandbezug: Die Verarbeitung findet ueberwiegend in den USA statt, gestuetzt auf das EU-US Data Privacy Framework, soweit Anbieter zertifiziert sind, andernfalls auf EU-Standardvertragsklauseln bzw. die Standard-Datenschutzvereinbarungen der Anbieter (Art. 44 ff. DSGVO).',
         'Speicherdauer: Kontodaten bleiben gespeichert, solange dein Konto besteht. Nach Konto-Loeschung werden personenbezogene Daten zweistufig entfernt (sofortige Sperrung, anschliessend endgueltige Loeschung der Datenobjekte). Technische Logs nur so lange, wie fuer Betrieb und Sicherheit erforderlich. Chats ohne Konto werden nicht dauerhaft gespeichert.',
         'Deine Rechte: Auskunft (Art. 15), Berichtigung (Art. 16), Loeschung (Art. 17), Einschraenkung (Art. 18), Datenuebertragbarkeit (Art. 20), Widerspruch (Art. 21) und jederzeitiger Widerruf erteilter Einwilligungen. Konto-Export und Konto-Loeschung stehen direkt im Produkt bereit (Trust Center, Deine Daten: Export und Loeschung); zusaetzlich per E-Mail an s@smyst.com. Du kannst dich ausserdem bei einer Datenschutz-Aufsichtsbehoerde beschweren.',
@@ -4860,9 +4860,12 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
       intro: 'Angaben zum Betreiber von smyst.com.',
       points: [
         'Betreiber: iMild LLC',
-        'Anschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA',
+        'Sitz: 1401 21st St, Ste R, Sacramento, CA 95811, USA',
+        'Postanschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA',
         'E-Mail: s@smyst.com',
-        
+        'Rechtsform: Limited Liability Company (LLC), registriert im Bundesstaat Kalifornien, USA',
+        'Registereintrag: California Secretary of State, Registernummer B20260312817',
+        'Vertretungsberechtigter Manager und inhaltlich Verantwortlicher: Müslüm Akdeniz, Anschrift wie oben',
       ],
     },
   }[kind]
