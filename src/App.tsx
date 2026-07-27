@@ -2584,6 +2584,30 @@ function SmystStartPage({
             ))}
           </div>
 
+          <div className="mt-5 border-t border-white/10 px-2 pt-5">
+            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Rechtliches</p>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 px-2 pb-1">
+              <a
+                href="/imprint/"
+                className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              >
+                Impressum
+              </a>
+              <a
+                href="/privacy/"
+                className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              >
+                Datenschutz
+              </a>
+              <a
+                href="mailto:s@smyst.com"
+                className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              >
+                Kontakt
+              </a>
+            </div>
+          </div>
+
           <div className="mt-5 border-t border-white/10 pt-5">
             <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Design</p>
             <div className="mt-3 grid grid-cols-2 gap-2 px-2">
@@ -2813,6 +2837,18 @@ function SmystStartPage({
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Beliebt' : t.start.popularLabel, popularTwins)}
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Neu' : t.start.newLabel, freshTwins)}
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Kürzlich genutzt' : t.start.recentLabel, recentTwins)}
+              <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.08] px-4 py-3 text-xs text-[#8e97a8]">
+                <span>© 2026 smyst.com</span>
+                <a href="/imprint/" className="font-semibold text-[#aeb6c4] underline-offset-2 hover:text-white hover:underline">
+                  {lang === DEFAULT_LANG ? 'Impressum' : 'Imprint'}
+                </a>
+                <a href="/privacy/" className="font-semibold text-[#aeb6c4] underline-offset-2 hover:text-white hover:underline">
+                  {lang === DEFAULT_LANG ? 'Datenschutz' : 'Privacy'}
+                </a>
+                <a href="mailto:s@smyst.com" className="font-semibold text-[#aeb6c4] underline-offset-2 hover:text-white hover:underline">
+                  {lang === DEFAULT_LANG ? 'Kontakt' : 'Contact'}
+                </a>
+              </footer>
             </div>
           )}
           {!selectedTwin && !showNamePicker && profilesLoaded && profilesLoadError && (
@@ -6993,7 +7029,7 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
               <Card className="p-5">
                 <h3 className="mb-1 text-lg font-semibold">Meine Stimme</h3>
                 <p className="text-sm text-[#555b64]">
-                  Nach dem Einloggen kannst du hier deine private Stimmprobe aufnehmen und fuer deine eigenen Twins aktivieren.
+                  Nach dem Einloggen kannst du hier deine private Stimmprobe aufnehmen und für deine eigenen Twins aktivieren.
                 </p>
               </Card>
             )}

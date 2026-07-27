@@ -100,7 +100,7 @@
     "actionChooseSubtitle": "Profiles, topics, knowledge",
     "actionAskSubtitle": "Chat starts instantly",
     "actionCreateSubtitle": "Identity + memories",
-    "privateByDefaultText": "IDrive E2 stores media, knowledge, backups and signed files. Salad only computes API, AI, search and cron jobs.",
+    "privateByDefaultText": "Your media, knowledge and backups are stored securely and encrypted. Private content stays private and bound to your account.",
     "welcomeBack": "Welcome back, {{name}}",
     "readyTitle": "Your dashboard is ready",
     "introAuthed": "Your twins, memories and conversations stay separate and under your control.",
