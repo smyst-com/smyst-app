@@ -183,7 +183,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     actionAskSubtitle: 'Chat startet sofort',
     actionCreateSubtitle: 'Identität + Memories',
     privateByDefaultText:
-      'IDrive E2 speichert Medien, Wissen, Backups und signierte Dateien. Salad rechnet nur API, KI, Suche und Cronjobs.',
+      'Deine Medien, dein Wissen und deine Backups werden sicher und verschlüsselt gespeichert. Private Inhalte bleiben privat und an dein Konto gebunden.',
     welcomeBack: 'Willkommen zurück, {{name}}',
     readyTitle: 'Dein Dashboard ist bereit',
     introAuthed: 'Deine Twins, Memories und Gespräche bleiben getrennt und kontrollierbar.',
