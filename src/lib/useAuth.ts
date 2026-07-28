@@ -22,6 +22,7 @@ import {
   fetchAuth,
   storeAuthToken,
 } from './authEndpoints';
+import { requestGoogleAccessToken } from './googleIdentity';
 
 export interface AuthUser {
   sub: string;
@@ -176,11 +177,38 @@ export function useAuth(options: { enabled?: boolean } = {}) {
     };
   }, [enabled, fetchMe]);
 
-  const signInWithGoogle = useCallback((returnTo?: string) => {
-    const target = returnTo ?? window.location.pathname + window.location.search;
-    const url = `${GOOGLE_START_ENDPOINT}?return_to=${encodeURIComponent(target)}`;
-    window.location.href = url;
-  }, []);
+  const signInWithGoogle = useCallback(
+    (returnTo?: string) => {
+      const target = returnTo ?? window.location.pathname + window.location.search;
+      void (async () => {
+        try {
+          // Primaer: GIS-Popup-Login (kein Server-Redirect, kein Client-Secret
+          // im Backend noetig). Muss synchron zur User-Geste starten.
+          const accessToken = await requestGoogleAccessToken();
+          const res = await fetchAuth('/google/token', {
+            method: 'POST',
+            credentials: 'include',
+            headers: JSON_POST_HEADERS,
+            body: JSON.stringify({ access_token: accessToken }),
+          });
+          const data = (await res.json().catch(() => null)) as { token?: string; detail?: string } | null;
+          if (!res.ok || !data?.token) {
+            throw new Error(data?.detail || `Google-Token-Login fehlgeschlagen (${res.status})`);
+          }
+          storeAuthToken(data.token);
+          await refreshSharedAuth(enabled, true);
+          const current = window.location.pathname + window.location.search;
+          if (target && target !== current) window.location.assign(target);
+        } catch (err) {
+          // Fallback: klassischer Server-Redirect-Flow (funktioniert, sobald
+          // GOOGLE_OAUTH_CLIENT_SECRET serverseitig konfiguriert ist).
+          console.warn('[auth] GIS-Popup-Login fehlgeschlagen, Fallback auf Redirect', err);
+          window.location.href = `${GOOGLE_START_ENDPOINT}?return_to=${encodeURIComponent(target)}`;
+        }
+      })();
+    },
+    [enabled],
+  );
 
   const signInWithGitHub = useCallback((returnTo?: string) => {
     const target = returnTo ?? window.location.pathname + window.location.search;
