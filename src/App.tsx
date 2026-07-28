@@ -706,7 +706,7 @@ export default function App() {
               onClick={() => setAppTheme((theme) => (theme === 'dark' ? 'light' : 'dark'))}
               className="hidden min-h-9 border border-white/[0.1] bg-white/[0.04] px-3 text-xs font-semibold text-white transition hover:bg-white/[0.08] sm:inline-flex sm:items-center"
             >
-              {appTheme === 'dark' ? 'Heller' : 'Dunkler'}
+              {appTheme === 'dark' ? (appLang === DEFAULT_LANG ? 'Heller' : ft.drawer.themeLighter) : (appLang === DEFAULT_LANG ? 'Dunkler' : ft.drawer.themeDarker)}
             </button>
             {/* Auth-Action: Avatar wenn eingeloggt, sonst Sign-In/Early-Access */}
             {auth.status === 'authenticated' ? (
@@ -2585,31 +2585,31 @@ function SmystStartPage({
           </div>
 
           <div className="mt-5 border-t border-white/10 px-2 pt-5">
-            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Rechtliches</p>
+            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Rechtliches' : t.drawer.legalTitle}</p>
             <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 px-2 pb-1">
               <a
                 href="/imprint/"
                 className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
-                Impressum
+                {lang === DEFAULT_LANG ? 'Impressum' : t.drawer.legalImprint}
               </a>
               <a
                 href="/privacy/"
                 className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
-                Datenschutz
+                {lang === DEFAULT_LANG ? 'Datenschutz' : t.drawer.legalPrivacy}
               </a>
               <a
                 href="mailto:s@smyst.com"
                 className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
               >
-                Kontakt
+                {lang === DEFAULT_LANG ? 'Kontakt' : t.drawer.legalContact}
               </a>
             </div>
           </div>
 
           <div className="mt-5 border-t border-white/10 pt-5">
-            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Design</p>
+            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Design' : t.drawer.designTitle}</p>
             <div className="mt-3 grid grid-cols-2 gap-2 px-2">
               {(['dark', 'light'] as const).map((theme) => (
                 <button
@@ -2622,7 +2622,7 @@ function SmystStartPage({
                       : 'border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
                   }`}
                 >
-                  {theme === 'dark' ? 'Dunkler' : 'Heller'}
+                  {theme === 'dark' ? (lang === DEFAULT_LANG ? 'Dunkler' : t.drawer.themeDarker) : (lang === DEFAULT_LANG ? 'Heller' : t.drawer.themeLighter)}
                 </button>
               ))}
             </div>
