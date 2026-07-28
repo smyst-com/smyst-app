@@ -3,6 +3,7 @@ import time
 from fastapi.testclient import TestClient
 
 from app.api.v1.routes.auth import SESSION_COOKIE, _make_token
+from app.core.config import AUTH_SESSION_SECRET_PLACEHOLDER, settings
 from app.main import app
 
 
@@ -21,6 +22,42 @@ def test_google_start_requires_runtime_config() -> None:
 
     assert response.status_code == 503
     assert "Google OAuth is not configured" in response.text
+
+
+def test_google_token_login_requires_runtime_config() -> None:
+    response = client.post("/auth/google/token", json={})
+
+    assert response.status_code == 503
+    assert "Google OAuth is not configured" in response.text
+
+
+def test_google_token_login_rejects_missing_token(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "google_oauth_client_id", "test-client-id")
+    monkeypatch.setattr(settings, "openrouter_api_key", "sk-or-test-master-key")
+
+    response = client.post("/auth/google/token", json={})
+
+    assert response.status_code == 400
+    assert "Missing Google credential" in response.text
+
+
+def test_effective_session_secret_derivation(monkeypatch) -> None:
+    monkeypatch.setattr(settings, "auth_session_secret", AUTH_SESSION_SECRET_PLACEHOLDER)
+    monkeypatch.setattr(settings, "openrouter_api_key", "sk-or-test-master-key")
+    derived = settings.effective_auth_session_secret
+    assert derived is not None
+    assert len(derived) == 64
+    assert derived != AUTH_SESSION_SECRET_PLACEHOLDER
+
+    # Explizit gesetztes, ausreichend langes Secret hat Vorrang
+    explicit = "x" * 48
+    monkeypatch.setattr(settings, "auth_session_secret", explicit)
+    assert settings.effective_auth_session_secret == explicit
+
+    # Ohne Master-Key und ohne explizites Secret gibt es kein Signier-Secret
+    monkeypatch.setattr(settings, "auth_session_secret", AUTH_SESSION_SECRET_PLACEHOLDER)
+    monkeypatch.setattr(settings, "openrouter_api_key", None)
+    assert settings.effective_auth_session_secret is None
 
 
 def test_me_reads_signed_http_only_session_cookie() -> None:
