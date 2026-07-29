@@ -147,11 +147,16 @@ export function preferredVoiceLanguage(current: string = DEFAULT_LANG): VoiceLan
   return toVoiceLang(current)
 }
 
+// Standardsprache mit Wechsel-Erlaubnis, KEIN harter Zwang: "Answer only in X.
+// Do not switch languages" liess Twins Sprachwechsel-Bitten ablehnen ("Ich kann
+// nur auf Deutsch antworten" auf "kannst du mit mir tuerkisch reden", 28.07.).
+// Das Praefix "[Voice language: Name (xx)." muss erhalten bleiben —
+// degraded_messages.py im Backend parst genau dieses Muster.
 export function voiceLanguageInstruction(message: string, lang: string): string {
   const voiceLang = toVoiceLang(lang)
   const name = voiceLanguageName(voiceLang)
   return [
-    `[Voice language: ${name} (${voiceLang}). Answer only in ${name}. Do not mix German, Turkish, English, or any other language unless the user explicitly asks for translation.]`,
+    `[Voice language: ${name} (${voiceLang}). Answer in ${name} by default. You speak every language fluently: if the user asks you to talk in another language, switch fully to that language and keep it until asked otherwise. Never claim you can only speak one language. Do not mix languages within a single reply unless asked for a translation.]`,
     message,
   ].join('\n\n')
 }
