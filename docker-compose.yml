@@ -46,8 +46,10 @@ services:
   backend:
     profiles: ["legacy-local"]
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      # Repo-Root als Kontext, wie im Zeabur-Build: backend/Dockerfile nutzt
+      # backend/-prefixte COPY-Pfade (eine Datei fuer lokal und Produktion).
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: smyst-backend
     restart: unless-stopped
     env_file:
