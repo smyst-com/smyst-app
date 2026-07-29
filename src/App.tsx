@@ -3151,6 +3151,8 @@ function TwinProfileView({
   const [loaded, setLoaded] = useState(!slug && !privateTwinId)
   const [shareStatus, setShareStatus] = useState('')
   const [profileImageBroken, setProfileImageBroken] = useState(false)
+  const lang = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const isPrivate = Boolean(privateTwinId)
 
   useEffect(() => {
@@ -3248,8 +3250,8 @@ function TwinProfileView({
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Privates Twin-Profil</h1>
-          <p className="mb-5 text-sm text-[#555b64]">Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Privates Twin-Profil' : t.profile.privateProfile}</h1>
+          <p className="mb-5 text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.' : t.profile.privateText}</p>
           <Suspense fallback={null}>
             <GitHubSignInButton variant="official" returnTo={window.location.pathname} />
           </Suspense>
@@ -3262,8 +3264,8 @@ function TwinProfileView({
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Profil wird geladen</h1>
-          <p className="text-sm text-[#555b64]">Profil und Inhalte werden vorbereitet.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Profil wird geladen' : t.profile.loadingTitle}</h1>
+          <p className="text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Profil und Inhalte werden vorbereitet.' : t.profile.loadingText}</p>
         </Card>
       </div>
     )
@@ -3273,8 +3275,8 @@ function TwinProfileView({
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Twin-Profil nicht gefunden</h1>
-          <p className="text-sm text-[#555b64]">Dieses Profil ist nicht öffentlich indexierbar oder existiert nicht.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Twin-Profil nicht gefunden' : t.profile.notFoundTitle}</h1>
+          <p className="text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dieses Profil ist nicht öffentlich indexierbar oder existiert nicht.' : t.profile.notFoundText}</p>
         </Card>
       </div>
     )
@@ -3284,8 +3286,8 @@ function TwinProfileView({
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Twin-Profil nicht vollständig</h1>
-          <p className="text-sm text-[#555b64]">Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Twin-Profil nicht vollständig' : t.profile.incompleteTitle}</h1>
+          <p className="text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.' : t.profile.incompleteText}</p>
         </Card>
       </div>
     )
@@ -3301,7 +3303,7 @@ function TwinProfileView({
           text: profile.description,
           url: profileShareUrl,
         })
-        setShareStatus('Geteilt')
+        setShareStatus(lang === DEFAULT_LANG ? 'Geteilt' : t.profile.shareShared)
         return
       }
       if (navigator.clipboard?.writeText) {
@@ -3317,9 +3319,9 @@ function TwinProfileView({
         document.execCommand('copy')
         textarea.remove()
       }
-      setShareStatus('Link kopiert')
+      setShareStatus(lang === DEFAULT_LANG ? 'Link kopiert' : t.profile.shareCopied)
     } catch {
-      setShareStatus('Teilen nicht möglich')
+      setShareStatus(lang === DEFAULT_LANG ? 'Teilen nicht möglich' : t.profile.shareFailed)
     } finally {
       window.setTimeout(() => setShareStatus(''), 2200)
     }
@@ -3333,7 +3335,7 @@ function TwinProfileView({
             smyst<span className="text-[0.78em]">.com</span>
           </button>
           <span className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
-            {profile.visibility === 'public' ? 'Öffentlich sichtbar' : 'Privat · nicht öffentlich'}
+            {profile.visibility === 'public' ? (lang === DEFAULT_LANG ? 'Öffentlich sichtbar' : t.profile.publicVisible) : (lang === DEFAULT_LANG ? 'Privat · nicht öffentlich' : t.profile.privateVisible)}
           </span>
         </div>
 
@@ -3361,7 +3363,7 @@ function TwinProfileView({
                 }}
                 className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#17191d] px-5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
               >
-                Mit Twin chatten
+                {lang === DEFAULT_LANG ? 'Mit Twin chatten' : t.profile.chatButton}
               </button>
               <button
                 type="button"
@@ -3369,7 +3371,7 @@ function TwinProfileView({
                 className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-white/18 px-5 text-sm font-semibold text-[#17191d] transition-colors hover:bg-white/30"
               >
                 <Share className="h-4 w-4" />
-                Profil teilen
+                {lang === DEFAULT_LANG ? 'Profil teilen' : t.profile.shareButton}
               </button>
               {shareStatus && (
                 <p className="mt-2 rounded-full bg-white/26 px-3 py-2 text-center text-xs font-semibold text-[#555b64]" role="status">
@@ -3379,37 +3381,37 @@ function TwinProfileView({
             </div>
 
             <div className="p-6 sm:p-8">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">KI-Zwilling Profil</p>
-              <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile)}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
-              <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.'}</p>
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">{lang === DEFAULT_LANG ? 'KI-Zwilling Profil' : t.profile.kicker}</p>
+              <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
+              <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || (lang === DEFAULT_LANG ? 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.' : t.profile.noDescription)}</p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">Inhalte</p>
+                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Inhalte' : t.profile.statContents}</p>
                   <p className="mt-1 text-2xl font-bold">{profile.mediaCount}</p>
                 </div>
                 <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">Wissen</p>
+                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Wissen' : t.profile.statKnowledge}</p>
                   <p className="mt-1 text-2xl font-bold">{profile.knowledgeCount}</p>
                 </div>
                 <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">Stil</p>
+                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Stil' : t.profile.statStyle}</p>
                   <p className="mt-1 text-sm font-semibold capitalize">{profile.style}</p>
                 </div>
               </div>
 
               <div className="mt-6 grid gap-5 md:grid-cols-2">
                 <section>
-                  <h2 className="mb-3 text-lg font-semibold">Kategorien</h2>
+                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Kategorien' : t.profile.categoriesTitle}</h2>
                   <div className="flex flex-wrap gap-2">
-                    {(profile.categories.length ? profile.categories : ['KI-Zwilling']).map((item) => (
+                    {(profile.categories.length ? profile.categories : [lang === DEFAULT_LANG ? 'KI-Zwilling' : t.profile.defaultCategory]).map((item) => (
                       <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm">{item}</span>
                     ))}
                   </div>
                 </section>
 
                 <section>
-                  <h2 className="mb-3 text-lg font-semibold">Sprachen</h2>
+                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Sprachen' : t.profile.languagesTitle}</h2>
                   <div className="flex flex-wrap gap-2">
                     {(profile.languages.length ? profile.languages : ['de']).map((item) => (
                       <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm uppercase">{item}</span>
@@ -3419,9 +3421,9 @@ function TwinProfileView({
               </div>
 
               <section className="mt-6">
-                <h2 className="mb-3 text-lg font-semibold">Hochgeladene Inhalte</h2>
+                <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Hochgeladene Inhalte' : t.profile.uploadsTitle}</h2>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {(profile.uploadedContents.length ? profile.uploadedContents : [{ category: 'Noch keine öffentlichen Inhalte', count: 0 }]).map((item) => (
+                  {(profile.uploadedContents.length ? profile.uploadedContents : [{ category: lang === DEFAULT_LANG ? 'Noch keine öffentlichen Inhalte' : t.profile.noPublicContents, count: 0 }]).map((item) => (
                     <div key={item.category} className="flex items-center justify-between rounded-lg bg-white/16 px-4 py-3">
                       <span className="text-sm font-medium">{item.category}</span>
                       <span className="text-sm text-[#667085]">{item.count}</span>
@@ -3431,13 +3433,13 @@ function TwinProfileView({
               </section>
 
               <section className="mt-6 rounded-lg border border-white/30 bg-white/14 p-4">
-                <h2 className="mb-2 text-lg font-semibold">Twin-Kontext</h2>
+                <h2 className="mb-2 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Twin-Kontext' : t.profile.contextTitle}</h2>
                 <p className="text-sm leading-relaxed text-[#555b64]">{profile.contextSummary}</p>
               </section>
 
               {(profile.guardrail || profile.rightsPosture) && (
                 <section className="mt-6 rounded-lg border border-amber-300/50 bg-amber-50/70 p-4">
-                  <h2 className="mb-2 text-lg font-semibold text-amber-950">Historisches Profil</h2>
+                  <h2 className="mb-2 text-lg font-semibold text-amber-950">{lang === DEFAULT_LANG ? 'Historisches Profil' : t.profile.historicalTitle}</h2>
                   {profile.guardrail && <p className="text-sm leading-relaxed text-amber-950">{profile.guardrail}</p>}
                   {profile.rightsPosture && <p className="mt-2 text-sm leading-relaxed text-amber-900">{profile.rightsPosture}</p>}
                 </section>
@@ -3445,7 +3447,7 @@ function TwinProfileView({
 
               {profile.sources?.length ? (
                 <section className="mt-6">
-                  <h2 className="mb-3 text-lg font-semibold">Quellen</h2>
+                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</h2>
                   <div className="grid gap-2">
                     {profile.sources.map((source) => (
                       <a
