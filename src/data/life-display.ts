@@ -127,10 +127,10 @@ function lifePlaceSlug(profile: LifeDisplayProfile): string {
 }
 
 // Zeile 1: "Name – 76 Jahre" (ohne Alter nur Name).
-export function profileNameWithAge(input: LifeDisplayProfile): string {
+export function profileNameWithAge(input: LifeDisplayProfile, labels?: { years?: string }): string {
   const profile = withLifeFallback(input)
   const age = ageAtDeath(profile)
-  return age !== null ? `${profile.name} – ${age} Jahre` : profile.name
+  return age !== null ? `${profile.name} – ${age} ${labels?.years ?? 'Jahre'}` : profile.name
 }
 
 // Zeile 2: "Geburtsdatum, Geburtsort" (fehlender Teil wird weggelassen).
