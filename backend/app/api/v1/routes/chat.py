@@ -145,8 +145,14 @@ async def _build_llm_request(
         r"(\( \), \[ \], $...$) and no markup around formulas — write E=mc^2, not \(E=mc^2\)."
     )
     context_block = f"Curated public profile knowledge:\n{context}\n" if context else ""
+    # Standardsprache mit Wechsel-Erlaubnis: der fruehere harte Zwang ("Answer
+    # strictly ... Do not switch languages") liess Twins Sprachwechsel-Bitten
+    # ablehnen ("Ich kann nur auf Deutsch antworten", live 28.07.).
     language_line = (
-        f"Answer strictly in this language: {_language_name(language)}. Do not switch languages.\n"
+        f"Default answer language: {_language_name(language)}. "
+        "You speak every language fluently: if the user asks for another language "
+        "or writes in another language, answer in that language instead. "
+        "Never claim you can only speak one language.\n"
         if _language_name(language)
         else "Answer in the same language as the user.\n"
     )
