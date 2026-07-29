@@ -412,24 +412,33 @@ function VoiceWaveStatus({
   state,
   isSpeaking,
   variant = 'dark',
+  mode = 'live',
 }: {
   state: SpeechRecognitionState
   isSpeaking: boolean
   variant?: 'dark' | 'light'
+  // Diktat (Mikrofon-Icon) und Sprachwelle (Live-Modus) teilen sich diese
+  // Anzeige. Beim Diktat stand hier faelschlich der Live-Text "Sprachwelle
+  // hoert zu ... wird automatisch gesendet" — Diktat sendet aber nichts,
+  // der Text landet nur im Eingabefeld (Nutzer-Befund 29.07.).
+  mode?: 'live' | 'dictation'
 }) {
   if (state === 'idle' && !isSpeaking) return null
 
+  const dictating = mode === 'dictation' && !isSpeaking
   const label = isSpeaking
     ? 'Twin spricht laut'
     : state === 'listening'
-      ? 'Sprachwelle hört zu'
+      ? (dictating ? 'Diktat hört zu' : 'Sprachwelle hört zu')
       : state === 'paused'
         ? 'Sprachwelle pausiert'
         : 'Antwort wird vorbereitet'
   const detail = isSpeaking
     ? 'Laut vorlesen aktiv'
     : state === 'listening'
-      ? 'Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.'
+      ? (dictating
+          ? 'Sprich deinen Text – er erscheint im Eingabefeld. Zum Stoppen Mikrofon erneut tippen.'
+          : 'Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.')
       : state === 'paused'
         ? 'Tippe die Welle erneut, um weiterzusprechen.'
         : 'Der Twin antwortet gleich und liest danach laut vor.'
@@ -3022,7 +3031,7 @@ function SmystStartPage({
         )}
         {(voiceState !== 'idle' || isSpeaking) && (
           <div className="px-2 py-1 sm:px-3">
-            <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant={shellTheme === 'light' ? 'light' : 'dark'} />
+            <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant={shellTheme === 'light' ? 'light' : 'dark'} mode={liveVoiceActiveRef.current ? 'live' : 'dictation'} />
           </div>
         )}
         <div className="flex h-[44px] items-center justify-between px-2 text-white sm:px-3">
@@ -8333,7 +8342,7 @@ function TwinChatView({
             )}
             {(voiceState !== 'idle' || isSpeaking) && (
               <div className="mb-1">
-                <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant="light" />
+                <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant="light" mode={liveVoiceActiveRef.current ? 'live' : 'dictation'} />
               </div>
             )}
 
