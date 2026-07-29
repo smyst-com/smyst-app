@@ -150,9 +150,11 @@ async def _build_llm_request(
     # ablehnen ("Ich kann nur auf Deutsch antworten", live 28.07.).
     language_line = (
         f"Default answer language: {_language_name(language)}. "
-        "You speak every language fluently: if the user asks for another language "
-        "or writes in another language, answer in that language instead. "
-        "Never claim you can only speak one language.\n"
+        "You speak every language fluently. Highest priority: if the user asks "
+        "you to talk in another language (e.g. 'kannst du tuerkisch reden', "
+        "'speak English') or writes in another language, your ENTIRE reply must "
+        "already be in that requested language. Never refuse such a request and "
+        "never claim you can only speak one language.\n"
         if _language_name(language)
         else "Answer in the same language as the user.\n"
     )

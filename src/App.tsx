@@ -17,6 +17,7 @@ import {
 import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import {
+  detectRequestedLanguage,
   detectVoiceLanguage,
   preferredVoiceLanguage,
   speechLangForVoice,
@@ -2183,7 +2184,9 @@ function SmystStartPage({
     const sendAttachments = overrideAttachments ?? attachments
     const fullMessage = composeMessageWithAttachments(text, sendAttachments)
     if (!fullMessage) return null
-    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLangRef.current || lang)
+    // Expliziter Sprachwunsch ("kannst du tuerkisch reden") schlaegt die
+    // Wortmarker-Erkennung — die sieht nur deutsche Woerter und bliebe bei de.
+    const messageVoiceLang = detectRequestedLanguage(text) ?? options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if (sendAttachments.some((attachment) => attachment.status === 'uploading')) {
       addNotice(lang === DEFAULT_LANG ? 'Bitte warten, bis alle Anhänge hochgeladen sind.' : t.notices.attachmentsUploading)
@@ -7778,7 +7781,9 @@ function TwinChatView({
     const message = composeMessageWithAttachments((overrideText ?? input).trim(), overrideAttachments ?? attachments)
     const canChatWithActiveTwin = auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)
     if (!message || !canChatWithActiveTwin || isReplying) return null
-    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLangRef.current || lang)
+    // Expliziter Sprachwunsch ("kannst du tuerkisch reden") schlaegt die
+    // Wortmarker-Erkennung — die sieht nur deutsche Woerter und bliebe bei de.
+    const messageVoiceLang = detectRequestedLanguage(overrideText ?? input) ?? options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if ((overrideAttachments ?? attachments).some((attachment) => attachment.status === 'uploading')) {
       addNotice(lang === DEFAULT_LANG ? 'Bitte warten, bis alle Anhänge hochgeladen sind.' : t.notices.attachmentsUploading)
