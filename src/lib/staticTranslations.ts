@@ -47,6 +47,32 @@ export interface StaticTranslations {
     privateProfile: string
     chatButton: string
     noindex: string
+    kicker: string
+    publicVisible: string
+    privateVisible: string
+    shareButton: string
+    shareShared: string
+    shareCopied: string
+    shareFailed: string
+    noDescription: string
+    statContents: string
+    statKnowledge: string
+    statStyle: string
+    categoriesTitle: string
+    defaultCategory: string
+    languagesTitle: string
+    uploadsTitle: string
+    noPublicContents: string
+    contextTitle: string
+    historicalTitle: string
+    sourcesTitle: string
+    loadingTitle: string
+    loadingText: string
+    notFoundTitle: string
+    notFoundText: string
+    incompleteTitle: string
+    incompleteText: string
+    privateText: string
   }
   dashboard: {
     heroTitle: string
@@ -175,6 +201,32 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     privateProfile: 'Privates Twin-Profil',
     chatButton: 'Mit Twin chatten',
     noindex: 'Private Profile werden nicht indexiert.',
+    kicker: 'KI-Zwilling Profil',
+    publicVisible: 'Öffentlich sichtbar',
+    privateVisible: 'Privat · nicht öffentlich',
+    shareButton: 'Profil teilen',
+    shareShared: 'Geteilt',
+    shareCopied: 'Link kopiert',
+    shareFailed: 'Teilen nicht möglich',
+    noDescription: 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.',
+    statContents: 'Inhalte',
+    statKnowledge: 'Wissen',
+    statStyle: 'Stil',
+    categoriesTitle: 'Kategorien',
+    defaultCategory: 'KI-Zwilling',
+    languagesTitle: 'Sprachen',
+    uploadsTitle: 'Hochgeladene Inhalte',
+    noPublicContents: 'Noch keine öffentlichen Inhalte',
+    contextTitle: 'Twin-Kontext',
+    historicalTitle: 'Historisches Profil',
+    sourcesTitle: 'Quellen',
+    loadingTitle: 'Profil wird geladen',
+    loadingText: 'Profil und Inhalte werden vorbereitet.',
+    notFoundTitle: 'Twin-Profil nicht gefunden',
+    notFoundText: 'Dieses Profil ist nicht öffentlich indexierbar oder existiert nicht.',
+    incompleteTitle: 'Twin-Profil nicht vollständig',
+    incompleteText: 'Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.',
+    privateText: 'Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.',
   },
   dashboard: {
     heroTitle: 'Was möchtest du heute mit einem KI-Twin tun?',
