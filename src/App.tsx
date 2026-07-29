@@ -3151,7 +3151,7 @@ function TwinProfileView({
   const [loaded, setLoaded] = useState(!slug && !privateTwinId)
   const [shareStatus, setShareStatus] = useState('')
   const [profileImageBroken, setProfileImageBroken] = useState(false)
-  const lang = useLanguage({ reloadOnChange: false })
+  const { lang } = useLanguage({ reloadOnChange: false })
   const t = useStaticTranslations(lang)
   const isPrivate = Boolean(privateTwinId)
 
