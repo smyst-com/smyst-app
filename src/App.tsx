@@ -27,7 +27,7 @@ import {
 import { pickVoiceSettings, remoteRateFor, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
 import { markServerAsrUnavailable, recordAndTranscribeOnce, serverAsrReady, serverAsrSupported } from '@/lib/serverAsrClient'
-import { isRemoteSpeechActive, playRemoteSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
+import { isRemoteSpeechActive, playRemoteSpeech, prefetchSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { fetchService } from '@/lib/serviceEndpoints'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
@@ -384,6 +384,50 @@ function speakText(
     if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
   })
   return true
+}
+
+function liveGreetingText(twinName: string | undefined, lang: string): string {
+  return lang === 'de'
+    ? twinName
+      ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
+      : 'Hallo! Schön, dass du da bist. Was kann ich für dich tun?'
+    : twinName
+      ? 'Hello! This is ' + twinName + '. Nice to meet you. What can I do for you?'
+      : 'Hello! Nice to meet you. What can I do for you?'
+}
+
+// Merker, ob auf diesem Geraet je Voice genutzt wurde: nur dann lohnt sich das
+// Vorab-Synthetisieren der Begruessung (P5) - alle anderen Besucher erzeugen
+// keine unnoetige TTS-Last.
+const VOICE_USED_KEY = 'smyst_voice_used'
+
+function markVoiceUsed(): void {
+  try {
+    window.localStorage.setItem(VOICE_USED_KEY, '1')
+  } catch {
+    // Speicher gesperrt (z. B. Private Mode) - Prefetch entfaellt dann einfach
+  }
+}
+
+function hasUsedVoice(): boolean {
+  try {
+    return window.localStorage.getItem(VOICE_USED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+// Begruessungs-Audio vorab erzeugen und persistent cachen (P5). Muss dieselben
+// Stimm-Parameter aufloesen wie speakText, damit der Cache-Key identisch ist.
+function prefetchGreetingSpeech(twinName: string | undefined, lang: string, voiceGender?: 'female' | 'male') {
+  const gender = voiceGenderFor(twinName) ?? voiceGender
+  prefetchSpeech(
+    liveGreetingText(twinName, lang),
+    lang,
+    gender,
+    userVoiceIdFor(twinName) ?? remoteVoiceIdFor(twinName, lang, gender),
+    remoteRateFor(twinName),
+  )
 }
 
 // Filtert typische STT-Artefakte bei Stille/Hintergrundrauschen: dasselbe Wort
@@ -1422,6 +1466,18 @@ function SmystStartPage({
   }, [activeCategory, nameSortMode, query, realStartTwins])
 
   const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
+
+  // P5: Begruessungs-Audio vorab erzeugen, sobald ein Twin geoeffnet wird.
+  // Nur fuer Geraete, die schon einmal Voice genutzt haben - so startet der
+  // Live-Sprachmodus ohne Synthese-Ladeluecke, ohne allen anderen Besuchern
+  // TTS-Last zu erzeugen. Ergebnis landet im persistenten Cache (ttsClient).
+  const prefetchTwinName = selectedTwin?.name?.trim()
+  const prefetchTwinGender = selectedTwin?.voiceGender
+  useEffect(() => {
+    if (!prefetchTwinName || !hasUsedVoice()) return
+    prefetchGreetingSpeech(prefetchTwinName, lang, prefetchTwinGender)
+  }, [prefetchTwinName, prefetchTwinGender, lang])
+
   const genericMessageLabel =
     lang === DEFAULT_LANG
       ? 'Nachricht schreiben'
@@ -2142,6 +2198,7 @@ function SmystStartPage({
     {
       liveVoiceActiveRef.current = true
       setSpeechOutputEnabled(true)
+      markVoiceUsed()
       {
         liveVoiceDraftRef.current = ''
         const twinName = (selectedTwin ?? activeTwin)?.name?.trim()
@@ -2153,14 +2210,7 @@ function SmystStartPage({
           return
         }
         liveGreetedRef.current = greetKey
-        const greeting =
-          lang === 'de'
-            ? twinName
-              ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
-              : 'Hallo! Schön, dass du da bist. Was kann ich für dich tun?'
-            : twinName
-              ? 'Hello! This is ' + twinName + '. Nice to meet you. What can I do for you?'
-              : 'Hello! Nice to meet you. What can I do for you?'
+        const greeting = liveGreetingText(twinName, lang)
         setVoiceState('replying')
         const started = speakText(greeting, lang, () => {
           setIsSpeaking(false)
@@ -2345,6 +2395,7 @@ function SmystStartPage({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
+    markVoiceUsed()
     const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name, (selectedTwin ?? activeTwin)?.voiceGender)
     if (started) setIsSpeaking(true)
   }
@@ -7772,6 +7823,7 @@ function TwinChatView({
     liveVoiceActiveRef.current = true
     liveVoiceDraftRef.current = ''
     setSpeechOutputEnabled(true)
+    markVoiceUsed()
     startDictation({ live: true })
   }
 
@@ -7942,6 +7994,7 @@ function TwinChatView({
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
+    markVoiceUsed()
     const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), activeTwin?.name, activeTwin?.voiceGender)
     if (started) setIsSpeaking(true)
   }
