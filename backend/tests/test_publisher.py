@@ -193,6 +193,27 @@ def test_publish_one_rejects_curated_live_duplicate() -> None:
     ).startswith("published")
 
 
+def test_publish_one_rejects_transliteration_variant_duplicate() -> None:
+    # Befund 2026-07-29: kuratiert 'mustafa-kemal-atatuerk' vs. Pipeline
+    # 'mustafa-kemal-ataturk' — Umschrift-Varianten muessen als Dublette gelten.
+    from app.workers.publish_profiles import publish_one
+
+    store = _prepared_store()
+    result = publish_one(
+        "Q1035", store=store, config=CONFIG, approved_by="a@smyst.com",
+        dry_run=True, live_slugs={"charles-daerwin"},
+    )
+    assert result.startswith("abgelehnt: Slug 'charles-darwin'")
+
+
+def test_normalize_slug_folds_german_transliterations() -> None:
+    from app.workers.publish_profiles import normalize_slug
+
+    assert normalize_slug("mustafa-kemal-atatuerk") == normalize_slug("mustafa-kemal-ataturk")
+    assert normalize_slug("johann-strauss") == normalize_slug("johann-straus")
+    assert normalize_slug("charles-darwin") != normalize_slug("marie-curie")
+
+
 def test_select_reviewed_qids_requires_qa_passed() -> None:
     from app.workers.publish_profiles import select_reviewed_qids
 

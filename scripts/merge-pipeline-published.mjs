@@ -75,7 +75,22 @@ if (!existsSync(apiIndexPath) || !existsSync(templatePath)) {
 
 const api = JSON.parse(readFileSync(apiIndexPath, 'utf8'));
 const twins = Array.isArray(api.twins) ? api.twins : [];
-const takenSlugs = new Set(twins.map((twin) => twin.slug));
+// Vergleichsform fuer den Duplikat-Schutz: Diakritika entfernen UND deutsche
+// Umschriften falten. Befund 2026-07-29: kuratiert 'mustafa-kemal-atatuerk'
+// vs. Pipeline 'mustafa-kemal-ataturk' — exakter Slug-Vergleich sah keine
+// Kollision, beide gingen live. Muss zu normalize_slug in
+// backend/app/workers/publish_profiles.py passen.
+function normalizeSlug(value) {
+  let text = String(value)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '');
+  for (const [src, dst] of [['ae', 'a'], ['oe', 'o'], ['ue', 'u'], ['ss', 's']]) {
+    text = text.replaceAll(src, dst);
+  }
+  return text;
+}
+const takenSlugs = new Set(twins.map((twin) => normalizeSlug(twin.slug)));
 const template = readFileSync(templatePath, 'utf8');
 
 function escapeAttr(value) {
@@ -437,8 +452,8 @@ const attribution = await fetchCommonsAttribution(
   eligible.map((record) => ((record.image || {}).mode === 'commons' ? (record.image || {}).commons_file : null)),
 );
 for (const record of eligible) {
-  if (takenSlugs.has(record.slug)) {
-    console.log(`merge-pipeline-published: Slug '${record.slug}' existiert bereits (kuratiert) — uebersprungen.`);
+  if (takenSlugs.has(normalizeSlug(record.slug))) {
+    console.log(`merge-pipeline-published: Slug '${record.slug}' existiert bereits (normalisiert) — uebersprungen.`);
     continue;
   }
   const image = await mirrorCommonsImage(record, record.slug);
@@ -452,7 +467,7 @@ for (const record of eligible) {
   }
   const profile = toPublicTwinProfile(record, imageUrl, attribution, generatedImage);
   twins.push(profile);
-  takenSlugs.add(record.slug);
+  takenSlugs.add(normalizeSlug(record.slug));
 
   const apiDir = resolve(DIST, 'api', 'public', 'twins', profile.slug);
   mkdirSync(apiDir, { recursive: true });
