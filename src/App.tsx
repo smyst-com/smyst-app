@@ -14,7 +14,7 @@ import {
   similarProfiles,
   type DiscoveryProfile,
 } from '@/lib/profileDiscovery'
-import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
+import { DEFAULT_TRANSLATIONS, useStaticTranslations, type StaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import {
   detectRequestedLanguage,
@@ -3535,27 +3535,29 @@ function TwinProfileView({
   )
 }
 
-function emailAuthMessageForCode(result: { ok: boolean; code?: string; message?: string }): string {
+function emailAuthMessageForCode(result: { ok: boolean; code?: string; message?: string }, labels?: StaticTranslations['authMsg']): string {
   switch (result.code) {
     case 'email_service_unavailable':
-      return 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange den Google-Login.'
+      return labels?.serviceUnavailable ?? 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange den Google-Login.'
     case 'email_not_verified':
-      return 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.'
+      return labels?.notVerified ?? 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.'
     case 'invalid_credentials':
-      return 'E-Mail oder Passwort ist falsch.'
+      return labels?.invalidCredentials ?? 'E-Mail oder Passwort ist falsch.'
     case 'email_taken':
-      return 'Für diese E-Mail gibt es bereits ein Konto. Bitte logge dich ein.'
+      return labels?.emailTaken ?? 'Für diese E-Mail gibt es bereits ein Konto. Bitte logge dich ein.'
     case 'weak_password':
-      return 'Das Passwort muss mindestens 8 Zeichen lang sein.'
+      return labels?.weakPassword ?? 'Das Passwort muss mindestens 8 Zeichen lang sein.'
     case 'invalid_email':
-      return 'Bitte gib eine gültige E-Mail-Adresse an.'
+      return labels?.invalidEmail ?? 'Bitte gib eine gültige E-Mail-Adresse an.'
     default:
-      return result.message || 'Aktion fehlgeschlagen. Bitte versuche es erneut.'
+      return result.message || labels?.actionFailed || 'Aktion fehlgeschlagen. Bitte versuche es erneut.'
   }
 }
 
 function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
   const auth = useAuth()
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -3570,11 +3572,11 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
     setInfo('')
     const cleanEmail = email.trim().toLowerCase()
     if (!cleanEmail || !password) {
-      setError('Bitte E-Mail und Passwort eingeben.')
+      setError(lang === DEFAULT_LANG ? 'Bitte E-Mail und Passwort eingeben.' : t.authMsg.missingFields)
       return
     }
     if (mode === 'register' && password.length < 8) {
-      setError('Das Passwort muss mindestens 8 Zeichen lang sein.')
+      setError(lang === DEFAULT_LANG ? 'Das Passwort muss mindestens 8 Zeichen lang sein.' : t.authMsg.weakPassword)
       return
     }
     setBusy(true)
@@ -3584,14 +3586,14 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         if (result.ok) {
           window.location.assign(returnTo || window.location.pathname + window.location.search)
         } else {
-          setError(emailAuthMessageForCode(result))
+          setError(emailAuthMessageForCode(result, lang === DEFAULT_LANG ? undefined : t.authMsg))
         }
       } else {
         const result = await auth.signInWithEmail(cleanEmail, password)
         if (result.ok) {
           window.location.assign(returnTo || window.location.pathname + window.location.search)
         } else {
-          setError(emailAuthMessageForCode(result))
+          setError(emailAuthMessageForCode(result, lang === DEFAULT_LANG ? undefined : t.authMsg))
         }
       }
     } finally {
@@ -3605,13 +3607,13 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
     setInfo('')
     const cleanEmail = email.trim().toLowerCase()
     if (!cleanEmail) {
-      setError('Bitte gib zuerst deine E-Mail-Adresse ein.')
+      setError(lang === DEFAULT_LANG ? 'Bitte gib zuerst deine E-Mail-Adresse ein.' : t.authMsg.forgotNeedEmail)
       return
     }
     setBusy(true)
     try {
       await auth.requestPasswordReset(cleanEmail)
-      setInfo('Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.')
+      setInfo(lang === DEFAULT_LANG ? 'Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.' : t.authMsg.forgotSent)
     } finally {
       setBusy(false)
     }
@@ -3633,7 +3635,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Name (optional)"
+          placeholder={lang === DEFAULT_LANG ? 'Name (optional)' : t.authMsg.namePlaceholder}
           autoComplete="name"
           className={inputClass}
         />
@@ -3642,7 +3644,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         type="email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="E-Mail"
+        placeholder={lang === DEFAULT_LANG ? 'E-Mail' : t.authMsg.emailPlaceholder}
         autoComplete="email"
         required
         className={inputClass}
@@ -3651,7 +3653,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         type="password"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
-        placeholder={mode === 'register' ? 'Passwort (min. 8 Zeichen)' : 'Passwort'}
+        placeholder={mode === 'register' ? (lang === DEFAULT_LANG ? 'Passwort (min. 8 Zeichen)' : t.authMsg.passwordPlaceholderRegister) : (lang === DEFAULT_LANG ? 'Passwort' : t.authMsg.passwordPlaceholderLogin)}
         autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
         required
         className={inputClass}
@@ -3663,7 +3665,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         disabled={busy}
         className="rounded-md border border-[#0b1c44]/14 bg-[#0b1c44] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#173064] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {busy ? 'Bitte warten…' : mode === 'register' ? 'Konto erstellen' : 'Mit E-Mail einloggen'}
+        {busy ? (lang === DEFAULT_LANG ? 'Bitte warten…' : t.authMsg.submitBusy) : mode === 'register' ? (lang === DEFAULT_LANG ? 'Konto erstellen' : t.authMsg.submitRegister) : (lang === DEFAULT_LANG ? 'Mit E-Mail einloggen' : t.authMsg.submitLogin)}
       </button>
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#555b64]">
         <button
@@ -3675,11 +3677,11 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
           }}
           className="font-medium text-[#0b1c44] hover:underline"
         >
-          {mode === 'login' ? 'Neu hier? Konto erstellen' : 'Schon ein Konto? Einloggen'}
+          {mode === 'login' ? (lang === DEFAULT_LANG ? 'Neu hier? Konto erstellen' : t.authMsg.toggleToRegister) : (lang === DEFAULT_LANG ? 'Schon ein Konto? Einloggen' : t.authMsg.toggleToLogin)}
         </button>
         {mode === 'login' && (
           <button type="button" onClick={() => void forgot()} className="hover:underline">
-            Passwort vergessen?
+            {lang === DEFAULT_LANG ? 'Passwort vergessen?' : t.authMsg.forgotPassword}
           </button>
         )}
       </div>
