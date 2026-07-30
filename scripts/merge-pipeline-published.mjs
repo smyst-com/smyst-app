@@ -217,7 +217,14 @@ async function mirrorCommonsImage(record, slug) {
     for (const delayMs of delaysMs) {
       if (delayMs && !(await waitForRetry(delayMs))) break;
       try {
-        res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+        // Wikimedia-Policy verlangt einen beschreibenden User-Agent; ohne ihn
+        // werden Cloud-IPs (GitHub-Runner) pauschal mit 429 gedrosselt
+        // (Build-Logs 30.07.: jeder Mirror-Versuch scheiterte sofort).
+        res = await fetch(remote, {
+          redirect: 'follow',
+          signal: AbortSignal.timeout(20000),
+          headers: { 'User-Agent': 'smyst.com-profile-image-mirror/1.0 (https://smyst.com; s@smyst.com)' },
+        });
       } catch {
         res = null; // Netzwerkfehler/Timeout: wie drosselnde Antwort behandeln
         continue;
