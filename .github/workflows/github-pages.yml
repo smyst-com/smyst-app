@@ -97,6 +97,12 @@ jobs:
         env:
           VITE_CANONICAL_HOST: https://smyst.com
 
+      # Dubletten-Wächter (Befund 29.07.2026, Atatürk doppelt): bricht den
+      # Deploy ab, wenn zwei Profile nach Normalisierung (Diakritika +
+      # Umschrift ue/oe/ae/ss) denselben Namen oder Slug tragen.
+      - name: Check twin duplicates (deploy gate)
+        run: node scripts/check-twin-duplicates.mjs
+
       # Neu gespiegelte Bilder zurueck in den Cache. Nur hinzufuegen, niemals
       # loeschen (kein --delete): bestehende Bilder bleiben unangetastet.
       - name: Persist mirrored profile images to IDrive e2 (optional)
