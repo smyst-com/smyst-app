@@ -20,6 +20,11 @@ concurrency:
 jobs:
   deploy:
     name: Build, push and deploy voice worker to Salad
+    # STILLGELEGT 29.07.2026: Der GPU-Worker erzeugte laufende Salad-Kosten und
+    # ist abgeschaltet. Die Sprachwelle laeuft seit PR #261 ohne Server-ASR
+    # (Browser-Erkennung), die Sprachausgabe ueber den Browser-Fallback.
+    # Zum Reaktivieren diese if-Zeile entfernen.
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
