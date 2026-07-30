@@ -28,6 +28,11 @@ concurrency:
 jobs:
   deploy:
     name: Build, push and deploy backend to Salad
+    # STILLGELEGT 29.07.2026: Das Backend laeuft auf Zeabur
+    # (smyst-api.zeabur.app). Zielarchitektur = GitHub Free + Zeabur + IDrive e2;
+    # Salad wird abgeloest. Der Workflow bleibt als Rollback-Pfad erhalten:
+    # zum Reaktivieren diese if-Zeile entfernen.
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
