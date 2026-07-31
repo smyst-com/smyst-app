@@ -78,6 +78,21 @@ jobs:
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
             || { if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; else cat s3-index-err.log; echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."; exit 1; fi; }
 
+      # Egress-Sparer (Vorfall 31.07.2026: 10-GB-Frei-Egress von IDrive e2
+      # aufgebraucht, alle e2-Zugriffe gesperrt, Deploys/Pipeline rot): die
+      # gespiegelten Profilbilder zwischen Builds im kostenlosen GitHub-
+      # Actions-Cache halten. Der e2-Sync unten laedt dann nur noch NEUE
+      # Bilder (wenige MB) statt aller ~1000 Bilder (~600 MB) pro Build.
+      # key ist pro Lauf eindeutig, damit am Job-Ende immer der aktuelle
+      # Stand gesichert wird; restore-keys zieht den juengsten Treffer.
+      - name: Restore profile image cache (GitHub Actions)
+        uses: actions/cache@v4
+        with:
+          path: dist/public/profile-images
+          key: profile-images-${{ github.run_id }}
+          restore-keys: |
+            profile-images-
+
       # Bild-Cache aus dem Object Brain (IDrive e2) vorladen: Commons drosselt
       # Serien-Downloads, deshalb zieht jeder Build nur noch die NEUEN Bilder.
       # Fehlt der Ordner (erster Lauf), ist das ein No-op.
