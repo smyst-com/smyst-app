@@ -75,8 +75,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           aws s3 cp s3://smyst-memories/pipeline/published/index.json pipeline-published-index.json \
-            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 \
-            || echo "Kein Publish-Index in IDrive e2 (ok) — Site bleibt unveraendert."
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
+            || { if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; else cat s3-index-err.log; echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."; exit 1; fi; }
 
       # Bild-Cache aus dem Object Brain (IDrive e2) vorladen: Commons drosselt
       # Serien-Downloads, deshalb zieht jeder Build nur noch die NEUEN Bilder.
@@ -89,7 +89,7 @@ jobs:
           mkdir -p dist/public/profile-images
           aws s3 sync s3://smyst-memories/profile-images/ dist/public/profile-images/ \
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 --only-show-errors \
-            || echo "Kein Bild-Cache in IDrive e2 (ok) — Bilder werden neu gespiegelt."
+            || { echo "::error::Bild-Cache nicht lesbar (z.B. AccessDenied) — Abbruch, sonst gehen Profilseiten ohne gespiegelte Bilder live (leerer Prefix ist fuer sync kein Fehler)."; exit 1; }
           echo "Bilder im Cache: $(ls -1 dist/public/profile-images 2>/dev/null | wc -l)"
 
       - name: Merge published pipeline profiles
