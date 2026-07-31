@@ -1,0 +1,67 @@
+name: Pipeline-Backup (Publish-Index ins Repo)
+
+# Sichert den Publish-Index der Autopilot-Pipeline (IDrive e2:
+# pipeline/published/index.json) taeglich als Kopie ins Repo.
+#
+# Hintergrund (Vorfall 30./31.07.2026, "Deploy-Silent-Wipe"): Als IDrive e2
+# wegen des Egress-Limits sperrte, war der Index die EINZIGE Quelle der
+# ~1000 Pipeline-Profile — die Site verlor sie beim naechsten Deploy.
+# Mit dieser Repo-Kopie kann ein Deploy notfalls auch ohne e2 auskommen
+# und die Profile bleiben versioniert (Git-Historie = Zeitreise).
+#
+# Bewusst NUR der kleine JSON-Index (wenige MB): die Profilbilder liegen
+# weiterhin in e2 + GitHub-Actions-Cache und sind aus Wikimedia Commons
+# rekonstruierbar; grosse Binaerdaten wuerden das Repo aufblaehen.
+
+on:
+  schedule:
+    # Taeglich 02:37 UTC — nach dem Pipeline-Cron (01:23 UTC + Laufzeit),
+    # damit der frische Stand des Tages gesichert wird.
+    - cron: "37 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pipeline-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Publish-Index sichern
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Publish-Index aus IDrive e2 laden
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          mkdir -p backup
+          aws s3 cp s3://smyst-memories/pipeline/published/index.json backup/pipeline-published-index.json \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
+          python3 -c "import json; d=json.load(open('backup/pipeline-published-index.json')); print('Profile im Index:', len(d))"
+
+      # main ist branch-geschuetzt — das Backup lebt auf dem eigenen Branch
+      # `pipeline-backup` mit fortlaufender Historie (jeder Tag = 1 Commit).
+      - name: Aenderungen committen (Branch pipeline-backup, nur bei Diff)
+        run: |
+          cp backup/pipeline-published-index.json /tmp/index-neu.json
+          git fetch origin pipeline-backup 2>/dev/null \
+            && git checkout -B pipeline-backup origin/pipeline-backup \
+            || git checkout -B pipeline-backup
+          mkdir -p backup
+          cp /tmp/index-neu.json backup/pipeline-published-index.json
+          git add backup/pipeline-published-index.json
+          if git diff --cached --quiet; then
+            echo "Keine Aenderung — nichts zu sichern."
+            exit 0
+          fi
+          COUNT=$(python3 -c "import json; print(len(json.load(open('backup/pipeline-published-index.json'))))")
+          git config user.name "smyst-backup-bot"
+          git config user.email "smyst247@gmail.com"
+          git commit -m "backup: Publish-Index vom $(date -u +%F) (${COUNT} Profile)"
+          git push origin pipeline-backup
