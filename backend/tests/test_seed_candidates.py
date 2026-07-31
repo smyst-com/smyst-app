@@ -98,6 +98,29 @@ def test_resolve_accepts_only_matching_death_year() -> None:
     assert resolution["birth_date"] == date(1858, 4, 23)
 
 
+def test_resolve_includes_places_with_resolver() -> None:
+    from app.workers.seed_candidates import make_place_resolver
+
+    person = entity("Q107032", "+1947-10-04T00:00:00Z")
+    person["Q107032"]["claims"]["P19"] = [
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q3150"}}}}]
+    person["Q107032"]["claims"]["P20"] = [
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q3033"}}}}]
+    places = {
+        "Q3150": {"labels": {"de": {"value": "Kiel"}}, "claims": {"P17": [
+            {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q183"}}}}]}},
+        "Q3033": {"labels": {"de": {"value": "Göttingen"}}, "claims": {"P17": [
+            {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q183"}}}}]}},
+        "Q183": {"labels": {"de": {"value": "Deutschland"}}, "claims": {}},
+    }
+    fetch = make_fetch(search_payload("Q107032"), {**person, **places})
+    resolver = make_place_resolver(fetch, sleep=NO_SLEEP)
+    resolution = resolve_candidate(seed(), fetch_json=fetch, sleep=NO_SLEEP,
+                                   place_resolver=resolver)
+    assert resolution["birth_place"] == "Kiel, Deutschland"
+    assert resolution["death_place"] == "Göttingen, Deutschland"
+
+
 def test_resolve_returns_none_without_match_or_hint() -> None:
     fetch = make_fetch(search_payload("Q1"), entity("Q1", "+1700-01-01T00:00:00Z"))
     assert resolve_candidate(seed(), fetch_json=fetch, sleep=NO_SLEEP) is None
