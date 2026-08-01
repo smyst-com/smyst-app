@@ -75,6 +75,27 @@ Regeln:
 - Bei UI-Änderungen: Browser-/Responsive-/PWA-Prüfung und Live-Smoke-Test nach Deploy
 - Doku aktualisieren, nur validierte Ergebnisse in Memory übernehmen
 
+## Schutzregeln Qualitaetsschleife (Pflicht, ab 2026-08-01)
+
+Die Qualitaetsschleife (PRs #303/#304/#305: Evals, Chat-Feedback, Freshness-Check,
+Quality-Report, rebuild-one, Zeitreisenden-Modus) steht unter denselben
+Schutzprinzipien wie die Pipeline:
+
+1. Kein Worker der Qualitaetsschleife darf jemals Profile loeschen, unpublishen
+   oder deren Status aendern. Evals/Freshness schreiben nur Berichte
+   (eval_report, refresh, rebuild_report) in die Kandidaten-Dokumente.
+2. rebuild-one ersetzt eine Live-Capsule NUR nach bestandener QA und behaelt
+   twin_id und Slug bei. Ein QA-Fail laesst die Live-Capsule unangetastet.
+   Diese QA-Gate-Logik darf nicht entfernt oder umgangen werden.
+3. Chat-Feedback und Chat-Archive werden nur geschrieben, nie geloescht
+   (chat-feedback/, chat-archives/ im Object Brain).
+4. Der Zeitreisenden-Rahmen im Persona-Prompt (berichtetes Wissen statt
+   erlebter Gegenwart, keine Echtzeit-Behauptungen, KI-Kennzeichnung) ist
+   eine Ehrlichkeitsregel und darf ohne schriftliche Freigabe des Inhabers
+   (Adam King) nicht aufgeweicht werden.
+5. Produktions-Env-Variablen (Zeabur) aendern nur der Inhaber oder mit dessen
+   schriftlicher Freigabe; Secrets/API-Keys traegt ausschliesslich der Inhaber ein.
+
 ## Rote Linien
 
 - Keine Nutzerdaten, Medien, Chats oder Profile löschen
