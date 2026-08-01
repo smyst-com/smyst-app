@@ -35,6 +35,7 @@ import httpx
 
 from app.ai.historical_pipeline import DEFAULT_CONFIG, HistoricalCandidate, PipelineConfig
 from app.ai.wikidata_candidates import USER_AGENT, screen_candidates
+from app.ai.wikidata_places import P_BIRTH_PLACE, P_DEATH_PLACE, PlaceResolver, claim_item_ids
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
@@ -98,17 +99,36 @@ def _parse_seed_date(iso: str | None) -> date | None:
         return None
 
 
+def make_place_resolver(fetch_json, sleep=time.sleep) -> PlaceResolver:
+    """PlaceResolver, der Orts-/Land-Entities einzeln via wbgetentities laedt.
+
+    Ein Resolver pro Seed-Lauf: der Cache buendelt wiederkehrende Orte und
+    Laender (Paris, Deutschland, ...) ueber alle Kandidaten hinweg.
+    """
+
+    def fetch_entity(qid: str) -> dict | None:
+        url = _api_url(action="wbgetentities", ids=qid, props="labels|claims")
+        payload = fetch_json(url)
+        sleep(REQUEST_PAUSE_SECONDS)
+        return payload.get("entities", {}).get(qid)
+
+    return PlaceResolver(fetch_entity)
+
+
 def resolve_candidate(
     seed: dict,
     *,
     fetch_json,
     languages: tuple[str, ...] = ("de", "en"),
     sleep=time.sleep,
+    place_resolver: PlaceResolver | None = None,
 ) -> dict | None:
     """Loest einen kuratierten Seed gegen Wikidata auf (QID + Lebensdaten).
 
     Akzeptiert nur Treffer, deren Sterbejahr (P570) zum kuratierten
     Sterbejahr passt — das verhindert Namensvetter-Verwechslungen.
+    Mit place_resolver werden zusaetzlich Geburts-/Sterbeort (P19/P20)
+    zu "Stadt, Land" aufgeloest (4-Zeilen-Profilformat).
     """
     hint = death_year_hint(seed)
     if hint is None:
@@ -153,12 +173,20 @@ def resolve_candidate(
         birth = _wb_time_to_date(_first_claim_time(entity, "P569")) or _parse_seed_date(
             seed.get("birth_date")
         )
+        birth_place = death_place = None
+        if place_resolver is not None:
+            birth_qids = claim_item_ids(entity, P_BIRTH_PLACE)
+            death_qids = claim_item_ids(entity, P_DEATH_PLACE)
+            birth_place = place_resolver.resolve(birth_qids[0]) if birth_qids else None
+            death_place = place_resolver.resolve(death_qids[0]) if death_qids else None
         return {
             "qid": qid,
             "death_date": death,
             "birth_date": birth,
             "birth_label": seed.get("birth_label"),
             "death_label": seed.get("death_label"),
+            "birth_place": birth_place,
+            "death_place": death_place,
             "sitelink_count": len(entity.get("sitelinks", {})),
         }
     return None
@@ -199,9 +227,12 @@ def run_seed(
     }
 
     resolved: list[HistoricalCandidate] = []
+    place_resolver = make_place_resolver(fetch_json, sleep=sleep)
     for seed in seeds[:limit] if limit else seeds:
         report["totals"]["seeds"] += 1
-        resolution = resolve_candidate(seed, fetch_json=fetch_json, sleep=sleep)
+        resolution = resolve_candidate(
+            seed, fetch_json=fetch_json, sleep=sleep, place_resolver=place_resolver
+        )
         if resolution is None:
             report["unresolved"].append({"name": seed["name"], "hint": death_year_hint(seed)})
             report["totals"]["unresolved"] += 1
@@ -214,6 +245,8 @@ def run_seed(
                 birth_date=resolution["birth_date"],
                 birth_label=resolution.get("birth_label"),
                 death_label=resolution.get("death_label"),
+                birth_place=resolution.get("birth_place"),
+                death_place=resolution.get("death_place"),
                 category=seed["category"],
                 language=seed.get("language"),
                 sitelink_count=resolution["sitelink_count"],

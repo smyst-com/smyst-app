@@ -20,11 +20,11 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish | backfill-gender"
+        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish | backfill-gender | backfill-places"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish, backfill-gender]
+        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish, backfill-gender, backfill-places]
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
@@ -47,7 +47,7 @@ on:
         required: false
         default: ""
       backfill_dry_run:
-        description: "backfill-gender: 'true' = nur Vorschau (Standard, schreibt nichts), 'false' = echter Schreiblauf"
+        description: "backfill-gender/-places: 'true' = nur Vorschau (Standard, schreibt nichts), 'false' = echter Schreiblauf"
         required: false
         default: "true"
         type: choice
@@ -100,6 +100,20 @@ jobs:
             python -m app.workers.backfill_gender
           else
             python -m app.workers.backfill_gender --dry-run
+          fi
+
+      - name: "Orts-Backfill (Bestandsprofile, Wikidata P19/P20 aus Snapshots)"
+        if: env.MODE == 'backfill-places'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        # Standard ist Vorschau (--dry-run): schreibt nichts, zeigt nur, was
+        # sich aendern wuerde. Echter Schreiblauf nur mit backfill_dry_run=false.
+        run: |
+          if [ "${{ inputs.backfill_dry_run }}" = "false" ]; then
+            python -m app.workers.backfill_places
+          else
+            python -m app.workers.backfill_places --dry-run
           fi
 
       - name: "Status-Report (read-only)"
@@ -254,6 +268,18 @@ jobs:
         run: |
           python -m app.workers.publish_profiles publish --all-reviewed \
             --approved-by "smyst247@gmail.com" --enabled --daily-limit 100
+
+      # Die 500er-Seed-Kandidaten wurden ohne birth_place/death_place ingestiert
+      # (Seed-Resolver ohne Ortsaufloesung); frisch publizierte Profile bekommen
+      # ihre Orte deshalb direkt nach dem Publish ergaenzt, bevor deployed wird.
+      # Idempotent; Fehler einzelner QIDs blockieren den Deploy nicht.
+      - name: "Auto-Orts-Backfill nach Publish (nur Cron)"
+        if: github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.backfill_places
 
       - name: "Auto-Deploy nach Publish (nur Cron)"
         if: github.event_name == 'schedule'
