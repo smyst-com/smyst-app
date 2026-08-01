@@ -5003,6 +5003,30 @@ type AdminMetric = {
 
 type AdminRow = Record<string, string>
 
+type AdminQualityApi = {
+  ok: boolean
+  summary?: {
+    generated_at?: string
+    counts?: {
+      published?: number
+      evaluated?: number
+      regressions?: number
+      needs_review?: number
+      refresh_checked?: number
+      score_below_0_8?: number
+    }
+    average_score?: number | null
+    worst_evals?: Array<{ qid: string; name?: string; score: number; regression?: boolean; finished_at?: string; issues?: string[] }>
+    regressions?: Array<{ qid: string; name?: string; score: number; previous_score?: number; finished_at?: string }>
+    needs_review?: Array<{ qid: string; name?: string; checked_at?: string; changed?: boolean }>
+  } | null
+  feedback?: {
+    recent?: Array<{ twinId?: string | null; rating?: string; question?: string | null; answer?: string | null; comment?: string | null; createdAt?: number }>
+    total_listed?: number
+    down_or_report?: number
+  }
+}
+
 type AdminOverviewApi = {
   ok: boolean
   mode?: string
@@ -5267,6 +5291,8 @@ function AdminControlCenterInner() {
   const [adminMfaCode, setAdminMfaCode] = useState('')
   const [adminMfaMessage, setAdminMfaMessage] = useState<string | null>(null)
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
+  const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
+  const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
   const [computeCapabilities, setComputeCapabilities] = useState<ComputeCapabilitiesApi | null>(null)
   const [computeJobs, setComputeJobs] = useState<ComputeJobsApi | null>(null)
@@ -5301,6 +5327,32 @@ function AdminControlCenterInner() {
   useEffect(() => {
     return refreshAdminOverview()
   }, [refreshAdminOverview])
+
+  useEffect(() => {
+    if (activeSection !== 'aiQuality') return
+    let alive = true
+    setAdminQualityStatus('loading')
+    fetch('/api/admin/quality', { credentials: 'same-origin' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        if (response.ok && payload?.ok) {
+          setAdminQuality(payload as AdminQualityApi)
+          setAdminQualityStatus('live')
+        } else {
+          setAdminQuality(null)
+          setAdminQualityStatus(response.status === 401 || response.status === 403 ? 'denied' : 'offline')
+        }
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminQuality(null)
+        setAdminQualityStatus('offline')
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
 
   useEffect(() => {
     let alive = true
@@ -5844,53 +5896,97 @@ function AdminControlCenterInner() {
   )
 
   const renderAiQuality = () => {
-    const routerRows = [
-      ['Fast Chat', '89 %', '#43d17a', 'Sofortantwort, niedrige Kosten'],
-      ['Deep Reasoning', '41 %', '#59c7ff', 'Komplexe Aufgaben, längere Kontexte'],
-      ['RAG Verified', '68 %', '#f7b733', 'Quellengebundene Antworten'],
-      ['Safety Rewrite', '12 %', '#ef4444', 'Policy, Risiko, sensible Inhalte'],
-    ]
+    const summary = adminQuality?.summary
+    const counts = summary?.counts
+    const feedback = adminQuality?.feedback
+    const scoreLabel = (score: number | null | undefined) =>
+      typeof score === 'number' ? `${Math.round(score * 100)} %` : '–'
+    const dateLabel = (value?: string | number | null) => {
+      if (!value) return '–'
+      const date = typeof value === 'number' ? new Date(value) : new Date(value)
+      return Number.isNaN(date.getTime()) ? '–' : date.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
+    }
+    const ratingLabel = (rating?: string) => (rating === 'up' ? '👍 gut' : rating === 'down' ? '👎 schlecht' : rating === 'report' ? '⚠️ gemeldet' : '–')
 
     return (
       <div className="grid gap-5">
+        {adminQualityStatus === 'denied' && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+            Qualitätsdaten nur für Admin-Rollen sichtbar. Bitte mit einem Admin-Konto anmelden.
+          </div>
+        )}
+        {adminQualityStatus === 'offline' && (
+          <div className="rounded-lg border border-[#d9e2ec] bg-white p-4 text-sm font-semibold text-[#5d6776]">
+            Qualitätsdaten gerade nicht erreichbar. Der Quality-Report-Worker läuft 3× täglich im Pipeline-Cron.
+          </div>
+        )}
         <div className="grid gap-4 lg:grid-cols-4">
           {[
-            { label: 'Answer p95', value: '1.2 s', detail: 'Streaming sofort sichtbar, Antwort bleibt flüssig.', tone: 'green' },
-            { label: 'Quality Score', value: '93', detail: 'Eval, Nutzerfeedback, Quellenabgleich.', tone: 'cyan' },
-            { label: 'RAG Freshness', value: '11 m', detail: 'Index und Embeddings frisch gehalten.', tone: 'green' },
-            { label: 'Safety Holds', value: '0.7 %', detail: 'Unsichere Antworten werden gestoppt oder umgeschrieben.', tone: 'amber' },
+            { label: 'Ø Eval-Score', value: scoreLabel(summary?.average_score), detail: `${counts?.evaluated ?? 0} von ${counts?.published ?? 0} veröffentlichten Profilen evaluiert.`, tone: (summary?.average_score ?? 1) >= 0.8 ? 'green' : 'amber' },
+            { label: 'Regressionen', value: String(counts?.regressions ?? 0), detail: 'Profile, deren Score gegenüber dem Vorlauf gefallen ist.', tone: (counts?.regressions ?? 0) > 0 ? 'red' : 'green' },
+            { label: 'Offene Reviews', value: String(counts?.needs_review ?? 0), detail: 'Freshness-Check hat Quellen-Änderungen gefunden (needs_review).', tone: (counts?.needs_review ?? 0) > 0 ? 'amber' : 'green' },
+            { label: 'Feedback 👎', value: String(feedback?.down_or_report ?? 0), detail: `${feedback?.total_listed ?? 0} Feedback-Einträge gesamt; 👎/Meldungen werden Eval-Testfälle.`, tone: (feedback?.down_or_report ?? 0) > 0 ? 'amber' : 'green' },
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
         </div>
+        <p className="text-xs font-semibold text-[#5d6776]">
+          Stand: {dateLabel(summary?.generated_at)} · Quelle: Quality-Report-Worker (3× täglich) · Evals rotieren durch den Bestand, Freshness prüft jedes Profil alle 30 Tage.
+        </p>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Schlechteste Eval-Scores</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">Kandidaten für den Reparatur-Lauf (Pipeline-Modus rebuild-one).</p>
+          <div className="mt-4">
+            {summary?.worst_evals?.length ? (
+              <AdminTable
+                columns={['Profil', 'Score', 'Regression', 'Letzter Eval', 'Auffälligkeiten']}
+                rows={summary.worst_evals.map((entry) => ({
+                  Profil: `${entry.name ?? entry.qid} (${entry.qid})`,
+                  Score: scoreLabel(entry.score),
+                  Regression: entry.regression ? 'ja' : 'nein',
+                  'Letzter Eval': dateLabel(entry.finished_at),
+                  'Auffälligkeiten': (entry.issues ?? []).join(' · ') || '–',
+                }))}
+              />
+            ) : (
+              <p className="text-sm font-semibold text-[#5d6776]">Noch keine Eval-Ergebnisse — der erste Cron-Lauf füllt diese Liste.</p>
+            )}
+          </div>
+        </section>
         <div className="grid gap-5 xl:grid-cols-2">
           <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Model Router</h2>
-            {routerRows.map(([label, value, color, detail]) => (
-              <div key={label} className="mt-4">
-                <div className="mb-1 flex items-center justify-between gap-3 text-sm font-bold text-[#172033]">
-                  <span>{label}</span>
-                  <span>{detail}</span>
-                </div>
-                <div className="h-3 rounded-md bg-[#e8eef5]">
-                  <div className="h-3 rounded-md" style={{ width: value, backgroundColor: color }} />
-                </div>
-              </div>
-            ))}
+            <h2 className="text-xl font-bold text-[#111722]">Offene Freshness-Reviews</h2>
+            <p className="mt-1 text-sm font-semibold text-[#5d6776]">Quellen (Wikidata/Wikipedia) haben sich geändert — bitte sichten.</p>
+            <div className="mt-4">
+              {summary?.needs_review?.length ? (
+                <AdminTable
+                  columns={['Profil', 'Geprüft', 'Geändert']}
+                  rows={summary.needs_review.map((entry) => ({
+                    Profil: `${entry.name ?? entry.qid} (${entry.qid})`,
+                    'Geprüft': dateLabel(entry.checked_at),
+                    'Geändert': entry.changed ? 'ja' : 'offen aus früherem Lauf',
+                  }))}
+                />
+              ) : (
+                <p className="text-sm font-semibold text-[#5d6776]">Keine offenen Reviews — alle geprüften Quellen sind unverändert.</p>
+              )}
+            </div>
           </section>
           <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Qualitäts-Prüfungen</h2>
-            <div className="mt-5 grid gap-3">
-              {[
-                ['Eval Suites', 'Regression gegen ChatGPT, Gemini, Claude, Grok und Open-Model Benchmarks.'],
-                ['Prompt Library', 'Versionierte Systemprompts in IDrive e2, Code in GitHub.'],
-                ['RAG Guardrails', 'Quellenpflicht, Halluzinationsscore, Zitierbarkeit.'],
-                ['Memory Safety', 'Profilwissen getrennt, verschlüsselt und exportierbar.'],
-                ['Latency Budget', 'Vorberechnung, Cache, Queue und Fallback pro Intent.'],
-              ].map(([label, detail]) => (
-                <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
-                  <AdminStatusChip tone="green">{label}</AdminStatusChip>
-                  <p className="text-sm font-bold text-[#172033]">{detail}</p>
-                </div>
-              ))}
+            <h2 className="text-xl font-bold text-[#111722]">Neuestes Nutzerfeedback</h2>
+            <p className="mt-1 text-sm font-semibold text-[#5d6776]">👎 und Meldungen werden automatisch Eval-Testfälle des Profils.</p>
+            <div className="mt-4">
+              {feedback?.recent?.length ? (
+                <AdminTable
+                  columns={['Profil', 'Bewertung', 'Frage', 'Zeit']}
+                  rows={feedback.recent.slice(0, 10).map((entry, index) => ({
+                    Profil: entry.twinId ?? `– (${index + 1})`,
+                    Bewertung: ratingLabel(entry.rating),
+                    Frage: entry.question ?? '–',
+                    Zeit: dateLabel(entry.createdAt),
+                  }))}
+                />
+              ) : (
+                <p className="text-sm font-semibold text-[#5d6776]">Noch kein Feedback eingegangen.</p>
+              )}
             </div>
           </section>
         </div>
