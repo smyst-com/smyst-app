@@ -9,7 +9,7 @@ name: Pipeline Run (historische Profile)
 #                  bleibt eine menschliche Handlung (publish_profiles CLI).
 # mode=run-batch : wie run-small, aber mit batch_limit je Worker-Stufe —
 #                  fuer das Abarbeiten kuratierter Seeds (laengeres Timeout).
-# mode=seed      : kuratierte Kandidaten aus smyst_500_candidates.json einspielen.
+# mode=seed      : kuratierte Kandidaten aus smyst_500_candidates_v2.json einspielen.
 
 on:
   # Automatik-Laeufe 3x taeglich (Anweisung Nutzer 01.08.2026: Tageslimit 1000;
@@ -150,12 +150,12 @@ jobs:
               --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
           fi
 
-      - name: "Seed: kuratierte Kandidaten einspielen (smyst_500_candidates.json)"
+      - name: "Seed: kuratierte Kandidaten einspielen (smyst_500_candidates_v2.json)"
         if: env.MODE == 'seed'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-        run: python -m app.workers.seed_candidates --file ../smyst_500_candidates.json --enabled
+        run: python -m app.workers.seed_candidates --file ../smyst_500_candidates_v2.json --enabled
 
       - name: "Worker 1: Wikidata-Ingest"
         if: env.MODE == 'dry-run' || env.MODE == 'run-small'
