@@ -12,11 +12,15 @@ name: Pipeline Run (historische Profile)
 # mode=seed      : kuratierte Kandidaten aus smyst_500_candidates.json einspielen.
 
 on:
-  # Taeglicher Automatik-Lauf 01:23 UTC = 03:23 Europe/Berlin (Sommerzeit).
-    # Off-Peak-Minute statt 04:00 UTC: GitHub verzoegert Crons zur vollen Stunde um 2-4 h.
+  # Automatik-Laeufe 3x taeglich (Anweisung Nutzer 01.08.2026: Tageslimit 1000;
+  # real begrenzt die Rechenzeit einen Lauf auf ~100-120 Profile, deshalb
+  # mehrere Laeufe statt eines groesseren). Off-Peak-Minuten statt voller
+  # Stunde: GitHub verzoegert Crons zur vollen Stunde um 2-4 h.
     # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
   schedule:
     - cron: "23 1 * * *"
+    - cron: "23 9 * * *"
+    - cron: "23 17 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -267,7 +271,7 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "smyst247@gmail.com" --enabled --daily-limit 100
+            --approved-by "smyst247@gmail.com" --enabled --daily-limit 1000
 
       # Die 500er-Seed-Kandidaten wurden ohne birth_place/death_place ingestiert
       # (Seed-Resolver ohne Ortsaufloesung); frisch publizierte Profile bekommen
