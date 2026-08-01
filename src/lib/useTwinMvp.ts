@@ -111,7 +111,10 @@ export interface TwinChatMessage {
   content: string
   createdAt: number
   webResearch?: WebResearchMeta
+  feedback?: { rating: ChatFeedbackRating; comment?: string | null; createdAt: number }
 }
+
+export type ChatFeedbackRating = 'up' | 'down' | 'report'
 
 export interface AccountExportBundle {
   ok: boolean
@@ -577,6 +580,21 @@ export function useTwinMvp() {
     [run],
   )
 
+  const sendChatFeedback = useCallback(
+    (chatId: string, messageId: string, rating: ChatFeedbackRating, comment?: string) =>
+      run(async () => {
+        const body = await apiJson<{ ok: boolean; messageId: string; rating: ChatFeedbackRating }>(
+          '/api/chat/feedback',
+          {
+            method: 'POST',
+            body: JSON.stringify({ chatId, messageId, rating, comment }),
+          },
+        )
+        return body
+      }),
+    [run],
+  )
+
   const listTwinChats = useCallback(
     () =>
       run(async () => {
@@ -771,6 +789,7 @@ export function useTwinMvp() {
     startTwinChat,
     sendTwinMessage,
     sendTwinMessageStream,
+    sendChatFeedback,
     listTwinChats,
     searchTwinChats,
     getProfile,

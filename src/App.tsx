@@ -7169,6 +7169,8 @@ function TwinChatView({
 }) {
   type TwinChatUiMessage = {
     id: string
+    // Backend-Message-Id (fuer Feedback); beim Streamen ist id nur lokal.
+    serverId?: string
     role: 'ai' | 'user'
     content: string
     streaming?: boolean
@@ -7259,6 +7261,8 @@ function TwinChatView({
   const [composerNotice, setComposerNotice] = useState('')
   const [savedMemoryIds, setSavedMemoryIds] = useState<Set<string>>(() => new Set())
   const [savingMemoryId, setSavingMemoryId] = useState<string | null>(null)
+  const [answerFeedback, setAnswerFeedback] = useState<Record<string, 'up' | 'down'>>({})
+  const [feedbackSendingId, setFeedbackSendingId] = useState<string | null>(null)
   const [noteText, setNoteText] = useState('')
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteStatus, setNoteStatus] = useState('')
@@ -7328,11 +7332,19 @@ function TwinChatView({
       setMessages(
         match.messages.map((message) => ({
           id: message.id,
+          serverId: message.id,
           role: message.role === 'assistant' ? 'ai' : 'user',
           content: message.content,
           webResearch: message.webResearch,
         })),
       )
+      const restoredFeedback: Record<string, 'up' | 'down'> = {}
+      for (const message of match.messages) {
+        if (message.role === 'assistant' && message.feedback && message.feedback.rating !== 'report') {
+          restoredFeedback[message.id] = message.feedback.rating
+        }
+      }
+      setAnswerFeedback(restoredFeedback)
     } else {
       setMessages([readyMessage(twin)])
     }
@@ -7912,7 +7924,7 @@ function TwinChatView({
         setMessages((current) =>
           current.map((entry) =>
             entry.id === assistantId
-              ? { ...entry, content: reply.message.content, streaming: false, webResearch: reply.message.webResearch }
+              ? { ...entry, serverId: reply.message.id, content: reply.message.content, streaming: false, webResearch: reply.message.webResearch }
               : entry,
           ),
         )
@@ -7920,7 +7932,7 @@ function TwinChatView({
         await streamAssistantMessage(assistantId, reply.message.content)
         setMessages((current) =>
           current.map((entry) =>
-            entry.id === assistantId ? { ...entry, webResearch: reply.message.webResearch } : entry,
+            entry.id === assistantId ? { ...entry, serverId: reply.message.id, webResearch: reply.message.webResearch } : entry,
           ),
         )
       }
@@ -8050,6 +8062,24 @@ function TwinChatView({
       addNotice(lang === DEFAULT_LANG ? 'Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.' : t.notices.saveMemoryFailed)
     } finally {
       setSavingMemoryId(null)
+    }
+  }
+
+  const handleAnswerFeedback = async (msg: TwinChatUiMessage, rating: 'up' | 'down') => {
+    if (msg.role !== 'ai' || !msg.content.trim()) return
+    if (!chatId || answerFeedback[msg.id] || feedbackSendingId) return
+    setFeedbackSendingId(msg.id)
+    try {
+      const result = await twinMvp.sendChatFeedback(chatId, msg.serverId ?? msg.id, rating)
+      if (result?.ok) {
+        setAnswerFeedback((current) => ({ ...current, [msg.id]: rating }))
+      } else {
+        addNotice('Feedback konnte gerade nicht gespeichert werden. Bitte später erneut versuchen.')
+      }
+    } catch {
+      addNotice('Feedback konnte gerade nicht gespeichert werden. Bitte später erneut versuchen.')
+    } finally {
+      setFeedbackSendingId(null)
     }
   }
 
@@ -8298,6 +8328,43 @@ function TwinChatView({
                           ? 'Speichern…'
                           : 'Im Memory speichern'}
                     </button>
+                    {chatId && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => void handleAnswerFeedback(msg, 'up')}
+                          disabled={Boolean(answerFeedback[msg.id]) || feedbackSendingId === msg.id}
+                          aria-label="Gute Antwort"
+                          title="Gute Antwort"
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed ${
+                            answerFeedback[msg.id] === 'up'
+                              ? 'border-[#59C7FF]/45 bg-[#59C7FF]/25 text-[#0b1c44]'
+                              : 'border-white/30 bg-white/14 text-[#555b64] hover:bg-white/28 disabled:opacity-45'
+                          }`}
+                        >
+                          👍
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleAnswerFeedback(msg, 'down')}
+                          disabled={Boolean(answerFeedback[msg.id]) || feedbackSendingId === msg.id}
+                          aria-label="Schlechte Antwort melden"
+                          title="Schlechte Antwort melden"
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed ${
+                            answerFeedback[msg.id] === 'down'
+                              ? 'border-[#59C7FF]/45 bg-[#59C7FF]/25 text-[#0b1c44]'
+                              : 'border-white/30 bg-white/14 text-[#555b64] hover:bg-white/28 disabled:opacity-45'
+                          }`}
+                        >
+                          👎
+                        </button>
+                        {answerFeedback[msg.id] && (
+                          <span className="self-center px-1 text-[11px] font-medium text-[#555b64]">
+                            Danke für dein Feedback ✓
+                          </span>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
