@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 import json
 from datetime import UTC, datetime
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -15,7 +15,7 @@ from app.ai.models import LLMRequest
 from app.ai.twin_context import twin_context
 from app.ai.web_research import ResearchContext, VerifiedWebResearchService, WebSearchResponse
 from app.core.config import get_settings
-from app.integrations import chat_store
+from app.integrations import chat_store, feedback_store
 from app.security.sanitization import normalize_text
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -25,6 +25,13 @@ _CHATS: dict[str, dict[str, object]] = {}
 
 class StartChatRequest(BaseModel):
     twinId: str | None = Field(default=None, max_length=160)
+
+
+class ChatFeedbackRequest(BaseModel):
+    chatId: str = Field(min_length=1, max_length=120)
+    messageId: str = Field(min_length=1, max_length=120)
+    rating: Literal["up", "down", "report"]
+    comment: str | None = Field(default=None, max_length=1000)
 
 
 class SendMessageRequest(BaseModel):
@@ -284,6 +291,67 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
         "message": assistant_message,
         "mode": llm_response.provider,
     }
+
+
+@router.post("/feedback")
+async def submit_feedback(body: ChatFeedbackRequest) -> dict[str, object]:
+    """Nutzerfeedback (Daumen hoch/runter, Meldung) zu einer Twin-Antwort.
+
+    Das Feedback wird am Nachrichten-Objekt gespeichert (ueberlebt via
+    Chat-Archiv Neustarts) und zusaetzlich als eigener Record ins Object
+    Brain geschrieben — Daumen-runter-Records nutzt der Eval-Worker als
+    Regressions-Testfaelle (app/workers/eval_profiles).
+    """
+    chat = await _ensure_chat(body.chatId)
+    messages = chat.get("messages")
+    if not isinstance(messages, list):
+        raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
+    target_index = next(
+        (
+            index
+            for index, item in enumerate(messages)
+            if isinstance(item, dict)
+            and item.get("id") == body.messageId
+            and item.get("role") == "assistant"
+        ),
+        None,
+    )
+    if target_index is None:
+        raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
+
+    target = messages[target_index]
+    comment = (
+        normalize_text(body.comment, max_length=1000).value if body.comment else None
+    )
+    feedback = {"rating": body.rating, "comment": comment, "createdAt": _now_ms()}
+    target["feedback"] = feedback
+    chat["updatedAt"] = _now_ms()
+    _schedule_archive(chat)
+
+    question = next(
+        (
+            item.get("content")
+            for item in reversed(messages[:target_index])
+            if isinstance(item, dict) and item.get("role") == "user"
+        ),
+        None,
+    )
+    record = {
+        "chatId": body.chatId,
+        "messageId": body.messageId,
+        "twinId": chat.get("twinId"),
+        "rating": body.rating,
+        "comment": comment,
+        "question": question,
+        "answer": target.get("content"),
+        "createdAt": feedback["createdAt"],
+    }
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(asyncio.to_thread(feedback_store.save_feedback, record))
+    except Exception:
+        pass
+    return {"ok": True, "messageId": body.messageId, "rating": body.rating}
 
 
 @router.post("/messages/stream")
