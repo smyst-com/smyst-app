@@ -18,6 +18,8 @@
 
 import { useEffect, useState } from 'react';
 import { hasDecidedConsent, revokeConsent, setConsent } from '@/lib/analytics';
+import { DEFAULT_LANG, useLanguage } from '@/lib/i18n';
+import { useStaticTranslations } from '@/lib/staticTranslations';
 
 type View = 'banner' | 'settings';
 
@@ -26,6 +28,9 @@ export default function CookieConsent() {
   const [view, setView] = useState<View>('banner');
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
+  const { lang } = useLanguage();
+  const t = useStaticTranslations(lang);
+  const c = t.consent;
 
   useEffect(() => {
     // Erst nach Mount entscheiden — verhindert SSR-Mismatch & Flash
@@ -79,17 +84,15 @@ export default function CookieConsent() {
         {view === 'banner' ? (
           <>
             <h2 id="privacy-consent-title" className="text-base font-semibold text-white sm:text-lg">
-              App-Daten & Datenschutz
+              {lang === DEFAULT_LANG ? 'App-Daten & Datenschutz' : c.title}
             </h2>
             <p
               id="privacy-consent-desc"
               className="mt-1 text-sm leading-relaxed text-[#aeb6c4]"
             >
-              smyst.com speichert notwendige App-Daten für die Funktion.
-              Optional helfen uns anonyme Nutzungsdaten, smyst.com zu verbessern. Du kannst deine
-              Einstellungen jederzeit ändern. Mehr in der{' '}
+              {lang === DEFAULT_LANG ? 'smyst.com speichert notwendige App-Daten für die Funktion. Optional helfen uns anonyme Nutzungsdaten, smyst.com zu verbessern. Du kannst deine Einstellungen jederzeit ändern. Mehr in der' : c.intro}{' '}
               <a href="/datenschutz" className="text-white underline hover:no-underline">
-                Datenschutzerklärung
+                {lang === DEFAULT_LANG ? 'Datenschutzerklärung' : c.privacy}
               </a>
               .
             </p>
@@ -100,21 +103,21 @@ export default function CookieConsent() {
                 onClick={acceptAll}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-[#111722] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                Alle akzeptieren
+                {lang === DEFAULT_LANG ? 'Alle akzeptieren' : c.acceptAll}
               </button>
               <button
                 type="button"
                 onClick={acceptOnlyNecessary}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 text-sm font-semibold text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                Nur Notwendige
+                {lang === DEFAULT_LANG ? 'Nur Notwendige' : c.onlyNecessary}
               </button>
               <button
                 type="button"
                 onClick={() => setView('settings')}
                 className="inline-flex min-h-[44px] items-center justify-center rounded-full px-4 text-sm font-medium text-white underline hover:no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:flex-none"
               >
-                Einstellungen
+                {lang === DEFAULT_LANG ? 'Einstellungen' : c.settings}
               </button>
             </div>
           </>
@@ -122,12 +125,12 @@ export default function CookieConsent() {
           <>
             <div className="flex items-start justify-between gap-2">
               <h2 id="privacy-consent-title" className="text-base font-semibold text-white sm:text-lg">
-                Datenschutz-Einstellungen
+                {lang === DEFAULT_LANG ? 'Datenschutz-Einstellungen' : c.settingsTitle}
               </h2>
               <button
                 type="button"
                 onClick={() => setView('banner')}
-                aria-label="Zurück"
+                aria-label={lang === DEFAULT_LANG ? 'Zurück' : c.back}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[#aeb6c4] hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
@@ -140,21 +143,21 @@ export default function CookieConsent() {
               <li className="rounded-xl border border-white/10 bg-white/5 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-white">Notwendig</h3>
+                    <h3 className="text-sm font-semibold text-white">{lang === DEFAULT_LANG ? 'Notwendig' : c.necessaryTitle}</h3>
                     <p className="mt-0.5 text-xs text-[#aeb6c4]">
-                      Login, Spracheinstellung, Sicherheit. Lassen sich nicht abschalten.
+                      {lang === DEFAULT_LANG ? 'Login, Spracheinstellung, Sicherheit. Lassen sich nicht abschalten.' : c.necessaryDesc}
                     </p>
                   </div>
-                  <span className="shrink-0 text-xs font-medium text-emerald-300">Aktiv</span>
+                  <span className="shrink-0 text-xs font-medium text-emerald-300">{lang === DEFAULT_LANG ? 'Aktiv' : c.active}</span>
                 </div>
               </li>
 
               <li className="rounded-xl border border-white/10 p-3">
                 <label className="flex cursor-pointer items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-white">Statistik</h3>
+                    <h3 className="text-sm font-semibold text-white">{lang === DEFAULT_LANG ? 'Statistik' : c.statsTitle}</h3>
                     <p className="mt-0.5 text-xs text-[#aeb6c4]">
-                      Lokale Nutzungsentscheidung. Externe Analytics sind in Production deaktiviert.
+                      {lang === DEFAULT_LANG ? 'Lokale Nutzungsentscheidung. Externe Analytics sind in Production deaktiviert.' : c.statsDesc}
                     </p>
                   </div>
                   <input
@@ -169,9 +172,9 @@ export default function CookieConsent() {
               <li className="rounded-xl border border-white/10 p-3">
                 <label className="flex cursor-pointer items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="text-sm font-semibold text-white">Marketing</h3>
+                    <h3 className="text-sm font-semibold text-white">{lang === DEFAULT_LANG ? 'Marketing' : c.marketingTitle}</h3>
                     <p className="mt-0.5 text-xs text-[#aeb6c4]">
-                      Werbung und Werbe-Personalisierung. Wird nur nach aktiver Einwilligung und technischer Freigabe geladen.
+                      {lang === DEFAULT_LANG ? 'Werbung und Werbe-Personalisierung. Wird nur nach aktiver Einwilligung und technischer Freigabe geladen.' : c.marketingDesc}
                     </p>
                   </div>
                   <input
@@ -190,14 +193,14 @@ export default function CookieConsent() {
                 onClick={saveCustom}
                 className="inline-flex min-h-[44px] flex-1 items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-[#111722] hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                Auswahl speichern
+                {lang === DEFAULT_LANG ? 'Auswahl speichern' : c.save}
               </button>
               <button
                 type="button"
                 onClick={revoke}
                 className="inline-flex min-h-[44px] items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 text-sm font-medium text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
               >
-                Alle widerrufen
+                {lang === DEFAULT_LANG ? 'Alle widerrufen' : c.revoke}
               </button>
             </div>
           </>
