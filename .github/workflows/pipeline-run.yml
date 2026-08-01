@@ -24,18 +24,18 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish | backfill-gender | backfill-places | evals | refresh"
+        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish | backfill-gender | backfill-places | evals | refresh | rebuild-one | quality-report"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish, backfill-gender, backfill-places, evals, refresh]
+        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish, backfill-gender, backfill-places, evals, refresh, rebuild-one, quality-report]
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
         # Admin-/Freigabe-E-Mail als Standard (schriftliche Anweisung Adam King, 17.07.2026)
         default: "smyst247@gmail.com"
       qids:
-        description: "Optional (publish-reviewed/unpublish): kommagetrennte QIDs — publiziert bzw. unpublisht NUR diese Profile"
+        description: "Optional (publish-reviewed/unpublish/rebuild-one): kommagetrennte QIDs — bearbeitet NUR diese Profile"
         required: false
         default: ""
       reason:
@@ -321,6 +321,46 @@ jobs:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: python -m app.workers.refresh_profiles --enabled --limit 50
+
+      # Reparatur-Weg der Qualitaetsschleife: gezielter Neuaufbau einzelner
+      # Profile (Recherche -> Capsule -> QA-Gate). Faellt die QA durch, bleibt
+      # die Live-Capsule unveraendert; Status/twin_id/Slug bleiben stabil.
+      - name: "Rebuild-One: Profile gezielt reparieren (nur manuell, mit QIDs)"
+        if: env.MODE == 'rebuild-one'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_PROVIDER_ORDER: "groq,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
+        run: |
+          if [ -z "${{ inputs.qids }}" ]; then
+            echo "rebuild-one erfordert qids (kommagetrennte QIDs)."; exit 2
+          fi
+          QID_ARGS=""
+          for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
+            QID_ARGS="$QID_ARGS --qid $qid"
+          done
+          python -m app.workers.rebuild_profile $QID_ARGS --enabled
+
+      # Aggregation fuer die Admin-Sicht (/api/admin/quality): laeuft nach
+      # Evals + Freshness, damit die Zusammenfassung deren frische Ergebnisse
+      # enthaelt. Read-only gegenueber den Profilen.
+      - name: "Quality-Report: Zusammenfassung fuer Admin-Sicht (Cron + manuell)"
+        if: github.event_name == 'schedule' || env.MODE == 'quality-report' || env.MODE == 'evals' || env.MODE == 'refresh' || env.MODE == 'rebuild-one'
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.report_quality
 
       - name: "Auto-Deploy nach Publish (nur Cron)"
         if: github.event_name == 'schedule'

@@ -118,7 +118,15 @@ def evaluate_chat_answers(
             issues.append("Chat-Test identity: Taeuschungsformel gefunden")
 
     after = _n(answers.get("after_death", ""))
-    if after and not any(m in after for m in ("nach meiner zeit", "zu meinen lebzeiten", "nicht erlebt", "nicht miterlebt", "after my time")):
+    # Akzeptierte Einordnungen: klassisch epochengebunden ODER Zeitreisenden-
+    # Rahmung (berichtetes Wissen statt eigener Erinnerung). Marker in
+    # normalisierter Form: _n() strippt Diakritika ("erzählt" -> "erzahlt").
+    _AFTER_DEATH_MARKERS = (
+        "nach meiner zeit", "zu meinen lebzeiten", "nicht erlebt", "nicht miterlebt",
+        "after my time", "man erzahlt mir", "man erzaehlt mir", "man berichtet mir",
+        "wie ich hore", "wie ich hoere", "i am told", "i hear that",
+    )
+    if after and not any(m in after for m in _AFTER_DEATH_MARKERS):
         issues.append("Chat-Test after_death: Ereignis nach Todesdatum nicht als solches eingeordnet")
 
     trap = _n(answers.get("trap", ""))
