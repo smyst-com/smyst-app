@@ -275,10 +275,12 @@ jobs:
 
       # Die 500er-Seed-Kandidaten wurden ohne birth_place/death_place ingestiert
       # (Seed-Resolver ohne Ortsaufloesung); frisch publizierte Profile bekommen
-      # ihre Orte deshalb direkt nach dem Publish ergaenzt, bevor deployed wird.
+      # ihre Orte deshalb direkt nach JEDEM Publish ergaenzt — auch bei manuellen
+      # publish-reviewed-Laeufen, die sonst bis zum naechsten Cron ortlose
+      # Profile hinterlassen (live passiert am 01.08. um 02:56 und 09:38 UTC).
       # Idempotent; Fehler einzelner QIDs blockieren den Deploy nicht.
-      - name: "Auto-Orts-Backfill nach Publish (nur Cron)"
-        if: github.event_name == 'schedule'
+      - name: "Auto-Orts-Backfill nach Publish (Cron + publish-reviewed)"
+        if: github.event_name == 'schedule' || env.MODE == 'publish-reviewed'
         continue-on-error: true
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
