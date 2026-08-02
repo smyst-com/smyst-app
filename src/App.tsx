@@ -5259,7 +5259,9 @@ function AdminControlCenterView() {
   const [adminGateAuthed, setAdminGateAuthed] = useState<boolean | null>(null)
   useEffect(() => {
     let cancelled = false
-    fetch('/auth/me', { credentials: 'include' })
+    // fetchService statt fetch: relativer Pfad 404t auf GitHub Pages —
+    // das Gate hielt sonst JEDEN fuer ausgeloggt (Befund A-Z-Check 01.08.).
+    fetchService('/auth/me', { credentials: 'include' })
       .then((response) => (response.ok ? response.json() : { authenticated: false }))
       .then((data: { authenticated?: boolean } | null) => {
         if (!cancelled) setAdminGateAuthed(Boolean(data?.authenticated))
@@ -5302,7 +5304,7 @@ function AdminControlCenterInner() {
   const refreshAdminOverview = useCallback(() => {
     let alive = true
     setAdminBackendStatus('loading')
-    fetch('/api/admin/overview', { credentials: 'same-origin' })
+    fetchService('/api/admin/overview', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5332,7 +5334,7 @@ function AdminControlCenterInner() {
     if (activeSection !== 'aiQuality') return
     let alive = true
     setAdminQualityStatus('loading')
-    fetch('/api/admin/quality', { credentials: 'same-origin' })
+    fetchService('/api/admin/quality', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5356,7 +5358,7 @@ function AdminControlCenterInner() {
 
   useEffect(() => {
     let alive = true
-    fetch('/auth/admin-2fa/status', { credentials: 'same-origin' })
+    fetchService('/auth/admin-2fa/status', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5373,7 +5375,7 @@ function AdminControlCenterInner() {
 
   useEffect(() => {
     let alive = true
-    fetch('/storage/capabilities', { credentials: 'same-origin' })
+    fetchService('/storage/capabilities', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5390,7 +5392,7 @@ function AdminControlCenterInner() {
 
   useEffect(() => {
     let alive = true
-    fetch('/api/compute/capabilities', { credentials: 'same-origin' })
+    fetchService('/api/compute/capabilities', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5407,7 +5409,7 @@ function AdminControlCenterInner() {
 
   useEffect(() => {
     let alive = true
-    fetch('/api/admin/compute/jobs', { credentials: 'same-origin' })
+    fetchService('/api/admin/compute/jobs', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5424,7 +5426,7 @@ function AdminControlCenterInner() {
 
   const refreshComputeRuntime = useCallback(() => {
     let alive = true
-    fetch('/api/admin/compute/runtime', { credentials: 'same-origin' })
+    fetchService('/api/admin/compute/runtime', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5446,9 +5448,9 @@ function AdminControlCenterInner() {
   const wakeComputeRuntime = async () => {
     setComputeWakeBusy(true)
     try {
-      const response = await fetch('/api/admin/compute/runtime', {
+      const response = await fetchService('/api/admin/compute/runtime', {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'x-smyst-csrf': '1' },
       })
       const payload = await response.json().catch(() => ({}))
@@ -5470,9 +5472,9 @@ function AdminControlCenterInner() {
     setAdminMfaSubmitting(true)
     setAdminMfaMessage(null)
     try {
-      const response = await fetch('/auth/admin-2fa/verify', {
+      const response = await fetchService('/auth/admin-2fa/verify', {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
         body: JSON.stringify({ code }),
       })
