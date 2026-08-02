@@ -9,7 +9,7 @@ name: Pipeline Run (historische Profile)
 #                  bleibt eine menschliche Handlung (publish_profiles CLI).
 # mode=run-batch : wie run-small, aber mit batch_limit je Worker-Stufe —
 #                  fuer das Abarbeiten kuratierter Seeds (laengeres Timeout).
-# mode=seed      : kuratierte Kandidaten aus smyst_500_candidates_v2.json einspielen.
+# mode=seed      : kuratierte Kandidaten aus smyst_1000_candidates_v3.json einspielen.
 
 on:
   # Automatik-Laeufe 3x taeglich (Anweisung Nutzer 01.08.2026: Tageslimit 1000;
@@ -17,10 +17,11 @@ on:
   # mehrere Laeufe statt eines groesseren). Off-Peak-Minuten statt voller
   # Stunde: GitHub verzoegert Crons zur vollen Stunde um 2-4 h.
     # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
+  # 8 Laeufe/Tag (Anweisung Betreiber 02.08.2026: 1000 Profile/Tag real).
+  # Concurrency-Gruppe serialisiert die Laeufe — sie stauen sich hoechstens,
+  # kollidieren aber nie. 8 x ~120 QA-Profile ≈ 1000/Tag bei vollem Lager.
   schedule:
-    - cron: "23 1 * * *"
-    - cron: "23 9 * * *"
-    - cron: "23 17 * * *"
+    - cron: "23 1,4,7,10,13,16,19,22 * * *"
   workflow_dispatch:
     inputs:
       mode:
@@ -150,12 +151,12 @@ jobs:
               --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
           fi
 
-      - name: "Seed: kuratierte Kandidaten einspielen (smyst_500_candidates_v2.json)"
+      - name: "Seed: kuratierte Kandidaten einspielen (smyst_1000_candidates_v3.json)"
         if: env.MODE == 'seed'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-        run: python -m app.workers.seed_candidates --file ../smyst_500_candidates_v2.json --enabled
+        run: python -m app.workers.seed_candidates --file ../smyst_1000_candidates_v3.json --enabled
 
       - name: "Worker 1: Wikidata-Ingest"
         if: env.MODE == 'dry-run' || env.MODE == 'run-small'
