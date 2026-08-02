@@ -40,6 +40,10 @@ class EstateEntry:
 
 def _n(name: str) -> str:
     """Namensnormalisierung fuer den Fallback-Abgleich ohne QID."""
+    # Umlaute VOR NFKD transliterieren (gleiche Luecke wie in risk_checks._n:
+    # "Göring" wurde zu "goring" statt "goering" und traf keinen Eintrag).
+    for src, dst in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "ae"), ("Ö", "oe"), ("Ü", "ue"), ("ß", "ss")):
+        name = name.replace(src, dst)
     text = unicodedata.normalize("NFKD", name)
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     return " ".join(text.casefold().replace(".", " ").replace(",", " ").split())

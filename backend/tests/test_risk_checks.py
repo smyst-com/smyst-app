@@ -29,6 +29,17 @@ def test_ethics_watchlist_blocks_perpetrators_and_reviews_religious_figures() ->
     assert ethics_risk("Q1035", "Charles Darwin")[0] is RiskResult.PASS
 
 
+def test_ethics_watchlist_matches_umlaut_names_and_new_entries() -> None:
+    # Umlaut-Luecke vom 26.07.: "Hermann Göring" (Wikidata-Label) muss den
+    # Listeneintrag "Hermann Goering" treffen — mit und ohne QID.
+    assert ethics_risk(None, "Hermann Göring")[0] is RiskResult.BLOCK
+    assert ethics_risk("Q47906", "x")[0] is RiskResult.BLOCK
+    # Nachtraege 01.08. (Live-Vorfall: ueber organische Discovery publiziert).
+    for qid in ("Q101886", "Q76433", "Q160847", "Q5721", "Q1394"):
+        assert ethics_risk(qid, "x")[0] is RiskResult.BLOCK
+    assert ethics_risk(None, "Tōjō Hideki")[0] is RiskResult.BLOCK
+
+
 def test_license_evaluation() -> None:
     assert evaluate_commons_license("Public domain") is RiskResult.PASS
     assert evaluate_commons_license("PD-US") is RiskResult.PASS
