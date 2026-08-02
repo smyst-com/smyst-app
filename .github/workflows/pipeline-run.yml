@@ -58,8 +58,13 @@ on:
         type: choice
         options: ["true", "false"]
 
+# Seed-Laeufe haben eine EIGENE Queue: GitHub haelt pro Gruppe nur einen
+# wartenden Lauf — bei 8 Crons/Tag verdraengte jeder neue Cron einen
+# wartenden Seed-Dispatch (Vorfall 02.08.2026, Laeufe #132/#133 cancelled).
+# Seed schreibt nur QID-gekeyte Kandidaten in den Store; Kollisionen mit
+# der Worker-Kette faengt der Dedup-Guard in Merge/Deploy ab.
 concurrency:
-  group: pipeline-run
+  group: pipeline-run-${{ inputs.mode == 'seed' && 'seed' || 'main' }}
   cancel-in-progress: false
 
 jobs:
