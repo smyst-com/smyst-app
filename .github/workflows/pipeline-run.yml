@@ -368,8 +368,14 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: python -m app.workers.report_quality
 
-      - name: "Auto-Deploy nach Publish (nur Cron)"
-        if: github.event_name == 'schedule'
+      # Auch nach einem manuellen Orts-Backfill deployen: der Backfill schreibt
+      # den Publish-Index auf IDrive e2, die statische Site entsteht aber erst
+      # im Pages-Build. Ohne diesen Zusatz bleibt die Live-Seite bis zum
+      # naechsten Cron auf dem alten Stand — am 03.08.2026 endete Deploy #400
+      # exakt 90 Sekunden vor dem Backfill #147, der 1168 Orte ergaenzt hat.
+      # Vorschaulaeufe (dry-run) schreiben nichts und deployen deshalb nicht.
+      - name: "Auto-Deploy nach Publish (Cron + echter Orts-Backfill)"
+        if: github.event_name == 'schedule' || (env.MODE == 'backfill-places' && inputs.backfill_dry_run == 'false')
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
