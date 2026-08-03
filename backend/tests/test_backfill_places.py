@@ -6,7 +6,12 @@ import io
 import json
 from datetime import date
 
-from app.ai.wikidata_places import PlaceResolver, format_place
+from app.ai.wikidata_places import (
+    PlaceResolver,
+    claim_item_ids,
+    current_country_ids,
+    format_place,
+)
 from app.integrations.candidate_store import CandidateStore
 from app.workers.backfill_places import run_backfill
 
@@ -43,6 +48,20 @@ def item_claim(prop: str, *qids: str) -> dict:
         {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": q}}}}
         for q in qids
     ]}
+
+
+def country_claim(*entries: tuple[str, str, str | None]) -> dict:
+    """P17-Statements als (QID, Rang, Enddatum) — Enddatum None = laufend."""
+    claims = []
+    for qid, rank, end in entries:
+        claim: dict = {
+            "mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": qid}}},
+            "rank": rank,
+        }
+        if end:
+            claim["qualifiers"] = {"P582": [{"datavalue": {"value": {"time": end}}}]}
+        claims.append(claim)
+    return {"P17": claims}
 
 
 def entity_payload(qid: str, *, label: str = "", claims: dict | None = None) -> bytes:
@@ -140,7 +159,121 @@ def test_backfill_fills_only_missing_field() -> None:
     assert index[0]["birth_place"] == "Kuratierter Ort"
 
 
+def test_backfill_appends_missing_country_to_city_only_value() -> None:
+    """Bestandswert "Jasnaja Poljana" bekommt das Land nachtraeglich."""
+    store, s3 = prepared_store()
+    index = json.loads(s3.objects[PUBLISH_INDEX_KEY])
+    index[0]["birth_place"] = "Jasnaja Poljana"  # Stadt ohne Land (alte Regel)
+    s3.objects[PUBLISH_INDEX_KEY] = json.dumps(index).encode("utf-8")
+    report = run_backfill(store=store, dry_run=False, run_date=date(2026, 8, 3))
+
+    assert report["updated"]["Q9312"]["birth_place"] == "Jasnaja Poljana, Russland"
+    assert report["upgraded"] == 1
+    assert report["filled"] == 1  # death_place war leer
+    assert json.loads(s3.objects[PUBLISH_INDEX_KEY])[0]["birth_place"] == \
+        "Jasnaja Poljana, Russland"
+
+
+def test_backfill_never_rewrites_a_differing_city_name() -> None:
+    """Weicht die Stadt ab, bleibt der Bestandswert stehen — nur Bericht."""
+    store, s3 = prepared_store()
+    index = json.loads(s3.objects[PUBLISH_INDEX_KEY])
+    index[0]["birth_place"] = "Jasnaja"  # anderer Ortsname
+    s3.objects[PUBLISH_INDEX_KEY] = json.dumps(index).encode("utf-8")
+    report = run_backfill(store=store, dry_run=False, run_date=date(2026, 8, 3))
+
+    assert "birth_place" not in report["updated"]["Q9312"]
+    assert report["mismatch"]["Q9312"]["birth_place"] == \
+        ["Jasnaja", "Jasnaja Poljana, Russland"]
+    assert json.loads(s3.objects[PUBLISH_INDEX_KEY])[0]["birth_place"] == "Jasnaja"
+
+
+def test_backfill_leaves_complete_values_untouched() -> None:
+    """"Stadt, Land" wird nie angefasst — auch kuratierte Korrekturen nicht."""
+    store, s3 = prepared_store()
+    index = json.loads(s3.objects[PUBLISH_INDEX_KEY])
+    index[0]["birth_place"] = "Kuratierte Stadt, Kuratiertes Land"
+    index[0]["death_place"] = "Astapowo, Russland"
+    s3.objects[PUBLISH_INDEX_KEY] = json.dumps(index).encode("utf-8")
+    report = run_backfill(store=store, dry_run=False, run_date=date(2026, 8, 3))
+
+    assert report["updated"] == {}
+    assert report["already_set"] == 2
+    assert json.loads(s3.objects[PUBLISH_INDEX_KEY])[0]["birth_place"] == \
+        "Kuratierte Stadt, Kuratiertes Land"
+
+
 # --- Ein-Land-Regel (identisch zu wikidata_candidates._place) ---
+
+def test_claim_item_ids_skips_deprecated_and_prefers_preferred_rank() -> None:
+    """Sofja Kowalewskaja: P20 "Spanien" ist in Wikidata deprecated."""
+    person = {"claims": {"P20": [
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q29"}}},
+         "rank": "deprecated"},
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q10519255"}}},
+         "rank": "normal"},
+    ]}}
+    assert claim_item_ids(person, "P20") == ("Q10519255",)
+
+    mit_vorzug = {"claims": {"P19": [
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q1"}}},
+         "rank": "normal"},
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q2"}}},
+         "rank": "preferred"},
+    ]}}
+    assert claim_item_ids(mit_vorzug, "P19") == ("Q2",)
+    # Ohne Rang-Angabe (Testdaten, aeltere Snapshots) bleibt alles erhalten.
+    assert claim_item_ids({"claims": item_claim("P19", "Q1", "Q2")}, "P19") == ("Q1", "Q2")
+
+
+def test_current_country_prefers_preferred_rank_over_historic_states() -> None:
+    """Berlin fuehrt elf Staaten; bevorzugt ist genau der heutige."""
+    berlin = {"claims": country_claim(
+        ("Q27306", "normal", "+1871-01-17T00:00:00Z"),   # Preussen, beendet
+        ("Q43287", "normal", "+1918-11-28T00:00:00Z"),   # Deutsches Reich, beendet
+        ("Q183", "preferred", None),                      # Deutschland, heute
+        ("Q16957", "normal", "+1990-10-02T00:00:00Z"),   # DDR, beendet
+    )}
+    assert current_country_ids(berlin) == ("Q183",)
+
+
+def test_current_country_falls_back_to_statements_without_end_date() -> None:
+    """Ohne bevorzugten Rang zaehlt, was kein Enddatum hat (Thagaste)."""
+    thagaste = {"claims": country_claim(
+        ("Q4368", "normal", "+0435-00-00T00:00:00Z"),    # Numidien, beendet
+        ("Q142", "normal", "+1962-07-05T00:00:00Z"),     # Frankreich, beendet
+        ("Q262", "normal", None),                         # Algerien, heute
+    )}
+    assert current_country_ids(thagaste) == ("Q262",)
+
+
+def test_current_country_ignores_deprecated_and_keeps_single_normal() -> None:
+    mexiko_stadt = {"claims": country_claim(("Q96", "normal", None))}
+    assert current_country_ids(mexiko_stadt) == ("Q96",)
+    widerlegt = {"claims": country_claim(("Q1", "deprecated", None))}
+    assert current_country_ids(widerlegt) == ()
+    assert current_country_ids({"claims": {}}) == ()
+
+
+def test_current_country_stays_ambiguous_when_several_states_are_ongoing() -> None:
+    """Zwei laufende Staaten ohne Vorzug: lieber kein Land als ein falsches."""
+    strittig = {"claims": country_claim(("Q1", "normal", None), ("Q2", "normal", None))}
+    assert current_country_ids(strittig) == ("Q1", "Q2")
+
+
+def test_resolver_appends_country_for_city_with_historic_states() -> None:
+    """Regressionstest zum Livebefund: Stockholm bekam kein Land."""
+    entities = {
+        "Q1754": {"labels": {"de": {"value": "Stockholm"}}, "claims": country_claim(
+            ("Q34", "preferred", None),
+            ("Q62623", "normal", None),
+            ("Q62589", "normal", "+1905-06-07T00:00:00Z"),
+        )},
+        "Q34": {"labels": {"de": {"value": "Schweden"}}, "claims": {}},
+    }
+    resolver = PlaceResolver(entities.get)
+    assert resolver.resolve("Q1754") == "Stockholm, Schweden"
+
 
 def test_format_place_appends_country_only_when_unambiguous() -> None:
     assert format_place("Ulm", {"Deutschland"}) == "Ulm, Deutschland"
