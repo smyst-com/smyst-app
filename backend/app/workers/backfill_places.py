@@ -83,6 +83,46 @@ def _upgraded(current: str, resolved: str) -> str | None:
     return resolved if resolved.startswith(prefix) and len(resolved) > len(prefix) else None
 
 
+def _covers(container: str, place: str) -> bool:
+    """True, wenn container denselben Ort meint wie place (ggf. mit Zusatz).
+
+    Wikidata benennt Verwaltungseinheiten oft mit Zusatzwort ("Gemeinde
+    Stockholm" fuer Stockholm). Verglichen wird deshalb auf Wortgrenzen, nicht
+    auf Teilzeichenketten — "Halle" trifft damit nicht auf "Halland" zu.
+    """
+    a = container.casefold().split()
+    b = place.casefold().split()
+    if not b or len(b) > len(a):
+        return False
+    return any(a[i:i + len(b)] == b for i in range(len(a) - len(b) + 1))
+
+
+def _country_for_known_place(
+    resolver: PlaceResolver, place_qids: tuple[str, ...], current: str
+) -> str | None:
+    """Land fuer einen Bestandsort, ohne den Ortsnamen anzutasten.
+
+    Personen tragen oft mehrere Ortsangaben. Alfred Nobel hat "Stockholm"
+    (normal) und die Jakobs- und Johannesgemeinde (bevorzugt); der
+    veroeffentlichte Wert ist Stockholm. Darum zuerst genau das Statement
+    suchen, das denselben Ort nennt — dann wird nur dessen Land angehaengt.
+
+    Findet sich keins, greift die Verwaltungskette (P131): liegt der
+    Bestandsort in der Kette des Wikidata-Ortes, gilt dessen Land auch fuer
+    ihn (Windlesham Manor liegt in Crowborough). Trifft beides nicht zu
+    — Snamensk vs. Kaliningrad —, bleibt der Wert unveraendert.
+    """
+    for qid in place_qids:
+        resolved = resolver.resolve(qid)
+        if resolved and _upgraded(current, resolved):
+            return resolved
+    for qid in place_qids:
+        country = resolver.country_of(qid)
+        if country and any(_covers(c, current) for c in resolver.containing_labels(qid)):
+            return f"{current}, {country}"
+    return None
+
+
 def _fetch_entity_payload(qid: str) -> dict:
     import httpx  # lazy: Tests brauchen keinen HTTP-Client
 
@@ -164,7 +204,9 @@ def run_backfill(*, store: CandidateStore, dry_run: bool, run_date: date) -> dic
                 updates[field] = resolved
                 report["filled"] += 1
                 continue
-            upgrade = _upgraded(current, resolved)
+            upgrade = _upgraded(current, resolved) or _country_for_known_place(
+                resolver, place_qids, current
+            )
             if upgrade:
                 updates[field] = upgrade
                 report["upgraded"] += 1
