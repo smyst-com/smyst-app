@@ -191,7 +191,9 @@ export const LIFE_PLACES: Record<string, { birthPlace?: string; deathPlace?: str
   "mary-cassatt": { birthPlace: "Allegheny, USA", deathPlace: "Le Mesnil-Théribus, Frankreich" },
   "filippo-brunelleschi": { birthPlace: "Florenz, Italien", deathPlace: "Rom, Italien" },
   "benito-juarez": { birthPlace: "San Pablo Guelatao, Mexiko", deathPlace: "Mexiko-Stadt, Mexiko" },
-  "sofja-kowalewskaja": { birthPlace: "Moskau, Russland", deathPlace: "Spanien" },
+  // Sterbeort korrigiert 03.08.2026: Wikidata fuehrt "Spanien" als deprecated
+  // (widerlegt); gueltig ist die Hedvig-Eleonora-Gemeinde in Stockholm.
+  "sofja-kowalewskaja": { birthPlace: "Moskau, Russland", deathPlace: "Stockholm, Schweden" },
   "george-bernard-shaw": { birthPlace: "Dublin, Irland", deathPlace: "Ayot Saint Lawrence, Vereinigtes Königreich" },
   "susan-b-anthony": { birthPlace: "Adams, USA", deathPlace: "Rochester, USA" },
   "utagawa-hiroshige": { birthPlace: "Edo, Tokugawa-Shōgunat", deathPlace: "Edo, Tokugawa-Shōgunat" },
@@ -214,7 +216,9 @@ export const LIFE_PLACES: Record<string, { birthPlace?: string; deathPlace?: str
   "harun-ar-raschid": { birthPlace: "Ray, Iran", deathPlace: "Tūs, Iran" },
   "auguste-rodin": { birthPlace: "Paris, Frankreich", deathPlace: "Meudon, Frankreich" },
   "machado-de-assis": { birthPlace: "Rio de Janeiro, Brasilien", deathPlace: "Rio de Janeiro, Brasilien" },
-  "mehmet-akif-ersoy": { birthPlace: "Fatih, Türkei", deathPlace: "Moldau" },
+  // Sterbeort korrigiert 03.08.2026: Wikidata P20 nennt Moldau, das ist falsch —
+  // Ersoy starb am 27.12.1936 in Istanbul (Wikipedia-Infobox, beide Sprachen).
+  "mehmet-akif-ersoy": { birthPlace: "Fatih, Türkei", deathPlace: "Istanbul, Türkei" },
   "friedrich-der-grosse": { birthPlace: "Berlin, Deutschland", deathPlace: "Potsdam, Deutschland" },
   "nam-k-kemal": { birthPlace: "Tekirdağ, Türkei", deathPlace: "Chios, Griechenland" },
   "alexander-graham-bell": { birthPlace: "Edinburgh, Vereinigtes Königreich", deathPlace: "Beinn Bhreagh, Kanada" },
@@ -248,7 +252,9 @@ export const LIFE_PLACES: Record<string, { birthPlace?: string; deathPlace?: str
   "edvard-munch": { birthPlace: "Ådalsbruk, Norwegen", deathPlace: "Ekely, Norwegen" },
   "federico-garcia-lorca": { birthPlace: "Fuente Vaqueros, Spanien", deathPlace: "Víznar, Spanien" },
   "michel-de-montaigne": { birthPlace: "Saint-Michel-de-Montaigne, Frankreich", deathPlace: "Saint-Michel-de-Montaigne, Frankreich" },
-  "justinian-i": { birthPlace: "Taurision (Serbia)", deathPlace: "Konstantinopel, Türkei" },
+  // Geburtsort korrigiert 03.08.2026: das Wikidata-Label "Taurision (Serbia)"
+  // ist veraltet — Tauresium liegt heute in Nordmazedonien (bei Taor).
+  "justinian-i": { birthPlace: "Tauresium, Nordmazedonien", deathPlace: "Konstantinopel, Türkei" },
   "henri-bergson": { birthPlace: "Paris, Frankreich", deathPlace: "Paris, Frankreich" },
   "caravaggio": { birthPlace: "Mailand, Italien", deathPlace: "Porto Ercole, Italien" },
   "thomas-morus": { birthPlace: "London, Vereinigtes Königreich", deathPlace: "Tower Hill, Vereinigtes Königreich" },
@@ -313,7 +319,9 @@ export const LIFE_PLACES: Record<string, { birthPlace?: string; deathPlace?: str
   "henri-poincare": { birthPlace: "Nancy, Frankreich", deathPlace: "Paris, Frankreich" },
   "walt-whitman": { birthPlace: "West Hills, USA", deathPlace: "Camden, USA" },
   "charles-augustin-de-coulomb": { birthPlace: "Angoulême, Frankreich", deathPlace: "Paris, Frankreich" },
-  "murasaki-shikibu": { birthPlace: "Heian-kyō", deathPlace: "Heian-kyō" },
+  // Land ergaenzt 03.08.2026: Heian-kyo ist das heutige Kyoto (Wikidata fuehrt
+  // den Ort als "Hauptstadt Japans"), fuehrt aber selbst kein P17.
+  "murasaki-shikibu": { birthPlace: "Heian-kyō, Japan", deathPlace: "Heian-kyō, Japan" },
   "george-berkeley": { birthPlace: "Kilkenny, Irland", deathPlace: "Oxford, Vereinigtes Königreich" },
   "john-keats": { birthPlace: "Moorgate, Vereinigtes Königreich", deathPlace: "Rom, Italien" },
   "henri-de-toulouse-lautrec": { birthPlace: "Albi, Frankreich", deathPlace: "Saint-André-du-Bois, Frankreich" },

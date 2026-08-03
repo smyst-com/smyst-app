@@ -72,9 +72,13 @@ SELECT DISTINCT ?person ?personLabel ?birth ?death ?sitelinks ?countryLabel
   OPTIONAL {{ ?person wdt:P569 ?birth . }}
   OPTIONAL {{ ?person wdt:P27 ?country . }}
   # Geburts-/Sterbeort (P19/P20) samt Staat des Ortes (P17) fuer die Zeilen 2
-  # und 3 des 4-Zeilen-Profilformats. Orte mit mehreren P17-Werten (historische
-  # Gebietswechsel) erzeugen Mehrfachzeilen; die QID-Dedup in screen_candidates
-  # faengt das ab.
+  # und 3 des 4-Zeilen-Profilformats. wdt: liefert bewusst nur den besten Rang
+  # — und damit bei jeder Stadt mit gepflegtem Gebietsverlauf genau den heute
+  # gueltigen Staat (Livetest 03.08.2026: Berlin->Deutschland, London->
+  # Vereinigtes Koenigreich, Paris->Frankreich, Stockholm->Schweden), obwohl
+  # Wikidata dort acht bis elf P17-Werte fuehrt. Nicht auf p:/ps: umstellen:
+  # das vervielfacht die Zeilen gegen das LIMIT und laeuft am Endpunkt in
+  # Timeouts. Die Rangfolge fuer den QID-Weg steht in ai/wikidata_places.py.
   OPTIONAL {{ ?person wdt:P19 ?birthPlace .
               OPTIONAL {{ ?birthPlace wdt:P17 ?birthPlaceCountry . }} }}
   OPTIONAL {{ ?person wdt:P20 ?deathPlace .

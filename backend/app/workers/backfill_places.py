@@ -7,7 +7,7 @@ Worker ergaenzt birth_place/death_place nachtraeglich — nach demselben Muster
 wie backfill_gender:
 
 1. Publish-Index laden (pipeline/published/index.json auf IDrivee2.com).
-2. Fuer jeden Eintrag ohne birth_place/death_place: Snapshot
+2. Fuer jeden Eintrag ohne vollstaendigen birth_place/death_place: Snapshot
    pipeline/sources/{qid}/wikidata-entitydata.json lesen (fehlt er, wird er
    einmalig von Wikidata geladen und gesichert) und P19/P20 extrahieren.
 3. Orts-QIDs zu "Stadt, Land" aufloesen (Labels + P17 des Ortes; Orts-
@@ -15,8 +15,19 @@ wie backfill_gender:
 4. pipeline/published/{qid}/profile.json und den Index aktualisieren.
 5. Changelog-Bericht nach IDrivee2.com schreiben (Audit-Trail).
 
-Der Worker ist idempotent und ergaenzt nur fehlende Ortsfelder; vorhandene
-Werte werden nie ueberschrieben, sichtbare Profile bleiben sichtbar.
+Zwei Faelle werden behandelt:
+  fehlt   — das Feld ist leer und wird gesetzt.
+  ohne Land — das Feld enthaelt nur die Stadt ("Stockholm"). Solche Werte sind
+            durch die alte Ein-Land-Regel entstanden, die bei jeder Stadt mit
+            gepflegtem Gebietsverlauf das Land weggelassen hat (Livebefund
+            03.08.2026: 522 Geburts- und 629 Sterbeorte). Sie werden neu
+            aufgeloest und NUR dann ersetzt, wenn die neue Fassung mit exakt
+            demselben Stadtnamen beginnt und lediglich ", Land" anhaengt.
+            Weicht der Stadtname ab, bleibt der bestehende Wert stehen und der
+            Fall wird als mismatch berichtet.
+
+Der Worker ist idempotent. Vollstaendige Werte ("Stadt, Land") und kuratierte
+Eintraege mit Komma werden nie angefasst, sichtbare Profile bleiben sichtbar.
 
 Start:
     python -m app.workers.backfill_places --dry-run
@@ -52,6 +63,24 @@ def _put_json_object(store: CandidateStore, key: str, payload) -> None:
     store._client.put_object(  # noqa: SLF001
         Bucket=store._bucket, Key=key, Body=body, ContentType="application/json"
     )
+
+
+PLACE_FIELDS = (("birth_place", P_BIRTH_PLACE), ("death_place", P_DEATH_PLACE))
+
+
+def _needs_country(value) -> bool:
+    """True, wenn nur die Stadt drinsteht ("Stockholm") und das Land fehlt."""
+    return isinstance(value, str) and bool(value.strip()) and "," not in value
+
+
+def _upgraded(current: str, resolved: str) -> str | None:
+    """Neue Fassung, wenn sie den Stadtnamen unveraendert laesst — sonst None.
+
+    Bewusst eng: akzeptiert wird ausschliesslich "<current>, <Land>". Damit
+    kann der Backfill ein Land anhaengen, aber niemals einen Ort umschreiben.
+    """
+    prefix = f"{current.strip()}, "
+    return resolved if resolved.startswith(prefix) and len(resolved) > len(prefix) else None
 
 
 def _fetch_entity_payload(qid: str) -> dict:
@@ -90,6 +119,9 @@ def run_backfill(*, store: CandidateStore, dry_run: bool, run_date: date) -> dic
         "total": 0,
         "already_set": 0,
         "updated": {},
+        "filled": 0,
+        "upgraded": 0,
+        "mismatch": {},
         "unresolved": [],
         "errors": {},
     }
@@ -104,7 +136,10 @@ def run_backfill(*, store: CandidateStore, dry_run: bool, run_date: date) -> dic
         qid = record.get("wikidata_qid")
         if not qid:
             continue
-        if record.get("birth_place") and record.get("death_place"):
+        if not any(
+            not record.get(field) or _needs_country(record.get(field))
+            for field, _ in PLACE_FIELDS
+        ):
             report["already_set"] += 1
             continue
         try:
@@ -117,16 +152,31 @@ def run_backfill(*, store: CandidateStore, dry_run: bool, run_date: date) -> dic
             continue
 
         updates: dict[str, str] = {}
-        for field, prop in (("birth_place", P_BIRTH_PLACE), ("death_place", P_DEATH_PLACE)):
-            if record.get(field):
-                continue  # vorhandene Werte nie ueberschreiben
+        for field, prop in PLACE_FIELDS:
+            current = record.get(field)
+            if current and not _needs_country(current):
+                continue  # vollstaendige Werte nie anfassen
             place_qids = claim_item_ids(entity, prop)
             resolved = resolver.resolve(place_qids[0]) if place_qids else None
-            if resolved:
+            if not resolved:
+                continue
+            if not current:
                 updates[field] = resolved
+                report["filled"] += 1
+                continue
+            upgrade = _upgraded(current, resolved)
+            if upgrade:
+                updates[field] = upgrade
+                report["upgraded"] += 1
+            else:
+                # Stadtname weicht ab: bestehender Wert bleibt, Fall wird
+                # dokumentiert statt stillschweigend ueberschrieben.
+                report["mismatch"].setdefault(qid, {})[field] = [current, resolved]
         if not updates:
-            # Wikidata kennt fuer dieses Profil keinen (aufloesbaren) Ort.
-            report["unresolved"].append(qid)
+            # Wikidata kennt fuer dieses Profil keinen (aufloesbaren) Ort;
+            # abweichende Stadtnamen stehen bereits unter mismatch.
+            if qid not in report["mismatch"]:
+                report["unresolved"].append(qid)
             continue
 
         record.update(updates)
