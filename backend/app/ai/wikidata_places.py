@@ -26,6 +26,7 @@ P_BIRTH_PLACE = "P19"
 P_DEATH_PLACE = "P20"
 P_COUNTRY = "P17"
 P_END_TIME = "P582"
+P_LOCATED_IN = "P131"  # liegt in der Verwaltungseinheit
 
 
 def _item_id(claim: dict) -> str | None:
@@ -46,13 +47,18 @@ def _first_group(*groups: list[str]) -> tuple[str, ...]:
 
 
 def claim_item_ids(entity: dict, prop: str) -> tuple[str, ...]:
-    """Item-QIDs eines Claims nach Wikidata-Rang.
+    """Item-QIDs eines Claims, sortiert nach Wikidata-Rang.
 
-    Bevorzugte Statements gewinnen, deprecated (von Wikidata als widerlegt
-    markiert) faellt weg. Ohne diese Regel greift der Aufrufer einfach das
-    erste Statement ab — bei Sofja Kowalewskaja war das ausgerechnet der
-    deprecated-Sterbeort "Spanien" statt der Stockholmer Gemeinde
-    (Befund 03.08.2026).
+    Bevorzugte Statements stehen vorn, deprecated (von Wikidata als widerlegt
+    markiert) faellt weg. Wer nur einen Ort braucht, nimmt das erste Element.
+    Ohne die Rang-Sortierung greift der Aufrufer einfach das erste Statement
+    ab — bei Sofja Kowalewskaja war das ausgerechnet der deprecated-Sterbeort
+    "Spanien" statt der Stockholmer Gemeinde (Befund 03.08.2026).
+
+    Die restlichen Eintraege bleiben erhalten, weil Personen oft mehrere
+    Ortsangaben tragen: Alfred Nobel hat "Stockholm" (normal) UND die
+    Jakobs- und Johannesgemeinde (bevorzugt). Der Backfill sucht darin den
+    Eintrag, der zum bereits veroeffentlichten Ort passt.
     """
     preferred: list[str] = []
     normal: list[str] = []
@@ -64,7 +70,7 @@ def claim_item_ids(entity: dict, prop: str) -> tuple[str, ...]:
         if qid is None:
             continue
         (preferred if rank == "preferred" else normal).append(qid)
-    return _first_group(preferred, normal)
+    return tuple(dict.fromkeys(preferred + normal))
 
 
 def current_country_ids(entity: dict) -> tuple[str, ...]:
@@ -145,3 +151,44 @@ class PlaceResolver:
             result = format_place(label, countries)
         self._resolved[place_qid] = result
         return result
+
+    def country_of(self, place_qid: str) -> str | None:
+        """Land des Ortes als Label, sofern eindeutig — sonst None."""
+        place = self._entity(place_qid)
+        if place is None:
+            return None
+        labels = {
+            entity_label(self._entity(country_qid) or {})
+            for country_qid in current_country_ids(place)
+        }
+        real = {c for c in labels if c}
+        return real.pop() if len(real) == 1 else None
+
+    def containing_labels(self, place_qid: str, *, depth: int = 4) -> tuple[str, ...]:
+        """Labels der Verwaltungskette (P131) aufwaerts, ohne den Ort selbst.
+
+        Fuer "Jakob and Johannes parish" also Richtung "Gemeinde Stockholm".
+        Damit laesst sich pruefen, ob ein Bestandswert wie "Stockholm" derselbe
+        Ort in groeberer Aufloesung ist — dann gilt dessen Land auch fuer ihn.
+        """
+        labels: list[str] = []
+        seen = {place_qid}
+        frontier = [place_qid]
+        for _ in range(depth):
+            nextup: list[str] = []
+            for qid in frontier:
+                place = self._entity(qid)
+                if place is None:
+                    continue
+                for parent_qid in claim_item_ids(place, P_LOCATED_IN):
+                    if parent_qid in seen:
+                        continue
+                    seen.add(parent_qid)
+                    nextup.append(parent_qid)
+                    label = entity_label(self._entity(parent_qid) or {})
+                    if label:
+                        labels.append(label)
+            if not nextup:
+                break
+            frontier = nextup
+        return tuple(labels)

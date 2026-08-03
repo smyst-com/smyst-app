@@ -174,6 +174,87 @@ def test_backfill_appends_missing_country_to_city_only_value() -> None:
         "Jasnaja Poljana, Russland"
 
 
+def test_backfill_uses_the_statement_that_names_the_published_place() -> None:
+    """Fall Alfred Nobel: bevorzugt ist die Gemeinde, publiziert ist Stockholm."""
+    store, s3 = prepared_store()
+    index = json.loads(s3.objects[PUBLISH_INDEX_KEY])
+    index[0]["birth_place"] = "Stockholm"
+    index[0]["death_place"] = "Astapowo, Russland"
+    s3.objects[PUBLISH_INDEX_KEY] = json.dumps(index).encode("utf-8")
+    s3.objects[snapshot_key("Q9312")] = entity_payload("Q9312", label="Lew Tolstoi", claims={
+        "P19": [
+            {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q54006791"}}},
+             "rank": "preferred"},
+            {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q1754"}}},
+             "rank": "normal"},
+        ]
+    })
+    s3.objects[snapshot_key("Q54006791")] = entity_payload(
+        "Q54006791", label="Jakob and Johannes parish", claims=item_claim("P17", "Q34")
+    )
+    s3.objects[snapshot_key("Q1754")] = entity_payload(
+        "Q1754", label="Stockholm", claims=item_claim("P17", "Q34")
+    )
+    s3.objects[snapshot_key("Q34")] = entity_payload("Q34", label="Schweden")
+    report = run_backfill(store=store, dry_run=False, run_date=date(2026, 8, 3))
+
+    assert report["updated"]["Q9312"]["birth_place"] == "Stockholm, Schweden"
+    assert report["mismatch"] == {}
+
+
+def test_backfill_falls_back_to_the_administrative_chain() -> None:
+    """Ohne passendes Statement zaehlt P131: Windlesham Manor liegt in Crowborough."""
+    store, s3 = prepared_store()
+    index = json.loads(s3.objects[PUBLISH_INDEX_KEY])
+    index[0]["birth_place"] = "Crowborough"
+    index[0]["death_place"] = "Astapowo, Russland"
+    s3.objects[PUBLISH_INDEX_KEY] = json.dumps(index).encode("utf-8")
+    s3.objects[snapshot_key("Q9312")] = entity_payload(
+        "Q9312", label="Lew Tolstoi", claims=item_claim("P19", "Q8025265")
+    )
+    s3.objects[snapshot_key("Q8025265")] = entity_payload(
+        "Q8025265", label="Windlesham Manor",
+        claims={**item_claim("P17", "Q145"), **item_claim("P131", "Q2288772")},
+    )
+    s3.objects[snapshot_key("Q2288772")] = entity_payload("Q2288772", label="Crowborough")
+    s3.objects[snapshot_key("Q145")] = entity_payload(
+        "Q145", label="Vereinigtes Königreich"
+    )
+    report = run_backfill(store=store, dry_run=False, run_date=date(2026, 8, 3))
+
+    assert report["updated"]["Q9312"]["birth_place"] == "Crowborough, Vereinigtes Königreich"
+
+
+def test_backfill_leaves_place_alone_when_it_is_not_in_the_chain() -> None:
+    """Fall David Hilbert: "Snamensk" liegt nicht in Kaliningrad."""
+    store, s3 = prepared_store()
+    index = json.loads(s3.objects[PUBLISH_INDEX_KEY])
+    index[0]["birth_place"] = "Snamensk"
+    index[0]["death_place"] = "Astapowo, Russland"
+    s3.objects[PUBLISH_INDEX_KEY] = json.dumps(index).encode("utf-8")
+    s3.objects[snapshot_key("Q9312")] = entity_payload(
+        "Q9312", label="Lew Tolstoi", claims=item_claim("P19", "Q1829")
+    )
+    s3.objects[snapshot_key("Q1829")] = entity_payload(
+        "Q1829", label="Kaliningrad", claims=item_claim("P17", "Q159")
+    )
+    report = run_backfill(store=store, dry_run=False, run_date=date(2026, 8, 3))
+
+    assert report["updated"] == {}
+    assert report["mismatch"]["Q9312"]["birth_place"] == ["Snamensk", "Kaliningrad, Russland"]
+    assert json.loads(s3.objects[PUBLISH_INDEX_KEY])[0]["birth_place"] == "Snamensk"
+
+
+def test_covers_matches_on_word_boundaries_only() -> None:
+    from app.workers.backfill_places import _covers
+
+    assert _covers("Gemeinde Stockholm", "Stockholm")
+    assert _covers("Stockholm", "Stockholm")
+    assert _covers("Landkreis Frankfurt am Main", "Frankfurt am Main")
+    assert not _covers("Halland", "Halle")       # keine Teilzeichenkette
+    assert not _covers("Stockholm", "Gemeinde Stockholm")  # nur aufwaerts
+
+
 def test_backfill_never_rewrites_a_differing_city_name() -> None:
     """Weicht die Stadt ab, bleibt der Bestandswert stehen — nur Bericht."""
     store, s3 = prepared_store()
@@ -205,7 +286,7 @@ def test_backfill_leaves_complete_values_untouched() -> None:
 
 # --- Ein-Land-Regel (identisch zu wikidata_candidates._place) ---
 
-def test_claim_item_ids_skips_deprecated_and_prefers_preferred_rank() -> None:
+def test_claim_item_ids_skips_deprecated_and_sorts_preferred_first() -> None:
     """Sofja Kowalewskaja: P20 "Spanien" ist in Wikidata deprecated."""
     person = {"claims": {"P20": [
         {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q29"}}},
@@ -221,7 +302,8 @@ def test_claim_item_ids_skips_deprecated_and_prefers_preferred_rank() -> None:
         {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q2"}}},
          "rank": "preferred"},
     ]}}
-    assert claim_item_ids(mit_vorzug, "P19") == ("Q2",)
+    # Bevorzugt zuerst; die uebrigen bleiben fuer die Bestandssuche erhalten.
+    assert claim_item_ids(mit_vorzug, "P19") == ("Q2", "Q1")
     # Ohne Rang-Angabe (Testdaten, aeltere Snapshots) bleibt alles erhalten.
     assert claim_item_ids({"claims": item_claim("P19", "Q1", "Q2")}, "P19") == ("Q1", "Q2")
 
