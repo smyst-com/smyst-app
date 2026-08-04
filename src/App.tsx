@@ -839,8 +839,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.08] bg-[#090d14] px-4 py-8 text-[#9aa6b7] sm:px-6">
-        <div className="mx-auto mb-8 grid max-w-[1200px] grid-cols-1 gap-10 md:grid-cols-[1.2fr_2.8fr]">
+      <footer className="border-t border-white/[0.08] bg-[#090d14] px-4 py-5 text-[#9aa6b7] sm:px-6">
+        <div className="mx-auto mb-5 grid max-w-[1200px] grid-cols-1 gap-8 md:grid-cols-[1.2fr_2.8fr]">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <span className="font-smyst-logo text-xl">smyst<span className="text-[0.78em]">.com</span></span>
@@ -871,7 +871,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-white/[0.08] pt-6 md:flex-row">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-3 border-t border-white/[0.08] pt-4 md:flex-row">
           <p className="text-sm text-[#9aa6b7]">{ft.footer.rights}</p>
           <div className="flex flex-wrap gap-5">
             <a href="mailto:s@smyst.com" className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.contact}</a>
@@ -3483,17 +3483,10 @@ function TwinProfileView({
   }
 
   return (
-    <div className="pt-3">
+    <div className="pt-2">
       <section className="mx-auto max-w-[980px]">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <button onClick={() => onNavigate('landing')} className="font-smyst-logo text-2xl">
-            smyst<span className="text-[0.78em]">.com</span>
-          </button>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
-            {profile.visibility === 'public' ? (lang === DEFAULT_LANG ? 'Öffentlich sichtbar' : t.profile.publicVisible) : (lang === DEFAULT_LANG ? 'Privat · nicht öffentlich' : t.profile.privateVisible)}
-          </span>
-        </div>
-
+        {/* Kompakt: kein doppeltes smyst.com-Logo ueber der Karte (steht schon
+            in der Navbar); das Sichtbarkeits-Badge sitzt in der Kicker-Zeile. */}
         <Card className="overflow-hidden p-0">
           {/* Zwei Spalten nur fuer den Kopf; alles darunter laeuft volle Breite,
               damit unter dem Bild keine tote Flaeche entsteht. */}
@@ -3551,6 +3544,9 @@ function TwinProfileView({
                     ✓ {lang === DEFAULT_LANG ? 'Quellen geprüft' : t.profile.verifiedBadge}
                   </span>
                 ) : null}
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
+                  {profile.visibility === 'public' ? (lang === DEFAULT_LANG ? 'Öffentlich sichtbar' : t.profile.publicVisible) : (lang === DEFAULT_LANG ? 'Privat · nicht öffentlich' : t.profile.privateVisible)}
+                </span>
               </div>
               <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#c7d4ea]">{profileMainCategory(profile)}</p>
               <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || (lang === DEFAULT_LANG ? 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.' : t.profile.noDescription)}</p>
@@ -3579,7 +3575,7 @@ function TwinProfileView({
             </div>
           </div>
 
-          <div className="px-5 pb-5 sm:px-7 sm:pb-6">
+          <div className="px-5 pb-4 sm:px-7 sm:pb-4">
               <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {profile.milestones?.length ? (
                   <div className="rounded-lg bg-white/18 p-4">
