@@ -3240,6 +3240,7 @@ function TwinProfileView({
   const [shareStatus, setShareStatus] = useState('')
   const [profileImageBroken, setProfileImageBroken] = useState(false)
   const [similarTwins, setSimilarTwins] = useState<StartTwin[]>([])
+  const [publicProfileCount, setPublicProfileCount] = useState(0)
   const { lang } = useLanguage({ reloadOnChange: false })
   const t = useStaticTranslations(lang)
   const isPrivate = Boolean(privateTwinId)
@@ -3347,6 +3348,7 @@ function TwinProfileView({
           .map((item, index) => publicProfileToStartTwin(item, index))
         const active = pool.find((item) => item.profileSlug === slug) ?? null
         setSimilarTwins(similarProfiles(active, pool, 4) as StartTwin[])
+        setPublicProfileCount(pool.length)
       })
       .catch(() => {
         if (alive) setSimilarTwins([])
@@ -3455,9 +3457,21 @@ function TwinProfileView({
       ? 'dein Fachgebiet'
       : t.profile.askTopicFallback
   const askQuestions = [
-    (lang === DEFAULT_LANG ? 'Erkläre mir {{topic}} so, dass ich es wirklich verstehe.' : t.profile.askQ1).replace('{{topic}}', askTopic),
-    lang === DEFAULT_LANG ? 'Was war dein größter Fehler – und was hast du daraus gelernt?' : t.profile.askQ2,
-    lang === DEFAULT_LANG ? 'Wie würdest du heute über KI denken?' : t.profile.askQ3,
+    {
+      emoji: '🎓',
+      text: (lang === DEFAULT_LANG ? 'Erkläre mir {{topic}} so, dass ich es wirklich verstehe.' : t.profile.askQ1).replace('{{topic}}', askTopic),
+      sub: lang === DEFAULT_LANG ? 'Das Kernthema – Schritt für Schritt erklärt' : t.profile.askQ1Sub,
+    },
+    {
+      emoji: '🤔',
+      text: lang === DEFAULT_LANG ? 'Was war dein größter Fehler – und was hast du daraus gelernt?' : t.profile.askQ2,
+      sub: lang === DEFAULT_LANG ? 'Ehrliche Rückschau und Lehren' : t.profile.askQ2Sub,
+    },
+    {
+      emoji: '⚡',
+      text: lang === DEFAULT_LANG ? 'Wie würdest du heute über KI denken?' : t.profile.askQ3,
+      sub: lang === DEFAULT_LANG ? 'Der Denkstil auf eine Frage von heute' : t.profile.askQ3Sub,
+    },
   ]
   const openChatWithQuestion = (question: string) => {
     onNavigate('twin-chat')
@@ -3483,7 +3497,7 @@ function TwinProfileView({
               {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
                   quadratische Portrait bildschirmhoch und schiebt Name, Daten und
                   den Chat-Button unter die Falz. */}
-              <div className="mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-[18px] border border-white/40 bg-white/28 lg:max-w-none">
+              <div className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-[18px] border border-white/40 bg-white/28 lg:max-w-none">
                 <img
                   src={profile.imageUrl}
                   alt={profile.name}
@@ -3492,6 +3506,12 @@ function TwinProfileView({
                   decoding="async"
                   onError={() => setProfileImageBroken(true)}
                 />
+                {profile.visibility === 'public' && profile.status === 'ready' && (
+                  <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-[#0b1220]/85 px-3 py-1 text-xs font-semibold text-emerald-300">
+                    <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    {lang === DEFAULT_LANG ? 'Twin online – antwortet sofort' : t.profile.twinOnline}
+                  </span>
+                )}
               </div>
               <button
                 type="button"
@@ -3533,28 +3553,51 @@ function TwinProfileView({
               <section className="mt-5 max-w-[720px] rounded-lg border border-white/30 bg-white/14 p-4">
                 <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#667085]">{lang === DEFAULT_LANG ? 'Direkt fragen' : t.profile.askTitle}</h2>
                 <p className="mt-1 text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Ein Klick startet den Chat mit dieser Frage.' : t.profile.askSubtitle}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
                   {askQuestions.map((question) => (
                     <button
-                      key={question}
+                      key={question.text}
                       type="button"
-                      onClick={() => openChatWithQuestion(question)}
-                      className="rounded-full border border-white/42 bg-white/18 px-4 py-2 text-left text-sm font-medium transition-colors hover:bg-white/30"
+                      onClick={() => openChatWithQuestion(question.text)}
+                      className="flex flex-col items-start gap-1 rounded-xl border border-white/42 bg-white/18 px-4 py-3 text-left transition-colors hover:bg-white/30"
                     >
-                      {question} <span aria-hidden="true">→</span>
+                      <span aria-hidden="true" className="text-lg leading-none">{question.emoji}</span>
+                      <span className="text-sm font-semibold leading-snug">{question.text}</span>
+                      <span className="text-xs text-[#667085]">{question.sub}</span>
+                      <span className="mt-1 text-xs font-bold text-[#0b1c44]">
+                        {lang === DEFAULT_LANG ? 'Frage stellen' : t.profile.askCta} <span aria-hidden="true">→</span>
+                      </span>
                     </button>
                   ))}
                 </div>
               </section>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {profile.milestones?.length ? (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.milestones.length}</p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Inhalte' : t.profile.statContents}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.mediaCount}</p>
+                  </div>
+                )}
+                {profile.sources?.length ? (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.sources.length}</p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Wissen' : t.profile.statKnowledge}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.knowledgeCount}</p>
+                  </div>
+                )}
                 <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Inhalte' : t.profile.statContents}</p>
-                  <p className="mt-1 text-2xl font-bold">{profile.mediaCount}</p>
-                </div>
-                <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Wissen' : t.profile.statKnowledge}</p>
-                  <p className="mt-1 text-2xl font-bold">{profile.knowledgeCount}</p>
+                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Sprachen' : t.profile.languagesTitle}</p>
+                  <p className="mt-1 text-2xl font-bold">{profile.languages.length || 1}</p>
                 </div>
                 <div className="rounded-lg bg-white/18 p-4">
                   <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Stil' : t.profile.statStyle}</p>
@@ -3585,10 +3628,16 @@ function TwinProfileView({
               {profile.milestones?.length ? (
                 <section className="mt-6">
                   <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</h2>
-                  <ol className="relative ml-1.5 border-l-2 border-white/40 pl-5">
+                  <ol className="relative ml-1.5 border-l-2 border-white/40 pl-5 lg:ml-0 lg:flex lg:border-l-0 lg:pl-0">
                     {profile.milestones.map((milestone) => (
-                      <li key={`${milestone.year}-${milestone.title}`} className="relative mb-4 last:mb-0">
-                        <span aria-hidden="true" className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full bg-[#17191d]"></span>
+                      <li
+                        key={`${milestone.year}-${milestone.title}`}
+                        className="relative mb-4 last:mb-0 lg:mb-0 lg:flex-1 lg:border-t-2 lg:border-white/40 lg:px-2 lg:pt-5 lg:text-center"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full bg-[#17191d] lg:left-1/2 lg:-top-[7px] lg:-translate-x-1/2"
+                        ></span>
                         <p className="text-sm font-bold">{milestone.year}</p>
                         <p className="text-sm font-medium">{milestone.title}</p>
                         {milestone.place && <p className="text-xs text-[#667085]">{milestone.place}</p>}
@@ -3656,7 +3705,18 @@ function TwinProfileView({
 
         {similarTwins.length > 0 && (
           <section className="mt-8">
-            <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Ähnliche Profile' : t.start.relatedLabel}</h2>
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-lg font-semibold">{lang === DEFAULT_LANG ? 'Ähnliche Profile' : t.start.relatedLabel}</h2>
+              {publicProfileCount > 4 && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('twin-chat')}
+                  className="text-sm font-semibold text-[#0b1c44] underline-offset-2 hover:underline"
+                >
+                  {(lang === DEFAULT_LANG ? 'Alle {{count}} Profile ansehen' : t.profile.allProfiles).replace('{{count}}', String(publicProfileCount))} <span aria-hidden="true">→</span>
+                </button>
+              )}
+            </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {similarTwins.map((twin) => (
                 <a

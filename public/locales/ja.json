@@ -142,6 +142,6 @@
     "notFoundText": "このプロフィールは公開インデックスの対象外か、存在しません。",
     "incompleteTitle": "ツインプロフィールが不完全です",
     "incompleteText": "このプロフィールを公開するには、有効なプロフィール画像が必要です。",
-    "privateText": "このプロフィールは非公開で、インデックスされず、ログイン後にのみ表示されます。","verifiedBadge":"出典確認済み","askTitle":"直接質問する","askSubtitle":"ワンクリックでこの質問からチャットが始まります。","askQ1":"{{topic}}を本当に理解できるように説明してください。","askQ2":"あなたの最大の失敗は何でしたか?そこから何を学びましたか?","askQ3":"今のAIについてどう思いますか?","askTopicFallback":"あなたの専門分野","timelineTitle":"人生の歩み","createTitle":"自分のAIツインを作ろう","createText":"あなたの知識、スタイル、言語 – 公開でも非公開でも。"
+    "privateText": "このプロフィールは非公開で、インデックスされず、ログイン後にのみ表示されます。","verifiedBadge":"出典確認済み","askTitle":"直接質問する","askSubtitle":"ワンクリックでこの質問からチャットが始まります。","askQ1":"{{topic}}を本当に理解できるように説明してください。","askQ2":"あなたの最大の失敗は何でしたか?そこから何を学びましたか?","askQ3":"今のAIについてどう思いますか?","askTopicFallback":"あなたの専門分野","timelineTitle":"人生の歩み","createTitle":"自分のAIツインを作ろう","createText":"あなたの知識、スタイル、言語 – 公開でも非公開でも。","twinOnline":"ツインはオンライン – すぐに返答","askCta":"質問する","askQ1Sub":"核心テーマをステップごとに","askQ2Sub":"率直な振り返りと学び","askQ3Sub":"現代の問いへの思考スタイル","allProfiles":"{{count}}件のプロフィールを見る"
   }
 }

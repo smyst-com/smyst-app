@@ -86,6 +86,12 @@ export interface StaticTranslations {
     timelineTitle: string
     createTitle: string
     createText: string
+    twinOnline: string
+    askCta: string
+    askQ1Sub: string
+    askQ2Sub: string
+    askQ3Sub: string
+    allProfiles: string
   }
   dashboard: {
     heroTitle: string
@@ -253,6 +259,12 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     timelineTitle: 'Lebensstationen',
     createTitle: 'Erstelle deinen eigenen KI-Zwilling',
     createText: 'Dein Wissen, dein Stil, deine Sprache – öffentlich oder privat.',
+    twinOnline: 'Twin online – antwortet sofort',
+    askCta: 'Frage stellen',
+    askQ1Sub: 'Das Kernthema – Schritt für Schritt erklärt',
+    askQ2Sub: 'Ehrliche Rückschau und Lehren',
+    askQ3Sub: 'Der Denkstil auf eine Frage von heute',
+    allProfiles: 'Alle {{count}} Profile ansehen',
   },
   dashboard: {
     heroTitle: 'Was möchtest du heute mit einem KI-Twin tun?',
