@@ -3198,6 +3198,30 @@ function setJsonLd(id: string, value: unknown) {
   script.textContent = JSON.stringify(value)
 }
 
+function readableSourceUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname.endsWith('.wikipedia.org')) {
+      const summary = parsed.pathname.match(/^\/api\/rest_v1\/page\/summary\/(.+)$/)
+      if (summary) return `https://${parsed.hostname}/wiki/${summary[1]}`
+    }
+    if (parsed.hostname === 'www.wikidata.org' || parsed.hostname === 'wikidata.org') {
+      const entity = parsed.pathname.match(/^\/wiki\/Special:EntityData\/(Q\d+)(?:\.json)?$/)
+      if (entity) return `https://www.wikidata.org/wiki/${entity[1]}`
+    }
+  } catch {
+    // ungültige URL: unverändert lassen
+  }
+  return url
+}
+
+function readableSourceLabel(source: { title: string; publisher: string }): string {
+  const wiki = source.publisher.match(/^([a-z][a-z-]*)\.wikipedia\.org$/)
+  if (wiki) return `Wikipedia (${wiki[1].toUpperCase()}) — ${source.title}`
+  if (source.publisher === 'wikidata.org' || source.publisher === 'www.wikidata.org') return 'Wikidata'
+  return `${source.publisher}: ${source.title}`
+}
+
 function TwinProfileView({
   slug,
   privateTwinId,
@@ -3512,17 +3536,26 @@ function TwinProfileView({
                 <section className="mt-6">
                   <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</h2>
                   <div className="grid gap-2">
-                    {profile.sources.map((source) => (
-                      <a
-                        key={source.url}
-                        href={source.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-lg border border-white/32 bg-white/16 px-4 py-3 text-sm font-medium text-[#0b1c44] transition-colors hover:bg-white/28"
-                      >
-                        {source.publisher}: {source.title}
-                      </a>
-                    ))}
+                    {[...profile.sources]
+                      .sort(
+                        (a, b) =>
+                          Number(b.publisher === `${lang}.wikipedia.org`) -
+                          Number(a.publisher === `${lang}.wikipedia.org`),
+                      )
+                      .map((source) => (
+                        <a
+                          key={source.url}
+                          href={readableSourceUrl(source.url)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-lg border border-white/32 bg-white/16 px-4 py-3 text-sm font-medium text-[#0b1c44] transition-colors hover:bg-white/28"
+                        >
+                          {readableSourceLabel(source)}
+                          <span aria-hidden="true" className="ml-1 text-[#5d6776]">
+                            ↗
+                          </span>
+                        </a>
+                      ))}
                   </div>
                 </section>
               ) : null}
