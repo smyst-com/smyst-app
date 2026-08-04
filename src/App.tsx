@@ -808,6 +808,9 @@ export default function App() {
             ? 'min-h-[calc(100dvh-80px)] w-full px-0 pb-0 sm:min-h-[calc(100dvh-92px)]'
             : currentView === 'admin'
               ? 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1520px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-5'
+            : currentView === 'twin-profile'
+              // Profilseite kompakt: kein 7rem-Polster vor dem Footer
+              ? 'mx-auto w-full max-w-[1200px] px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6'
             : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6'
         }
       >
@@ -3480,9 +3483,9 @@ function TwinProfileView({
   }
 
   return (
-    <div className="pt-6">
+    <div className="pt-3">
       <section className="mx-auto max-w-[980px]">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <button onClick={() => onNavigate('landing')} className="font-smyst-logo text-2xl">
             smyst<span className="text-[0.78em]">.com</span>
           </button>
@@ -3549,7 +3552,7 @@ function TwinProfileView({
                   </span>
                 ) : null}
               </div>
-              <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
+              <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#c7d4ea]">{profileMainCategory(profile)}</p>
               <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || (lang === DEFAULT_LANG ? 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.' : t.profile.noDescription)}</p>
 
               <section className="mt-4 max-w-[720px] rounded-lg border border-white/30 bg-white/14 p-4">
@@ -3693,7 +3696,7 @@ function TwinProfileView({
         </Card>
 
         {similarTwins.length > 0 && (
-          <section className="mt-8">
+          <section className="mt-5">
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-lg font-semibold">{lang === DEFAULT_LANG ? 'Ähnliche Profile' : t.start.relatedLabel}</h2>
               {publicProfileCount > 4 && (
@@ -3739,7 +3742,7 @@ function TwinProfileView({
                 </a>
               ))}
             </div>
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/32 bg-white/16 p-5">
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/32 bg-white/16 px-5 py-4">
               <div>
                 <p className="text-base font-bold">{lang === DEFAULT_LANG ? 'Erstelle deinen eigenen KI-Zwilling' : t.profile.createTitle}</p>
                 <p className="mt-0.5 text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dein Wissen, dein Stil, deine Sprache – öffentlich oder privat.' : t.profile.createText}</p>
