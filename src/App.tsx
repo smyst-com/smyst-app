@@ -3490,16 +3490,18 @@ function TwinProfileView({
         <Card className="overflow-hidden p-0">
           {/* Zwei Spalten nur fuer den Kopf; alles darunter laeuft volle Breite,
               damit unter dem Bild keine tote Flaeche entsteht. */}
-          <div className="grid gap-0 lg:grid-cols-[300px_1fr]">
-            <div className="border-b border-white/30 bg-white/18 p-5 lg:border-b-0 lg:border-r">
+          <div className="grid gap-0 md:grid-cols-[300px_1fr]">
+            <div className="border-b border-white/30 bg-white/18 p-5 md:border-b-0 md:border-r">
               {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
                   quadratische Portrait bildschirmhoch und schiebt Name, Daten und
                   den Chat-Button unter die Falz. */}
-              <div className="relative mx-auto aspect-square w-full max-w-[240px] overflow-hidden rounded-[18px] border border-white/40 bg-white/28 lg:max-w-none">
+              {/* 4:5 wie die Aehnliche-Profile-Karten: ganzer Kopf sichtbar;
+                  auf Mobil volle Kartenbreite, ab md die linke Spalte. */}
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[18px] border border-white/40 bg-white/28">
                 <img
                   src={profile.imageUrl}
                   alt={profile.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-[center_20%]"
                   loading="eager"
                   decoding="async"
                   onError={() => setProfileImageBroken(true)}
