@@ -3707,17 +3707,28 @@ function TwinProfileView({
                 <a
                   key={twin.id}
                   href={`/t/${twin.profileSlug}/`}
-                  className="block overflow-hidden rounded-[18px] border border-white/32 bg-white/16 transition-transform hover:-translate-y-0.5"
+                  className="relative block aspect-[4/5] overflow-hidden rounded-[18px] border border-white/32 bg-white/16 transition-transform hover:-translate-y-0.5"
                 >
                   {twin.imageUrl ? (
-                    <img src={twin.imageUrl} alt={twin.name} loading="lazy" decoding="async" className="h-40 w-full object-cover object-top" />
+                    <img
+                      src={twin.imageUrl}
+                      alt={twin.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+                    />
                   ) : (
-                    <div className="grid h-40 w-full place-items-center bg-white/24 text-3xl font-bold text-[#667085]">{twin.initials}</div>
+                    <div className="absolute inset-0 grid place-items-center bg-white/24 text-4xl font-bold text-[#667085]">{twin.initials}</div>
                   )}
-                  <div className="p-4">
-                    <p className="text-base font-bold">{twin.name}</p>
-                    {twin.mainCategory && <p className="mt-0.5 text-xs text-[#667085]">{twin.mainCategory}</p>}
-                    <p className="mt-2 text-sm font-semibold text-[#0b1c44]">
+                  {/* Verlaufs-Schutz unten: Text bleibt auf hellen wie dunklen Bildern lesbar */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,15,0)_45%,rgba(5,8,15,0.55)_70%,rgba(5,8,15,0.92)_100%)]"
+                  ></div>
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <p className="text-base font-bold text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">{twin.name}</p>
+                    {twin.mainCategory && <p className="mt-0.5 text-xs text-[#c7d4ea] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">{twin.mainCategory}</p>}
+                    <p className="mt-2 text-sm font-bold text-[#8fd0ff] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
                       {lang === DEFAULT_LANG ? 'Mit Twin chatten' : t.profile.chatButton} <span aria-hidden="true">→</span>
                     </p>
                   </div>
