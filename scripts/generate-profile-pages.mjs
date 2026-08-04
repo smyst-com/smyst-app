@@ -176,6 +176,7 @@ function toPublicTwinProfile(spec, index) {
     exampleQuestions: spec.exampleQuestions,
     searchIndex: spec.searchIndex,
     sources: spec.sources,
+    milestones: spec.milestones,
     quality: { ok: Boolean(imageUrl), issues: imageUrl ? [] : ['missing_profile_image'] },
     createdAt,
     updatedAt,

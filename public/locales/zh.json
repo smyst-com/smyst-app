@@ -142,6 +142,6 @@
     "notFoundText": "该档案不可公开索引或不存在。",
     "incompleteTitle": "孪生档案不完整",
     "incompleteText": "该档案需要可用的头像后才能公开显示。",
-    "privateText": "该档案为私密档案，不被索引，仅登录后可见。"
+    "privateText": "该档案为私密档案，不被索引，仅登录后可见。","verifiedBadge":"来源已核实","askTitle":"直接提问","askSubtitle":"点击一下,即以此问题开始聊天。","askQ1":"请把{{topic}}讲解得让我真正明白。","askQ2":"你最大的错误是什么?你从中学到了什么?","askQ3":"你如何看待今天的人工智能?","askTopicFallback":"你的专业领域","timelineTitle":"人生历程","createTitle":"创建你自己的AI分身","createText":"你的知识、你的风格、你的语言 – 公开或私密。"
   }
 }

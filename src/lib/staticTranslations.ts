@@ -76,6 +76,16 @@ export interface StaticTranslations {
     incompleteTitle: string
     incompleteText: string
     privateText: string
+    verifiedBadge: string
+    askTitle: string
+    askSubtitle: string
+    askQ1: string
+    askQ2: string
+    askQ3: string
+    askTopicFallback: string
+    timelineTitle: string
+    createTitle: string
+    createText: string
   }
   dashboard: {
     heroTitle: string
@@ -233,6 +243,16 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     incompleteTitle: 'Twin-Profil nicht vollständig',
     incompleteText: 'Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.',
     privateText: 'Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.',
+    verifiedBadge: 'Quellen geprüft',
+    askTitle: 'Direkt fragen',
+    askSubtitle: 'Ein Klick startet den Chat mit dieser Frage.',
+    askQ1: 'Erkläre mir {{topic}} so, dass ich es wirklich verstehe.',
+    askQ2: 'Was war dein größter Fehler – und was hast du daraus gelernt?',
+    askQ3: 'Wie würdest du heute über KI denken?',
+    askTopicFallback: 'dein Fachgebiet',
+    timelineTitle: 'Lebensstationen',
+    createTitle: 'Erstelle deinen eigenen KI-Zwilling',
+    createText: 'Dein Wissen, dein Stil, deine Sprache – öffentlich oder privat.',
   },
   dashboard: {
     heroTitle: 'Was möchtest du heute mit einem KI-Twin tun?',

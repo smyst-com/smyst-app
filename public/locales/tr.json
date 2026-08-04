@@ -142,6 +142,6 @@
     "notFoundText": "Bu profil herkese açık olarak dizinlenemez veya mevcut değil.",
     "incompleteTitle": "İkiz profili eksik",
     "incompleteText": "Bu profilin herkese açık gösterilmeden önce çalışan bir profil resmine ihtiyacı var.",
-    "privateText": "Bu profil özeldir, dizinlenmez ve yalnızca giriş yaptıktan sonra görünür."
+    "privateText": "Bu profil özeldir, dizinlenmez ve yalnızca giriş yaptıktan sonra görünür.","verifiedBadge":"Kaynaklar doğrulandı","askTitle":"Doğrudan sor","askSubtitle":"Tek tıkla sohbet bu soruyla başlar.","askQ1":"{{topic}} konusunu gerçekten anlayacağım şekilde açıkla.","askQ2":"En büyük hatan neydi ve ondan ne öğrendin?","askQ3":"Bugün yapay zekâ hakkında ne düşünürdün?","askTopicFallback":"uzmanlık alanın","timelineTitle":"Hayat durakları","createTitle":"Kendi yapay zekâ ikizini oluştur","createText":"Bilgin, tarzın, dilin – herkese açık veya özel."
   }
 }

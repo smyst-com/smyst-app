@@ -72,6 +72,6 @@
     "notFoundText": "Profil ini tidak dapat diindeks publik atau tidak ada.",
     "incompleteTitle": "Profil kembar belum lengkap",
     "incompleteText": "Profil ini membutuhkan gambar profil yang berfungsi sebelum ditampilkan secara publik.",
-    "privateText": "Profil ini privat, tidak diindeks, dan hanya terlihat setelah masuk."
+    "privateText": "Profil ini privat, tidak diindeks, dan hanya terlihat setelah masuk.","verifiedBadge":"Sumber terverifikasi","askTitle":"Tanya langsung","askSubtitle":"Sekali klik, obrolan dimulai dengan pertanyaan ini.","askQ1":"Jelaskan {{topic}} agar saya benar-benar paham.","askQ2":"Apa kesalahan terbesarmu – dan apa yang kamu pelajari darinya?","askQ3":"Bagaimana pendapatmu tentang AI saat ini?","askTopicFallback":"bidangmu","timelineTitle":"Perjalanan hidup","createTitle":"Buat kembaran AI-mu sendiri","createText":"Pengetahuanmu, gayamu, bahasamu – publik atau privat."
   }
 }

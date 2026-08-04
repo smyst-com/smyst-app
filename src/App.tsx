@@ -1333,6 +1333,7 @@ function curatedPublicProfileToPublicTwinProfile(spec: CuratedPublicTwinSpec, in
     exampleQuestions: spec.exampleQuestions,
     searchIndex: spec.searchIndex,
     sources: spec.sources,
+    milestones: spec.milestones,
     quality: { ok: Boolean(imageUrl), issues: imageUrl ? [] : ['missing_profile_image'] },
     createdAt,
     updatedAt,
@@ -3238,6 +3239,7 @@ function TwinProfileView({
   const [loaded, setLoaded] = useState(!slug && !privateTwinId)
   const [shareStatus, setShareStatus] = useState('')
   const [profileImageBroken, setProfileImageBroken] = useState(false)
+  const [similarTwins, setSimilarTwins] = useState<StartTwin[]>([])
   const { lang } = useLanguage({ reloadOnChange: false })
   const t = useStaticTranslations(lang)
   const isPrivate = Boolean(privateTwinId)
@@ -3333,6 +3335,27 @@ function TwinProfileView({
     }
   }, [profile, isPrivate])
 
+  useEffect(() => {
+    if (isPrivate || !slug) return
+    let alive = true
+    void twinMvp
+      .listPublicTwins()
+      .then((list) => {
+        if (!alive) return
+        const pool = (list?.length ? list : curatedPublicProfiles())
+          .filter(isCompletePublicProfile)
+          .map((item, index) => publicProfileToStartTwin(item, index))
+        const active = pool.find((item) => item.profileSlug === slug) ?? null
+        setSimilarTwins(similarProfiles(active, pool, 4) as StartTwin[])
+      })
+      .catch(() => {
+        if (alive) setSimilarTwins([])
+      })
+    return () => {
+      alive = false
+    }
+  }, [slug, isPrivate])
+
   if (isPrivate && auth.status === 'anonymous') {
     return (
       <div className="pt-6">
@@ -3425,6 +3448,23 @@ function TwinProfileView({
     }
   }
 
+  const askTopicRaw = profile.categories[0] ?? ''
+  const askTopic = askTopicRaw
+    ? t.cats[askTopicRaw] ?? askTopicRaw
+    : lang === DEFAULT_LANG
+      ? 'dein Fachgebiet'
+      : t.profile.askTopicFallback
+  const askQuestions = [
+    (lang === DEFAULT_LANG ? 'Erkläre mir {{topic}} so, dass ich es wirklich verstehe.' : t.profile.askQ1).replace('{{topic}}', askTopic),
+    lang === DEFAULT_LANG ? 'Was war dein größter Fehler – und was hast du daraus gelernt?' : t.profile.askQ2,
+    lang === DEFAULT_LANG ? 'Wie würdest du heute über KI denken?' : t.profile.askQ3,
+  ]
+  const openChatWithQuestion = (question: string) => {
+    onNavigate('twin-chat')
+    const joiner = profile.chatPath.includes('?') ? '&' : '?'
+    window.history.replaceState({}, '', `${profile.chatPath}${joiner}q=${encodeURIComponent(question)}`)
+  }
+
   return (
     <div className="pt-6">
       <section className="mx-auto max-w-[980px]">
@@ -3479,9 +3519,33 @@ function TwinProfileView({
             </div>
 
             <div className="p-6 sm:p-8">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">{lang === DEFAULT_LANG ? 'KI-Zwilling Profil' : t.profile.kicker}</p>
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">{lang === DEFAULT_LANG ? 'KI-Zwilling Profil' : t.profile.kicker}</p>
+                {profile.sources?.length ? (
+                  <span className="rounded-full border border-emerald-300/60 bg-emerald-500/14 px-3 py-1 text-xs font-semibold text-emerald-900">
+                    ✓ {lang === DEFAULT_LANG ? 'Quellen geprüft' : t.profile.verifiedBadge}
+                  </span>
+                ) : null}
+              </div>
               <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
               <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || (lang === DEFAULT_LANG ? 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.' : t.profile.noDescription)}</p>
+
+              <section className="mt-5 max-w-[720px] rounded-lg border border-white/30 bg-white/14 p-4">
+                <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#667085]">{lang === DEFAULT_LANG ? 'Direkt fragen' : t.profile.askTitle}</h2>
+                <p className="mt-1 text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Ein Klick startet den Chat mit dieser Frage.' : t.profile.askSubtitle}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {askQuestions.map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      onClick={() => openChatWithQuestion(question)}
+                      className="rounded-full border border-white/42 bg-white/18 px-4 py-2 text-left text-sm font-medium transition-colors hover:bg-white/30"
+                    >
+                      {question} <span aria-hidden="true">→</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-lg bg-white/18 p-4">
@@ -3517,6 +3581,22 @@ function TwinProfileView({
                   </div>
                 </section>
               </div>
+
+              {profile.milestones?.length ? (
+                <section className="mt-6">
+                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</h2>
+                  <ol className="relative ml-1.5 border-l-2 border-white/40 pl-5">
+                    {profile.milestones.map((milestone) => (
+                      <li key={`${milestone.year}-${milestone.title}`} className="relative mb-4 last:mb-0">
+                        <span aria-hidden="true" className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full bg-[#17191d]"></span>
+                        <p className="text-sm font-bold">{milestone.year}</p>
+                        <p className="text-sm font-medium">{milestone.title}</p>
+                        {milestone.place && <p className="text-xs text-[#667085]">{milestone.place}</p>}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ) : null}
 
               <section className="mt-6">
                 <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Hochgeladene Inhalte' : t.profile.uploadsTitle}</h2>
@@ -3573,6 +3653,48 @@ function TwinProfileView({
             </div>
           </div>
         </Card>
+
+        {similarTwins.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Ähnliche Profile' : t.start.relatedLabel}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {similarTwins.map((twin) => (
+                <a
+                  key={twin.id}
+                  href={`/t/${twin.profileSlug}/`}
+                  className="block overflow-hidden rounded-[18px] border border-white/32 bg-white/16 transition-transform hover:-translate-y-0.5"
+                >
+                  {twin.imageUrl ? (
+                    <img src={twin.imageUrl} alt={twin.name} loading="lazy" decoding="async" className="h-40 w-full object-cover object-top" />
+                  ) : (
+                    <div className="grid h-40 w-full place-items-center bg-white/24 text-3xl font-bold text-[#667085]">{twin.initials}</div>
+                  )}
+                  <div className="p-4">
+                    <p className="text-base font-bold">{twin.name}</p>
+                    {twin.mainCategory && <p className="mt-0.5 text-xs text-[#667085]">{twin.mainCategory}</p>}
+                    <p className="mt-2 text-sm font-semibold text-[#0b1c44]">
+                      {lang === DEFAULT_LANG ? 'Mit Twin chatten' : t.profile.chatButton} <span aria-hidden="true">→</span>
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/32 bg-white/16 p-5">
+              <div>
+                <p className="text-base font-bold">{lang === DEFAULT_LANG ? 'Erstelle deinen eigenen KI-Zwilling' : t.profile.createTitle}</p>
+                <p className="mt-0.5 text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dein Wissen, dein Stil, deine Sprache – öffentlich oder privat.' : t.profile.createText}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('twin-builder')}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-[#17191d] px-6 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+              >
+                {lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate}
+              </button>
+            </div>
+          </section>
+        )}
+
         {profile.visibility === 'public' && <AdSlot placement="profile-footer" />}
       </section>
     </div>
@@ -7368,6 +7490,10 @@ function TwinChatView({
     const queryTwin = new URLSearchParams(window.location.search).get('twin')?.trim()
     return queryTwin || initialTwinId?.trim() || ''
   })
+  // Direkt-Frage von der Profilseite (?q=...): wird nach dem Laden des Twins
+  // einmalig automatisch gesendet.
+  const [requestedQuestion] = useState(() => new URLSearchParams(window.location.search).get('q')?.trim() ?? '')
+  const autoAskFiredRef = useRef(false)
   const [isReplying, setIsReplying] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -7557,6 +7683,20 @@ function TwinChatView({
       alive = false
     }
   }, [auth.status, requestedTwinId])
+
+  useEffect(() => {
+    // Frage aus ?q= genau einmal senden, sobald der gewuenschte Twin aktiv ist.
+    if (!requestedQuestion || autoAskFiredRef.current) return
+    if (!activeTwin || isReplying || auth.status === 'loading') return
+    if (auth.status !== 'authenticated' && !activeTwin.publicProfile) return
+    autoAskFiredRef.current = true
+    // q aus der URL entfernen, damit Reload oder Teilen die Frage nicht erneut sendet
+    const params = new URLSearchParams(window.location.search)
+    params.delete('q')
+    window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`)
+    void handleSend(requestedQuestion)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTwin, auth.status, requestedQuestion, isReplying])
 
   useEffect(() => {
     return () => {
