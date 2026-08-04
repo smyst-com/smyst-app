@@ -3497,7 +3497,7 @@ function TwinProfileView({
               {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
                   quadratische Portrait bildschirmhoch und schiebt Name, Daten und
                   den Chat-Button unter die Falz. */}
-              <div className="relative mx-auto aspect-square w-full max-w-[320px] overflow-hidden rounded-[18px] border border-white/40 bg-white/28 lg:max-w-none">
+              <div className="relative mx-auto aspect-square w-full max-w-[240px] overflow-hidden rounded-[18px] border border-white/40 bg-white/28 lg:max-w-none">
                 <img
                   src={profile.imageUrl}
                   alt={profile.name}
@@ -3550,7 +3550,7 @@ function TwinProfileView({
               <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
               <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || (lang === DEFAULT_LANG ? 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.' : t.profile.noDescription)}</p>
 
-              <section className="mt-5 max-w-[720px] rounded-lg border border-white/30 bg-white/14 p-4">
+              <section className="mt-4 max-w-[720px] rounded-lg border border-white/30 bg-white/14 p-4">
                 <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#667085]">{lang === DEFAULT_LANG ? 'Direkt fragen' : t.profile.askTitle}</h2>
                 <p className="mt-1 text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Ein Klick startet den Chat mit dieser Frage.' : t.profile.askSubtitle}</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -3572,7 +3572,7 @@ function TwinProfileView({
                 </div>
               </section>
 
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {profile.milestones?.length ? (
                   <div className="rounded-lg bg-white/18 p-4">
                     <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</p>
@@ -3605,28 +3605,19 @@ function TwinProfileView({
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-5 md:grid-cols-2">
-                <section>
-                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Kategorien' : t.profile.categoriesTitle}</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {(profile.categories.length ? profile.categories : [lang === DEFAULT_LANG ? 'KI-Zwilling' : t.profile.defaultCategory]).map((item) => (
-                      <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm">{item}</span>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Sprachen' : t.profile.languagesTitle}</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {(profile.languages.length ? profile.languages : ['de']).map((item) => (
-                      <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm uppercase">{item}</span>
-                    ))}
-                  </div>
-                </section>
+              {/* Kompakt: Kategorien und Sprachen in einer Zeile statt zwei Bloecken */}
+              <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                {(profile.categories.length ? profile.categories : [lang === DEFAULT_LANG ? 'KI-Zwilling' : t.profile.defaultCategory]).map((item) => (
+                  <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm">{item}</span>
+                ))}
+                <span aria-hidden="true" className="mx-1 text-[#667085]">·</span>
+                {(profile.languages.length ? profile.languages : ['de']).map((item) => (
+                  <span key={item} className="rounded-full border border-white/30 bg-white/10 px-2 py-0.5 text-xs uppercase text-[#667085]">{item}</span>
+                ))}
               </div>
 
               {profile.milestones?.length ? (
-                <section className="mt-6">
+                <section className="mt-5">
                   <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</h2>
                   <ol className="relative ml-1.5 border-l-2 border-white/40 pl-5 lg:ml-0 lg:flex lg:border-l-0 lg:pl-0">
                     {profile.milestones.map((milestone) => (
@@ -3647,34 +3638,28 @@ function TwinProfileView({
                 </section>
               ) : null}
 
-              <section className="mt-6">
-                <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Hochgeladene Inhalte' : t.profile.uploadsTitle}</h2>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {(profile.uploadedContents.length ? profile.uploadedContents : [{ category: lang === DEFAULT_LANG ? 'Noch keine öffentlichen Inhalte' : t.profile.noPublicContents, count: 0 }]).map((item) => (
-                    <div key={item.category} className="flex items-center justify-between rounded-lg bg-white/16 px-4 py-3">
-                      <span className="text-sm font-medium">{item.category}</span>
-                      <span className="text-sm text-[#667085]">{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="mt-6 rounded-lg border border-white/30 bg-white/14 p-4">
-                <h2 className="mb-2 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Twin-Kontext' : t.profile.contextTitle}</h2>
-                <p className="text-sm leading-relaxed text-[#555b64]">{profile.contextSummary}</p>
-              </section>
+              {/* Kompakt: lange Textbloecke sind eingeklappt (Progressive Disclosure).
+                  Inhalt bleibt vollstaendig im DOM — wichtig fuer Recht und SEO. */}
+              <details className="mt-4 rounded-lg border border-white/30 bg-white/14 px-4 py-3">
+                <summary className="cursor-pointer select-none text-sm font-semibold">
+                  {lang === DEFAULT_LANG ? 'Twin-Kontext' : t.profile.contextTitle}
+                </summary>
+                <p className="mt-2 text-sm leading-relaxed text-[#555b64]">{profile.contextSummary}</p>
+              </details>
 
               {(profile.guardrail || profile.rightsPosture) && (
-                <section className="mt-6 rounded-lg border border-amber-300/50 bg-amber-50/70 p-4">
-                  <h2 className="mb-2 text-lg font-semibold text-amber-950">{lang === DEFAULT_LANG ? 'Historisches Profil' : t.profile.historicalTitle}</h2>
-                  {profile.guardrail && <p className="text-sm leading-relaxed text-amber-950">{profile.guardrail}</p>}
+                <details className="mt-3 rounded-lg border border-amber-300/50 bg-amber-50/70 px-4 py-3">
+                  <summary className="cursor-pointer select-none text-sm font-semibold text-amber-950">
+                    {lang === DEFAULT_LANG ? 'Historisches Profil' : t.profile.historicalTitle}
+                  </summary>
+                  {profile.guardrail && <p className="mt-2 text-sm leading-relaxed text-amber-950">{profile.guardrail}</p>}
                   {profile.rightsPosture && <p className="mt-2 text-sm leading-relaxed text-amber-900">{profile.rightsPosture}</p>}
-                </section>
+                </details>
               )}
 
               {profile.sources?.length ? (
-                <section className="mt-6">
-                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</h2>
+                <section className="mt-4">
+                  <h2 className="mb-2 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</h2>
                   <div className="grid gap-2">
                     {[...profile.sources]
                       .sort(
