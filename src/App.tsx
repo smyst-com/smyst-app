@@ -809,8 +809,9 @@ export default function App() {
             : currentView === 'admin'
               ? 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1520px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-5'
             : currentView === 'twin-profile'
-              // Profilseite kompakt: kein 7rem-Polster vor dem Footer
-              ? 'mx-auto w-full max-w-[1200px] px-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6'
+              // Profilseite kompakt: kein 7rem-Polster vor dem Footer;
+              // auf Mobil volle Breite (Karte laeuft randlos, PWA/Apps inklusive)
+              ? 'mx-auto w-full max-w-[1200px] px-0 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6'
             : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6'
         }
       >
@@ -3487,11 +3488,11 @@ function TwinProfileView({
       <section className="mx-auto max-w-[980px]">
         {/* Kompakt: kein doppeltes smyst.com-Logo ueber der Karte (steht schon
             in der Navbar); das Sichtbarkeits-Badge sitzt in der Kicker-Zeile. */}
-        <Card className="overflow-hidden p-0">
+        <Card className="overflow-hidden p-0 max-sm:rounded-none max-sm:border-x-0">
           {/* Zwei Spalten nur fuer den Kopf; alles darunter laeuft volle Breite,
               damit unter dem Bild keine tote Flaeche entsteht. */}
           <div className="grid gap-0 md:grid-cols-[300px_1fr]">
-            <div className="border-b border-white/30 bg-white/18 p-5 md:border-b-0 md:border-r">
+            <div className="border-b border-white/30 bg-white/18 p-4 md:border-b-0 md:border-r md:p-5">
               {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
                   quadratische Portrait bildschirmhoch und schiebt Name, Daten und
                   den Chat-Button unter die Falz. */}
@@ -3538,7 +3539,7 @@ function TwinProfileView({
               )}
             </div>
 
-            <div className="p-5 sm:p-7">
+            <div className="p-4 sm:p-7">
               <div className="mb-2 flex flex-wrap items-center gap-2">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">{lang === DEFAULT_LANG ? 'KI-Zwilling Profil' : t.profile.kicker}</p>
                 {profile.sources?.length ? (
@@ -3577,7 +3578,7 @@ function TwinProfileView({
             </div>
           </div>
 
-          <div className="px-5 pb-4 sm:px-7 sm:pb-4">
+          <div className="px-4 pb-4 sm:px-7">
               <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {profile.milestones?.length ? (
                   <div className="rounded-lg bg-white/18 p-4">
@@ -3694,8 +3695,8 @@ function TwinProfileView({
         </Card>
 
         {similarTwins.length > 0 && (
-          <section className="mt-5">
-            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <section className="mt-4 max-sm:px-2">
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="text-lg font-semibold">{lang === DEFAULT_LANG ? 'Ähnliche Profile' : t.start.relatedLabel}</h2>
               {publicProfileCount > 4 && (
                 <button
@@ -3740,7 +3741,7 @@ function TwinProfileView({
                 </a>
               ))}
             </div>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/32 bg-white/16 px-5 py-4">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/32 bg-white/16 px-4 py-3 sm:px-5 sm:py-4">
               <div>
                 <p className="text-base font-bold">{lang === DEFAULT_LANG ? 'Erstelle deinen eigenen KI-Zwilling' : t.profile.createTitle}</p>
                 <p className="mt-0.5 text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dein Wissen, dein Stil, deine Sprache – öffentlich oder privat.' : t.profile.createText}</p>
