@@ -142,6 +142,6 @@
     "notFoundText": "이 프로필은 공개적으로 색인될 수 없거나 존재하지 않습니다.",
     "incompleteTitle": "트윈 프로필이 완전하지 않습니다",
     "incompleteText": "이 프로필은 공개 표시되기 전에 작동하는 프로필 이미지가 필요합니다.",
-    "privateText": "이 프로필은 비공개이며 색인되지 않고 로그인 후에만 표시됩니다.","verifiedBadge":"출처 검증됨","askTitle":"바로 질문하기","askSubtitle":"클릭 한 번으로 이 질문과 함께 채팅이 시작됩니다.","askQ1":"{{topic}}을(를) 제가 정말 이해할 수 있게 설명해 주세요.","askQ2":"가장 큰 실수는 무엇이었고, 그로부터 무엇을 배웠나요?","askQ3":"오늘날의 AI에 대해 어떻게 생각하시나요?","askTopicFallback":"당신의 전문 분야","timelineTitle":"인생의 발자취","createTitle":"나만의 AI 트윈 만들기","createText":"당신의 지식, 스타일, 언어 – 공개 또는 비공개로."
+    "privateText": "이 프로필은 비공개이며 색인되지 않고 로그인 후에만 표시됩니다.","verifiedBadge":"출처 검증됨","askTitle":"바로 질문하기","askSubtitle":"클릭 한 번으로 이 질문과 함께 채팅이 시작됩니다.","askQ1":"{{topic}}을(를) 제가 정말 이해할 수 있게 설명해 주세요.","askQ2":"가장 큰 실수는 무엇이었고, 그로부터 무엇을 배웠나요?","askQ3":"오늘날의 AI에 대해 어떻게 생각하시나요?","askTopicFallback":"당신의 전문 분야","timelineTitle":"인생의 발자취","createTitle":"나만의 AI 트윈 만들기","createText":"당신의 지식, 스타일, 언어 – 공개 또는 비공개로.","twinOnline":"트윈 온라인 – 즉시 답변","askCta":"질문하기","askQ1Sub":"핵심 주제를 단계별로","askQ2Sub":"솔직한 회고와 교훈","askQ3Sub":"오늘의 질문에 대한 그 사고방식","allProfiles":"{{count}}개 프로필 모두 보기"
   }
 }
