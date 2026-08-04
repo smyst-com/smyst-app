@@ -1,5 +1,5 @@
 {
-  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King).",
+  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King). Zusatz 03.08.2026: birthPlace/deathPlace als kuratierte Orts-Overrides fuer Faelle, in denen Wikidata falsch liegt oder keinen heutigen Staat kennt (der Backfill haengt nur ein Land an und schreibt einen Ort nie um).",
   "profiles": {
     "carl-von-linne": {
       "roles": "Naturforscher, Botaniker",
@@ -666,7 +666,8 @@
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "deathPlace": "Stockholm, Schweden"
     },
     "george-bernard-shaw": {
       "roles": "Dramatiker, Kritiker",
@@ -686,7 +687,9 @@
       "roles": "Maler, Holzschnittmeister",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "birthPlace": "Edo, Japan",
+      "deathPlace": "Edo, Japan"
     },
     "evliya-celebi": {
       "roles": "Reisender, Chronist",
@@ -826,7 +829,8 @@
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "deathPlace": "Istanbul, Türkei"
     },
     "friedrich-der-grosse": {
       "roles": "König, Feldherr",
@@ -1047,7 +1051,8 @@
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "birthPlace": "Tauresium, Nordmazedonien"
     },
     "henri-bergson": {
       "roles": "Philosoph",
@@ -1439,7 +1444,8 @@
       "roles": "Theologe, Philosoph",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "birthPlace": "Thagaste, Algerien"
     },
     "joseph-louis-lagrange": {
       "roles": "Mathematiker, Astronom",
@@ -1467,7 +1473,9 @@
       "roles": "Schriftstellerin, Hofdame",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "birthPlace": "Heian-kyō, Japan",
+      "deathPlace": "Heian-kyō, Japan"
     },
     "george-berkeley": {
       "roles": "Philosoph, Theologe",
@@ -1894,7 +1902,8 @@
         "Literatur",
         "Musik",
         "Kunst"
-      ]
+      ],
+      "birthPlace": "Königsberg (heute Kaliningrad), Russland"
     },
     "isabelle-de-charriere": {
       "roles": "Schriftstellerin, Komponistin",
@@ -2319,6 +2328,39 @@
         "Kunst",
         "Architektur"
       ]
+    },
+    "sei-shonagon": {
+      "birthPlace": "Heian-kyō, Japan"
+    },
+    "kitagawa-utamaro": {
+      "deathPlace": "Edo, Japan"
+    },
+    "gedimin": {
+      "birthPlace": "Vilnius, Litauen"
+    },
+    "rama-i": {
+      "deathPlace": "Bangkok, Thailand"
+    },
+    "nikolaus-i": {
+      "deathPlace": "Winterpalast, Russland"
+    },
+    "arnold-sommerfeld": {
+      "birthPlace": "Königsberg (heute Kaliningrad), Russland"
+    },
+    "bruno-taut": {
+      "birthPlace": "Königsberg (heute Kaliningrad), Russland"
+    },
+    "friedrich-i": {
+      "birthPlace": "Königsberg (heute Kaliningrad), Russland"
+    },
+    "gustav-robert-kirchhoff": {
+      "birthPlace": "Königsberg (heute Kaliningrad), Russland"
+    },
+    "kathe-kollwitz": {
+      "birthPlace": "Königsberg (heute Kaliningrad), Russland"
+    },
+    "friedrich-wilhelm-bessel": {
+      "deathPlace": "Königsberg (heute Kaliningrad), Russland"
     }
   }
 }
