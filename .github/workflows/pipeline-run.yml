@@ -298,8 +298,11 @@ jobs:
       # Faelle aus dem Chat-Feedback. Schreibt eval_report/eval_history ins
       # Kandidaten-Dokument, aendert NIE den Status. Rotiert durch den Bestand
       # (nie evaluierte zuerst). Fehler blockieren den Publish-/Deploy-Fluss nicht.
-      - name: "Evals: published-Profile (Qualitaetsschleife, Cron + manuell)"
-        if: github.event_name == 'schedule' || env.MODE == 'evals'
+      # Cron-Anteil ausgelagert nach quality-loop.yml (04.08.2026): die
+      # Qualitaetsschleife verlaengerte jeden Publish-Lauf; hier bleibt nur der
+      # manuelle Modus fuer gezielte Laeufe.
+      - name: "Evals: published-Profile (Qualitaetsschleife, nur manuell)"
+        if: env.MODE == 'evals'
         continue-on-error: true
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
@@ -320,8 +323,8 @@ jobs:
       # Qualitaetsschleife Baustein 2 (PR #303): Freshness-Check — Wikidata/
       # Wikipedia-Fingerprint gegen Baseline; Abweichung setzt refresh.needs_review
       # fuer das menschliche Review. Kein LLM noetig, kein Status-Wechsel.
-      - name: "Freshness: Quellen-Check published-Profile (Cron + manuell)"
-        if: github.event_name == 'schedule' || env.MODE == 'refresh'
+      - name: "Freshness: Quellen-Check published-Profile (nur manuell)"
+        if: env.MODE == 'refresh'
         continue-on-error: true
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
@@ -360,8 +363,8 @@ jobs:
       # Aggregation fuer die Admin-Sicht (/api/admin/quality): laeuft nach
       # Evals + Freshness, damit die Zusammenfassung deren frische Ergebnisse
       # enthaelt. Read-only gegenueber den Profilen.
-      - name: "Quality-Report: Zusammenfassung fuer Admin-Sicht (Cron + manuell)"
-        if: github.event_name == 'schedule' || env.MODE == 'quality-report' || env.MODE == 'evals' || env.MODE == 'refresh' || env.MODE == 'rebuild-one'
+      - name: "Quality-Report: Zusammenfassung fuer Admin-Sicht (nur manuell)"
+        if: env.MODE == 'quality-report' || env.MODE == 'evals' || env.MODE == 'refresh' || env.MODE == 'rebuild-one'
         continue-on-error: true
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}

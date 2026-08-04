@@ -98,6 +98,7 @@ def qa_one(
     config: PipelineConfig,
     dry_run: bool,
     chat_fn_factory: Callable[[dict], Callable[[str], str] | None] = build_chat_fn,
+    published: list[dict] | None = None,
 ) -> tuple[str, str]:
     candidate = _candidate_from_document(document)
     candidate = replace(
@@ -109,7 +110,13 @@ def qa_one(
     )
     qid = candidate.wikidata_qid
     capsule_doc = load_capsule_document(store, qid)
-    published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
+    # published wird vom Batch EINMAL geladen und durchgereicht: der Scan liest
+    # jedes Store-Dokument einzeln (S3-GET je QID). Pro Kandidat neu geladen
+    # waechst die QA-Laufzeit linear mit dem Live-Bestand — bei ~2400 published
+    # und 120 Kandidaten war das der 3h+-Engpass, an dem sich die Cron-Laeufe
+    # gegenseitig cancelten (Befund 04.08.2026).
+    if published is None:
+        published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
 
     try:
         report = run_qa(
@@ -185,6 +192,7 @@ def run_qa_batch(
     documents.sort(key=lambda doc: bool(doc.get("qa_report")))
     if limit is not None:
         documents = documents[: max(limit, 0)]
+    published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
     report: dict = {
         "worker": "qa_candidates",
         "run_date": run_date.isoformat(),
@@ -198,7 +206,7 @@ def run_qa_batch(
         try:
             qid, result = qa_one(
                 document, store=store, config=config, dry_run=dry_run,
-                chat_fn_factory=chat_fn_factory,
+                chat_fn_factory=chat_fn_factory, published=published,
             )
             report["results"][qid] = result
         except Exception as error:

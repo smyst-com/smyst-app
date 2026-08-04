@@ -232,6 +232,30 @@ def test_run_qa_batch_prioritizes_untested_candidates() -> None:
     assert list(report["results"]) == ["Q1339"]
 
 
+def test_run_qa_batch_loads_published_once() -> None:
+    """Performance-Regression (04.08.2026): published-Profile werden EINMAL pro
+    Batch geladen, nicht pro Kandidat. Der Scan liest jedes Store-Dokument
+    einzeln — pro Kandidat wiederholt wuchs die QA-Laufzeit linear mit dem
+    Live-Bestand (3h+ bei 2400 published, Cron-Laeufe cancelten sich)."""
+    from app.ai.historical_pipeline import PipelineStatus
+    from app.workers.qa_candidates import run_qa_batch
+
+    store = _prepared_store()
+    calls: list[str] = []
+    original = store.candidate_documents_by_status
+
+    def counting(status: str, **kwargs):
+        calls.append(status)
+        return original(status, **kwargs)
+
+    store.candidate_documents_by_status = counting  # type: ignore[method-assign]
+    run_qa_batch(
+        store=store, config=CONFIG, limit=10, dry_run=True,
+        run_date=date(2026, 8, 4), chat_fn_factory=lambda capsule: chat_ok,
+    )
+    assert calls.count(PipelineStatus.PUBLISHED.value) == 1
+
+
 def test_run_qa_reraises_degraded_chat_provider() -> None:
     """Degradierte Chat-Antworten duerfen QA weder bestehen noch scheitern lassen."""
     from app.ai.qa_checks import ChatProviderDegradedError
