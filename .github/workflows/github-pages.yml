@@ -118,6 +118,17 @@ jobs:
       - name: Check twin duplicates (deploy gate)
         run: node scripts/check-twin-duplicates.mjs
 
+      # Schwund-Waechter (Vorfall 30.07.2026, Deploys #360/#361): der Schritt
+      # oben faengt nur den TOTALausfall des Publish-Index ab. Ein halb
+      # geschriebener Index oder ein fehlgeschlagener Merge ergibt dagegen einen
+      # gruenen Build mit hunderten Profilen weniger — und die verschwinden
+      # still von der Live-Seite. Dieses Gate vergleicht den gebauten Katalog
+      # mit dem live ausgelieferten und bricht bei mehr als 5 % Schwund ab.
+      # Ist die Live-Seite nicht erreichbar, laeuft es bewusst durch.
+      # Gewollter Massen-Unpublish: Lauf mit ALLOW_PROFILE_DROP=1 wiederholen.
+      - name: Check profile count (deploy gate gegen stillen Schwund)
+        run: node scripts/check-profile-count-guard.mjs
+
       # Neu gespiegelte Bilder zurueck in den Cache. Nur hinzufuegen, niemals
       # loeschen (kein --delete): bestehende Bilder bleiben unangetastet.
       - name: Persist mirrored profile images to IDrive e2 (optional)
