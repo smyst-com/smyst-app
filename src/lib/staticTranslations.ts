@@ -92,6 +92,7 @@ export interface StaticTranslations {
     askQ2Sub: string
     askQ3Sub: string
     allProfiles: string
+    chatWithName: string
   }
   dashboard: {
     heroTitle: string
@@ -265,6 +266,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     askQ2Sub: 'Ehrliche Rückschau und Lehren',
     askQ3Sub: 'Der Denkstil auf eine Frage von heute',
     allProfiles: 'Alle {{count}} Profile ansehen',
+    chatWithName: 'Mit {{name}} chatten',
   },
   dashboard: {
     heroTitle: 'Was möchtest du heute mit einem KI-Twin tun?',
