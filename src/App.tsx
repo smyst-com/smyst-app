@@ -3380,7 +3380,12 @@ function TwinProfileView({
     )
   }
 
-  const profileShareUrl = profile.seo.canonical || `${window.location.origin}${profile.chatPath}`
+  // Eigene Twins: der Chat-Link (/twin-chat?twin=...) funktioniert nur eingeloggt im
+  // eigenen Browser. Öffentliche Twins haben eine echte Profil-URL unter /t/<slug>.
+  const publicProfilePath = profile.visibility === 'public' && profile.slug ? `/t/${profile.slug}` : null
+  const profileShareUrl =
+    profile.seo.canonical ||
+    (publicProfilePath ? `${window.location.origin}${publicProfilePath}` : `${window.location.origin}${profile.chatPath}`)
   const shareProfile = async () => {
     setShareStatus('')
     try {
@@ -3406,7 +3411,13 @@ function TwinProfileView({
         document.execCommand('copy')
         textarea.remove()
       }
-      setShareStatus(lang === DEFAULT_LANG ? 'Link kopiert' : t.profile.shareCopied)
+      const copiedMsg = lang === DEFAULT_LANG ? 'Link kopiert' : t.profile.shareCopied
+      const isPubliclyReachable = Boolean(profile.seo.canonical || publicProfilePath)
+      setShareStatus(
+        isPubliclyReachable
+          ? copiedMsg
+          : `${copiedMsg} · ${lang === DEFAULT_LANG ? 'Privat · nicht öffentlich' : t.profile.privateVisible}`,
+      )
     } catch {
       setShareStatus(lang === DEFAULT_LANG ? 'Teilen nicht möglich' : t.profile.shareFailed)
     } finally {
