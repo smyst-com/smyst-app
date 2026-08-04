@@ -3519,14 +3519,14 @@ function TwinProfileView({
                   onNavigate('twin-chat')
                   window.history.replaceState({}, '', profile.chatPath)
                 }}
-                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#17191d] px-5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full border-2 border-white/55 bg-[#17191d] px-5 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-0.5"
               >
-                {lang === DEFAULT_LANG ? 'Mit Twin chatten' : t.profile.chatButton}
+                {(lang === DEFAULT_LANG ? 'Mit {{name}} chatten' : t.profile.chatWithName).replace('{{name}}', profile.name)}
               </button>
               <button
                 type="button"
                 onClick={() => void shareProfile()}
-                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-white/18 px-5 text-sm font-semibold text-[#17191d] transition-colors hover:bg-white/30"
+                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white/14 px-5 text-sm font-semibold text-[#17191d] transition-colors hover:bg-white/26"
               >
                 <Share className="h-4 w-4" />
                 {lang === DEFAULT_LANG ? 'Profil teilen' : t.profile.shareButton}
