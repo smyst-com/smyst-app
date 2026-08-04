@@ -3492,8 +3492,10 @@ function TwinProfileView({
         </div>
 
         <Card className="overflow-hidden p-0">
-          <div className="grid gap-0 lg:grid-cols-[340px_1fr]">
-            <div className="border-b border-white/30 bg-white/18 p-6 lg:border-b-0 lg:border-r">
+          {/* Zwei Spalten nur fuer den Kopf; alles darunter laeuft volle Breite,
+              damit unter dem Bild keine tote Flaeche entsteht. */}
+          <div className="grid gap-0 lg:grid-cols-[300px_1fr]">
+            <div className="border-b border-white/30 bg-white/18 p-5 lg:border-b-0 lg:border-r">
               {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
                   quadratische Portrait bildschirmhoch und schiebt Name, Daten und
                   den Chat-Button unter die Falz. */}
@@ -3538,7 +3540,7 @@ function TwinProfileView({
               )}
             </div>
 
-            <div className="p-6 sm:p-8">
+            <div className="p-5 sm:p-7">
               <div className="mb-2 flex flex-wrap items-center gap-2">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">{lang === DEFAULT_LANG ? 'KI-Zwilling Profil' : t.profile.kicker}</p>
                 {profile.sources?.length ? (
@@ -3571,8 +3573,11 @@ function TwinProfileView({
                   ))}
                 </div>
               </section>
+            </div>
+          </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="px-5 pb-5 sm:px-7 sm:pb-6">
+              <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {profile.milestones?.length ? (
                   <div className="rounded-lg bg-white/18 p-4">
                     <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</p>
@@ -3660,7 +3665,7 @@ function TwinProfileView({
               {profile.sources?.length ? (
                 <section className="mt-4">
                   <h2 className="mb-2 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</h2>
-                  <div className="grid gap-2">
+                  <div className="grid gap-2 sm:grid-cols-2">
                     {[...profile.sources]
                       .sort(
                         (a, b) =>
@@ -3684,7 +3689,6 @@ function TwinProfileView({
                   </div>
                 </section>
               ) : null}
-            </div>
           </div>
         </Card>
 
