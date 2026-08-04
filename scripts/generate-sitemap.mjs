@@ -70,12 +70,26 @@ async function loadProfileSlugs() {
   return CURATED_PUBLIC_TWIN_SPECS.map((spec) => spec.slug).filter(Boolean);
 }
 
-function profileUrlElement(slug, today) {
+function profilePath(lang, slug) {
+  return lang === 'de' ? `/t/${slug}` : `/${lang}/t/${slug}`;
+}
+
+function profileAlternates(slug) {
+  return [
+    ...LANGS.map(
+      (lang) => `    <xhtml:link rel="alternate" hreflang="${lang}" href="${HOST}${profilePath(lang, slug)}" />`,
+    ),
+    `    <xhtml:link rel="alternate" hreflang="x-default" href="${HOST}/t/${slug}" />`,
+  ].join('\n');
+}
+
+function profileUrlElement(slug, today, lang = 'de') {
   return `  <url>
-    <loc>${HOST}/t/${slug}</loc>
+    <loc>${HOST}${profilePath(lang, slug)}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>${lang === 'de' ? '0.7' : '0.6'}</priority>
+${profileAlternates(slug)}
   </url>`;
 }
 
@@ -84,7 +98,7 @@ async function buildSitemap() {
   const profileSlugs = await loadProfileSlugs();
   const urls = [
     ...PAGES.map((page) => urlElement(page, today)),
-    ...profileSlugs.map((slug) => profileUrlElement(slug, today)),
+    ...profileSlugs.flatMap((slug) => LANGS.map((lang) => profileUrlElement(slug, today, lang))),
   ].join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
