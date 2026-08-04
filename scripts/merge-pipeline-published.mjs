@@ -386,8 +386,13 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     deathLabel: corr.deathLabel || record.death_label || record.death_date || '',
     // 4-Zeilen-Profilformat: Orte aus der Pipeline (Wikidata P19/P20).
     // Fehlen sie, greift im Frontend LIFE_PLACES als Fallback.
-    birthPlace: record.birth_place || undefined,
-    deathPlace: record.death_place || undefined,
+    // Kuratierte Orts-Overrides (03.08.2026): fuer die wenigen Faelle, in denen
+    // Wikidata selbst falsch liegt und der Backfill deshalb nicht helfen kann —
+    // er haengt nur ein Land an und schreibt einen Ort nie um. Beispiel: Sofja
+    // Kowalewskaja starb in Stockholm, Wikidatas gueltiges P20 nennt nur die
+    // Gemeinde, das widerlegte nennt "Spanien".
+    birthPlace: corr.birthPlace || record.birth_place || undefined,
+    deathPlace: corr.deathPlace || record.death_place || undefined,
     exampleQuestions: [],
     searchIndex: [record.name, record.slug, record.category, ...(Array.isArray(corr.categories) ? corr.categories : derived.categories), corr.roles || derived.roles, description].filter(Boolean).join(' '),
     sources: record.sources || [],
