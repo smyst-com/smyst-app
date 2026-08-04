@@ -93,6 +93,7 @@ export interface PublicTwinProfile {
   exampleQuestions?: string[]
   searchIndex?: string
   sources?: Array<{ title: string; publisher: string; url: string }>
+  milestones?: Array<{ year: string; title: string; place?: string }>
   quality?: { ok: boolean; issues: string[] }
   createdAt?: number
   updatedAt: number

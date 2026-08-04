@@ -121,7 +121,7 @@
     "notFoundText": "This profile is not publicly indexable or does not exist.",
     "incompleteTitle": "Twin profile incomplete",
     "incompleteText": "This profile needs a working profile image before it is shown publicly.",
-    "privateText": "This profile is private, not indexable, and only visible after signing in."
+    "privateText": "This profile is private, not indexable, and only visible after signing in.","verifiedBadge":"Sources verified","askTitle":"Ask directly","askSubtitle":"One click starts the chat with this question.","askQ1":"Explain {{topic}} to me so I truly understand it.","askQ2":"What was your biggest mistake – and what did you learn from it?","askQ3":"What would you think about AI today?","askTopicFallback":"your field","timelineTitle":"Life milestones","createTitle":"Create your own AI twin","createText":"Your knowledge, your style, your language – public or private."
   },
   "dashboard": {
     "heroTitle": "What would you like to do with an AI twin today?",

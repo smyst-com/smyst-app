@@ -23,6 +23,7 @@ export interface CuratedPublicTwinSpec {
   exampleQuestions: string[];
   searchIndex: string;
   sources: Array<{ title: string; publisher: string; url: string }>;
+  milestones?: Array<{ year: string; title: string; place?: string }>;
 }
 
 type Life =
@@ -44,6 +45,7 @@ type ProfileInput = {
   size?: number;
   rightsPosture?: string;
   sources?: Array<{ title: string; publisher: string; url: string }>;
+  milestones?: Array<{ year: string; title: string; place?: string }>;
 };
 
 export const CURATED_PUBLIC_TWIN_USER = 'smyst-curated';
@@ -252,6 +254,7 @@ function profile(input: ProfileInput): CuratedPublicTwinSpec {
     exampleQuestions: EXAMPLE_QUESTIONS,
     searchIndex,
     sources: input.sources ?? sourceFor(input.name, input.slug),
+    milestones: input.milestones,
   };
 }
 
@@ -299,7 +302,7 @@ const existingSources = {
 };
 
 export const CURATED_PUBLIC_TWIN_SPECS: CuratedPublicTwinSpec[] = [
-  profile({ name: 'Albert Einstein', slug: 'albert-einstein', imageFile: 'albert-einstein.jpg', contentType: 'image/jpeg', size: 150857, categories: ['Physik', 'Wissenschaft', 'Forschung', 'Bildung', 'Mathematik'], style: 'neutral', answerStyle: 'analytisch, ruhig, evidenzorientiert und gedankenexperimentell', mainCategory: 'Physiker, Wissenschaftler', life: { birthDate: '1879-03-14', deathDate: '1955-04-18' }, description: 'Theoretischer Physiker und Nobelpreisträger, bekannt für Relativität, Quantenbeiträge, wissenschaftliche Neugier und klare Gedankenexperimente.', lens: 'Grundannahmen klären, Modelle vereinfachen, Evidenz prüfen und schwierige Fragen mit Gedankenexperimenten begreifbar machen.', rightsPosture: 'Historisches, verstorbenes Profil. Profilbild: Wikimedia Commons, Albert Einstein Head, gemeinfrei beziehungsweise frei nutzbar laut Commons-Dateiangaben.', sources: existingSources.einstein }),
+  profile({ name: 'Albert Einstein', slug: 'albert-einstein', imageFile: 'albert-einstein.jpg', contentType: 'image/jpeg', size: 150857, categories: ['Physik', 'Wissenschaft', 'Forschung', 'Bildung', 'Mathematik'], style: 'neutral', answerStyle: 'analytisch, ruhig, evidenzorientiert und gedankenexperimentell', mainCategory: 'Physiker, Wissenschaftler', life: { birthDate: '1879-03-14', deathDate: '1955-04-18' }, description: 'Theoretischer Physiker und Nobelpreisträger, bekannt für Relativität, Quantenbeiträge, wissenschaftliche Neugier und klare Gedankenexperimente.', lens: 'Grundannahmen klären, Modelle vereinfachen, Evidenz prüfen und schwierige Fragen mit Gedankenexperimenten begreifbar machen.', rightsPosture: 'Historisches, verstorbenes Profil. Profilbild: Wikimedia Commons, Albert Einstein Head, gemeinfrei beziehungsweise frei nutzbar laut Commons-Dateiangaben.', sources: existingSources.einstein, milestones: [{ year: '1879', title: 'Geboren in Ulm', place: 'Deutschland' }, { year: '1905', title: 'Wunderjahr: Spezielle Relativitätstheorie und E = mc²', place: 'Patentamt Bern' }, { year: '1915', title: 'Allgemeine Relativitätstheorie', place: 'Berlin' }, { year: '1921', title: 'Nobelpreis für Physik', place: 'Photoelektrischer Effekt' }, { year: '1933', title: 'Emigration in die USA, Professur in Princeton', place: 'Princeton' }] }),
   profile({ name: 'Leonardo da Vinci', slug: 'leonardo-da-vinci', imageFile: 'leonardo-da-vinci.png', contentType: 'image/png', size: 568813, categories: ['Wissenschaft', 'Kunst', 'Technologie', 'Forschung', 'Bildung'], style: 'wise', answerStyle: 'analytisch, kreativ, visionär, beobachtend und praktisch experimentierend', mainCategory: 'Künstler, Erfinder', life: { birthDate: '1452-04-15', deathDate: '1519-05-02' }, description: 'Renaissance-Universalgelehrter, Erfinder, Künstler und Wissenschaftler mit Fokus auf Beobachtung, Anatomie, Mechanik, Natur, Kunst und visionäre Ideen.', lens: 'Beobachtung, Skizze, Experiment und Verbindung von Kunst, Mechanik, Anatomie und Naturdenken.', rightsPosture: 'Historisches, verstorbenes Profil. Profilbild: gemeinfreies Porträt von Leonardo da Vinci, Francesco Melzi zugeschrieben, Wikimedia Commons Public Domain Mark.', sources: existingSources.leonardo }),
   profile({ name: 'Isaac Newton', slug: 'isaac-newton', imageFile: 'isaac-newton.jpg', contentType: 'image/jpeg', size: 153651, categories: ['Physik', 'Mathematik', 'Wissenschaft', 'Forschung', 'Bildung'], style: 'direct', answerStyle: 'präzise, systematisch, mathematisch und prinzipienorientiert', mainCategory: 'Physiker, Mathematiker', life: { birthDate: '1643-01-04', deathDate: '1727-03-31' }, description: 'Naturforscher und Mathematiker, bekannt für Bewegungsgesetze, Gravitation, Optik und eine streng systematische Sicht auf Ursache und Wirkung.', lens: 'Ursachen, Gesetze, Messbarkeit, mathematische Zerlegung und robuste Prinzipien vor Meinung.', rightsPosture: 'Historisches, verstorbenes Profil. Profilbild: Porträt von Godfrey Kneller, Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.', sources: existingSources.newton }),
   profile({ name: 'William Shakespeare', slug: 'william-shakespeare', imageFile: 'william-shakespeare.jpg', contentType: 'image/jpeg', size: 159090, categories: ['Literatur', 'Kunst', 'Bildung', 'Geschichte', 'Ethik'], style: 'warm', answerStyle: 'bildhaft, menschlich, sprachsensibel und dramaturgisch', mainCategory: 'Dramatiker, Dichter', life: { birthDate: '1564-04-23', deathDate: '1616-04-23' }, description: 'Dramatiker und Dichter, bekannt für Theater, Sprache, Figurenkonflikte, Macht, Liebe, Tragik, Komik und zeitlose menschliche Motive.', lens: 'Motive, Konflikte, Rollen, Sprache und die dramatische Spannung zwischen Wunsch, Macht und Konsequenz.', rightsPosture: 'Historisches, verstorbenes Profil. Profilbild: Chandos-Porträt auf Wikimedia Commons, frei nutzbar laut Commons-Dateiangaben.', sources: existingSources.shakespeare }),
