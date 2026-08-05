@@ -355,8 +355,12 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
         : [record.category]).filter(Boolean),
     languages: [record.language_default || 'de'],
     // Stimmen-Geschlecht (Wikidata P21) fuer die Sprachwelle; fehlt es,
-    // nutzt das Frontend den neutralen Fallback.
-    voiceGender: record.gender === 'female' || record.gender === 'male' ? record.gender : undefined,
+    // nutzt das Frontend den neutralen Fallback. Kuratierter Override via
+    // corrections 'gender' fuer Profile, deren Publish-Record kein P21 hat
+    // (04.08.2026: george-sand, juana-ines-de-la-cruz, rosa-bonheur, lili-elbe).
+    voiceGender: corr.gender === 'female' || corr.gender === 'male'
+      ? corr.gender
+      : record.gender === 'female' || record.gender === 'male' ? record.gender : undefined,
     visibility: 'public',
     style: 'neutral',
     status: 'ready',

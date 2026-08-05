@@ -2377,6 +2377,90 @@
     },
     "charlotte-von-preussen": {
       "deathPlace": "Zarskoje Selo, Russland"
+    },
+    "simone-weil": {
+      "roles": "Philosophin, Mystikerin"
+    },
+    "cixi": {
+      "roles": "Kaiserinwitwe, Regentin"
+    },
+    "teresa-von-avila": {
+      "roles": "Mystikerin, Ordensgründerin"
+    },
+    "sacajawea": {
+      "roles": "Dolmetscherin, Entdeckerin"
+    },
+    "isabella-i": {
+      "roles": "Königin"
+    },
+    "hildegard-von-bingen": {
+      "roles": "Ärztin, Mystikerin"
+    },
+    "sigrid-undset": {
+      "roles": "Romanautorin, Essayistin"
+    },
+    "katharina-von-siena": {
+      "roles": "Mystikerin"
+    },
+    "matilda": {
+      "roles": "Kaiserin"
+    },
+    "maria-de-medici": {
+      "roles": "Königin, Regentin"
+    },
+    "olga-nikolajewna-romanowa": {
+      "roles": "Großfürstin"
+    },
+    "tatjana-nikolajewna-romanowa": {
+      "roles": "Großfürstin"
+    },
+    "anna-pawlowna": {
+      "roles": "Königin"
+    },
+    "katharina-von-braganza": {
+      "roles": "Königin"
+    },
+    "maria-faustyna-kowalska": {
+      "roles": "Ordensschwester, Mystikerin"
+    },
+    "catherine-parr": {
+      "roles": "Königin"
+    },
+    "isabelle-de-france": {
+      "roles": "Königin"
+    },
+    "madame-du-barry": {
+      "roles": "Mätresse Ludwigs XV."
+    },
+    "hortense-de-beauharnais": {
+      "roles": "Königin"
+    },
+    "rosalia-de-castro": {
+      "roles": "Lyrikerin"
+    },
+    "raziah": {
+      "roles": "Sultanin"
+    },
+    "mirabai": {
+      "roles": "Mystikerin, Dichterin"
+    },
+    "albert-von-sachsen-coburg-und-gotha": {
+      "roles": "Prinzgemahl"
+    },
+    "grigori-alexandrowitsch-potjomkin": {
+      "roles": "Feldherr, Staatsmann"
+    },
+    "george-sand": {
+      "gender": "female"
+    },
+    "juana-ines-de-la-cruz": {
+      "gender": "female"
+    },
+    "rosa-bonheur": {
+      "gender": "female"
+    },
+    "lili-elbe": {
+      "gender": "female"
     }
   }
 }
