@@ -5,6 +5,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Check, MoreHorizontal, Pencil, RotateCw, Trash2, X } from 'lucide-react'
 import { fetchService } from '@/lib/serviceEndpoints'
+import { DEFAULT_LANG, useLanguage } from '@/lib/i18n'
+import { useStaticTranslations } from '@/lib/staticTranslations'
 
 interface SocialLink {
   id: string
@@ -58,6 +60,8 @@ const STATUS_BADGES: Record<string, { label: string; className: string }> = {
 }
 
 export default function SocialLinksCard() {
+  const { lang } = useLanguage()
+  const sl = useStaticTranslations(lang).social
   const [links, setLinks] = useState<SocialLink[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
@@ -95,7 +99,7 @@ export default function SocialLinksCard() {
     const url = input.trim()
     if (!url) return
     setBusy(true)
-    setStatus('Link wird geprüft und importiert …')
+    setStatus(lang === DEFAULT_LANG ? 'Link wird geprüft und importiert …' : sl.addChecking)
     try {
       const response = await fetchService('/api/social/links', {
         method: 'POST',
@@ -107,17 +111,17 @@ export default function SocialLinksCard() {
         | { link?: SocialLink; error?: { message?: string } }
         | null
       if (!response.ok || !data?.link) {
-        setStatus(data?.error?.message ?? `Hinzufügen fehlgeschlagen (${response.status}).`)
+        setStatus(data?.error?.message ?? (lang === DEFAULT_LANG ? `Hinzufügen fehlgeschlagen (${response.status}).` : `${sl.addFailed} (${response.status}).`))
       } else {
         setLinks((current) => [...current, data.link as SocialLink])
         setInput('')
-        setStatus('Link gespeichert.')
+        setStatus(lang === DEFAULT_LANG ? 'Link gespeichert.' : sl.added)
       }
     } catch {
-      setStatus('Gerade nicht möglich. Bitte später erneut versuchen.')
+      setStatus(lang === DEFAULT_LANG ? 'Gerade nicht möglich. Bitte später erneut versuchen.' : sl.addUnavailable)
     }
     setBusy(false)
-  }, [input])
+  }, [input, lang, sl])
 
   const recheck = useCallback(async (id: string) => {
     setBusyId(id)
@@ -132,22 +136,22 @@ export default function SocialLinksCard() {
       const data = (await response.json().catch(() => null)) as { link?: SocialLink } | null
       if (response.ok && data?.link) {
         setLinks((current) => current.map((item) => (item.id === id ? (data.link as SocialLink) : item)))
-        setStatus('Neu geprüft.')
+        setStatus(lang === DEFAULT_LANG ? 'Neu geprüft.' : sl.rechecked)
       } else {
-        setStatus(`Prüfung fehlgeschlagen (${response.status}).`)
+        setStatus(lang === DEFAULT_LANG ? `Prüfung fehlgeschlagen (${response.status}).` : `${sl.recheckFailed} (${response.status}).`)
       }
     } catch {
-      setStatus('Prüfung gerade nicht möglich.')
+      setStatus(lang === DEFAULT_LANG ? 'Prüfung gerade nicht möglich.' : sl.recheckUnavailable)
     }
     setBusyId(null)
-  }, [])
+  }, [lang, sl])
 
   const restoreRemovedLink = useCallback(async () => {
     if (!undoLink) return
     const linkToRestore = undoLink
     setUndoLink(null)
     setBusy(true)
-    setStatus('Link wird wiederhergestellt …')
+    setStatus(lang === DEFAULT_LANG ? 'Link wird wiederhergestellt …' : sl.restoring)
     try {
       const response = await fetchService('/api/social/links', {
         method: 'POST',
@@ -158,7 +162,7 @@ export default function SocialLinksCard() {
       const data = (await response.json().catch(() => null)) as { link?: SocialLink; error?: { message?: string } } | null
       if (!response.ok || !data?.link) {
         setLinks((current) => current.some((item) => item.url === linkToRestore.url) ? current : [...current, linkToRestore])
-        setStatus(data?.error?.message ?? 'Link lokal wieder angezeigt. Bitte später erneut speichern.')
+        setStatus(data?.error?.message ?? (lang === DEFAULT_LANG ? 'Link lokal wieder angezeigt. Bitte später erneut speichern.' : sl.restoredLocalSave))
         return
       }
       const restored = data.link as SocialLink
@@ -176,14 +180,14 @@ export default function SocialLinksCard() {
       })
       const patchData = (await patchResponse.json().catch(() => null)) as { link?: SocialLink } | null
       setLinks((current) => [...current, patchResponse.ok && patchData?.link ? patchData.link : restored])
-      setStatus('Link wiederhergestellt.')
+      setStatus(lang === DEFAULT_LANG ? 'Link wiederhergestellt.' : sl.restored)
     } catch {
       setLinks((current) => current.some((item) => item.url === linkToRestore.url) ? current : [...current, linkToRestore])
-      setStatus('Link lokal wieder angezeigt. Bitte Verbindung prüfen.')
+      setStatus(lang === DEFAULT_LANG ? 'Link lokal wieder angezeigt. Bitte Verbindung prüfen.' : sl.restoredLocalConn)
     } finally {
       setBusy(false)
     }
-  }, [undoLink])
+  }, [undoLink, lang, sl])
 
   const remove = useCallback(async (link: SocialLink) => {
     const id = link.id
@@ -199,15 +203,15 @@ export default function SocialLinksCard() {
       if (response.ok) {
         setLinks((current) => current.filter((item) => item.id !== id))
         setUndoLink(link)
-        setStatus('Link entfernt. Rückgängig ist kurz möglich.')
+        setStatus(lang === DEFAULT_LANG ? 'Link entfernt. Rückgängig ist kurz möglich.' : sl.removed)
       } else {
-        setStatus(`Entfernen fehlgeschlagen (${response.status}).`)
+        setStatus(lang === DEFAULT_LANG ? `Entfernen fehlgeschlagen (${response.status}).` : `${sl.removeFailed} (${response.status}).`)
       }
     } catch {
-      setStatus('Entfernen gerade nicht möglich.')
+      setStatus(lang === DEFAULT_LANG ? 'Entfernen gerade nicht möglich.' : sl.removeUnavailable)
     }
     setBusyId(null)
-  }, [])
+  }, [lang, sl])
 
   const saveEdit = useCallback(async (id: string) => {
     setBusyId(id)
@@ -222,24 +226,23 @@ export default function SocialLinksCard() {
       if (response.ok && data?.link) {
         setLinks((current) => current.map((item) => (item.id === id ? (data.link as SocialLink) : item)))
         setEditingId(null)
-        setStatus('Änderungen gespeichert.')
+        setStatus(lang === DEFAULT_LANG ? 'Änderungen gespeichert.' : sl.editSaved)
       } else {
-        setStatus(`Speichern fehlgeschlagen (${response.status}).`)
+        setStatus(lang === DEFAULT_LANG ? `Speichern fehlgeschlagen (${response.status}).` : `${sl.editSaveFailed} (${response.status}).`)
       }
     } catch {
-      setStatus('Speichern gerade nicht möglich.')
+      setStatus(lang === DEFAULT_LANG ? 'Speichern gerade nicht möglich.' : sl.editSaveUnavailable)
     }
     setBusyId(null)
-  }, [editName, editCategory])
+  }, [editName, editCategory, lang, sl])
 
   return (
     <section className="rounded-xl border border-white/12 bg-white/[0.05] p-6 lg:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="mb-1 text-lg font-semibold">Social-Media-Links</h3>
+          <h3 className="mb-1 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Social-Media-Links' : sl.title}</h3>
           <p className="text-sm text-[#555b64]">
-            Verknüpfe deine Profile (Instagram, TikTok, YouTube, X, LinkedIn, Website …). Die KI
-            erkennt die Plattform, prüft den Link und fasst öffentliche Infos zusammen.
+            {lang === DEFAULT_LANG ? 'Verknüpfe deine Profile (Instagram, TikTok, YouTube, X, LinkedIn, Website …). Die KI erkennt die Plattform, prüft den Link und fasst öffentliche Infos zusammen.' : sl.subtitle}
           </p>
         </div>
         <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-[#8e97a8]">
@@ -254,7 +257,7 @@ export default function SocialLinksCard() {
           onKeyDown={(event) => {
             if (event.key === 'Enter') void addLink()
           }}
-          placeholder="z. B. instagram.com/deinname oder deine-website.de"
+          placeholder={lang === DEFAULT_LANG ? 'z. B. instagram.com/deinname oder deine-website.de' : sl.inputPlaceholder}
           className="rounded-lg border border-white/20 bg-white/[0.04] px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
         />
         <button
@@ -263,7 +266,7 @@ export default function SocialLinksCard() {
           disabled={busy || !input.trim()}
           className="rounded-lg border border-white/20 bg-white/[0.08] px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/[0.14] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {busy ? 'Prüft …' : 'Hinzufügen'}
+          {busy ? (lang === DEFAULT_LANG ? 'Prüft …' : sl.checking) : (lang === DEFAULT_LANG ? 'Hinzufügen' : sl.addButton)}
         </button>
       </div>
 
@@ -271,7 +274,7 @@ export default function SocialLinksCard() {
 
       <div className="mt-4 grid gap-3">
         {links.length === 0 && (
-          <p className="text-sm text-[#767d87]">Noch keine Links gespeichert.</p>
+          <p className="text-sm text-[#767d87]">{lang === DEFAULT_LANG ? 'Noch keine Links gespeichert.' : sl.empty}</p>
         )}
         {links.map((link) => {
           const badge = STATUS_BADGES[link.status] ?? STATUS_BADGES.pending
@@ -284,7 +287,7 @@ export default function SocialLinksCard() {
                   </span>
                   {link.username && <span className="text-sm text-[#8e97a8]">@{link.username}</span>}
                   <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badge.className}`}>
-                    {badge.label}
+                    {lang === DEFAULT_LANG ? badge.label : (sl.status[link.status] ?? badge.label)}
                   </span>
                   {link.category && (
                     <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-[#8e97a8]">
@@ -300,8 +303,8 @@ export default function SocialLinksCard() {
                         setConfirmRemoveId(null)
                         setMenuOpenId((current) => (current === link.id ? null : link.id))
                       }}
-                      aria-label="Weitere Optionen"
-                      title="Weitere Optionen"
+                      aria-label={lang === DEFAULT_LANG ? 'Weitere Optionen' : sl.moreOptions}
+                      title={lang === DEFAULT_LANG ? 'Weitere Optionen' : sl.moreOptions}
                       className="grid h-9 w-9 place-items-center rounded-md border border-white/20 bg-white/[0.04] text-[#8e97a8] transition-colors hover:bg-white/[0.1] hover:text-white"
                     >
                       <MoreHorizontal className="h-4 w-4" />
@@ -315,7 +318,7 @@ export default function SocialLinksCard() {
                           className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-[#d8dee8] hover:bg-white/10 disabled:opacity-50"
                         >
                           <RotateCw className="h-4 w-4" />
-                          {busyId === link.id ? 'Prüft …' : 'Neu prüfen'}
+                          {busyId === link.id ? (lang === DEFAULT_LANG ? 'Prüft …' : sl.checking) : (lang === DEFAULT_LANG ? 'Neu prüfen' : sl.recheck)}
                         </button>
                         <button
                           type="button"
@@ -328,7 +331,7 @@ export default function SocialLinksCard() {
                           className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-[#d8dee8] hover:bg-white/10"
                         >
                           <Pencil className="h-4 w-4" />
-                          Bearbeiten
+                          {lang === DEFAULT_LANG ? 'Bearbeiten' : sl.edit}
                         </button>
                         <button
                           type="button"
@@ -336,7 +339,7 @@ export default function SocialLinksCard() {
                           className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-xs font-semibold text-red-300 hover:bg-red-500/12"
                         >
                           <Trash2 className="h-4 w-4" />
-                          Entfernen vorbereiten
+                          {lang === DEFAULT_LANG ? 'Entfernen vorbereiten' : sl.removePrepare}
                         </button>
                       </div>
                     )}
@@ -364,7 +367,7 @@ export default function SocialLinksCard() {
                   <input
                     value={editName}
                     onChange={(event) => setEditName(event.target.value)}
-                    placeholder="Anzeigename"
+                    placeholder={lang === DEFAULT_LANG ? 'Anzeigename' : sl.namePlaceholder}
                     className="rounded-md border border-white/20 bg-white/[0.04] px-3 py-1.5 text-sm outline-none focus:border-[#59C7FF]"
                   />
                   <select
@@ -373,7 +376,7 @@ export default function SocialLinksCard() {
                     className="rounded-md border border-white/20 bg-white/[0.04] px-2 py-1.5 text-sm"
                   >
                     {CATEGORY_OPTIONS.map((option) => (
-                      <option key={option} value={option}>{option}</option>
+                      <option key={option} value={option}>{lang === DEFAULT_LANG ? option : (sl.linkCats[option] ?? option)}</option>
                     ))}
                   </select>
                   <button
@@ -382,21 +385,21 @@ export default function SocialLinksCard() {
                     disabled={busyId === link.id}
                     className="rounded-md border border-white/20 bg-white/[0.08] px-3 py-1.5 text-sm font-semibold hover:bg-white/[0.14] disabled:opacity-50"
                   >
-                    Speichern
+                    {lang === DEFAULT_LANG ? 'Speichern' : sl.save}
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingId(null)}
                     className="rounded-md border border-white/20 px-3 py-1.5 text-sm hover:bg-white/[0.08]"
                   >
-                    Abbrechen
+                    {lang === DEFAULT_LANG ? 'Abbrechen' : sl.cancel}
                   </button>
                 </div>
               ) : (
                 confirmRemoveId === link.id && (
                   <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 p-3">
                     <p className="text-xs font-semibold text-red-200">
-                      Diesen Link entfernen? Die Verbindung wird aus deinem Profilbereich gelöscht.
+                      {lang === DEFAULT_LANG ? 'Diesen Link entfernen? Die Verbindung wird aus deinem Profilbereich gelöscht.' : sl.confirmRemoveText}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
@@ -406,7 +409,7 @@ export default function SocialLinksCard() {
                         className="inline-flex items-center gap-2 rounded-md border border-red-500/30 bg-red-500/14 px-3 py-1.5 text-xs font-semibold text-red-100 hover:bg-red-500/22 disabled:opacity-50"
                       >
                         <Check className="h-4 w-4" />
-                        Ja, entfernen
+                        {lang === DEFAULT_LANG ? 'Ja, entfernen' : sl.confirmRemoveYes}
                       </button>
                       <button
                         type="button"
@@ -417,7 +420,7 @@ export default function SocialLinksCard() {
                         className="inline-flex items-center gap-2 rounded-md border border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-white/[0.08]"
                       >
                         <X className="h-4 w-4" />
-                        Abbrechen
+                        {lang === DEFAULT_LANG ? 'Abbrechen' : sl.cancel}
                       </button>
                     </div>
                   </div>
@@ -430,22 +433,20 @@ export default function SocialLinksCard() {
 
       {undoLink && (
         <div className="mt-4 flex flex-col gap-3 rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-3 text-sm text-emerald-100 sm:flex-row sm:items-center sm:justify-between">
-          <span>„{PLATFORM_LABELS[undoLink.platform] ?? undoLink.platform}“ wurde entfernt.</span>
+          <span>{lang === DEFAULT_LANG ? `„${PLATFORM_LABELS[undoLink.platform] ?? undoLink.platform}“ wurde entfernt.` : sl.removedToast.replace('{name}', PLATFORM_LABELS[undoLink.platform] ?? undoLink.platform)}</span>
           <button
             type="button"
             onClick={() => void restoreRemovedLink()}
             disabled={busy}
             className="rounded-md border border-emerald-400/30 px-3 py-1.5 text-xs font-semibold hover:bg-emerald-400/10 disabled:opacity-50"
           >
-            Rückgängig
+            {lang === DEFAULT_LANG ? 'Rückgängig' : sl.undo}
           </button>
         </div>
       )}
 
       <p className="mt-4 text-xs text-[#767d87]">
-        Es werden nur öffentlich sichtbare Informationen (Meta-Angaben) gelesen — kein Login,
-        keine privaten Daten. Einige Plattformen geben ohne Anmeldung nur wenig frei; solche
-        Links erscheinen als „Eingeschränkt".
+        {lang === DEFAULT_LANG ? 'Es werden nur öffentlich sichtbare Informationen (Meta-Angaben) gelesen — kein Login, keine privaten Daten. Einige Plattformen geben ohne Anmeldung nur wenig frei; solche Links erscheinen als „Eingeschränkt".' : sl.footer}
       </p>
     </section>
   )
