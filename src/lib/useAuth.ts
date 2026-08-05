@@ -86,6 +86,14 @@ function subscribeAuth(listener: (state: AuthState) => void) {
   return () => authListeners.delete(listener);
 }
 
+/**
+ * Auth-Status fuer Nicht-React-Module (z. B. userVoice): Listener wird sofort
+ * mit dem aktuellen Stand aufgerufen und danach bei jeder Aenderung erneut.
+ */
+export function observeAuthState(listener: (state: AuthState) => void): () => void {
+  return subscribeAuth(listener);
+}
+
 async function refreshSharedAuth(enabled: boolean, force = false) {
   if (!enabled) return;
   if (sharedAuthRequest && !force) return sharedAuthRequest;
