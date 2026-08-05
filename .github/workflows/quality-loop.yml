@@ -86,7 +86,7 @@ jobs:
           TODAY=$(date -u +%Y-%m-%d)
           {
             echo "### Tagesbilanz ${TODAY}"
-            echo "- Live-Profile (Sitemap /t/): **${LIVE}** — Soll-Zuwachs: 1000+/Tag"
+            echo "- Live-Profile (Sitemap /t/): **${LIVE}** — Soll-Zuwachs: 2000/Tag"
             echo "- Pipeline-Laeufe heute (Soll: 8, alle success):"
             gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?created=${TODAY}&per_page=20" \
               --jq '.workflow_runs[] | "  - \(.created_at) \(.conclusion // .status)"'
