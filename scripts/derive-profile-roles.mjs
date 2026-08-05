@@ -255,4 +255,56 @@ export function deriveRolesAndCategories(description) {
   return { roles: roleNames.join(', '), categories: categories.slice(0, MAX_CATEGORIES) };
 }
 
+/**
+ * Maennliche Rollen-Nomen -> weibliche Form. Anzeige-Fix (Befund 04./05.08.2026):
+ * Wikidata-Occupations und Ingest-Toepfe liefern generisch-maennliche Formen,
+ * wodurch z. B. Cixi als "Kaiser" und Edith Wharton als "Romanautor" erschienen.
+ * Nur eindeutige Paare; unbekannte oder bereits weibliche Formen bleiben stehen.
+ */
+const FEMALE_ROLE_FORMS = new Map([
+  ['König', 'Königin'], ['Kaiser', 'Kaiserin'], ['Zar', 'Zarin'], ['Sultan', 'Sultanin'],
+  ['Fürst', 'Fürstin'], ['Herzog', 'Herzogin'], ['Graf', 'Gräfin'], ['Prinz', 'Prinzessin'],
+  ['Regent', 'Regentin'], ['Politiker', 'Politikerin'], ['Präsident', 'Präsidentin'],
+  ['Kanzler', 'Kanzlerin'], ['Diplomat', 'Diplomatin'], ['Stratege', 'Strategin'],
+  ['Philosoph', 'Philosophin'], ['Mystiker', 'Mystikerin'], ['Theologe', 'Theologin'],
+  ['Dichter', 'Dichterin'], ['Lyriker', 'Lyrikerin'], ['Dramatiker', 'Dramatikerin'],
+  ['Schriftsteller', 'Schriftstellerin'], ['Romanautor', 'Romanautorin'], ['Autor', 'Autorin'],
+  ['Essayist', 'Essayistin'], ['Journalist', 'Journalistin'], ['Kritiker', 'Kritikerin'],
+  ['Maler', 'Malerin'], ['Bildhauer', 'Bildhauerin'], ['Künstler', 'Künstlerin'],
+  ['Komponist', 'Komponistin'], ['Musiker', 'Musikerin'], ['Sänger', 'Sängerin'],
+  ['Dirigent', 'Dirigentin'], ['Pianist', 'Pianistin'], ['Schauspieler', 'Schauspielerin'],
+  ['Regisseur', 'Regisseurin'], ['Architekt', 'Architektin'],
+  ['Wissenschaftler', 'Wissenschaftlerin'], ['Physiker', 'Physikerin'],
+  ['Chemiker', 'Chemikerin'], ['Mathematiker', 'Mathematikerin'], ['Astronom', 'Astronomin'],
+  ['Biologe', 'Biologin'], ['Botaniker', 'Botanikerin'], ['Zoologe', 'Zoologin'],
+  ['Geologe', 'Geologin'], ['Mediziner', 'Medizinerin'], ['Arzt', 'Ärztin'],
+  ['Naturforscher', 'Naturforscherin'], ['Forscher', 'Forscherin'],
+  ['Entdecker', 'Entdeckerin'], ['Erfinder', 'Erfinderin'], ['Ingenieur', 'Ingenieurin'],
+  ['Historiker', 'Historikerin'], ['Archäologe', 'Archäologin'],
+  ['Anthropologe', 'Anthropologin'], ['Psychologe', 'Psychologin'],
+  ['Soziologe', 'Soziologin'], ['Ökonom', 'Ökonomin'], ['Jurist', 'Juristin'],
+  ['Pädagoge', 'Pädagogin'], ['Lehrer', 'Lehrerin'], ['Professor', 'Professorin'],
+  ['Übersetzer', 'Übersetzerin'], ['Verleger', 'Verlegerin'], ['Gelehrter', 'Gelehrte'],
+  ['Heiliger', 'Heilige'], ['Reformator', 'Reformatorin'], ['Missionar', 'Missionarin'],
+  ['Prediger', 'Predigerin'], ['Seefahrer', 'Seefahrerin'], ['Pionier', 'Pionierin'],
+  ['Unternehmer', 'Unternehmerin'], ['Sammler', 'Sammlerin'], ['Mäzen', 'Mäzenin'],
+  ['Ordensgründer', 'Ordensgründerin'], ['Astrologe', 'Astrologin'],
+]);
+
+/**
+ * Setzt Anzeige-Rollen fuer weibliche Profile in die weibliche Form um.
+ * roles ist der Komma-String aus Zeile 4 (z. B. "Lyriker, Dramatikerin").
+ * Bei gender !== 'female' oder leerem Input unveraendert zurueck.
+ */
+export function feminizeRoles(roles, gender) {
+  if (gender !== 'female' || !roles) return roles;
+  return String(roles)
+    .split(',')
+    .map((part) => {
+      const p = part.trim();
+      return FEMALE_ROLE_FORMS.get(p) || p;
+    })
+    .join(', ');
+}
+
 export default deriveRolesAndCategories;
