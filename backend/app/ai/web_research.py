@@ -769,6 +769,11 @@ class VerifiedWebResearchService:
         decision = decide_search(question, context, self.settings)
         if decision.decision is SearchDecision.NO_SEARCH or not decision.can_call_provider:
             return None
+        # Settings koennen einen Provider nennen, dessen Key/URL fehlt; build_web_search_provider
+        # faellt dann auf DisabledWebSearchProvider zurueck. Ohne diesen Guard bekaeme der Chat
+        # eine "Ich habe im Internet gesucht."-Antwort mit provider=disabled und 0 Quellen.
+        if self.provider.name == "disabled":
+            return None
         rewrite = rewrite_query(question, category=decision.category)
         key = cache_key(query_hash=rewrite.query_hash, category=decision.category, provider=self.provider.name)
         cached = response_from_cache_payload(await self.cache_store.get_json(key) or {})

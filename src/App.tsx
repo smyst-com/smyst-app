@@ -8622,8 +8622,6 @@ function TwinChatView({
                   <div className="mt-1 max-w-[calc(100%-8px)] rounded-md border border-white/24 bg-white/16 px-3 py-2 text-xs text-[#555b64] sm:max-w-[94%]">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-[#16181b]">{msg.webResearch.notice}</span>
-                      <span>{msg.webResearch.category}</span>
-                      <span>{msg.webResearch.fromCache ? 'Cache' : msg.webResearch.provider}</span>
                     </div>
                     {msg.webResearch.sources.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -8904,7 +8902,7 @@ function TwinChatView({
             <p className="text-xs text-[#555b64]">Halte Ideen fest und vertiefe die Antwort.</p>
           </div>
           <div className="rounded-[10px] border border-white/22 bg-white/16 p-2">
-            <label className="mb-1 block text-xs font-semibold text-[#16181b]">Create note</label>
+            <label className="mb-1 block text-xs font-semibold text-[#16181b]">Notiz erstellen</label>
             <textarea
               value={noteText}
               onChange={(event) => setNoteText(event.target.value)}
@@ -8929,14 +8927,14 @@ function TwinChatView({
               disabled={isReplying || !hasUserTurn}
               className="rounded-md border border-white/30 bg-white/16 px-3 py-1.5 text-sm font-medium text-[#16181b] transition-colors hover:bg-white/28 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              Explain simpler
+              Einfacher erklären
             </button>
             <button
               type="button"
               onClick={handleAskFollowUp}
               className="rounded-md border border-white/30 bg-white/16 px-3 py-1.5 text-sm font-medium text-[#16181b] transition-colors hover:bg-white/28"
             >
-              Ask follow-up
+              Nachfragen
             </button>
           </div>
         </aside>

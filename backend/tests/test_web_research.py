@@ -167,6 +167,22 @@ async def test_provider_mock_and_cache_first() -> None:
 
 
 @pytest.mark.asyncio
+async def test_research_returns_none_when_provider_falls_back_to_disabled() -> None:
+    # Provider in den Settings benannt, aber ohne Key: build_web_search_provider
+    # liefert den DisabledWebSearchProvider. research() darf dann keine
+    # "Ich habe im Internet gesucht."-Antwort mit 0 Quellen erzeugen.
+    service = VerifiedWebResearchService(
+        cache_store=InMemoryResearchCacheStore(),
+        active_settings=Settings(WEB_RESEARCH_ENABLED=True, WEB_SEARCH_PROVIDER="brave"),
+    )
+
+    assert service.provider.name == "disabled"
+    result = await service.research("Bitte online aktuelle News zu Open Source KI suchen.")
+
+    assert result is None
+
+
+@pytest.mark.asyncio
 async def test_expired_cache_calls_provider() -> None:
     provider = MockProvider()
     cache = InMemoryResearchCacheStore()

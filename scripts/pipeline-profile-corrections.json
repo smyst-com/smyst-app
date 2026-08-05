@@ -2367,6 +2367,16 @@
     },
     "edgar-von-wahl": {
       "birthPlace": "Olviopol, Ukraine"
+    },
+    "anna-von-kleve": {
+      "roles": "Königin",
+      "categories": [
+        "Geschichte",
+        "Politik"
+      ]
+    },
+    "charlotte-von-preussen": {
+      "deathPlace": "Zarskoje Selo, Russland"
     }
   }
 }
