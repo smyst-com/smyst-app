@@ -1,0 +1,64 @@
+name: iOS App Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "Build-Typ"
+        type: choice
+        default: simulator-check
+        options:
+          - simulator-check
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build iOS App (Capacitor, unsigniert)
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+        env:
+          VITE_CANONICAL_HOST: https://smyst.com
+          VITE_API_BASE_URL: https://smyst-api.zeabur.app
+          VITE_API_FALLBACK_BASE_URL: https://api.smyst.com
+          VITE_AUTH_BASE_URL: https://smyst-api.zeabur.app/auth
+
+      - name: Capacitor sync (ios)
+        run: npx cap sync ios
+
+      # Unsignierter Simulator-Build: verifiziert, dass das Xcode-Projekt
+      # vollstaendig kompiliert. Signierter Store-Build folgt, sobald
+      # Apple-Developer-Zertifikate als Secrets hinterlegt sind.
+      - name: Build (Simulator, ohne Signierung)
+        working-directory: ios/App
+        run: |
+          xcodebuild build \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | tail -50
+
+      - name: Ergebnis
+        run: echo "iOS-Projekt kompiliert erfolgreich (unsigniert)."
