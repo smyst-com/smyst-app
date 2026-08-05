@@ -26,6 +26,8 @@ jobs:
     timeout-minutes: 120
     permissions:
       contents: read
+      # actions:read fuer die Tagesbilanz (Liste der heutigen Pipeline-Laeufe).
+      actions: read
     defaults:
       run:
         working-directory: backend
@@ -70,3 +72,22 @@ jobs:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: python -m app.workers.report_quality
+
+      # Tagesbilanz (04.08.2026): Soll 1000+ publizierte Profile/Tag. Am 04.08.
+      # fielen 5 von 7 Cron-Laeufen still aus (QA-Timeout vor PR #324) — das
+      # fiel erst beim manuellen Nachrechnen auf. Diese Bilanz macht Ist-Zahl
+      # und abgebrochene Laeufe in der Run-Summary sichtbar.
+      - name: "Tagesbilanz: Live-Profile + Pipeline-Laeufe heute"
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LIVE=$( (curl -sf https://smyst.com/sitemap.xml | grep -o '<loc>https://smyst.com/t/' || true) | wc -l | tr -d ' ')
+          TODAY=$(date -u +%Y-%m-%d)
+          {
+            echo "### Tagesbilanz ${TODAY}"
+            echo "- Live-Profile (Sitemap /t/): **${LIVE}** — Soll-Zuwachs: 1000+/Tag"
+            echo "- Pipeline-Laeufe heute (Soll: 8, alle success):"
+            gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?created=${TODAY}&per_page=20" \
+              --jq '.workflow_runs[] | "  - \(.created_at) \(.conclusion // .status)"'
+          } >> "$GITHUB_STEP_SUMMARY"
