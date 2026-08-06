@@ -113,7 +113,7 @@ export default function MobileNav({ open, onClose, items, primaryAction, labels 
         aria-modal="true"
         aria-label="smyst.com Control Center"
         aria-hidden={!open}
-        className={`fixed top-0 ${drawerSide} z-50 flex h-[100dvh] w-[min(88vw,380px)] flex-col border-r border-white/10 bg-[rgba(11,16,24,0.96)] text-[#f4f7fb] shadow-2xl backdrop-blur-2xl ${transitionClass} ${
+        className={`smyst-mobile-drawer fixed top-0 ${drawerSide} z-50 flex h-[100dvh] w-[min(88vw,380px)] flex-col border-r border-white/10 bg-[rgba(11,16,24,0.96)] text-[#f4f7fb] shadow-2xl backdrop-blur-2xl ${transitionClass} ${
           open ? 'translate-x-0' : closedTransform
         }`}
       >
