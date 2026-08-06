@@ -72,13 +72,25 @@ def fetch_bindings(
     raise last_error  # type: ignore[misc]
 
 
-def categories_for_today(run_date: date, *, all_categories: bool) -> list[str]:
+def categories_for_run(run_date: date, *, slot: int = 0, all_categories: bool = False) -> list[str]:
+    """Zwei Kategorien je LAUF, deterministisch und replaybar.
+
+    Bis 06.08.2026 rotierte die Auswahl nur pro Tag (run_date) — alle 8
+    Tagesläufe scannten dieselben zwei Kategorien und dieselben OFFSET-
+    Seiten; Lauf 1 erntete alles, die Läufe 2-8 publizierten 2-5 Profile
+    (Befund 06.08.). Der 3h-Slot (UTC-Stunde // 3) schiebt die Rotation
+    deshalb pro Lauf weiter: 8 Slots x 2 = 16 Kategorie-Besuche am Tag.
+    """
     names = list(CATEGORY_OCCUPATIONS)
     if all_categories:
         return names
-    # Tagesrotation: jeden Tag zwei Kategorien, deterministisch und replaybar.
-    index = run_date.toordinal() % len(names)
+    index = (run_date.toordinal() * 8 + slot) % len(names)
     return [names[index], names[(index + len(names) // 2) % len(names)]]
+
+
+def categories_for_today(run_date: date, *, all_categories: bool) -> list[str]:
+    """Rueckwaertskompatibler Alias (Slot 0) fuer bestehende Aufrufer/Tests."""
+    return categories_for_run(run_date, slot=0, all_categories=all_categories)
 
 
 def run_ingest(
@@ -102,20 +114,28 @@ def run_ingest(
         "totals": {"accepted": 0, "rejected": 0, "skipped_duplicates": 0},
     }
     per_category_limit = max(1, config.daily_candidate_limit // max(1, len(categories)))
+    # Persistenter Seiten-Cursor je Kategorie: ohne ihn scannte jeder Lauf
+    # wieder die Seiten 0..MAX-1 und fand nur Bekanntes (Befund 06.08.:
+    # Laeufe 2-8 des Tages publizierten 2-5 Profile). Der Cursor laesst
+    # Folgelaeufe dort weiterblaettern, wo der letzte aufgehoert hat.
+    cursor = store.load_ingest_cursor()
 
     for category in categories:
         # OFFSET-Pagination: die Sitelink-Sortierung liefert auf Seite 1 immer
         # dieselben Top-Namen — sobald die im Store sind, kaeme ohne Blaettern
         # nie wieder Nachschub (Befund 20.07.: 0 neue Kandidaten/Tag).
         remaining = per_category_limit
+        start_page = max(0, int(cursor.get(category, 0)))
+        next_start = start_page
         cat_report = {
             "fetched": 0,
             "pages": 0,
+            "start_page": start_page,
             "accepted": [],
             "rejected": [],
             "skipped_duplicates": [],
         }
-        for page in range(MAX_PAGES_PER_CATEGORY):
+        for page in range(start_page, start_page + MAX_PAGES_PER_CATEGORY):
             query = build_sparql_query(
                 category=category,
                 config=config,
@@ -159,15 +179,26 @@ def run_ingest(
 
             remaining -= len(result.accepted)
             if remaining <= 0:
+                # Budget voll, Seite evtl. nicht ausgeschoepft: naechster Lauf
+                # liest DIESE Seite erneut (Dedup macht das billig) statt
+                # ungesehene Kandidaten zu ueberspringen.
+                next_start = page
                 break
             if len(rows) < per_category_limit:
-                # Seite kuerzer als angefragt: Kategorie ist ausgeschoepft.
+                # Seite kuerzer als angefragt: Kategorie ist ausgeschoepft —
+                # Cursor zurueck auf 0, damit spaetere Laeufe neu erfasste
+                # Wikidata-Eintraege am Kopf der Sortierung wieder einsammeln.
+                next_start = 0
                 break
+            next_start = page + 1
+        cursor[category] = next_start
+        cat_report["next_page"] = next_start
         if cat_report["pages"]:
             report["categories"][category] = cat_report
 
     report["finished_at"] = datetime.now(timezone.utc).isoformat()
     if not dry_run:
+        store.save_ingest_cursor(cursor)
         store.save_changelog(run_date, report)
     return report
 
@@ -191,7 +222,11 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         return 2
 
     run_date = date.today()
-    categories = args.category or categories_for_today(run_date, all_categories=args.all_categories)
+    # 3h-Slot des Laufs (0-7): rotiert die Kategorien pro Lauf statt pro Tag.
+    slot = datetime.now(timezone.utc).hour // 3
+    categories = args.category or categories_for_run(
+        run_date, slot=slot, all_categories=args.all_categories
+    )
     store = CandidateStore(build_s3_client(), _pipeline_bucket())
     report = run_ingest(
         categories=categories, config=config, store=store, dry_run=args.dry_run, run_date=run_date

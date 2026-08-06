@@ -42,6 +42,15 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Erfinder": ("Q205375",),                         # inventor
     "Entdecker": ("Q11900058",),                      # explorer
     "Technik": ("Q81096",),                           # engineer
+    # Nachschub-Erweiterung 06.08.2026 (Anweisung Betreiber: 2000 Profile/Tag):
+    # die groessten Personen-Pools fehlten komplett. QIDs am 06.08.2026 gegen
+    # wbgetentities verifiziert (Lehre Watchlist-Vorfall: QIDs NIE raten).
+    "Schauspiel": ("Q33999", "Q10800557"),            # actor, film actor
+    "Film": ("Q2526255",),                            # film director
+    "Gesang": ("Q177220",),                           # singer
+    "Sport": ("Q2066131", "Q937857"),                 # athlete, association football player
+    "Journalismus": ("Q1930187",),                    # journalist
+    "Geschichte": ("Q201788",),                       # historian
 }
 
 

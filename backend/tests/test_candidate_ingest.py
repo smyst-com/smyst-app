@@ -304,6 +304,70 @@ def test_ingest_stops_when_category_exhausted(monkeypatch) -> None:
     assert report["categories"]["Wissenschaft"]["accepted"] == ["Q10", "Q11"]
 
 
+def test_ingest_cursor_continues_across_runs(monkeypatch) -> None:
+    # Befund 06.08.: Alle 8 Tageslaeufe scannten dieselben Seiten — Lauf 1
+    # erntete alles, die Laeufe 2-8 fanden nur Bekanntes. Der persistente
+    # Cursor muss Folgelaeufe dort weiterblaettern lassen, wo der letzte
+    # aufgehoert hat.
+    pages = {
+        0: payload(
+            binding("Q20", "Neu A", "1900-01-01T00:00:00Z", 100),
+            binding("Q21", "Neu B", "1900-01-01T00:00:00Z", 90),
+        ),
+        2: payload(
+            binding("Q22", "Neu C", "1900-01-01T00:00:00Z", 80),
+            binding("Q23", "Neu D", "1900-01-01T00:00:00Z", 70),
+        ),
+    }
+    worker, calls = _paged_fetch(monkeypatch, pages)
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    config = PipelineConfig(enabled=True, daily_candidate_limit=2, min_sitelinks=15)
+
+    worker.run_ingest(
+        categories=["Wissenschaft"], config=config, store=store,
+        dry_run=False, run_date=date(2026, 8, 6),
+    )
+    report = worker.run_ingest(
+        categories=["Wissenschaft"], config=config, store=store,
+        dry_run=False, run_date=date(2026, 8, 6),
+    )
+    # Lauf 1 fuellt sein Budget auf Seite 0 (Cursor bleibt dort), Lauf 2
+    # liest Seite 0 erneut (nur Duplikate) und erntet Seite 1 (OFFSET 2).
+    assert calls == [0, 0, 2]
+    assert report["categories"]["Wissenschaft"]["accepted"] == ["Q22", "Q23"]
+    assert report["categories"]["Wissenschaft"]["start_page"] == 0
+    assert report["categories"]["Wissenschaft"]["next_page"] == 1
+
+
+def test_ingest_cursor_resets_when_category_exhausted(monkeypatch) -> None:
+    # Ausgeschoepfte Kategorie -> Cursor zurueck auf 0, damit spaeter neu
+    # erfasste Wikidata-Eintraege am Kopf der Sortierung wieder einsammelbar sind.
+    pages = {
+        0: payload(binding("Q30", "Letzter Neuer", "1900-01-01T00:00:00Z", 60)),
+    }
+    worker, _ = _paged_fetch(monkeypatch, pages)
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    config = PipelineConfig(enabled=True, daily_candidate_limit=4, min_sitelinks=15)
+    worker.run_ingest(
+        categories=["Wissenschaft"], config=config, store=store,
+        dry_run=False, run_date=date(2026, 8, 6),
+    )
+    assert store.load_ingest_cursor() == {"Wissenschaft": 0}
+
+
+def test_categories_rotate_per_run_slot() -> None:
+    # 8 Slots x 2 Kategorien = 16 Besuche/Tag statt 2 (Befund 06.08.).
+    from app.workers.ingest_candidates import categories_for_run
+
+    day = date(2026, 8, 6)
+    picks = [tuple(categories_for_run(day, slot=slot)) for slot in range(8)]
+    assert len(set(picks)) == 8, "jeder 3h-Slot muss ein anderes Kategorien-Paar bekommen"
+    visited = {name for pair in picks for name in pair}
+    assert len(visited) >= 12, "die Slot-Rotation muss den Grossteil der Kategorien abdecken"
+    # Deterministisch/replaybar: gleicher Tag + Slot -> gleiche Auswahl.
+    assert categories_for_run(day, slot=3) == categories_for_run(day, slot=3)
+
+
 def test_ingest_respects_page_cap(monkeypatch) -> None:
     # Volle Seiten ohne einen einzigen neuen Kandidaten: nach
     # MAX_PAGES_PER_CATEGORY ist Schluss, sonst haemmert der Worker WDQS zu.
