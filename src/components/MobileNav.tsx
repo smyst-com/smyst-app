@@ -13,6 +13,7 @@
 import { useEffect, useRef } from 'react';
 import { usePrefersReducedMotion } from '@/lib/useResponsive';
 import LangSwitcher from './LangSwitcher';
+import type { StaticTranslations } from '@/lib/staticTranslations';
 
 export interface NavItem {
   label: string;
@@ -26,9 +27,11 @@ interface Props {
   items: NavItem[];
   /** Optional: rechte Aktion am unteren Drawer-Rand. */
   primaryAction?: { label: string; onClick: () => void };
+  /** Optional: übersetzte Drawer-Texte (nicht-DE); Fallback ist Deutsch. */
+  labels?: StaticTranslations['mnav'];
 }
 
-export default function MobileNav({ open, onClose, items, primaryAction }: Props) {
+export default function MobileNav({ open, onClose, items, primaryAction, labels }: Props) {
   const reduced = usePrefersReducedMotion();
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -128,7 +131,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Menü schließen"
+                aria-label={labels?.closeMenu ?? 'Menü schließen'}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
@@ -139,15 +142,15 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
           </div>
 
           <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.05] p-4">
-            <p className="text-sm font-bold">Profil, Twins und Memories</p>
+            <p className="text-sm font-bold">{labels?.infoTitle ?? 'Profil, Twins und Memories'}</p>
             <p className="mt-1 text-xs leading-relaxed text-[#9aa6b7]">
-              Steuere Identität, Wissen, Chats und Datenschutz an einer Stelle.
+              {labels?.infoText ?? 'Steuere Identität, Wissen, Chats und Datenschutz an einer Stelle.'}
             </p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {[
-                'Profil',
-                'Twin',
-                'Daten',
+                labels?.chipProfile ?? 'Profil',
+                labels?.chipTwin ?? 'Twin',
+                labels?.chipData ?? 'Daten',
               ].map((label) => (
                 <div key={label} className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
                   <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#d5dbe5]">{label}</p>
@@ -158,7 +161,7 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
         </div>
 
         {/* Items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Hauptmenü">
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label={labels?.mainMenu ?? 'Hauptmenü'}>
           <ul className="flex flex-col gap-1">
             {items.map((item) => (
               <li key={item.label}>
@@ -185,9 +188,9 @@ export default function MobileNav({ open, onClose, items, primaryAction }: Props
 
           <div className="mt-5 grid gap-2 border-t border-white/10 px-1 pt-5">
             {[
-              ['Sicherer Login', 'Deine Sitzung wird klar geschützt und getrennt.'],
-              ['Privat bleibt privat', 'Private Profile werden nicht öffentlich angezeigt.'],
-              ['Export & Löschung', 'Datenkontrolle im Profilbereich.'],
+              [labels?.trustLoginTitle ?? 'Sicherer Login', labels?.trustLoginText ?? 'Deine Sitzung wird klar geschützt und getrennt.'],
+              [labels?.trustPrivacyTitle ?? 'Privat bleibt privat', labels?.trustPrivacyText ?? 'Private Profile werden nicht öffentlich angezeigt.'],
+              [labels?.trustExportTitle ?? 'Export & Löschung', labels?.trustExportText ?? 'Datenkontrolle im Profilbereich.'],
             ].map(([title, text]) => (
               <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
                 <p className="text-xs font-bold text-white">{title}</p>

@@ -3,18 +3,19 @@ from __future__ import annotations
 import asyncio
 import json
 from datetime import UTC, datetime
-from typing import AsyncIterator
+from typing import AsyncIterator, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from app.ai.llm_router import build_default_router
+from app.ai.llm_router import LLMRouter, build_default_router
 from app.ai.models import LLMRequest
 from app.ai.twin_context import twin_context
 from app.ai.web_research import ResearchContext, VerifiedWebResearchService, WebSearchResponse
-from app.integrations import chat_store
+from app.core.config import get_settings
+from app.integrations import chat_store, feedback_store
 from app.security.sanitization import normalize_text
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -26,9 +27,20 @@ class StartChatRequest(BaseModel):
     twinId: str | None = Field(default=None, max_length=160)
 
 
+class ChatFeedbackRequest(BaseModel):
+    chatId: str = Field(min_length=1, max_length=120)
+    messageId: str = Field(min_length=1, max_length=120)
+    rating: Literal["up", "down", "report"]
+    comment: str | None = Field(default=None, max_length=1000)
+
+
 class SendMessageRequest(BaseModel):
     chatId: str = Field(min_length=1, max_length=120)
     message: str = Field(min_length=1, max_length=4000)
+    # Das Frontend kennt die UI-/Sprechsprache sicher (Umschalter, Voice-Turn) und
+    # sendet sie seit jeher mit. Ohne Auswertung musste das Modell die Sprache aus
+    # dem Text raten und antwortete z. B. auf umlautlose deutsche Saetze englisch.
+    language: str | None = Field(default=None, max_length=16)
 
 
 def _now_ms() -> int:
@@ -39,6 +51,22 @@ def _title_for_twin(twin_id: str | None) -> str:
     if not twin_id:
         return "Smyst Twin Chat"
     return twin_id.replace("-", " ").replace("_", " ").title()
+
+
+def _chat_router() -> LLMRouter:
+    """Router mit hartem Chat-Zeitbudget (LLM_CHAT_TOTAL_DEADLINE_SECONDS,
+    Default 20 s): kein Nutzer wartet laenger auf eine Antwort. Pipeline- und
+    Worker-Laeufe nutzen weiterhin das globale Budget (45 s).
+
+    getattr statt Direktzugriff: Tests injizieren Fake-Router ohne
+    total_deadline_seconds (Pipeline-Lauf #57 schlug mit AttributeError fehl).
+    """
+    llm_router = build_default_router()
+    chat_deadline = get_settings().llm_chat_total_deadline_seconds
+    current = getattr(llm_router, "total_deadline_seconds", None)
+    if current is None or current > chat_deadline:
+        llm_router.total_deadline_seconds = chat_deadline
+    return llm_router
 
 
 async def _ensure_chat(chat_id: str) -> dict[str, object]:
@@ -73,22 +101,82 @@ def _schedule_archive(chat: dict[str, object]) -> None:
         pass
 
 
-async def _build_llm_request(chat: dict[str, object], message: str) -> LLMRequest:
+# Die 15 Sprachen der Voice-/UI-Matrix (src/lib/voiceLanguage.ts). Alles andere
+# wird verworfen, damit kein fremder Freitext in den Prompt gelangt.
+_LANGUAGE_NAMES: dict[str, str] = {
+    "en": "English",
+    "zh": "Chinese",
+    "es": "Spanish",
+    "ar": "Arabic",
+    "fr": "French",
+    "de": "German",
+    "pt": "Portuguese",
+    "ru": "Russian",
+    "tr": "Turkish",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "it": "Italian",
+    "hi": "Hindi",
+    "id": "Indonesian",
+    "bn": "Bengali",
+}
+
+
+def _language_name(language: str | None) -> str | None:
+    if not language:
+        return None
+    base = str(language).strip().lower().replace("_", "-").split("-", 1)[0]
+    return _LANGUAGE_NAMES.get(base)
+
+
+async def _build_llm_request(
+    chat: dict[str, object], message: str, language: str | None = None
+) -> LLMRequest:
     twin_id = chat.get("twinId")
     context = await twin_context(twin_id if isinstance(twin_id, str) else None)
     system_prompt = (
         "You are the AI twin of the named profile on smyst.com. Always answer in the first "
         "person, in the persona's voice, tone and perspective. Never speak about the persona "
-        "in the third person. You are a transparent AI twin, not the real person: never claim "
-        "real-time experiences, and acknowledge being an AI twin if asked directly. Answer "
-        "briefly, helpfully and clearly."
+        "in the third person.\n"
+        "Stay in character at all times: speak about the persona's documented life, works and "
+        "experiences as your own memories (e.g. 'I built models of it, but never completed the "
+        "full machine'). Never say things like 'as an AI twin I have no experiences' - that "
+        "breaks the persona. Only acknowledge being an AI twin when the user explicitly asks "
+        "whether you are real or an AI; confirm it briefly then and return to character.\n"
+        "Your OWN memories and experiences end with the persona's era: never claim to have "
+        "lived through, seen or felt anything after the persona's death.\n"
+        "Time-traveller mode for the present day: when the user asks about events, inventions "
+        "or the world after your era, do NOT refuse and do NOT claim you cannot access "
+        "information. If the system provides verified public web evidence below, use it — but "
+        "always in character and clearly framed as reported knowledge, never as lived "
+        "experience (e.g. 'Man erzaehlt mir, dass...', 'I am told that...'). Without such "
+        "evidence, say honestly that it is after your time, then react from your era's "
+        "perspective with curiosity.\n"
+        "Never claim real-time experiences (today's news, current feelings about live events), "
+        "never deceive the user into thinking they talk to the real person. Answer briefly, "
+        "helpfully and clearly. Write plain readable prose: no LaTeX delimiters "
+        r"(\( \), \[ \], $...$) and no markup around formulas — write E=mc^2, not \(E=mc^2\)."
     )
     context_block = f"Curated public profile knowledge:\n{context}\n" if context else ""
+    # Standardsprache mit Wechsel-Erlaubnis: der fruehere harte Zwang ("Answer
+    # strictly ... Do not switch languages") liess Twins Sprachwechsel-Bitten
+    # ablehnen ("Ich kann nur auf Deutsch antworten", live 28.07.).
+    language_line = (
+        f"Default answer language: {_language_name(language)}. "
+        "You speak every language fluently. Highest priority: if the user asks "
+        "you to talk in another language (e.g. 'kannst du tuerkisch reden', "
+        "'speak English') or writes in another language, your ENTIRE reply must "
+        "already be in that requested language. Never refuse such a request and "
+        "never claim you can only speak one language.\n"
+        if _language_name(language)
+        else "Answer in the same language as the user.\n"
+    )
     prompt = (
         f"Twin/profile: {_title_for_twin(twin_id if isinstance(twin_id, str) else None)}\n"
         + context_block
         + f"User message: {message}\n"
-        "Answer in the same language as the user. Keep it concise."
+        + language_line
+        + "Keep it concise."
     )
     return LLMRequest(prompt=prompt, system_prompt=system_prompt, max_tokens=220, temperature=0.2)
 
@@ -189,10 +277,10 @@ async def start_chat(body: StartChatRequest) -> dict[str, object]:
 async def send_message(body: SendMessageRequest) -> dict[str, object]:
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
-    llm_request = await _build_llm_request(chat, message)
+    llm_request = await _build_llm_request(chat, message, body.language)
     research_response = await _research_for_chat(chat, message)
     llm_request = _attach_web_research_evidence(llm_request, research_response)
-    llm_response = await build_default_router().complete(llm_request)
+    llm_response = await _chat_router().complete(llm_request)
     assistant_message = {
         "id": str(uuid4()),
         "role": "assistant",
@@ -211,19 +299,80 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
     }
 
 
+@router.post("/feedback")
+async def submit_feedback(body: ChatFeedbackRequest) -> dict[str, object]:
+    """Nutzerfeedback (Daumen hoch/runter, Meldung) zu einer Twin-Antwort.
+
+    Das Feedback wird am Nachrichten-Objekt gespeichert (ueberlebt via
+    Chat-Archiv Neustarts) und zusaetzlich als eigener Record ins Object
+    Brain geschrieben — Daumen-runter-Records nutzt der Eval-Worker als
+    Regressions-Testfaelle (app/workers/eval_profiles).
+    """
+    chat = await _ensure_chat(body.chatId)
+    messages = chat.get("messages")
+    if not isinstance(messages, list):
+        raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
+    target_index = next(
+        (
+            index
+            for index, item in enumerate(messages)
+            if isinstance(item, dict)
+            and item.get("id") == body.messageId
+            and item.get("role") == "assistant"
+        ),
+        None,
+    )
+    if target_index is None:
+        raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
+
+    target = messages[target_index]
+    comment = (
+        normalize_text(body.comment, max_length=1000).value if body.comment else None
+    )
+    feedback = {"rating": body.rating, "comment": comment, "createdAt": _now_ms()}
+    target["feedback"] = feedback
+    chat["updatedAt"] = _now_ms()
+    _schedule_archive(chat)
+
+    question = next(
+        (
+            item.get("content")
+            for item in reversed(messages[:target_index])
+            if isinstance(item, dict) and item.get("role") == "user"
+        ),
+        None,
+    )
+    record = {
+        "chatId": body.chatId,
+        "messageId": body.messageId,
+        "twinId": chat.get("twinId"),
+        "rating": body.rating,
+        "comment": comment,
+        "question": question,
+        "answer": target.get("content"),
+        "createdAt": feedback["createdAt"],
+    }
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(asyncio.to_thread(feedback_store.save_feedback, record))
+    except Exception:
+        pass
+    return {"ok": True, "messageId": body.messageId, "rating": body.rating}
+
+
 @router.post("/messages/stream")
 async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     """SSE-Variante von /messages: streamt Antwort-Deltas, dann ein done-Event.
 
-    Event-Format (jeweils eine `data:`-Zeile mit JSON):
+    Event-Format (jeweils eine "data:"-Zeile mit JSON):
     - {"delta": "..."}  Text-Fragment
     - {"done": true, "chatId": ..., "twinId": ..., "message": {...}, "mode": ...}
     - {"error": true}   Stream abgebrochen; Client faellt auf /messages zurueck
     """
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
-    llm_router = build_default_router()
-    request = await _build_llm_request(chat, message)
+    llm_router = _chat_router()
+    request = await _build_llm_request(chat, message, body.language)
     research_response = await _research_for_chat(chat, message)
     request = _attach_web_research_evidence(request, research_response)
 

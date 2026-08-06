@@ -7,42 +7,75 @@ name: Pipeline Run (historische Profile)
 # mode=run-small : echter Kettenlauf mit kleinen Limits — Kandidaten landen in
 #                  IDrive e2 unter pipeline/. KEIN Publish: Veroeffentlichen
 #                  bleibt eine menschliche Handlung (publish_profiles CLI).
+# mode=run-batch : wie run-small, aber mit batch_limit je Worker-Stufe —
+#                  fuer das Abarbeiten kuratierter Seeds (laengeres Timeout).
+# mode=seed      : kuratierte Kandidaten aus smyst_1000_candidates_v3.json einspielen.
 
 on:
-  # Taeglicher Automatik-Lauf 04:00 UTC = 06:00 Europe/Berlin (Sommerzeit).
-  # Cron laeuft immer als run-small (Ingest bis QA). Publish bleibt manuell.
+  # Automatik-Laeufe 3x taeglich (Anweisung Nutzer 01.08.2026: Tageslimit 1000;
+  # real begrenzt die Rechenzeit einen Lauf auf ~100-120 Profile, deshalb
+  # mehrere Laeufe statt eines groesseren). Off-Peak-Minuten statt voller
+  # Stunde: GitHub verzoegert Crons zur vollen Stunde um 2-4 h.
+    # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
+  # 8 Laeufe/Tag (Anweisung Betreiber 02.08.2026: 1000 Profile/Tag real).
+  # Concurrency-Gruppe serialisiert die Laeufe — sie stauen sich hoechstens,
+  # kollidieren aber nie. Stufen-Limit 250 (schriftliche Anweisung Betreiber
+  # 05.08.2026: 2000 Profile/Tag): 8 x 250 = 2000 Kandidaten/Tag; Publish-
+  # Deckel 2500/Tag. Lauf-Prognose ~2,5-2,8h bei 3h-Takt — QA bleibt durch
+  # ihr 90-min-Step-Timeout begrenzt, Rest-Backlog draint der Folgelauf.
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "23 1,4,7,10,13,16,19,22 * * *"
   workflow_dispatch:
     inputs:
       mode:
-        description: "dry-run | run-small | status | publish-reviewed | unpublish"
+        description: "dry-run | run-small | run-batch | seed | status | publish-reviewed | unpublish | backfill-gender | backfill-places | evals | refresh | rebuild-one | quality-report"
         required: true
         default: "dry-run"
         type: choice
-        options: [dry-run, run-small, status, publish-reviewed, unpublish]
+        options: [dry-run, run-small, run-batch, seed, status, publish-reviewed, unpublish, backfill-gender, backfill-places, evals, refresh, rebuild-one, quality-report]
       approved_by:
         description: "Freigabe-E-Mail (nur fuer publish-reviewed; wird im Audit-Trail dokumentiert)"
         required: false
-        default: ""
+        # Admin-/Freigabe-E-Mail als Standard (schriftliche Anweisung Adam King, 17.07.2026)
+        default: "smyst247@gmail.com"
       qids:
-        description: "Optional (publish-reviewed/unpublish): kommagetrennte QIDs — publiziert bzw. unpublisht NUR diese Profile"
+        description: "Optional (publish-reviewed/unpublish/rebuild-one): kommagetrennte QIDs — bearbeitet NUR diese Profile"
         required: false
         default: ""
       reason:
         description: "Begruendung (nur fuer unpublish; wird im Audit-Trail dokumentiert)"
         required: false
         default: ""
+      batch_limit:
+        description: "Kandidaten je Worker-Stufe (nur run-batch; kuratierte Seeds abarbeiten)"
+        required: false
+        default: "45"
+      publish_limit:
+        description: "Optional (publish-reviewed): Tageslimit-Override fuer dokumentierte Sonderfreigaben"
+        required: false
+        default: ""
+      backfill_dry_run:
+        description: "backfill-gender/-places: 'true' = nur Vorschau (Standard, schreibt nichts), 'false' = echter Schreiblauf"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
 
+# Seed-Laeufe haben eine EIGENE Queue: GitHub haelt pro Gruppe nur einen
+# wartenden Lauf — bei 8 Crons/Tag verdraengte jeder neue Cron einen
+# wartenden Seed-Dispatch (Vorfall 02.08.2026, Laeufe #132/#133 cancelled).
+# Seed schreibt nur QID-gekeyte Kandidaten in den Store; Kollisionen mit
+# der Worker-Kette faengt der Dedup-Guard in Merge/Deploy ab.
 concurrency:
-  group: pipeline-run
+  group: pipeline-run-${{ inputs.mode == 'seed' && 'seed' || 'main' }}
   cancel-in-progress: false
 
 jobs:
   pipeline:
     name: Worker-Kette (${{ inputs.mode }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # run-batch verarbeitet kuratierte Seeds in groesseren Stapeln und darf laenger laufen.
+    timeout-minutes: 350
     permissions:
       contents: read
       actions: write
@@ -51,6 +84,7 @@ jobs:
         working-directory: backend
     env:
       MODE: ${{ inputs.mode || 'run-small' }}
+      BATCH_LIMIT: ${{ inputs.batch_limit || '45' }}
     steps:
       - uses: actions/checkout@v6
 
@@ -66,6 +100,34 @@ jobs:
       # ausloesen und die Assertions brechen.
       - name: Unit-Tests (komplette Pipeline-Suite, ohne Provider-Keys)
         run: python -m pytest tests/ -q
+
+      - name: "Gender-Backfill (Bestandsprofile, Wikidata P21 aus Snapshots)"
+        if: env.MODE == 'backfill-gender'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        # Standard ist Vorschau (--dry-run): schreibt nichts, zeigt nur, was
+        # sich aendern wuerde. Echter Schreiblauf nur mit backfill_dry_run=false.
+        run: |
+          if [ "${{ inputs.backfill_dry_run }}" = "false" ]; then
+            python -m app.workers.backfill_gender
+          else
+            python -m app.workers.backfill_gender --dry-run
+          fi
+
+      - name: "Orts-Backfill (Bestandsprofile, Wikidata P19/P20 aus Snapshots)"
+        if: env.MODE == 'backfill-places'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        # Standard ist Vorschau (--dry-run): schreibt nichts, zeigt nur, was
+        # sich aendern wuerde. Echter Schreiblauf nur mit backfill_dry_run=false.
+        run: |
+          if [ "${{ inputs.backfill_dry_run }}" = "false" ]; then
+            python -m app.workers.backfill_places
+          else
+            python -m app.workers.backfill_places --dry-run
+          fi
 
       - name: "Status-Report (read-only)"
         if: env.MODE == 'status'
@@ -83,15 +145,26 @@ jobs:
           if [ -z "${{ inputs.approved_by }}" ]; then
             echo "publish-reviewed erfordert approved_by (Freigabe-E-Mail)."; exit 2
           fi
+          LIMIT_ARGS=""
+          if [ -n "${{ inputs.publish_limit }}" ]; then
+            LIMIT_ARGS="--daily-limit ${{ inputs.publish_limit }}"
+          fi
           if [ -n "${{ inputs.qids }}" ]; then
             for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
               python -m app.workers.publish_profiles publish --qid "$qid" \
-                --approved-by "${{ inputs.approved_by }}" --enabled
+                --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
             done
           else
             python -m app.workers.publish_profiles publish --all-reviewed \
-              --approved-by "${{ inputs.approved_by }}" --enabled
+              --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
           fi
+
+      - name: "Seed: kuratierte Kandidaten einspielen (smyst_1000_candidates_v3.json)"
+        if: env.MODE == 'seed'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.seed_candidates --file ../smyst_1000_candidates_v3.json --enabled
 
       - name: "Worker 1: Wikidata-Ingest"
         if: env.MODE == 'dry-run' || env.MODE == 'run-small'
@@ -100,49 +173,63 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.ingest_candidates --enabled
+            python -m app.workers.ingest_candidates --enabled --limit 250
           else
             python -m app.workers.ingest_candidates --dry-run --category Wissenschaft
           fi
 
       - name: "Worker 2: Research"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.research_candidates --enabled --limit 5
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.research_candidates --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
+            python -m app.workers.research_candidates --enabled --limit 250
           else
             python -m app.workers.research_candidates --dry-run --limit 3
           fi
 
       - name: "Worker 3: Risiko-Check"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.assess_risk --enabled --limit 5
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.assess_risk --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
+            python -m app.workers.assess_risk --enabled --limit 250
           else
             python -m app.workers.assess_risk --dry-run --limit 3
           fi
 
       - name: "Worker 4: Twin-Capsule-Build"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.build_capsules --enabled --limit 5
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.build_capsules --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
+            python -m app.workers.build_capsules --enabled --limit 250
           else
             python -m app.workers.build_capsules --dry-run --limit 3
           fi
 
+      # Schritt-Timeout + continue-on-error (04.08.2026): Vor dem QA-Perf-Fix
+      # (PR #324) lief die QA 5+ Stunden, riss den Job in den 350-min-Timeout
+      # und verhinderte damit auch den Auto-Publish bereits gepruefter Profile
+      # (5 von 7 Cron-Laeufen am 04.08. ohne einen einzigen Publish). Haengt
+      # die QA kuenftig, wird nur sie abgebrochen — Publish + Deploy laufen
+      # mit dem bis dahin geprueften Bestand weiter. Normalfall: ~31 min.
       - name: "Worker 5: QA (inkl. Chat-Smoke-Test)"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small'
+        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
+        timeout-minutes: 90
+        continue-on-error: true
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -153,11 +240,20 @@ jobs:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-          LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
+          # Runde 41: OpenRouter/OpenAI ergaenzt — Live-Ping bestaetigt beide
+          # funktionsfaehig; sie fehlten dem QA-Lauf bisher, wodurch Groq-429
+          # direkt in den degradierten Not-Fallback fuehrte.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # BEWUSST fest verdrahtet (Runde 40/41): exakt die Provider, deren
+          # Keys oben uebergeben werden — Reihenfolge nach Live-Ping-Latenz.
+          LLM_PROVIDER_ORDER: "groq,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
-          if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.qa_candidates --enabled --limit 5
+          if [ "$MODE" = "run-batch" ]; then
+            python -m app.workers.qa_candidates --enabled --limit "$BATCH_LIMIT"
+          elif [ "$MODE" = "run-small" ]; then
+            python -m app.workers.qa_candidates --enabled --limit 250
           else
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
@@ -178,28 +274,138 @@ jobs:
               --approved-by "${{ inputs.approved_by }}" --enabled
           done
 
-      # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026):
-      # der naechtliche Cron publiziert alle reviewed-Profile mit bestandener QA
+      # Dauerhafte schriftliche Pauschal-Freigabe von Adam King (04.07.2026,
+      # erweitert 18.07.2026: Tageslimit 100/Tag (schriftliche Freigabe Adam King)
+      # / 10 Milliarden, explizite Anweisung Adam King):
+      # der naechtliche Cron publiziert ALLE reviewed-Profile mit bestandener QA
       # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
-      # reviewed+qa_passed, Tageslimit, Duplikat-Schutz gegen kuratierte
-      # Live-Profile, Audit-Trail mit approved_by.
-      - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04)"
+      # reviewed+qa_passed, Duplikat-Schutz gegen kuratierte Live-Profile,
+      # Audit-Trail mit approved_by. Kein Loeschen.
+      # Deckel 2500/Tag (schriftliche Anweisung Betreiber 05.08.2026: 2000
+      # Profile/Tag; Luft nach oben). Publish-Zahl landet in der Run-Summary, damit der
+      # Tagesdurchsatz ohne Log-Graben sichtbar ist.
+      - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04/17)"
         if: github.event_name == 'schedule'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
+          set -o pipefail
           python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "smyst247@gmail.com" --enabled
+            --approved-by "smyst247@gmail.com" --enabled --daily-limit 2500 \
+            | tee /tmp/publish-out.log
+          COUNT=$( (grep -o 'published (slug' /tmp/publish-out.log || true) | wc -l | tr -d ' ')
+          {
+            echo "### Auto-Publish"
+            echo "- Publiziert in diesem Lauf: **${COUNT}** Profile (Deckel 2500/Tag)"
+          } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: "Auto-Deploy nach Publish (nur Cron)"
-        if: github.event_name == 'schedule'
+      # Die 500er-Seed-Kandidaten wurden ohne birth_place/death_place ingestiert
+      # (Seed-Resolver ohne Ortsaufloesung); frisch publizierte Profile bekommen
+      # ihre Orte deshalb direkt nach JEDEM Publish ergaenzt — auch bei manuellen
+      # publish-reviewed-Laeufen, die sonst bis zum naechsten Cron ortlose
+      # Profile hinterlassen (live passiert am 01.08. um 02:56 und 09:38 UTC).
+      # Idempotent; Fehler einzelner QIDs blockieren den Deploy nicht.
+      - name: "Auto-Orts-Backfill nach Publish (Cron + publish-reviewed)"
+        if: github.event_name == 'schedule' || env.MODE == 'publish-reviewed'
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.backfill_places
+
+      # Qualitaetsschleife Baustein 1 (PR #303): wiederkehrende Evals fuer
+      # published-Profile — Standardfragen + Stammdaten-Fragen + Daumen-runter-
+      # Faelle aus dem Chat-Feedback. Schreibt eval_report/eval_history ins
+      # Kandidaten-Dokument, aendert NIE den Status. Rotiert durch den Bestand
+      # (nie evaluierte zuerst). Fehler blockieren den Publish-/Deploy-Fluss nicht.
+      # Cron-Anteil ausgelagert nach quality-loop.yml (04.08.2026): die
+      # Qualitaetsschleife verlaengerte jeden Publish-Lauf; hier bleibt nur der
+      # manuelle Modus fuer gezielte Laeufe.
+      - name: "Evals: published-Profile (Qualitaetsschleife, nur manuell)"
+        if: env.MODE == 'evals'
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_PROVIDER_ORDER: "groq,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
+        run: python -m app.workers.eval_profiles --enabled --limit 20
+
+      # Qualitaetsschleife Baustein 2 (PR #303): Freshness-Check — Wikidata/
+      # Wikipedia-Fingerprint gegen Baseline; Abweichung setzt refresh.needs_review
+      # fuer das menschliche Review. Kein LLM noetig, kein Status-Wechsel.
+      - name: "Freshness: Quellen-Check published-Profile (nur manuell)"
+        if: env.MODE == 'refresh'
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.refresh_profiles --enabled --limit 50
+
+      # Reparatur-Weg der Qualitaetsschleife: gezielter Neuaufbau einzelner
+      # Profile (Recherche -> Capsule -> QA-Gate). Faellt die QA durch, bleibt
+      # die Live-Capsule unveraendert; Status/twin_id/Slug bleiben stabil.
+      - name: "Rebuild-One: Profile gezielt reparieren (nur manuell, mit QIDs)"
+        if: env.MODE == 'rebuild-one'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_PROVIDER_ORDER: "groq,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
+        run: |
+          if [ -z "${{ inputs.qids }}" ]; then
+            echo "rebuild-one erfordert qids (kommagetrennte QIDs)."; exit 2
+          fi
+          QID_ARGS=""
+          for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
+            QID_ARGS="$QID_ARGS --qid $qid"
+          done
+          python -m app.workers.rebuild_profile $QID_ARGS --enabled
+
+      # Aggregation fuer die Admin-Sicht (/api/admin/quality): laeuft nach
+      # Evals + Freshness, damit die Zusammenfassung deren frische Ergebnisse
+      # enthaelt. Read-only gegenueber den Profilen.
+      - name: "Quality-Report: Zusammenfassung fuer Admin-Sicht (nur manuell)"
+        if: env.MODE == 'quality-report' || env.MODE == 'evals' || env.MODE == 'refresh' || env.MODE == 'rebuild-one'
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python -m app.workers.report_quality
+
+      # Auch nach einem manuellen Orts-Backfill deployen: der Backfill schreibt
+      # den Publish-Index auf IDrive e2, die statische Site entsteht aber erst
+      # im Pages-Build. Ohne diesen Zusatz bleibt die Live-Seite bis zum
+      # naechsten Cron auf dem alten Stand — am 03.08.2026 endete Deploy #400
+      # exakt 90 Sekunden vor dem Backfill #147, der 1168 Orte ergaenzt hat.
+      # Vorschaulaeufe (dry-run) schreiben nichts und deployen deshalb nicht.
+      - name: "Auto-Deploy nach Publish (Cron + echter Orts-Backfill)"
+        if: github.event_name == 'schedule' || (env.MODE == 'backfill-places' && inputs.backfill_dry_run == 'false')
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
 
       - name: Hinweis Publish
-        if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule')
+        if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule') || env.MODE == 'run-batch'
         run: |
           echo "Kein automatischer Publish. Freigabe durch Menschen:"
           echo "python -m app.workers.publish_profiles publish --qid <QID> --approved-by <email> --enabled"

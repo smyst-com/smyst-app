@@ -32,7 +32,7 @@ from app.ai.historical_pipeline import (
     PipelineStatus,
     transition,
 )
-from app.ai.qa_checks import run_qa
+from app.ai.qa_checks import ChatProviderDegradedError, run_qa
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 from app.workers.build_capsules import CAPSULE_PREFIX
 from app.workers.research_candidates import _candidate_from_document
@@ -77,6 +77,13 @@ def build_chat_fn(capsule_doc: dict) -> Callable[[str], str] | None:
                     )
                 )
             )
+            # Not-Fallback-Antworten (degraded=True) sind Wartemeldungen ohne
+            # Bezug zur Capsule — als Provider-Ausfall behandeln, NICHT bewerten
+            # (Befund Runde 39: 111 falsche QA-Fails durch degradierte Antworten).
+            if getattr(response, "degraded", False):
+                raise ChatProviderDegradedError(
+                    f"provider={response.provider} model={response.model}"
+                )
             return response.text
 
         return chat
@@ -91,6 +98,7 @@ def qa_one(
     config: PipelineConfig,
     dry_run: bool,
     chat_fn_factory: Callable[[dict], Callable[[str], str] | None] = build_chat_fn,
+    published: list[dict] | None = None,
 ) -> tuple[str, str]:
     candidate = _candidate_from_document(document)
     candidate = replace(
@@ -102,14 +110,26 @@ def qa_one(
     )
     qid = candidate.wikidata_qid
     capsule_doc = load_capsule_document(store, qid)
-    published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
+    # published wird vom Batch EINMAL geladen und durchgereicht: der Scan liest
+    # jedes Store-Dokument einzeln (S3-GET je QID). Pro Kandidat neu geladen
+    # waechst die QA-Laufzeit linear mit dem Live-Bestand — bei ~2400 published
+    # und 120 Kandidaten war das der 3h+-Engpass, an dem sich die Cron-Laeufe
+    # gegenseitig cancelten (Befund 04.08.2026).
+    if published is None:
+        published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
 
-    report = run_qa(
-        document,
-        capsule_doc,
-        published,
-        chat_fn=chat_fn_factory(capsule_doc),
-    )
+    try:
+        report = run_qa(
+            document,
+            capsule_doc,
+            published,
+            chat_fn=chat_fn_factory(capsule_doc),
+        )
+    except ChatProviderDegradedError as error:
+        # Provider-Ausfall: Kandidat NICHT anfassen (kein qa_report, kein
+        # Status-Wechsel) — er wird im naechsten Lauf erneut geprueft.
+        print(f"qa_candidates: {qid} uebersprungen — Chat-Provider degradiert ({error})")
+        return qid, f"skipped (Chat-Provider degradiert: {error}) — Kandidat unbewertet"
 
     audit_entry = None
     if report.duplicate:
@@ -162,7 +182,17 @@ def run_qa_batch(
     *, store: CandidateStore, config: PipelineConfig, limit: int, dry_run: bool, run_date: date,
     chat_fn_factory: Callable[[dict], Callable[[str], str] | None] = build_chat_fn,
 ) -> dict:
-    documents = store.candidate_documents_by_status(PipelineStatus.GENERATED.value, limit=limit)
+    # Queue-Fairness: erst ALLE generated-Kandidaten laden, dann ungetestete
+    # (ohne qa_report) nach vorn sortieren und bereits durchgefallene ans Ende.
+    # Sonst blockieren Dauer-Wiederholer bei limit=N die restliche Queue
+    # dauerhaft (Befund Runde 38: 88 Kandidaten kamen nie zur QA, weil dieselben
+    # ~45 QA-Verlierer die vorderen Queue-Plaetze belegten). Stabile Sortierung:
+    # innerhalb beider Gruppen bleibt die QID-Reihenfolge erhalten.
+    documents = store.candidate_documents_by_status(PipelineStatus.GENERATED.value)
+    documents.sort(key=lambda doc: bool(doc.get("qa_report")))
+    if limit is not None:
+        documents = documents[: max(limit, 0)]
+    published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
     report: dict = {
         "worker": "qa_candidates",
         "run_date": run_date.isoformat(),
@@ -176,7 +206,7 @@ def run_qa_batch(
         try:
             qid, result = qa_one(
                 document, store=store, config=config, dry_run=dry_run,
-                chat_fn_factory=chat_fn_factory,
+                chat_fn_factory=chat_fn_factory, published=published,
             )
             report["results"][qid] = result
         except Exception as error:

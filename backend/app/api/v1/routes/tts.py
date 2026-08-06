@@ -175,6 +175,7 @@ def _try_worker_tts(
     lang: str | None,
     voice_id: str | None = None,
     gender: str | None = None,
+    rate: float | None = None,
 ) -> Response | None:
     """Normale Standard-TTS ueber den stateless Voice-Worker (Piper, Option A).
 
@@ -188,7 +189,7 @@ def _try_worker_tts(
     try:
         worker_response = _worker_client().post(
             f"{worker_url}/synthesize",
-            json={"text": text, "lang": (lang or "de"), "voiceId": voice_id, "gender": gender},
+            json={"text": text, "lang": (lang or "de"), "voiceId": voice_id, "gender": gender, "rate": rate},
             headers={"X-Worker-Token": worker_token},
             timeout=45.0,
         )
@@ -214,6 +215,9 @@ class TtsRequest(BaseModel):
     voiceId: str | None = Field(default=None, max_length=32)
     lang: str | None = Field(default=None, max_length=16)
     gender: str | None = Field(default=None, max_length=8)
+    # Sprechtempo des Twins (1.0 = normal, >1 schneller). Optional und
+    # abwaertskompatibel: alte Clients senden kein rate.
+    rate: float | None = Field(default=None, ge=0.5, le=1.5)
 
 
 @router.get("/voices")
@@ -256,7 +260,7 @@ def synthesize(request: Request, body: TtsRequest) -> Response:
     piper_ready = os.path.exists(PIPER_BIN) and os.path.exists(model_path)
     lang_base = (body.lang or "").lower()[:2]
     if lang_base not in {"de", "en", "tr"} or not piper_ready:
-        worker_response = _try_worker_tts(text, body.lang, effective_voice_id, body.gender)
+        worker_response = _try_worker_tts(text, body.lang, effective_voice_id, body.gender, body.rate)
         if worker_response is not None:
             return worker_response
     if not piper_ready:
@@ -264,9 +268,13 @@ def synthesize(request: Request, body: TtsRequest) -> Response:
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         output_path = os.path.join(tmp_dir, "out.wav")
+        piper_cmd = [PIPER_BIN, "--model", model_path, "--output_file", output_path]
+        if body.rate:
+            # Piper: length_scale ist die inverse Sprechgeschwindigkeit.
+            piper_cmd.extend(["--length_scale", f"{1.0 / body.rate:.3f}"])
         try:
             completed = subprocess.run(
-                [PIPER_BIN, "--model", model_path, "--output_file", output_path],
+                piper_cmd,
                 input=text.encode("utf-8"),
                 capture_output=True,
                 timeout=60,

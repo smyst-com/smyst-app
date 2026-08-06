@@ -137,9 +137,13 @@ class CandidateStore:
         )
         return key
 
-    def save_changelog(self, run_date: date, report: dict) -> str:
-        """Tagesbericht: reproduzierbar, prueffaehig (Master Prompt)."""
-        key = f"{CHANGELOG_PREFIX}{run_date.isoformat()}.json"
+    def save_changelog(self, run_date: date, report: dict, *, suffix: str = "") -> str:
+        """Tagesbericht: reproduzierbar, prueffaehig (Master Prompt).
+
+        suffix (z. B. "-seed") verhindert, dass Sonderlaeufe den taeglichen
+        Ingest-Bericht desselben Tages ueberschreiben.
+        """
+        key = f"{CHANGELOG_PREFIX}{run_date.isoformat()}{suffix}.json"
         body = json.dumps(report, default=_json_default, ensure_ascii=False, indent=2).encode(
             "utf-8"
         )

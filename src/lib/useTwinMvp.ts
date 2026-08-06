@@ -44,6 +44,7 @@ export interface TwinRecord {
   knowledgeTexts: TwinKnowledgeItem[]
   mediaRefs: TwinMediaRef[]
   contextSummary: string
+  lifeSlug?: string
   mainCategory?: string
   birthDate?: string
   deathDate?: string
@@ -66,6 +67,9 @@ export interface PublicTwinProfile {
   imageUrl: string | null
   categories: string[]
   languages: string[]
+  // Stimmen-Geschlecht (Wikidata P21) der Pipeline-Profile; kuratierte
+  // Profile beziehen es weiterhin aus den Voice-Hints per Name.
+  voiceGender?: 'female' | 'male'
   visibility: TwinVisibility
   style: TwinStyle
   status: 'draft' | 'ready'
@@ -84,9 +88,12 @@ export interface PublicTwinProfile {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  birthPlace?: string
+  deathPlace?: string
   exampleQuestions?: string[]
   searchIndex?: string
   sources?: Array<{ title: string; publisher: string; url: string }>
+  milestones?: Array<{ year: string; title: string; place?: string }>
   quality?: { ok: boolean; issues: string[] }
   createdAt?: number
   updatedAt: number
@@ -105,7 +112,10 @@ export interface TwinChatMessage {
   content: string
   createdAt: number
   webResearch?: WebResearchMeta
+  feedback?: { rating: ChatFeedbackRating; comment?: string | null; createdAt: number }
 }
+
+export type ChatFeedbackRating = 'up' | 'down' | 'report'
 
 export interface AccountExportBundle {
   ok: boolean
@@ -277,6 +287,62 @@ async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   return body as T
 }
 
+// Die Twin-API speichert keine Lebensdaten (Geburts-/Sterbedatum, Beruf).
+// Fehlende Felder werden aus dem oeffentlichen Profilkatalog ergaenzt, damit
+// eigene Twins dasselbe 4-Zeilen-Format zeigen wie oeffentliche Profile.
+// Vorhandene Werte werden nie ueberschrieben, der Slug bleibt unveraendert.
+function lifeMatchKey(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+let lifeIndexPromise: Promise<Map<string, PublicTwinProfile>> | null = null
+
+async function loadPublicLifeIndex(): Promise<Map<string, PublicTwinProfile>> {
+  if (!lifeIndexPromise) {
+    lifeIndexPromise = (async () => {
+      const index = new Map<string, PublicTwinProfile>()
+      try {
+        const body =
+          (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
+          (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
+        for (const profile of body?.twins ?? []) {
+          if (profile?.name) index.set(lifeMatchKey(profile.name), profile)
+        }
+      } catch {
+        // Ohne Katalog bleiben die Twins unveraendert - kein harter Fehler.
+      }
+      return index
+    })()
+  }
+  return lifeIndexPromise
+}
+
+async function withPublicLifeData(twins: TwinRecord[]): Promise<TwinRecord[]> {
+  if (!twins.some((twin) => !twin.birthDate && !twin.birthYear)) return twins
+  const index = await loadPublicLifeIndex()
+  if (index.size === 0) return twins
+  return twins.map((twin) => {
+    if (twin.birthDate || twin.birthYear) return twin
+    const match = index.get(lifeMatchKey(twin.name ?? ''))
+    if (!match) return twin
+    return {
+      ...twin,
+      lifeSlug: match.slug,
+      mainCategory: twin.mainCategory ?? match.mainCategory,
+      birthDate: match.birthDate,
+      deathDate: match.deathDate,
+      birthYear: match.birthYear,
+      deathYear: match.deathYear,
+      birthLabel: match.birthLabel,
+      deathLabel: match.deathLabel,
+    }
+  })
+}
+
 async function publicApiJson<T>(path: string): Promise<T | null> {
   try {
     return await apiJson<T>(path)
@@ -307,7 +373,7 @@ export function useTwinMvp() {
     () =>
       run(async () => {
         const body = await apiJson<{ twins: TwinRecord[] }>('/api/twins')
-        return body.twins
+        return await withPublicLifeData(body.twins)
       }),
     [run],
   )
@@ -515,6 +581,21 @@ export function useTwinMvp() {
     [run],
   )
 
+  const sendChatFeedback = useCallback(
+    (chatId: string, messageId: string, rating: ChatFeedbackRating, comment?: string) =>
+      run(async () => {
+        const body = await apiJson<{ ok: boolean; messageId: string; rating: ChatFeedbackRating }>(
+          '/api/chat/feedback',
+          {
+            method: 'POST',
+            body: JSON.stringify({ chatId, messageId, rating, comment }),
+          },
+        )
+        return body
+      }),
+    [run],
+  )
+
   const listTwinChats = useCallback(
     () =>
       run(async () => {
@@ -709,6 +790,7 @@ export function useTwinMvp() {
     startTwinChat,
     sendTwinMessage,
     sendTwinMessageStream,
+    sendChatFeedback,
     listTwinChats,
     searchTwinChats,
     getProfile,

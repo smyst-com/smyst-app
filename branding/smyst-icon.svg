@@ -1,5 +1,1 @@
-<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="smyst icon">
-  <rect width="120" height="120" rx="28" fill="#0B1C44"/>
-  <path d="M76 44 A16 16 0 1 0 60 60" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"/>
-  <path d="M44 76 A16 16 0 1 0 60 60" fill="none" stroke="#59C7FF" stroke-width="9" stroke-linecap="round"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="none"/><g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="44"><path d="M486 150 C350 165 257 250 245 370 C240 425 210 465 169 505 C151 523 159 550 183 557 C205 563 218 579 205 598 C193 615 201 633 220 639 C201 655 206 678 228 684 C210 701 216 727 241 736 C263 744 282 742 300 741 C357 737 410 760 427 809 C437 837 438 866 438 894" stroke="#0B1C44"/><path d="M538 150 C674 165 767 250 779 370 C784 425 814 465 855 505 C873 523 865 550 841 557 C819 563 806 579 819 598 C831 615 823 633 804 639 C823 655 818 678 796 684 C814 701 808 727 783 736 C761 744 742 742 724 741 C667 737 614 760 597 809 C587 837 586 866 586 894" stroke="#59C7FF"/></g><g fill="#59C7FF"><circle cx="452" cy="520" r="24"/><circle cx="512" cy="520" r="24"/><circle cx="572" cy="520" r="24"/></g></svg>

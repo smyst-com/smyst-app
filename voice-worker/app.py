@@ -188,7 +188,13 @@ def _resolve_piper_voice(voice_id: str | None, lang: str, gender: str | None) ->
     return None, None
 
 
-def _piper_tts(text: str, voice_id: str | None, lang: str, gender: str | None) -> Response | None:
+def _piper_tts(
+    text: str,
+    voice_id: str | None,
+    lang: str,
+    gender: str | None,
+    rate: float | None = None,
+) -> Response | None:
     """Standard-TTS ueber Piper (CPU). Jeder Fehler fuehrt zum espeak-Fallback."""
     used_id, file_name = _resolve_piper_voice(voice_id, lang, gender)
     if not used_id or not file_name:
@@ -196,11 +202,16 @@ def _piper_tts(text: str, voice_id: str | None, lang: str, gender: str | None) -
     model_path = os.path.join(PIPER_VOICES_DIR, file_name)
     if not os.path.exists(PIPER_BIN) or not os.path.exists(model_path):
         return None
+    piper_args = [PIPER_BIN, "--model", model_path]
+    if rate:
+        # Piper: length_scale ist die inverse Sprechgeschwindigkeit
+        # (rate 1.0 = normal, >1 schneller, <1 langsamer/getragener).
+        piper_args.extend(["--length_scale", f"{1.0 / rate:.3f}"])
     try:
         with tempfile.TemporaryDirectory() as tmp_dir:
             output_path = os.path.join(tmp_dir, "out.wav")
             completed = subprocess.run(
-                [PIPER_BIN, "--model", model_path, "--output_file", output_path],
+                [*piper_args, "--output_file", output_path],
                 input=text.encode("utf-8"),
                 capture_output=True,
                 timeout=40,
@@ -271,6 +282,9 @@ class SynthesizeRequest(BaseModel):
     lang: str | None = Field(default="de", max_length=16)
     voiceId: str | None = Field(default=None, max_length=32)
     gender: str | None = Field(default=None, max_length=8)
+    # Sprechtempo des Twins (1.0 = normal, >1 schneller). Optional und
+    # abwaertskompatibel: altes Backend sendet kein rate.
+    rate: float | None = Field(default=None, ge=0.5, le=1.5)
 
 
 class TranscribeRequest(BaseModel):
@@ -408,7 +422,7 @@ def synthesize(body: SynthesizeRequest, x_worker_token: str | None = Header(defa
     # Piper (CPU, echtzeitfaehig). Chatterbox bleibt NUR fuer /clone-tts —
     # die neuronale Synthese war fuer den Live-Loop strukturell zu langsam
     # (3-6 s Sampling + Overhead auf RTX 3060, QA-Schwelle 8 s).
-    piper = _piper_tts(text, body.voiceId, lang, body.gender)
+    piper = _piper_tts(text, body.voiceId, lang, body.gender, body.rate)
     if piper is not None:
         return piper
     fallback = _fallback_tts(text, lang)

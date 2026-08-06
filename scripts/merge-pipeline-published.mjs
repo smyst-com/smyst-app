@@ -19,6 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deriveRolesAndCategories, feminizeRoles } from './derive-profile-roles.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -74,7 +75,22 @@ if (!existsSync(apiIndexPath) || !existsSync(templatePath)) {
 
 const api = JSON.parse(readFileSync(apiIndexPath, 'utf8'));
 const twins = Array.isArray(api.twins) ? api.twins : [];
-const takenSlugs = new Set(twins.map((twin) => twin.slug));
+// Vergleichsform fuer den Duplikat-Schutz: Diakritika entfernen UND deutsche
+// Umschriften falten. Befund 2026-07-29: kuratiert 'mustafa-kemal-atatuerk'
+// vs. Pipeline 'mustafa-kemal-ataturk' — exakter Slug-Vergleich sah keine
+// Kollision, beide gingen live. Muss zu normalize_slug in
+// backend/app/workers/publish_profiles.py passen.
+function normalizeSlug(value) {
+  let text = String(value)
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '');
+  for (const [src, dst] of [['ae', 'a'], ['oe', 'o'], ['ue', 'u'], ['ss', 's']]) {
+    text = text.replaceAll(src, dst);
+  }
+  return text;
+}
+const takenSlugs = new Set(twins.map((twin) => normalizeSlug(twin.slug)));
 const template = readFileSync(templatePath, 'utf8');
 
 function escapeAttr(value) {
@@ -156,6 +172,26 @@ function imageCreditText(record, imageUrl, attribution) {
   return creditSource ? `${base} — Quelle: ${creditSource}` : base;
 }
 
+// Gemeinsames Wartezeit-Budget fuer ALLE Bild-Retries eines Builds: bei
+// anhaltender Commons-Drosselung sonst 45s+ pro Bild x hunderte Bilder ->
+// Pages-Job-Timeout 60min (Run #328 cancelled). Nach Verbrauch des Budgets
+// wird jedes Bild nur noch einmal versucht; Fallback bleibt die Commons-URL.
+//
+// 8 -> 25 Minuten (26.07.): Seit der IDrive-Bild-Cache greift, ueberspringt der
+// Merge bereits gespiegelte Bilder komplett — die Restlaufzeit gehoert damit
+// den noch fehlenden. Der Job-Timeout (60 min) bleibt mit Build + Prerender
+// (~12 min) deutlich unterschritten, und pro Lauf kommen mehr Bilder dauerhaft
+// in den Cache (Lauf 1: 156, Lauf 2: 203).
+let retryWaitBudgetMs = 25 * 60 * 1000;
+
+async function waitForRetry(ms) {
+  const wait = Math.min(ms, retryWaitBudgetMs);
+  if (wait <= 0) return false;
+  retryWaitBudgetMs -= wait;
+  await new Promise((done) => setTimeout(done, wait));
+  return true;
+}
+
 async function mirrorCommonsImage(record, slug) {
   // Selbst-Hosting (Freigabe Adam King 2026-07-03): Commons-Bild wird beim
   // Build nach dist/public/profile-images/<slug>.<ext> gespiegelt und lokal
@@ -163,13 +199,44 @@ async function mirrorCommonsImage(record, slug) {
   // Commons-URL der Fallback — der Build scheitert dadurch NIE.
   const remote = commonsImageUrl(record);
   if (!remote) return { imageUrl: null };
-  try {
-    let res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
-    if (res.status === 429 || res.status >= 500) {
-      // Commons drosselt Burst-Downloads (429) — einmal geduldig wiederholen.
-      await new Promise((wait) => setTimeout(wait, 5000));
-      res = await fetch(remote, { redirect: 'follow', signal: AbortSignal.timeout(20000) });
+  // Bild-Cache (IDrive e2, Object Brain): Der Workflow spiegelt den Bucket-Ordner
+  // profile-images/ vor dem Merge nach dist/. Was dort schon liegt, wird NICHT
+  // erneut von Commons geladen — das ist der eigentliche Schutz gegen die
+  // Drosselung, weil jeder Build nur noch die wirklich neuen Bilder zieht.
+  const cachedDir = resolve(DIST, 'public', 'profile-images');
+  for (const ext of ['.jpg', '.png', '.svg']) {
+    if (existsSync(resolve(cachedDir, `${slug}${ext}`))) {
+      return { imageUrl: `/public/profile-images/${slug}${ext}` };
     }
+  }
+  try {
+    // Commons drosselt anhaltende Download-Serien (429/5xx). Kurzer Backoff
+    // mit globalem Zeitbudget; ein Retry-After-Header (gekappt) hat Vorrang.
+    let res = null;
+    const delaysMs = retryWaitBudgetMs > 0 ? [0, 4000, 12000] : [0];
+    for (const delayMs of delaysMs) {
+      if (delayMs && !(await waitForRetry(delayMs))) break;
+      try {
+        // Wikimedia-Policy verlangt einen beschreibenden User-Agent; ohne ihn
+        // werden Cloud-IPs (GitHub-Runner) pauschal mit 429 gedrosselt
+        // (Build-Logs 30.07.: jeder Mirror-Versuch scheiterte sofort).
+        res = await fetch(remote, {
+          redirect: 'follow',
+          signal: AbortSignal.timeout(20000),
+          headers: { 'User-Agent': 'smyst.com-profile-image-mirror/1.0 (https://smyst.com; s@smyst.com)' },
+        });
+      } catch {
+        res = null; // Netzwerkfehler/Timeout: wie drosselnde Antwort behandeln
+        continue;
+      }
+      if (res.status === 429 || res.status >= 500) {
+        const retryAfterSec = Number(res.headers.get('retry-after') || 0);
+        if (retryAfterSec > 0) await waitForRetry(Math.min(retryAfterSec, 30) * 1000);
+        continue;
+      }
+      break;
+    }
+    if (!res) throw new Error('Netzwerkfehler nach mehreren Versuchen');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const type = String(res.headers.get('content-type') || '');
     if (!type.startsWith('image/')) throw new Error(`kein Bild: ${type}`);
@@ -265,6 +332,18 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
   const description = cardDescription(record);
   const seo = record.seo || {};
   const corr = PROFILE_CORRECTIONS[record.slug] || {};
+  // Rollen/Kategorien-Fallback aus der research-verifizierten Beschreibung
+  // (Befund 23.07.2026: Ingest-Topf ist zu grob, z. B. Praesidenten als
+  // "Literatur"). Kuratierte Korrekturen behalten immer Vorrang.
+  const derived = deriveRolesAndCategories(description);
+  // Stimmen-/Anzeige-Geschlecht: kuratierter corrections-Override vor Wikidata-P21.
+  const effectiveGender = corr.gender === 'female' || corr.gender === 'male'
+    ? corr.gender
+    : record.gender === 'female' || record.gender === 'male' ? record.gender : undefined;
+  // Zeile 4: Korrektur > Ableitung > Ingest-Topf; fuer weibliche Profile werden
+  // generisch-maennliche Rollen-Nomen automatisch in die weibliche Form gesetzt
+  // (Befund 05.08.2026: neue Pipeline-Profile wie Edith Wharton als "Romanautor").
+  const resolvedRoles = corr.roles || feminizeRoles(derived.roles || record.category || '', effectiveGender);
   const baseGuardrail =
     record.ai_disclosure ||
     'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.';
@@ -277,8 +356,17 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     imageCredit: generatedImage
       ? 'KI-generierte, stilisierte Darstellung (keine Fotografie der Person)'
       : imageCreditText(record, imageUrl, attribution),
-    categories: (Array.isArray(corr.categories) && corr.categories.length ? corr.categories : [record.category]).filter(Boolean),
+    categories: (Array.isArray(corr.categories) && corr.categories.length
+      ? corr.categories
+      : derived.categories.length
+        ? derived.categories
+        : [record.category]).filter(Boolean),
     languages: [record.language_default || 'de'],
+    // Stimmen-Geschlecht (Wikidata P21) fuer die Sprachwelle; fehlt es,
+    // nutzt das Frontend den neutralen Fallback. Kuratierter Override via
+    // corrections 'gender' fuer Profile, deren Publish-Record kein P21 hat
+    // (04.08.2026: george-sand, juana-ines-de-la-cruz, rosa-bonheur, lili-elbe).
+    voiceGender: effectiveGender,
     visibility: 'public',
     style: 'neutral',
     status: 'ready',
@@ -294,15 +382,29 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     guardrail: `${DIRECT_ANSWER_GUARDRAIL} ${baseGuardrail}`,
     rightsPosture:
       'Autopilot-Pipeline: Quellen dokumentiert, Vier-Stufen-Risiko-Check und QA bestanden, menschlich freigegeben.',
-    mainCategory: corr.roles || record.category || '',
+    mainCategory: resolvedRoles || '',
     birthDate: record.birth_date || undefined,
     deathDate: record.death_date || undefined,
-    birthYear: record.birth_date ? Number(String(record.birth_date).slice(0, 4)) : undefined,
-    deathYear: record.death_date ? Number(String(record.death_date).slice(0, 4)) : undefined,
-    birthLabel: record.birth_date || '',
-    deathLabel: record.death_date || '',
+    // Kuratierte Lebensdaten-Overrides (Freigabe 18.07.2026): fuer Profile,
+    // deren Quelle kein brauchbares Datum liefert (z. B. Augustus, geboren
+    // 63 v. Chr. - vor-christliche Daten kann der Publish-Record nicht als
+    // ISO transportieren). birthYear/deathYear sind Rechenfelder fuer die
+    // Altersanzeige; Anzeigetext ist immer das Label.
+    birthYear: corr.birthYear ?? (record.birth_date ? Number(String(record.birth_date).slice(0, 4)) : undefined),
+    deathYear: corr.deathYear ?? (record.death_date ? Number(String(record.death_date).slice(0, 4)) : undefined),
+    birthLabel: corr.birthLabel || record.birth_label || record.birth_date || '',
+    deathLabel: corr.deathLabel || record.death_label || record.death_date || '',
+    // 4-Zeilen-Profilformat: Orte aus der Pipeline (Wikidata P19/P20).
+    // Fehlen sie, greift im Frontend LIFE_PLACES als Fallback.
+    // Kuratierte Orts-Overrides (03.08.2026): fuer die wenigen Faelle, in denen
+    // Wikidata selbst falsch liegt und der Backfill deshalb nicht helfen kann —
+    // er haengt nur ein Land an und schreibt einen Ort nie um. Beispiel: Sofja
+    // Kowalewskaja starb in Stockholm, Wikidatas gueltiges P20 nennt nur die
+    // Gemeinde, das widerlegte nennt "Spanien".
+    birthPlace: corr.birthPlace || record.birth_place || undefined,
+    deathPlace: corr.deathPlace || record.death_place || undefined,
     exampleQuestions: [],
-    searchIndex: [record.name, record.slug, record.category, ...(Array.isArray(corr.categories) ? corr.categories : []), corr.roles, description].filter(Boolean).join(' '),
+    searchIndex: [record.name, record.slug, record.category, ...(Array.isArray(corr.categories) ? corr.categories : derived.categories), resolvedRoles, description].filter(Boolean).join(' '),
     sources: record.sources || [],
     quality: imageUrl
       ? { ok: true, issues: [] }
@@ -372,11 +474,13 @@ const attribution = await fetchCommonsAttribution(
   eligible.map((record) => ((record.image || {}).mode === 'commons' ? (record.image || {}).commons_file : null)),
 );
 for (const record of eligible) {
-  if (takenSlugs.has(record.slug)) {
-    console.log(`merge-pipeline-published: Slug '${record.slug}' existiert bereits (kuratiert) — uebersprungen.`);
+  if (takenSlugs.has(normalizeSlug(record.slug))) {
+    console.log(`merge-pipeline-published: Slug '${record.slug}' existiert bereits (normalisiert) — uebersprungen.`);
     continue;
   }
   const image = await mirrorCommonsImage(record, record.slug);
+  // Kurze Pause zwischen Downloads: haelt die Serie unter dem Commons-Limit.
+  await new Promise((wait) => setTimeout(wait, 150));
   let imageUrl = image.imageUrl;
   let generatedImage = false;
   if (!imageUrl) {
@@ -385,7 +489,7 @@ for (const record of eligible) {
   }
   const profile = toPublicTwinProfile(record, imageUrl, attribution, generatedImage);
   twins.push(profile);
-  takenSlugs.add(record.slug);
+  takenSlugs.add(normalizeSlug(record.slug));
 
   const apiDir = resolve(DIST, 'api', 'public', 'twins', profile.slug);
   mkdirSync(apiDir, { recursive: true });

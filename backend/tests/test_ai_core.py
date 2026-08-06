@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 
 from app.ai.dataflow import AiDataflowProbe
+from app.ai.degraded_messages import DEGRADED_FALLBACK_MESSAGES
 from app.ai.historical_profiles import (
     LEONARDO_DA_VINCI_PROFILE,
     LOW_RISK_HISTORICAL_STARTER_PROFILES,
@@ -116,7 +117,9 @@ async def test_rag_returns_answer_with_citations() -> None:
     assert answer.provider == "local"
     assert answer.degraded is True
     assert len(answer.citations) >= 1
-    assert "Smyst memory context" in answer.answer
+    # Der degradierte Fallback liefert eine sichere Wartemeldung statt
+    # Prompt-/Kontext-Echo (Prompt-Echo-Bug, live 2026-07-17).
+    assert answer.answer == DEGRADED_FALLBACK_MESSAGES["en"]
 
 
 @pytest.mark.asyncio

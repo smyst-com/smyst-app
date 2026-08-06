@@ -46,7 +46,7 @@ PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
         name="deepseek",
         base_url="https://api.deepseek.com",
         api_key_attr="deepseek_api_key",
-        default_model="deepseek-chat",
+        default_model="deepseek-v4-flash",
     ),
     "moonshot": ProviderConfig(
         name="moonshot",
@@ -138,4 +138,7 @@ STALE_MODEL_ALIASES: dict[tuple[str, str], str] = {
     ("anthropic", "claude-3-7-sonnet-latest"): "claude-haiku-4-5",
     ("gemini", "gemini-2.5-flash"): "gemini-3.5-flash",
     ("xai", "grok-3"): "grok-4.3",
+    # deepseek-chat wird am 2026-07-24 abgeschaltet; Nachfolger (non-thinking):
+    ("deepseek", "deepseek-chat"): "deepseek-v4-flash",
+    ("deepseek", "deepseek-reasoner"): "deepseek-v4-pro",
 }

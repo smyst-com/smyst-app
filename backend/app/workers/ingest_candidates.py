@@ -19,6 +19,7 @@ import argparse
 import json
 import sys
 import urllib.parse
+from dataclasses import replace
 from datetime import date, datetime, timezone
 
 import httpx
@@ -36,6 +37,10 @@ from app.integrations.candidate_store import CandidateStore, build_s3_client
 
 
 RETRY_DELAYS_SECONDS = (10.0, 30.0)  # WDQS liefert unter Last transiente 5xx (Run #7: 502)
+
+# Obergrenze der OFFSET-Seiten je Kategorie: schuetzt WDQS vor Dauerfeuer,
+# wenn der Store irgendwann fast alle bekannten Namen einer Kategorie enthaelt.
+MAX_PAGES_PER_CATEGORY = 8
 
 
 def fetch_bindings(
@@ -84,7 +89,9 @@ def run_ingest(
     dry_run: bool,
     run_date: date,
 ) -> dict:
-    existing = store.existing_qids()
+    # "known" = Store-Bestand + alle in diesem Lauf bereits gesehenen QIDs.
+    # Damit deduplizieren die OFFSET-Seiten untereinander UND gegen den Store.
+    known = store.existing_qids()
     report: dict = {
         "worker": "ingest_candidates",
         "run_date": run_date.isoformat(),
@@ -97,35 +104,67 @@ def run_ingest(
     per_category_limit = max(1, config.daily_candidate_limit // max(1, len(categories)))
 
     for category in categories:
-        query = build_sparql_query(category=category, config=config, limit=per_category_limit)
-        try:
-            payload = fetch_bindings(query)
-        except Exception as error:
-            # Eine klemmende Kategorie (z.B. WDQS-502 bei grossen Berufen wie
-            # Maler) darf den Tageslauf nicht komplett stoppen — dokumentieren
-            # und mit der naechsten Kategorie weitermachen (Run #7-Befund).
-            report["errors"][category] = f"{type(error).__name__}: {error}"
-            continue
-        parsed = parse_sparql_bindings(payload, category=category)
-        result = screen_candidates(parsed, existing_qids=existing, config=config)
+        # OFFSET-Pagination: die Sitelink-Sortierung liefert auf Seite 1 immer
+        # dieselben Top-Namen — sobald die im Store sind, kaeme ohne Blaettern
+        # nie wieder Nachschub (Befund 20.07.: 0 neue Kandidaten/Tag).
+        remaining = per_category_limit
+        cat_report = {
+            "fetched": 0,
+            "pages": 0,
+            "accepted": [],
+            "rejected": [],
+            "skipped_duplicates": [],
+        }
+        for page in range(MAX_PAGES_PER_CATEGORY):
+            query = build_sparql_query(
+                category=category,
+                config=config,
+                limit=per_category_limit,
+                offset=page * per_category_limit,
+            )
+            try:
+                payload = fetch_bindings(query)
+            except Exception as error:
+                # Eine klemmende Kategorie (z.B. WDQS-502 bei grossen Berufen
+                # wie Maler) darf den Tageslauf nicht komplett stoppen —
+                # dokumentieren und mit der naechsten Kategorie weitermachen
+                # (Run #7-Befund).
+                report["errors"][category] = f"{type(error).__name__}: {error}"
+                break
+            rows = payload.get("results", {}).get("bindings", [])
+            parsed = parse_sparql_bindings(payload, category=category)
+            result = screen_candidates(
+                parsed,
+                existing_qids=known,
+                config=replace(config, daily_candidate_limit=remaining),
+            )
 
-        if not dry_run:
-            for candidate in result.accepted:
-                store.save_candidate(candidate)
-                existing.add(candidate.wikidata_qid)
+            if not dry_run:
+                for candidate in result.accepted:
+                    store.save_candidate(candidate)
+            for candidate in parsed:
+                known.add(candidate.wikidata_qid)
 
-        report["categories"][category] = {
-            "fetched": len(parsed),
-            "accepted": [c.wikidata_qid for c in result.accepted],
-            "rejected": [
+            cat_report["fetched"] += len(parsed)
+            cat_report["pages"] += 1
+            cat_report["accepted"].extend(c.wikidata_qid for c in result.accepted)
+            cat_report["rejected"].extend(
                 {"qid": c.wikidata_qid, "name": c.name, "reason": reason}
                 for c, reason in result.rejected
-            ],
-            "skipped_duplicates": list(result.skipped_duplicates),
-        }
-        report["totals"]["accepted"] += len(result.accepted)
-        report["totals"]["rejected"] += len(result.rejected)
-        report["totals"]["skipped_duplicates"] += len(result.skipped_duplicates)
+            )
+            cat_report["skipped_duplicates"].extend(result.skipped_duplicates)
+            report["totals"]["accepted"] += len(result.accepted)
+            report["totals"]["rejected"] += len(result.rejected)
+            report["totals"]["skipped_duplicates"] += len(result.skipped_duplicates)
+
+            remaining -= len(result.accepted)
+            if remaining <= 0:
+                break
+            if len(rows) < per_category_limit:
+                # Seite kuerzer als angefragt: Kategorie ist ausgeschoepft.
+                break
+        if cat_report["pages"]:
+            report["categories"][category] = cat_report
 
     report["finished_at"] = datetime.now(timezone.utc).isoformat()
     if not dry_run:
@@ -139,9 +178,14 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser.add_argument("--all-categories", action="store_true")
     parser.add_argument("--dry-run", action="store_true", help="nichts speichern, nur Bericht")
     parser.add_argument("--enabled", action="store_true", help="pipeline.enabled Override (Test)")
+    parser.add_argument(
+        "--limit", type=int, help="Override daily_candidate_limit (Tagesquote Kandidaten)"
+    )
     args = parser.parse_args(argv)
 
     config = DEFAULT_CONFIG if not args.enabled else PipelineConfig(enabled=True)
+    if args.limit:
+        config = replace(config, daily_candidate_limit=args.limit)
     if not config.enabled and not args.dry_run:
         print("pipeline.enabled ist false — nur --dry-run erlaubt. Abbruch.", file=sys.stderr)
         return 2

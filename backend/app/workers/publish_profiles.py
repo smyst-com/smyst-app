@@ -65,6 +65,20 @@ def select_reviewed_qids(store: CandidateStore) -> list[str]:
 LIVE_TWINS_API = "https://smyst.com/api/public/twins/"
 
 
+def normalize_slug(slug: str) -> str:
+    """Vergleichsform fuer den Duplikat-Schutz: deutsche Umschriften falten.
+
+    Kuratierte Slugs nutzen teils Umschrift (ue/oe/ae/ss), Pipeline-Slugs
+    entfernen Diakritika (ü -> u). Befund 2026-07-29: 'mustafa-kemal-atatuerk'
+    (kuratiert) vs. 'mustafa-kemal-ataturk' (Pipeline) — exakter Vergleich
+    erkannte die Dublette nicht. Beide Seiten werden gefaltet verglichen.
+    """
+    text = slug.casefold()
+    for src, dst in (("ae", "a"), ("oe", "o"), ("ue", "u"), ("ss", "s")):
+        text = text.replace(src, dst)
+    return text
+
+
 def fetch_live_slugs(timeout_seconds: float = 20.0) -> set[str]:
     """Slugs aller live sichtbaren Profile (kuratierte + Pipeline).
 
@@ -137,8 +151,13 @@ def publish_one(
     # Publish-Index): der Pages-Merge wuerde den Slug sowieso ueberspringen —
     # hier lehnen wir frueher ab, damit kein toter Index-Eintrag entsteht.
     own_slugs = {entry.get("slug") for entry in index}
-    if live_slugs and record["slug"] in live_slugs and record["slug"] not in own_slugs:
-        return f"abgelehnt: Slug '{record['slug']}' existiert bereits als kuratiertes Live-Profil"
+    if live_slugs and record["slug"] not in own_slugs:
+        normalized_live = {normalize_slug(slug) for slug in live_slugs}
+        if normalize_slug(record["slug"]) in normalized_live:
+            return (
+                f"abgelehnt: Slug '{record['slug']}' existiert bereits als Live-Profil "
+                "(normalisierter Vergleich, Umschrift-Varianten eingeschlossen)"
+            )
 
     new_index = upsert_index(index, record)  # wirft bei Slug-/Namenskonflikt
 
@@ -212,9 +231,17 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser.add_argument("--reason", default="", help="Pflicht bei unpublish")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--enabled", action="store_true", help="pipeline.enabled Override")
+    parser.add_argument(
+        "--daily-limit", type=int, default=None,
+        help="Tageslimit-Override fuer dokumentierte Sonderfreigaben (z. B. kuratierter Seed-Batch); wirkt nur zusammen mit --approved-by",
+    )
     args = parser.parse_args(argv)
 
     config = DEFAULT_CONFIG if not args.enabled else PipelineConfig(enabled=True)
+    if args.daily_limit is not None and args.daily_limit > 0:
+        from dataclasses import replace as _replace
+
+        config = _replace(config, daily_publish_limit=args.daily_limit)
     if args.command == "unpublish" and not args.reason.strip():
         print("unpublish erfordert --reason.", file=sys.stderr)
         return 2

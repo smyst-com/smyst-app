@@ -48,6 +48,28 @@ export function serverAsrSupported(): boolean {
     && typeof MediaRecorder !== 'undefined'
 }
 
+// Sprachwelle: Server-ASR nur nutzen, wenn das Backend wirklich bereit ist
+// (GET /api/asr/status -> ready). Ergebnis wird pro Session gecacht, damit
+// der Live-Modus ohne Voice-Worker sofort auf Browser-Erkennung umschaltet
+// statt endlos gegen ein totes Backend zu laufen.
+let serverAsrReadyCache: boolean | null = null
+
+export async function serverAsrReady(): Promise<boolean> {
+  if (serverAsrReadyCache !== null) return serverAsrReadyCache
+  try {
+    const response = await fetchService('/api/asr/status', { headers: { Accept: 'application/json' } })
+    const data = response.ok ? ((await response.json()) as { ready?: boolean }) : null
+    serverAsrReadyCache = Boolean(data?.ready)
+  } catch {
+    serverAsrReadyCache = false
+  }
+  return serverAsrReadyCache
+}
+
+export function markServerAsrUnavailable(): void {
+  serverAsrReadyCache = false
+}
+
 export async function recordAndTranscribeOnce(lang: string, maxMs = 5200): Promise<ServerAsrResult> {
   if (!serverAsrSupported()) throw new Error('Server-ASR wird von diesem Browser nicht unterstuetzt.')
   const stream = await navigator.mediaDevices.getUserMedia({

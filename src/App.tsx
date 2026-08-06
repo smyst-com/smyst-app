@@ -14,19 +14,20 @@ import {
   similarProfiles,
   type DiscoveryProfile,
 } from '@/lib/profileDiscovery'
-import { DEFAULT_TRANSLATIONS, useStaticTranslations } from '@/lib/staticTranslations'
+import { DEFAULT_TRANSLATIONS, useStaticTranslations, type StaticTranslations } from '@/lib/staticTranslations'
 import { useAuth } from '@/lib/useAuth'
 import {
+  detectRequestedLanguage,
   detectVoiceLanguage,
   preferredVoiceLanguage,
   speechLangForVoice,
   voiceLanguageInstruction,
   type VoiceLang,
 } from '@/lib/voiceLanguage'
-import { pickVoiceSettings, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
+import { pickVoiceSettings, remoteRateFor, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
-import { recordAndTranscribeOnce, serverAsrSupported } from '@/lib/serverAsrClient'
-import { isRemoteSpeechActive, playRemoteSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
+import { markServerAsrUnavailable, recordAndTranscribeOnce, serverAsrReady, serverAsrSupported } from '@/lib/serverAsrClient'
+import { isRemoteSpeechActive, playRemoteSpeech, prefetchSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { fetchService } from '@/lib/serviceEndpoints'
 import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
@@ -36,6 +37,7 @@ import {
   CURATED_PUBLIC_TWIN_SPECS,
   type CuratedPublicTwinSpec,
 } from './data/curated-public-twin-data'
+import { profileNameWithAge, profileBirthLine, profileDeathLine } from './data/life-display'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
 const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
@@ -365,15 +367,67 @@ function speakLocal(text: string, lang: string, onDone: () => void, voiceKey?: s
   return true
 }
 
-function speakText(text: string, lang: string, onDone: () => void, voiceKey?: string) {
+function speakText(
+  text: string,
+  lang: string,
+  onDone: () => void,
+  voiceKey?: string,
+  voiceGender?: 'female' | 'male',
+) {
   const cleanText = text.trim()
   if (!cleanText) return false
   if ('speechSynthesis' in window) window.speechSynthesis.cancel()
   stopRemoteSpeech()
-  void playRemoteSpeech(cleanText, lang, voiceGenderFor(voiceKey), onDone, userVoiceIdFor(voiceKey) ?? remoteVoiceIdFor(voiceKey, lang)).then((started) => {
+  // Kuratierter Voice-Hint (per Name) vor Profil-Metadaten (Wikidata P21).
+  const gender = voiceGenderFor(voiceKey) ?? voiceGender
+  void playRemoteSpeech(cleanText, lang, gender, onDone, userVoiceIdFor(voiceKey) ?? remoteVoiceIdFor(voiceKey, lang, gender), remoteRateFor(voiceKey)).then((started) => {
     if (!started && !speakLocal(cleanText, lang, onDone, voiceKey)) onDone()
   })
   return true
+}
+
+function liveGreetingText(twinName: string | undefined, lang: string): string {
+  return lang === 'de'
+    ? twinName
+      ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
+      : 'Hallo! Schön, dass du da bist. Was kann ich für dich tun?'
+    : twinName
+      ? 'Hello! This is ' + twinName + '. Nice to meet you. What can I do for you?'
+      : 'Hello! Nice to meet you. What can I do for you?'
+}
+
+// Merker, ob auf diesem Geraet je Voice genutzt wurde: nur dann lohnt sich das
+// Vorab-Synthetisieren der Begruessung (P5) - alle anderen Besucher erzeugen
+// keine unnoetige TTS-Last.
+const VOICE_USED_KEY = 'smyst_voice_used'
+
+function markVoiceUsed(): void {
+  try {
+    window.localStorage.setItem(VOICE_USED_KEY, '1')
+  } catch {
+    // Speicher gesperrt (z. B. Private Mode) - Prefetch entfaellt dann einfach
+  }
+}
+
+function hasUsedVoice(): boolean {
+  try {
+    return window.localStorage.getItem(VOICE_USED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+// Begruessungs-Audio vorab erzeugen und persistent cachen (P5). Muss dieselben
+// Stimm-Parameter aufloesen wie speakText, damit der Cache-Key identisch ist.
+function prefetchGreetingSpeech(twinName: string | undefined, lang: string, voiceGender?: 'female' | 'male') {
+  const gender = voiceGenderFor(twinName) ?? voiceGender
+  prefetchSpeech(
+    liveGreetingText(twinName, lang),
+    lang,
+    gender,
+    userVoiceIdFor(twinName) ?? remoteVoiceIdFor(twinName, lang, gender),
+    remoteRateFor(twinName),
+  )
 }
 
 // Filtert typische STT-Artefakte bei Stille/Hintergrundrauschen: dasselbe Wort
@@ -402,24 +456,33 @@ function VoiceWaveStatus({
   state,
   isSpeaking,
   variant = 'dark',
+  mode = 'live',
 }: {
   state: SpeechRecognitionState
   isSpeaking: boolean
   variant?: 'dark' | 'light'
+  // Diktat (Mikrofon-Icon) und Sprachwelle (Live-Modus) teilen sich diese
+  // Anzeige. Beim Diktat stand hier faelschlich der Live-Text "Sprachwelle
+  // hoert zu ... wird automatisch gesendet" — Diktat sendet aber nichts,
+  // der Text landet nur im Eingabefeld (Nutzer-Befund 29.07.).
+  mode?: 'live' | 'dictation'
 }) {
   if (state === 'idle' && !isSpeaking) return null
 
+  const dictating = mode === 'dictation' && !isSpeaking
   const label = isSpeaking
     ? 'Twin spricht laut'
     : state === 'listening'
-      ? 'Sprachwelle hört zu'
+      ? (dictating ? 'Diktat hört zu' : 'Sprachwelle hört zu')
       : state === 'paused'
         ? 'Sprachwelle pausiert'
         : 'Antwort wird vorbereitet'
   const detail = isSpeaking
     ? 'Laut vorlesen aktiv'
     : state === 'listening'
-      ? 'Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.'
+      ? (dictating
+          ? 'Sprich deinen Text – er erscheint im Eingabefeld. Zum Stoppen Mikrofon erneut tippen.'
+          : 'Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.')
       : state === 'paused'
         ? 'Tippe die Welle erneut, um weiterzusprechen.'
         : 'Der Twin antwortet gleich und liest danach laut vor.'
@@ -619,22 +682,22 @@ export default function App() {
   const mobileItems: NavItem[] =
     currentView === 'landing'
       ? [
-          { label: 'Vision', onClick: () => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: 'Anwendungen', onClick: () => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: 'Produkt', onClick: () => document.getElementById('product')?.scrollIntoView({ behavior: 'smooth' }) },
-          { label: 'Sicherheit', onClick: () => document.getElementById('security')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Vision' : ft.mnav.vision, onClick: () => document.getElementById('vision')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Anwendungen' : ft.mnav.useCases, onClick: () => document.getElementById('use-cases')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Produkt' : ft.mnav.product, onClick: () => document.getElementById('product')?.scrollIntoView({ behavior: 'smooth' }) },
+          { label: appLang === DEFAULT_LANG ? 'Sicherheit' : ft.mnav.security, onClick: () => document.getElementById('security')?.scrollIntoView({ behavior: 'smooth' }) },
         ]
       : [
-          { label: 'Dashboard', onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
-          { label: 'Start-Assistent', onClick: () => navigateTo('onboarding'), active: currentView === 'onboarding' },
-          ...(canSeeAdmin ? [{ label: 'Admin', onClick: () => navigateTo('admin'), active: currentView === 'admin' }] : []),
-          { label: 'Mein Profil', onClick: () => navigateTo('account-profile'), active: currentView === 'account-profile' },
-          { label: 'Meine Twins', onClick: () => navigateTo('my-twins'), active: currentView === 'my-twins' },
-          { label: 'Twin Builder', onClick: () => navigateTo('twin-builder'), active: currentView === 'twin-builder' },
-          { label: 'Daten hochladen', onClick: () => navigateTo('memory-upload'), active: currentView === 'memory-upload' },
-          { label: 'Chats', onClick: () => navigateTo('twin-chat'), active: currentView === 'twin-chat' },
-          { label: 'Trust', onClick: () => navigateTo('trust'), active: currentView === 'trust' },
-          { label: 'Einstellungen', onClick: () => navigateTo('settings'), active: currentView === 'settings' },
+          { label: appLang === DEFAULT_LANG ? 'Dashboard' : ft.nav.dashboard, onClick: () => navigateTo('dashboard'), active: currentView === 'dashboard' },
+          { label: appLang === DEFAULT_LANG ? 'Start-Assistent' : ft.nav.onboarding, onClick: () => navigateTo('onboarding'), active: currentView === 'onboarding' },
+          ...(canSeeAdmin ? [{ label: appLang === DEFAULT_LANG ? 'Admin' : ft.nav.admin, onClick: () => navigateTo('admin'), active: currentView === 'admin' }] : []),
+          { label: appLang === DEFAULT_LANG ? 'Mein Profil' : ft.nav.profile, onClick: () => navigateTo('account-profile'), active: currentView === 'account-profile' },
+          { label: appLang === DEFAULT_LANG ? 'Meine Twins' : ft.nav.myTwins, onClick: () => navigateTo('my-twins'), active: currentView === 'my-twins' },
+          { label: appLang === DEFAULT_LANG ? 'Twin Builder' : ft.nav.twinBuilder, onClick: () => navigateTo('twin-builder'), active: currentView === 'twin-builder' },
+          { label: appLang === DEFAULT_LANG ? 'Daten hochladen' : ft.nav.upload, onClick: () => navigateTo('memory-upload'), active: currentView === 'memory-upload' },
+          { label: appLang === DEFAULT_LANG ? 'Chats' : ft.nav.chats, onClick: () => navigateTo('twin-chat'), active: currentView === 'twin-chat' },
+          { label: appLang === DEFAULT_LANG ? 'Trust' : ft.nav.trust, onClick: () => navigateTo('trust'), active: currentView === 'trust' },
+          { label: appLang === DEFAULT_LANG ? 'Einstellungen' : ft.nav.settings, onClick: () => navigateTo('settings'), active: currentView === 'settings' },
         ]
 
   if (currentView === 'landing') {
@@ -647,7 +710,7 @@ export default function App() {
           nameSortMode={nameSortMode}
           onNameSortModeChange={setNameSortMode}
         />
-		  <PasswordResetGate />
+		  <PasswordResetGate labels={appLang === DEFAULT_LANG ? undefined : ft.pwreset} />
         <Suspense fallback={null}>
           <CookieConsent />
         </Suspense>
@@ -697,7 +760,7 @@ export default function App() {
               onClick={() => setAppTheme((theme) => (theme === 'dark' ? 'light' : 'dark'))}
               className="hidden min-h-9 border border-white/[0.1] bg-white/[0.04] px-3 text-xs font-semibold text-white transition hover:bg-white/[0.08] sm:inline-flex sm:items-center"
             >
-              {appTheme === 'dark' ? 'Heller' : 'Dunkler'}
+              {appTheme === 'dark' ? (appLang === DEFAULT_LANG ? 'Heller' : ft.drawer.themeLighter) : (appLang === DEFAULT_LANG ? 'Dunkler' : ft.drawer.themeDarker)}
             </button>
             {/* Auth-Action: Avatar wenn eingeloggt, sonst Sign-In/Early-Access */}
             {auth.status === 'authenticated' ? (
@@ -728,10 +791,11 @@ export default function App() {
           open={mobileNavOpen}
           onClose={() => setMobileNavOpen(false)}
           items={mobileItems}
+          labels={appLang === DEFAULT_LANG ? undefined : ft.mnav}
           primaryAction={
             auth.status === 'authenticated'
-              ? { label: 'Zum Dashboard', onClick: () => navigateTo('dashboard') }
-              : { label: 'Einloggen', onClick: () => navigateTo('account-profile') }
+              ? { label: appLang === DEFAULT_LANG ? 'Zum Dashboard' : ft.mnav.toDashboard, onClick: () => navigateTo('dashboard') }
+              : { label: appLang === DEFAULT_LANG ? 'Einloggen' : ft.mnav.login, onClick: () => navigateTo('account-profile') }
           }
         />
       </Suspense>
@@ -744,6 +808,10 @@ export default function App() {
             ? 'min-h-[calc(100dvh-80px)] w-full px-0 pb-0 sm:min-h-[calc(100dvh-92px)]'
             : currentView === 'admin'
               ? 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1520px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-5'
+            : currentView === 'twin-profile'
+              // Profilseite kompakt: kein 7rem-Polster vor dem Footer;
+              // auf Mobil volle Breite (Karte laeuft randlos, PWA/Apps inklusive)
+              ? 'mx-auto w-full max-w-[1200px] px-0 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6'
             : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6'
         }
       >
@@ -772,8 +840,8 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/[0.08] bg-[#090d14] px-4 py-8 text-[#9aa6b7] sm:px-6">
-        <div className="mx-auto mb-8 grid max-w-[1200px] grid-cols-1 gap-10 md:grid-cols-[1.2fr_2.8fr]">
+      <footer className="border-t border-white/[0.08] bg-[#090d14] px-4 py-5 text-[#9aa6b7] sm:px-6">
+        <div className="mx-auto mb-5 grid max-w-[1200px] grid-cols-1 gap-8 md:grid-cols-[1.2fr_2.8fr]">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <span className="font-smyst-logo text-xl">smyst<span className="text-[0.78em]">.com</span></span>
@@ -804,7 +872,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-4 border-t border-white/[0.08] pt-6 md:flex-row">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-3 border-t border-white/[0.08] pt-4 md:flex-row">
           <p className="text-sm text-[#9aa6b7]">{ft.footer.rights}</p>
           <div className="flex flex-wrap gap-5">
             <a href="mailto:s@smyst.com" className="inline-flex min-h-8 items-center text-sm font-semibold text-[#9aa6b7] transition-colors hover:text-white">{ft.footer.contact}</a>
@@ -837,6 +905,7 @@ type StartTwin = {
   initials: string
   tone: string
   manualRank: number
+  lifeSlug?: string
   profileSlug?: string
   imageUrl?: string | null
   categories: string[]
@@ -855,6 +924,8 @@ type StartTwin = {
   deathYear?: number
   birthLabel?: string
   deathLabel?: string
+  birthPlace?: string
+  deathPlace?: string
   searchIndex?: string
 } & DiscoveryProfile
 
@@ -921,6 +992,27 @@ function profileLifeLine(profile: {
 
 // Statischer Public-Profile-Fallback: antwortet kurz, in der Ich-Perspektive der Person,
 // nur aus den kuratierten Profildaten. Keine Meta-Kommentare, keine technischen Interna.
+// Kurze Stoermeldung fuer Folgefragen, wenn der Twin-Chat nicht erreichbar ist -
+// verhindert, dass sich das Profil bei jedem Fehler erneut vorstellt
+// (Rollen-Bug: "Ich bin Albert Einstein ..." als Antwort auf Folgefragen).
+const STATIC_TWIN_RETRY_TEXTS: Partial<Record<VoiceLang, string>> = {
+  de: 'Ich kann gerade nicht auf mein Wissen zugreifen. Bitte versuche es gleich noch einmal.',
+  en: "I can't reach my knowledge right now. Please try again in a moment.",
+  tr: 'Şu anda bilgime ulaşamıyorum. Lütfen birazdan tekrar dene.',
+  es: 'Ahora mismo no puedo acceder a mi conocimiento. Inténtalo de nuevo en un momento.',
+  fr: 'Je ne peux pas accéder à mes connaissances pour le moment. Réessaie dans un instant.',
+  it: 'Al momento non riesco ad accedere alle mie conoscenze. Riprova tra un attimo.',
+  pt: 'Não consigo aceder ao meu conhecimento neste momento. Tenta novamente daqui a pouco.',
+  ru: 'Сейчас я не могу получить доступ к своим знаниям. Пожалуйста, попробуй ещё раз через минуту.',
+  zh: '我现在无法访问我的知识。请稍后再试。',
+  ja: '今は知識にアクセスできません。少し待ってからもう一度お試しください。',
+  ko: '지금은 지식에 접근할 수 없습니다. 잠시 후 다시 시도해 주세요.',
+  ar: 'لا أستطيع الوصول إلى معرفتي الآن. يرجى المحاولة مرة أخرى بعد قليل.',
+  hi: 'मैं अभी अपनी जानकारी तक नहीं पहुँच पा रहा हूँ। कृपया थोड़ी देर में फिर कोशिश करें।',
+  id: 'Saat ini saya tidak dapat mengakses pengetahuan saya. Silakan coba lagi sebentar lagi.',
+  bn: 'এই মুহূর্তে আমি আমার জ্ঞানে পৌঁছাতে পারছি না। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।',
+}
+
 function staticPublicTwinReply(profile: {
   name: string
   description?: string
@@ -933,7 +1025,14 @@ function staticPublicTwinReply(profile: {
   birthLabel?: string
   deathLabel?: string
   lifeLine?: string
-}, _question: string, responseLang: VoiceLang = DEFAULT_LANG): string {
+}, _question: string, responseLang: VoiceLang = DEFAULT_LANG, options: { repeat?: boolean } = {}): string {
+  if (options.repeat) {
+    return (
+      STATIC_TWIN_RETRY_TEXTS[responseLang] ??
+      STATIC_TWIN_RETRY_TEXTS.de ??
+      'Ich kann gerade nicht auf mein Wissen zugreifen. Bitte versuche es gleich noch einmal.'
+    )
+  }
   const branch = profile.mainCategory || profile.categories?.slice(0, 2).join(', ') || ''
   // Lebensdaten: bevorzugt direkte Profilfelder, sonst aus der lifeLine ("76 Jahre • 14.03.1879 – 18.04.1955")
   let birth = profile.birthLabel || formatIsoDate(profile.birthDate) || ''
@@ -1108,6 +1207,7 @@ function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsag
     initials: initialsForName(twin.name),
     tone: twin.style,
     manualRank: index + 1,
+    lifeSlug: twin.lifeSlug,
     profileSlug: publicProfile ? twin.slug : undefined,
     imageUrl: twin.imageUrl ?? null,
     categories,
@@ -1128,6 +1228,37 @@ function realTwinToStartTwin(twin: TwinRecord, index: number, usage: ProfileUsag
     deathLabel: twin.deathLabel,
     searchIndex: twin.searchIndex,
   }
+}
+
+// Namensschluessel fuer den Dublettenschutz: Akzente, Gross-/Kleinschreibung
+// und Sonderzeichen werden eingeebnet, damit "Henri Poincare" und
+// "Henri Poincaré" als derselbe Mensch gelten.
+function normalizedProfileName(name?: string): string {
+  return (name ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+// Behaelt je Name den informativsten Eintrag: Profile mit Lebensdaten haben
+// Vorrang, sonst gewinnt der erste. Verhindert Doppelkarten auf der Startseite,
+// ohne dass ein Twin verlorengeht — die Twin-Verwaltung zeigt weiterhin alle.
+function dedupeByName(profiles: StartTwin[]): StartTwin[] {
+  const byName = new Map<string, StartTwin>()
+  for (const profile of profiles) {
+    const key = normalizedProfileName(profile.name)
+    const kept = byName.get(key)
+    if (!kept) {
+      byName.set(key, profile)
+      continue
+    }
+    const keptHasLife = Boolean(kept.birthDate || kept.birthYear)
+    const nextHasLife = Boolean(profile.birthDate || profile.birthYear)
+    if (!keptHasLife && nextHasLife) byName.set(key, profile)
+  }
+  return [...byName.values()]
 }
 
 function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usage: ProfileUsage = { chatCount: 0, lastChatAt: 0 }): StartTwin {
@@ -1160,6 +1291,8 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
     deathYear: profile.deathYear,
     birthLabel: profile.birthLabel,
     deathLabel: profile.deathLabel,
+    birthPlace: profile.birthPlace,
+    deathPlace: profile.deathPlace,
     searchIndex: profile.searchIndex,
   }
 }
@@ -1204,6 +1337,7 @@ function curatedPublicProfileToPublicTwinProfile(spec: CuratedPublicTwinSpec, in
     exampleQuestions: spec.exampleQuestions,
     searchIndex: spec.searchIndex,
     sources: spec.sources,
+    milestones: spec.milestones,
     quality: { ok: Boolean(imageUrl), issues: imageUrl ? [] : ['missing_profile_image'] },
     createdAt,
     updatedAt,
@@ -1317,6 +1451,9 @@ function SmystStartPage({
   const dictationBaseRef = useRef('')
   const dictationSessionRef = useRef('')
   const liveVoiceSendTimerRef = useRef<number | null>(null)
+  // Schutz gegen parallele Sendungen: eine zweite Anfrage waehrend eine Antwort
+  // laeuft wuerde einen zweiten Chat starten und den Kontext zerreissen.
+  const sendActiveRef = useRef(false)
 
   useEffect(() => {
     setLastVoiceLang(preferredVoiceLanguage(lang))
@@ -1334,6 +1471,18 @@ function SmystStartPage({
   }, [activeCategory, nameSortMode, query, realStartTwins])
 
   const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
+
+  // P5: Begruessungs-Audio vorab erzeugen, sobald ein Twin geoeffnet wird.
+  // Nur fuer Geraete, die schon einmal Voice genutzt haben - so startet der
+  // Live-Sprachmodus ohne Synthese-Ladeluecke, ohne allen anderen Besuchern
+  // TTS-Last zu erzeugen. Ergebnis landet im persistenten Cache (ttsClient).
+  const prefetchTwinName = selectedTwin?.name?.trim()
+  const prefetchTwinGender = selectedTwin?.voiceGender
+  useEffect(() => {
+    if (!prefetchTwinName || !hasUsedVoice()) return
+    prefetchGreetingSpeech(prefetchTwinName, lang, prefetchTwinGender)
+  }, [prefetchTwinName, prefetchTwinGender, lang])
+
   const genericMessageLabel =
     lang === DEFAULT_LANG
       ? 'Nachricht schreiben'
@@ -1421,12 +1570,19 @@ function SmystStartPage({
         ])
         if (!alive) return
         const usage = usageByTwinId(chats)
-        const ownProfiles = (twins ?? [])
-          .filter(isCompleteTwinRecord)
-          .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug)))
+        const ownProfiles = dedupeByName(
+          (twins ?? [])
+            .filter(isCompleteTwinRecord)
+            .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug))),
+        )
+        // Dublettenschutz gegen die oeffentliche Liste: bisher nur ueber den Slug.
+        // Ein zweiter eigener Twin gleichen Namens bekommt aber einen neuen Slug
+        // ("alessandro-volta-2") und rutschte dadurch als Doppelkarte durch.
         const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
+        const ownNames = new Set(ownProfiles.map((profile) => normalizedProfileName(profile.name)))
         const publicStartProfiles = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
-          .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug))
+          .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug)
+            && !ownNames.has(normalizedProfileName(profile.name)))
           .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
         const next = [...ownProfiles, ...publicStartProfiles]
         setRealStartTwins(next)
@@ -1591,15 +1747,7 @@ function SmystStartPage({
       </span>
       <span className={`${compact ? 'flex min-w-0 flex-1 flex-col justify-center px-3 py-2' : 'flex min-w-0 flex-1 flex-col justify-center px-4 py-3 sm:px-6'}`}>
         <span className="min-w-0">
-          <span className={`${compact ? 'text-[15px]' : 'text-lg sm:text-2xl'} block truncate font-bold leading-tight text-[#edf4ff]`}>
-            {twin.name}
-          </span>
-          <span className={`${compact ? 'text-[13px]' : 'text-sm sm:text-base'} mt-1 block truncate font-semibold leading-tight text-[#aab4c4]`}>
-            {profileMainCategory(twin)}
-          </span>
-          <span className={`${compact ? 'text-[12px]' : 'text-sm'} mt-1 block truncate font-medium leading-tight text-[#8e97a8]`}>
-            {profileLifeLine(twin, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel, unknown: t.start.lifeDatesUnknown })}
-          </span>
+                    <span className={(compact ? 'text-[15px]' : 'text-lg sm:text-2xl') + ' block truncate font-bold leading-tight text-[#edf4ff]'}>{profileNameWithAge(twin)}</span>{profileBirthLine(twin) && <span className={(compact ? 'text-[11px]' : 'text-sm') + ' mt-0.5 block truncate font-medium leading-tight text-[#8e97a8]'}>{profileBirthLine(twin)}</span>}{profileDeathLine(twin) && <span className={(compact ? 'text-[11px]' : 'text-sm') + ' block truncate font-medium leading-tight text-[#8e97a8]'}>{profileDeathLine(twin)}</span>}<span className={(compact ? 'text-[12px]' : 'text-sm sm:text-base') + ' mt-0.5 block truncate font-semibold leading-tight text-[#aab4c4]'}>{profileMainCategory(twin)}</span>
         </span>
       </span>
     </button>
@@ -1674,7 +1822,7 @@ function SmystStartPage({
     if (!selected.length) return
     setComposerMenuOpen(false)
     if (auth.status !== 'authenticated') {
-      addNotice('Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.' : t.notices.loginToUpload)
       return
     }
 
@@ -1692,7 +1840,7 @@ function SmystStartPage({
       const uploaded = await memoryUpload.upload(file, mediaCategoryForFile(file))
       if (!uploaded) {
         updateAttachment(id, { status: 'failed' })
-        addNotice(memoryUpload.error || 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.')
+        addNotice(memoryUpload.error || (lang === DEFAULT_LANG ? 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.' : t.notices.uploadFailed))
         continue
       }
       updateAttachment(id, {
@@ -1711,7 +1859,7 @@ function SmystStartPage({
     const contactsApi = (navigator as BrowserNavigatorWithContacts).contacts
     if (!contactsApi?.select) {
       fileInputRef.current?.click()
-      addNotice('Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.' : t.notices.contactUnsupported)
       return
     }
     try {
@@ -1724,7 +1872,7 @@ function SmystStartPage({
       ])
       resizeInput([input, `Kontakt:\n${text}`].filter(Boolean).join('\n\n'))
     } catch {
-      addNotice('Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.' : t.notices.contactCancelled)
     }
   }
 
@@ -1745,16 +1893,16 @@ function SmystStartPage({
           url: url.href,
         },
       ])
-      addNotice('Link wurde angehängt.')
+      addNotice(lang === DEFAULT_LANG ? 'Link wurde angehängt.' : t.notices.linkAttached)
     } catch {
-      addNotice('Bitte einen gültigen http- oder https-Link einfügen.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte einen gültigen http- oder https-Link einfügen.' : t.notices.linkInvalid)
     }
   }
 
   const handleAttachLocation = () => {
     setComposerMenuOpen(false)
     if (!('geolocation' in navigator)) {
-      addNotice('Standort wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Standort wird von diesem Browser nicht unterstützt.' : t.notices.locationUnsupported)
       return
     }
     navigator.geolocation.getCurrentPosition(
@@ -1771,9 +1919,9 @@ function SmystStartPage({
             url,
           },
         ])
-        addNotice('Standort wurde angehängt.')
+        addNotice(lang === DEFAULT_LANG ? 'Standort wurde angehängt.' : t.notices.locationAttached)
       },
-      () => addNotice('Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.'),
+      () => addNotice(lang === DEFAULT_LANG ? 'Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.' : t.notices.locationError),
       { enableHighAccuracy: false, maximumAge: 60_000, timeout: 10_000 },
     )
   }
@@ -1809,7 +1957,7 @@ function SmystStartPage({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.' : t.notices.speechUnsupported)
       return
     }
     if (!options.live && !options.resume) {
@@ -1850,22 +1998,40 @@ function SmystStartPage({
       })
       .catch(() => {
         if (options.live && liveVoiceActiveRef.current) {
-          window.setTimeout(() => startServerAsrDictation({ live: true, resume: true }), 700)
+          // Server-ASR nicht erreichbar: fuer diese Session merken und die
+          // Sprachwelle nahtlos mit der Browser-Erkennung fortsetzen.
+          markServerAsrUnavailable()
+          if (speechRecognitionConstructor()) {
+            window.setTimeout(() => startDictation({ live: true, resume: true, forceBrowser: true }), 400)
+            return
+          }
+          liveVoiceActiveRef.current = false
+          setSpeechOutputEnabled(false)
+          setVoiceState('idle')
+          addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
           return
         }
         dictationActiveRef.current = false
         setVoiceState('idle')
-        addNotice('Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.')
+        addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
       })
   }
 
-  const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
+  const startDictation = (options: { live?: boolean; resume?: boolean; forceBrowser?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     // Sprachwelle (Live-Modus): Server-ASR (Whisper) zuerst - erkennt die gesprochene
     // Sprache automatisch schon im ersten Satz und wechselt sie pro Turn (DE/TR/EN, ...).
-    // Browser-Erkennung bleibt fuer das Diktat und als Fallback ohne Server-ASR.
-    if (options.live && serverAsrSupported()) {
-      startServerAsrDictation(options)
+    // Browser-Erkennung bleibt fuer das Diktat und als Fallback, wenn kein
+    // Server-ASR bereitsteht (z. B. ohne Voice-Worker auf dem Backend).
+    if (options.live && !options.forceBrowser && serverAsrSupported()) {
+      if (!Recognition) {
+        startServerAsrDictation(options)
+        return
+      }
+      void serverAsrReady().then((ready) => {
+        if (ready) startServerAsrDictation(options)
+        else startDictation({ ...options, forceBrowser: true })
+      })
       return
     }
     if (!Recognition) {
@@ -1909,8 +2075,8 @@ function SmystStartPage({
       }
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
-          ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
-          : 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.',
+          ? (lang === DEFAULT_LANG ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.' : t.notices.micNotAllowed)
+          : (lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed),
       )
     }
     recognition.onend = () => {
@@ -2011,7 +2177,7 @@ function SmystStartPage({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed)
     }
   }
 
@@ -2031,12 +2197,13 @@ function SmystStartPage({
       setVoiceState('idle')
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
-      addNotice('Live-Sprachmodus beendet.')
+      addNotice(lang === DEFAULT_LANG ? 'Live-Sprachmodus beendet.' : t.notices.liveVoiceEnded)
       return
     }
     {
       liveVoiceActiveRef.current = true
       setSpeechOutputEnabled(true)
+      markVoiceUsed()
       {
         liveVoiceDraftRef.current = ''
         const twinName = (selectedTwin ?? activeTwin)?.name?.trim()
@@ -2048,14 +2215,7 @@ function SmystStartPage({
           return
         }
         liveGreetedRef.current = greetKey
-        const greeting =
-          lang === 'de'
-            ? twinName
-              ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
-              : 'Hallo! Schön, dass du da bist. Was kann ich für dich tun?'
-            : twinName
-              ? 'Hello! This is ' + twinName + '. Nice to meet you. What can I do for you?'
-              : 'Hello! Nice to meet you. What can I do for you?'
+        const greeting = liveGreetingText(twinName, lang)
         setVoiceState('replying')
         const started = speakText(greeting, lang, () => {
           setIsSpeaking(false)
@@ -2088,29 +2248,26 @@ function SmystStartPage({
     const sendAttachments = overrideAttachments ?? attachments
     const fullMessage = composeMessageWithAttachments(text, sendAttachments)
     if (!fullMessage) return null
-    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLangRef.current || lang)
+    // Expliziter Sprachwunsch ("kannst du tuerkisch reden") schlaegt die
+    // Wortmarker-Erkennung — die sieht nur deutsche Woerter und bliebe bei de.
+    const messageVoiceLang = detectRequestedLanguage(text) ?? options.voiceLang ?? detectVoiceLanguage(text, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if (sendAttachments.some((attachment) => attachment.status === 'uploading')) {
-      addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte warten, bis alle Anhänge hochgeladen sind.' : t.notices.attachmentsUploading)
+      return null
+    }
+    if (sendActiveRef.current) {
+      // Es laeuft schon eine Antwort - keine zweite parallele Anfrage starten.
+      addNotice(lang === DEFAULT_LANG ? 'Antwort läuft gerade. Bitte kurz warten.' : t.notices.replyRunning)
       return null
     }
 
-    const twin = selectedTwin ?? filteredTwins[0] ?? activeTwin
+    // Nie stillschweigend ein Profil aus der Liste uebernehmen: ohne explizit
+    // gewaehltes Profil antwortete sonst z. B. "Ich bin Albert Einstein ..."
+    // auf eine allgemeine Frage (Rollen-Bug, live beobachtet 26.07.2026).
+    const twin = selectedTwin ?? activeTwin
     if (!twin) {
-      setMessages((current) => [
-        ...current,
-        { id: crypto.randomUUID(), role: 'user', content: fullMessage },
-        {
-          id: crypto.randomUUID(),
-          role: 'ai',
-          content:
-            auth.status === 'authenticated'
-              ? 'Erstelle zuerst ein echtes Profil. Danach kannst du diese Person direkt anschreiben.'
-              : 'Melde dich an und erstelle ein echtes Profil. Danach kannst du direkt mit diesem Profil chatten.',
-        },
-      ])
-      resizeInput('')
-      setAttachments([])
+      addNotice(lang === DEFAULT_LANG ? 'Wähle zuerst ein KI-Profil aus.' : t.notices.chooseProfileFirst)
       return null
     }
     if (!selectedTwin) selectTwin(twin)
@@ -2130,6 +2287,7 @@ function SmystStartPage({
       return null
     }
 
+    sendActiveRef.current = true
     const assistantId = crypto.randomUUID()
     setMessages((current) => [
       ...current,
@@ -2144,9 +2302,10 @@ function SmystStartPage({
     const liveSpeech = (speechOutputEnabled || options.forceSpeech)
       ? startSentenceSpeech(
           messageVoiceLang,
-          voiceGenderFor(twin.name),
-          userVoiceIdFor(twin.name) ?? remoteVoiceIdFor(twin.name, messageVoiceLang),
+          voiceGenderFor(twin.name) ?? twin.voiceGender,
+          userVoiceIdFor(twin.name) ?? remoteVoiceIdFor(twin.name, messageVoiceLang, voiceGenderFor(twin.name) ?? twin.voiceGender),
           () => setIsSpeaking(false),
+          remoteRateFor(twin.name),
         )
       : null
     try {
@@ -2186,9 +2345,12 @@ function SmystStartPage({
     } catch (err) {
       liveSpeech?.cancel()
       if (twin.publicProfile) {
-        const reply = staticPublicTwinReply(twin, fullMessage, messageVoiceLang)
+        // Vorstellung nur beim ersten Turn - bei Folgefragen stattdessen eine
+        // kurze Stoermeldung, sonst wiederholt der Twin endlos sein Intro.
+        const alreadyIntroduced = messages.some((entry) => entry.role === 'ai' && entry.content.trim().length > 0)
+        const reply = staticPublicTwinReply(twin, fullMessage, messageVoiceLang, { repeat: alreadyIntroduced })
         await streamText(assistantId, reply)
-        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), twin.name)) {
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), twin.name, twin.voiceGender)) {
           setIsSpeaking(true)
         }
         return reply
@@ -2206,6 +2368,8 @@ function SmystStartPage({
         ),
       )
       return null
+    } finally {
+      sendActiveRef.current = false
     }
   }
 
@@ -2225,24 +2389,25 @@ function SmystStartPage({
       return
     }
     if (!latestAssistantText) {
-      addNotice('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.')
+      addNotice(lang === DEFAULT_LANG ? 'Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.' : t.notices.nothingToRead)
       return
     }
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-      addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Vorlesen wird von diesem Browser nicht unterstützt.' : t.notices.readAloudUnsupported)
       return
     }
     // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name)
+    markVoiceUsed()
+    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name, (selectedTwin ?? activeTwin)?.voiceGender)
     if (started) setIsSpeaking(true)
   }
 
   const handleSendButtonClick = () => {
     if (!canSend) {
-      addNotice('Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.')
+      addNotice(lang === DEFAULT_LANG ? 'Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.' : t.notices.messageEmpty)
       textareaRef.current?.focus()
       return
     }
@@ -2250,15 +2415,15 @@ function SmystStartPage({
   }
 
   const menuItems: Array<{ label: string; view: AppView; detail: string; adminOnly?: boolean }> = [
-    { label: 'Start-Assistent', view: 'onboarding', detail: 'Schritt für Schritt zum fertigen Twin' },
-    { label: 'Mein Profil', view: 'account-profile', detail: 'Identität, Bio, Rollen und Profilqualität' },
-    { label: 'Twin erstellen', view: 'twin-builder', detail: 'Persönlichkeit, Wissen und Sichtbarkeit' },
-    { label: 'Meine Twins', view: 'my-twins', detail: 'Private und öffentliche AI Twins' },
-    { label: 'Memories', view: 'memory-upload', detail: 'Dateien, Wissen und Erinnerungen hochladen' },
-    { label: 'Chats', view: 'twin-chat', detail: 'Letzte Gespräche und Twin-Auswahl' },
-    { label: 'Admin', view: 'admin', detail: 'User, Werbung, Umsatz, Sicherheit und Betrieb', adminOnly: true },
-    { label: 'Datenschutz', view: 'trust', detail: 'Privatsphäre, Export und Löschung' },
-    { label: 'Einstellungen', view: 'settings', detail: 'Sprache, Theme, Account und Logout' },
+    { label: lang === DEFAULT_LANG ? 'Start-Assistent' : t.nav.onboarding, view: 'onboarding', detail: lang === DEFAULT_LANG ? 'Schritt für Schritt zum fertigen Twin' : t.nav.onboardingDetail },
+    { label: lang === DEFAULT_LANG ? 'Mein Profil' : t.nav.profile, view: 'account-profile', detail: lang === DEFAULT_LANG ? 'Identität, Bio, Rollen und Profilqualität' : t.nav.profileDetail },
+    { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate, view: 'twin-builder', detail: lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit' : t.nav.twinCreateDetail },
+    { label: lang === DEFAULT_LANG ? 'Meine Twins' : t.nav.myTwins, view: 'my-twins', detail: lang === DEFAULT_LANG ? 'Private und öffentliche AI Twins' : t.nav.myTwinsDetail },
+    { label: lang === DEFAULT_LANG ? 'Memories' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'Dateien, Wissen und Erinnerungen hochladen' : t.nav.memoriesDetail },
+    { label: lang === DEFAULT_LANG ? 'Chats' : t.nav.chats, view: 'twin-chat', detail: lang === DEFAULT_LANG ? 'Letzte Gespräche und Twin-Auswahl' : t.nav.chatsDetail },
+    { label: lang === DEFAULT_LANG ? 'Admin' : t.nav.admin, view: 'admin', detail: lang === DEFAULT_LANG ? 'User, Werbung, Umsatz, Sicherheit und Betrieb' : t.nav.adminDetail, adminOnly: true },
+    { label: lang === DEFAULT_LANG ? 'Datenschutz' : t.nav.privacy, view: 'trust', detail: lang === DEFAULT_LANG ? 'Privatsphäre, Export und Löschung' : t.nav.privacyDetail },
+    { label: lang === DEFAULT_LANG ? 'Einstellungen' : t.nav.settings, view: 'settings', detail: lang === DEFAULT_LANG ? 'Sprache, Theme, Account und Logout' : t.nav.settingsDetail },
   ]
   const canSeeAdmin = Boolean(
     auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
@@ -2282,17 +2447,17 @@ function SmystStartPage({
   ]
 
   const profileQuickActions = [
-    { label: 'Start-Assistent', view: 'onboarding' as const },
-    { label: 'Profil öffnen', view: 'account-profile' as const },
-    { label: 'Twin erstellen', view: 'twin-builder' as const },
-    { label: 'Daten hochladen', view: 'memory-upload' as const },
+    { label: lang === DEFAULT_LANG ? 'Start-Assistent' : t.drawer.quickOnboarding, view: 'onboarding' as const },
+    { label: lang === DEFAULT_LANG ? 'Profil öffnen' : t.drawer.quickProfile, view: 'account-profile' as const },
+    { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.drawer.quickTwinCreate, view: 'twin-builder' as const },
+    { label: lang === DEFAULT_LANG ? 'Daten hochladen' : t.drawer.quickUpload, view: 'memory-upload' as const },
   ]
 
   const profileControlCards = [
-    ['Identität', 'Name, Rollen, Expertise und Bio sauber pflegen.'],
-    ['AI Twin', 'Persönlichkeit, Wissen und Sichtbarkeit steuern.'],
-    ['Memories', 'Uploads, Quellen und Erinnerungen als Kontext verwalten.'],
-    ['Datenschutz', 'Freigaben, Export, Löschung und private Standards.'],
+    [lang === DEFAULT_LANG ? 'Identität' : t.drawer.cardIdentityTitle, lang === DEFAULT_LANG ? 'Name, Rollen, Expertise und Bio sauber pflegen.' : t.drawer.cardIdentityText],
+    [lang === DEFAULT_LANG ? 'AI Twin' : t.drawer.cardTwinTitle, lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit steuern.' : t.drawer.cardTwinText],
+    [lang === DEFAULT_LANG ? 'Memories' : t.drawer.cardMemoriesTitle, lang === DEFAULT_LANG ? 'Uploads, Quellen und Erinnerungen als Kontext verwalten.' : t.drawer.cardMemoriesText],
+    [lang === DEFAULT_LANG ? 'Datenschutz' : t.drawer.cardPrivacyTitle, lang === DEFAULT_LANG ? 'Freigaben, Export, Löschung und private Standards.' : t.drawer.cardPrivacyText],
   ]
 
   return (
@@ -2428,7 +2593,7 @@ function SmystStartPage({
               {showEmailForm && (
                 <div className="mt-3">
                   <Suspense fallback={null}>
-                    <EmailAuthForm onClose={() => setShowEmailForm(false)} />
+                    <EmailAuthForm onClose={() => setShowEmailForm(false)} labels={lang === DEFAULT_LANG ? undefined : t.auth} />
                   </Suspense>
                 </div>
               )}
@@ -2445,7 +2610,7 @@ function SmystStartPage({
 
         <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Startmenü Navigation">
           <div className="mb-4 grid gap-2 px-2">
-            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Profilbereich</p>
+            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilbereich' : t.drawer.sectionTitle}</p>
             {profileControlCards.map(([title, text]) => (
               <div key={title} className="rounded-lg border border-white/10 bg-white/[0.035] p-3">
                 <p className="text-xs font-bold text-white">{title}</p>
@@ -2487,8 +2652,32 @@ function SmystStartPage({
             ))}
           </div>
 
+          <div className="mt-5 border-t border-white/10 px-2 pt-5">
+            <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Rechtliches' : t.drawer.legalTitle}</p>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 px-2 pb-1">
+              <a
+                href="/imprint/"
+                className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              >
+                {lang === DEFAULT_LANG ? 'Impressum' : t.drawer.legalImprint}
+              </a>
+              <a
+                href="/privacy/"
+                className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              >
+                {lang === DEFAULT_LANG ? 'Datenschutz' : t.drawer.legalPrivacy}
+              </a>
+              <a
+                href="mailto:s@smyst.com"
+                className="text-xs font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+              >
+                {lang === DEFAULT_LANG ? 'Kontakt' : t.drawer.legalContact}
+              </a>
+            </div>
+          </div>
+
           <div className="mt-5 border-t border-white/10 pt-5">
-            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">Design</p>
+            <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Design' : t.drawer.designTitle}</p>
             <div className="mt-3 grid grid-cols-2 gap-2 px-2">
               {(['dark', 'light'] as const).map((theme) => (
                 <button
@@ -2501,7 +2690,7 @@ function SmystStartPage({
                       : 'border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
                   }`}
                 >
-                  {theme === 'dark' ? 'Dunkler' : 'Heller'}
+                  {theme === 'dark' ? (lang === DEFAULT_LANG ? 'Dunkler' : t.drawer.themeDarker) : (lang === DEFAULT_LANG ? 'Heller' : t.drawer.themeLighter)}
                 </button>
               ))}
             </div>
@@ -2595,9 +2784,7 @@ function SmystStartPage({
                 )}
               </span>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
-                <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{selectedTwin.name}</span>
-                <span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>
-                <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileLifeLine(selectedTwin, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel, unknown: t.start.lifeDatesUnknown })}</span>
+                <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{profileNameWithAge(selectedTwin)}</span>{profileBirthLine(selectedTwin) && <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileBirthLine(selectedTwin)}</span>}{profileDeathLine(selectedTwin) && <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileDeathLine(selectedTwin)}</span>}<span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>
               </span>
             </div>
           </div>
@@ -2676,7 +2863,7 @@ function SmystStartPage({
                     : 'border-white/12 bg-white/[0.06] text-[#c7d1de]'
                 }`}
               >
-                Alle
+                {lang === DEFAULT_LANG ? 'Alle' : t.start.categoryAll}
               </button>
               {visibleCategories.map((category) => (
                 <button
@@ -2694,7 +2881,7 @@ function SmystStartPage({
                       : 'border-white/12 bg-white/[0.06] text-[#c7d1de]'
                   }`}
                 >
-                  {category.name}
+                  {lang === DEFAULT_LANG ? category.name : (t.cats[category.name] ?? category.name)}
                   <span className="ml-1 opacity-65">{category.count}</span>
                 </button>
               ))}
@@ -2718,6 +2905,18 @@ function SmystStartPage({
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Beliebt' : t.start.popularLabel, popularTwins)}
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Neu' : t.start.newLabel, freshTwins)}
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Kürzlich genutzt' : t.start.recentLabel, recentTwins)}
+              <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.08] px-4 py-3 text-xs text-[#8e97a8]">
+                <span>© 2026 smyst.com</span>
+                <a href="/imprint/" className="font-semibold text-[#aeb6c4] underline-offset-2 hover:text-white hover:underline">
+                  {lang === DEFAULT_LANG ? 'Impressum' : 'Imprint'}
+                </a>
+                <a href="/privacy/" className="font-semibold text-[#aeb6c4] underline-offset-2 hover:text-white hover:underline">
+                  {lang === DEFAULT_LANG ? 'Datenschutz' : 'Privacy'}
+                </a>
+                <a href="mailto:s@smyst.com" className="font-semibold text-[#aeb6c4] underline-offset-2 hover:text-white hover:underline">
+                  {lang === DEFAULT_LANG ? 'Kontakt' : 'Contact'}
+                </a>
+              </footer>
             </div>
           )}
           {!selectedTwin && !showNamePicker && profilesLoaded && profilesLoadError && (
@@ -2888,7 +3087,7 @@ function SmystStartPage({
         )}
         {(voiceState !== 'idle' || isSpeaking) && (
           <div className="px-2 py-1 sm:px-3">
-            <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant={shellTheme === 'light' ? 'light' : 'dark'} />
+            <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant={shellTheme === 'light' ? 'light' : 'dark'} mode={liveVoiceActiveRef.current ? 'live' : 'dictation'} />
           </div>
         )}
         <div className="flex h-[44px] items-center justify-between px-2 text-white sm:px-3">
@@ -3004,6 +3203,30 @@ function setJsonLd(id: string, value: unknown) {
   script.textContent = JSON.stringify(value)
 }
 
+function readableSourceUrl(url: string): string {
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname.endsWith('.wikipedia.org')) {
+      const summary = parsed.pathname.match(/^\/api\/rest_v1\/page\/summary\/(.+)$/)
+      if (summary) return `https://${parsed.hostname}/wiki/${summary[1]}`
+    }
+    if (parsed.hostname === 'www.wikidata.org' || parsed.hostname === 'wikidata.org') {
+      const entity = parsed.pathname.match(/^\/wiki\/Special:EntityData\/(Q\d+)(?:\.json)?$/)
+      if (entity) return `https://www.wikidata.org/wiki/${entity[1]}`
+    }
+  } catch {
+    // ungültige URL: unverändert lassen
+  }
+  return url
+}
+
+function readableSourceLabel(source: { title: string; publisher: string }): string {
+  const wiki = source.publisher.match(/^([a-z][a-z-]*)\.wikipedia\.org$/)
+  if (wiki) return `Wikipedia (${wiki[1].toUpperCase()}) — ${source.title}`
+  if (source.publisher === 'wikidata.org' || source.publisher === 'www.wikidata.org') return 'Wikidata'
+  return `${source.publisher}: ${source.title}`
+}
+
 function TwinProfileView({
   slug,
   privateTwinId,
@@ -3020,6 +3243,10 @@ function TwinProfileView({
   const [loaded, setLoaded] = useState(!slug && !privateTwinId)
   const [shareStatus, setShareStatus] = useState('')
   const [profileImageBroken, setProfileImageBroken] = useState(false)
+  const [similarTwins, setSimilarTwins] = useState<StartTwin[]>([])
+  const [publicProfileCount, setPublicProfileCount] = useState(0)
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const isPrivate = Boolean(privateTwinId)
 
   useEffect(() => {
@@ -3113,12 +3340,34 @@ function TwinProfileView({
     }
   }, [profile, isPrivate])
 
+  useEffect(() => {
+    if (isPrivate || !slug) return
+    let alive = true
+    void twinMvp
+      .listPublicTwins()
+      .then((list) => {
+        if (!alive) return
+        const pool = (list?.length ? list : curatedPublicProfiles())
+          .filter(isCompletePublicProfile)
+          .map((item, index) => publicProfileToStartTwin(item, index))
+        const active = pool.find((item) => item.profileSlug === slug) ?? null
+        setSimilarTwins(similarProfiles(active, pool, 4) as StartTwin[])
+        setPublicProfileCount(pool.length)
+      })
+      .catch(() => {
+        if (alive) setSimilarTwins([])
+      })
+    return () => {
+      alive = false
+    }
+  }, [slug, isPrivate])
+
   if (isPrivate && auth.status === 'anonymous') {
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Privates Twin-Profil</h1>
-          <p className="mb-5 text-sm text-[#555b64]">Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Privates Twin-Profil' : t.profile.privateProfile}</h1>
+          <p className="mb-5 text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.' : t.profile.privateText}</p>
           <Suspense fallback={null}>
             <GitHubSignInButton variant="official" returnTo={window.location.pathname} />
           </Suspense>
@@ -3131,8 +3380,8 @@ function TwinProfileView({
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Profil wird geladen</h1>
-          <p className="text-sm text-[#555b64]">Profil und Inhalte werden vorbereitet.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Profil wird geladen' : t.profile.loadingTitle}</h1>
+          <p className="text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Profil und Inhalte werden vorbereitet.' : t.profile.loadingText}</p>
         </Card>
       </div>
     )
@@ -3142,8 +3391,8 @@ function TwinProfileView({
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Twin-Profil nicht gefunden</h1>
-          <p className="text-sm text-[#555b64]">Dieses Profil ist nicht öffentlich indexierbar oder existiert nicht.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Twin-Profil nicht gefunden' : t.profile.notFoundTitle}</h1>
+          <p className="text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dieses Profil ist nicht öffentlich indexierbar oder existiert nicht.' : t.profile.notFoundText}</p>
         </Card>
       </div>
     )
@@ -3153,14 +3402,19 @@ function TwinProfileView({
     return (
       <div className="pt-6">
         <Card className="mx-auto max-w-[720px] p-8">
-          <h1 className="mb-2 text-2xl font-bold">Twin-Profil nicht vollständig</h1>
-          <p className="text-sm text-[#555b64]">Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.</p>
+          <h1 className="mb-2 text-2xl font-bold">{lang === DEFAULT_LANG ? 'Twin-Profil nicht vollständig' : t.profile.incompleteTitle}</h1>
+          <p className="text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.' : t.profile.incompleteText}</p>
         </Card>
       </div>
     )
   }
 
-  const profileShareUrl = profile.seo.canonical || `${window.location.origin}${profile.chatPath}`
+  // Eigene Twins: der Chat-Link (/twin-chat?twin=...) funktioniert nur eingeloggt im
+  // eigenen Browser. Öffentliche Twins haben eine echte Profil-URL unter /t/<slug>.
+  const publicProfilePath = profile.visibility === 'public' && profile.slug ? `/t/${profile.slug}` : null
+  const profileShareUrl =
+    profile.seo.canonical ||
+    (publicProfilePath ? `${window.location.origin}${publicProfilePath}` : `${window.location.origin}${profile.chatPath}`)
   const shareProfile = async () => {
     setShareStatus('')
     try {
@@ -3170,7 +3424,7 @@ function TwinProfileView({
           text: profile.description,
           url: profileShareUrl,
         })
-        setShareStatus('Geteilt')
+        setShareStatus(lang === DEFAULT_LANG ? 'Geteilt' : t.profile.shareShared)
         return
       }
       if (navigator.clipboard?.writeText) {
@@ -3186,38 +3440,79 @@ function TwinProfileView({
         document.execCommand('copy')
         textarea.remove()
       }
-      setShareStatus('Link kopiert')
+      const copiedMsg = lang === DEFAULT_LANG ? 'Link kopiert' : t.profile.shareCopied
+      const isPubliclyReachable = Boolean(profile.seo.canonical || publicProfilePath)
+      setShareStatus(
+        isPubliclyReachable
+          ? copiedMsg
+          : `${copiedMsg} · ${lang === DEFAULT_LANG ? 'Privat · nicht öffentlich' : t.profile.privateVisible}`,
+      )
     } catch {
-      setShareStatus('Teilen nicht möglich')
+      setShareStatus(lang === DEFAULT_LANG ? 'Teilen nicht möglich' : t.profile.shareFailed)
     } finally {
       window.setTimeout(() => setShareStatus(''), 2200)
     }
   }
 
-  return (
-    <div className="pt-6">
-      <section className="mx-auto max-w-[980px]">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-          <button onClick={() => onNavigate('landing')} className="font-smyst-logo text-2xl">
-            smyst<span className="text-[0.78em]">.com</span>
-          </button>
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
-            {profile.visibility === 'public' ? 'Öffentlich sichtbar' : 'Privat · nicht öffentlich'}
-          </span>
-        </div>
+  const askTopicRaw = profile.categories[0] ?? ''
+  const askTopic = askTopicRaw
+    ? t.cats[askTopicRaw] ?? askTopicRaw
+    : lang === DEFAULT_LANG
+      ? 'dein Fachgebiet'
+      : t.profile.askTopicFallback
+  const askQuestions = [
+    {
+      emoji: '🎓',
+      text: (lang === DEFAULT_LANG ? 'Erkläre mir {{topic}} so, dass ich es wirklich verstehe.' : t.profile.askQ1).replace('{{topic}}', askTopic),
+      sub: lang === DEFAULT_LANG ? 'Das Kernthema – Schritt für Schritt erklärt' : t.profile.askQ1Sub,
+    },
+    {
+      emoji: '🤔',
+      text: lang === DEFAULT_LANG ? 'Was war dein größter Fehler – und was hast du daraus gelernt?' : t.profile.askQ2,
+      sub: lang === DEFAULT_LANG ? 'Ehrliche Rückschau und Lehren' : t.profile.askQ2Sub,
+    },
+    {
+      emoji: '⚡',
+      text: lang === DEFAULT_LANG ? 'Wie würdest du heute über KI denken?' : t.profile.askQ3,
+      sub: lang === DEFAULT_LANG ? 'Der Denkstil auf eine Frage von heute' : t.profile.askQ3Sub,
+    },
+  ]
+  const openChatWithQuestion = (question: string) => {
+    onNavigate('twin-chat')
+    const joiner = profile.chatPath.includes('?') ? '&' : '?'
+    window.history.replaceState({}, '', `${profile.chatPath}${joiner}q=${encodeURIComponent(question)}`)
+  }
 
-        <Card className="overflow-hidden p-0">
-          <div className="grid gap-0 lg:grid-cols-[340px_1fr]">
-            <div className="border-b border-white/30 bg-white/18 p-6 lg:border-b-0 lg:border-r">
-              <div className="aspect-square overflow-hidden rounded-[18px] border border-white/40 bg-white/28">
+  return (
+    <div className="pt-2">
+      <section className="mx-auto max-w-[980px]">
+        {/* Kompakt: kein doppeltes smyst.com-Logo ueber der Karte (steht schon
+            in der Navbar); das Sichtbarkeits-Badge sitzt in der Kicker-Zeile. */}
+        <Card className="overflow-hidden p-0 max-sm:rounded-none max-sm:border-x-0">
+          {/* Zwei Spalten nur fuer den Kopf; alles darunter laeuft volle Breite,
+              damit unter dem Bild keine tote Flaeche entsteht. */}
+          <div className="grid gap-0 md:grid-cols-[300px_1fr]">
+            <div className="border-b border-white/30 bg-white/18 p-4 md:border-b-0 md:border-r md:p-5">
+              {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
+                  quadratische Portrait bildschirmhoch und schiebt Name, Daten und
+                  den Chat-Button unter die Falz. */}
+              {/* 4:5 wie die Aehnliche-Profile-Karten: ganzer Kopf sichtbar;
+                  auf Mobil volle Kartenbreite, ab md die linke Spalte. */}
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[18px] border border-white/40 bg-white/28">
                 <img
                   src={profile.imageUrl}
                   alt={profile.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover object-[center_20%]"
                   loading="eager"
                   decoding="async"
                   onError={() => setProfileImageBroken(true)}
                 />
+                {profile.visibility === 'public' && profile.status === 'ready' && (
+                  <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-[#0b1220]/85 px-3 py-1 text-xs font-semibold text-emerald-300">
+                    <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                    {lang === DEFAULT_LANG ? 'Twin online – antwortet sofort' : t.profile.twinOnline}
+                  </span>
+                )}
               </div>
               <button
                 type="button"
@@ -3225,17 +3520,17 @@ function TwinProfileView({
                   onNavigate('twin-chat')
                   window.history.replaceState({}, '', profile.chatPath)
                 }}
-                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full bg-[#17191d] px-5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+                className="mt-5 inline-flex h-12 w-full items-center justify-center rounded-full border-2 border-white/55 bg-[#17191d] px-5 text-sm font-bold text-white shadow-lg transition-transform hover:-translate-y-0.5"
               >
-                Mit Twin chatten
+                {(lang === DEFAULT_LANG ? 'Mit {{name}} chatten' : t.profile.chatWithName).replace('{{name}}', profile.name)}
               </button>
               <button
                 type="button"
                 onClick={() => void shareProfile()}
-                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-white/40 bg-white/18 px-5 text-sm font-semibold text-[#17191d] transition-colors hover:bg-white/30"
+                className="mt-2 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-white/14 px-5 text-sm font-semibold text-[#17191d] transition-colors hover:bg-white/26"
               >
                 <Share className="h-4 w-4" />
-                Profil teilen
+                {lang === DEFAULT_LANG ? 'Profil teilen' : t.profile.shareButton}
               </button>
               {shareStatus && (
                 <p className="mt-2 rounded-full bg-white/26 px-3 py-2 text-center text-xs font-semibold text-[#555b64]" role="status">
@@ -3244,121 +3539,253 @@ function TwinProfileView({
               )}
             </div>
 
-            <div className="p-6 sm:p-8">
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">KI-Zwilling Profil</p>
-              <h1 className="text-4xl font-bold tracking-tight">{profile.name}</h1>
-              <p className="text-xl font-semibold text-[#20252d]">{profileMainCategory(profile)}</p>
-              <p className="mt-1 text-sm font-semibold text-[#667085]">{profileLifeLine(profile)}</p>
-              <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.'}</p>
+            <div className="p-4 sm:p-7">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">{lang === DEFAULT_LANG ? 'KI-Zwilling Profil' : t.profile.kicker}</p>
+                {profile.sources?.length ? (
+                  <span className="rounded-full border border-emerald-300/60 bg-emerald-500/14 px-3 py-1 text-xs font-semibold text-emerald-900">
+                    ✓ {lang === DEFAULT_LANG ? 'Quellen geprüft' : t.profile.verifiedBadge}
+                  </span>
+                ) : null}
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${profile.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
+                  {profile.visibility === 'public' ? (lang === DEFAULT_LANG ? 'Öffentlich sichtbar' : t.profile.publicVisible) : (lang === DEFAULT_LANG ? 'Privat · nicht öffentlich' : t.profile.privateVisible)}
+                </span>
+              </div>
+              <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#c7d4ea]">{profileMainCategory(profile)}</p>
+              <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || (lang === DEFAULT_LANG ? 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.' : t.profile.noDescription)}</p>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              <section className="mt-4 max-w-[720px] rounded-lg border border-white/30 bg-white/14 p-4">
+                <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#667085]">{lang === DEFAULT_LANG ? 'Direkt fragen' : t.profile.askTitle}</h2>
+                <p className="mt-1 text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Ein Klick startet den Chat mit dieser Frage.' : t.profile.askSubtitle}</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                  {askQuestions.map((question) => (
+                    <button
+                      key={question.text}
+                      type="button"
+                      onClick={() => openChatWithQuestion(question.text)}
+                      className="flex flex-col items-start gap-1 rounded-xl border border-white/42 bg-white/18 px-4 py-3 text-left transition-colors hover:bg-white/30"
+                    >
+                      <span aria-hidden="true" className="text-lg leading-none">{question.emoji}</span>
+                      <span className="text-sm font-semibold leading-snug">{question.text}</span>
+                      <span className="text-xs text-[#667085]">{question.sub}</span>
+                      <span className="mt-1 text-xs font-bold text-[#0b1c44]">
+                        {lang === DEFAULT_LANG ? 'Frage stellen' : t.profile.askCta} <span aria-hidden="true">→</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <div className="px-4 pb-4 sm:px-7">
+              <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {profile.milestones?.length ? (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.milestones.length}</p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Inhalte' : t.profile.statContents}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.mediaCount}</p>
+                  </div>
+                )}
+                {profile.sources?.length ? (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.sources.length}</p>
+                  </div>
+                ) : (
+                  <div className="rounded-lg bg-white/18 p-4">
+                    <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Wissen' : t.profile.statKnowledge}</p>
+                    <p className="mt-1 text-2xl font-bold">{profile.knowledgeCount}</p>
+                  </div>
+                )}
                 <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">Inhalte</p>
-                  <p className="mt-1 text-2xl font-bold">{profile.mediaCount}</p>
+                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Sprachen' : t.profile.languagesTitle}</p>
+                  <p className="mt-1 text-2xl font-bold">{profile.languages.length || 1}</p>
                 </div>
                 <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">Wissen</p>
-                  <p className="mt-1 text-2xl font-bold">{profile.knowledgeCount}</p>
-                </div>
-                <div className="rounded-lg bg-white/18 p-4">
-                  <p className="text-xs text-[#667085]">Stil</p>
+                  <p className="text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Stil' : t.profile.statStyle}</p>
                   <p className="mt-1 text-sm font-semibold capitalize">{profile.style}</p>
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-5 md:grid-cols-2">
-                <section>
-                  <h2 className="mb-3 text-lg font-semibold">Kategorien</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {(profile.categories.length ? profile.categories : ['KI-Zwilling']).map((item) => (
-                      <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm">{item}</span>
-                    ))}
-                  </div>
-                </section>
-
-                <section>
-                  <h2 className="mb-3 text-lg font-semibold">Sprachen</h2>
-                  <div className="flex flex-wrap gap-2">
-                    {(profile.languages.length ? profile.languages : ['de']).map((item) => (
-                      <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm uppercase">{item}</span>
-                    ))}
-                  </div>
-                </section>
+              {/* Kompakt: Kategorien und Sprachen in einer Zeile statt zwei Bloecken */}
+              <div className="mt-4 flex flex-wrap items-center gap-1.5">
+                {(profile.categories.length ? profile.categories : [lang === DEFAULT_LANG ? 'KI-Zwilling' : t.profile.defaultCategory]).map((item) => (
+                  <span key={item} className="rounded-full border border-white/42 bg-white/18 px-3 py-1 text-sm">{item}</span>
+                ))}
+                <span aria-hidden="true" className="mx-1 text-[#667085]">·</span>
+                {(profile.languages.length ? profile.languages : ['de']).map((item) => (
+                  <span key={item} className="rounded-full border border-white/30 bg-white/10 px-2 py-0.5 text-xs uppercase text-[#667085]">{item}</span>
+                ))}
               </div>
 
-              <section className="mt-6">
-                <h2 className="mb-3 text-lg font-semibold">Hochgeladene Inhalte</h2>
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {(profile.uploadedContents.length ? profile.uploadedContents : [{ category: 'Noch keine öffentlichen Inhalte', count: 0 }]).map((item) => (
-                    <div key={item.category} className="flex items-center justify-between rounded-lg bg-white/16 px-4 py-3">
-                      <span className="text-sm font-medium">{item.category}</span>
-                      <span className="text-sm text-[#667085]">{item.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
+              {profile.milestones?.length ? (
+                <section className="mt-5">
+                  <h2 className="mb-3 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Lebensstationen' : t.profile.timelineTitle}</h2>
+                  <ol className="relative ml-1.5 border-l-2 border-white/40 pl-5 lg:ml-0 lg:flex lg:border-l-0 lg:pl-0">
+                    {profile.milestones.map((milestone) => (
+                      <li
+                        key={`${milestone.year}-${milestone.title}`}
+                        className="relative mb-4 last:mb-0 lg:mb-0 lg:flex-1 lg:border-t-2 lg:border-white/40 lg:px-2 lg:pt-5 lg:text-center"
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full bg-[#17191d] lg:left-1/2 lg:-top-[7px] lg:-translate-x-1/2"
+                        ></span>
+                        <p className="text-sm font-bold">{milestone.year}</p>
+                        <p className="text-sm font-medium">{milestone.title}</p>
+                        {milestone.place && <p className="text-xs text-[#667085]">{milestone.place}</p>}
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ) : null}
 
-              <section className="mt-6 rounded-lg border border-white/30 bg-white/14 p-4">
-                <h2 className="mb-2 text-lg font-semibold">Twin-Kontext</h2>
-                <p className="text-sm leading-relaxed text-[#555b64]">{profile.contextSummary}</p>
-              </section>
+              {/* Kompakt: lange Textbloecke sind eingeklappt (Progressive Disclosure).
+                  Inhalt bleibt vollstaendig im DOM — wichtig fuer Recht und SEO. */}
+              <details className="mt-4 rounded-lg border border-white/30 bg-white/14 px-4 py-3">
+                <summary className="cursor-pointer select-none text-sm font-semibold">
+                  {lang === DEFAULT_LANG ? 'Twin-Kontext' : t.profile.contextTitle}
+                </summary>
+                <p className="mt-2 text-sm leading-relaxed text-[#555b64]">{profile.contextSummary}</p>
+              </details>
 
               {(profile.guardrail || profile.rightsPosture) && (
-                <section className="mt-6 rounded-lg border border-amber-300/50 bg-amber-50/70 p-4">
-                  <h2 className="mb-2 text-lg font-semibold text-amber-950">Historisches Profil</h2>
-                  {profile.guardrail && <p className="text-sm leading-relaxed text-amber-950">{profile.guardrail}</p>}
+                <details className="mt-3 rounded-lg border border-amber-300/50 bg-amber-50/70 px-4 py-3">
+                  <summary className="cursor-pointer select-none text-sm font-semibold text-amber-950">
+                    {lang === DEFAULT_LANG ? 'Historisches Profil' : t.profile.historicalTitle}
+                  </summary>
+                  {profile.guardrail && <p className="mt-2 text-sm leading-relaxed text-amber-950">{profile.guardrail}</p>}
                   {profile.rightsPosture && <p className="mt-2 text-sm leading-relaxed text-amber-900">{profile.rightsPosture}</p>}
-                </section>
+                </details>
               )}
 
               {profile.sources?.length ? (
-                <section className="mt-6">
-                  <h2 className="mb-3 text-lg font-semibold">Quellen</h2>
-                  <div className="grid gap-2">
-                    {profile.sources.map((source) => (
-                      <a
-                        key={source.url}
-                        href={source.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-lg border border-white/32 bg-white/16 px-4 py-3 text-sm font-medium text-[#0b1c44] transition-colors hover:bg-white/28"
-                      >
-                        {source.publisher}: {source.title}
-                      </a>
-                    ))}
+                <section className="mt-4">
+                  <h2 className="mb-2 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Quellen' : t.profile.sourcesTitle}</h2>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {[...profile.sources]
+                      .sort(
+                        (a, b) =>
+                          Number(b.publisher === `${lang}.wikipedia.org`) -
+                          Number(a.publisher === `${lang}.wikipedia.org`),
+                      )
+                      .map((source) => (
+                        <a
+                          key={source.url}
+                          href={readableSourceUrl(source.url)}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="rounded-lg border border-white/32 bg-white/16 px-4 py-3 text-sm font-medium text-[#0b1c44] transition-colors hover:bg-white/28"
+                        >
+                          {readableSourceLabel(source)}
+                          <span aria-hidden="true" className="ml-1 text-[#5d6776]">
+                            ↗
+                          </span>
+                        </a>
+                      ))}
                   </div>
                 </section>
               ) : null}
-            </div>
           </div>
         </Card>
+
+        {similarTwins.length > 0 && (
+          <section className="mt-4 max-sm:px-2">
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="text-lg font-semibold">{lang === DEFAULT_LANG ? 'Ähnliche Profile' : t.start.relatedLabel}</h2>
+              {publicProfileCount > 4 && (
+                <button
+                  type="button"
+                  onClick={() => onNavigate('twin-chat')}
+                  className="text-sm font-semibold text-[#0b1c44] underline-offset-2 hover:underline"
+                >
+                  {(lang === DEFAULT_LANG ? 'Alle {{count}} Profile ansehen' : t.profile.allProfiles).replace('{{count}}', String(publicProfileCount))} <span aria-hidden="true">→</span>
+                </button>
+              )}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {similarTwins.map((twin) => (
+                <a
+                  key={twin.id}
+                  href={`/t/${twin.profileSlug}/`}
+                  className="relative block aspect-[4/5] overflow-hidden rounded-[18px] border border-white/32 bg-white/16 transition-transform hover:-translate-y-0.5"
+                >
+                  {twin.imageUrl ? (
+                    <img
+                      src={twin.imageUrl}
+                      alt={twin.name}
+                      loading="lazy"
+                      decoding="async"
+                      className="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 grid place-items-center bg-white/24 text-4xl font-bold text-[#667085]">{twin.initials}</div>
+                  )}
+                  {/* Verlaufs-Schutz unten: Text bleibt auf hellen wie dunklen Bildern lesbar */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,8,15,0)_45%,rgba(5,8,15,0.55)_70%,rgba(5,8,15,0.92)_100%)]"
+                  ></div>
+                  <div className="absolute inset-x-0 bottom-0 p-4">
+                    <p className="text-base font-bold text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">{twin.name}</p>
+                    {twin.mainCategory && <p className="mt-0.5 text-xs text-[#c7d4ea] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">{twin.mainCategory}</p>}
+                    <p className="mt-2 text-sm font-bold text-[#8fd0ff] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
+                      {lang === DEFAULT_LANG ? 'Mit Twin chatten' : t.profile.chatButton} <span aria-hidden="true">→</span>
+                    </p>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-white/32 bg-white/16 px-4 py-3 sm:px-5 sm:py-4">
+              <div>
+                <p className="text-base font-bold">{lang === DEFAULT_LANG ? 'Erstelle deinen eigenen KI-Zwilling' : t.profile.createTitle}</p>
+                <p className="mt-0.5 text-sm text-[#555b64]">{lang === DEFAULT_LANG ? 'Dein Wissen, dein Stil, deine Sprache – öffentlich oder privat.' : t.profile.createText}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onNavigate('twin-builder')}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-[#17191d] px-6 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5"
+              >
+                {lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate}
+              </button>
+            </div>
+          </section>
+        )}
+
         {profile.visibility === 'public' && <AdSlot placement="profile-footer" />}
       </section>
     </div>
   )
 }
 
-function emailAuthMessageForCode(result: { ok: boolean; code?: string; message?: string }): string {
+function emailAuthMessageForCode(result: { ok: boolean; code?: string; message?: string }, labels?: StaticTranslations['authMsg']): string {
   switch (result.code) {
     case 'email_service_unavailable':
-      return 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange den Google-Login.'
+      return labels?.serviceUnavailable ?? 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange den Google-Login.'
     case 'email_not_verified':
-      return 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.'
+      return labels?.notVerified ?? 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.'
     case 'invalid_credentials':
-      return 'E-Mail oder Passwort ist falsch.'
+      return labels?.invalidCredentials ?? 'E-Mail oder Passwort ist falsch.'
     case 'email_taken':
-      return 'Für diese E-Mail gibt es bereits ein Konto. Bitte logge dich ein.'
+      return labels?.emailTaken ?? 'Für diese E-Mail gibt es bereits ein Konto. Bitte logge dich ein.'
     case 'weak_password':
-      return 'Das Passwort muss mindestens 8 Zeichen lang sein.'
+      return labels?.weakPassword ?? 'Das Passwort muss mindestens 8 Zeichen lang sein.'
     case 'invalid_email':
-      return 'Bitte gib eine gültige E-Mail-Adresse an.'
+      return labels?.invalidEmail ?? 'Bitte gib eine gültige E-Mail-Adresse an.'
     default:
-      return result.message || 'Aktion fehlgeschlagen. Bitte versuche es erneut.'
+      return result.message || labels?.actionFailed || 'Aktion fehlgeschlagen. Bitte versuche es erneut.'
   }
 }
 
 function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
   const auth = useAuth()
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -3373,11 +3800,11 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
     setInfo('')
     const cleanEmail = email.trim().toLowerCase()
     if (!cleanEmail || !password) {
-      setError('Bitte E-Mail und Passwort eingeben.')
+      setError(lang === DEFAULT_LANG ? 'Bitte E-Mail und Passwort eingeben.' : t.authMsg.missingFields)
       return
     }
     if (mode === 'register' && password.length < 8) {
-      setError('Das Passwort muss mindestens 8 Zeichen lang sein.')
+      setError(lang === DEFAULT_LANG ? 'Das Passwort muss mindestens 8 Zeichen lang sein.' : t.authMsg.weakPassword)
       return
     }
     setBusy(true)
@@ -3387,14 +3814,14 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         if (result.ok) {
           window.location.assign(returnTo || window.location.pathname + window.location.search)
         } else {
-          setError(emailAuthMessageForCode(result))
+          setError(emailAuthMessageForCode(result, lang === DEFAULT_LANG ? undefined : t.authMsg))
         }
       } else {
         const result = await auth.signInWithEmail(cleanEmail, password)
         if (result.ok) {
           window.location.assign(returnTo || window.location.pathname + window.location.search)
         } else {
-          setError(emailAuthMessageForCode(result))
+          setError(emailAuthMessageForCode(result, lang === DEFAULT_LANG ? undefined : t.authMsg))
         }
       }
     } finally {
@@ -3408,13 +3835,13 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
     setInfo('')
     const cleanEmail = email.trim().toLowerCase()
     if (!cleanEmail) {
-      setError('Bitte gib zuerst deine E-Mail-Adresse ein.')
+      setError(lang === DEFAULT_LANG ? 'Bitte gib zuerst deine E-Mail-Adresse ein.' : t.authMsg.forgotNeedEmail)
       return
     }
     setBusy(true)
     try {
       await auth.requestPasswordReset(cleanEmail)
-      setInfo('Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.')
+      setInfo(lang === DEFAULT_LANG ? 'Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.' : t.authMsg.forgotSent)
     } finally {
       setBusy(false)
     }
@@ -3436,7 +3863,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
           type="text"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Name (optional)"
+          placeholder={lang === DEFAULT_LANG ? 'Name (optional)' : t.authMsg.namePlaceholder}
           autoComplete="name"
           className={inputClass}
         />
@@ -3445,7 +3872,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         type="email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="E-Mail"
+        placeholder={lang === DEFAULT_LANG ? 'E-Mail' : t.authMsg.emailPlaceholder}
         autoComplete="email"
         required
         className={inputClass}
@@ -3454,7 +3881,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         type="password"
         value={password}
         onChange={(event) => setPassword(event.target.value)}
-        placeholder={mode === 'register' ? 'Passwort (min. 8 Zeichen)' : 'Passwort'}
+        placeholder={mode === 'register' ? (lang === DEFAULT_LANG ? 'Passwort (min. 8 Zeichen)' : t.authMsg.passwordPlaceholderRegister) : (lang === DEFAULT_LANG ? 'Passwort' : t.authMsg.passwordPlaceholderLogin)}
         autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
         required
         className={inputClass}
@@ -3466,7 +3893,7 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
         disabled={busy}
         className="rounded-md border border-[#0b1c44]/14 bg-[#0b1c44] px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#173064] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {busy ? 'Bitte warten…' : mode === 'register' ? 'Konto erstellen' : 'Mit E-Mail einloggen'}
+        {busy ? (lang === DEFAULT_LANG ? 'Bitte warten…' : t.authMsg.submitBusy) : mode === 'register' ? (lang === DEFAULT_LANG ? 'Konto erstellen' : t.authMsg.submitRegister) : (lang === DEFAULT_LANG ? 'Mit E-Mail einloggen' : t.authMsg.submitLogin)}
       </button>
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-[#555b64]">
         <button
@@ -3478,11 +3905,11 @@ function EmailPasswordForm({ returnTo }: { returnTo?: string }) {
           }}
           className="font-medium text-[#0b1c44] hover:underline"
         >
-          {mode === 'login' ? 'Neu hier? Konto erstellen' : 'Schon ein Konto? Einloggen'}
+          {mode === 'login' ? (lang === DEFAULT_LANG ? 'Neu hier? Konto erstellen' : t.authMsg.toggleToRegister) : (lang === DEFAULT_LANG ? 'Schon ein Konto? Einloggen' : t.authMsg.toggleToLogin)}
         </button>
         {mode === 'login' && (
           <button type="button" onClick={() => void forgot()} className="hover:underline">
-            Passwort vergessen?
+            {lang === DEFAULT_LANG ? 'Passwort vergessen?' : t.authMsg.forgotPassword}
           </button>
         )}
       </div>
@@ -4696,13 +5123,13 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
   const content = {
     privacy: {
       title: 'Datenschutz',
-      intro: 'Verantwortlich: iMild LLC, 1401 21st St, Ste R, Sacramento, CA 95811, USA. E-Mail: s@smyst.com. Stand: 15. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
+      intro: 'Verantwortlich: iMild LLC, 1401 21st St, Ste R, Sacramento, CA 95811, USA. E-Mail: s@smyst.com. Stand: 27. Juli 2026. Es gilt die auf smyst.com/privacy veroeffentlichte Fassung.',
       points: [
         'Ohne Konto verarbeiten wir technische Zugriffsdaten (IP-Adresse, Zeitpunkt, aufgerufene Seite, Browser- und Geraetetyp) fuer Betrieb, Stabilitaet und Missbrauchsabwehr (Art. 6 Abs. 1 lit. f DSGVO). Chat-Anfragen an oeffentliche KI-Profile werden zur Beantwortung an unser Backend uebertragen; ohne Anmeldung wird kein Chat-Verlauf dauerhaft gespeichert.',
         'Mit Konto verarbeiten wir E-Mail-Adresse, Name (optional), Passwort ausschliesslich als kryptografischen Hash (scrypt), Profilinhalte, erstellte AI-Twins, hochgeladene Dateien (Dokumente, Bilder, Audio, Video), Chat-Verlaeufe sowie Einstellungs- und Sitzungsdaten zur Bereitstellung deines Kontos und der Kernfunktionen (Art. 6 Abs. 1 lit. b DSGVO).',
         'Bei Google-Login erhalten wir nur die Google-Konto-Basisdaten (E-Mail-Adresse, Name, Profilbild-URL). Dein Google-Passwort wird nicht an uns uebertragen.',
         'Technisch notwendige lokale Speicherung (Session-Cookie bzw. signiertes Token, Sprach- und Design-Einstellung, Consent-Status) erfolgt nach Par. 25 Abs. 2 TDDDG bzw. Art. 6 Abs. 1 lit. b/f DSGVO. Optionale anonyme Nutzungsstatistik und optionale Werbespeicherung werden standardmaessig abgelehnt und nur nach aktiver Einwilligung ueber das Consent-Banner freigegeben; jede Einwilligung ist jederzeit widerrufbar.',
-        'Dienstleister: IDrive Inc. (USA, Objektspeicher und Auslieferung der Website-Dateien), Salad Technologies (USA, Backend fuer Login, API und KI-Antworten), GitHub Inc. (USA, Code-Hosting), Google LLC (USA, nur bei Google-Login), Spaceship/Namecheap-Gruppe (Domain, DNS, E-Mail-Weiterleitung an s@smyst.com).',
+        'Dienstleister: IDrive Inc. (USA, Objektspeicher und Auslieferung von Medien-Dateien), Zeabur (App-Hosting und Backend fuer Login und API), OpenRouter Inc. (USA, KI-Modell-Verarbeitung fuer Twin-Antworten), GitHub Inc. (USA, Code-Hosting und Website-Auslieferung), Google LLC (USA, nur bei Google-Login), Spaceship/Namecheap-Gruppe (Domain, DNS, E-Mail-Weiterleitung an s@smyst.com).',
         'Drittlandbezug: Die Verarbeitung findet ueberwiegend in den USA statt, gestuetzt auf das EU-US Data Privacy Framework, soweit Anbieter zertifiziert sind, andernfalls auf EU-Standardvertragsklauseln bzw. die Standard-Datenschutzvereinbarungen der Anbieter (Art. 44 ff. DSGVO).',
         'Speicherdauer: Kontodaten bleiben gespeichert, solange dein Konto besteht. Nach Konto-Loeschung werden personenbezogene Daten zweistufig entfernt (sofortige Sperrung, anschliessend endgueltige Loeschung der Datenobjekte). Technische Logs nur so lange, wie fuer Betrieb und Sicherheit erforderlich. Chats ohne Konto werden nicht dauerhaft gespeichert.',
         'Deine Rechte: Auskunft (Art. 15), Berichtigung (Art. 16), Loeschung (Art. 17), Einschraenkung (Art. 18), Datenuebertragbarkeit (Art. 20), Widerspruch (Art. 21) und jederzeitiger Widerruf erteilter Einwilligungen. Konto-Export und Konto-Loeschung stehen direkt im Produkt bereit (Trust Center, Deine Daten: Export und Loeschung); zusaetzlich per E-Mail an s@smyst.com. Du kannst dich ausserdem bei einer Datenschutz-Aufsichtsbehoerde beschweren.',
@@ -4728,9 +5155,12 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
       intro: 'Angaben zum Betreiber von smyst.com.',
       points: [
         'Betreiber: iMild LLC',
-        'Anschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA',
+        'Sitz: 1401 21st St, Ste R, Sacramento, CA 95811, USA',
+        'Postanschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA',
         'E-Mail: s@smyst.com',
-        
+        'Rechtsform: Limited Liability Company (LLC), registriert im Bundesstaat Kalifornien, USA',
+        'Registereintrag: California Secretary of State, Registernummer B20260312817',
+        'Vertretungsberechtigter Manager und inhaltlich Verantwortlicher: Müslüm Akdeniz, Anschrift wie oben',
       ],
     },
   }[kind]
@@ -4800,6 +5230,30 @@ type AdminMetric = {
 }
 
 type AdminRow = Record<string, string>
+
+type AdminQualityApi = {
+  ok: boolean
+  summary?: {
+    generated_at?: string
+    counts?: {
+      published?: number
+      evaluated?: number
+      regressions?: number
+      needs_review?: number
+      refresh_checked?: number
+      score_below_0_8?: number
+    }
+    average_score?: number | null
+    worst_evals?: Array<{ qid: string; name?: string; score: number; regression?: boolean; finished_at?: string; issues?: string[] }>
+    regressions?: Array<{ qid: string; name?: string; score: number; previous_score?: number; finished_at?: string }>
+    needs_review?: Array<{ qid: string; name?: string; checked_at?: string; changed?: boolean }>
+  } | null
+  feedback?: {
+    recent?: Array<{ twinId?: string | null; rating?: string; question?: string | null; answer?: string | null; comment?: string | null; createdAt?: number }>
+    total_listed?: number
+    down_or_report?: number
+  }
+}
 
 type AdminOverviewApi = {
   ok: boolean
@@ -5033,7 +5487,9 @@ function AdminControlCenterView() {
   const [adminGateAuthed, setAdminGateAuthed] = useState<boolean | null>(null)
   useEffect(() => {
     let cancelled = false
-    fetch('/auth/me', { credentials: 'include' })
+    // fetchService statt fetch: relativer Pfad 404t auf GitHub Pages —
+    // das Gate hielt sonst JEDEN fuer ausgeloggt (Befund A-Z-Check 01.08.).
+    fetchService('/auth/me', { credentials: 'include' })
       .then((response) => (response.ok ? response.json() : { authenticated: false }))
       .then((data: { authenticated?: boolean } | null) => {
         if (!cancelled) setAdminGateAuthed(Boolean(data?.authenticated))
@@ -5065,6 +5521,8 @@ function AdminControlCenterInner() {
   const [adminMfaCode, setAdminMfaCode] = useState('')
   const [adminMfaMessage, setAdminMfaMessage] = useState<string | null>(null)
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
+  const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
+  const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
   const [computeCapabilities, setComputeCapabilities] = useState<ComputeCapabilitiesApi | null>(null)
   const [computeJobs, setComputeJobs] = useState<ComputeJobsApi | null>(null)
@@ -5074,7 +5532,7 @@ function AdminControlCenterInner() {
   const refreshAdminOverview = useCallback(() => {
     let alive = true
     setAdminBackendStatus('loading')
-    fetch('/api/admin/overview', { credentials: 'same-origin' })
+    fetchService('/api/admin/overview', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5101,8 +5559,34 @@ function AdminControlCenterInner() {
   }, [refreshAdminOverview])
 
   useEffect(() => {
+    if (activeSection !== 'aiQuality') return
     let alive = true
-    fetch('/auth/admin-2fa/status', { credentials: 'same-origin' })
+    setAdminQualityStatus('loading')
+    fetchService('/api/admin/quality', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        if (response.ok && payload?.ok) {
+          setAdminQuality(payload as AdminQualityApi)
+          setAdminQualityStatus('live')
+        } else {
+          setAdminQuality(null)
+          setAdminQualityStatus(response.status === 401 || response.status === 403 ? 'denied' : 'offline')
+        }
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminQuality(null)
+        setAdminQualityStatus('offline')
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
+  useEffect(() => {
+    let alive = true
+    fetchService('/auth/admin-2fa/status', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5119,7 +5603,7 @@ function AdminControlCenterInner() {
 
   useEffect(() => {
     let alive = true
-    fetch('/storage/capabilities', { credentials: 'same-origin' })
+    fetchService('/storage/capabilities', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5136,7 +5620,7 @@ function AdminControlCenterInner() {
 
   useEffect(() => {
     let alive = true
-    fetch('/api/compute/capabilities', { credentials: 'same-origin' })
+    fetchService('/api/compute/capabilities', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5153,7 +5637,7 @@ function AdminControlCenterInner() {
 
   useEffect(() => {
     let alive = true
-    fetch('/api/admin/compute/jobs', { credentials: 'same-origin' })
+    fetchService('/api/admin/compute/jobs', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5170,7 +5654,7 @@ function AdminControlCenterInner() {
 
   const refreshComputeRuntime = useCallback(() => {
     let alive = true
-    fetch('/api/admin/compute/runtime', { credentials: 'same-origin' })
+    fetchService('/api/admin/compute/runtime', { credentials: 'include' })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}))
         if (!alive) return
@@ -5192,9 +5676,9 @@ function AdminControlCenterInner() {
   const wakeComputeRuntime = async () => {
     setComputeWakeBusy(true)
     try {
-      const response = await fetch('/api/admin/compute/runtime', {
+      const response = await fetchService('/api/admin/compute/runtime', {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'x-smyst-csrf': '1' },
       })
       const payload = await response.json().catch(() => ({}))
@@ -5216,9 +5700,9 @@ function AdminControlCenterInner() {
     setAdminMfaSubmitting(true)
     setAdminMfaMessage(null)
     try {
-      const response = await fetch('/auth/admin-2fa/verify', {
+      const response = await fetchService('/auth/admin-2fa/verify', {
         method: 'POST',
-        credentials: 'same-origin',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
         body: JSON.stringify({ code }),
       })
@@ -5642,53 +6126,97 @@ function AdminControlCenterInner() {
   )
 
   const renderAiQuality = () => {
-    const routerRows = [
-      ['Fast Chat', '89 %', '#43d17a', 'Sofortantwort, niedrige Kosten'],
-      ['Deep Reasoning', '41 %', '#59c7ff', 'Komplexe Aufgaben, längere Kontexte'],
-      ['RAG Verified', '68 %', '#f7b733', 'Quellengebundene Antworten'],
-      ['Safety Rewrite', '12 %', '#ef4444', 'Policy, Risiko, sensible Inhalte'],
-    ]
+    const summary = adminQuality?.summary
+    const counts = summary?.counts
+    const feedback = adminQuality?.feedback
+    const scoreLabel = (score: number | null | undefined) =>
+      typeof score === 'number' ? `${Math.round(score * 100)} %` : '–'
+    const dateLabel = (value?: string | number | null) => {
+      if (!value) return '–'
+      const date = typeof value === 'number' ? new Date(value) : new Date(value)
+      return Number.isNaN(date.getTime()) ? '–' : date.toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' })
+    }
+    const ratingLabel = (rating?: string) => (rating === 'up' ? '👍 gut' : rating === 'down' ? '👎 schlecht' : rating === 'report' ? '⚠️ gemeldet' : '–')
 
     return (
       <div className="grid gap-5">
+        {adminQualityStatus === 'denied' && (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+            Qualitätsdaten nur für Admin-Rollen sichtbar. Bitte mit einem Admin-Konto anmelden.
+          </div>
+        )}
+        {adminQualityStatus === 'offline' && (
+          <div className="rounded-lg border border-[#d9e2ec] bg-white p-4 text-sm font-semibold text-[#5d6776]">
+            Qualitätsdaten gerade nicht erreichbar. Der Quality-Report-Worker läuft 3× täglich im Pipeline-Cron.
+          </div>
+        )}
         <div className="grid gap-4 lg:grid-cols-4">
           {[
-            { label: 'Answer p95', value: '1.2 s', detail: 'Streaming sofort sichtbar, Antwort bleibt flüssig.', tone: 'green' },
-            { label: 'Quality Score', value: '93', detail: 'Eval, Nutzerfeedback, Quellenabgleich.', tone: 'cyan' },
-            { label: 'RAG Freshness', value: '11 m', detail: 'Index und Embeddings frisch gehalten.', tone: 'green' },
-            { label: 'Safety Holds', value: '0.7 %', detail: 'Unsichere Antworten werden gestoppt oder umgeschrieben.', tone: 'amber' },
+            { label: 'Ø Eval-Score', value: scoreLabel(summary?.average_score), detail: `${counts?.evaluated ?? 0} von ${counts?.published ?? 0} veröffentlichten Profilen evaluiert.`, tone: (summary?.average_score ?? 1) >= 0.8 ? 'green' : 'amber' },
+            { label: 'Regressionen', value: String(counts?.regressions ?? 0), detail: 'Profile, deren Score gegenüber dem Vorlauf gefallen ist.', tone: (counts?.regressions ?? 0) > 0 ? 'red' : 'green' },
+            { label: 'Offene Reviews', value: String(counts?.needs_review ?? 0), detail: 'Freshness-Check hat Quellen-Änderungen gefunden (needs_review).', tone: (counts?.needs_review ?? 0) > 0 ? 'amber' : 'green' },
+            { label: 'Feedback 👎', value: String(feedback?.down_or_report ?? 0), detail: `${feedback?.total_listed ?? 0} Feedback-Einträge gesamt; 👎/Meldungen werden Eval-Testfälle.`, tone: (feedback?.down_or_report ?? 0) > 0 ? 'amber' : 'green' },
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
         </div>
+        <p className="text-xs font-semibold text-[#5d6776]">
+          Stand: {dateLabel(summary?.generated_at)} · Quelle: Quality-Report-Worker (3× täglich) · Evals rotieren durch den Bestand, Freshness prüft jedes Profil alle 30 Tage.
+        </p>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Schlechteste Eval-Scores</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">Kandidaten für den Reparatur-Lauf (Pipeline-Modus rebuild-one).</p>
+          <div className="mt-4">
+            {summary?.worst_evals?.length ? (
+              <AdminTable
+                columns={['Profil', 'Score', 'Regression', 'Letzter Eval', 'Auffälligkeiten']}
+                rows={summary.worst_evals.map((entry) => ({
+                  Profil: `${entry.name ?? entry.qid} (${entry.qid})`,
+                  Score: scoreLabel(entry.score),
+                  Regression: entry.regression ? 'ja' : 'nein',
+                  'Letzter Eval': dateLabel(entry.finished_at),
+                  'Auffälligkeiten': (entry.issues ?? []).join(' · ') || '–',
+                }))}
+              />
+            ) : (
+              <p className="text-sm font-semibold text-[#5d6776]">Noch keine Eval-Ergebnisse — der erste Cron-Lauf füllt diese Liste.</p>
+            )}
+          </div>
+        </section>
         <div className="grid gap-5 xl:grid-cols-2">
           <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Model Router</h2>
-            {routerRows.map(([label, value, color, detail]) => (
-              <div key={label} className="mt-4">
-                <div className="mb-1 flex items-center justify-between gap-3 text-sm font-bold text-[#172033]">
-                  <span>{label}</span>
-                  <span>{detail}</span>
-                </div>
-                <div className="h-3 rounded-md bg-[#e8eef5]">
-                  <div className="h-3 rounded-md" style={{ width: value, backgroundColor: color }} />
-                </div>
-              </div>
-            ))}
+            <h2 className="text-xl font-bold text-[#111722]">Offene Freshness-Reviews</h2>
+            <p className="mt-1 text-sm font-semibold text-[#5d6776]">Quellen (Wikidata/Wikipedia) haben sich geändert — bitte sichten.</p>
+            <div className="mt-4">
+              {summary?.needs_review?.length ? (
+                <AdminTable
+                  columns={['Profil', 'Geprüft', 'Geändert']}
+                  rows={summary.needs_review.map((entry) => ({
+                    Profil: `${entry.name ?? entry.qid} (${entry.qid})`,
+                    'Geprüft': dateLabel(entry.checked_at),
+                    'Geändert': entry.changed ? 'ja' : 'offen aus früherem Lauf',
+                  }))}
+                />
+              ) : (
+                <p className="text-sm font-semibold text-[#5d6776]">Keine offenen Reviews — alle geprüften Quellen sind unverändert.</p>
+              )}
+            </div>
           </section>
           <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Qualitäts-Prüfungen</h2>
-            <div className="mt-5 grid gap-3">
-              {[
-                ['Eval Suites', 'Regression gegen ChatGPT, Gemini, Claude, Grok und Open-Model Benchmarks.'],
-                ['Prompt Library', 'Versionierte Systemprompts in IDrive e2, Code in GitHub.'],
-                ['RAG Guardrails', 'Quellenpflicht, Halluzinationsscore, Zitierbarkeit.'],
-                ['Memory Safety', 'Profilwissen getrennt, verschlüsselt und exportierbar.'],
-                ['Latency Budget', 'Vorberechnung, Cache, Queue und Fallback pro Intent.'],
-              ].map(([label, detail]) => (
-                <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
-                  <AdminStatusChip tone="green">{label}</AdminStatusChip>
-                  <p className="text-sm font-bold text-[#172033]">{detail}</p>
-                </div>
-              ))}
+            <h2 className="text-xl font-bold text-[#111722]">Neuestes Nutzerfeedback</h2>
+            <p className="mt-1 text-sm font-semibold text-[#5d6776]">👎 und Meldungen werden automatisch Eval-Testfälle des Profils.</p>
+            <div className="mt-4">
+              {feedback?.recent?.length ? (
+                <AdminTable
+                  columns={['Profil', 'Bewertung', 'Frage', 'Zeit']}
+                  rows={feedback.recent.slice(0, 10).map((entry, index) => ({
+                    Profil: entry.twinId ?? `– (${index + 1})`,
+                    Bewertung: ratingLabel(entry.rating),
+                    Frage: entry.question ?? '–',
+                    Zeit: dateLabel(entry.createdAt),
+                  }))}
+                />
+              ) : (
+                <p className="text-sm font-semibold text-[#5d6776]">Noch kein Feedback eingegangen.</p>
+              )}
             </div>
           </section>
         </div>
@@ -6900,7 +7428,7 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
               <Card className="p-5">
                 <h3 className="mb-1 text-lg font-semibold">Meine Stimme</h3>
                 <p className="text-sm text-[#555b64]">
-                  Nach dem Einloggen kannst du hier deine private Stimmprobe aufnehmen und fuer deine eigenen Twins aktivieren.
+                  Nach dem Einloggen kannst du hier deine private Stimmprobe aufnehmen und für deine eigenen Twins aktivieren.
                 </p>
               </Card>
             )}
@@ -6967,6 +7495,8 @@ function TwinChatView({
 }) {
   type TwinChatUiMessage = {
     id: string
+    // Backend-Message-Id (fuer Feedback); beim Streamen ist id nur lokal.
+    serverId?: string
     role: 'ai' | 'user'
     content: string
     streaming?: boolean
@@ -6984,6 +7514,7 @@ function TwinChatView({
     imageUrl?: string | null
     branch: string
     lifeLine: string
+    voiceGender?: 'female' | 'male'
   }
 
   const privateTwinToChatSummary = (twin: TwinRecord): ChatTwinSummary => ({
@@ -7010,6 +7541,7 @@ function TwinChatView({
     imageUrl: profile.imageUrl,
     branch: profileMainCategory(profile),
     lifeLine: profileLifeLine(profile),
+    voiceGender: profile.voiceGender,
   })
 
   const [messages, setMessages] = useState<TwinChatUiMessage[]>([])
@@ -7020,6 +7552,10 @@ function TwinChatView({
     const queryTwin = new URLSearchParams(window.location.search).get('twin')?.trim()
     return queryTwin || initialTwinId?.trim() || ''
   })
+  // Direkt-Frage von der Profilseite (?q=...): wird nach dem Laden des Twins
+  // einmalig automatisch gesendet.
+  const [requestedQuestion] = useState(() => new URLSearchParams(window.location.search).get('q')?.trim() ?? '')
+  const autoAskFiredRef = useRef(false)
   const [isReplying, setIsReplying] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -7036,6 +7572,7 @@ function TwinChatView({
   const dictationBaseRef = useRef('')
   const dictationSessionRef = useRef('')
   const { lang } = useLanguage({ reloadOnChange: false })
+  const t = useStaticTranslations(lang)
   const auth = useAuth()
   const twinMvp = useTwinMvp()
   const memoryUpload = useMemoryUpload()
@@ -7054,6 +7591,8 @@ function TwinChatView({
   const [composerNotice, setComposerNotice] = useState('')
   const [savedMemoryIds, setSavedMemoryIds] = useState<Set<string>>(() => new Set())
   const [savingMemoryId, setSavingMemoryId] = useState<string | null>(null)
+  const [answerFeedback, setAnswerFeedback] = useState<Record<string, 'up' | 'down'>>({})
+  const [feedbackSendingId, setFeedbackSendingId] = useState<string | null>(null)
   const [noteText, setNoteText] = useState('')
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteStatus, setNoteStatus] = useState('')
@@ -7123,11 +7662,19 @@ function TwinChatView({
       setMessages(
         match.messages.map((message) => ({
           id: message.id,
+          serverId: message.id,
           role: message.role === 'assistant' ? 'ai' : 'user',
           content: message.content,
           webResearch: message.webResearch,
         })),
       )
+      const restoredFeedback: Record<string, 'up' | 'down'> = {}
+      for (const message of match.messages) {
+        if (message.role === 'assistant' && message.feedback && message.feedback.rating !== 'report') {
+          restoredFeedback[message.id] = message.feedback.rating
+        }
+      }
+      setAnswerFeedback(restoredFeedback)
     } else {
       setMessages([readyMessage(twin)])
     }
@@ -7198,6 +7745,20 @@ function TwinChatView({
       alive = false
     }
   }, [auth.status, requestedTwinId])
+
+  useEffect(() => {
+    // Frage aus ?q= genau einmal senden, sobald der gewuenschte Twin aktiv ist.
+    if (!requestedQuestion || autoAskFiredRef.current) return
+    if (!activeTwin || isReplying || auth.status === 'loading') return
+    if (auth.status !== 'authenticated' && !activeTwin.publicProfile) return
+    autoAskFiredRef.current = true
+    // q aus der URL entfernen, damit Reload oder Teilen die Frage nicht erneut sendet
+    const params = new URLSearchParams(window.location.search)
+    params.delete('q')
+    window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`)
+    void handleSend(requestedQuestion)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTwin, auth.status, requestedQuestion, isReplying])
 
   useEffect(() => {
     return () => {
@@ -7273,7 +7834,7 @@ function TwinChatView({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.' : t.notices.speechUnsupported)
       return
     }
     if (!options.live && !options.resume) {
@@ -7314,12 +7875,22 @@ function TwinChatView({
       })
       .catch(() => {
         if (options.live && liveVoiceActiveRef.current) {
-          window.setTimeout(() => startServerAsrDictation({ live: true, resume: true }), 700)
+          // Server-ASR nicht erreichbar: fuer diese Session merken und die
+          // Sprachwelle nahtlos mit der Browser-Erkennung fortsetzen.
+          markServerAsrUnavailable()
+          if (speechRecognitionConstructor()) {
+            window.setTimeout(() => startDictation({ live: true, resume: true, forceBrowser: true }), 400)
+            return
+          }
+          liveVoiceActiveRef.current = false
+          setSpeechOutputEnabled(false)
+          setVoiceState('idle')
+          addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
           return
         }
         dictationActiveRef.current = false
         setVoiceState('idle')
-        addNotice('Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.')
+        addNotice(lang === DEFAULT_LANG ? 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.' : t.notices.asrUnavailable)
       })
   }
 
@@ -7328,7 +7899,7 @@ function TwinChatView({
     if (!selected.length) return
     setComposerMenuOpen(false)
     if (auth.status !== 'authenticated') {
-      addNotice('Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.' : t.notices.loginToUpload)
       return
     }
     for (const file of selected.slice(0, 6)) {
@@ -7347,7 +7918,7 @@ function TwinChatView({
       const uploaded = await memoryUpload.upload(file, mediaCategoryForFile(file))
       if (!uploaded) {
         updateAttachment(id, { status: 'failed' })
-        addNotice(memoryUpload.error || 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.')
+        addNotice(memoryUpload.error || (lang === DEFAULT_LANG ? 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.' : t.notices.uploadFailed))
         continue
       }
       updateAttachment(id, {
@@ -7366,7 +7937,7 @@ function TwinChatView({
     const contactsApi = (navigator as BrowserNavigatorWithContacts).contacts
     if (!contactsApi?.select) {
       fileInputRef.current?.click()
-      addNotice('Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.' : t.notices.contactUnsupported)
       return
     }
     try {
@@ -7379,7 +7950,7 @@ function TwinChatView({
       ])
       resizeInput([input, `Kontakt:\n${text}`].filter(Boolean).join('\n\n'))
     } catch {
-      addNotice('Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.')
+      addNotice(lang === DEFAULT_LANG ? 'Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.' : t.notices.contactCancelled)
     }
   }
 
@@ -7400,16 +7971,16 @@ function TwinChatView({
           url: url.href,
         },
       ])
-      addNotice('Link wurde angehängt.')
+      addNotice(lang === DEFAULT_LANG ? 'Link wurde angehängt.' : t.notices.linkAttached)
     } catch {
-      addNotice('Bitte einen gültigen http- oder https-Link einfügen.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte einen gültigen http- oder https-Link einfügen.' : t.notices.linkInvalid)
     }
   }
 
   const handleAttachLocation = () => {
     setComposerMenuOpen(false)
     if (!('geolocation' in navigator)) {
-      addNotice('Standort wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Standort wird von diesem Browser nicht unterstützt.' : t.notices.locationUnsupported)
       return
     }
     navigator.geolocation.getCurrentPosition(
@@ -7426,20 +7997,28 @@ function TwinChatView({
             url,
           },
         ])
-        addNotice('Standort wurde angehängt.')
+        addNotice(lang === DEFAULT_LANG ? 'Standort wurde angehängt.' : t.notices.locationAttached)
       },
-      () => addNotice('Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.'),
+      () => addNotice(lang === DEFAULT_LANG ? 'Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.' : t.notices.locationError),
       { enableHighAccuracy: false, maximumAge: 60_000, timeout: 10_000 },
     )
   }
 
-  const startDictation = (options: { live?: boolean; resume?: boolean } = {}) => {
+  const startDictation = (options: { live?: boolean; resume?: boolean; forceBrowser?: boolean } = {}) => {
     const Recognition = speechRecognitionConstructor()
     // Sprachwelle (Live-Modus): Server-ASR (Whisper) zuerst - erkennt die gesprochene
     // Sprache automatisch schon im ersten Satz und wechselt sie pro Turn (DE/TR/EN, ...).
-    // Browser-Erkennung bleibt fuer das Diktat und als Fallback ohne Server-ASR.
-    if (options.live && serverAsrSupported()) {
-      startServerAsrDictation(options)
+    // Browser-Erkennung bleibt fuer das Diktat und als Fallback, wenn kein
+    // Server-ASR bereitsteht (z. B. ohne Voice-Worker auf dem Backend).
+    if (options.live && !options.forceBrowser && serverAsrSupported()) {
+      if (!Recognition) {
+        startServerAsrDictation(options)
+        return
+      }
+      void serverAsrReady().then((ready) => {
+        if (ready) startServerAsrDictation(options)
+        else startDictation({ ...options, forceBrowser: true })
+      })
       return
     }
     if (!Recognition) {
@@ -7483,8 +8062,8 @@ function TwinChatView({
       }
       addNotice(
         error === 'not-allowed' || error === 'service-not-allowed'
-          ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.'
-          : 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.',
+          ? (lang === DEFAULT_LANG ? 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.' : t.notices.micNotAllowed)
+          : (lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed),
       )
     }
     recognition.onend = () => {
@@ -7577,7 +8156,7 @@ function TwinChatView({
         liveVoiceActiveRef.current = false
         setSpeechOutputEnabled(false)
       }
-      addNotice('Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.')
+      addNotice(lang === DEFAULT_LANG ? 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.' : t.notices.speechStartFailed)
     }
   }
 
@@ -7596,12 +8175,13 @@ function TwinChatView({
       setVoiceState('idle')
       setIsSpeaking(false)
       setSpeechOutputEnabled(false)
-      addNotice('Live-Sprachmodus beendet.')
+      addNotice(lang === DEFAULT_LANG ? 'Live-Sprachmodus beendet.' : t.notices.liveVoiceEnded)
       return
     }
     liveVoiceActiveRef.current = true
     liveVoiceDraftRef.current = ''
     setSpeechOutputEnabled(true)
+    markVoiceUsed()
     startDictation({ live: true })
   }
 
@@ -7620,10 +8200,12 @@ function TwinChatView({
     const message = composeMessageWithAttachments((overrideText ?? input).trim(), overrideAttachments ?? attachments)
     const canChatWithActiveTwin = auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)
     if (!message || !canChatWithActiveTwin || isReplying) return null
-    const messageVoiceLang = options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLangRef.current || lang)
+    // Expliziter Sprachwunsch ("kannst du tuerkisch reden") schlaegt die
+    // Wortmarker-Erkennung — die sieht nur deutsche Woerter und bliebe bei de.
+    const messageVoiceLang = detectRequestedLanguage(overrideText ?? input) ?? options.voiceLang ?? detectVoiceLanguage(overrideText ?? input, lastVoiceLangRef.current || lang)
     setLastVoiceLang(messageVoiceLang)
     if ((overrideAttachments ?? attachments).some((attachment) => attachment.status === 'uploading')) {
-      addNotice('Bitte warten, bis alle Anhänge hochgeladen sind.')
+      addNotice(lang === DEFAULT_LANG ? 'Bitte warten, bis alle Anhänge hochgeladen sind.' : t.notices.attachmentsUploading)
       return null
     }
     if (!activeTwin) {
@@ -7657,9 +8239,10 @@ function TwinChatView({
     const liveSpeech = (speechOutputEnabled || options.forceSpeech)
       ? startSentenceSpeech(
           messageVoiceLang,
-          voiceGenderFor(activeTwin?.name),
-          userVoiceIdFor(activeTwin?.name) ?? remoteVoiceIdFor(activeTwin?.name, messageVoiceLang),
+          voiceGenderFor(activeTwin?.name) ?? activeTwin?.voiceGender,
+          userVoiceIdFor(activeTwin?.name) ?? remoteVoiceIdFor(activeTwin?.name, messageVoiceLang, voiceGenderFor(activeTwin?.name) ?? activeTwin?.voiceGender),
           () => setIsSpeaking(false),
+          remoteRateFor(activeTwin?.name),
         )
       : null
     try {
@@ -7685,7 +8268,7 @@ function TwinChatView({
         setMessages((current) =>
           current.map((entry) =>
             entry.id === assistantId
-              ? { ...entry, content: reply.message.content, streaming: false, webResearch: reply.message.webResearch }
+              ? { ...entry, serverId: reply.message.id, content: reply.message.content, streaming: false, webResearch: reply.message.webResearch }
               : entry,
           ),
         )
@@ -7693,7 +8276,7 @@ function TwinChatView({
         await streamAssistantMessage(assistantId, reply.message.content)
         setMessages((current) =>
           current.map((entry) =>
-            entry.id === assistantId ? { ...entry, webResearch: reply.message.webResearch } : entry,
+            entry.id === assistantId ? { ...entry, serverId: reply.message.id, webResearch: reply.message.webResearch } : entry,
           ),
         )
       }
@@ -7705,6 +8288,9 @@ function TwinChatView({
     } catch (err) {
       liveSpeech?.cancel()
       if (activeTwin.publicProfile) {
+        // Vorstellung nur beim ersten Turn - bei Folgefragen stattdessen eine
+        // kurze Stoermeldung, sonst wiederholt der Twin endlos sein Intro.
+        const alreadyIntroduced = messages.some((entry) => entry.role === 'ai' && entry.content.trim().length > 0)
         const reply = staticPublicTwinReply(
           {
             name: activeTwin.name,
@@ -7714,9 +8300,10 @@ function TwinChatView({
           },
           message,
           messageVoiceLang,
+          { repeat: alreadyIntroduced },
         )
         await streamAssistantMessage(assistantId, reply)
-        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), activeTwin.name)) {
+        if ((speechOutputEnabled || options.forceSpeech) && speakText(reply, messageVoiceLang, () => setIsSpeaking(false), activeTwin.name, activeTwin.voiceGender)) {
           setIsSpeaking(true)
         }
         return reply
@@ -7754,24 +8341,25 @@ function TwinChatView({
       return
     }
     if (!latestAssistantText) {
-      addNotice('Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.')
+      addNotice(lang === DEFAULT_LANG ? 'Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.' : t.notices.nothingToRead)
       return
     }
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
-      addNotice('Vorlesen wird von diesem Browser nicht unterstützt.')
+      addNotice(lang === DEFAULT_LANG ? 'Vorlesen wird von diesem Browser nicht unterstützt.' : t.notices.readAloudUnsupported)
       return
     }
     // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
     setSpeechOutputEnabled(true)
-    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), activeTwin?.name)
+    markVoiceUsed()
+    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), activeTwin?.name, activeTwin?.voiceGender)
     if (started) setIsSpeaking(true)
   }
 
   const handleExplainSimpler = () => {
     if (isReplying || !activeTwin) {
-      if (isReplying) addNotice('Antwort läuft gerade. Bitte kurz warten.')
+      if (isReplying) addNotice(lang === DEFAULT_LANG ? 'Antwort läuft gerade. Bitte kurz warten.' : t.notices.replyRunning)
       return
     }
     void handleSend('Erkläre deine letzte Antwort bitte einfacher – in 2–3 kurzen Sätzen, ohne Fachbegriffe.')
@@ -7779,18 +8367,18 @@ function TwinChatView({
 
   const handleAskFollowUp = () => {
     if (!activeTwin) {
-      addNotice('Wähle zuerst ein KI-Profil aus.')
+      addNotice(lang === DEFAULT_LANG ? 'Wähle zuerst ein KI-Profil aus.' : t.notices.chooseProfileFirst)
       return
     }
     resizeInput('')
     inputRef.current?.focus()
-    addNotice('Stelle direkt deine nächste Frage – der Kontext bleibt erhalten.')
+    addNotice(lang === DEFAULT_LANG ? 'Stelle direkt deine nächste Frage – der Kontext bleibt erhalten.' : t.notices.askNextQuestion)
   }
 
   const handleSaveAnswerToMemory = async (msg: TwinChatUiMessage) => {
     if (msg.role !== 'ai' || !msg.content.trim()) return
     if (auth.status !== 'authenticated') {
-      addNotice('Melde dich an, um Antworten dauerhaft im Memory zu speichern.')
+      addNotice(lang === DEFAULT_LANG ? 'Melde dich an, um Antworten dauerhaft im Memory zu speichern.' : t.notices.loginToSaveMemory)
       return
     }
     if (savedMemoryIds.has(msg.id) || savingMemoryId) return
@@ -7810,14 +8398,32 @@ function TwinChatView({
           next.add(msg.id)
           return next
         })
-        addNotice('Antwort wurde im Memory gespeichert.')
+        addNotice(lang === DEFAULT_LANG ? 'Antwort wurde im Memory gespeichert.' : t.notices.savedToMemory)
       } else {
-        addNotice('Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.')
+        addNotice(lang === DEFAULT_LANG ? 'Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.' : t.notices.saveMemoryFailed)
       }
     } catch {
-      addNotice('Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.')
+      addNotice(lang === DEFAULT_LANG ? 'Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.' : t.notices.saveMemoryFailed)
     } finally {
       setSavingMemoryId(null)
+    }
+  }
+
+  const handleAnswerFeedback = async (msg: TwinChatUiMessage, rating: 'up' | 'down') => {
+    if (msg.role !== 'ai' || !msg.content.trim()) return
+    if (!chatId || answerFeedback[msg.id] || feedbackSendingId) return
+    setFeedbackSendingId(msg.id)
+    try {
+      const result = await twinMvp.sendChatFeedback(chatId, msg.serverId ?? msg.id, rating)
+      if (result?.ok) {
+        setAnswerFeedback((current) => ({ ...current, [msg.id]: rating }))
+      } else {
+        addNotice('Feedback konnte gerade nicht gespeichert werden. Bitte später erneut versuchen.')
+      }
+    } catch {
+      addNotice('Feedback konnte gerade nicht gespeichert werden. Bitte später erneut versuchen.')
+    } finally {
+      setFeedbackSendingId(null)
     }
   }
 
@@ -7853,19 +8459,19 @@ function TwinChatView({
 
   const handleSendButtonClick = () => {
     if (!activeTwin) {
-      addNotice('Wähle zuerst ein KI-Profil aus.')
+      addNotice(lang === DEFAULT_LANG ? 'Wähle zuerst ein KI-Profil aus.' : t.notices.chooseProfileFirst)
       return
     }
     if (auth.status !== 'authenticated' && !activeTwin.publicProfile) {
-      addNotice('Melde dich an, um mit diesem privaten Profil zu chatten.')
+      addNotice(lang === DEFAULT_LANG ? 'Melde dich an, um mit diesem privaten Profil zu chatten.' : t.notices.loginToChatPrivate)
       return
     }
     if (isReplying) {
-      addNotice('Antwort läuft gerade. Bitte kurz warten.')
+      addNotice(lang === DEFAULT_LANG ? 'Antwort läuft gerade. Bitte kurz warten.' : t.notices.replyRunning)
       return
     }
     if (!input.trim() && !attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) {
-      addNotice('Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.')
+      addNotice(lang === DEFAULT_LANG ? 'Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.' : t.notices.messageEmpty)
       inputRef.current?.focus()
       return
     }
@@ -8016,8 +8622,6 @@ function TwinChatView({
                   <div className="mt-1 max-w-[calc(100%-8px)] rounded-md border border-white/24 bg-white/16 px-3 py-2 text-xs text-[#555b64] sm:max-w-[94%]">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-[#16181b]">{msg.webResearch.notice}</span>
-                      <span>{msg.webResearch.category}</span>
-                      <span>{msg.webResearch.fromCache ? 'Cache' : msg.webResearch.provider}</span>
                     </div>
                     {msg.webResearch.sources.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -8066,6 +8670,43 @@ function TwinChatView({
                           ? 'Speichern…'
                           : 'Im Memory speichern'}
                     </button>
+                    {chatId && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => void handleAnswerFeedback(msg, 'up')}
+                          disabled={Boolean(answerFeedback[msg.id]) || feedbackSendingId === msg.id}
+                          aria-label="Gute Antwort"
+                          title="Gute Antwort"
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed ${
+                            answerFeedback[msg.id] === 'up'
+                              ? 'border-[#59C7FF]/45 bg-[#59C7FF]/25 text-[#0b1c44]'
+                              : 'border-white/30 bg-white/14 text-[#555b64] hover:bg-white/28 disabled:opacity-45'
+                          }`}
+                        >
+                          👍
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void handleAnswerFeedback(msg, 'down')}
+                          disabled={Boolean(answerFeedback[msg.id]) || feedbackSendingId === msg.id}
+                          aria-label="Schlechte Antwort melden"
+                          title="Schlechte Antwort melden"
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-medium transition-colors disabled:cursor-not-allowed ${
+                            answerFeedback[msg.id] === 'down'
+                              ? 'border-[#59C7FF]/45 bg-[#59C7FF]/25 text-[#0b1c44]'
+                              : 'border-white/30 bg-white/14 text-[#555b64] hover:bg-white/28 disabled:opacity-45'
+                          }`}
+                        >
+                          👎
+                        </button>
+                        {answerFeedback[msg.id] && (
+                          <span className="self-center px-1 text-[11px] font-medium text-[#555b64]">
+                            Danke für dein Feedback ✓
+                          </span>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -8165,7 +8806,7 @@ function TwinChatView({
             )}
             {(voiceState !== 'idle' || isSpeaking) && (
               <div className="mb-1">
-                <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant="light" />
+                <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant="light" mode={liveVoiceActiveRef.current ? 'live' : 'dictation'} />
               </div>
             )}
 
@@ -8261,7 +8902,7 @@ function TwinChatView({
             <p className="text-xs text-[#555b64]">Halte Ideen fest und vertiefe die Antwort.</p>
           </div>
           <div className="rounded-[10px] border border-white/22 bg-white/16 p-2">
-            <label className="mb-1 block text-xs font-semibold text-[#16181b]">Create note</label>
+            <label className="mb-1 block text-xs font-semibold text-[#16181b]">Notiz erstellen</label>
             <textarea
               value={noteText}
               onChange={(event) => setNoteText(event.target.value)}
@@ -8286,14 +8927,14 @@ function TwinChatView({
               disabled={isReplying || !hasUserTurn}
               className="rounded-md border border-white/30 bg-white/16 px-3 py-1.5 text-sm font-medium text-[#16181b] transition-colors hover:bg-white/28 disabled:cursor-not-allowed disabled:opacity-45"
             >
-              Explain simpler
+              Einfacher erklären
             </button>
             <button
               type="button"
               onClick={handleAskFollowUp}
               className="rounded-md border border-white/30 bg-white/16 px-3 py-1.5 text-sm font-medium text-[#16181b] transition-colors hover:bg-white/28"
             >
-              Ask follow-up
+              Nachfragen
             </button>
           </div>
         </aside>

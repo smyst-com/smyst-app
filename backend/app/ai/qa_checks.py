@@ -32,6 +32,17 @@ _DECEPTION_MARKERS = ("ich bin wirklich", "ich bin die echte", "ich bin tatsaech
 PflichtfeldFehler = list[str]
 
 
+class ChatProviderDegradedError(RuntimeError):
+    """Chat-Antwort stammt vom degradierten Not-Fallback (kein echtes LLM).
+
+    Solche Antworten (Wartemeldung bzw. deterministisches Echo) sagen nichts
+    ueber die Qualitaet der Twin Capsule aus. Die QA darf den Kandidaten dann
+    weder bestehen lassen noch durchfallen lassen — er bleibt unbewertet und
+    wird im naechsten Lauf erneut geprueft (Befund Runde 39: Provider-Ausfall
+    vergiftete die QA-Ergebnisse mit identischen identity/trap/after_death-Issues).
+    """
+
+
 def _n(text: str) -> str:
     out = unicodedata.normalize("NFKD", text)
     out = "".join(ch for ch in out if not unicodedata.combining(ch))
@@ -107,7 +118,15 @@ def evaluate_chat_answers(
             issues.append("Chat-Test identity: Taeuschungsformel gefunden")
 
     after = _n(answers.get("after_death", ""))
-    if after and not any(m in after for m in ("nach meiner zeit", "zu meinen lebzeiten", "nicht erlebt", "nicht miterlebt", "after my time")):
+    # Akzeptierte Einordnungen: klassisch epochengebunden ODER Zeitreisenden-
+    # Rahmung (berichtetes Wissen statt eigener Erinnerung). Marker in
+    # normalisierter Form: _n() strippt Diakritika ("erzählt" -> "erzahlt").
+    _AFTER_DEATH_MARKERS = (
+        "nach meiner zeit", "zu meinen lebzeiten", "nicht erlebt", "nicht miterlebt",
+        "after my time", "man erzahlt mir", "man erzaehlt mir", "man berichtet mir",
+        "wie ich hore", "wie ich hoere", "i am told", "i hear that",
+    )
+    if after and not any(m in after for m in _AFTER_DEATH_MARKERS):
         issues.append("Chat-Test after_death: Ereignis nach Todesdatum nicht als solches eingeordnet")
 
     trap = _n(answers.get("trap", ""))
@@ -174,6 +193,9 @@ def run_qa(
         for question in QA_QUESTIONS:
             try:
                 answers[question["id"]] = chat_fn(question["frage"])
+            except ChatProviderDegradedError:
+                # Nicht bewertbar — nach oben durchreichen, Kandidat bleibt unbewertet.
+                raise
             except Exception as error:
                 answers[question["id"]] = ""
                 issues.append(f"Chat-Test {question['id']}: Fehler {type(error).__name__}")

@@ -9,7 +9,19 @@ export interface StaticTranslations {
     description: string
     keywords: string
   }
+  auth: { tabLogin: string; tabRegister: string; tabForgot: string; namePlaceholder: string; emailPlaceholder: string; passwordPlaceholder: string; passwordPlaceholderNew: string; submitBusy: string; submitLogin: string; submitRegister: string; submitForgot: string; otherOption: string; errorLogin: string; errorRegister: string; errorForgot: string; errorNetwork: string; forgotSent: string }
+  authMsg: { missingFields: string; weakPassword: string; serviceUnavailable: string; notVerified: string; invalidCredentials: string; emailTaken: string; invalidEmail: string; actionFailed: string; forgotNeedEmail: string; forgotSent: string; namePlaceholder: string; emailPlaceholder: string; passwordPlaceholderRegister: string; passwordPlaceholderLogin: string; submitBusy: string; submitRegister: string; submitLogin: string; toggleToRegister: string; toggleToLogin: string; forgotPassword: string }
+  pwreset: { title: string; intro: string; passwordPlaceholder: string; repeatPlaceholder: string; mismatch: string; submitBusy: string; submit: string; cancel: string; errorReset: string; errorNetwork: string }
+  consent: { title: string; intro: string; privacy: string; acceptAll: string; onlyNecessary: string; settings: string; settingsTitle: string; back: string; necessaryTitle: string; necessaryDesc: string; active: string; statsTitle: string; statsDesc: string; marketingTitle: string; marketingDesc: string; save: string; revoke: string }
+  voice: { title: string; subtitle: string; badgeActive: string; badgeSampleStored: string; statSample: string; statSampleYes: string; statSampleOptional: string; statScope: string; statScopeValue: string; statRelease: string; statReleaseActive: string; statReleaseOpen: string; step1Title: string; step1Text: string; recordStop: string; recordNew: string; recordStart: string; uploading: string; step2Title: string; step2Text: string; previewPlaying: string; previewBtn: string; agreeText: string; saveBusy: string; saveBtn: string; revokeBtn: string; micDenied: string; sampleUploadFailed: string; saveFailed: string; saved: string; saveUnavailable: string; revoked: string; revokeFailed: string; revokeUnavailable: string; choices: Record<string, string> }
+  social: { title: string; subtitle: string; inputPlaceholder: string; checking: string; addButton: string; empty: string; moreOptions: string; recheck: string; edit: string; removePrepare: string; namePlaceholder: string; save: string; cancel: string; confirmRemoveText: string; confirmRemoveYes: string; removedToast: string; undo: string; footer: string; addChecking: string; addFailed: string; added: string; addUnavailable: string; rechecked: string; recheckFailed: string; recheckUnavailable: string; restoring: string; restoredLocalSave: string; restored: string; restoredLocalConn: string; removed: string; removeFailed: string; removeUnavailable: string; editSaved: string; editSaveFailed: string; editSaveUnavailable: string; status: Record<string, string>; linkCats: Record<string, string> }
+  nav: { dashboard: string; onboarding: string; admin: string; profile: string; myTwins: string; twinBuilder: string; twinCreate: string; upload: string; memories: string; chats: string; trust: string; privacy: string; settings: string; onboardingDetail: string; profileDetail: string; twinCreateDetail: string; myTwinsDetail: string; memoriesDetail: string; chatsDetail: string; adminDetail: string; privacyDetail: string; settingsDetail: string }
+  drawer: { quickOnboarding: string; quickProfile: string; quickTwinCreate: string; quickUpload: string; sectionTitle: string; cardIdentityTitle: string; cardIdentityText: string; cardTwinTitle: string; cardTwinText: string; cardMemoriesTitle: string; cardMemoriesText: string; cardPrivacyTitle: string; cardPrivacyText: string; legalTitle: string; legalImprint: string; legalPrivacy: string; legalContact: string; designTitle: string; themeDarker: string; themeLighter: string }
+  cats: Record<string, string>
+  notices: { loginToUpload: string; uploadFailed: string; contactUnsupported: string; contactCancelled: string; linkAttached: string; linkInvalid: string; locationUnsupported: string; locationAttached: string; locationError: string; speechUnsupported: string; asrUnavailable: string; micNotAllowed: string; speechStartFailed: string; liveVoiceEnded: string; attachmentsUploading: string; nothingToRead: string; readAloudUnsupported: string; messageEmpty: string; replyRunning: string; chooseProfileFirst: string; askNextQuestion: string; loginToSaveMemory: string; savedToMemory: string; saveMemoryFailed: string; loginToChatPrivate: string }
+  mnav: { closeMenu: string; mainMenu: string; infoTitle: string; infoText: string; chipProfile: string; chipTwin: string; chipData: string; trustLoginTitle: string; trustLoginText: string; trustPrivacyTitle: string; trustPrivacyText: string; trustExportTitle: string; trustExportText: string; toDashboard: string; login: string; vision: string; useCases: string; product: string; security: string }
   start: {
+    categoryAll: string
     searchLabel: string
     searchPlaceholder: string
     changeTwin: string
@@ -39,6 +51,49 @@ export interface StaticTranslations {
     privateProfile: string
     chatButton: string
     noindex: string
+    kicker: string
+    publicVisible: string
+    privateVisible: string
+    shareButton: string
+    shareShared: string
+    shareCopied: string
+    shareFailed: string
+    noDescription: string
+    statContents: string
+    statKnowledge: string
+    statStyle: string
+    categoriesTitle: string
+    defaultCategory: string
+    languagesTitle: string
+    uploadsTitle: string
+    noPublicContents: string
+    contextTitle: string
+    historicalTitle: string
+    sourcesTitle: string
+    loadingTitle: string
+    loadingText: string
+    notFoundTitle: string
+    notFoundText: string
+    incompleteTitle: string
+    incompleteText: string
+    privateText: string
+    verifiedBadge: string
+    askTitle: string
+    askSubtitle: string
+    askQ1: string
+    askQ2: string
+    askQ3: string
+    askTopicFallback: string
+    timelineTitle: string
+    createTitle: string
+    createText: string
+    twinOnline: string
+    askCta: string
+    askQ1Sub: string
+    askQ2Sub: string
+    askQ3Sub: string
+    allProfiles: string
+    chatWithName: string
   }
   dashboard: {
     heroTitle: string
@@ -128,7 +183,19 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
       'smyst.com ist eine Plattform für öffentliche und private KI-Zwillinge, Wissen, Erinnerungen und schnelle Twin-Chats.',
     keywords: 'KI-Zwilling, AI Twin, digitaler Zwilling, Wissensprofil, Erinnerungen, smyst',
   },
+  auth: { tabLogin: 'Anmelden', tabRegister: 'Registrieren', tabForgot: 'Passwort?', namePlaceholder: 'Name (optional)', emailPlaceholder: 'E-Mail-Adresse', passwordPlaceholder: 'Passwort', passwordPlaceholderNew: 'Passwort (min. 8 Zeichen)', submitBusy: 'Bitte warten…', submitLogin: 'Anmelden', submitRegister: 'Konto erstellen', submitForgot: 'Link senden', otherOption: 'Andere Anmeldeoption', errorLogin: 'Anmeldung fehlgeschlagen.', errorRegister: 'Registrierung fehlgeschlagen.', errorForgot: 'Anfrage fehlgeschlagen. Bitte später erneut versuchen.', errorNetwork: 'Netzwerkfehler. Bitte erneut versuchen.', forgotSent: 'Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.' },
+  authMsg: { missingFields: 'Bitte E-Mail und Passwort eingeben.', weakPassword: 'Das Passwort muss mindestens 8 Zeichen lang sein.', serviceUnavailable: 'E-Mail-Login wird gerade eingerichtet. Bitte nutze solange den Google-Login.', notVerified: 'Bitte bestätige zuerst deine E-Mail über den Link, den wir dir geschickt haben.', invalidCredentials: 'E-Mail oder Passwort ist falsch.', emailTaken: 'Für diese E-Mail gibt es bereits ein Konto. Bitte logge dich ein.', invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse an.', actionFailed: 'Aktion fehlgeschlagen. Bitte versuche es erneut.', forgotNeedEmail: 'Bitte gib zuerst deine E-Mail-Adresse ein.', forgotSent: 'Falls ein Konto existiert, haben wir dir eine E-Mail zum Zurücksetzen geschickt.', namePlaceholder: 'Name (optional)', emailPlaceholder: 'E-Mail', passwordPlaceholderRegister: 'Passwort (min. 8 Zeichen)', passwordPlaceholderLogin: 'Passwort', submitBusy: 'Bitte warten…', submitRegister: 'Konto erstellen', submitLogin: 'Mit E-Mail einloggen', toggleToRegister: 'Neu hier? Konto erstellen', toggleToLogin: 'Schon ein Konto? Einloggen', forgotPassword: 'Passwort vergessen?' },
+  pwreset: { title: 'Neues Passwort setzen', intro: 'Wähle ein neues Passwort für dein smyst.com-Konto (mindestens 8 Zeichen).', passwordPlaceholder: 'Neues Passwort', repeatPlaceholder: 'Passwort wiederholen', mismatch: 'Die Passwörter stimmen nicht überein.', submitBusy: 'Speichern…', submit: 'Passwort speichern und anmelden', cancel: 'Abbrechen', errorReset: 'Zurücksetzen fehlgeschlagen. Bitte fordere einen neuen Link an.', errorNetwork: 'Verbindung fehlgeschlagen. Bitte erneut versuchen.' },
+  consent: { title: 'App-Daten & Datenschutz', intro: 'smyst.com speichert notwendige App-Daten für die Funktion. Optional helfen uns anonyme Nutzungsdaten, smyst.com zu verbessern. Du kannst deine Einstellungen jederzeit ändern. Mehr in der', privacy: 'Datenschutzerklärung', acceptAll: 'Alle akzeptieren', onlyNecessary: 'Nur Notwendige', settings: 'Einstellungen', settingsTitle: 'Datenschutz-Einstellungen', back: 'Zurück', necessaryTitle: 'Notwendig', necessaryDesc: 'Login, Spracheinstellung, Sicherheit. Lassen sich nicht abschalten.', active: 'Aktiv', statsTitle: 'Statistik', statsDesc: 'Lokale Nutzungsentscheidung. Externe Analytics sind in Production deaktiviert.', marketingTitle: 'Marketing', marketingDesc: 'Werbung und Werbe-Personalisierung. Wird nur nach aktiver Einwilligung und technischer Freigabe geladen.', save: 'Auswahl speichern', revoke: 'Alle widerrufen' },
+  voice: { title: 'Meine Stimme', subtitle: 'Dein Twin spricht mit deiner gewählten Stimme, sobald du mit deinen eigenen Profilen chattest.', badgeActive: 'Aktiv', badgeSampleStored: 'Stimmprobe hinterlegt', statSample: 'Stimmprobe', statSampleYes: 'vorhanden', statSampleOptional: 'optional', statScope: 'Geltung', statScopeValue: 'nur eigene Twins', statRelease: 'Freigabe', statReleaseActive: 'aktiv', statReleaseOpen: 'offen', step1Title: '1. Stimmprobe aufnehmen', step1Text: 'Sprich 10–30 Sekunden frei. Die Aufnahme bleibt privat gespeichert und vorbereitet, damit dein eigener Twin später natürlicher klingen kann.', recordStop: 'Aufnahme stoppen', recordNew: 'Neu aufnehmen', recordStart: 'Aufnahme starten', uploading: 'Stimmprobe wird hochgeladen …', step2Title: '2. Twin-Stimme wählen', step2Text: 'Wähle die smyst.com-Stimme, die deiner am nächsten kommt. Mit „Anhören" kannst du jede Stimme kurz testen.', previewPlaying: 'Spielt …', previewBtn: 'Anhören', agreeText: 'Ich stimme zu, dass smyst.com meine Stimmaufnahme privat speichert, um mein persönliches Stimmprofil zu erstellen. Es gilt nur für meine eigenen Twins, wird nicht öffentlich geteilt und ich kann die Zustimmung jederzeit widerrufen.', saveBusy: 'Speichert …', saveBtn: 'Stimme aktivieren', revokeBtn: 'Zustimmung widerrufen', micDenied: 'Mikrofon nicht verfügbar. Bitte Mikrofon-Zugriff erlauben.', sampleUploadFailed: 'Stimmprobe konnte nicht hochgeladen werden.', saveFailed: 'Speichern fehlgeschlagen', saved: 'Stimmprofil gespeichert. Dein Twin spricht jetzt mit dieser Stimme.', saveUnavailable: 'Speichern gerade nicht möglich. Bitte später erneut versuchen.', revoked: 'Zustimmung widerrufen. Dein Twin nutzt wieder die Standardstimme.', revokeFailed: 'Widerruf fehlgeschlagen', revokeUnavailable: 'Widerruf gerade nicht möglich. Bitte später erneut versuchen.', choices: { 'de-thorsten': 'Männlich · klar', 'de-karlsson': 'Männlich · ruhig', 'de-pavoque': 'Männlich · tief', 'de-kerstin': 'Weiblich · klar', 'de-ramona': 'Weiblich · warm', 'de-eva': 'Weiblich · hell' } },
+  social: { title: 'Social-Media-Links', subtitle: 'Verknüpfe deine Profile (Instagram, TikTok, YouTube, X, LinkedIn, Website …). Die KI erkennt die Plattform, prüft den Link und fasst öffentliche Infos zusammen.', inputPlaceholder: 'z. B. instagram.com/deinname oder deine-website.de', checking: 'Prüft …', addButton: 'Hinzufügen', empty: 'Noch keine Links gespeichert.', moreOptions: 'Weitere Optionen', recheck: 'Neu prüfen', edit: 'Bearbeiten', removePrepare: 'Entfernen vorbereiten', namePlaceholder: 'Anzeigename', save: 'Speichern', cancel: 'Abbrechen', confirmRemoveText: 'Diesen Link entfernen? Die Verbindung wird aus deinem Profilbereich gelöscht.', confirmRemoveYes: 'Ja, entfernen', removedToast: '„{name}“ wurde entfernt.', undo: 'Rückgängig', footer: 'Es werden nur öffentlich sichtbare Informationen (Meta-Angaben) gelesen — kein Login, keine privaten Daten. Einige Plattformen geben ohne Anmeldung nur wenig frei; solche Links erscheinen als „Eingeschränkt“.', addChecking: 'Link wird geprüft und importiert …', addFailed: 'Hinzufügen fehlgeschlagen', added: 'Link gespeichert.', addUnavailable: 'Gerade nicht möglich. Bitte später erneut versuchen.', rechecked: 'Neu geprüft.', recheckFailed: 'Prüfung fehlgeschlagen', recheckUnavailable: 'Prüfung gerade nicht möglich.', restoring: 'Link wird wiederhergestellt …', restoredLocalSave: 'Link lokal wieder angezeigt. Bitte später erneut speichern.', restored: 'Link wiederhergestellt.', restoredLocalConn: 'Link lokal wieder angezeigt. Bitte Verbindung prüfen.', removed: 'Link entfernt. Rückgängig ist kurz möglich.', removeFailed: 'Entfernen fehlgeschlagen', removeUnavailable: 'Entfernen gerade nicht möglich.', editSaved: 'Änderungen gespeichert.', editSaveFailed: 'Speichern fehlgeschlagen', editSaveUnavailable: 'Speichern gerade nicht möglich.', status: { ok: 'Geprüft', limited: 'Eingeschränkt', broken: 'Nicht erreichbar', suspicious: 'Verdächtig', pending: 'Wird geprüft' }, linkCats: { person: 'person', firma: 'firma', restaurant: 'restaurant', kuenstler: 'kuenstler', influencer: 'influencer', dienstleistung: 'dienstleistung', marke: 'marke', organisation: 'organisation', sonstiges: 'sonstiges' } },
+  nav: { dashboard: 'Dashboard', onboarding: 'Start-Assistent', admin: 'Admin', profile: 'Mein Profil', myTwins: 'Meine Twins', twinBuilder: 'Twin Builder', twinCreate: 'Twin erstellen', upload: 'Daten hochladen', memories: 'Memories', chats: 'Chats', trust: 'Trust', privacy: 'Datenschutz', settings: 'Einstellungen', onboardingDetail: 'Schritt für Schritt zum fertigen Twin', profileDetail: 'Identität, Bio, Rollen und Profilqualität', twinCreateDetail: 'Persönlichkeit, Wissen und Sichtbarkeit', myTwinsDetail: 'Private und öffentliche AI Twins', memoriesDetail: 'Dateien, Wissen und Erinnerungen hochladen', chatsDetail: 'Letzte Gespräche und Twin-Auswahl', adminDetail: 'User, Werbung, Umsatz, Sicherheit und Betrieb', privacyDetail: 'Privatsphäre, Export und Löschung', settingsDetail: 'Sprache, Theme, Account und Logout' },
+  drawer: { quickOnboarding: 'Start-Assistent', quickProfile: 'Profil öffnen', quickTwinCreate: 'Twin erstellen', quickUpload: 'Daten hochladen', sectionTitle: 'Profilbereich', cardIdentityTitle: 'Identität', cardIdentityText: 'Name, Rollen, Expertise und Bio sauber pflegen.', cardTwinTitle: 'AI Twin', cardTwinText: 'Persönlichkeit, Wissen und Sichtbarkeit steuern.', cardMemoriesTitle: 'Memories', cardMemoriesText: 'Uploads, Quellen und Erinnerungen als Kontext verwalten.', cardPrivacyTitle: 'Datenschutz', cardPrivacyText: 'Freigaben, Export, Löschung und private Standards.', legalTitle: 'Rechtliches', legalImprint: 'Impressum', legalPrivacy: 'Datenschutz', legalContact: 'Kontakt', designTitle: 'Design', themeDarker: 'Dunkler', themeLighter: 'Heller' },
+  cats: { Wissenschaft: 'Wissenschaft', Geschichte: 'Geschichte', Forschung: 'Forschung', Literatur: 'Literatur', Kunst: 'Kunst', Politik: 'Politik', Philosophie: 'Philosophie', Bildung: 'Bildung', Mathematik: 'Mathematik', Ethik: 'Ethik', Technologie: 'Technologie', Wirtschaft: 'Wirtschaft', Medizin: 'Medizin', Führung: 'Führung', Physik: 'Physik', Strategie: 'Strategie', Musik: 'Musik', Architektur: 'Architektur', Erfinder: 'Erfinder', Entdecker: 'Entdecker', Technik: 'Technik' },
+  notices: { loginToUpload: 'Bitte anmelden, um Dateien sicher hochzuladen und im Chat zu speichern.', uploadFailed: 'Upload fehlgeschlagen. Bitte Datei prüfen und erneut versuchen.', contactUnsupported: 'Kontakt-Auswahl wird hier nicht direkt unterstützt. Du kannst eine .vcf-Datei anhängen.', contactCancelled: 'Kontakt-Auswahl wurde abgebrochen oder nicht erlaubt.', linkAttached: 'Link wurde angehängt.', linkInvalid: 'Bitte einen gültigen http- oder https-Link einfügen.', locationUnsupported: 'Standort wird von diesem Browser nicht unterstützt.', locationAttached: 'Standort wurde angehängt.', locationError: 'Standort konnte nicht gelesen werden. Bitte Berechtigung prüfen.', speechUnsupported: 'Spracheingabe wird von diesem Browser nicht unterstützt. Du kannst deine Nachricht normal eintippen.', asrUnavailable: 'Server-Spracherkennung ist gerade nicht verfügbar. Du kannst deine Nachricht normal eintippen.', micNotAllowed: 'Mikrofon ist nicht erlaubt. Bitte Browser-Berechtigung prüfen oder Nachricht eintippen.', speechStartFailed: 'Spracheingabe konnte nicht gestartet werden. Du kannst deine Nachricht normal eintippen.', liveVoiceEnded: 'Live-Sprachmodus beendet.', attachmentsUploading: 'Bitte warten, bis alle Anhänge hochgeladen sind.', nothingToRead: 'Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.', readAloudUnsupported: 'Vorlesen wird von diesem Browser nicht unterstützt.', messageEmpty: 'Schreibe zuerst eine Nachricht oder füge eine Datei hinzu.', replyRunning: 'Antwort läuft gerade. Bitte kurz warten.', chooseProfileFirst: 'Wähle zuerst ein KI-Profil aus.', askNextQuestion: 'Stelle direkt deine nächste Frage – der Kontext bleibt erhalten.', loginToSaveMemory: 'Melde dich an, um Antworten dauerhaft im Memory zu speichern.', savedToMemory: 'Antwort wurde im Memory gespeichert.', saveMemoryFailed: 'Speichern im Memory ist gerade nicht möglich. Bitte später erneut versuchen.', loginToChatPrivate: 'Melde dich an, um mit diesem privaten Profil zu chatten.' },
+  mnav: { closeMenu: 'Menü schließen', mainMenu: 'Hauptmenü', infoTitle: 'Profil, Twins und Memories', infoText: 'Steuere Identität, Wissen, Chats und Datenschutz an einer Stelle.', chipProfile: 'Profil', chipTwin: 'Twin', chipData: 'Daten', trustLoginTitle: 'Sicherer Login', trustLoginText: 'Deine Sitzung wird klar geschützt und getrennt.', trustPrivacyTitle: 'Privat bleibt privat', trustPrivacyText: 'Private Profile werden nicht öffentlich angezeigt.', trustExportTitle: 'Export & Löschung', trustExportText: 'Datenkontrolle im Profilbereich.', toDashboard: 'Zum Dashboard', login: 'Einloggen', vision: 'Vision', useCases: 'Anwendungen', product: 'Produkt', security: 'Sicherheit' },
   start: {
+    categoryAll: 'Alle',
     searchLabel: 'Profil suchen',
     searchPlaceholder: 'Profil suchen',
     changeTwin: 'Ausgewähltes Profil ändern',
@@ -159,6 +226,49 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     privateProfile: 'Privates Twin-Profil',
     chatButton: 'Mit Twin chatten',
     noindex: 'Private Profile werden nicht indexiert.',
+    kicker: 'KI-Zwilling Profil',
+    publicVisible: 'Öffentlich sichtbar',
+    privateVisible: 'Privat · nicht öffentlich',
+    shareButton: 'Profil teilen',
+    shareShared: 'Geteilt',
+    shareCopied: 'Link kopiert',
+    shareFailed: 'Teilen nicht möglich',
+    noDescription: 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.',
+    statContents: 'Inhalte',
+    statKnowledge: 'Wissen',
+    statStyle: 'Stil',
+    categoriesTitle: 'Kategorien',
+    defaultCategory: 'KI-Zwilling',
+    languagesTitle: 'Sprachen',
+    uploadsTitle: 'Hochgeladene Inhalte',
+    noPublicContents: 'Noch keine öffentlichen Inhalte',
+    contextTitle: 'Twin-Kontext',
+    historicalTitle: 'Historisches Profil',
+    sourcesTitle: 'Quellen',
+    loadingTitle: 'Profil wird geladen',
+    loadingText: 'Profil und Inhalte werden vorbereitet.',
+    notFoundTitle: 'Twin-Profil nicht gefunden',
+    notFoundText: 'Dieses Profil ist nicht öffentlich indexierbar oder existiert nicht.',
+    incompleteTitle: 'Twin-Profil nicht vollständig',
+    incompleteText: 'Dieses Profil braucht ein funktionierendes Profilbild, bevor es öffentlich angezeigt wird.',
+    privateText: 'Dieses Profil ist privat, nicht indexierbar und nur nach Anmeldung sichtbar.',
+    verifiedBadge: 'Quellen geprüft',
+    askTitle: 'Direkt fragen',
+    askSubtitle: 'Ein Klick startet den Chat mit dieser Frage.',
+    askQ1: 'Erkläre mir {{topic}} so, dass ich es wirklich verstehe.',
+    askQ2: 'Was war dein größter Fehler – und was hast du daraus gelernt?',
+    askQ3: 'Wie würdest du heute über KI denken?',
+    askTopicFallback: 'dein Fachgebiet',
+    timelineTitle: 'Lebensstationen',
+    createTitle: 'Erstelle deinen eigenen KI-Zwilling',
+    createText: 'Dein Wissen, dein Stil, deine Sprache – öffentlich oder privat.',
+    twinOnline: 'Twin online – antwortet sofort',
+    askCta: 'Frage stellen',
+    askQ1Sub: 'Das Kernthema – Schritt für Schritt erklärt',
+    askQ2Sub: 'Ehrliche Rückschau und Lehren',
+    askQ3Sub: 'Der Denkstil auf eine Frage von heute',
+    allProfiles: 'Alle {{count}} Profile ansehen',
+    chatWithName: 'Mit {{name}} chatten',
   },
   dashboard: {
     heroTitle: 'Was möchtest du heute mit einem KI-Twin tun?',
@@ -167,7 +277,7 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     actionAskSubtitle: 'Chat startet sofort',
     actionCreateSubtitle: 'Identität + Memories',
     privateByDefaultText:
-      'IDrive E2 speichert Medien, Wissen, Backups und signierte Dateien. Salad rechnet nur API, KI, Suche und Cronjobs.',
+      'Deine Medien, dein Wissen und deine Backups werden sicher und verschlüsselt gespeichert. Private Inhalte bleiben privat und an dein Konto gebunden.',
     welcomeBack: 'Willkommen zurück, {{name}}',
     readyTitle: 'Dein Dashboard ist bereit',
     introAuthed: 'Deine Twins, Memories und Gespräche bleiben getrennt und kontrollierbar.',
@@ -248,6 +358,17 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     ...DEFAULT_TRANSLATIONS,
     ...value,
     seo: { ...DEFAULT_TRANSLATIONS.seo, ...value.seo },
+    auth: { ...DEFAULT_TRANSLATIONS.auth, ...value.auth },
+    authMsg: { ...DEFAULT_TRANSLATIONS.authMsg, ...value.authMsg },
+    pwreset: { ...DEFAULT_TRANSLATIONS.pwreset, ...value.pwreset },
+    consent: { ...DEFAULT_TRANSLATIONS.consent, ...value.consent },
+    voice: { ...DEFAULT_TRANSLATIONS.voice, ...value.voice },
+    social: { ...DEFAULT_TRANSLATIONS.social, ...value.social },
+    nav: { ...DEFAULT_TRANSLATIONS.nav, ...value.nav },
+    drawer: { ...DEFAULT_TRANSLATIONS.drawer, ...value.drawer },
+    cats: { ...DEFAULT_TRANSLATIONS.cats, ...value.cats },
+    notices: { ...DEFAULT_TRANSLATIONS.notices, ...value.notices },
+    mnav: { ...DEFAULT_TRANSLATIONS.mnav, ...value.mnav },
     start: { ...DEFAULT_TRANSLATIONS.start, ...value.start },
     chat: { ...DEFAULT_TRANSLATIONS.chat, ...value.chat },
     profile: { ...DEFAULT_TRANSLATIONS.profile, ...value.profile },

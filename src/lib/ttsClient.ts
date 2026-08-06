@@ -12,6 +12,57 @@ let sharedAudio: HTMLAudioElement | null = null
 let active = false
 const audioCache = new Map<string, string>()
 
+// Persistenter Begruessungs-Cache (P5): ueberlebt Reloads, damit die
+// Twin-Begruessung ab dem zweiten Besuch ohne Synthese-Ladeluecke startet.
+// Es schreiben NUR prefetchSpeech-Aufrufer (Begruessungen) hinein — normale
+// Antworten bleiben im fluechtigen Session-Cache, sonst waechst der Speicher
+// unbegrenzt.
+const PERSISTENT_TTS_CACHE = 'smyst-tts-greetings-v1'
+
+function persistentSpeechUrl(cacheKey: string): string {
+    return 'https://tts-cache.smyst.invalid/' + encodeURIComponent(cacheKey)
+}
+
+function rememberSpeechUrl(cacheKey: string, url: string): void {
+    if (audioCache.size >= 24) {
+          for (const [oldKey, oldUrl] of audioCache) {
+                URL.revokeObjectURL(oldUrl)
+                audioCache.delete(oldKey)
+                break
+          }
+    }
+    audioCache.set(cacheKey, url)
+}
+
+async function readPersistentSpeech(cacheKey: string): Promise<string | null> {
+    try {
+          if (typeof caches === 'undefined') return null
+          const cache = await caches.open(PERSISTENT_TTS_CACHE)
+          const hit = await cache.match(persistentSpeechUrl(cacheKey))
+          if (!hit) return null
+          const blob = await hit.blob()
+          if (blob.size < 100) return null
+          const url = URL.createObjectURL(blob)
+          rememberSpeechUrl(cacheKey, url)
+          return url
+    } catch {
+          return null
+    }
+}
+
+async function writePersistentSpeech(cacheKey: string, blob: Blob): Promise<void> {
+    try {
+          if (typeof caches === 'undefined') return
+          const cache = await caches.open(PERSISTENT_TTS_CACHE)
+          await cache.put(
+                persistentSpeechUrl(cacheKey),
+                new Response(blob, { headers: { 'Content-Type': 'audio/wav' } }),
+          )
+    } catch {
+          // Persistenz ist best effort - Session-Cache greift weiterhin
+    }
+}
+
 function getSharedAudio(): HTMLAudioElement {
     if (!sharedAudio) sharedAudio = new Audio()
     return sharedAudio
@@ -58,6 +109,7 @@ export async function playRemoteSpeech(
     gender: 'female' | 'male' | undefined,
     onDone: () => void,
     voiceId?: string,
+    rate?: number,
   ): Promise<boolean> {
     stopRemoteSpeech()
     // Sofort als aktiv markieren: auch waehrend die Stimme generiert/geladen wird,
@@ -73,8 +125,8 @@ export async function playRemoteSpeech(
           const effectiveVoiceId =
                   voiceId && voiceId.startsWith(expectedBase + '-') ? voiceId : undefined
           const cacheKey =
-                  (effectiveVoiceId ?? gender ?? 'x') + '|' + effectiveLang + '|' + cleanText
-          let url = audioCache.get(cacheKey)
+                  (effectiveVoiceId ?? gender ?? 'x') + '|' + (rate ?? '') + '|' + effectiveLang + '|' + cleanText
+          let url = audioCache.get(cacheKey) ?? (await readPersistentSpeech(cacheKey))
           if (!url) {
                   const controller = new AbortController()
                   const timer = window.setTimeout(
@@ -90,6 +142,7 @@ export async function playRemoteSpeech(
                                         lang: effectiveLang,
                                         gender,
                                         voiceId: effectiveVoiceId,
+                                        rate,
                             }),
                             signal: controller.signal,
                   })
@@ -104,14 +157,7 @@ export async function playRemoteSpeech(
                         return false
                   }
                   url = URL.createObjectURL(blob)
-                  if (audioCache.size >= 24) {
-                            for (const [oldKey, oldUrl] of audioCache) {
-                                        URL.revokeObjectURL(oldUrl)
-                                        audioCache.delete(oldKey)
-                                        break
-                            }
-                  }
-                  audioCache.set(cacheKey, url)
+                  rememberSpeechUrl(cacheKey, url)
           }
           const audio = getSharedAudio()
           const finish = () => {
@@ -155,6 +201,8 @@ async function fetchSpeechUrl(
     lang: string | undefined,
     gender: 'female' | 'male' | undefined,
     voiceId?: string,
+    rate?: number,
+    persist = false,
 ): Promise<string | null> {
     try {
         const effectiveLang = resolveSpeechLang(cleanText, lang)
@@ -162,8 +210,8 @@ async function fetchSpeechUrl(
         const effectiveVoiceId =
             voiceId && voiceId.startsWith(expectedBase + '-') ? voiceId : undefined
         const cacheKey =
-            (effectiveVoiceId ?? gender ?? 'x') + '|' + effectiveLang + '|' + cleanText
-        const cached = audioCache.get(cacheKey)
+            (effectiveVoiceId ?? gender ?? 'x') + '|' + (rate ?? '') + '|' + effectiveLang + '|' + cleanText
+        const cached = audioCache.get(cacheKey) ?? (await readPersistentSpeech(cacheKey))
         if (cached) return cached
         const controller = new AbortController()
         const timer = window.setTimeout(
@@ -179,6 +227,7 @@ async function fetchSpeechUrl(
                 lang: effectiveLang,
                 gender,
                 voiceId: effectiveVoiceId,
+                rate,
             }),
             signal: controller.signal,
         })
@@ -186,19 +235,28 @@ async function fetchSpeechUrl(
         if (!response.ok) return null
         const blob = await response.blob()
         if (blob.size < 100) return null
+        if (persist) await writePersistentSpeech(cacheKey, blob)
         const url = URL.createObjectURL(blob)
-        if (audioCache.size >= 24) {
-            for (const [oldKey, oldUrl] of audioCache) {
-                URL.revokeObjectURL(oldUrl)
-                audioCache.delete(oldKey)
-                break
-            }
-        }
-        audioCache.set(cacheKey, url)
+        rememberSpeechUrl(cacheKey, url)
         return url
     } catch {
         return null
     }
+}
+
+// Begruessung (o. ae.) vorab synthetisieren und dauerhaft cachen (P5).
+// Nutzt exakt dieselbe Cache-Key-Logik wie playRemoteSpeech - ein spaeterer
+// Sprech-Aufruf mit denselben Parametern trifft den Cache ohne Netz-Roundtrip.
+export function prefetchSpeech(
+    text: string,
+    lang: string | undefined,
+    gender: 'female' | 'male' | undefined,
+    voiceId?: string,
+    rate?: number,
+): void {
+    const cleanText = text.trim().slice(0, 800)
+    if (!cleanText) return
+    void fetchSpeechUrl(cleanText, lang, gender, voiceId, rate, true)
 }
 
 // Satzende finden: Punkt/!/?/Ellipse + Anfuehrungszeichen + Leerraum bzw.
@@ -242,6 +300,7 @@ export function startSentenceSpeech(
     gender: 'female' | 'male' | undefined,
     voiceId: string | undefined,
     onDone: () => void,
+    rate?: number,
 ): SentenceSpeech {
     stopRemoteSpeech()
     if ('speechSynthesis' in window) window.speechSynthesis.cancel()
@@ -332,7 +391,7 @@ export function startSentenceSpeech(
         const text = rawText.trim()
         if (!text) return
         for (const part of splitLongSentence(text)) {
-            entries.push({ text: part, job: fetchSpeechUrl(part, lang, gender, voiceId) })
+            entries.push({ text: part, job: fetchSpeechUrl(part, lang, gender, voiceId, rate) })
         }
         void pump()
     }

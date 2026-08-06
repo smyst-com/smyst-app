@@ -54,6 +54,79 @@ function escapeAttr(value) {
   return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/**
+ * Sprach-SEO: pro Profil wird jede Sprache als eigene indexierbare Seite
+ * erzeugt (/t/<slug> = Deutsch/kanonisch, /<lang>/t/<slug> = Uebersetzung)
+ * und ueber hreflang verknuepft. Die deutschen Seiten bleiben unveraendert.
+ */
+const SEO_LANGS = ['de', 'en', 'tr', 'fr', 'es', 'pt', 'ar', 'zh', 'ja', 'ko', 'ru', 'it', 'hi', 'id', 'bn'];
+const RTL_LANGS = new Set(['ar']);
+
+// Title-Zusatz und Beschreibungs-Vorlage pro Sprache ({name}, {cats}, {life}).
+const SEO_META = {
+  de: { title: 'KI-Profil & Chat', desc: null },
+  en: { title: 'AI Profile & Chat', desc: '{name} ({cats}{life}) as an AI twin on smyst.com: chat directly, explore life milestones and verified sources.' },
+  tr: { title: 'Yapay Zekâ Profili ve Sohbet', desc: "{name} ({cats}{life}) smyst.com'da yapay zekâ ikizi: doğrudan sohbet edin, hayat duraklarını ve doğrulanmış kaynakları keşfedin." },
+  fr: { title: 'Profil IA & Chat', desc: '{name} ({cats}{life}) en jumeau IA sur smyst.com : discutez directement et découvrez les étapes de sa vie et des sources vérifiées.' },
+  es: { title: 'Perfil de IA y Chat', desc: '{name} ({cats}{life}) como gemelo de IA en smyst.com: chatea directamente y descubre etapas de su vida y fuentes verificadas.' },
+  pt: { title: 'Perfil de IA e Chat', desc: '{name} ({cats}{life}) como gêmeo de IA no smyst.com: converse diretamente e descubra etapas da vida e fontes verificadas.' },
+  ar: { title: 'ملف ذكاء اصطناعي ودردشة', desc: '{name} ({cats}{life}) كتوأم ذكاء اصطناعي على smyst.com: تحدث مباشرة واستكشف محطات الحياة والمصادر الموثقة.' },
+  zh: { title: 'AI档案与聊天', desc: '{name}({cats}{life})的AI分身。在smyst.com直接聊天,探索人生历程与已核实的来源。' },
+  ja: { title: 'AIプロフィール&チャット', desc: '{name}({cats}{life})のAIツイン。smyst.comで直接チャットし、人生の歩みと確認済みの出典を探索。' },
+  ko: { title: 'AI 프로필 & 채팅', desc: '{name}({cats}{life})의 AI 트윈. smyst.com에서 바로 채팅하고 인생 여정과 검증된 출처를 확인하세요.' },
+  ru: { title: 'ИИ-профиль и чат', desc: '{name} ({cats}{life}) как ИИ-двойник на smyst.com: общайтесь напрямую, изучайте этапы жизни и проверенные источники.' },
+  it: { title: 'Profilo IA e Chat', desc: '{name} ({cats}{life}) come gemello IA su smyst.com: chatta direttamente e scopri tappe della vita e fonti verificate.' },
+  hi: { title: 'AI प्रोफ़ाइल और चैट', desc: '{name} ({cats}{life}) smyst.com पर AI ट्विन: सीधे चैट करें, जीवन के पड़ाव और सत्यापित स्रोत देखें।' },
+  id: { title: 'Profil AI & Obrolan', desc: '{name} ({cats}{life}) sebagai kembaran AI di smyst.com: mengobrol langsung, jelajahi perjalanan hidup dan sumber terverifikasi.' },
+  bn: { title: 'AI প্রোফাইল ও চ্যাট', desc: '{name} ({cats}{life}) smyst.com-এ AI টুইন: সরাসরি চ্যাট করুন, জীবনের ধাপ ও যাচাইকৃত উৎস দেখুন।' },
+};
+
+// Kategorie-Uebersetzungen aus den Runtime-Locales wiederverwenden.
+const LOCALE_CATS = {};
+for (const lang of SEO_LANGS) {
+  try {
+    const json = JSON.parse(readFileSync(resolve(ROOT, 'public', 'locales', `${lang}.json`), 'utf8'));
+    LOCALE_CATS[lang] = json.cats ?? {};
+  } catch {
+    LOCALE_CATS[lang] = {};
+  }
+}
+
+function profilePath(lang, slug) {
+  return lang === 'de' ? `/t/${slug}` : `/${lang}/t/${slug}`;
+}
+
+function hreflangBlock(slug) {
+  const links = SEO_LANGS.map(
+    (lang) => `    <link rel="alternate" hreflang="${lang}" href="${HOST}${profilePath(lang, slug)}" />`,
+  );
+  links.push(`    <link rel="alternate" hreflang="x-default" href="${HOST}/t/${slug}" />`);
+  return links.join('\n');
+}
+
+function lifeYears(spec) {
+  const birth = spec.birthDate?.slice(0, 4) ?? spec.birthYear ?? '';
+  const death = spec.deathDate?.slice(0, 4) ?? spec.deathYear ?? '';
+  return birth && death ? `${birth}–${death}` : '';
+}
+
+function localizedCats(spec, lang) {
+  const cats = LOCALE_CATS[lang] ?? {};
+  return (spec.categories ?? [])
+    .slice(0, 3)
+    .map((category) => cats[category] ?? category)
+    .join(', ');
+}
+
+function localizedDescription(spec, lang) {
+  const meta = SEO_META[lang];
+  const life = lifeYears(spec);
+  return meta.desc
+    .replace('{name}', spec.name)
+    .replace('{cats}', localizedCats(spec, lang))
+    .replace('{life}', life ? `, ${life}` : '');
+}
+
 function truncate(text, max) {
   const clean = String(text).replace(/\s+/g, ' ').trim();
   if (clean.length <= max) return clean;
@@ -66,7 +139,7 @@ function lifeLabel(spec) {
   return '';
 }
 
-function jsonLd(spec, pageUrl, imageUrl) {
+function jsonLd(spec, pageUrl, imageUrl, lang = 'de') {
   const person = {
     '@type': 'Person',
     name: spec.name,
@@ -80,7 +153,7 @@ function jsonLd(spec, pageUrl, imageUrl) {
     '@type': 'ProfilePage',
     name: `${spec.name} – KI-Profil auf smyst.com`,
     url: pageUrl,
-    inLanguage: 'de',
+    inLanguage: lang,
     isPartOf: { '@type': 'WebSite', name: 'smyst.com', url: `${HOST}/` },
     about: person,
     mainEntity: person,
@@ -90,16 +163,26 @@ function jsonLd(spec, pageUrl, imageUrl) {
   return JSON.stringify(profilePage);
 }
 
-function renderPage(spec) {
-  const pageUrl = `${HOST}/t/${spec.slug}`;
+function renderPage(spec, lang = 'de') {
+  const pageUrl = `${HOST}${profilePath(lang, spec.slug)}`;
   const imageUrl = spec.imageFile ? `${HOST}/public/profile-images/${spec.imageFile}` : `${HOST}/og-image.png`;
-  const title = `${spec.name} – KI-Profil & Chat | smyst.com`;
-  const description = truncate(
-    `${spec.name} (${spec.mainCategory}${lifeLabel(spec) ? `, ${lifeLabel(spec)}` : ''}) als KI-Profil auf smyst.com: ${spec.description}`,
-    158,
-  );
+  const title = `${spec.name} – ${SEO_META[lang].title} | smyst.com`;
+  const description =
+    lang === 'de'
+      ? truncate(
+          `${spec.name} (${spec.mainCategory}${lifeLabel(spec) ? `, ${lifeLabel(spec)}` : ''}) als KI-Profil auf smyst.com: ${spec.description}`,
+          158,
+        )
+      : truncate(localizedDescription(spec, lang), 158);
 
   let html = template;
+  html = html.replace(
+    /<html lang="[^"]*" dir="[^"]*">/,
+    `<html lang="${lang}" dir="${RTL_LANGS.has(lang) ? 'rtl' : 'ltr'}">`,
+  );
+  // Homepage-hreflang aus dem Template durch das profil-spezifische Set ersetzen.
+  html = html.replace(/[ \t]*<link rel="alternate" hreflang="[^"]+" href="[^"]*" \/>\n/g, '');
+  html = html.replace(/(<link rel="canonical" href="[^"]*" \/>)/, `$1\n${hreflangBlock(spec.slug)}`);
   html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeAttr(title)}</title>`);
   html = html.replace(/(<meta name="description" content=")[^"]*(")/, `$1${escapeAttr(description)}$2`);
   html = html.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${pageUrl}$2`);
@@ -113,7 +196,7 @@ function renderPage(spec) {
   html = html.replace(/(<meta name="twitter:image" content=")[^"]*(")/, `$1${imageUrl}$2`);
   html = html.replace(
     '</head>',
-    `<script type="application/ld+json" id="smyst-profile-schema">${jsonLd(spec, pageUrl, imageUrl)}</script></head>`,
+    `<script type="application/ld+json" id="smyst-profile-schema">${jsonLd(spec, pageUrl, imageUrl, lang)}</script></head>`,
   );
   return html;
 }
@@ -121,17 +204,22 @@ function renderPage(spec) {
 let written = 0;
 for (const spec of CURATED_PUBLIC_TWIN_SPECS) {
   if (!spec.slug) continue;
-  const dir = resolve(DIST, 't', spec.slug);
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(resolve(dir, 'index.html'), renderPage(spec), 'utf8');
-  written += 1;
+  for (const lang of SEO_LANGS) {
+    const dir = lang === 'de' ? resolve(DIST, 't', spec.slug) : resolve(DIST, lang, 't', spec.slug);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(resolve(dir, 'index.html'), renderPage(spec, lang), 'utf8');
+    written += 1;
+  }
 }
 
-if (written !== EXPECTED_PROFILE_COUNT) {
-  console.error(`generate-profile-pages: nur ${written}/${EXPECTED_PROFILE_COUNT} Seiten geschrieben.`);
+const expectedPages = EXPECTED_PROFILE_COUNT * SEO_LANGS.length;
+if (written !== expectedPages) {
+  console.error(`generate-profile-pages: nur ${written}/${expectedPages} Seiten geschrieben.`);
   process.exit(1);
 }
-console.log(`generate-profile-pages: ${written} Profilseiten unter dist/t/ erzeugt.`);
+console.log(
+  `generate-profile-pages: ${written} Profilseiten (${EXPECTED_PROFILE_COUNT} Profile × ${SEO_LANGS.length} Sprachen) unter dist/t/ und dist/<lang>/t/ erzeugt.`,
+);
 
 /**
  * Statisches Public-JSON-API (llms.txt-Vertrag: /api/public/twins/{slug}).
@@ -176,6 +264,7 @@ function toPublicTwinProfile(spec, index) {
     exampleQuestions: spec.exampleQuestions,
     searchIndex: spec.searchIndex,
     sources: spec.sources,
+    milestones: spec.milestones,
     quality: { ok: Boolean(imageUrl), issues: imageUrl ? [] : ['missing_profile_image'] },
     createdAt,
     updatedAt,

@@ -22,6 +22,11 @@ from app.ai.historical_pipeline import HistoricalCandidate, PipelineConfig, Risk
 
 
 def _n(name: str) -> str:
+    # Deutsche Umlaute VOR der NFKD-Zerlegung transliterieren: NFKD macht aus
+    # "Göring" sonst "goring", waehrend Listeneintraege "Goering" schreiben —
+    # genau diese Luecke liess Hermann Goering am 26.07. durch die Watchlist.
+    for src, dst in (("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("Ä", "ae"), ("Ö", "oe"), ("Ü", "ue"), ("ß", "ss")):
+        name = name.replace(src, dst)
     text = unicodedata.normalize("NFKD", name)
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     return " ".join(text.casefold().split())
@@ -41,9 +46,17 @@ ETHICS_WATCHLIST: tuple[EthicsWatchlistEntry, ...] = (
     EthicsWatchlistEntry("Adolf Hitler", RiskResult.BLOCK, "NS-Haupttaeter; Chat-Verkoerperung ausgeschlossen", "Q352"),
     EthicsWatchlistEntry("Heinrich Himmler", RiskResult.BLOCK, "NS-Haupttaeter", "Q43067"),
     EthicsWatchlistEntry("Joseph Goebbels", RiskResult.BLOCK, "NS-Haupttaeter", "Q44331"),
-    EthicsWatchlistEntry("Hermann Goering", RiskResult.BLOCK, "NS-Haupttaeter"),
-    EthicsWatchlistEntry("Reinhard Heydrich", RiskResult.BLOCK, "NS-Haupttaeter"),
-    EthicsWatchlistEntry("Adolf Eichmann", RiskResult.BLOCK, "NS-Haupttaeter"),
+    EthicsWatchlistEntry("Hermann Goering", RiskResult.BLOCK, "NS-Haupttaeter", "Q47906"),
+    EthicsWatchlistEntry("Reinhard Heydrich", RiskResult.BLOCK, "NS-Haupttaeter", "Q60039"),
+    EthicsWatchlistEntry("Adolf Eichmann", RiskResult.BLOCK, "NS-Haupttaeter", "Q28085"),
+    # Ergaenzt 01.08.2026 nach Live-Vorfall: diese Figuren kamen ueber die
+    # organische Discovery auf die Seite, obwohl die Redaktionsregel der
+    # Seed-Liste (PR #295) NS-Fuehrung/totalitaere Diktatoren ausschliesst.
+    EthicsWatchlistEntry("Joachim von Ribbentrop", RiskResult.BLOCK, "NS-Fuehrung (Nuernberg 1946)", "Q101886"),
+    EthicsWatchlistEntry("Eva Braun", RiskResult.BLOCK, "NS-Fuehrungskreis", "Q76433"),
+    EthicsWatchlistEntry("Tojo Hideki", RiskResult.BLOCK, "Kriegsverbrecher, totalitaerer Militaerfuehrer", "Q160847"),
+    EthicsWatchlistEntry("Philippe Petain", RiskResult.BLOCK, "Vichy-Kollaborationsregime", "Q5721"),
+    EthicsWatchlistEntry("Wladimir Iljitsch Lenin", RiskResult.BLOCK, "totalitaerer Diktator; Redaktionsregel Seed-Liste", "Q1394"),
     EthicsWatchlistEntry("Josef Stalin", RiskResult.BLOCK, "Massenverbrechen; Chat-Verkoerperung ausgeschlossen", "Q855"),
     EthicsWatchlistEntry("Benito Mussolini", RiskResult.BLOCK, "faschistischer Diktator", "Q23559"),
     EthicsWatchlistEntry("Mohammed", RiskResult.BLOCK, "Darstellungs-/Verkoerperungsverbot; religioes hochsensibel", "Q9458"),

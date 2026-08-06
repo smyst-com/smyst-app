@@ -18,6 +18,15 @@ P_DEATH = "P570"
 P_IMAGE = "P18"
 P_NOTABLE_WORKS = "P800"
 P_OCCUPATION = "P106"
+P_GENDER = "P21"
+
+# Wikidata sex-or-gender (P21) -> Stimmen-Geschlecht fuer die Sprachwelle.
+# Nur binaere Werte werden gemappt; alles andere bleibt None (neutraler
+# Fallback, keine Vermutungen laut Master-Prompt).
+GENDER_BY_QID = {
+    "Q6581072": "female",
+    "Q6581097": "male",
+}
 
 #: Bevorzugte Wikipedia-Sprachversionen fuer Quellen-Snapshots.
 PREFERRED_WIKIS = ("dewiki", "enwiki", "frwiki", "eswiki", "itwiki")
@@ -46,6 +55,9 @@ class ResearchDocument:
     wikipedia_titles: dict[str, str]
     sources: tuple[SourceRef, ...] = ()
     conflicts: tuple[str, ...] = ()
+    # Stimmen-Geschlecht aus Wikidata P21 ('female'/'male'); None = unbekannt
+    # oder nicht-binaer -> neutraler Fallback in der Sprachwelle.
+    gender: str | None = None
 
     @property
     def source_count(self) -> int:
@@ -96,6 +108,8 @@ def parse_entity(payload: dict, qid: str) -> ResearchDocument:
     death_value = _first_claim_value(entity, P_DEATH)
     birth_value = _first_claim_value(entity, P_BIRTH)
     image_value = _first_claim_value(entity, P_IMAGE)
+    gender_qids = _claim_item_ids(entity, P_GENDER)
+    gender = GENDER_BY_QID.get(gender_qids[0]) if gender_qids else None
 
     wikipedia_titles = {
         wiki: link["title"]
@@ -113,6 +127,7 @@ def parse_entity(payload: dict, qid: str) -> ResearchDocument:
         notable_work_qids=_claim_item_ids(entity, P_NOTABLE_WORKS),
         occupation_qids=_claim_item_ids(entity, P_OCCUPATION),
         wikipedia_titles=wikipedia_titles,
+        gender=gender,
     )
 
 

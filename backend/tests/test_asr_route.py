@@ -25,15 +25,66 @@ def test_asr_status_is_transient_and_lists_required_languages(monkeypatch) -> No
         assert lang in body["languages"]
 
 
-def test_asr_transcribe_requires_worker(monkeypatch) -> None:
+def test_asr_transcribe_requires_worker_or_local_engine(monkeypatch) -> None:
     monkeypatch.delenv("VOICE_WORKER_URL", raising=False)
     monkeypatch.delenv("VOICE_WORKER_TOKEN", raising=False)
+    monkeypatch.setattr(asr_route, "_local_asr_available", lambda: False)
     audio = base64.b64encode(b"0" * 1000).decode()
 
     response = client.post("/asr/transcribe", json={"audioBase64": audio, "contentType": "audio/webm", "lang": "tr"})
 
     assert response.status_code == 503
     assert response.json()["detail"] == "asr_worker_not_configured"
+
+
+def test_asr_status_ready_with_local_engine(monkeypatch) -> None:
+    monkeypatch.delenv("VOICE_WORKER_URL", raising=False)
+    monkeypatch.delenv("VOICE_WORKER_TOKEN", raising=False)
+    monkeypatch.setattr(asr_route, "_local_asr_available", lambda: True)
+
+    response = client.get("/asr/status")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ready"] is True
+    assert body["engine"] == "local-whisper"
+
+
+def test_asr_transcribe_uses_local_engine_without_worker(monkeypatch) -> None:
+    monkeypatch.delenv("VOICE_WORKER_URL", raising=False)
+    monkeypatch.delenv("VOICE_WORKER_TOKEN", raising=False)
+    monkeypatch.setattr(asr_route, "_local_asr_available", lambda: True)
+    calls: list[dict] = []
+
+    def fake_local_transcribe(audio: bytes, lang: str | None):
+        calls.append({"audio_len": len(audio), "lang": lang})
+        return "Hallo, wie geht es dir?", "de"
+
+    monkeypatch.setattr(asr_route, "_local_transcribe", fake_local_transcribe)
+    audio = base64.b64encode(b"3" * 1200).decode()
+
+    response = client.post("/asr/transcribe", json={"audioBase64": audio, "contentType": "audio/webm", "lang": "de-DE"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["text"] == "Hallo, wie geht es dir?"
+    assert body["language"] == "de"
+    assert body["engine"] == "local-whisper"
+    assert calls[0]["lang"] == "de"
+    assert calls[0]["audio_len"] == 1200
+
+
+def test_asr_local_engine_rejects_empty_transcript(monkeypatch) -> None:
+    monkeypatch.delenv("VOICE_WORKER_URL", raising=False)
+    monkeypatch.delenv("VOICE_WORKER_TOKEN", raising=False)
+    monkeypatch.setattr(asr_route, "_local_asr_available", lambda: True)
+    monkeypatch.setattr(asr_route, "_local_transcribe", lambda _audio, _lang: ("", None))
+    audio = base64.b64encode(b"4" * 1200).decode()
+
+    response = client.post("/asr/transcribe", json={"audioBase64": audio, "contentType": "audio/webm"})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "empty_transcript"
 
 
 def test_asr_transcribe_proxies_to_voice_worker(monkeypatch) -> None:

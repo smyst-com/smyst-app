@@ -15,6 +15,7 @@ RESEARCH = {
     "description": "britischer Naturforscher",
     "birth_date_wikidata": "1809-02-12",
     "image_commons_file": "Charles Darwin.jpg",
+    "gender": "male",
     "sources": [
         {"title": "Wikidata EntityData", "url": "https://w.wiki/x", "snapshot_key": "pipeline/sources/Q1035/wikidata-entitydata.json"},
         {"title": "Charles Darwin", "url": "https://de.wikipedia.org/x", "snapshot_key": "pipeline/sources/Q1035/wikipedia-de.json"},
@@ -47,6 +48,7 @@ def test_slugify_handles_umlauts_and_specials() -> None:
 
 def test_capsule_contains_all_mandatory_parts() -> None:
     capsule = build_capsule(make_candidate(), RESEARCH, config=CONFIG)
+    assert capsule.gender == "male"
     assert capsule.slug == "charles-darwin"
     assert isinstance(capsule.twin_id, UUID)
     assert "KI-Rekonstruktion" in capsule.persona_prompt

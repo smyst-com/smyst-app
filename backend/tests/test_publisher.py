@@ -41,6 +41,7 @@ CAPSULE_DOC = {
     "seo": {"json_ld": {"name": "Charles Darwin", "deathDate": "1882-04-19",
                         "birthDate": "1809-02-12", "description": "britischer Naturforscher"}},
     "sources": [{"title": "Wikidata"}, {"title": "Wikipedia de"}, {"title": "Wikipedia en"}],
+    "gender": "male",
 }
 
 
@@ -63,6 +64,7 @@ def test_publish_record_contains_disclosure_and_references() -> None:
     assert rec["approved_by"] == "adam@smyst.com"
     assert rec["visible"] is True
     assert rec["birth_date"] == "1809-02-12"
+    assert rec["gender"] == "male"
 
 
 def test_upsert_index_replaces_same_qid_and_blocks_conflicts() -> None:
@@ -191,6 +193,27 @@ def test_publish_one_rejects_curated_live_duplicate() -> None:
     ).startswith("published")
 
 
+def test_publish_one_rejects_transliteration_variant_duplicate() -> None:
+    # Befund 2026-07-29: kuratiert 'mustafa-kemal-atatuerk' vs. Pipeline
+    # 'mustafa-kemal-ataturk' — Umschrift-Varianten muessen als Dublette gelten.
+    from app.workers.publish_profiles import publish_one
+
+    store = _prepared_store()
+    result = publish_one(
+        "Q1035", store=store, config=CONFIG, approved_by="a@smyst.com",
+        dry_run=True, live_slugs={"charles-daerwin"},
+    )
+    assert result.startswith("abgelehnt: Slug 'charles-darwin'")
+
+
+def test_normalize_slug_folds_german_transliterations() -> None:
+    from app.workers.publish_profiles import normalize_slug
+
+    assert normalize_slug("mustafa-kemal-atatuerk") == normalize_slug("mustafa-kemal-ataturk")
+    assert normalize_slug("johann-strauss") == normalize_slug("johann-straus")
+    assert normalize_slug("charles-darwin") != normalize_slug("marie-curie")
+
+
 def test_select_reviewed_qids_requires_qa_passed() -> None:
     from app.workers.publish_profiles import select_reviewed_qids
 
@@ -231,3 +254,27 @@ def test_publish_one_rejects_wrong_status_and_daily_limit() -> None:
     assert publish_one(
         "Q1035", store=store, config=disabled, approved_by="a@smyst.com", dry_run=True
     ).startswith("abgelehnt: Tageslimit")
+
+
+def test_publish_record_prefers_candidate_life_data_and_carries_labels() -> None:
+    cand = {**CANDIDATE_DOC, "wikidata_qid": "Q8018", "name": "Augustinus von Hippo",
+            "birth_date": "0354-11-13", "death_date": "0430-08-28",
+            "birth_label": None, "death_label": None}
+    caps = {**CAPSULE_DOC, "slug": "augustinus-von-hippo", "name": "Augustinus von Hippo",
+            "seo": {"json_ld": {"birthDate": None, "deathDate": "0430-08-28"}}}
+    rec = build_publish_record(cand, caps, approved_by="adam@smyst.com",
+                               now=datetime(2026, 7, 17, tzinfo=timezone.utc))
+    assert rec["birth_date"] == "0354-11-13"
+    assert rec["death_date"] == "0430-08-28"
+
+
+def test_publish_record_keeps_approximate_labels() -> None:
+    cand = {**CANDIDATE_DOC, "wikidata_qid": "Q131805", "name": "Erasmus",
+            "birth_date": None, "death_date": "1536-07-12",
+            "birth_label": "um 1466", "death_label": None}
+    caps = {**CAPSULE_DOC, "slug": "erasmus",
+            "seo": {"json_ld": {"birthDate": None, "deathDate": "1536-07-12"}}}
+    rec = build_publish_record(cand, caps, approved_by="adam@smyst.com",
+                               now=datetime(2026, 7, 17, tzinfo=timezone.utc))
+    assert rec["birth_label"] == "um 1466"
+    assert rec["death_date"] == "1536-07-12"

@@ -43,9 +43,16 @@ def build_publish_record(
         "name": capsule_doc.get("name") or candidate_doc.get("name"),
         "category": candidate_doc.get("category"),
         "language_default": capsule_doc.get("language_default", "de"),
-        "birth_date": (seo.get("json_ld") or {}).get("birthDate"),
-        "death_date": candidate_doc.get("death_date"),
+        "birth_date": candidate_doc.get("birth_date") or (seo.get("json_ld") or {}).get("birthDate"),
+        "death_date": candidate_doc.get("death_date") or (seo.get("json_ld") or {}).get("deathDate"),
+        "birth_label": candidate_doc.get("birth_label"),
+        "death_label": candidate_doc.get("death_label"),
+        # 4-Zeilen-Profilformat: Ort gehoert zu Zeile 2 bzw. 3.
+        "birth_place": candidate_doc.get("birth_place"),
+        "death_place": candidate_doc.get("death_place"),
         "description": (seo.get("json_ld") or {}).get("description"),
+        # Stimmen-Geschlecht (Wikidata P21) fuer die Sprachwelle; None = neutral.
+        "gender": capsule_doc.get("gender") if capsule_doc.get("gender") in ("female", "male") else None,
         "persona_prompt_key": candidate_doc.get("prompt_key"),
         "capsule_key": f"pipeline/capsules/{candidate_doc['wikidata_qid']}/capsule.json",
         "image": image,

@@ -5,6 +5,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { buildServiceUrl, fetchService } from '@/lib/serviceEndpoints'
 import { applyUserVoiceProfile } from '@/lib/userVoice'
+import { DEFAULT_LANG, useLanguage } from '@/lib/i18n'
+import { useStaticTranslations } from '@/lib/staticTranslations'
 
 const VOICE_CHOICES: Array<{ id: string; label: string }> = [
   { id: 'de-thorsten', label: 'Männlich · klar' },
@@ -28,6 +30,8 @@ interface VoiceProfileState {
 }
 
 export default function UserVoiceCard() {
+  const { lang } = useLanguage()
+  const v = useStaticTranslations(lang).voice
   const [voice, setVoice] = useState<VoiceProfileState | null>(null)
   const [consentChecked, setConsentChecked] = useState(false)
   const [selectedVoiceId, setSelectedVoiceId] = useState('')
@@ -121,9 +125,9 @@ export default function UserVoiceCard() {
         })
       }, 1000)
     } catch {
-      setStatus('Mikrofon nicht verfügbar. Bitte Mikrofon-Zugriff erlauben.')
+      setStatus(lang === DEFAULT_LANG ? 'Mikrofon nicht verfügbar. Bitte Mikrofon-Zugriff erlauben.' : v.micDenied)
     }
-  }, [stopRecording])
+  }, [stopRecording, lang, v])
 
   const previewVoice = useCallback(async (voiceId: string) => {
     try {
@@ -186,7 +190,7 @@ export default function UserVoiceCard() {
           | { ok?: boolean; sampleKey?: string; error?: { message?: string } }
           | null
         if (!uploadResponse.ok || !uploadData?.sampleKey) {
-          setStatus(uploadData?.error?.message ?? 'Stimmprobe konnte nicht hochgeladen werden.')
+          setStatus(uploadData?.error?.message ?? (lang === DEFAULT_LANG ? 'Stimmprobe konnte nicht hochgeladen werden.' : v.sampleUploadFailed))
           setSaving(false)
           return
         }
@@ -209,18 +213,18 @@ export default function UserVoiceCard() {
         | { voice?: VoiceProfileState | null; names?: string[]; error?: { message?: string } }
         | null
       if (!response.ok) {
-        setStatus(data?.error?.message ?? `Speichern fehlgeschlagen (${response.status}).`)
+        setStatus(data?.error?.message ?? (lang === DEFAULT_LANG ? `Speichern fehlgeschlagen (${response.status}).` : `${v.saveFailed} (${response.status}).`))
         setSaving(false)
         return
       }
       setVoice(data?.voice ?? null)
       applyUserVoiceProfile(data?.names, data?.voice?.consent ? (data?.voice?.sampleKey ? 'de-own' : data?.voice?.voiceId) : undefined)
-      setStatus('Stimmprofil gespeichert. Dein Twin spricht jetzt mit dieser Stimme.')
+      setStatus(lang === DEFAULT_LANG ? 'Stimmprofil gespeichert. Dein Twin spricht jetzt mit dieser Stimme.' : v.saved)
     } catch {
-      setStatus('Speichern gerade nicht möglich. Bitte später erneut versuchen.')
+      setStatus(lang === DEFAULT_LANG ? 'Speichern gerade nicht möglich. Bitte später erneut versuchen.' : v.saveUnavailable)
     }
     setSaving(false)
-  }, [consentChecked, selectedVoiceId, sampleBlob])
+  }, [consentChecked, selectedVoiceId, sampleBlob, lang, v])
 
   const revoke = useCallback(async () => {
     setSaving(true)
@@ -237,36 +241,37 @@ export default function UserVoiceCard() {
         setVoice(null)
         setConsentChecked(false)
         applyUserVoiceProfile(data?.names, undefined)
-        setStatus('Zustimmung widerrufen. Dein Twin nutzt wieder die Standardstimme.')
+        setStatus(lang === DEFAULT_LANG ? 'Zustimmung widerrufen. Dein Twin nutzt wieder die Standardstimme.' : v.revoked)
       } else {
-        setStatus(`Widerruf fehlgeschlagen (${response.status}).`)
+        setStatus(lang === DEFAULT_LANG ? `Widerruf fehlgeschlagen (${response.status}).` : `${v.revokeFailed} (${response.status}).`)
       }
     } catch {
-      setStatus('Widerruf gerade nicht möglich. Bitte später erneut versuchen.')
+      setStatus(lang === DEFAULT_LANG ? 'Widerruf gerade nicht möglich. Bitte später erneut versuchen.' : v.revokeUnavailable)
     }
     setSaving(false)
-  }, [])
+  }, [lang, v])
 
   const active = Boolean(voice?.consent && voice?.voiceId)
-  const activeLabel = VOICE_CHOICES.find((choice) => choice.id === voice?.voiceId)?.label
+  const activeChoice = VOICE_CHOICES.find((choice) => choice.id === voice?.voiceId)
+  const activeLabel = activeChoice ? (lang === DEFAULT_LANG ? activeChoice.label : (v.choices[activeChoice.id] ?? activeChoice.label)) : undefined
   const voiceStatusItems = [
-    ['Stimmprobe', voice?.sampleKey || sampleBlob ? 'vorhanden' : 'optional'],
-    ['Geltung', 'nur eigene Twins'],
-    ['Freigabe', active ? 'aktiv' : 'offen'],
+    [lang === DEFAULT_LANG ? 'Stimmprobe' : v.statSample, voice?.sampleKey || sampleBlob ? (lang === DEFAULT_LANG ? 'vorhanden' : v.statSampleYes) : (lang === DEFAULT_LANG ? 'optional' : v.statSampleOptional)],
+    [lang === DEFAULT_LANG ? 'Geltung' : v.statScope, lang === DEFAULT_LANG ? 'nur eigene Twins' : v.statScopeValue],
+    [lang === DEFAULT_LANG ? 'Freigabe' : v.statRelease, active ? (lang === DEFAULT_LANG ? 'aktiv' : v.statReleaseActive) : (lang === DEFAULT_LANG ? 'offen' : v.statReleaseOpen)],
   ]
 
   return (
     <section className="rounded-lg border border-white/12 bg-white/[0.05] p-6 lg:col-span-2">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="mb-1 text-lg font-semibold">Meine Stimme</h3>
+          <h3 className="mb-1 text-lg font-semibold">{lang === DEFAULT_LANG ? 'Meine Stimme' : v.title}</h3>
           <p className="text-sm text-[#555b64]">
-            Dein Twin spricht mit deiner gewählten Stimme, sobald du mit deinen eigenen Profilen chattest.
+            {lang === DEFAULT_LANG ? 'Dein Twin spricht mit deiner gewählten Stimme, sobald du mit deinen eigenen Profilen chattest.' : v.subtitle}
           </p>
         </div>
         {active && (
           <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-semibold text-emerald-500">
-            Aktiv{activeLabel ? ` · ${activeLabel}` : ''}{voice?.sampleKey ? ' · Stimmprobe hinterlegt' : ''}
+            {lang === DEFAULT_LANG ? 'Aktiv' : v.badgeActive}{activeLabel ? ` · ${activeLabel}` : ''}{voice?.sampleKey ? (lang === DEFAULT_LANG ? ' · Stimmprobe hinterlegt' : ` · ${v.badgeSampleStored}`) : ''}
           </span>
         )}
       </div>
@@ -282,10 +287,9 @@ export default function UserVoiceCard() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <p className="text-sm font-semibold">1. Stimmprobe aufnehmen</p>
+          <p className="text-sm font-semibold">{lang === DEFAULT_LANG ? '1. Stimmprobe aufnehmen' : v.step1Title}</p>
           <p className="mt-1 text-xs text-[#767d87]">
-            Sprich 10–30 Sekunden frei. Die Aufnahme bleibt privat gespeichert und vorbereitet,
-            damit dein eigener Twin später natürlicher klingen kann.
+            {lang === DEFAULT_LANG ? 'Sprich 10–30 Sekunden frei. Die Aufnahme bleibt privat gespeichert und vorbereitet, damit dein eigener Twin später natürlicher klingen kann.' : v.step1Text}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
@@ -293,22 +297,21 @@ export default function UserVoiceCard() {
               onClick={() => (recording ? stopRecording() : void startRecording())}
               className={`rounded-md px-3 py-2 text-sm font-semibold transition-colors ${recording ? 'bg-red-500/20 text-red-400' : 'border border-white/20 bg-white/[0.06] hover:bg-white/[0.12]'}`}
             >
-              {recording ? `Aufnahme stoppen (${recordSeconds}s)` : sampleBlob ? 'Neu aufnehmen' : 'Aufnahme starten'}
+              {recording ? (lang === DEFAULT_LANG ? `Aufnahme stoppen (${recordSeconds}s)` : `${v.recordStop} (${recordSeconds}s)`) : sampleBlob ? (lang === DEFAULT_LANG ? 'Neu aufnehmen' : v.recordNew) : (lang === DEFAULT_LANG ? 'Aufnahme starten' : v.recordStart)}
             </button>
             {sampleUrl && !recording && (
               <audio controls src={sampleUrl} className="h-9 max-w-full" />
             )}
           </div>
           {saving && sampleBlob && (
-            <p className="mt-2 text-xs text-[#767d87]">Stimmprobe wird hochgeladen …</p>
+            <p className="mt-2 text-xs text-[#767d87]">{lang === DEFAULT_LANG ? 'Stimmprobe wird hochgeladen …' : v.uploading}</p>
           )}
         </div>
 
         <div className="rounded-lg border border-white/10 bg-white/[0.03] p-4">
-          <p className="text-sm font-semibold">2. Twin-Stimme wählen</p>
+          <p className="text-sm font-semibold">{lang === DEFAULT_LANG ? '2. Twin-Stimme wählen' : v.step2Title}</p>
           <p className="mt-1 text-xs text-[#767d87]">
-            Wähle die smyst.com-Stimme, die deiner am nächsten kommt. Mit „Anhören" kannst du jede
-            Stimme kurz testen.
+            {lang === DEFAULT_LANG ? 'Wähle die smyst.com-Stimme, die deiner am nächsten kommt. Mit „Anhören" kannst du jede Stimme kurz testen.' : v.step2Text}
           </p>
           <div className="mt-3 grid gap-2">
             {VOICE_CHOICES.map((choice) => (
@@ -323,7 +326,7 @@ export default function UserVoiceCard() {
                     checked={selectedVoiceId === choice.id}
                     onChange={() => setSelectedVoiceId(choice.id)}
                   />
-                  {choice.label}
+                  {lang === DEFAULT_LANG ? choice.label : (v.choices[choice.id] ?? choice.label)}
                 </span>
                 <button
                   type="button"
@@ -331,7 +334,7 @@ export default function UserVoiceCard() {
                   disabled={previewingId !== null}
                   className="rounded border border-white/20 px-2 py-1 text-xs hover:bg-white/[0.08] disabled:opacity-50"
                 >
-                  {previewingId === choice.id ? 'Spielt …' : 'Anhören'}
+                  {previewingId === choice.id ? (lang === DEFAULT_LANG ? 'Spielt …' : v.previewPlaying) : (lang === DEFAULT_LANG ? 'Anhören' : v.previewBtn)}
                 </button>
               </label>
             ))}
@@ -347,9 +350,7 @@ export default function UserVoiceCard() {
           className="mt-0.5"
         />
         <span className="text-[#8e97a8]">
-          Ich stimme zu, dass smyst.com meine Stimmaufnahme privat speichert, um mein persönliches
-          Stimmprofil zu erstellen. Es gilt nur für meine eigenen Twins, wird nicht öffentlich
-          geteilt und ich kann die Zustimmung jederzeit widerrufen.
+          {lang === DEFAULT_LANG ? 'Ich stimme zu, dass smyst.com meine Stimmaufnahme privat speichert, um mein persönliches Stimmprofil zu erstellen. Es gilt nur für meine eigenen Twins, wird nicht öffentlich geteilt und ich kann die Zustimmung jederzeit widerrufen.' : v.agreeText}
         </span>
       </label>
 
@@ -360,7 +361,7 @@ export default function UserVoiceCard() {
           disabled={!consentChecked || !selectedVoiceId || saving || recording}
           className="rounded-md border border-white/20 bg-white/[0.08] px-4 py-2 text-sm font-semibold transition-colors hover:bg-white/[0.14] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {saving ? 'Speichert …' : 'Stimme aktivieren'}
+          {saving ? (lang === DEFAULT_LANG ? 'Speichert …' : v.saveBusy) : (lang === DEFAULT_LANG ? 'Stimme aktivieren' : v.saveBtn)}
         </button>
         {active && (
           <button
@@ -369,7 +370,7 @@ export default function UserVoiceCard() {
             disabled={saving}
             className="rounded-md border border-red-500/30 px-4 py-2 text-sm text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
           >
-            Zustimmung widerrufen
+            {lang === DEFAULT_LANG ? 'Zustimmung widerrufen' : v.revokeBtn}
           </button>
         )}
         {status && <p className="text-sm text-[#8e97a8]">{status}</p>}

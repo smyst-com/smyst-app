@@ -13,6 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchAuth, storeAuthToken } from '@/lib/authEndpoints';
+import type { StaticTranslations } from '@/lib/staticTranslations';
 
 function captureResetTokenFromLocation(): string | null {
   const match = /[#&]smyst_pwreset=([^&]+)/.exec(window.location.hash);
@@ -25,7 +26,7 @@ function captureResetTokenFromLocation(): string | null {
   return token;
 }
 
-export default function PasswordResetGate() {
+export default function PasswordResetGate({ labels }: { labels?: StaticTranslations['pwreset'] }) {
   const [token, setToken] = useState<string | null>(null);
   const [password, setPassword] = useState('');
   const [repeat, setRepeat] = useState('');
@@ -57,6 +58,7 @@ export default function PasswordResetGate() {
       if (!res.ok) {
         setError(
           data?.error?.message ??
+            labels?.errorReset ??
             'Zurücksetzen fehlgeschlagen. Bitte fordere einen neuen Link an.'
         );
         return;
@@ -64,7 +66,7 @@ export default function PasswordResetGate() {
       if (data?.token) storeAuthToken(data.token);
       window.location.href = '/';
     } catch {
-      setError('Verbindung fehlgeschlagen. Bitte erneut versuchen.');
+      setError(labels?.errorNetwork ?? 'Verbindung fehlgeschlagen. Bitte erneut versuchen.');
     } finally {
       setBusy(false);
     }
@@ -78,19 +80,19 @@ export default function PasswordResetGate() {
       className="fixed inset-0 z-[80] grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      aria-label="Neues Passwort setzen"
+      aria-label={labels?.title ?? 'Neues Passwort setzen'}
     >
       <div className="w-full max-w-[420px] rounded-2xl border border-white/15 bg-[#0d1526] p-6 shadow-2xl">
-        <h1 className="text-xl font-bold text-white">Neues Passwort setzen</h1>
+        <h1 className="text-xl font-bold text-white">{labels?.title ?? 'Neues Passwort setzen'}</h1>
         <p className="mt-1 text-sm text-[#9aa6b7]">
-          Wähle ein neues Passwort für dein smyst.com-Konto (mindestens 8 Zeichen).
+          {labels?.intro ?? 'Wähle ein neues Passwort für dein smyst.com-Konto (mindestens 8 Zeichen).'}
         </p>
         <div className="mt-4 grid gap-2">
           <input
             className={inputClass}
             type="password"
             autoComplete="new-password"
-            placeholder="Neues Passwort"
+            placeholder={labels?.passwordPlaceholder ?? 'Neues Passwort'}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
           />
@@ -98,12 +100,12 @@ export default function PasswordResetGate() {
             className={inputClass}
             type="password"
             autoComplete="new-password"
-            placeholder="Passwort wiederholen"
+            placeholder={labels?.repeatPlaceholder ?? 'Passwort wiederholen'}
             value={repeat}
             onChange={(event) => setRepeat(event.target.value)}
           />
           {password && repeat && password !== repeat && (
-            <p className="text-xs font-semibold text-[#ffb4b4]">Die Passwörter stimmen nicht überein.</p>
+            <p className="text-xs font-semibold text-[#ffb4b4]">{labels?.mismatch ?? 'Die Passwörter stimmen nicht überein.'}</p>
           )}
           {error && <p className="text-xs font-semibold text-[#ffb4b4]">{error}</p>}
           <button
@@ -112,14 +114,14 @@ export default function PasswordResetGate() {
             disabled={!canSubmit}
             className="mt-1 min-h-[44px] rounded-lg bg-white px-3 text-sm font-bold text-[#111722] transition hover:bg-[#eef6ff] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {busy ? 'Speichern…' : 'Passwort speichern und anmelden'}
+            {busy ? (labels?.submitBusy ?? 'Speichern…') : (labels?.submit ?? 'Passwort speichern und anmelden')}
           </button>
           <button
             type="button"
             onClick={() => setToken(null)}
             className="text-center text-xs text-[#8e97a8] hover:text-white"
           >
-            Abbrechen
+            {labels?.cancel ?? 'Abbrechen'}
           </button>
         </div>
       </div>

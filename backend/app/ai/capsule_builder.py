@@ -141,6 +141,9 @@ class TwinCapsule:
     sources: list[dict]
     risk_flags: dict[str, str]
     risk_score: float | None
+    # Stimmen-Geschlecht aus Wikidata P21 ('female'/'male'); None = neutraler
+    # Fallback der Sprachwelle (Master Prompt: Stimme gehoert zur Capsule).
+    gender: str | None = None
     version: int = 1
     capsule_id: UUID = field(default_factory=uuid4)
 
@@ -178,4 +181,5 @@ def build_capsule(
         sources=list(research.get("sources", [])),
         risk_flags=dict(candidate.risk_flags),
         risk_score=candidate.risk_score,
+        gender=research.get("gender") if research.get("gender") in ("female", "male") else None,
     )

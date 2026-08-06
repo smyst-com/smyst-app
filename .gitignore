@@ -68,3 +68,12 @@ tmp
 # --- OS ---
 Thumbs.db
 desktop.ini
+
+
+# Build-generierte Brand-Assets (Quelle: branding/generated/*.b64)
+public/icons/icon-192.png
+public/icons/icon-512.png
+public/icons/maskable-512.png
+public/apple-touch-icon.png
+public/og-image.png
+public/favicon.ico

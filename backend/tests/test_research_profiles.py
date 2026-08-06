@@ -62,6 +62,7 @@ def entity_payload(
                                "datavalue": {"value": {"time": "+1809-02-12T00:00:00Z"}}}}],
         "P106": [{"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q901"}}}}],
         "P800": [{"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q20124"}}}}],
+        "P21": [{"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q6581097"}}}}],
     }
     if with_image:
         claims["P18"] = [
@@ -99,6 +100,22 @@ def test_parse_entity_extracts_all_fields() -> None:
     assert doc.occupation_qids == ("Q901",)
     assert doc.notable_work_qids == ("Q20124",)
     assert set(doc.wikipedia_titles) == {"dewiki", "enwiki"}
+    assert doc.gender == "male"
+
+
+def test_parse_entity_gender_female_and_unknown() -> None:
+    payload = entity_payload()
+    payload["entities"]["Q1035"]["claims"]["P21"] = [
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q6581072"}}}}
+    ]
+    assert parse_entity(payload, "Q1035").gender == "female"
+    # Nicht-binaerer oder fehlender P21-Wert -> None (neutraler Fallback).
+    payload["entities"]["Q1035"]["claims"]["P21"] = [
+        {"mainsnak": {"snaktype": "value", "datavalue": {"value": {"id": "Q48270"}}}}
+    ]
+    assert parse_entity(payload, "Q1035").gender is None
+    del payload["entities"]["Q1035"]["claims"]["P21"]
+    assert parse_entity(payload, "Q1035").gender is None
 
 
 def test_parse_entity_handles_unknown_month_day() -> None:

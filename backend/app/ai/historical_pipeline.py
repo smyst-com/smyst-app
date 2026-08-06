@@ -68,7 +68,10 @@ class PipelineConfig:
 
     enabled: bool = False
     daily_publish_limit: int = 5
-    daily_candidate_limit: int = 50
+    # 01.08.2026: 50 -> 1000 auf Anweisung des Betreibers (Tageslimit-Erhoehung).
+    # Wirkt als Obergrenze fuer Screening/Seed-Uebernahme; die reale Rate pro
+    # Lauf begrenzt weiterhin die Rechenzeit der Worker-Kette (~100-120).
+    daily_candidate_limit: int = 1000
     min_sources: int = 3
     max_death_year: int = 1955
     min_sitelinks: int = 15
@@ -86,6 +89,12 @@ class HistoricalCandidate:
     death_date: date
     category: str
     birth_date: date | None = None
+    birth_label: str | None = None
+    death_label: str | None = None
+    # Geburts-/Sterbeort als "Stadt, Land" (Wikidata P19/P20 + P17) fuer die
+    # Zeilen 2 und 3 des verbindlichen 4-Zeilen-Profilformats.
+    birth_place: str | None = None
+    death_place: str | None = None
     country: str | None = None
     language: str | None = None
     sitelink_count: int = 0
