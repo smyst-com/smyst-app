@@ -37,6 +37,8 @@ export interface TwinRecord {
   description: string
   imageUrl?: string
   imageKey?: string
+  // Aufgeloester Avatar nach SSOT-Regel: Twin-Bild ?? Besitzer-Avatar ?? Platzhalter.
+  resolvedAvatarUrl?: string
   categories: string[]
   languages: string[]
   visibility: TwinVisibility
@@ -191,6 +193,11 @@ export interface UserProfileRecord {
   id: 'default'
   userSub: string
   displayName: string
+  // Avatar-SSOT (PR #189): avatarUrl ist der Besitzer-Avatar (beim ersten
+  // Profil-Abruf aus dem Google-Login-Bild uebernommen), resolvedAvatarUrl
+  // die fertig aufgeloeste Anzeige-URL (immer gesetzt, notfalls Platzhalter).
+  avatarUrl?: string
+  resolvedAvatarUrl?: string
   headline?: string
   privateBio?: string
   publicBio?: string
@@ -629,7 +636,7 @@ export function useTwinMvp() {
   )
 
   const updateProfile = useCallback(
-    (input: Partial<Pick<UserProfileRecord, 'displayName' | 'headline' | 'privateBio' | 'publicBio' | 'roles' | 'expertise' | 'goals' | 'languages' | 'tone' | 'visibility'>>) =>
+    (input: Partial<Pick<UserProfileRecord, 'displayName' | 'avatarUrl' | 'headline' | 'privateBio' | 'publicBio' | 'roles' | 'expertise' | 'goals' | 'languages' | 'tone' | 'visibility'>>) =>
       run(async () => {
         const body = await apiJson<{ profile: UserProfileRecord; storagePlan: Record<string, unknown> }>('/api/profile', {
           method: 'PATCH',
