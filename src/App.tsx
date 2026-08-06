@@ -3275,7 +3275,8 @@ function TwinProfileView({
         name: privateTwin.name,
         slug: privateTwin.slug,
         description: privateTwin.description,
-        imageUrl: privateTwin.imageUrl ?? null,
+        // Avatar-SSOT: Twin-Bild ?? Besitzer-Avatar ?? Platzhalter (vom Backend aufgeloest).
+        imageUrl: privateTwin.resolvedAvatarUrl ?? privateTwin.imageUrl ?? null,
         categories: privateTwin.categories ?? [],
         languages: privateTwin.languages ?? [],
         visibility: privateTwin.visibility,
@@ -3949,6 +3950,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   const [profileTwinCount, setProfileTwinCount] = useState(0)
   const [profileDraft, setProfileDraft] = useState({
     displayName: '',
+    avatarUrl: '',
     headline: '',
     privateBio: '',
     publicBio: '',
@@ -3974,6 +3976,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   const hydrateProfileDraft = (next: UserProfileRecord) => {
     setProfileDraft({
       displayName: next.displayName,
+      avatarUrl: next.avatarUrl ?? '',
       headline: next.headline ?? '',
       privateBio: next.privateBio ?? '',
       publicBio: next.publicBio ?? '',
@@ -4007,6 +4010,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
   const saveProfile = async () => {
     const result = await twinMvp.updateProfile({
       displayName: profileDraft.displayName,
+      avatarUrl: profileDraft.avatarUrl.trim(),
       headline: profileDraft.headline,
       privateBio: profileDraft.privateBio,
       publicBio: profileDraft.publicBio,
@@ -4219,8 +4223,8 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 items-center gap-5">
                 <div className="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e7f6ff] text-2xl font-bold text-[#0b1c44] ring-1 ring-white/50">
-                  {auth.user?.picture ? (
-                    <img src={auth.user.picture} alt="" className="h-full w-full object-cover" />
+                  {profile?.resolvedAvatarUrl || auth.user?.picture ? (
+                    <img src={profile?.resolvedAvatarUrl || auth.user?.picture || ''} alt="" className="h-full w-full object-cover" />
                   ) : (
                     (auth.user?.name?.[0] ?? auth.user?.email?.[0] ?? 'S').toUpperCase()
                   )}
@@ -4287,6 +4291,18 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                   />
                 </label>
               </div>
+              <label className="grid gap-1 text-sm font-semibold">
+                Profilbild-URL
+                <input
+                  value={profileDraft.avatarUrl}
+                  onChange={(event) => setProfileDraft((current) => ({ ...current, avatarUrl: event.target.value }))}
+                  placeholder="https://… (leer lassen = Google-Bild bzw. Platzhalter)"
+                  className="rounded-lg border border-white/24 bg-white/18 px-3 py-2 text-sm outline-none focus:border-[#59C7FF]"
+                />
+                <span className="text-xs font-normal text-[#667085]">
+                  Gilt überall als dein Profilbild; Twins ohne eigenes Bild übernehmen es automatisch. Nur https-Adressen.
+                </span>
+              </label>
               <label className="grid gap-1 text-sm font-semibold">
                 Private Bio
                 <textarea
@@ -4856,9 +4872,18 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
           {twins.map((twin) => (
             <Card key={twin.id} className="p-6">
               <div className="mb-4 flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-bold">{twin.name}</h2>
-                  <p className="mt-1 text-sm text-[#555b64]">{twin.description || t.myTwins.noDescription}</p>
+                <div className="flex min-w-0 items-start gap-3">
+                  {twin.resolvedAvatarUrl && (
+                    <img
+                      src={twin.resolvedAvatarUrl}
+                      alt=""
+                      className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-white/40"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold">{twin.name}</h2>
+                    <p className="mt-1 text-sm text-[#555b64]">{twin.description || t.myTwins.noDescription}</p>
+                  </div>
                 </div>
                 <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${twin.visibility === 'public' ? 'bg-emerald-500/14 text-emerald-800' : 'bg-slate-500/14 text-slate-700'}`}>
                   {twin.visibility === 'public' ? 'Öffentlich' : 'Privat'}

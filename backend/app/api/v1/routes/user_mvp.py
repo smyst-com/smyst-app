@@ -25,6 +25,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from app.ai.avatar import resolved_avatar_url
 from app.api.v1.routes.auth import _session_from_request
 from app.integrations import user_store
 
@@ -101,6 +102,7 @@ def _default_profile(sub: str) -> dict[str, Any]:
         "id": "default",
         "userSub": sub,
         "displayName": "",
+        "avatarUrl": "",
         "headline": "",
         "privateBio": "",
         "publicBio": "",
@@ -166,8 +168,50 @@ def _find_twin(doc: dict[str, Any], twin_id: str) -> dict[str, Any] | None:
     return None
 
 
+def _clean_avatar_url(value: str | None) -> str:
+    """Nur https-URLs oder App-relative Pfade; alles andere wird verworfen.
+
+    Verhindert javascript:/data:-URLs im img-src und haelt die Laenge im Rahmen.
+    Leerer String bedeutet 'Avatar entfernt' (Platzhalter greift wieder).
+    """
+    cleaned = _clean_text(value, 600)
+    if not cleaned:
+        return ""
+    if cleaned.startswith("https://") or cleaned.startswith("/"):
+        return cleaned
+    return ""
+
+
+def _session_picture(request: Request) -> str:
+    session = _session_from_request(request)
+    if not session:
+        return ""
+    return _clean_avatar_url(str(session.get("picture") or ""))
+
+
+def _profile_with_avatar(profile: dict[str, Any]) -> dict[str, Any]:
+    """Profil-Antwort inkl. fertig aufgeloestem Avatar (SSOT-Regel aus avatar.py)."""
+    return {
+        **profile,
+        "resolvedAvatarUrl": resolved_avatar_url(
+            None, profile.get("avatarUrl"), version=profile.get("updatedAt")
+        ),
+    }
+
+
+def _twin_with_avatar(twin: dict[str, Any], profile: dict[str, Any]) -> dict[str, Any]:
+    """Twin-Antwort inkl. aufgeloestem Avatar: Twin-Bild ?? Besitzer-Avatar ?? Platzhalter."""
+    return {
+        **twin,
+        "resolvedAvatarUrl": resolved_avatar_url(
+            twin.get("imageUrl"), profile.get("avatarUrl"), version=twin.get("updatedAt")
+        ),
+    }
+
+
 class ProfilePatch(BaseModel):
     displayName: str | None = None
+    avatarUrl: str | None = None
     headline: str | None = None
     privateBio: str | None = None
     publicBio: str | None = None
@@ -254,6 +298,8 @@ class SupportReport(BaseModel):
 def _apply_profile_patch(profile: dict[str, Any], patch: ProfilePatch) -> None:
     if patch.displayName is not None:
         profile["displayName"] = _clean_text(patch.displayName, 120)
+    if patch.avatarUrl is not None:
+        profile["avatarUrl"] = _clean_avatar_url(patch.avatarUrl)
     if patch.headline is not None:
         profile["headline"] = _clean_text(patch.headline, 160)
     if patch.privateBio is not None:
@@ -282,7 +328,18 @@ def get_profile(request: Request) -> Any:
         return err
     doc = _load_doc(sub)
     _sync_counts(doc)
-    return {"profile": doc["profile"], "limits": {"maxTwins": MAX_TWINS, "maxMemories": MAX_MEMORIES}}
+    # Einmaliges Seeding: Ohne gesetzten Avatar uebernimmt das Profil das
+    # Google-Login-Bild aus der Session als dauerhaften Besitzer-Avatar
+    # (SSOT-Regel: Twin-Override ?? Besitzer-Avatar ?? Platzhalter).
+    picture = _session_picture(request)
+    if picture and not str(doc["profile"].get("avatarUrl") or "").strip():
+        doc["profile"]["avatarUrl"] = picture
+        doc["profile"]["updatedAt"] = _now_ms()
+        user_store.save_user_doc(sub, doc)
+    return {
+        "profile": _profile_with_avatar(doc["profile"]),
+        "limits": {"maxTwins": MAX_TWINS, "maxMemories": MAX_MEMORIES},
+    }
 
 
 @router.patch("/profile")
@@ -292,9 +349,10 @@ def patch_profile(request: Request, patch: ProfilePatch) -> Any:
         return err
     doc = _load_doc(sub)
     _apply_profile_patch(doc["profile"], patch)
+    doc["profile"]["updatedAt"] = _now_ms()
     _sync_counts(doc)
     user_store.save_user_doc(sub, doc)
-    return {"profile": doc["profile"], "storagePlan": {"note": STORAGE_NOTE}}
+    return {"profile": _profile_with_avatar(doc["profile"]), "storagePlan": {"note": STORAGE_NOTE}}
 
 
 @router.get("/twins")
@@ -303,7 +361,7 @@ def list_twins(request: Request) -> Any:
     if err:
         return err
     doc = _load_doc(sub)
-    return {"twins": doc["twins"]}
+    return {"twins": [_twin_with_avatar(twin, doc["profile"]) for twin in doc["twins"]]}
 
 
 @router.post("/twins")
@@ -345,7 +403,7 @@ def create_twin(request: Request, payload: TwinCreate) -> Any:
     }
     doc["twins"].append(twin)
     user_store.save_user_doc(sub, doc)
-    return {"twin": twin}
+    return {"twin": _twin_with_avatar(twin, doc["profile"])}
 
 
 @router.get("/twins/{twin_id}")
@@ -357,7 +415,7 @@ def get_twin(request: Request, twin_id: str) -> Any:
     twin = _find_twin(doc, twin_id)
     if not twin:
         return _error(404, "twin_not_found", "Twin nicht gefunden.")
-    return {"twin": twin}
+    return {"twin": _twin_with_avatar(twin, doc["profile"])}
 
 
 @router.patch("/twins/{twin_id}")
@@ -391,7 +449,7 @@ def patch_twin(request: Request, twin_id: str, patch: TwinPatch) -> Any:
     twin["status"] = "ready" if twin["name"] and twin["description"] else "draft"
     twin["updatedAt"] = _now_ms()
     user_store.save_user_doc(sub, doc)
-    return {"twin": twin}
+    return {"twin": _twin_with_avatar(twin, doc["profile"])}
 
 
 @router.post("/twins/knowledge")
