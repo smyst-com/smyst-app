@@ -5203,6 +5203,13 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
             </div>
           ))}
         </div>
+        {kind === 'imprint' && (
+          <p className="mt-6 text-sm text-[#9aa6b7]">
+            <a href="/bildnachweise/" className="font-semibold text-[#c7d1de] underline-offset-2 hover:text-white hover:underline">
+              Bildnachweise / Image Credits
+            </a>
+          </p>
+        )}
       </Card>
     </div>
   )
