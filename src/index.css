@@ -374,6 +374,11 @@
     color: #f4f7fb !important;
   }
 
+  /* "Quellen geprüft"-Badge: dunkles Emerald ist auf dunklem Grund unlesbar. */
+  .smyst-app-dark .text-emerald-900 {
+    color: #6ee7b7 !important;
+  }
+
   .smyst-app-dark .bg-white,
   .smyst-app-dark .bg-\[\#eef6ff\],
   .smyst-app-dark .bg-\[\#e7f6ff\] {
@@ -385,6 +390,12 @@
   .smyst-app-dark .bg-white.text-\[\#111722\] {
     background-color: #f4f7fb !important;
     color: #111722 !important;
+  }
+
+  /* Offizieller Google-Button: bleibt laut Branding-Vorgabe weiß mit grauem Text. */
+  .smyst-app-dark .bg-white.text-\[\#3c4043\] {
+    background-color: #ffffff !important;
+    color: #3c4043 !important;
   }
 
   .smyst-app-dark .rounded-full,
