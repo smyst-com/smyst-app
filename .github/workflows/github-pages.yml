@@ -107,6 +107,14 @@ jobs:
             || { echo "::error::Bild-Cache nicht lesbar (z.B. AccessDenied) — Abbruch, sonst gehen Profilseiten ohne gespiegelte Bilder live (leerer Prefix ist fuer sync kein Fehler)."; exit 1; }
           echo "Bilder im Cache: $(ls -1 dist/public/profile-images 2>/dev/null | wc -l)"
 
+      # Ausgemusterte Altbilder (Freigabe Adam 06.08.2026): euklid.jpg zeigte
+      # das Rathaus von Euclid/Ohio, julius-caesar.jpg hatte ungeklaerte
+      # Foto-Lizenz. Beide sind seit PR #353 nirgends mehr referenziert,
+      # kommen aber ueber Actions-Cache und e2-Spiegel zurueck in dist.
+      # Dieser Schritt haelt sie dauerhaft aus der Auslieferung heraus.
+      - name: Remove retired profile images
+        run: rm -fv dist/public/profile-images/euklid.jpg dist/public/profile-images/julius-caesar.jpg
+
       - name: Merge published pipeline profiles
         run: node scripts/merge-pipeline-published.mjs
         env:
