@@ -16,6 +16,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { fetchService } from './serviceEndpoints';
+import { DEFAULT_LANG, useLanguage } from './i18n';
+import { useStaticTranslations, type StaticTranslations } from './staticTranslations';
 
 export type MemoryCategory =
   | 'audio'
@@ -176,12 +178,12 @@ interface UploadUrlResponse {
   supportsResume: false;
 }
 
-function errorMessage(body: unknown, fallback: string): string {
+function errorMessage(body: unknown, fallback: string, labels?: StaticTranslations['upload']): string {
   if (body && typeof body === 'object') {
     const maybe = body as { error?: string | { code?: string; message?: string } };
     if (typeof maybe.error === 'string') return maybe.error;
     if (maybe.error?.code === 'storage_write_limited') {
-      return 'Upload-Speichern ist gerade wegen eines temporären Speicherlimits pausiert. Bitte versuche es später erneut.';
+      return labels?.storagePaused ?? 'Upload-Speichern ist gerade wegen eines temporären Speicherlimits pausiert. Bitte versuche es später erneut.';
     }
     if (maybe.error?.message) return maybe.error.message;
   }
@@ -203,6 +205,8 @@ export function useMemoryUpload() {
   const [progress, setProgress] = useState<UploadProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const activeXhr = useRef<XMLHttpRequest | null>(null);
+  const { lang } = useLanguage();
+  const u = useStaticTranslations(lang).upload;
 
   const upload = useCallback(
     async (file: File, category: MemoryCategory, opts: { twinId?: string } = {}): Promise<UploadResult | null> => {
@@ -211,12 +215,12 @@ export function useMemoryUpload() {
       setProgress({ loaded: 0, total: file.size, percentage: 0 });
 
       try {
-        if (file.size <= 0) throw new Error('Datei ist leer.');
+        if (file.size <= 0) throw new Error(lang === DEFAULT_LANG ? 'Datei ist leer.' : u.emptyFile);
         if (file.size > CLIENT_CATEGORY_LIMITS[category]) {
-          throw new Error('Datei ist fuer diese Kategorie zu gross.');
+          throw new Error(lang === DEFAULT_LANG ? 'Datei ist fuer diese Kategorie zu gross.' : u.tooLarge);
         }
         if (!isAllowedClientType(file, category)) {
-          throw new Error('Dateityp passt nicht zur gewählten Kategorie.');
+          throw new Error(lang === DEFAULT_LANG ? 'Dateityp passt nicht zur gewählten Kategorie.' : u.wrongType);
         }
 
         // Schritt 1: Presigned URL holen
@@ -235,7 +239,7 @@ export function useMemoryUpload() {
 
         if (!urlRes.ok) {
           const errBody = await urlRes.json().catch(() => ({ error: 'Unknown' }));
-          throw new Error(errorMessage(errBody, `Upload-URL failed (${urlRes.status})`));
+          throw new Error(errorMessage(errBody, `Upload-URL failed (${urlRes.status})`, lang === DEFAULT_LANG ? undefined : u));
         }
 
         const { uploadId, uploadUrl, key, getUrl, contentType } = (await urlRes.json()) as UploadUrlResponse;
@@ -293,7 +297,7 @@ export function useMemoryUpload() {
         });
         if (!completeRes.ok) {
           const errBody = await completeRes.json().catch(() => ({ error: 'Unknown' }));
-          throw new Error(errorMessage(errBody, `Upload complete failed (${completeRes.status})`));
+          throw new Error(errorMessage(errBody, `Upload complete failed (${completeRes.status})`, lang === DEFAULT_LANG ? undefined : u));
         }
 
         setUploading(false);
@@ -315,7 +319,7 @@ export function useMemoryUpload() {
         return null;
       }
     },
-    [],
+    [lang, u],
   );
 
   const reset = useCallback(() => {
@@ -330,8 +334,8 @@ export function useMemoryUpload() {
     activeXhr.current?.abort();
     activeXhr.current = null;
     setUploading(false);
-    setError('Upload abgebrochen.');
-  }, []);
+    setError(lang === DEFAULT_LANG ? 'Upload abgebrochen.' : u.aborted);
+  }, [lang, u]);
 
   return { upload, uploading, progress, error, reset, cancel };
 }
