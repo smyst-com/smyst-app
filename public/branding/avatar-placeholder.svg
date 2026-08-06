@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Profilbild-Platzhalter">
+  <!-- Neutraler Avatar-Platzhalter (Avatar-SSOT, PR #189): erscheint nur, wenn
+       weder Twin-Override noch Besitzer-Avatar gesetzt ist. Farben im
+       Brand-Stil (dunkles Blau + gedaempftes Weiss), theme-neutral. -->
+  <rect width="128" height="128" rx="16" fill="#0b1c44"/>
+  <circle cx="64" cy="50" r="22" fill="#f4f7fb" fill-opacity="0.82"/>
+  <path d="M24 112c4-24 20-36 40-36s36 12 40 36v4H24z" fill="#f4f7fb" fill-opacity="0.82"/>
+</svg>
