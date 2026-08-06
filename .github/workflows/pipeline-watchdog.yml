@@ -43,7 +43,8 @@ jobs:
           echo "Pipeline-Laeufe in den letzten 170 min: ${RECENT}"
           if [ "${RECENT}" -eq 0 ]; then
             echo "Kein Lauf im Fenster — verpasster Cron-Slot wird nachgeholt."
-            gh workflow run pipeline-run.yml --ref main -f mode=run-small -f watchdog=true
+            # --repo ist Pflicht: der Job laeuft ohne Checkout, gh hat kein Git-Kontextverzeichnis (Lauf #1: "not a git repository").
+            gh workflow run pipeline-run.yml --ref main --repo "${GITHUB_REPOSITORY}" -f mode=run-small -f watchdog=true
             echo "### Watchdog hat einen verpassten Cron-Slot nachgeholt" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Takt in Ordnung — nichts zu tun."
