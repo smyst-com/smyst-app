@@ -523,6 +523,24 @@ if (merged > 0 && existsSync(sitemapPath)) {
   writeFileSync(sitemapPath, sitemap, 'utf8');
 }
 
+// Bildnachweis-Seite: Pipeline-Credits in dist/bildnachweise/index.html einsetzen.
+// Die Seite kommt statisch aus public/; fehlt sie oder fehlt der Marker,
+// passiert nichts (defensiv wie der Rest dieses Skripts).
+const creditsPagePath = resolve(DIST, 'bildnachweise', 'index.html');
+const CREDITS_MARKER = '<!-- SMYST_PIPELINE_CREDITS -->';
+if (existsSync(creditsPagePath)) {
+  const page = readFileSync(creditsPagePath, 'utf8');
+  if (page.includes(CREDITS_MARKER)) {
+    const rows = twins
+      .filter((twin) => twin.id?.startsWith('pipeline-') && twin.imageCredit)
+      .sort((a, b) => String(a.name).localeCompare(String(b.name), 'de'))
+      .map((twin) => `<tr><td>${escapeAttr(twin.name)}</td><td>${escapeAttr(twin.imageCredit)}</td></tr>`)
+      .join('\n');
+    writeFileSync(creditsPagePath, page.replace(CREDITS_MARKER, rows), 'utf8');
+    console.log(`merge-pipeline-published: Bildnachweis-Seite mit Pipeline-Credits ergaenzt.`);
+  }
+}
+
 console.log(
   `merge-pipeline-published: ${merged} Pipeline-Profil(e) gemergt (API gesamt: ${twins.length}); Sitemap ergaenzt: ${merged > 0}.`,
 );
