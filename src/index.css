@@ -94,8 +94,10 @@
     /* Min-height für Mobile inkl. Toolbar */
     min-height: 100vh;
     min-height: 100dvh;
-    /* Safe-Area Padding für iOS-Notch / Home-Indicator */
+    /* Safe-Area Padding für iOS-Notch / Home-Indicator (auch quer: links/rechts) */
     padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;

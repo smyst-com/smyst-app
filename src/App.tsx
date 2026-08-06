@@ -812,7 +812,7 @@ export default function App() {
               // Profilseite kompakt: kein 7rem-Polster vor dem Footer;
               // auf Mobil volle Breite (Karte laeuft randlos, PWA/Apps inklusive)
               ? 'mx-auto w-full max-w-[1200px] px-0 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:px-6'
-            : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6'
+            : 'mx-auto min-h-[calc(100dvh-145px)] w-full max-w-[1200px] px-3 pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6'
         }
       >
         {currentView === 'dashboard' && <DashboardView onNavigate={navigateTo} />}
@@ -3486,14 +3486,15 @@ function TwinProfileView({
 
   return (
     <div className="pt-2">
-      <section className="mx-auto max-w-[980px]">
+      <section className="mx-auto max-w-[1200px]">
         {/* Kompakt: kein doppeltes smyst.com-Logo ueber der Karte (steht schon
             in der Navbar); das Sichtbarkeits-Badge sitzt in der Kicker-Zeile. */}
-        <Card className="overflow-hidden p-0 max-sm:rounded-none max-sm:border-x-0">
+        {/* !p-0: die Card-Basisklasse p-5 gewinnt sonst per CSS-Reihenfolge (cn() ohne tailwind-merge) */}
+        <Card className="overflow-hidden !p-0 max-sm:rounded-none max-sm:border-x-0">
           {/* Zwei Spalten nur fuer den Kopf; alles darunter laeuft volle Breite,
               damit unter dem Bild keine tote Flaeche entsteht. */}
           <div className="grid gap-0 md:grid-cols-[300px_1fr]">
-            <div className="border-b border-white/30 bg-white/18 p-4 md:border-b-0 md:border-r md:p-5">
+            <div className="border-b border-white/30 bg-white/18 p-2 pb-3 md:border-b-0 md:border-r md:p-5">
               {/* Unter lg ist die Spalte volle Seitenbreite; ohne Deckel wird das
                   quadratische Portrait bildschirmhoch und schiebt Name, Daten und
                   den Chat-Button unter die Falz. */}
@@ -3540,7 +3541,7 @@ function TwinProfileView({
               )}
             </div>
 
-            <div className="p-4 sm:p-7">
+            <div className="px-3 py-4 sm:p-7">
               <div className="mb-2 flex flex-wrap items-center gap-2">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#667085]">{lang === DEFAULT_LANG ? 'KI-Zwilling Profil' : t.profile.kicker}</p>
                 {profile.sources?.length ? (
@@ -3555,7 +3556,7 @@ function TwinProfileView({
               <h1 className="text-4xl font-bold tracking-tight">{profileNameWithAge(profile, lang === DEFAULT_LANG ? undefined : { years: t.start.yearsLabel })}</h1>{profileBirthLine(profile) && <p className="mt-1 text-sm font-semibold text-[#667085]">{profileBirthLine(profile)}</p>}{profileDeathLine(profile) && <p className="text-sm font-semibold text-[#667085]">{profileDeathLine(profile)}</p>}<p className="mt-1 text-xl font-semibold text-[#c7d4ea]">{profileMainCategory(profile)}</p>
               <p className="mt-4 max-w-[720px] text-base leading-relaxed text-[#555b64]">{profile.description || (lang === DEFAULT_LANG ? 'Dieses Twin-Profil hat noch keine öffentliche Beschreibung.' : t.profile.noDescription)}</p>
 
-              <section className="mt-4 max-w-[720px] rounded-lg border border-white/30 bg-white/14 p-4">
+              <section className="mt-4 rounded-lg border border-white/30 bg-white/14 p-4">
                 <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#667085]">{lang === DEFAULT_LANG ? 'Direkt fragen' : t.profile.askTitle}</h2>
                 <p className="mt-1 text-xs text-[#667085]">{lang === DEFAULT_LANG ? 'Ein Klick startet den Chat mit dieser Frage.' : t.profile.askSubtitle}</p>
                 <div className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -3579,7 +3580,7 @@ function TwinProfileView({
             </div>
           </div>
 
-          <div className="px-4 pb-4 sm:px-7">
+          <div className="px-3 pb-4 sm:px-7">
               <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {profile.milestones?.length ? (
                   <div className="rounded-lg bg-white/18 p-4">
