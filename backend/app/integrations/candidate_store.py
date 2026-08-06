@@ -28,6 +28,7 @@ from app.ai.historical_pipeline import AuditEvent, HistoricalCandidate
 CANDIDATE_PREFIX = "pipeline/candidates/"
 CHANGELOG_PREFIX = "pipeline/changelogs/"
 SOURCE_PREFIX = "pipeline/sources/"
+INGEST_CURSOR_KEY = "pipeline/ingest/cursor.json"
 RESEARCH_PREFIX = "pipeline/research/"
 
 
@@ -136,6 +137,27 @@ class CandidateStore:
             Bucket=self._bucket, Key=key, Body=body, ContentType="application/json"
         )
         return key
+
+    def load_ingest_cursor(self) -> dict:
+        """OFFSET-Cursor je Kategorie (Seiten-Fortschritt ueber Laeufe hinweg).
+
+        Fehlender Schluessel = Erstlauf -> leerer Cursor. Bewusst breit
+        gefangen: jeder Lesefehler faellt auf 'von vorn blaettern' zurueck,
+        der Ingest bleibt dadurch immer lauffaehig.
+        """
+        try:
+            response = self._client.get_object(Bucket=self._bucket, Key=INGEST_CURSOR_KEY)
+            data = json.loads(response["Body"].read().decode("utf-8"))
+            return data if isinstance(data, dict) else {}
+        except Exception:
+            return {}
+
+    def save_ingest_cursor(self, cursor: dict) -> str:
+        body = json.dumps(cursor, ensure_ascii=False, indent=2, sort_keys=True).encode("utf-8")
+        self._client.put_object(
+            Bucket=self._bucket, Key=INGEST_CURSOR_KEY, Body=body, ContentType="application/json"
+        )
+        return INGEST_CURSOR_KEY
 
     def save_changelog(self, run_date: date, report: dict, *, suffix: str = "") -> str:
         """Tagesbericht: reproduzierbar, prueffaehig (Master Prompt).
