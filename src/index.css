@@ -938,3 +938,55 @@
 .smyst-start-shell-theme-dark .text-\[\#c7d1de\] {
     color: #c7d1de !important;
 }
+
+/* Fix 2026-08-06: Light-Theme-Kontrast, helle Version komplett lesbar.
+   1) html behaelt sonst den dunklen Grundton - unter/ueber dem Inhalt
+      (Overscroll, kurze Seiten) erscheint im hellen Theme sonst Schwarz.
+   2) Bewusst dunkle CTA-Pillen (Chat-Button, "Twin erstellen", bg-[#17191d])
+      behalten hellen Text - Gegenstueck zur .text-white-Regel.
+   3) Profil-Untertitel #c7d4ea ist auf hellem Grund unlesbar; Text ueber
+      Bild-Verlaeufen (markiert durch [text-shadow:...]-Klassen) bleibt hell.
+   4) Brand-Cyan #59C7FF ("Create Your AI Twin") ist auf hellem Grund zu
+      blass - dunkleres Blau nur im hellen Theme.
+   5) Mobile-Drawer wird im hellen Theme hell, damit die erzwungenen dunklen
+      Textfarben lesbar bleiben. */
+
+html[data-smyst-theme='light'] {
+    background: #d9dee7;
+}
+
+.smyst-app-light .bg-\[\#17191d\].text-white {
+    color: #f4f7fb !important;
+}
+
+.smyst-app-light .text-\[\#c7d4ea\] {
+    color: #4f5b6b !important;
+}
+
+.smyst-app-light [class*='text-shadow'].text-white {
+    color: #ffffff !important;
+}
+
+.smyst-app-light [class*='text-shadow'].text-\[\#c7d4ea\] {
+    color: #c7d4ea !important;
+}
+
+.smyst-app-light .text-\[\#59C7FF\] {
+    color: #1273d4 !important;
+}
+
+.smyst-app-light .smyst-mobile-drawer {
+    background: rgba(244, 247, 251, 0.97) !important;
+    border-color: rgba(17, 23, 33, 0.12) !important;
+    color: #111722 !important;
+}
+
+.smyst-app-light .smyst-mobile-drawer .border-white\/10 {
+    border-color: rgba(17, 23, 33, 0.12) !important;
+}
+
+.smyst-app-light .smyst-mobile-drawer .bg-white\/\[0\.035\],
+.smyst-app-light .smyst-mobile-drawer .bg-white\/\[0\.04\],
+.smyst-app-light .smyst-mobile-drawer .bg-white\/\[0\.05\] {
+    background-color: rgba(17, 23, 33, 0.05) !important;
+}
