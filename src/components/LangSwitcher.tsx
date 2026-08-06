@@ -13,7 +13,8 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { LANGUAGES, useLanguage, type SupportedLang, type LanguageMeta } from '@/lib/i18n';
+import { DEFAULT_LANG, LANGUAGES, useLanguage, type SupportedLang, type LanguageMeta } from '@/lib/i18n';
+import { useStaticTranslations } from '@/lib/staticTranslations';
 
 interface Props {
   /** Anzeigevariante. */
@@ -29,6 +30,7 @@ export default function LangSwitcher({
   showProvider = false,
 }: Props) {
   const { lang, setLanguage } = useLanguage();
+  const ls = useStaticTranslations(lang).langSw;
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -153,7 +155,7 @@ export default function LangSwitcher({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}
-        aria-label={`Sprache wechseln, aktuell: ${currentMeta.englishName}`}
+        aria-label={lang === DEFAULT_LANG ? `Sprache wechseln, aktuell: ${currentMeta.englishName}` : `${ls.ariaCurrent} ${currentMeta.englishName}`}
         className="inline-flex min-h-[44px] min-w-[44px] items-center gap-2 rounded-full border border-white/40 bg-white/30 px-3 py-2 text-sm font-medium text-[#16181b] backdrop-blur-md hover:bg-white/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition"
       >
         <GlobeIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -178,7 +180,7 @@ export default function LangSwitcher({
           {/* Such-Input */}
           <div className="border-b border-black/5 p-2">
             <label htmlFor={inputId} className="sr-only">
-              Sprache suchen
+              {lang === DEFAULT_LANG ? 'Sprache suchen' : ls.searchLabel}
             </label>
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden="true" />
@@ -191,7 +193,7 @@ export default function LangSwitcher({
                 spellCheck={false}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Suche … (z. B. español, türkçe, japan)"
+                placeholder={lang === DEFAULT_LANG ? 'Suche … (z. B. español, türkçe, japan)' : ls.searchPlaceholder}
                 className="w-full min-h-[44px] rounded-xl border border-gray-200 bg-white pl-9 pr-3 text-sm text-[#16181b] placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 aria-controls={listboxId}
                 aria-activedescendant={
