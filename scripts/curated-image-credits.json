@@ -1,0 +1,705 @@
+{
+  "comment": "Bildnachweise der 100 kuratierten Profilbilder. Quelle: Lizenz-Inventur 06.08.2026 (SHA1/Thumbnail-Hash-Abgleich gegen Wikimedia Commons, siehe Lizenz_Inventur_Profilbilder_2026-08-06.md). Wird von scripts/generate-profile-pages.mjs als imageCredit in die Public-API uebernommen. Die Seite /bildnachweise/ listet dieselben Angaben oeffentlich.",
+  "profiles": {
+    "ada-lovelace": {
+      "commonsFile": "Ada Lovelace.jpg",
+      "license": "Public domain",
+      "artist": "Margaret Sarah Carpenter",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=354077",
+      "credit": "Bild: Margaret Sarah Carpenter — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=354077"
+    },
+    "adam-smith": {
+      "commonsFile": "AdamSmith.jpg",
+      "license": "Public domain",
+      "artist": "Etching created by Cadell and Davies (1811), John Horsburgh (1828) or R.C. Bell (1872).",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=497250",
+      "credit": "Bild: Etching created by Cadell and Davies (1811), John Horsburgh (1828) or R.C. Bell (1872). — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=497250"
+    },
+    "al-biruni": {
+      "commonsFile": "Al-Biruni.jpg",
+      "license": "CC BY 4.0",
+      "artist": "Muntadher Saleh",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=192994438",
+      "credit": "Bild: Muntadher Saleh — Wikimedia Commons (CC BY 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=192994438"
+    },
+    "al-farabi": {
+      "commonsFile": "Farabi.jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "Iraninhk",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=112365421",
+      "credit": "Bild: Iraninhk — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=112365421"
+    },
+    "al-khwarizmi": {
+      "commonsFile": "Al-Khwarizmi.jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "Muntadher Saleh",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=193741781",
+      "credit": "Bild: Muntadher Saleh — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=193741781"
+    },
+    "albert-einstein": {
+      "commonsFile": "Einstein 1921 by F Schmutzer - restoration.jpg",
+      "license": "Public domain",
+      "artist": "Ferdinand Schmutzer / Adam Cuerden",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=34239518",
+      "credit": "Bild: Ferdinand Schmutzer / Adam Cuerden — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=34239518"
+    },
+    "alexander-der-grosse": {
+      "commonsFile": "Alexander the Great mosaic (cropped).jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=66715266",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=66715266"
+    },
+    "antonio-vivaldi": {
+      "commonsFile": "Onbekend - Antonio Vivaldi - Bologna Museo Internationale e biblioteca della musica di bologna 28-04-2012 9-21-050.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=131170816",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=131170816"
+    },
+    "archimedes": {
+      "commonsFile": "Arhimedes3d.jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "John Alan Elson",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=17824049",
+      "credit": "Bild: John Alan Elson — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=17824049"
+    },
+    "aristoteles": {
+      "commonsFile": "Aristotle Altemps Inv8575.jpg",
+      "license": "Public domain",
+      "artist": "After Lysippos",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=1359807",
+      "credit": "Bild: After Lysippos — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=1359807"
+    },
+    "arthur-schopenhauer": {
+      "commonsFile": "Arthur Schopenhauer by J Schäfer, 1859b.jpg",
+      "license": "Public domain",
+      "artist": "Johann Schäfer",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=36910397",
+      "credit": "Bild: Johann Schäfer — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=36910397"
+    },
+    "benjamin-franklin": {
+      "commonsFile": "Joseph Siffrein Duplessis - Benjamin Franklin - Google Art Project.jpg",
+      "license": "Public domain",
+      "artist": "Joseph-Siffred Duplessis",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=21880454",
+      "credit": "Bild: Joseph-Siffred Duplessis — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=21880454"
+    },
+    "bernhard-riemann": {
+      "commonsFile": "Georg Friedrich Bernhard Riemann.jpeg",
+      "license": "Public domain",
+      "artist": "Unbekannter Urheber",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=27383",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=27383"
+    },
+    "blaise-pascal": {
+      "commonsFile": "FR-631136102 GRA 6025 Portrait de Blaise Pascal par Edelinck (cropped).jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "Gérard Edelinck",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=124654052",
+      "credit": "Bild: Gérard Edelinck — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=124654052"
+    },
+    "carl-friedrich-gauss": {
+      "commonsFile": "Carl Friedrich Gauss.jpg",
+      "license": "Public domain",
+      "artist": "Gottlieb Biermann / After Christian Albrecht Jensen",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=57629",
+      "credit": "Bild: Gottlieb Biermann / After Christian Albrecht Jensen — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=57629"
+    },
+    "charles-darwin": {
+      "commonsFile": "Charles Darwin portrait.jpg",
+      "license": "Public domain",
+      "artist": "Herbert Rose Barraud",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=106193486",
+      "credit": "Bild: Herbert Rose Barraud — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=106193486"
+    },
+    "charles-dickens": {
+      "commonsFile": "Dickens Gurney head.jpg",
+      "license": "Public domain",
+      "artist": "Jeremiah Gurney",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=8451549",
+      "credit": "Bild: Jeremiah Gurney — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=8451549"
+    },
+    "cicero": {
+      "commonsFile": "Bust of Cicero (1st-cent. BC) - Palazzo Nuovo - Musei Capitolini - Rome 2016.jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "José Luiz",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=53959809",
+      "credit": "Bild: José Luiz — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=53959809"
+    },
+    "claude-debussy": {
+      "commonsFile": "Claude Debussy by Atelier Nadar.jpg",
+      "license": "Public domain",
+      "artist": "Adam Cuerden",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=144077576",
+      "credit": "Bild: Adam Cuerden — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=144077576"
+    },
+    "dante-alighieri": {
+      "commonsFile": "Portrait de Dante.jpg",
+      "license": "Public domain",
+      "artist": "Sandro Botticelli",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=122900",
+      "credit": "Bild: Sandro Botticelli — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=122900"
+    },
+    "david-hume": {
+      "commonsFile": "David Hume Ramsay.jpg",
+      "license": "Public domain",
+      "artist": "Allan Ramsay",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=51564591",
+      "credit": "Bild: Allan Ramsay — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=51564591"
+    },
+    "dmitri-mendelejew": {
+      "commonsFile": "DIMendeleevCab.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=7347916",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=7347916"
+    },
+    "edgar-allan-poe": {
+      "commonsFile": "Edgar Allan Poe, circa 1849, restored, squared off.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author; Restored by Yann Forget and Adam Cuerden",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=77527076",
+      "credit": "Bild: Unbekannter Urheber; Restored by Yann Forget and Adam Cuerden — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=77527076"
+    },
+    "epiktet": {
+      "commonsFile": "Epictetus from L. Annaei Senecae philosophi Opera, 1605, title page detail.png",
+      "license": "Public domain",
+      "artist": "Theodoor Galle",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=74829142",
+      "credit": "Bild: Theodoor Galle — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=74829142"
+    },
+    "euklid": {
+      "commonsFile": "Euclid statue, Oxford University Museum of Natural History, UK - 20080315.jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "Mark A. Wilson (Wilson44691)",
+      "source": "https://commons.wikimedia.org/wiki/File:Euclid_statue,_Oxford_University_Museum_of_Natural_History,_UK_-_20080315.jpg",
+      "credit": "Bild: Mark A. Wilson (Wilson44691) — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/wiki/File:Euclid_statue,_Oxford_University_Museum_of_Natural_History,_UK_-_20080315.jpg"
+    },
+    "euripides": {
+      "commonsFile": "Euripides Pio-Clementino Inv302.jpg",
+      "license": "Public domain",
+      "artist": "Marie-Lan Nguyen",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=1307109",
+      "credit": "Bild: Marie-Lan Nguyen — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=1307109"
+    },
+    "fjodor-dostojewski": {
+      "commonsFile": "Vasily Perov - Портрет Ф.М.Достоевского - Google Art Project.jpg",
+      "license": "Public domain",
+      "artist": "Vasily Perov",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=13499483",
+      "credit": "Bild: Vasily Perov — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=13499483"
+    },
+    "franz-kafka": {
+      "commonsFile": "Kafka1906 cropped.jpg",
+      "license": "Public domain",
+      "artist": "Atelier Jacobi: Sigismund Jacobi (1860–1935)",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=4300462",
+      "credit": "Bild: Atelier Jacobi: Sigismund Jacobi (1860–1935) — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=4300462"
+    },
+    "franz-schubert": {
+      "commonsFile": "Franz Schubert by Wilhelm August Rieder 1875 larger version.png",
+      "license": "Public domain",
+      "artist": "Wilhelm August Rieder",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=112306536",
+      "credit": "Bild: Wilhelm August Rieder — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=112306536"
+    },
+    "frederic-chopin": {
+      "commonsFile": "Chopin, by Wodzinska.JPG",
+      "license": "Public domain",
+      "artist": "Maria Wodzińska",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=10884233",
+      "credit": "Bild: Maria Wodzińska — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=10884233"
+    },
+    "friedrich-nietzsche": {
+      "commonsFile": "Nietzsche187a.jpg",
+      "license": "Public domain",
+      "artist": "Friedrich Hermann Hartmann",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=95970",
+      "credit": "Bild: Friedrich Hermann Hartmann — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=95970"
+    },
+    "galileo-galilei": {
+      "commonsFile": "Galileo.arp.300pix.jpg",
+      "license": "Public domain",
+      "artist": "Justus Sustermans",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=23858",
+      "credit": "Bild: Justus Sustermans — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=23858"
+    },
+    "georg-wilhelm-friedrich-hegel": {
+      "commonsFile": "Jakob Schlesinger - Hegel 1831.jpg",
+      "license": "Public domain",
+      "artist": "Jakob Schlesinger",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=126943438",
+      "credit": "Bild: Jakob Schlesinger — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=126943438"
+    },
+    "giuseppe-verdi": {
+      "commonsFile": "Giuseppe Verdi xilografia.jpg",
+      "license": "Public domain",
+      "artist": "Disegnatore: A. Cairoli - Incisore: Ernesto Mancastroppa",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=82729020",
+      "credit": "Bild: Disegnatore: A. Cairoli - Incisore: Ernesto Mancastroppa — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=82729020"
+    },
+    "gottfried-wilhelm-leibniz": {
+      "commonsFile": "Christoph Bernhard Francke - Bildnis des Philosophen Leibniz (ca. 1695).jpg",
+      "license": "Public domain",
+      "artist": "Christoph Bernhard Francke",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=53159699",
+      "credit": "Bild: Christoph Bernhard Francke — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=53159699"
+    },
+    "gregor-mendel": {
+      "commonsFile": "Gregor Mendel with cross.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=33347276",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=33347276"
+    },
+    "h-g-wells": {
+      "commonsFile": "H.G. Wells by Beresford.jpg",
+      "license": "Public domain",
+      "artist": "George Charles Beresford",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=37154905",
+      "credit": "Bild: George Charles Beresford — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=37154905"
+    },
+    "hannibal": {
+      "commonsFile": "Mark Twain Boyhood Home 1.jpg",
+      "license": "CC BY-SA 3.0",
+      "artist": "Andrew Balet",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=3557638",
+      "credit": "Bild: Andrew Balet — Wikimedia Commons (CC BY-SA 3.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=3557638"
+    },
+    "hans-christian-andersen": {
+      "commonsFile": "Hans Christian Andersen by Thora Hallager 1869.jpg",
+      "license": "Public domain",
+      "artist": "Thora Hallager",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=11819411",
+      "credit": "Bild: Thora Hallager — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=11819411"
+    },
+    "herodot": {
+      "commonsFile": "Marble bust of Herodotos MET DT11742 (cropped).jpg",
+      "license": "CC0",
+      "artist": "Unbekannter Urheber",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=115708819",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (CC0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=115708819"
+    },
+    "hippokrates": {
+      "commonsFile": "Hippocrates rubens.jpg",
+      "license": "Public domain",
+      "artist": "Paulus Pontius / After Peter Paul Rubens",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=1332072",
+      "credit": "Bild: Paulus Pontius / After Peter Paul Rubens — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=1332072"
+    },
+    "homer": {
+      "commonsFile": "Homer bust, Farnese collection (Naples).jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "NikonZ7II",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=116767754",
+      "credit": "Bild: NikonZ7II — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=116767754"
+    },
+    "ibn-khaldun": {
+      "commonsFile": "Bust of Ibn Khaldun (Casbah of Bejaia, Algeria).jpg",
+      "license": "CC BY-SA 4.0",
+      "artist": "Reda Kerbush",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=57387768",
+      "credit": "Bild: Reda Kerbush — Wikimedia Commons (CC BY-SA 4.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=57387768"
+    },
+    "ibn-sina": {
+      "commonsFile": "Avicenna Portrait on Silver Vase - Museum at BuAli Sina (Avicenna) Mausoleum - Hamadan - Western Iran (7423560860).jpg",
+      "license": "Public domain",
+      "artist": "Adam Jones from Kelowna, BC, Canada",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=30320426",
+      "credit": "Bild: Adam Jones from Kelowna, BC, Canada — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=30320426"
+    },
+    "immanuel-kant": {
+      "commonsFile": "Immanuel Kant - Gemaelde 2.jpg",
+      "license": "Public domain",
+      "artist": "Becker",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=4371746",
+      "credit": "Bild: Becker — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=4371746"
+    },
+    "isaac-newton": {
+      "commonsFile": "GodfreyKneller-IsaacNewton-1689.jpg",
+      "license": "Public domain",
+      "artist": "James Thronill after Sir Godfrey Kneller",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=37337",
+      "credit": "Bild: James Thronill after Sir Godfrey Kneller — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=37337"
+    },
+    "james-clerk-maxwell": {
+      "commonsFile": "James-Clerk-Maxwell-1831-1879.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=129476608",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=129476608"
+    },
+    "jane-austen": {
+      "commonsFile": "CassandraAusten-JaneAusten(c.1810) hires.jpg",
+      "license": "Public domain",
+      "artist": "Cassandra Austen",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=9458174",
+      "credit": "Bild: Cassandra Austen — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=9458174"
+    },
+    "jean-jacques-rousseau": {
+      "commonsFile": "Jean-Jacques Rousseau (painted portrait).jpg",
+      "license": "Public domain",
+      "artist": "Maurice Quentin de La Tour",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=24158",
+      "credit": "Bild: Maurice Quentin de La Tour — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=24158"
+    },
+    "johann-sebastian-bach": {
+      "commonsFile": "Johann Sebastian Bach.png",
+      "license": "Public domain",
+      "artist": "Elias Gottlob Haussmann",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=106500145",
+      "credit": "Bild: Elias Gottlob Haussmann — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=106500145"
+    },
+    "johann-wolfgang-von-goethe": {
+      "commonsFile": "Goethe (Stieler 1828).jpg",
+      "license": "Public domain",
+      "artist": "Joseph Karl Stieler",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=375657",
+      "credit": "Bild: Joseph Karl Stieler — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=375657"
+    },
+    "johannes-kepler": {
+      "commonsFile": "JKepler.jpg",
+      "license": "Public domain",
+      "artist": "August Köhler [1]",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=9406242",
+      "credit": "Bild: August Köhler [1] — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=9406242"
+    },
+    "john-locke": {
+      "commonsFile": "JohnLocke.png",
+      "license": "Public domain",
+      "artist": "Godfrey Kneller",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=1554640",
+      "credit": "Bild: Godfrey Kneller — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=1554640"
+    },
+    "jules-verne": {
+      "commonsFile": "Félix Nadar 1820-1910 portraits Jules Verne.jpg",
+      "license": "Public domain",
+      "artist": "Nadar",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=5147431",
+      "credit": "Bild: Nadar — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=5147431"
+    },
+    "julius-caesar": {
+      "commonsFile": "Retrato de Julio César (26724093101).jpg",
+      "license": "Public domain",
+      "artist": "Ángel M. Felicísimo",
+      "source": "https://commons.wikimedia.org/wiki/File:Retrato_de_Julio_C%C3%A9sar_(26724093101).jpg",
+      "credit": "Bild: Ángel M. Felicísimo — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/wiki/File:Retrato_de_Julio_C%C3%A9sar_(26724093101).jpg"
+    },
+    "karl-marx": {
+      "commonsFile": "Karl Marx 001 restored.jpg",
+      "license": "Public domain",
+      "artist": "John Jabez Edwin Mayall",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=164779139",
+      "credit": "Bild: John Jabez Edwin Mayall — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=164779139"
+    },
+    "konfuzius": {
+      "commonsFile": "Confucius_Tang_Dynasty.jpg",
+      "license": "Public domain",
+      "artist": "Wu Daozi, 685-758, Tang Dynasty.",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=857482",
+      "credit": "Bild: Wu Daozi, 685-758, Tang Dynasty. — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=857482"
+    },
+    "laotse": {
+      "commonsFile": "Zhang Lu-Laozi Riding an Ox (cropped).jpg",
+      "license": "Public domain",
+      "artist": "Zhang Lu",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=123261497",
+      "credit": "Bild: Zhang Lu — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=123261497"
+    },
+    "leo-tolstoi": {
+      "commonsFile": "L.N.Tolstoy Prokudin-Gorsky.jpg",
+      "license": "Public domain",
+      "artist": "Sergei Prokudin-Gorskii",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=2324270",
+      "credit": "Bild: Sergei Prokudin-Gorskii — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=2324270"
+    },
+    "leonardo-da-vinci": {
+      "commonsFile": "Francesco Melzi - Portrait of Leonardo.png",
+      "license": "Public domain",
+      "artist": "Attributed to Francesco Melzi",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=78645105",
+      "credit": "Bild: Attributed to Francesco Melzi — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=78645105"
+    },
+    "leonardo-fibonacci": {
+      "commonsFile": "Fibonacci5.jpg",
+      "license": "Public domain",
+      "artist": "Unknown",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=120336472",
+      "credit": "Bild: Unknown — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=120336472"
+    },
+    "leonhard-euler": {
+      "commonsFile": "Leonhard Euler 2.jpg",
+      "license": "Public domain",
+      "artist": "Jakob Emanuel Handmann",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=1001511",
+      "credit": "Bild: Jakob Emanuel Handmann — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=1001511"
+    },
+    "louis-pasteur": {
+      "commonsFile": "Louis Pasteur (1822 - 1895), microbiologist and chemist Wellcome V0026980.jpg",
+      "license": "Public domain",
+      "artist": "Paul Nadar",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=36582238",
+      "credit": "Bild: Paul Nadar — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=36582238"
+    },
+    "ludwig-van-beethoven": {
+      "commonsFile": "Beethoven.jpg",
+      "license": "Public domain",
+      "artist": "Joseph Karl Stieler",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=165990",
+      "credit": "Bild: Joseph Karl Stieler — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=165990"
+    },
+    "marcus-aurelius": {
+      "commonsFile": "Marcus Aurelius Louvre MR561 n02.jpg",
+      "license": "CC BY 2.5",
+      "artist": "Unbekannter Urheber",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=12915724",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (CC BY 2.5) — Quelle: https://commons.wikimedia.org/w/index.php?curid=12915724"
+    },
+    "marie-curie": {
+      "commonsFile": "Marie Curie (1900) (cropped).jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=123803240",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=123803240"
+    },
+    "mark-twain": {
+      "commonsFile": "MarkTwain.LOC.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=41459",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=41459"
+    },
+    "mary-shelley": {
+      "commonsFile": "Richard Rothwell (1800-1868) - Mary Wollstonecraft Shelley - NPG 1235 - National Portrait Gallery.jpg",
+      "license": "Public domain",
+      "artist": "Richard Rothwell",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=91859202",
+      "credit": "Bild: Richard Rothwell — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=91859202"
+    },
+    "max-weber": {
+      "commonsFile": "Max Weber in 1918.png",
+      "license": "Public domain",
+      "artist": "Ernst Gottmann",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=134028762",
+      "credit": "Bild: Ernst Gottmann — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=134028762"
+    },
+    "michael-faraday": {
+      "commonsFile": "M Faraday Th Phillips oil 1842.jpg",
+      "license": "Public domain",
+      "artist": "Thomas Phillips",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=463384",
+      "credit": "Bild: Thomas Phillips — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=463384"
+    },
+    "michelangelo": {
+      "commonsFile": "Michelangelo Daniele da Volterra (dettaglio).jpg",
+      "license": "Public domain",
+      "artist": "Attributed to Daniele da Volterra",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=93197995",
+      "credit": "Bild: Attributed to Daniele da Volterra — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=93197995"
+    },
+    "miguel-de-cervantes": {
+      "commonsFile": "Cervantes Jáuregui.jpg",
+      "license": "Public domain",
+      "artist": "Attributed to Juan de Jáuregui",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=676819",
+      "credit": "Bild: Attributed to Juan de Jáuregui — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=676819"
+    },
+    "mimar-sinan": {
+      "commonsFile": "Mimar Sinan büstü, ODTÜ.jpg",
+      "license": "Public domain",
+      "artist": "Veritas-tr",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=8534277",
+      "credit": "Bild: Veritas-tr — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=8534277"
+    },
+    "mustafa-kemal-atatuerk": {
+      "commonsFile": "Atatürk Kemal.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=80002557",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=80002557"
+    },
+    "napoleon-bonaparte": {
+      "commonsFile": "Jacques-Louis David - The Emperor Napoleon in His Study at the Tuileries - Google Art Project.jpg",
+      "license": "Public domain",
+      "artist": "Jacques-Louis David",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=22174172",
+      "credit": "Bild: Jacques-Louis David — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=22174172"
+    },
+    "niccolo-machiavelli": {
+      "commonsFile": "Portrait of Niccolò Machiavelli by Santi di Tito.jpg",
+      "license": "Public domain",
+      "artist": "Santi di Tito",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=9578897",
+      "credit": "Bild: Santi di Tito — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=9578897"
+    },
+    "nikola-tesla": {
+      "commonsFile": "Tesla circa 1890.jpeg",
+      "license": "Public domain",
+      "artist": "Napoleon Sarony",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=26187019",
+      "credit": "Bild: Napoleon Sarony — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=26187019"
+    },
+    "nikolaus-kopernikus": {
+      "commonsFile": "Nikolaus Kopernikus MOT.jpg",
+      "license": "Public domain",
+      "artist": "Unknown authorUnknown author",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=147956893",
+      "credit": "Bild: Unbekannter Urheber — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=147956893"
+    },
+    "omar-khayyam": {
+      "commonsFile": "Omar Khayyam2.JPG",
+      "license": "CC BY-SA 3.0",
+      "artist": "The original uploader was Atilin at French Wikipedia.",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=16492805",
+      "credit": "Bild: The original uploader was Atilin at French Wikipedia. — Wikimedia Commons (CC BY-SA 3.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=16492805"
+    },
+    "oscar-wilde": {
+      "commonsFile": "Oscar Wilde by Napoleon Sarony. Three-quarter-length photograph, seated.jpg",
+      "license": "Public domain",
+      "artist": "Napoleon Sarony / Adam Cuerden",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=141158986",
+      "credit": "Bild: Napoleon Sarony / Adam Cuerden — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=141158986"
+    },
+    "otto-von-bismarck": {
+      "commonsFile": "BismarckArbeitszimmer1886.jpg",
+      "license": "Public domain",
+      "artist": "André Bockmann",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=129540",
+      "credit": "Bild: André Bockmann — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=129540"
+    },
+    "pjotr-tschaikowski": {
+      "commonsFile": "Porträt des Komponisten Pjotr I. Tschaikowski (1840-1893).jpg",
+      "license": "Public domain",
+      "artist": "Nikolai Kuznetsov",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=3722530",
+      "credit": "Bild: Nikolai Kuznetsov — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=3722530"
+    },
+    "platon": {
+      "commonsFile": "Plato Silanion Musei Capitolini MC1377.jpg",
+      "license": "CC BY 2.5",
+      "artist": "Marie-Lan Nguyen",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=7831217",
+      "credit": "Bild: Marie-Lan Nguyen — Wikimedia Commons (CC BY 2.5) — Quelle: https://commons.wikimedia.org/w/index.php?curid=7831217"
+    },
+    "pythagoras": {
+      "commonsFile": "Kapitolinischer Pythagoras.jpg",
+      "license": "CC BY-SA 3.0",
+      "artist": "The original uploader was Galilea at German Wikipedia.",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=171958",
+      "credit": "Bild: The original uploader was Galilea at German Wikipedia. — Wikimedia Commons (CC BY-SA 3.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=171958"
+    },
+    "raphael": {
+      "commonsFile": "Raffaello_Sanzio.jpg",
+      "license": "Public domain",
+      "artist": "Raphael",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=35440864",
+      "credit": "Bild: Raphael — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=35440864"
+    },
+    "rene-descartes": {
+      "commonsFile": "Frans Hals - Portret van René Descartes.jpg",
+      "license": "Public domain",
+      "artist": "After Frans Hals",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=2774313",
+      "credit": "Bild: After Frans Hals — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=2774313"
+    },
+    "richard-wagner": {
+      "commonsFile": "RichardWagner.jpg",
+      "license": "Public domain",
+      "artist": "Franz Hanfstaengl",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=55183",
+      "credit": "Bild: Franz Hanfstaengl — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=55183"
+    },
+    "rumi": {
+      "commonsFile": "مولانا اثر حسین بهزاد (cropped).jpg",
+      "license": "Public domain",
+      "artist": "Hossein Behzad",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=85573572",
+      "credit": "Bild: Hossein Behzad — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=85573572"
+    },
+    "saladin": {
+      "commonsFile": "Al-Nasir I Salah al-Din Yusuf (Saladin). AH 564-589 (1169-1193 CE) Æ Dirham (30.1mm, 13.28 g, 6h). Without mint-name. Dated AH 586 (AD 1190-91). Sultan sitting facing, cross-legged, on high-backed throne (obverse).jpg",
+      "license": "CC BY-SA 2.5",
+      "artist": "Classical Numismatic Group (CNG)",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=146236437",
+      "credit": "Bild: Classical Numismatic Group (CNG) — Wikimedia Commons (CC BY-SA 2.5) — Quelle: https://commons.wikimedia.org/w/index.php?curid=146236437"
+    },
+    "seneca": {
+      "commonsFile": "Duble herma of Socrates and Seneca Antikensammlung Berlin 07.jpg",
+      "license": "CC BY-SA 3.0",
+      "artist": "Calidius",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=2456052",
+      "credit": "Bild: Calidius — Wikimedia Commons (CC BY-SA 3.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=2456052"
+    },
+    "sokrates": {
+      "commonsFile": "Socrates Louvre.jpg",
+      "license": "Public domain",
+      "artist": "Copy of Lysippos (?)",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=3569936",
+      "credit": "Bild: Copy of Lysippos (?) — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=3569936"
+    },
+    "sophokles": {
+      "commonsFile": "Sophocles pushkin.jpg",
+      "license": "CC BY-SA 3.0",
+      "artist": "user:shakko",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=5573891",
+      "credit": "Bild: user:shakko — Wikimedia Commons (CC BY-SA 3.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=5573891"
+    },
+    "sun-tzu": {
+      "commonsFile": "Enchoen27n3200.jpg",
+      "license": "CC BY 2.5",
+      "artist": "663highland",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=4876792",
+      "credit": "Bild: 663highland — Wikimedia Commons (CC BY 2.5) — Quelle: https://commons.wikimedia.org/w/index.php?curid=4876792"
+    },
+    "thomas-jefferson": {
+      "commonsFile": "Official Presidential portrait of Thomas Jefferson (by Rembrandt Peale, 1800)(cropped).jpg",
+      "license": "Public domain",
+      "artist": "Rembrandt Peale",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=72792044",
+      "credit": "Bild: Rembrandt Peale — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=72792044"
+    },
+    "thukydides": {
+      "commonsFile": "Thucydides pushkin01.jpg",
+      "license": "CC BY-SA 3.0",
+      "artist": "user:shakko",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=5573948",
+      "credit": "Bild: user:shakko — Wikimedia Commons (CC BY-SA 3.0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=5573948"
+    },
+    "vergil": {
+      "commonsFile": "Parco della Grotta di Posillipo5 (crop).jpg",
+      "license": "Public domain",
+      "artist": "Armando Mancini",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=21845489",
+      "credit": "Bild: Armando Mancini — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=21845489"
+    },
+    "victor-hugo": {
+      "commonsFile": "Victor Hugo by Étienne Carjat 1876 - full.jpg",
+      "license": "Public domain",
+      "artist": "Étienne Carjat",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=28384247",
+      "credit": "Bild: Étienne Carjat — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=28384247"
+    },
+    "voltaire": {
+      "commonsFile": "Nicolas de Largillière - Portrait de Voltaire (1694-1778) en 1718 - P208 - Musée Carnavalet - 2.jpg",
+      "license": "CC0",
+      "artist": "Nicolas de Largillière",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=98222039",
+      "credit": "Bild: Nicolas de Largillière — Wikimedia Commons (CC0) — Quelle: https://commons.wikimedia.org/w/index.php?curid=98222039"
+    },
+    "william-shakespeare": {
+      "commonsFile": "Shakespeare.jpg",
+      "license": "Public domain",
+      "artist": "Attributed to John Taylor",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=5442977",
+      "credit": "Bild: Attributed to John Taylor — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=5442977"
+    },
+    "wolfgang-amadeus-mozart": {
+      "commonsFile": "Wolfgang-amadeus-mozart 1.jpg",
+      "license": "Public domain",
+      "artist": "Barbara Krafft",
+      "source": "https://commons.wikimedia.org/w/index.php?curid=141841",
+      "credit": "Bild: Barbara Krafft — Wikimedia Commons (Public domain) — Quelle: https://commons.wikimedia.org/w/index.php?curid=141841"
+    }
+  }
+}

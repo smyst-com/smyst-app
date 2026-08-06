@@ -24,6 +24,17 @@ const EXPECTED_PROFILE_COUNT = 100;
 const DIRECT_ANSWER_GUARDRAIL =
   'Kurz, direkt und sachlich antworten. Kein Rollenspiel, keine Selbstbeschreibung, keine Story.';
 
+// Bildnachweise der kuratierten Profile (Lizenz-Inventur 06.08.2026).
+// Fehlt die Datei, laeuft der Build unveraendert weiter (imageCredit bleibt leer).
+let CURATED_IMAGE_CREDITS = {};
+try {
+  CURATED_IMAGE_CREDITS = JSON.parse(
+    readFileSync(resolve(__dirname, 'curated-image-credits.json'), 'utf8'),
+  ).profiles || {};
+} catch {
+  CURATED_IMAGE_CREDITS = {};
+}
+
 const templatePath = resolve(DIST, 'index.html');
 if (!existsSync(templatePath)) {
   console.error('generate-profile-pages: dist/index.html fehlt. Erst `npm run build` ausfuehren.');
@@ -237,6 +248,7 @@ function toPublicTwinProfile(spec, index) {
     slug: spec.slug,
     description: spec.description,
     imageUrl,
+    imageCredit: CURATED_IMAGE_CREDITS[spec.slug]?.credit,
     categories: spec.categories,
     languages: CURATED_PUBLIC_TWIN_LANGUAGES,
     visibility: 'public',
