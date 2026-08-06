@@ -60,6 +60,12 @@ on:
         default: "true"
         type: choice
         options: ["true", "false"]
+      watchdog:
+        description: "true = Nachhol-Lauf des Pipeline-Watchdogs (publiziert + deployt wie ein Cron-Lauf)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["true", "false"]
 
 # Seed-Laeufe haben eine EIGENE Queue: GitHub haelt pro Gruppe nur einen
 # wartenden Lauf — bei 8 Crons/Tag verdraengte jeder neue Cron einen
@@ -284,8 +290,9 @@ jobs:
       # Deckel 2500/Tag (schriftliche Anweisung Betreiber 05.08.2026: 2000
       # Profile/Tag; Luft nach oben). Publish-Zahl landet in der Run-Summary, damit der
       # Tagesdurchsatz ohne Log-Graben sichtbar ist.
+      # watchdog=true: Nachhol-Lauf des Pipeline-Watchdogs zaehlt wie ein Cron.
       - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04/17)"
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || inputs.watchdog == 'true'
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -307,7 +314,7 @@ jobs:
       # Profile hinterlassen (live passiert am 01.08. um 02:56 und 09:38 UTC).
       # Idempotent; Fehler einzelner QIDs blockieren den Deploy nicht.
       - name: "Auto-Orts-Backfill nach Publish (Cron + publish-reviewed)"
-        if: github.event_name == 'schedule' || env.MODE == 'publish-reviewed'
+        if: github.event_name == 'schedule' || env.MODE == 'publish-reviewed' || inputs.watchdog == 'true'
         continue-on-error: true
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
@@ -399,13 +406,13 @@ jobs:
       # exakt 90 Sekunden vor dem Backfill #147, der 1168 Orte ergaenzt hat.
       # Vorschaulaeufe (dry-run) schreiben nichts und deployen deshalb nicht.
       - name: "Auto-Deploy nach Publish (Cron + echter Orts-Backfill)"
-        if: github.event_name == 'schedule' || (env.MODE == 'backfill-places' && inputs.backfill_dry_run == 'false')
+        if: github.event_name == 'schedule' || inputs.watchdog == 'true' || (env.MODE == 'backfill-places' && inputs.backfill_dry_run == 'false')
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
 
       - name: Hinweis Publish
-        if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule') || env.MODE == 'run-batch'
+        if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule' && inputs.watchdog != 'true') || env.MODE == 'run-batch'
         run: |
           echo "Kein automatischer Publish. Freigabe durch Menschen:"
           echo "python -m app.workers.publish_profiles publish --qid <QID> --approved-by <email> --enabled"

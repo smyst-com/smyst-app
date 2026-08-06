@@ -1,0 +1,50 @@
+name: Pipeline-Watchdog
+
+# GitHub-Crons fallen unter Last ersatzlos aus (05.08.2026: Slot 01:23 fehlte,
+# 06.08. wieder — je ausgefallenem Slot fehlen bis zu ~250 Profile am Tag).
+# Dieser Watchdog prueft stuendlich, ob im letzten ~3h-Fenster ein Pipeline-
+# Lauf gestartet wurde, und holt den Slot sonst per Dispatch nach
+# (mode=run-small mit watchdog=true — publiziert und deployt wie ein Cron-Lauf;
+# die Pauschal-Freigabe Adam King 2026-07-04/17 deckt alle Automatik-Laeufe).
+#
+# Der Watchdog ist selbst ein Cron und kann ebenfalls ausfallen — bei 24
+# Chancen/Tag ist ein verpasster Pipeline-Slot trotzdem nach spaetestens
+# ~1h nachgeholt. Doppel-Dispatches sind unkritisch: die Concurrency-Gruppe
+# von pipeline-run serialisiert, und ein Lauf ohne frische Kandidaten ist
+# nach ~25 min Overhead fertig.
+
+on:
+  schedule:
+    - cron: "40 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: pipeline-watchdog
+  cancel-in-progress: true
+
+jobs:
+  watchdog:
+    name: Slot-Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: "Fehlt ein Pipeline-Lauf im 3h-Fenster? Dann nachholen."
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 170 min = Cron-Abstand (180) minus Toleranz; zaehlt JEDEN Lauf des
+          # Pipeline-Workflows (auch manuelle), damit nie doppelt angeschoben wird.
+          RECENT=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=10" \
+            --jq '[.workflow_runs[] | select((now - (.created_at | fromdateiso8601)) < 10200)] | length')
+          echo "Pipeline-Laeufe in den letzten 170 min: ${RECENT}"
+          if [ "${RECENT}" -eq 0 ]; then
+            echo "Kein Lauf im Fenster — verpasster Cron-Slot wird nachgeholt."
+            gh workflow run pipeline-run.yml --ref main -f mode=run-small -f watchdog=true
+            echo "### Watchdog hat einen verpassten Cron-Slot nachgeholt" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Takt in Ordnung — nichts zu tun."
+          fi
