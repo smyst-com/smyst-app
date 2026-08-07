@@ -29,13 +29,15 @@ interface Props {
   primaryAction?: { label: string; onClick: () => void };
   /** Optional: übersetzte Drawer-Texte (nicht-DE); Fallback ist Deutsch. */
   labels?: StaticTranslations['mnav'];
-  /** Optional: Hell/Dunkel-Umschalter als Design-Sektion (Header-Button ist mobil ausgeblendet). */
+  /** Optional: Theme-Umschalter als Design-Sektion (Header-Button ist mobil ausgeblendet).
+      "system" folgt dauerhaft der Geraete-Einstellung. */
   theme?: {
-    value: 'dark' | 'light';
-    onChange: (theme: 'dark' | 'light') => void;
+    pref: 'dark' | 'light' | 'system';
+    onChange: (theme: 'dark' | 'light' | 'system') => void;
     title: string;
     darker: string;
     lighter: string;
+    system: string;
   };
 }
 
@@ -210,20 +212,20 @@ export default function MobileNav({ open, onClose, items, primaryAction, labels,
           {theme && (
             <div className="mt-5 border-t border-white/10 px-1 pt-5">
               <p className="px-3 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{theme.title}</p>
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                {(['dark', 'light'] as const).map((mode) => (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {(['dark', 'light', 'system'] as const).map((mode) => (
                   <button
                     key={mode}
                     type="button"
                     onClick={() => theme.onChange(mode)}
-                    aria-pressed={theme.value === mode}
-                    className={`min-h-[48px] rounded-lg border px-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 ${
-                      theme.value === mode
+                    aria-pressed={theme.pref === mode}
+                    className={`min-h-[48px] rounded-lg border px-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 ${
+                      theme.pref === mode
                         ? 'border-white/35 bg-[#f4f7fb] text-[#111722]'
                         : 'border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
                     }`}
                   >
-                    {mode === 'dark' ? theme.darker : theme.lighter}
+                    {mode === 'dark' ? theme.darker : mode === 'light' ? theme.lighter : theme.system}
                   </button>
                 ))}
               </div>
