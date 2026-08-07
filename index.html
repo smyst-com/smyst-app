@@ -3,6 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- Security-Header-Teilabhilfe (GitHub Pages erlaubt keine HTTP-Header;
+         Werbe-Audit Befund 4, Option A, Freigabe 07.08.2026). HSTS/X-Frame-Options
+         gehen per meta nicht. Bei AdSense-Aktivierung ergaenzen: script-src/frame-src
+         pagead2.googlesyndication.com googleads.g.doubleclick.net tpc.googlesyndication.com,
+         img-src bleibt https:. Inline-Script-Hash unten gilt fuer das
+         Kleinschreibungs-Redirect-Script; bei dessen Aenderung Hash neu berechnen. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-UGYekqzmHdjWUvtOY+rAzYx6T53WqQ02/Fshmq82cPw=' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://api.smyst.com https://smyst-api.zeabur.app https://accounts.google.com; media-src 'self' blob:; worker-src 'self'; frame-src https://accounts.google.com; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="theme-color" content="#0b1c44" />
     <meta name="color-scheme" content="light dark" />
     <script>
