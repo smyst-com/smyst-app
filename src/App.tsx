@@ -279,6 +279,8 @@ type AppView =
   | 'not-found'
 
 type AppTheme = 'dark' | 'light'
+// Gespeicherte Nutzerwahl: explizit hell/dunkel oder dauerhaft der Systemeinstellung folgen
+type ThemePref = AppTheme | 'system'
 type NameSortMode = 'famous' | 'used' | 'popular' | 'trend' | 'manual'
 type SpeechRecognitionState = 'idle' | 'listening' | 'paused' | 'replying'
 type ChatAttachmentKind = 'image' | 'video' | 'audio' | 'document' | 'contact' | 'location' | 'file' | 'link'
@@ -630,12 +632,16 @@ export default function App() {
   const [profileSlug, setProfileSlug] = useState<string | null>(route.profileSlug)
   const [privateTwinId, setPrivateTwinId] = useState<string | null>(route.privateTwinId)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
-  const [appTheme, setAppTheme] = useState<AppTheme>(() => {
+  const [themePref, setThemePref] = useState<ThemePref>(() => {
     const stored = window.localStorage.getItem('smyst-theme')
-    if (stored === 'light' || stored === 'dark') return stored
-    // Erstbesuch ohne gespeicherte Wahl: Systemeinstellung des Geraets uebernehmen
-    return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+    if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
+    // Erstbesuch ohne gespeicherte Wahl: dauerhaft der Systemeinstellung folgen
+    return 'system'
   })
+  const [systemTheme, setSystemTheme] = useState<AppTheme>(() =>
+    window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark',
+  )
+  const appTheme: AppTheme = themePref === 'system' ? systemTheme : themePref
   const [nameSortMode, setNameSortMode] = useState<NameSortMode>(() => {
     const stored = window.localStorage.getItem('smyst-name-sort')
     return isNameSortMode(stored) ? stored : 'famous'
@@ -645,10 +651,19 @@ export default function App() {
     auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
   )
 
+  // Systemwechsel des Geraets live uebernehmen, solange "System" gewaehlt ist
   useEffect(() => {
-    window.localStorage.setItem('smyst-theme', appTheme)
+    const mq = window.matchMedia?.('(prefers-color-scheme: light)')
+    if (!mq) return
+    const onChange = (e: MediaQueryListEvent) => setSystemTheme(e.matches ? 'light' : 'dark')
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  useEffect(() => {
+    window.localStorage.setItem('smyst-theme', themePref)
     document.documentElement.dataset.smystTheme = appTheme
-  }, [appTheme])
+  }, [themePref, appTheme])
 
   useEffect(() => {
     window.localStorage.setItem('smyst-name-sort', nameSortMode)
@@ -708,7 +723,8 @@ export default function App() {
         <SmystStartPage
           onNavigate={navigateTo}
           appTheme={appTheme}
-          onThemeChange={setAppTheme}
+          themePref={themePref}
+          onThemeChange={setThemePref}
           nameSortMode={nameSortMode}
           onNameSortModeChange={setNameSortMode}
         />
@@ -759,7 +775,7 @@ export default function App() {
             </div>
             <button
               type="button"
-              onClick={() => setAppTheme((theme) => (theme === 'dark' ? 'light' : 'dark'))}
+              onClick={() => setThemePref(appTheme === 'dark' ? 'light' : 'dark')}
               className="hidden min-h-9 border border-white/[0.1] bg-white/[0.04] px-3 text-xs font-semibold text-white transition hover:bg-white/[0.08] sm:inline-flex sm:items-center"
             >
               {appTheme === 'dark' ? (appLang === DEFAULT_LANG ? 'Heller' : ft.drawer.themeLighter) : (appLang === DEFAULT_LANG ? 'Dunkler' : ft.drawer.themeDarker)}
@@ -795,11 +811,12 @@ export default function App() {
           items={mobileItems}
           labels={appLang === DEFAULT_LANG ? undefined : ft.mnav}
           theme={{
-            value: appTheme,
-            onChange: setAppTheme,
+            pref: themePref,
+            onChange: setThemePref,
             title: appLang === DEFAULT_LANG ? 'Design' : ft.drawer.designTitle,
             darker: appLang === DEFAULT_LANG ? 'Dunkler' : ft.drawer.themeDarker,
             lighter: appLang === DEFAULT_LANG ? 'Heller' : ft.drawer.themeLighter,
+            system: appLang === DEFAULT_LANG ? 'System' : ft.drawer.themeSystem,
           }}
           primaryAction={
             auth.status === 'authenticated'
@@ -1403,13 +1420,15 @@ type ChatMessage = {
 function SmystStartPage({
   onNavigate,
   appTheme,
+  themePref,
   onThemeChange,
   nameSortMode,
   onNameSortModeChange,
 }: {
   onNavigate: (view: AppView) => void
   appTheme: AppTheme
-  onThemeChange: (theme: AppTheme) => void
+  themePref: ThemePref
+  onThemeChange: (theme: ThemePref) => void
   nameSortMode: NameSortMode
   onNameSortModeChange: (mode: NameSortMode) => void
 }) {
@@ -2687,19 +2706,24 @@ function SmystStartPage({
 
           <div className="mt-5 border-t border-white/10 pt-5">
             <p className="px-4 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Design' : t.drawer.designTitle}</p>
-            <div className="mt-3 grid grid-cols-2 gap-2 px-2">
-              {(['dark', 'light'] as const).map((theme) => (
+            <div className="mt-3 grid grid-cols-3 gap-2 px-2">
+              {(['dark', 'light', 'system'] as const).map((theme) => (
                 <button
                   key={theme}
                   type="button"
                   onClick={() => onThemeChange(theme)}
+                  aria-pressed={themePref === theme}
                   className={`min-h-[48px] border px-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 ${
-                    appTheme === theme
+                    themePref === theme
                       ? 'border-white/35 bg-[#f4f7fb] text-[#111722]'
                       : 'border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
                   }`}
                 >
-                  {theme === 'dark' ? (lang === DEFAULT_LANG ? 'Dunkler' : t.drawer.themeDarker) : (lang === DEFAULT_LANG ? 'Heller' : t.drawer.themeLighter)}
+                  {theme === 'dark'
+                    ? (lang === DEFAULT_LANG ? 'Dunkler' : t.drawer.themeDarker)
+                    : theme === 'light'
+                      ? (lang === DEFAULT_LANG ? 'Heller' : t.drawer.themeLighter)
+                      : (lang === DEFAULT_LANG ? 'System' : t.drawer.themeSystem)}
                 </button>
               ))}
             </div>
