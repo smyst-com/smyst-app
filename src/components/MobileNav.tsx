@@ -29,9 +29,17 @@ interface Props {
   primaryAction?: { label: string; onClick: () => void };
   /** Optional: übersetzte Drawer-Texte (nicht-DE); Fallback ist Deutsch. */
   labels?: StaticTranslations['mnav'];
+  /** Optional: Hell/Dunkel-Umschalter als Design-Sektion (Header-Button ist mobil ausgeblendet). */
+  theme?: {
+    value: 'dark' | 'light';
+    onChange: (theme: 'dark' | 'light') => void;
+    title: string;
+    darker: string;
+    lighter: string;
+  };
 }
 
-export default function MobileNav({ open, onClose, items, primaryAction, labels }: Props) {
+export default function MobileNav({ open, onClose, items, primaryAction, labels, theme }: Props) {
   const reduced = usePrefersReducedMotion();
   const drawerRef = useRef<HTMLDivElement>(null);
 
@@ -198,6 +206,29 @@ export default function MobileNav({ open, onClose, items, primaryAction, labels 
               </div>
             ))}
           </div>
+
+          {theme && (
+            <div className="mt-5 border-t border-white/10 px-1 pt-5">
+              <p className="px-3 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{theme.title}</p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                {(['dark', 'light'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => theme.onChange(mode)}
+                    aria-pressed={theme.value === mode}
+                    className={`min-h-[48px] rounded-lg border px-3 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 ${
+                      theme.value === mode
+                        ? 'border-white/35 bg-[#f4f7fb] text-[#111722]'
+                        : 'border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08]'
+                    }`}
+                  >
+                    {mode === 'dark' ? theme.darker : theme.lighter}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </nav>
 
         {/* Primary Action */}

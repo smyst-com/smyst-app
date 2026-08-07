@@ -792,6 +792,13 @@ export default function App() {
           onClose={() => setMobileNavOpen(false)}
           items={mobileItems}
           labels={appLang === DEFAULT_LANG ? undefined : ft.mnav}
+          theme={{
+            value: appTheme,
+            onChange: setAppTheme,
+            title: appLang === DEFAULT_LANG ? 'Design' : ft.drawer.designTitle,
+            darker: appLang === DEFAULT_LANG ? 'Dunkler' : ft.drawer.themeDarker,
+            lighter: appLang === DEFAULT_LANG ? 'Heller' : ft.drawer.themeLighter,
+          }}
           primaryAction={
             auth.status === 'authenticated'
               ? { label: appLang === DEFAULT_LANG ? 'Zum Dashboard' : ft.mnav.toDashboard, onClick: () => navigateTo('dashboard') }
