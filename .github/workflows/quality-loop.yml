@@ -63,7 +63,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_PROVIDER_ORDER: "groq,gemini,deepseek,openrouter,openai,anthropic,xai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_PROVIDER_ORDER: "anthropic,xai,groq,gemini,deepseek,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: python -m app.workers.eval_profiles --enabled --limit 80
 

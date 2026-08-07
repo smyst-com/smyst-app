@@ -261,7 +261,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           # BEWUSST fest verdrahtet (Runde 40/41): exakt die Provider, deren
           # Keys oben uebergeben werden — Reihenfolge nach Live-Ping-Latenz.
-          LLM_PROVIDER_ORDER: "groq,gemini,deepseek,openrouter,openai,anthropic,xai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_PROVIDER_ORDER: "anthropic,xai,groq,gemini,deepseek,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
           if [ "$MODE" = "run-batch" ]; then
@@ -360,7 +360,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_PROVIDER_ORDER: "groq,gemini,deepseek,openrouter,openai,anthropic,xai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_PROVIDER_ORDER: "anthropic,xai,groq,gemini,deepseek,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: python -m app.workers.eval_profiles --enabled --limit 20
 
@@ -400,7 +400,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_PROVIDER_ORDER: "groq,gemini,deepseek,openrouter,openai,anthropic,xai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_PROVIDER_ORDER: "anthropic,xai,groq,gemini,deepseek,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
           if [ -z "${{ inputs.qids }}" ]; then
