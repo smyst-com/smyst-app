@@ -632,7 +632,9 @@ export default function App() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [appTheme, setAppTheme] = useState<AppTheme>(() => {
     const stored = window.localStorage.getItem('smyst-theme')
-    return stored === 'light' ? 'light' : 'dark'
+    if (stored === 'light' || stored === 'dark') return stored
+    // Erstbesuch ohne gespeicherte Wahl: Systemeinstellung des Geraets uebernehmen
+    return window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
   })
   const [nameSortMode, setNameSortMode] = useState<NameSortMode>(() => {
     const stored = window.localStorage.getItem('smyst-name-sort')
