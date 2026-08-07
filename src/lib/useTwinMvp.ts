@@ -463,6 +463,39 @@ export function useTwinMvp() {
     [run],
   )
 
+  // Soft-Delete: verschiebt den Twin serverseitig in den Papierkorb
+  // (backend twins_delete.py); Chats und Uploads bleiben erhalten.
+  const deleteTwin = useCallback(
+    (twinId: string) =>
+      run(async () => {
+        return apiJson<{ ok: boolean; deletedId: string; restorable: boolean; remaining: number }>(
+          `/api/twins/${encodeURIComponent(twinId)}`,
+          { method: 'DELETE' },
+        )
+      }),
+    [run],
+  )
+
+  const restoreTwin = useCallback(
+    (twinId: string) =>
+      run(async () => {
+        return apiJson<{ ok: boolean; restoredId: string; remaining: number }>(
+          `/api/twins/${encodeURIComponent(twinId)}/restore`,
+          { method: 'POST' },
+        )
+      }),
+    [run],
+  )
+
+  const listDeletedTwins = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ twins: TwinRecord[] }>('/api/twins/deleted/list')
+        return body.twins
+      }),
+    [run],
+  )
+
   const addKnowledge = useCallback(
     (input: { twinId: string; title?: string; text: string }) =>
       run(async () => {
@@ -792,6 +825,9 @@ export function useTwinMvp() {
     listPublicTwins,
     createTwin,
     updateTwin,
+    deleteTwin,
+    restoreTwin,
+    listDeletedTwins,
     addKnowledge,
     addMedia,
     startTwinChat,

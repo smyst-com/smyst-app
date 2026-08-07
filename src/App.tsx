@@ -4827,6 +4827,9 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const twinMvp = useTwinMvp()
   const [twins, setTwins] = useState<TwinRecord[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [trash, setTrash] = useState<TwinRecord[]>([])
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
   const styleLabels: Record<TwinStyle, string> = {
     warm: 'Warm',
     direct: 'Direkt',
@@ -4846,10 +4849,35 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
       setTwins(items ?? [])
       setLoaded(true)
     })
+    void twinMvp.listDeletedTwins().then((items) => {
+      if (!alive) return
+      setTrash(items ?? [])
+    })
     return () => {
       alive = false
     }
   }, [auth.status])
+
+  const handleDelete = async (twinId: string) => {
+    setBusyId(twinId)
+    const result = await twinMvp.deleteTwin(twinId)
+    setBusyId(null)
+    setConfirmDeleteId(null)
+    if (!result?.ok) return
+    const removed = twins.find((item) => item.id === twinId)
+    setTwins((prev) => prev.filter((item) => item.id !== twinId))
+    if (removed) setTrash((prev) => [...prev, removed])
+  }
+
+  const handleRestore = async (twinId: string) => {
+    setBusyId(twinId)
+    const result = await twinMvp.restoreTwin(twinId)
+    setBusyId(null)
+    if (!result?.ok) return
+    const restored = trash.find((item) => item.id === twinId)
+    setTrash((prev) => prev.filter((item) => item.id !== twinId))
+    if (restored) setTwins((prev) => [...prev, restored])
+  }
 
   return (
     <div className="pt-6">
@@ -4922,9 +4950,42 @@ function MyTwinsView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
                   Chat
                 </Button>
                 <Button size="sm" variant="secondary" onClick={() => onNavigate('memory-upload')}>{t.myTwins.uploadButton}</Button>
+                <Button size="sm" variant="secondary" onClick={() => setConfirmDeleteId(twin.id)}>Löschen</Button>
               </div>
+              {confirmDeleteId === twin.id && (
+                <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+                  <p className="text-sm font-semibold">
+                    Diesen Twin in den Papierkorb verschieben? Chats und Uploads bleiben erhalten, Wiederherstellen ist jederzeit möglich.
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => void handleDelete(twin.id)} disabled={busyId === twin.id}>
+                      {busyId === twin.id ? 'Wird verschoben…' : 'In den Papierkorb'}
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => setConfirmDeleteId(null)}>Abbrechen</Button>
+                  </div>
+                </div>
+              )}
             </Card>
           ))}
+        </div>
+      )}
+      {auth.status === 'authenticated' && trash.length > 0 && (
+        <div className="mt-10">
+          <h2 className="mb-1 text-xl font-bold tracking-tight">Papierkorb</h2>
+          <p className="mb-4 text-sm text-[#555b64]">Gelöschte Twins lassen sich jederzeit wiederherstellen.</p>
+          <div className="grid gap-3 md:grid-cols-2">
+            {trash.map((twin) => (
+              <Card key={twin.id} className="flex items-center justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold">{twin.name}</p>
+                  <p className="truncate text-xs text-[#667085]">{twin.description || '—'}</p>
+                </div>
+                <Button size="sm" variant="secondary" onClick={() => void handleRestore(twin.id)} disabled={busyId === twin.id}>
+                  {busyId === twin.id ? 'Wird wiederhergestellt…' : 'Wiederherstellen'}
+                </Button>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
       {twinMvp.error && <p className="mt-4 rounded-lg bg-red-500/10 p-3 text-sm text-red-700">{twinMvp.error}</p>}
