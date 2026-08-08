@@ -5595,6 +5595,13 @@ function AdminTable({ columns, rows }: { columns: string[]; rows: AdminRow[] }) 
           </tr>
         </thead>
         <tbody className="divide-y divide-[#edf2f7]">
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={columns.length} className="px-4 py-6 text-center text-sm font-semibold text-[#7b8493]">
+                Noch keine Live-Daten. Diese Tabelle füllt sich, sobald das Backend verbunden ist.
+              </td>
+            </tr>
+          )}
           {rows.map((row, index) => (
             <tr key={`${row[columns[0]]}-${index}`} className="text-[#5d6776]">
               {columns.map((column, columnIndex) => (
@@ -5856,43 +5863,34 @@ function AdminControlCenterInner() {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount)
   }
 
+  // Fix 2026-08-07: Demo-/Platzhalterdaten entfernt — vor Go-Live dürfen keine
+  // erfundenen User, Umsätze oder Metriken angezeigt werden. Ohne Live-Backend
+  // zeigen Metriken "—" und Tabellen den Leerzustand.
   const overviewMetrics: AdminMetric[] = [
     {
       label: 'Live Nutzer',
-      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : '18.4M',
-      detail: adminOverview ? `${adminOverview.metrics?.blockedUsers ?? 0} blockiert, KV-User sichtbar.` : 'Web, PWA, iPhone, Android und API zusammen.',
+      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : '—',
+      detail: adminOverview ? `${adminOverview.metrics?.blockedUsers ?? 0} blockiert, KV-User sichtbar.` : 'Wartet auf Live-Daten vom Backend.',
       tone: 'green',
     },
-    { label: 'Chat Start', value: '142 ms', detail: 'Ziel: Chat sofort offen, Streaming sofort sichtbar.', tone: 'cyan' },
+    { label: 'Chat Start', value: '—', detail: 'Messung startet mit Live-Backend. Ziel: Chat sofort offen, Streaming sofort sichtbar.', tone: 'cyan' },
     {
       label: 'Ad Revenue',
-      value: adminOverview ? formatCents(adminOverview.metrics?.validRevenueCents) : '$248K',
-      detail: 'Nur gültige Anzeigenumsätze nach Policy-Filter.',
+      value: adminOverview ? formatCents(adminOverview.metrics?.validRevenueCents) : '—',
+      detail: adminOverview ? 'Nur gültige Anzeigenumsätze nach Policy-Filter.' : 'Wartet auf Live-Daten vom Backend.',
       tone: 'amber',
     },
     {
       label: 'User Share',
-      value: adminOverview ? formatCents(adminOverview.metrics?.userShareCents) : '$62K',
-      detail: `${adminOverview?.metrics?.userSharePercent ?? 25} % Pool für genutzte AI-Profile.`,
+      value: adminOverview ? formatCents(adminOverview.metrics?.userShareCents) : '—',
+      detail: adminOverview ? `${adminOverview.metrics?.userSharePercent ?? 25} % Pool für genutzte AI-Profile.` : 'Wartet auf Live-Daten vom Backend.',
       tone: 'green',
     },
   ]
 
-  const users: AdminRow[] = [
-    { User: 'amina@smyst', Status: 'aktiv', Risiko: 'niedrig', Registriert: 'Web / DE', 'AI-Profile': '12 Twins', Umsatz: '$842', Aktion: 'Details' },
-    { User: 'leo@smyst', Status: 'review', Risiko: 'mittel', Registriert: 'PWA / US', 'AI-Profile': '3 Twins', Umsatz: '$128', Aktion: 'Prüfen' },
-    { User: 'botnet-44', Status: 'hold', Risiko: 'hoch', Registriert: 'API / unknown', 'AI-Profile': '0 Twins', Umsatz: '$0', Aktion: 'Block' },
-    { User: 'sara@smyst', Status: 'aktiv', Risiko: 'niedrig', Registriert: 'iPhone / FR', 'AI-Profile': '1 Twin', Umsatz: '$2,405', Aktion: 'Pay' },
-    { User: 'max@smyst', Status: 'gesperrt', Risiko: 'hoch', Registriert: 'Android / DE', 'AI-Profile': '6 Twins', Umsatz: '$0', Aktion: 'Appeal' },
-  ]
+  const users: AdminRow[] = []
 
-  const profileRevenue: AdminRow[] = [
-    { Profil: 'Einstein', Chats: '12.8M', Qualität: '94', 'Ad RPM': '$3.20', 'gültiger Umsatz': '$40,960', '25 % Anteil': '$10,240', Status: 'payable' },
-    { Profil: 'Fitness Coach', Chats: '8.1M', Qualität: '88', 'Ad RPM': '$2.70', 'gültiger Umsatz': '$21,870', '25 % Anteil': '$5,467', Status: 'review' },
-    { Profil: 'Deutsch Tutor', Chats: '6.4M', Qualität: '91', 'Ad RPM': '$3.90', 'gültiger Umsatz': '$24,960', '25 % Anteil': '$6,240', Status: 'payable' },
-    { Profil: 'Crypto Guru', Chats: '3.9M', Qualität: '62', 'Ad RPM': '$5.10', 'gültiger Umsatz': '$19,890', '25 % Anteil': 'hold', Status: 'policy' },
-    { Profil: 'Recipe Helper', Chats: '2.2M', Qualität: '85', 'Ad RPM': '$2.10', 'gültiger Umsatz': '$4,620', '25 % Anteil': '$1,155', Status: 'payable' },
-  ]
+  const profileRevenue: AdminRow[] = []
 
   const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
 
@@ -5965,9 +5963,9 @@ function AdminControlCenterInner() {
           <div className="mt-5 grid gap-3">
             {[
               ['AdSense Policy', 'Mobile-Abstand prüfen', 'amber'],
-              ['Invalid Traffic', '0.18 % verdächtig, Auto-Hold aktiv', 'green'],
-              ['Registrierungen', '+42 % durch Creator-Profile', 'cyan'],
-              ['Salad Queue', 'Suche und Embeddings normal', 'green'],
+              ['Invalid Traffic', 'Messung startet mit Live-Backend', 'cyan'],
+              ['Registrierungen', 'Wartet auf Live-Daten', 'cyan'],
+              ['Salad Queue', 'Status im Salad-Tab prüfen', 'cyan'],
             ].map(([label, detail, tone]) => (
               <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[190px_1fr]">
                 <AdminStatusChip tone={tone as AdminMetric['tone']}>{label}</AdminStatusChip>
@@ -6024,27 +6022,18 @@ function AdminControlCenterInner() {
     <div className="grid gap-5">
       <div className="grid gap-4 lg:grid-cols-4">
         {[
-          { label: 'Neue Nutzer', value: '482K', detail: 'Heute, nach Bot-Filter.', tone: 'green' },
-          { label: 'Aktivierung', value: '71 %', detail: 'Erster Chat in 60 Sekunden.', tone: 'cyan' },
-          { label: 'Bot-Block', value: '38K', detail: 'Rate-limit, Device-Fingerprint, CAPTCHA.', tone: 'amber' },
-          { label: 'Kosten/User', value: '$0.013', detail: 'Compute, Storage und Index.', tone: 'green' },
+          { label: 'Neue Nutzer', value: '—', detail: 'Wartet auf Live-Daten. Zählung nach Bot-Filter.', tone: 'green' },
+          { label: 'Aktivierung', value: '—', detail: 'Wartet auf Live-Daten. Ziel: erster Chat in 60 Sekunden.', tone: 'cyan' },
+          { label: 'Bot-Block', value: '—', detail: 'Wartet auf Live-Daten. Rate-limit, Device-Fingerprint, CAPTCHA.', tone: 'amber' },
+          { label: 'Kosten/User', value: '—', detail: 'Wartet auf Live-Daten. Compute, Storage und Index.', tone: 'green' },
         ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
       </div>
       <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <h2 className="text-xl font-bold text-[#111722]">Funnel</h2>
-          {[
-            ['Landing', '100 %', 'w-full'],
-            ['Signup', '74 %', 'w-[74%]'],
-            ['Verify', '69 %', 'w-[69%]'],
-            ['First chat', '61 %', 'w-[61%]'],
-            ['Profile created', '34 %', 'w-[34%]'],
-          ].map(([label, value, width]) => (
-            <div key={label} className="mt-4">
-              <div className="mb-1 flex items-center justify-between text-sm font-bold text-[#172033]"><span>{label}</span><span>{value}</span></div>
-              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md bg-[#59c7ff] ${width}`} /></div>
-            </div>
-          ))}
+          <p className="mt-4 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-4 text-sm font-semibold text-[#7b8493]">
+            Funnel-Zahlen (Landing, Signup, Verify, First chat, Profile created) erscheinen hier, sobald das Backend Live-Daten liefert.
+          </p>
         </section>
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <h2 className="text-xl font-bold text-[#111722]">Onboarding muss idiotensicher sein</h2>
@@ -6071,17 +6060,9 @@ function AdminControlCenterInner() {
         </section>
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <h2 className="text-xl font-bold text-[#111722]">Profil-Qualität</h2>
-          {[
-            ['Antwortqualität', 'w-[92%]', 'bg-emerald-500'],
-            ['Sicherheitsrisiko', 'w-[28%]', 'bg-amber-400'],
-            ['Quellenqualität', 'w-[88%]', 'bg-sky-400'],
-            ['Nutzerzufriedenheit', 'w-[91%]', 'bg-emerald-500'],
-          ].map(([label, width, color]) => (
-            <div key={label} className="mt-4">
-              <p className="mb-1 text-sm font-bold text-[#172033]">{label}</p>
-              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md ${color} ${width}`} /></div>
-            </div>
-          ))}
+          <p className="mt-4 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-4 text-sm font-semibold text-[#7b8493]">
+            Qualitäts-Scores (Antwortqualität, Sicherheitsrisiko, Quellenqualität, Nutzerzufriedenheit) erscheinen hier, sobald das Backend Live-Daten liefert.
+          </p>
         </section>
       </div>
     </div>
@@ -6140,19 +6121,13 @@ function AdminControlCenterInner() {
     <div className="grid gap-5">
       <div className="grid gap-4 lg:grid-cols-4">
         {[
-          { label: 'Abuse Queue', value: '1,284', detail: 'Spam, Prompt Injection, gefährliche Inhalte.', tone: 'amber' },
-          { label: 'Invalid Ads', value: '0.18 %', detail: 'Verdächtige Klicks und Trafficquellen.', tone: 'green' },
-          { label: 'Audit Events', value: '9.2M', detail: 'Jede Änderung revisionssicher.', tone: 'cyan' },
-          { label: 'Privacy Requests', value: '742', detail: 'Export, Löschung, Korrektur.', tone: 'green' },
+          { label: 'Abuse Queue', value: '—', detail: 'Wartet auf Live-Daten. Spam, Prompt Injection, gefährliche Inhalte.', tone: 'amber' },
+          { label: 'Invalid Ads', value: '—', detail: 'Wartet auf Live-Daten. Verdächtige Klicks und Trafficquellen.', tone: 'green' },
+          { label: 'Audit Events', value: '—', detail: 'Wartet auf Live-Daten. Jede Änderung revisionssicher.', tone: 'cyan' },
+          { label: 'Privacy Requests', value: '—', detail: 'Wartet auf Live-Daten. Export, Löschung, Korrektur.', tone: 'green' },
         ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
       </div>
-      <AdminTable columns={['Fall', 'Risiko', 'Quelle', 'Grund', 'Owner', 'Aktion']} rows={[
-        { Fall: 'A-30941', Risiko: 'hoch', Quelle: 'Chat', Grund: 'Policy / Selbstschaden', Owner: 'Trust', Aktion: 'Escalate' },
-        { Fall: 'AD-8821', Risiko: 'mittel', Quelle: 'Ad Click', Grund: 'Invalid pattern', Owner: 'Ads', Aktion: 'Hold' },
-        { Fall: 'U-1180', Risiko: 'hoch', Quelle: 'Signup', Grund: 'Bot cluster', Owner: 'Security', Aktion: 'Block' },
-        { Fall: 'P-7754', Risiko: 'mittel', Quelle: 'Twin', Grund: 'Copyright claim', Owner: 'Legal', Aktion: 'Review' },
-        { Fall: 'D-204', Risiko: 'niedrig', Quelle: 'DSGVO', Grund: 'Data export', Owner: 'Privacy', Aktion: 'Send' },
-      ]} />
+      <AdminTable columns={['Fall', 'Risiko', 'Quelle', 'Grund', 'Owner', 'Aktion']} rows={[]} />
     </div>
   )
 
@@ -6160,34 +6135,25 @@ function AdminControlCenterInner() {
     <div className="grid gap-5">
       <div className="grid gap-4 lg:grid-cols-4">
         {[
-          { label: 'IDrive E2', value: '14.8 PB', detail: '99 % Storage, Backups, Uploads, Medien.', tone: 'green' },
-          { label: 'Salad', value: '62K Jobs', detail: 'Compute, API, KI, Suche, Cronjobs.', tone: 'cyan' },
-          { label: 'GitHub', value: '42 repos', detail: 'Code und Versionierung only.', tone: 'navy' },
-          { label: 'Spaceship', value: 'healthy', detail: 'Domain und DNS.', tone: 'amber' },
+          { label: 'IDrive E2', value: '—', detail: 'Wartet auf Live-Daten. 99 % Storage, Backups, Uploads, Medien.', tone: 'green' },
+          { label: 'Salad', value: '—', detail: 'Wartet auf Live-Daten. Compute, API, KI, Suche, Cronjobs.', tone: 'cyan' },
+          { label: 'GitHub', value: 'aktiv', detail: 'Code und Versionierung only.', tone: 'navy' },
+          { label: 'Spaceship', value: 'aktiv', detail: 'Domain und DNS.', tone: 'amber' },
         ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
       </div>
       <div className="grid gap-5 xl:grid-cols-2">
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <h2 className="text-xl font-bold text-[#111722]">Workloads + Jobs</h2>
-          {[
-            ['API inference', 'w-[72%]', 'bg-sky-400'],
-            ['Search indexing', 'w-[44%]', 'bg-emerald-500'],
-            ['Embedding builds', 'w-[61%]', 'bg-amber-400'],
-            ['Media processing', 'w-[37%]', 'bg-emerald-500'],
-            ['Backups', 'w-[29%]', 'bg-emerald-500'],
-          ].map(([label, width, color]) => (
-            <div key={label} className="mt-4">
-              <p className="mb-1 text-sm font-bold text-[#172033]">{label}</p>
-              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md ${color} ${width}`} /></div>
-            </div>
-          ))}
+          <p className="mt-4 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-4 text-sm font-semibold text-[#7b8493]">
+            Auslastung (API inference, Search indexing, Embedding builds, Media processing, Backups) erscheint hier, sobald das Backend Live-Daten liefert.
+          </p>
         </section>
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <h2 className="text-xl font-bold text-[#111722]">Release Safety</h2>
           <div className="mt-4 grid gap-3">
-            {['Canary 1 %', 'Crash-free 99.98 %', 'Rollback-Paket auf IDrive E2', 'App/PWA Offline-Dateien', 'Audit + Fehlerberichte'].map((item) => (
+            {['Canary Rollout', 'Crash-free Monitoring', 'Rollback-Paket auf IDrive E2', 'App/PWA Offline-Dateien', 'Audit + Fehlerberichte'].map((item) => (
               <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
-                <AdminStatusChip>OK</AdminStatusChip>
+                <AdminStatusChip tone="cyan">geplant</AdminStatusChip>
                 <span className="text-sm font-bold text-[#172033]">{item}</span>
               </div>
             ))}
@@ -6199,12 +6165,7 @@ function AdminControlCenterInner() {
 
   const renderSupport = () => (
     <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
-      <AdminTable columns={['Queue', 'Count', 'Owner', 'SLA', 'Aktion']} rows={[
-        { Queue: 'Offene Tickets', Count: '4,280', Owner: 'Support', SLA: '92 %', Aktion: 'Priorisieren' },
-        { Queue: 'VIP Eskalationen', Count: '48', Owner: 'Support Lead', SLA: '99 %', Aktion: 'Sofort' },
-        { Queue: 'Payout Fragen', Count: '382', Owner: 'Finance', SLA: '88 %', Aktion: 'Prüfen' },
-        { Queue: 'Bug Reports', Count: '1,204', Owner: 'QA', SLA: '91 %', Aktion: 'Triagieren' },
-      ]} />
+      <AdminTable columns={['Queue', 'Count', 'Owner', 'SLA', 'Aktion']} rows={[]} />
       <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
         <h2 className="text-xl font-bold text-[#111722]">Admin Rollen</h2>
         <div className="mt-4 grid gap-2">
@@ -6222,18 +6183,13 @@ function AdminControlCenterInner() {
     <div className="grid gap-5">
       <div className="grid gap-4 lg:grid-cols-4">
         {[
-          { label: 'Payable', value: '$62K', detail: '25 % User-Anteil nach Validierung.', tone: 'green' },
-          { label: 'On Hold', value: '$8.4K', detail: 'Policy, KYC oder Invalid-Traffic offen.', tone: 'amber' },
-          { label: 'KYC Ready', value: '91 %', detail: 'Auszahlbare Creator mit vollständigem Profil.', tone: 'cyan' },
-          { label: 'Tax Queue', value: '318', detail: 'Steuerdaten, Rechnungen und Export.', tone: 'navy' },
+          { label: 'Payable', value: '—', detail: 'Wartet auf Live-Daten. 25 % User-Anteil nach Validierung.', tone: 'green' },
+          { label: 'On Hold', value: '—', detail: 'Wartet auf Live-Daten. Policy, KYC oder Invalid-Traffic offen.', tone: 'amber' },
+          { label: 'KYC Ready', value: '—', detail: 'Wartet auf Live-Daten. Auszahlbare Creator mit vollständigem Profil.', tone: 'cyan' },
+          { label: 'Tax Queue', value: '—', detail: 'Wartet auf Live-Daten. Steuerdaten, Rechnungen und Export.', tone: 'navy' },
         ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
       </div>
-      <AdminTable columns={['User', 'Profil', 'gültiger Umsatz', '25 % Anteil', 'KYC', 'Tax', 'Aktion']} rows={[
-        { User: 'sara@smyst', Profil: 'Deutsch Tutor', 'gültiger Umsatz': '$24,960', '25 % Anteil': '$6,240', KYC: 'ready', Tax: 'ready', Aktion: 'Pay batch' },
-        { User: 'amina@smyst', Profil: 'Einstein', 'gültiger Umsatz': '$40,960', '25 % Anteil': '$10,240', KYC: 'ready', Tax: 'pending', Aktion: 'Tax check' },
-        { User: 'team@smyst', Profil: 'Fitness Coach', 'gültiger Umsatz': '$21,870', '25 % Anteil': '$5,467', KYC: 'review', Tax: 'ready', Aktion: 'Review' },
-        { User: 'hold@smyst', Profil: 'Crypto Guru', 'gültiger Umsatz': '$19,890', '25 % Anteil': 'hold', KYC: 'blocked', Tax: 'missing', Aktion: 'Policy hold' },
-      ]} />
+      <AdminTable columns={['User', 'Profil', 'gültiger Umsatz', '25 % Anteil', 'KYC', 'Tax', 'Aktion']} rows={[]} />
       <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
         <h2 className="text-xl font-bold text-[#111722]">Auszahlungsregeln</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
