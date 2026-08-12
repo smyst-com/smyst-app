@@ -50,3 +50,20 @@ Profil-Kontext), `sprache` (Deutsch-Qualitaet, Sprachwechsel),
 
 v1 startet mit 40 Seed-Fragen (10 je Kategorie); Ziel laut Fahrplan sind
 200 in v2, generiert + handkuratiert, sobald v1 im Einsatz ist.
+
+## Eval-Runner (Baseline & Checkpoints)
+
+Stellt jede Frage dem Live-Twin (aktuelle Provider-Kette) und bewertet per
+LLM-as-Judge (0-2). Der erste Lauf mit `--tag baseline` ist der Massstab,
+den smyst 1.0 spaeter schlagen muss:
+
+```
+cd backend
+python -m app.workers.run_model_eval --eval-set ../training/eval/smyst-eval-v1.jsonl --dry-run
+python -m app.workers.run_model_eval --eval-set ../training/eval/smyst-eval-v1.jsonl --tag baseline
+```
+
+Report: lokal unter `training-export/model-eval-<tag>-<zeit>.json` und
+(wenn e2 konfiguriert) dauerhaft unter `training-evals/` im Object Brain.
+Degradierte Provider brechen den Lauf ab — eine halb-degradierte Baseline
+waere wertlos.
