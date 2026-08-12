@@ -12,6 +12,17 @@ class ProviderConfig:
 
 
 PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
+    # Kein eigener Anbieter, sondern der smyst-Server selbst: die Pipeline in
+    # GitHub Actions leiht sich dessen Provider-Kette, statt eigene Keys zu
+    # brauchen (siehe api/v1/routes/ci_gateway.py). base_url kommt aus den
+    # Settings; api_key_attr zeigt bewusst auf dieselbe Einstellung, damit die
+    # Kette den Eintrag ueberspringt, solange kein Gateway konfiguriert ist.
+    "smyst_gateway": ProviderConfig(
+        name="smyst_gateway",
+        base_url="",
+        api_key_attr="smyst_gateway_base_url",
+        default_model="smyst-gateway",
+    ),
     "openrouter": ProviderConfig(
         name="openrouter",
         base_url="https://openrouter.ai/api/v1",
@@ -117,6 +128,7 @@ PROVIDER_ALIASES = {
 }
 
 DEFAULT_PROVIDER_ORDER = [
+    "smyst_gateway",
     "openrouter",
     "openai",
     "anthropic",

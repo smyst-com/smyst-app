@@ -78,6 +78,23 @@ class Settings(BaseSettings):
     together_api_key: str | None = Field(default=None, validation_alias="TOGETHER_API_KEY")
     cohere_api_key: str | None = Field(default=None, validation_alias="COHERE_API_KEY")
     perplexity_api_key: str | None = Field(default=None, validation_alias="PERPLEXITY_API_KEY")
+    # CI-LLM-Gateway: laesst die Pipeline in GitHub Actions die Provider-Kette
+    # DIESES Servers mitbenutzen, statt eigene Provider-Keys zu brauchen. Die
+    # Authentifizierung laeuft ueber GitHub-OIDC (kein geteiltes Geheimnis).
+    ci_gateway_enabled: bool = Field(default=True, validation_alias="CI_GATEWAY_ENABLED")
+    ci_gateway_repository: str = Field(
+        default="smyst-com/smyst-app", validation_alias="CI_GATEWAY_REPOSITORY"
+    )
+    ci_gateway_audience: str = Field(
+        default="smyst-ci-llm-gateway", validation_alias="CI_GATEWAY_AUDIENCE"
+    )
+    ci_gateway_max_tokens: int = Field(default=800, validation_alias="CI_GATEWAY_MAX_TOKENS")
+    # Client-Seite (Pipeline): Basis-URL des Gateways. Leer => Gateway-Provider
+    # wird nicht in die Kette aufgenommen.
+    smyst_gateway_base_url: str | None = Field(
+        default=None, validation_alias="SMYST_GATEWAY_BASE_URL"
+    )
+
     llm_provider_order_raw: str = Field(default="", validation_alias="LLM_PROVIDER_ORDER")
     llm_default_models_raw: str = Field(default="", validation_alias="LLM_DEFAULT_MODELS")
     llm_provider_timeout_seconds: float = Field(
