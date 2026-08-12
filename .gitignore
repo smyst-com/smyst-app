@@ -77,3 +77,6 @@ public/icons/maskable-512.png
 public/apple-touch-icon.png
 public/og-image.png
 public/favicon.ico
+
+# Trainings-Export (enthaelt Nutzereingaben, NIE einchecken)
+training-export/
