@@ -7,6 +7,7 @@ from app.api.v1.routes.auth import router as auth_router
 from app.api.v1.routes.auth_account import router as auth_account_router
 from app.api.v1.routes.auth_email import router as auth_email_router
 from app.api.v1.routes.chat import router as chat_router
+from app.api.v1.routes.ci_gateway import router as ci_gateway_router
 from app.api.v1.routes.health import router as health_router
 from app.api.v1.routes.public_twins import router as public_twins_router
 from app.api.v1.routes.security import router as security_router
@@ -34,4 +35,5 @@ api_router.include_router(user_mvp_router)
 api_router.include_router(twins_delete_router)
 api_router.include_router(web_research_router)
 api_router.include_router(admin_quality_router)
+api_router.include_router(ci_gateway_router)
 

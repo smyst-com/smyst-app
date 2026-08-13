@@ -4,12 +4,15 @@ import asyncio
 import json
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from time import perf_counter
-from typing import Any, AsyncIterator
+from typing import Any
 from urllib.parse import urljoin
 
 import httpx
+
 from app.ai.degraded_messages import degraded_fallback_message
+from app.ai.github_oidc import ActionsIdTokenSource
 from app.ai.models import LLMRequest, LLMResponse
 from app.ai.provider_catalog import (
     DEFAULT_PROVIDER_ORDER,
@@ -272,6 +275,32 @@ class OpenAICompatibleProvider(LLMProvider):
         raise RuntimeError(f"LLM provider '{self.name}' returned empty content")
 
 
+class SmystGatewayProvider(OpenAICompatibleProvider):
+    """Nutzt die Provider-Kette des Live-Servers statt eigener Keys.
+
+    Nur fuer Laeufe in GitHub Actions gedacht: der Zugang wird nicht mit einem
+    hinterlegten Schluessel nachgewiesen, sondern mit dem OIDC-Token des
+    laufenden Jobs, das GitHub bei jedem Aufruf frisch ausstellt. Deshalb wird
+    der Bearer-Wert unmittelbar vor jeder Anfrage gesetzt.
+    """
+
+    def __init__(self, base_url: str, token_source: ActionsIdTokenSource, **kwargs: Any) -> None:
+        super().__init__("smyst_gateway", base_url, "", "smyst-gateway", **kwargs)
+        self._token_source = token_source
+
+    async def _refresh_key(self) -> None:
+        self.api_key = await self._token_source.token()
+
+    async def complete(self, request: LLMRequest) -> LLMResponse:
+        await self._refresh_key()
+        return await super().complete(request)
+
+    async def stream(self, request: LLMRequest) -> AsyncIterator[str]:
+        await self._refresh_key()
+        async for delta in super().stream(request):
+            yield delta
+
+
 class AnthropicProvider(OpenAICompatibleProvider):
     async def complete(self, request: LLMRequest) -> LLMResponse:
         try:
@@ -526,7 +555,19 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
             AnthropicProvider if provider_name == "anthropic" else OpenAICompatibleProvider
         )
         timeout = active_settings.llm_provider_timeout_seconds
-        if provider_name == "manus":
+        if provider_name == "smyst_gateway":
+            # Ohne Actions-OIDC (lokal, oder Workflow ohne id-token-Permission)
+            # gibt es nichts, womit sich der Lauf ausweisen koennte.
+            if not ActionsIdTokenSource.available():
+                continue
+            providers.append(
+                SmystGatewayProvider(
+                    api_key,
+                    ActionsIdTokenSource(active_settings.ci_gateway_audience),
+                    timeout=timeout,
+                )
+            )
+        elif provider_name == "manus":
             providers.append(
                 ManusProvider(
                     api_key, agent_profile=model, base_url=config.base_url, timeout=timeout
