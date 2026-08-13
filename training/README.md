@@ -67,3 +67,39 @@ Report: lokal unter `training-export/model-eval-<tag>-<zeit>.json` und
 (wenn e2 konfiguriert) dauerhaft unter `training-evals/` im Object Brain.
 Degradierte Provider brechen den Lauf ab — eine halb-degradierte Baseline
 waere wertlos.
+
+## Phase 1: Korpus (Continued Pretraining)
+
+Stellt den deutschen Pretraining-Korpus zusammen (Ziel 10–15 Mrd Token) und
+mischt einen englischen Replay-Anteil bei (Standard 15 %) — ohne ihn vergisst
+das Basismodell beim Weitertrainieren, was es vorher konnte.
+
+```
+cd backend
+python -m app.workers.prepare_corpus --plan-only     # Budget-Verteilung zeigen
+python -m app.workers.prepare_corpus --sample --out ./korpus
+```
+
+**NICHT auf dem Entwickler-Mac im Vollmodus laufen lassen** — der Vollkorpus
+sind ~40 GB Text nach Filterung, der Rohdurchsatz ein Vielfaches davon. Der
+Volllauf gehoert auf dieselbe gemietete Maschine, auf der danach trainiert wird.
+
+Installation dort:
+
+```
+pip install 'datatrove[io,processing,multilingual]'
+```
+
+Zwei Fallen, die im Code bewusst adressiert sind (und die der Test
+`test_datatrove_pipeline_wiring` absichert):
+
+- `streaming=True` am HuggingFace-Reader — ohne das laedt er den KOMPLETTEN
+  Datensatz statt nur des Limits (bei fineweb-2 mehrere TB)
+- `language=deu` an den Gopher-Filtern — die Defaults sind englisch, deutsche
+  Komposita fallen sonst durchs Wortlaengen-Gate (`max_avg_word_length` von
+  10 auf 12 erhoeht)
+
+Nach dem Lauf fehlen noch zwei Schritte (Phase 1b): MinHash-Dedup ueber ALLE
+Quellen zusammen (14×8 Buckets, 5-Gramm) und der Tokenizer-Lauf, der die
+echte Token-Zahl liefert — die Zahlen aus `--plan-only` sind Schaetzungen
+(3,3 Zeichen/Token).
