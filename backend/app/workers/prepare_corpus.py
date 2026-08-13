@@ -283,8 +283,9 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         from datatrove.executor.local import LocalPipelineExecutor
     except ImportError:
         print(
-            "datatrove fehlt. Installation: pip install 'datatrove[io,processing,multilingual]' "
-            "(io = orjson fuer den Writer, multilingual = deutsche Tokenisierung)",
+            "datatrove fehlt. Verifizierte Installation: "
+            "pip install 'datatrove[io,processing]' spacy "
+            "(io = orjson fuer den Writer, spacy = deutsche Wort-Tokenisierung)",
             file=sys.stderr,
         )
         return 1

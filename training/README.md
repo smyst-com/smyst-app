@@ -84,11 +84,17 @@ python -m app.workers.prepare_corpus --sample --out ./korpus
 sind ~40 GB Text nach Filterung, der Rohdurchsatz ein Vielfaches davon. Der
 Volllauf gehoert auf dieselbe gemietete Maschine, auf der danach trainiert wird.
 
-Installation dort:
+Installation dort (genau diese Kombination ist verifiziert — die Tests laufen
+damit durch, inklusive echter Dokument-Filterung):
 
 ```
-pip install 'datatrove[io,processing,multilingual]'
+pip install 'datatrove[io,processing]' spacy
 ```
+
+`io` liefert orjson fuer den Writer, `spacy` die deutsche Wort-Tokenisierung.
+Letztere wird erst beim ERSTEN Dokument geladen, nicht beim Aufbau der
+Pipeline — ohne sie bricht ein Lauf also erst nach dem Start ab. Genau das
+prueft `test_german_filters_run_on_real_document`.
 
 Zwei Fallen, die im Code bewusst adressiert sind (und die der Test
 `test_datatrove_pipeline_wiring` absichert):

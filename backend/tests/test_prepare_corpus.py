@@ -151,3 +151,21 @@ def test_datatrove_pipeline_wiring(tmp_path) -> None:
         "LambdaFilter",
         "JsonlWriter",
     ]
+
+
+def test_german_filters_run_on_real_document(tmp_path) -> None:
+    """Laesst die Filter ein echtes deutsches Dokument passieren.
+
+    Der Konstruktions-Test allein genuegt NICHT: die deutsche Wort-
+    Tokenisierung laedt spacy erst beim ersten Dokument. Ohne diesen Test
+    wuerde ein Korpus-Lauf mit unvollstaendiger Installation erst nach dem
+    Start abbrechen (fehlender 'multilingual'-Extra).
+    """
+    pytest.importorskip("datatrove")
+    pytest.importorskip("spacy")
+    from datatrove.data import Document
+
+    steps = build_pipeline(build_source_plan(1_000_000_000, replay_ratio=0.0)[0], str(tmp_path))
+    document = Document(text=GERMAN_PROSE * 3, id="test-1")
+    for step in steps[1:4]:  # die drei Filter, ohne Writer
+        assert step.filter(document) is not False, f"{type(step).__name__} lehnt deutsche Prosa ab"
