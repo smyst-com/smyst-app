@@ -1,0 +1,107 @@
+# Modell-Eval fuer smyst 1.0: stellt das eingefrorene Fragenset den Live-Twins
+# und bewertet die Antworten per LLM-as-Judge.
+#
+# Warum als Workflow und nicht lokal: die Twin-Kapseln liegen in IDrive e2, und
+# der LLM-Zugang kommt ueber das CI-Gateway (OIDC) — beides existiert nur hier,
+# nicht auf einem Entwicklerrechner.
+#
+# Der erste Lauf mit tag=baseline ist der Massstab, den ein eigenes Modell
+# spaeter schlagen muss. Danach laeuft derselbe Workflow pro Trainings-
+# Checkpoint gegen dieselben, NIE veraenderten Fragen.
+name: Modell-Eval (smyst 1.0 Baseline & Checkpoints)
+
+on:
+  workflow_dispatch:
+    inputs:
+      eval_set:
+        description: "Pfad zum Eval-Set (relativ zu backend/)"
+        required: false
+        default: "../training/eval/smyst-eval-v1.jsonl"
+      tag:
+        description: "Label des Laufs (baseline, checkpoint-1000, ...)"
+        required: false
+        default: "baseline"
+      limit:
+        description: "Nur die ersten N Fragen (leer = alle)"
+        required: false
+        default: ""
+      dry_run:
+        description: "Nur Twin-Aufloesung pruefen, keine LLM-Calls"
+        required: false
+        default: "false"
+
+concurrency:
+  group: model-eval
+  cancel-in-progress: false
+
+jobs:
+  eval:
+    name: Eval-Lauf (${{ inputs.tag }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      # id-token:write laesst den Job ein OIDC-Token anfordern — damit weist
+      # sich der Eval beim CI-LLM-Gateway aus (kein Provider-Key noetig).
+      id-token: write
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install backend
+        run: pip install -e ".[dev]"
+
+      - name: Eval-Lauf
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          # Gateway zuerst: es leiht sich die funktionierende Provider-Kette des
+          # Servers. Die Einzel-Keys bleiben als Rueckfallebene dahinter.
+          LLM_PROVIDER_ORDER: "smyst_gateway,anthropic,xai,groq,gemini,deepseek,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+        run: |
+          ARGS="--eval-set ${{ inputs.eval_set }} --tag ${{ inputs.tag }} --out ../eval-report"
+          if [ -n "${{ inputs.limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.limit }}"; fi
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          # Ausgabe doppelt verwenden: Konsole fuer die Log-Suche, Datei fuer die
+          # Zusammenfassung. set -o pipefail, damit ein Eval-Fehler den Job
+          # rot macht statt still durch tee zu verschwinden.
+          set -o pipefail
+          python -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt
+
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          {
+            echo "## Modell-Eval: ${{ inputs.tag }}"
+            echo ""
+            echo '```'
+            tail -n 20 /tmp/eval-out.txt 2>/dev/null || echo "keine Ausgabe"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Der Report enthaelt die Twin-Antworten im Klartext — als Artefakt
+      # abgelegt (30 Tage), NICHT ins Repo. Dauerhaft liegt er in e2 unter
+      # training-evals/.
+      - name: Report als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-eval-${{ inputs.tag }}
+          path: eval-report/
+          if-no-files-found: warn
+          retention-days: 30
