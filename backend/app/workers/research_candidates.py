@@ -134,7 +134,9 @@ def research_one(
             + [{**asdict(event), "from_status": event.from_status.value,
                 "to_status": event.to_status.value}],
         }
-        store.save_candidate_document(qid, new_document)
+        store.save_candidate_document(
+            qid, new_document, previous_status=document.get("status")
+        )
     return qid, result
 
 

@@ -23,6 +23,28 @@ Ergebnis (lokal, NICHT einchecken — enthaelt Nutzereingaben):
 - `preference-<datum>.jsonl` — nur bewertete Antworten (`rating: up/down`),
   Rohmaterial fuer DPO-Paare
 
+## QA-Urteile (Trainingsdaten fuer das Pipeline-Modell)
+
+Damit smyst 1.0 spaeter die **Pruefarbeit** der Pipeline uebernehmen kann (das
+QA-Gate, das heute fremde Provider erledigen), braucht es Beispiele der Form
+"Profil + Frage + Antwort -> Urteil". Genau die fallen bei jedem echten
+Pipeline-Lauf ohnehin an — `qa_candidates` legt zu jedem Kandidaten einen
+`qa_report` mit Antworten und Maengeln ab.
+
+```
+cd backend
+python -m app.workers.export_qa_judgments --dry-run    # Kennzahlen + Klassenverteilung
+python -m app.workers.export_qa_judgments --out ../training-export
+```
+
+Bei 250 Kandidaten x 5 Standardfragen sind das ~1250 Urteile pro Lauf, **ohne
+einen einzigen zusaetzlichen LLM-Aufruf** — die Trainingsdaten entstehen als
+Nebenprodukt des Normalbetriebs.
+
+Die wichtigste Zahl im Bericht ist `fail_ratio`: ein Datensatz mit 99 % "pass"
+taugt NICHT zum Trainieren eines Pruefers, das Modell lernt dann einfach immer
+"pass". Unter 5 % warnt der Worker ausdruecklich.
+
 ## Eval-Set (eval/smyst-eval-v1.jsonl)
 
 **Eingefroren.** Dieses Set ist der Massstab, mit dem Trainings-Checkpoints

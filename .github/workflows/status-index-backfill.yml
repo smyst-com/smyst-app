@@ -1,0 +1,70 @@
+# Einmal-Backfill der Status-Marker fuer den Kandidaten-Bestand.
+#
+# Warum ein eigener Workflow und nicht ein Modus in pipeline-run.yml: die
+# Pipeline-Laeufe teilen sich EINE Concurrency-Gruppe, und GitHub haelt darin
+# nur einen wartenden Lauf. Am 13.08.2026 haben genau dadurch manuelle
+# Dispatches zwei Cron-Laeufe gekostet (einer stand 31 min pending und wurde
+# gecancelt, ohne je zu starten). Ein eigener Workflow mit eigener Gruppe
+# kann die Profilerstellung also nicht ausbremsen.
+name: Status-Marker-Backfill (einmalig)
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = nur zaehlen und Verteilung zeigen (Standard), false = Marker schreiben"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+      limit:
+        description: "Optional: nur die ersten N Kandidaten (Test)"
+        required: false
+        default: ""
+
+concurrency:
+  group: status-index-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    name: Status-Marker schreiben
+    runs-on: ubuntu-latest
+    # Ein voller Scan (~14.000 Dokumente) plus ebenso viele Marker-Writes.
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install backend
+        run: pip install -e ".[dev]"
+
+      - name: Backfill
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ inputs.dry_run }}" != "false" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ -n "${{ inputs.limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.limit }}"; fi
+          set -o pipefail
+          python -m app.workers.backfill_status_index $ARGS | tee /tmp/backfill.txt
+
+      - name: Zusammenfassung
+        if: always()
+        run: |
+          {
+            echo "## Status-Marker-Backfill (dry_run=${{ inputs.dry_run }})"
+            echo ""
+            echo '```'
+            tail -n 30 /tmp/backfill.txt 2>/dev/null || echo "keine Ausgabe"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

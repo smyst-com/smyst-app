@@ -174,7 +174,9 @@ def qa_one(
                     "occurred_at": audit_entry.occurred_at.isoformat(),
                 }
             ]
-        store.save_candidate_document(qid, new_document)
+        store.save_candidate_document(
+            qid, new_document, previous_status=document.get("status")
+        )
     return qid, result
 
 
