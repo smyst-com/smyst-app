@@ -31,9 +31,19 @@ DEFAULT_CONCURRENCY = 4
 ENV_CONCURRENCY = "PIPELINE_WORKER_CONCURRENCY"
 
 
-def resolve_concurrency(requested: int | None = None) -> int:
-    """Parallelitaet aus Argument, sonst Env, sonst Default; immer >= 1."""
-    for value in (requested, os.environ.get(ENV_CONCURRENCY)):
+def resolve_concurrency(
+    requested: int | None = None,
+    *,
+    default: int = DEFAULT_CONCURRENCY,
+    env_var: str = ENV_CONCURRENCY,
+) -> int:
+    """Parallelitaet aus Argument, sonst Env, sonst Default; immer >= 1.
+
+    default/env_var sind ueberschreibbar, weil nicht jede Stufe dieselbe
+    Grenze vertraegt: Risiko und Kapsel sprechen mit unserem eigenen Gateway,
+    die Recherche dagegen mit Wikimedia — und das drosselt haerter.
+    """
+    for value in (requested, os.environ.get(env_var)):
         if value is None:
             continue
         try:
@@ -42,7 +52,7 @@ def resolve_concurrency(requested: int | None = None) -> int:
             continue
         if parsed > 0:
             return parsed
-    return DEFAULT_CONCURRENCY
+    return max(1, default)
 
 
 def map_candidates(
@@ -73,6 +83,9 @@ def map_candidates(
         with lock:
             results[done_qid] = result
 
+    # Ein bereits aufgeloester Wert (z. B. die niedrigere Recherche-Grenze)
+    # kommt hier als Zahl an und gewinnt — resolve_concurrency prueft das
+    # Argument vor Env und Default.
     workers = resolve_concurrency(concurrency)
     if workers == 1 or len(documents) <= 1:
         for document in documents:
