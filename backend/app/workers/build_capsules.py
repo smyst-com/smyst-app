@@ -93,7 +93,9 @@ def build_one(
                 }
             ],
         }
-        store.save_candidate_document(qid, new_document)
+        store.save_candidate_document(
+            qid, new_document, previous_status=document.get("status")
+        )
     return qid, f"generated (slug {capsule.slug}, twin {capsule.twin_id})"
 
 

@@ -31,6 +31,18 @@ SOURCE_PREFIX = "pipeline/sources/"
 INGEST_CURSOR_KEY = "pipeline/ingest/cursor.json"
 RESEARCH_PREFIX = "pipeline/research/"
 
+#: Status-Marker: EIN leeres Objekt je Kandidat unter seinem aktuellen Status.
+#: Grund (Messung 13.08.2026): candidate_documents_by_status lud vorher JEDES
+#: Kandidaten-Dokument einzeln, nur um nach Status zu filtern — bei ~14.000
+#: Kandidaten ~12 Minuten pro Aufruf, viermal pro Pipeline-Lauf, also ~48
+#: Minuten reiner Leerlauf, linear wachsend. Mit Markern genuegt EIN
+#: LIST-Aufruf je Status; geladen werden nur noch die Treffer.
+#:
+#: Ein eigener Schluessel je Kandidat (statt einer zentralen Index-Datei) ist
+#: Absicht: die Worker-Stufen laufen seit 13.08. parallel, ein gemeinsames
+#: Index-Objekt haette Lese-Aenderungs-Schreib-Kollisionen.
+STATUS_PREFIX = "pipeline/status/"
+
 
 class S3Like(Protocol):
     """Minimale boto3-Schnittstelle; erlaubt Fakes in Tests."""
@@ -38,6 +50,10 @@ class S3Like(Protocol):
     def put_object(self, *, Bucket: str, Key: str, Body: bytes, ContentType: str) -> Any: ...
     def get_object(self, *, Bucket: str, Key: str) -> Any: ...
     def get_paginator(self, name: str) -> Any: ...
+    # Nur fuer die Status-Marker; Fakes duerfen beides weglassen, die Aufrufer
+    # fangen den AttributeError ab (Marker sind Hinweise, keine Wahrheit).
+    def list_objects_v2(self, *, Bucket: str, Prefix: str, MaxKeys: int) -> Any: ...
+    def delete_object(self, *, Bucket: str, Key: str) -> Any: ...
 
 
 def _json_default(value: Any) -> str:
@@ -90,14 +106,23 @@ class CandidateStore:
         self._client.put_object(
             Bucket=self._bucket, Key=key, Body=body, ContentType="application/json"
         )
+        # Neuer Kandidat: es gibt noch keinen alten Marker wegzuraeumen.
+        self.write_status_marker(candidate.wikidata_qid, candidate.status.value)
         return key
 
     def load_candidate_document(self, qid: str) -> dict:
         response = self._client.get_object(Bucket=self._bucket, Key=f"{CANDIDATE_PREFIX}{qid}.json")
         return json.loads(response["Body"].read().decode("utf-8"))
 
-    def save_candidate_document(self, qid: str, document: dict) -> str:
-        """Aktualisiertes Kandidaten-Dokument (inkl. Audit-Trail) schreiben."""
+    def save_candidate_document(
+        self, qid: str, document: dict, *, previous_status: str | None = None
+    ) -> str:
+        """Aktualisiertes Kandidaten-Dokument (inkl. Audit-Trail) schreiben.
+
+        previous_status raeumt den alten Status-Marker weg. Ohne die Angabe
+        bleibt er stehen und kostet beim naechsten Lauf einen ueberfluessigen
+        GET — der Statusabgleich beim Laden faengt ihn ab.
+        """
         key = f"{CANDIDATE_PREFIX}{qid}.json"
         body = json.dumps(document, default=_json_default, ensure_ascii=False, indent=2).encode(
             "utf-8"
@@ -105,17 +130,81 @@ class CandidateStore:
         self._client.put_object(
             Bucket=self._bucket, Key=key, Body=body, ContentType="application/json"
         )
+        status = document.get("status")
+        if isinstance(status, str) and status:
+            self.write_status_marker(qid, status, previous_status=previous_status)
         return key
 
+    def _status_index_present(self) -> bool:
+        """Gibt es ueberhaupt Status-Marker? (ein LIST-Aufruf, MaxKeys=1)
+
+        Solange der Bestand nicht einmal indiziert wurde (Worker
+        backfill_status_index), arbeitet candidate_documents_by_status wie
+        frueher weiter. So kann die Umstellung keinen Lauf leerlaufen lassen.
+        """
+        try:
+            response = self._client.list_objects_v2(
+                Bucket=self._bucket, Prefix=STATUS_PREFIX, MaxKeys=1
+            )
+        except Exception:
+            return False
+        return bool(response.get("Contents"))
+
+    def qids_by_status(self, status: str) -> list[str]:
+        """QIDs laut Status-Marker — EIN LIST-Aufruf statt zehntausender GETs."""
+        prefix = f"{STATUS_PREFIX}{status}/"
+        qids: list[str] = []
+        paginator = self._client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=self._bucket, Prefix=prefix):
+            for obj in page.get("Contents", []) or []:
+                qid = obj["Key"][len(prefix):]
+                if qid:
+                    qids.append(qid)
+        return sorted(qids)
+
+    def write_status_marker(self, qid: str, status: str, *, previous_status: str | None = None) -> None:
+        """Setzt den Marker auf den neuen Status und raeumt den alten weg.
+
+        Wirft NIE: der Marker ist ein HINWEIS, keine Wahrheit. Beim Laden wird
+        der Status im Dokument geprueft — ein fehlender oder veralteter Marker
+        kostet hoechstens einen ueberfluessigen GET, verfaelscht aber nichts.
+        """
+        try:
+            self._client.put_object(
+                Bucket=self._bucket,
+                Key=f"{STATUS_PREFIX}{status}/{qid}",
+                Body=b"",
+                ContentType="text/plain",
+            )
+        except Exception:
+            return
+        if previous_status and previous_status != status:
+            try:
+                self._client.delete_object(
+                    Bucket=self._bucket, Key=f"{STATUS_PREFIX}{previous_status}/{qid}"
+                )
+            except Exception:
+                pass  # veralteter Marker kostet nur einen GET, siehe Docstring
+
     def candidate_documents_by_status(self, status: str, *, limit: int | None = None) -> list[dict]:
-        """Alle Kandidaten-Dokumente mit gegebenem Status (Scan; geringes Volumen)."""
+        """Alle Kandidaten-Dokumente mit gegebenem Status.
+
+        Schneller Weg ueber die Status-Marker; ohne Marker (vor dem einmaligen
+        Backfill) der alte Voll-Scan.
+        """
         documents: list[dict] = []
-        for qid in sorted(self.existing_qids()):
-            document = self.load_candidate_document(qid)
-            if document.get("status") == status:
-                documents.append(document)
-                if limit is not None and len(documents) >= limit:
-                    break
+        fast_path = self._status_index_present()
+        qids = self.qids_by_status(status) if fast_path else sorted(self.existing_qids())
+        for qid in qids:
+            try:
+                document = self.load_candidate_document(qid)
+            except Exception:
+                continue  # geloeschtes Dokument mit verwaistem Marker
+            if document.get("status") != status:
+                continue  # veralteter Marker — Dokument entscheidet
+            documents.append(document)
+            if limit is not None and len(documents) >= limit:
+                break
         return documents
 
     def save_source_snapshot(
