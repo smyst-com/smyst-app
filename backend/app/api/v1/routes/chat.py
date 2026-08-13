@@ -239,18 +239,24 @@ def _attach_web_research_evidence(request: LLMRequest, response: WebSearchRespon
 
 
 def _persist_exchange(
-    chat: dict[str, object], user_text: str, assistant_message: dict[str, object]
+    chat: dict[str, object],
+    user_text: str,
+    assistant_message: dict[str, object],
+    language: str | None = None,
 ) -> None:
     messages = chat.setdefault("messages", [])
     if isinstance(messages, list):
-        messages.append(
-            {
-                "id": str(uuid4()),
-                "role": "user",
-                "content": user_text,
-                "createdAt": _now_ms(),
-            }
-        )
+        user_message: dict[str, object] = {
+            "id": str(uuid4()),
+            "role": "user",
+            "content": user_text,
+            "createdAt": _now_ms(),
+        }
+        # Sprach-Tag fuer den Trainings-Export (workers/export_training_data):
+        # ohne ihn muesste die Sprache spaeter unsicher aus dem Text geraten werden.
+        if language:
+            user_message["language"] = language
+        messages.append(user_message)
         messages.append(assistant_message)
     chat["updatedAt"] = _now_ms()
     _schedule_archive(chat)
@@ -290,7 +296,7 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
     web_research = _web_research_metadata(research_response)
     if web_research is not None:
         assistant_message["webResearch"] = web_research
-    _persist_exchange(chat, message, assistant_message)
+    _persist_exchange(chat, message, assistant_message, language=body.language)
     return {
         "chatId": body.chatId,
         "twinId": chat.get("twinId"),
@@ -394,7 +400,7 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
                     web_research = _web_research_metadata(research_response)
                     if web_research is not None:
                         assistant_message["webResearch"] = web_research
-                    _persist_exchange(chat, message, assistant_message)
+                    _persist_exchange(chat, message, assistant_message, language=body.language)
                     yield _sse(
                         {
                             "done": True,
