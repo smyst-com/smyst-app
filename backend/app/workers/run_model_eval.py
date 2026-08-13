@@ -1,18 +1,22 @@
 """smyst.com Modell-Eval-Runner: eingefrorenes Eval-Set gegen die Live-Twins.
 
-Baustein fuer smyst 1.0: misst, wie gut das AKTUELLE Chat-Setup (Provider-
-Kette aus den Settings) die Fragen aus training/eval/smyst-eval-v*.jsonl
-beantwortet. Der erste Lauf ist die Baseline, die ein eigenes Modell spaeter
-schlagen muss; danach vergleicht jeder Trainings-Checkpoint gegen dieselben,
-NIE veraenderten Fragen.
+Baustein fuer smyst 1.0: misst, wie gut das AKTUELLE Setup die Fragen aus
+training/eval/smyst-eval-v*.jsonl beantwortet. Der erste Lauf ist die Baseline,
+die ein eigenes Modell spaeter schlagen muss; danach vergleicht jeder
+Trainings-Checkpoint gegen dieselben, NIE veraenderten Fragen.
 
-Bewertung per LLM-as-Judge (Skala 0-2 je Frage: verfehlt/teilweise/erfuellt).
-Twin-Namen aus dem Eval-Set werden gegen die published-Profile aufgeloest;
-nicht aufloesbare Twins werden uebersprungen und im Report ausgewiesen —
-so bleibt das Set auch dann gueltig, wenn sich der Profilbestand aendert.
+Die Antworten kommen ueber die OEFFENTLICHE Chat-API — denselben Weg, den ein
+Nutzer nimmt (/api/chat/start + /api/chat/messages). Das hat zwei Gruende:
+1. Es prueft den echten Produktionspfad samt Persona-Aufbau und Sprachlogik.
+2. Es braucht KEINE e2-Zugaenge; der Kandidatenspeicher enthaelt die
+   kuratierten Twins ohnehin nicht (die 100 beruehmten Figuren liegen als
+   'curated-*' nur in der Twin-API, nicht in der Pipeline).
 
-Der Report wird lokal geschrieben und (wenn e2 konfiguriert) zusaetzlich
-nach training-evals/ im Object Brain gelegt. Read-only gegenueber Profilen.
+Nur die Bewertung laeuft ueber die Provider-Kette (LLM-as-Judge, Skala 0-2) —
+in GitHub Actions traegt sie das CI-Gateway, ohne dass ein Key noetig ist.
+
+Antworten aus dem Not-Fallback (mode=local) werden NICHT bewertet, sondern
+brechen den Lauf ab: eine degradierte Baseline waere schlimmer als keine.
 
 Start:
     python -m app.workers.run_model_eval --eval-set ../training/eval/smyst-eval-v1.jsonl --dry-run
@@ -27,17 +31,19 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable
-
-from app.ai.qa_checks import ChatProviderDegradedError
-from app.integrations.candidate_store import CandidateStore, build_s3_client
-from app.workers.ingest_candidates import _pipeline_bucket
-from app.workers.qa_candidates import build_chat_fn, load_capsule_document
+from typing import Any, Callable
 
 #: Bewertungsskala des Judges; alles ausserhalb wird auf die Skala geklemmt.
 SCORE_MIN, SCORE_MAX = 0, 2
 
+#: Oeffentliche API (folgt Redirects; smyst.com leitet auf den Backend-Host um).
+DEFAULT_API_BASE = "https://api.smyst.com"
+
 REPORT_PREFIX = "training-evals/"
+
+#: Provider-Kennung des deterministischen Not-Fallbacks. Antworten daraus haben
+#: keinen Bezug zur Persona — sie zu bewerten ergaebe eine erfundene Baseline.
+DEGRADED_MODE = "local"
 
 JUDGE_PROMPT = """Du bist ein strenger Pruefer fuer einen KI-Twin einer historischen Person.
 Bewerte NUR, ob die Antwort die Erwartung erfuellt — nicht ihren Stil.
@@ -48,6 +54,10 @@ Antwort des Twins: {answer}
 
 Antworte AUSSCHLIESSLICH mit JSON: {{"score": 0, 1 oder 2, "grund": "ein Satz"}}
 (0 = Erwartung verfehlt, 1 = teilweise erfuellt, 2 = erfuellt)"""
+
+
+class DegradedProviderError(RuntimeError):
+    """Die Chat-API lieferte eine Not-Fallback-Antwort statt einer echten."""
 
 
 def load_eval_set(path: Path) -> list[dict]:
@@ -65,22 +75,70 @@ def load_eval_set(path: Path) -> list[dict]:
     return questions
 
 
-def resolve_twins(documents: list[dict], twin_names: set[str]) -> dict[str, dict]:
-    """Ordnet Eval-Twin-Namen den published-Dokumenten zu (case-insensitiv).
+def fetch_twins(api_base: str = DEFAULT_API_BASE, *, timeout: float = 180.0) -> list[dict]:  # pragma: no cover - Netz
+    """Holt alle Live-Twins (kuratiert + Pipeline) aus der oeffentlichen API."""
+    import httpx
 
-    Nur exakte Namens-Treffer — raten (Teilstrings, QIDs) waere gefaehrlicher
-    als ueberspringen.
+    response = httpx.get(
+        f"{api_base}/api/public/twins/",
+        params={"limit": 100000},
+        timeout=timeout,
+        follow_redirects=True,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    twins = payload.get("twins") if isinstance(payload, dict) else payload
+    return [twin for twin in (twins or []) if isinstance(twin, dict) and twin.get("id")]
+
+
+def resolve_twins(twins: list[dict], twin_names: set[str]) -> dict[str, dict]:
+    """Ordnet Eval-Twin-Namen den Live-Twins zu (case-insensitiv).
+
+    Nur exakte Namens-Treffer — raten (Teilstrings, Slugs) waere gefaehrlicher
+    als ueberspringen. Bei Namensdubletten gewinnt der kuratierte Twin: er hat
+    die handgepflegte Persona, die das Eval-Set meint.
     """
-    by_name = {
-        str(document.get("name") or "").casefold(): document
-        for document in documents
-        if str(document.get("name") or "").strip()
-    }
-    return {
-        name: by_name[name.casefold()]
-        for name in twin_names
-        if name.casefold() in by_name
-    }
+    by_name: dict[str, dict] = {}
+    for twin in twins:
+        name = str(twin.get("name") or "").strip()
+        if not name:
+            continue
+        key = name.casefold()
+        existing = by_name.get(key)
+        if existing is None or (
+            str(twin.get("id") or "").startswith("curated-")
+            and not str(existing.get("id") or "").startswith("curated-")
+        ):
+            by_name[key] = twin
+    return {name: by_name[name.casefold()] for name in twin_names if name.casefold() in by_name}
+
+
+def ask_twin(
+    twin_id: str,
+    question: str,
+    language: str | None = None,
+    *,
+    api_base: str = DEFAULT_API_BASE,
+    timeout: float = 180.0,
+) -> tuple[str, str | None]:  # pragma: no cover - Netz
+    """Stellt EINE Frage ueber die oeffentliche Chat-API; (Antwort, Provider).
+
+    Pro Frage ein frischer Chat — sonst faerbt der Verlauf die naechste Antwort
+    und die Fragen waeren nicht mehr unabhaengig bewertbar.
+    """
+    import httpx
+
+    with httpx.Client(timeout=timeout, follow_redirects=True) as client:
+        start = client.post(f"{api_base}/api/chat/start", json={"twinId": twin_id})
+        start.raise_for_status()
+        chat_id = start.json()["chat"]["id"]
+        body: dict[str, Any] = {"chatId": chat_id, "message": question}
+        if language:
+            body["language"] = language
+        answer = client.post(f"{api_base}/api/chat/messages", json=body)
+        answer.raise_for_status()
+        payload = answer.json()
+        return str(payload["message"]["content"] or ""), payload.get("mode")
 
 
 def parse_judge_verdict(raw: str) -> int | None:
@@ -98,7 +156,7 @@ def parse_judge_verdict(raw: str) -> int | None:
 
 
 def build_judge_fn(chat_fn: Callable[[str], str]) -> Callable[[dict, str], int | None]:
-    """Judge auf Basis derselben Provider-Kette wie der Chat selbst."""
+    """Judge auf Basis der Provider-Kette (in Actions: CI-Gateway)."""
 
     def judge(question: dict, answer: str) -> int | None:
         prompt = JUDGE_PROMPT.format(
@@ -115,6 +173,7 @@ def build_judge_fn(chat_fn: Callable[[str], str]) -> Callable[[dict, str], int |
 def aggregate(rows: list[dict]) -> dict:
     """Verdichtet Einzel-Ergebnisse zu Gesamt- und Kategorie-Scores [0..1]."""
     scored = [row for row in rows if isinstance(row.get("score"), int)]
+
     def _avg(subset: list[dict]) -> float:
         return round(sum(row["score"] for row in subset) / (len(subset) * SCORE_MAX), 4) if subset else 0.0
 
@@ -135,42 +194,41 @@ def run_eval(
     questions: list[dict],
     twins: dict[str, dict],
     *,
-    chat_fn_factory: Callable[[dict], Callable[[str], str] | None],
+    ask_fn: Callable[[str, str, str | None], tuple[str, str | None]],
     judge_fn: Callable[[dict, str], int | None],
-    capsule_loader: Callable[[dict], dict],
 ) -> list[dict]:
     """Fragt jeden aufloesbaren Twin und laesst den Judge bewerten (testbar).
 
-    Nicht aufloesbare Twins oder fehlende Chat-Provider ergeben skip-Zeilen
-    (score None) statt stiller Luecken. ChatProviderDegradedError bricht den
-    Lauf ab — eine halb-degradierte Baseline waere wertlos.
+    Nicht aufloesbare Twins und Fehler ergeben skip-Zeilen (score None) statt
+    stiller Luecken. Eine Not-Fallback-Antwort bricht den Lauf ab.
     """
     rows: list[dict] = []
-    chat_fns: dict[str, Callable[[str], str] | None] = {}
     for question in questions:
         twin_name = question["twin_name"]
-        row = {
+        row: dict[str, Any] = {
             "id": question["id"],
             "category": question["category"],
             "twin_name": twin_name,
             "score": None,
         }
-        document = twins.get(twin_name)
-        if document is None:
+        twin = twins.get(twin_name)
+        if twin is None:
             rows.append({**row, "skip": "twin nicht aufloesbar"})
             continue
-        if twin_name not in chat_fns:
-            chat_fns[twin_name] = chat_fn_factory(capsule_loader(document))
-        chat_fn = chat_fns[twin_name]
-        if chat_fn is None:
-            rows.append({**row, "skip": "kein Chat-Provider konfiguriert"})
-            continue
         try:
-            answer = chat_fn(question["question"])
-        except ChatProviderDegradedError:
+            answer, mode = ask_fn(str(twin["id"]), question["question"], question.get("language"))
+        except DegradedProviderError:
             raise
         except Exception as error:
             rows.append({**row, "skip": f"Chat-Fehler {type(error).__name__}"})
+            continue
+        if mode == DEGRADED_MODE:
+            raise DegradedProviderError(
+                f"Twin {twin_name} antwortete aus dem Not-Fallback (mode={mode})"
+            )
+        row["mode"] = mode
+        if not answer.strip():
+            rows.append({**row, "skip": "leere Antwort"})
             continue
         score = judge_fn(question, answer)
         if score is None:
@@ -186,6 +244,9 @@ def _upload_report(report: dict, key: str) -> bool:  # pragma: no cover - Verdra
     if not (settings.idrive_e2_access_key and settings.idrive_e2_secret_key):
         return False
     try:
+        from app.integrations.candidate_store import build_s3_client
+        from app.workers.ingest_candidates import _pipeline_bucket
+
         build_s3_client().put_object(
             Bucket=_pipeline_bucket(),
             Key=key,
@@ -202,6 +263,7 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser.add_argument("--eval-set", required=True, help="Pfad zu smyst-eval-v*.jsonl")
     parser.add_argument("--tag", default="baseline", help="Label des Laufs (z. B. baseline, checkpoint-1000)")
     parser.add_argument("--limit", type=int, default=None, help="max. Anzahl Fragen")
+    parser.add_argument("--api-base", default=DEFAULT_API_BASE, help="Basis der oeffentlichen API")
     parser.add_argument("--out", default="training-export", help="Zielverzeichnis fuer den Report")
     parser.add_argument("--dry-run", action="store_true", help="nur Twin-Aufloesung pruefen, keine LLM-Calls")
     args = parser.parse_args(argv)
@@ -210,32 +272,30 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     if args.limit is not None:
         questions = questions[: args.limit]
 
-    store = CandidateStore(build_s3_client(), _pipeline_bucket())
-    documents = store.candidate_documents_by_status("published")
-    twins = resolve_twins(documents, {question["twin_name"] for question in questions})
-    missing = sorted({q["twin_name"] for q in questions} - set(twins))
-    print(f"{len(questions)} Fragen, {len(twins)} Twins aufgeloest, fehlend: {missing or 'keine'}")
+    wanted = {question["twin_name"] for question in questions}
+    twins = resolve_twins(fetch_twins(args.api_base), wanted)
+    missing = sorted(wanted - set(twins))
+    print(f"{len(questions)} Fragen, {len(twins)}/{len(wanted)} Twins aufgeloest, fehlend: {missing or 'keine'}")
     if args.dry_run:
         return 0
+    if not twins:
+        print("Kein einziger Twin aufgeloest — Lauf abgebrochen (Report waere wertlos).")
+        return 1
 
-    def capsule_loader(document: dict) -> dict:
-        return load_capsule_document(store, str(document.get("wikidata_qid")))
+    from app.workers.qa_candidates import build_chat_fn
 
     judge_base = build_chat_fn({"persona_prompt": "Du bist ein praeziser Pruefer."})
     if judge_base is None:
-        print("Kein LLM-Provider konfiguriert — Eval nicht moeglich.")
+        print("Kein LLM-Provider fuer den Judge konfiguriert — Eval nicht moeglich.")
         return 1
 
+    def ask(twin_id: str, question: str, language: str | None) -> tuple[str, str | None]:
+        return ask_twin(twin_id, question, language, api_base=args.api_base)
+
     try:
-        rows = run_eval(
-            questions,
-            twins,
-            chat_fn_factory=build_chat_fn,
-            judge_fn=build_judge_fn(judge_base),
-            capsule_loader=capsule_loader,
-        )
-    except ChatProviderDegradedError as error:
-        print(f"Abbruch: Provider degradiert ({error}) — Baseline waere wertlos.")
+        rows = run_eval(questions, twins, ask_fn=ask, judge_fn=build_judge_fn(judge_base))
+    except DegradedProviderError as error:
+        print(f"Abbruch: {error} — eine degradierte Baseline waere wertlos.")
         return 1
 
     summary = aggregate(rows)
@@ -244,6 +304,7 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         "tag": args.tag,
         "createdAt": stamp,
         "eval_set": Path(args.eval_set).name,
+        "api_base": args.api_base,
         "summary": summary,
         "rows": rows,
     }
