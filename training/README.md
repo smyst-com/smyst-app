@@ -53,9 +53,8 @@ v1 startet mit 40 Seed-Fragen (10 je Kategorie); Ziel laut Fahrplan sind
 
 ## Eval-Runner (Baseline & Checkpoints)
 
-Stellt jede Frage dem Live-Twin (aktuelle Provider-Kette) und bewertet per
-LLM-as-Judge (0-2). Der erste Lauf mit `--tag baseline` ist der Massstab,
-den smyst 1.0 spaeter schlagen muss:
+Stellt jede Frage dem Live-Twin und bewertet per LLM-as-Judge (0-2). Der erste
+Lauf mit `--tag baseline` ist der Massstab, den smyst 1.0 spaeter schlagen muss:
 
 ```
 cd backend
@@ -63,10 +62,39 @@ python -m app.workers.run_model_eval --eval-set ../training/eval/smyst-eval-v1.j
 python -m app.workers.run_model_eval --eval-set ../training/eval/smyst-eval-v1.jsonl --tag baseline
 ```
 
-Report: lokal unter `training-export/model-eval-<tag>-<zeit>.json` und
-(wenn e2 konfiguriert) dauerhaft unter `training-evals/` im Object Brain.
-Degradierte Provider brechen den Lauf ab — eine halb-degradierte Baseline
-waere wertlos.
+Die Antworten kommen ueber die **oeffentliche Chat-API** (`/api/chat/start` +
+`/api/chat/messages`) — denselben Weg, den ein Nutzer nimmt. Damit prueft der
+Eval den echten Produktionspfad und braucht fuer die Antworten keine
+e2-Zugaenge. Pro Frage ein frischer Chat, sonst faerbt der Verlauf die
+Folgeantwort.
+
+Nur der Judge laeuft ueber die Provider-Kette. In GitHub Actions traegt sie das
+CI-Gateway (OIDC, kein Key noetig) — deshalb ist der Workflow
+`Modell-Eval (smyst 1.0 Baseline & Checkpoints)` der normale Weg:
+Actions → Modell-Eval → Run workflow, `tag=baseline`.
+
+Report: lokal unter `training-export/model-eval-<tag>-<zeit>.json`, als
+Workflow-Artefakt (30 Tage) und — wenn e2 konfiguriert — dauerhaft unter
+`training-evals/` im Object Brain.
+
+**Zwei Schutzmechanismen**, beide aus echten Fehlschlaegen entstanden:
+
+- Antworten mit `mode=local` (deterministischer Not-Fallback) brechen den Lauf
+  ab statt bewertet zu werden — sonst entsteht eine erfundene Baseline.
+- Twin-Namen werden nur exakt aufgeloest; bei Namensgleichheit gewinnt der
+  kuratierte Twin. Der erste Trockenlauf loeste **0 von 6** Twins auf, weil er
+  im Pipeline-Kandidatenspeicher suchte — die 100 beruehmten Figuren liegen
+  aber als `curated-*` ausschliesslich in der Twin-API.
+
+### Einmalige Korrektur am v1-Set (13.08.2026, vor dem ersten Score)
+
+`Kleopatra` existiert nicht als Twin (geprueft gegen alle 8425 Live-Twins), die
+6 zugehoerigen Fragen waeren stumm ausgefallen. Sie laufen jetzt auf
+`Julius Caesar` (kuratiert, live); zwei Fragen wurden inhaltlich angepasst
+(Alltag als Feldherr statt Herrscherin, politische Gegner statt roemische
+Feldherren). **Die Einfrier-Regel gilt ab dem ersten bewerteten Lauf** — zu
+diesem Zeitpunkt existierte noch kein Score, die Vergleichbarkeit ist also
+nicht verletzt. Ab jetzt: keine Aenderung mehr, Erweiterungen nur als v2.
 
 ## Phase 1: Korpus (Continued Pretraining)
 
