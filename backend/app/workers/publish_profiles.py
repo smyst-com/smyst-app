@@ -154,10 +154,35 @@ def publish_one(
     if live_slugs and record["slug"] not in own_slugs:
         normalized_live = {normalize_slug(slug) for slug in live_slugs}
         if normalize_slug(record["slug"]) in normalized_live:
-            return (
-                f"abgelehnt: Slug '{record['slug']}' existiert bereits als Live-Profil "
+            reason = (
+                f"Slug '{record['slug']}' existiert bereits als Live-Profil "
                 "(normalisierter Vergleich, Umschrift-Varianten eingeschlossen)"
             )
+            # TERMINAL ablehnen, nicht nur zurueckmelden: ohne Statuswechsel
+            # bleibt der Kandidat 'reviewed' + qa_passed und wird in JEDEM
+            # Folgelauf erneut geladen, neu aufgebaut und erneut abgelehnt.
+            # Befund 13.08.2026: 51 von 53 Kandidaten im Publish-Schritt waren
+            # solche Dauer-Dubletten (Einstein, Mozart, Goethe — die
+            # kuratierten Profile). Da --all-reviewed ohne Mengenbegrenzung
+            # laeuft, kosteten sie keine Publish-Plaetze, aber bei ~32 Laeufen
+            # pro Tag dauerhaft Rechenzeit und machten die Logs unlesbar.
+            if not dry_run:
+                rejected, event = transition(
+                    _candidate_from_document(document),
+                    PipelineStatus.REJECTED,
+                    reason=reason,
+                    config=config,
+                )
+                store.save_candidate_document(
+                    qid,
+                    {
+                        **document,
+                        "status": rejected.status.value,
+                        "status_reason": rejected.status_reason,
+                        "audit_trail": _append_audit(document, event),
+                    },
+                )
+            return f"abgelehnt: {reason}"
 
     new_index = upsert_index(index, record)  # wirft bei Slug-/Namenskonflikt
 
