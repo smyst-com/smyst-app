@@ -49,7 +49,7 @@ on:
       batch_limit:
         description: "Kandidaten je Worker-Stufe (nur run-batch; kuratierte Seeds abarbeiten)"
         required: false
-        default: "45"
+        default: "250"
       publish_limit:
         description: "Optional (publish-reviewed): Tageslimit-Override fuer dokumentierte Sonderfreigaben"
         required: false
@@ -93,7 +93,15 @@ jobs:
         working-directory: backend
     env:
       MODE: ${{ inputs.mode || 'run-small' }}
-      BATCH_LIMIT: ${{ inputs.batch_limit || '45' }}
+      # 250 statt 45 (13.08.2026), gemessen statt geraten: Recherche, Risiko und
+      # Kapsel brauchten je ~16 s pro Kandidat, die QA ~12 — seriell ~59 s, also
+      # hoechstens ~1465 Profile/Tag (genau die Bestwerte 1431/1497/1521). Die
+      # Stufen laufen jetzt mit 4 parallelen Kandidaten (workers/parallel_map),
+      # das druckt die Kette auf ~24 s pro Kandidat: 250 Kandidaten ~104 min pro
+      # Lauf, passt in den 3-Stunden-Abstand der Crons, 8 Crons = 2000/Tag.
+      # NUR zusammen mit der Parallelverarbeitung erhoehen — seriell braeuchte
+      # ein 250er-Lauf ~250 min, die Laeufe wuerden sich gegenseitig verdraengen.
+      BATCH_LIMIT: ${{ inputs.batch_limit || '250' }}
     steps:
       - uses: actions/checkout@v6
 

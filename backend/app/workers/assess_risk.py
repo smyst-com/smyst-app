@@ -29,6 +29,7 @@ from app.ai.historical_pipeline import (
 from app.ai.risk_checks import assess_risk
 from app.integrations.candidate_store import RESEARCH_PREFIX, CandidateStore, build_s3_client
 from app.workers.research_candidates import _candidate_from_document
+from app.workers.parallel_map import map_candidates
 
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 USER_AGENT = "smyst.com-risk/1.0 (https://smyst.com; pipeline)"
@@ -139,7 +140,8 @@ def assess_one(
 
 
 def run_assessment(
-    *, store: CandidateStore, config: PipelineConfig, limit: int, dry_run: bool, run_date: date
+    *, store: CandidateStore, config: PipelineConfig, limit: int, dry_run: bool, run_date: date,
+    concurrency: int | None = None,
 ) -> dict:
     documents = store.candidate_documents_by_status(PipelineStatus.RESEARCHED.value, limit=limit)
     report: dict = {
@@ -150,13 +152,13 @@ def run_assessment(
         "results": {},
         "errors": {},
     }
-    for document in documents:
-        qid = document.get("wikidata_qid", "?")
-        try:
-            qid, result = assess_one(document, store=store, config=config, dry_run=dry_run)
-            report["results"][qid] = result
-        except Exception as error:
-            report["errors"][qid] = f"{type(error).__name__}: {error}"
+    results, errors = map_candidates(
+        documents,
+        lambda document: assess_one(document, store=store, config=config, dry_run=dry_run),
+        concurrency=concurrency,
+    )
+    report["results"].update(results)
+    report["errors"].update(errors)
     report["finished_at"] = datetime.now(timezone.utc).isoformat()
     if not dry_run:
         store.save_changelog(run_date, report)
@@ -167,6 +169,10 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser = argparse.ArgumentParser(description="smyst.com risk-Worker")
     parser.add_argument("--limit", type=int, default=20)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--concurrency", type=int, default=None,
+        help="parallele Kandidaten (Default 4; siehe workers/parallel_map)",
+    )
     parser.add_argument("--enabled", action="store_true", help="pipeline.enabled Override (Test)")
     args = parser.parse_args(argv)
 
@@ -179,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
 
     store = CandidateStore(build_s3_client(), _pipeline_bucket())
     report = run_assessment(
-        store=store, config=config, limit=args.limit, dry_run=args.dry_run, run_date=date.today()
+        store=store, config=config, limit=args.limit, dry_run=args.dry_run, run_date=date.today(), concurrency=args.concurrency
     )
     print(json.dumps({"results": len(report["results"]), "errors": len(report["errors"])}))
     return 0
