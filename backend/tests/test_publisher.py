@@ -193,6 +193,44 @@ def test_publish_one_rejects_curated_live_duplicate() -> None:
     ).startswith("published")
 
 
+def test_live_duplicate_is_rejected_terminally_not_endlessly_retried() -> None:
+    """Eine Live-Dublette muss den Kandidaten TERMINAL ablehnen.
+
+    Ohne Statuswechsel bliebe er 'reviewed' + qa_passed und wuerde in jedem
+    Folgelauf erneut geladen, neu aufgebaut und erneut abgelehnt. Befund
+    13.08.2026: 51 von 53 Kandidaten im Publish-Schritt waren solche
+    Dauer-Dubletten (die kuratierten Profile) — bei ~32 Laeufen pro Tag
+    dauerhaft verschwendete Rechenzeit und unlesbare Logs.
+    """
+    from app.workers.publish_profiles import publish_one, select_reviewed_qids
+
+    store = _prepared_store()
+    result = publish_one(
+        "Q1035", store=store, config=CONFIG, approved_by="a@smyst.com",
+        dry_run=False, live_slugs={"charles-darwin"},
+    )
+    assert result.startswith("abgelehnt: Slug 'charles-darwin'")
+
+    document = store.load_candidate_document("Q1035")
+    assert document["status"] == "rejected"
+    assert "existiert bereits als Live-Profil" in (document.get("status_reason") or "")
+    assert document["audit_trail"][-1]["to_status"] == "rejected"
+    # Entscheidend: der Kandidat taucht in KEINEM Folgelauf mehr auf.
+    assert "Q1035" not in select_reviewed_qids(store)
+
+
+def test_live_duplicate_dry_run_does_not_change_status() -> None:
+    """Vorschau darf nichts schreiben — sonst waere --dry-run gefaehrlich."""
+    from app.workers.publish_profiles import publish_one
+
+    store = _prepared_store()
+    publish_one(
+        "Q1035", store=store, config=CONFIG, approved_by="a@smyst.com",
+        dry_run=True, live_slugs={"charles-darwin"},
+    )
+    assert store.load_candidate_document("Q1035")["status"] == "reviewed"
+
+
 def test_publish_one_rejects_transliteration_variant_duplicate() -> None:
     # Befund 2026-07-29: kuratiert 'mustafa-kemal-atatuerk' vs. Pipeline
     # 'mustafa-kemal-ataturk' — Umschrift-Varianten muessen als Dublette gelten.
