@@ -14,8 +14,11 @@ Start:
 from __future__ import annotations
 
 import argparse
+import collections
 import json
 import sys
+import time
+from collections.abc import Callable
 from dataclasses import asdict
 from datetime import date, datetime, timezone
 
@@ -34,20 +37,69 @@ from app.ai.research_profiles import (
     with_sources,
 )
 from app.integrations.candidate_store import CandidateStore, build_s3_client
-from app.workers.parallel_map import map_candidates
+from app.workers.parallel_map import map_candidates, resolve_concurrency
+
+#: Niedriger als die anderen Stufen: die Recherche ruft Wikimedia auf, nicht
+#: unser eigenes Gateway. Mit 4 lag die Fehlerquote bei 23-48 % (siehe
+#: _RETRY_STATUS). Notbremse ohne Code-Aenderung: RESEARCH_WORKER_CONCURRENCY.
+RESEARCH_CONCURRENCY = 2
+ENV_RESEARCH_CONCURRENCY = "RESEARCH_WORKER_CONCURRENCY"
+
+
+def error_kinds(errors: dict[str, str]) -> dict[str, int]:
+    """Fehlerarten zaehlen (z. B. HTTPStatusError: 12).
+
+    Der Worker druckte bisher nur die ANZAHL der Fehler; die Details landeten
+    ausschliesslich im Changelog in e2 und waren im Actions-Log unsichtbar.
+    Genau deshalb liess sich die 48-%-Fehlerquote am 13.08. nicht direkt
+    diagnostizieren.
+    """
+    return dict(
+        collections.Counter(
+            str(message).split(":", 1)[0].strip() for message in errors.values()
+        ).most_common()
+    )
 
 ENTITY_URL = "https://www.wikidata.org/wiki/Special:EntityData/{qid}.json"
 SUMMARY_URL = "https://{lang}.wikipedia.org/api/rest_v1/page/summary/{title}"
 USER_AGENT = "smyst.com-research/1.0 (https://smyst.com; pipeline)"
 
 
-def _get_json(url: str, *, timeout_seconds: float = 30.0) -> dict:
+#: Wikimedia drosselt gleichzeitige Abrufe pro IP, und GitHub-Runner teilen
+#: sich IPs. Seit die Stufen parallel laufen (13.08.2026) stieg die
+#: Fehlerquote der Recherche von ~0 auf 23 % (Lauf 31694475034: 29 von 125)
+#: und dann 48 % (Lauf 31738692617: 61 von 127). Deshalb: wiederholen statt
+#: sofort aufgeben, mit wachsender Wartezeit.
+_RETRY_STATUS = frozenset({429, 500, 502, 503, 504})
+_MAX_ATTEMPTS = 3
+
+
+def _get_json(
+    url: str,
+    *,
+    timeout_seconds: float = 30.0,
+    attempts: int = _MAX_ATTEMPTS,
+    sleep: Callable[[float], None] = time.sleep,
+) -> dict:
     import httpx  # lazy: Domain-Tests brauchen keinen HTTP-Client
 
-    response = httpx.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout_seconds,
-                         follow_redirects=True)
-    response.raise_for_status()
-    return response.json()
+    for attempt in range(1, attempts + 1):
+        try:
+            response = httpx.get(
+                url, headers={"User-Agent": USER_AGENT}, timeout=timeout_seconds,
+                follow_redirects=True,
+            )
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as error:
+            # 404 & Co. sind echte Absagen — die zu wiederholen kostet nur Zeit.
+            if error.response.status_code not in _RETRY_STATUS or attempt == attempts:
+                raise
+        except httpx.TransportError:  # Verbindungsabbruch, Timeout
+            if attempt == attempts:
+                raise
+        sleep(min(2 ** (attempt - 1), 8))
+    raise RuntimeError("unerreichbar")  # pragma: no cover - Schleife kehrt vorher zurueck
 
 
 def _candidate_from_document(document: dict) -> HistoricalCandidate:
@@ -156,10 +208,13 @@ def run_research(
     results, errors = map_candidates(
         documents,
         lambda document: research_one(document, store=store, config=config, dry_run=dry_run),
-        concurrency=concurrency,
+        concurrency=resolve_concurrency(
+            concurrency, default=RESEARCH_CONCURRENCY, env_var=ENV_RESEARCH_CONCURRENCY
+        ),
     )
     report["results"].update(results)
     report["errors"].update(errors)
+    report["error_kinds"] = error_kinds(errors)
     report["finished_at"] = datetime.now(timezone.utc).isoformat()
     if not dry_run:
         store.save_changelog(run_date, report)
@@ -188,7 +243,11 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     report = run_research(
         store=store, config=config, limit=args.limit, dry_run=args.dry_run, run_date=date.today(), concurrency=args.concurrency
     )
-    print(json.dumps({"results": len(report["results"]), "errors": len(report["errors"])}))
+    print(json.dumps({
+        "results": len(report["results"]),
+        "errors": len(report["errors"]),
+        "error_kinds": report.get("error_kinds") or {},
+    }))
     return 0
 
 
