@@ -45,15 +45,28 @@ REPORT_PREFIX = "training-evals/"
 #: keinen Bezug zur Persona — sie zu bewerten ergaebe eine erfundene Baseline.
 DEGRADED_MODE = "local"
 
+#: Der Judge benennt ZUERST die fehlende Anforderung und punktet erst danach.
+#: Ohne diese Bindung schwankte er: bei der Dreifachmessung am 14.08.2026 waren
+#: 10 von 40 Fragen instabil, darunter Faktenfragen mit [2, 2, 1] — dieselbe
+#: Antwortart, dreimal unterschiedlich bewertet. Ein Urteil, das eine konkrete
+#: Luecke benennen muss, faellt reproduzierbarer aus als eine freie Zahl.
 JUDGE_PROMPT = """Du bist ein strenger Pruefer fuer einen KI-Twin einer historischen Person.
-Bewerte NUR, ob die Antwort die Erwartung erfuellt — nicht ihren Stil.
+Nur der INHALT zaehlt, nicht Stil, Laenge oder Ton.
 
 Frage an den Twin: {question}
 Erwartung an eine gute Antwort: {expect}
 Antwort des Twins: {answer}
 
-Antworte AUSSCHLIESSLICH mit JSON: {{"score": 0, 1 oder 2, "grund": "ein Satz"}}
-(0 = Erwartung verfehlt, 1 = teilweise erfuellt, 2 = erfuellt)"""
+Gehe in dieser Reihenfolge vor:
+1. Nenne knapp, welche Anforderung aus der Erwartung NICHT erfuellt ist —
+   oder "keine", wenn alles erfuellt ist.
+2. Vergib danach die Punktzahl:
+   2 = jede Anforderung der Erwartung ist erfuellt
+   1 = mindestens eine Anforderung fehlt, die Antwort geht aber in die
+       richtige Richtung
+   0 = die Erwartung ist verfehlt oder die Antwort widerspricht ihr
+
+Antworte AUSSCHLIESSLICH mit JSON: {{"fehlt": "...", "score": 0, 1 oder 2}}"""
 
 
 class DegradedProviderError(RuntimeError):
