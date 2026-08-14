@@ -19,14 +19,21 @@ on:
     # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
   # 8 Laeufe/Tag (Anweisung Betreiber 02.08.2026: 1000 Profile/Tag real).
   # Concurrency-Gruppe serialisiert die Laeufe — sie stauen sich hoechstens,
-  # kollidieren aber nie. Stufen-Limit 290 (schriftliche Anweisung Betreiber
-  # 05.08.2026: 2000 Profile/Tag). Die alte Rechnung "8 x 250 = 2000" zaehlte
-  # KANDIDATEN, nicht veroeffentlichte Profile: rund 14 % fallen durch die QA
-  # (zu wenige Quellen, fehlendes Bild, Dubletten) — messbar am 14.08.2026,
-  # als vier Laeufe je 250 geprueft, aber nur 245/206/219/197 publiziert
-  # haben. 8 x 290 x 0,86 ~ 2000 Profile/Tag. Publish-Deckel 2500/Tag.
-  # Laufzeit seit der Parallelisierung ~47 min (vorher 90) — die 290 kosten
-  # etwa 8 min mehr und bleiben klar unter dem 90-min-Timeout der QA.
+  # kollidieren aber nie. Stufen-Limit 250; Publish-Deckel 2500/Tag.
+  #
+  # ACHTUNG, 14.08.2026 teuer gelernt: 250 ist KEINE Stellschraube fuer mehr
+  # Profile. Der Versuch, ueber den QA-Ausschuss hinweg auf 2000 zu kommen
+  # (Limit 290, PR #393), lieferte WENIGER statt mehr:
+  #
+  #   Limit 250:  245 | 206 | 219 | 197 | 192 publiziert je Lauf
+  #   Limit 290:  122 | 1   publiziert je Lauf  <- zurueckgedreht
+  #
+  # Die Durchfallquote ist keine Konstante, sondern steigt mit der Tiefe: die
+  # Pipeline arbeitet Wikidata von den bekanntesten Personen abwaerts ab, und
+  # weiter unten fehlen Quellen und Bilder. Mehr Kandidaten anzufordern heisst
+  # tiefer graben und dort mehr Ausschuss ernten — bei hoeheren Kosten und
+  # laengerer Laufzeit (109 statt 47 min). Wer die Tagesmenge steigern will,
+  # muss an die QA-Kriterien oder an die Quellenbasis, nicht an dieses Limit.
   schedule:
     - cron: "23 1,4,7,10,13,16,19,22 * * *"
   workflow_dispatch:
@@ -194,7 +201,7 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.ingest_candidates --enabled --limit 290
+            python -m app.workers.ingest_candidates --enabled --limit 250
           else
             python -m app.workers.ingest_candidates --dry-run --category Wissenschaft
           fi
@@ -208,7 +215,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.research_candidates --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.research_candidates --enabled --limit 290
+            python -m app.workers.research_candidates --enabled --limit 250
           else
             python -m app.workers.research_candidates --dry-run --limit 3
           fi
@@ -222,7 +229,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.assess_risk --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.assess_risk --enabled --limit 290
+            python -m app.workers.assess_risk --enabled --limit 250
           else
             python -m app.workers.assess_risk --dry-run --limit 3
           fi
@@ -236,7 +243,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.build_capsules --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.build_capsules --enabled --limit 290
+            python -m app.workers.build_capsules --enabled --limit 250
           else
             python -m app.workers.build_capsules --dry-run --limit 3
           fi
@@ -283,7 +290,7 @@ jobs:
           if [ "$MODE" = "run-batch" ]; then
             python -m app.workers.qa_candidates --enabled --limit "$BATCH_LIMIT"
           elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.qa_candidates --enabled --limit 290
+            python -m app.workers.qa_candidates --enabled --limit 250
           else
             python -m app.workers.qa_candidates --dry-run --limit 3
           fi
