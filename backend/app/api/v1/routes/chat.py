@@ -303,8 +303,13 @@ async def start_chat(body: StartChatRequest) -> dict[str, object]:
 async def send_message(body: SendMessageRequest) -> dict[str, object]:
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
-    llm_request = await _build_llm_request(chat, message, body.language)
-    research_response = await _research_for_chat(chat, message)
+    # Beide Vorarbeiten machen Netz-I/O und haengen NICHT voneinander ab
+    # (_research_for_chat braucht nur chat + message). Nacheinander addierten
+    # sich ihre Laufzeiten vor jeder Antwort; parallel zaehlt nur die laengere.
+    llm_request, research_response = await asyncio.gather(
+        _build_llm_request(chat, message, body.language),
+        _research_for_chat(chat, message),
+    )
     llm_request = _attach_web_research_evidence(llm_request, research_response)
     llm_response = await _chat_router().complete(llm_request)
     assistant_message = {
@@ -398,14 +403,29 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
     llm_router = _chat_router()
-    request = await _build_llm_request(chat, message, body.language)
-    research_response = await _research_for_chat(chat, message)
-    request = _attach_web_research_evidence(request, research_response)
 
     def _sse(payload: dict[str, object]) -> str:
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
     async def event_source() -> AsyncIterator[str]:
+        # Vorarbeit bewusst IM Generator: solange sie in der Handler-Funktion
+        # lief, gab Starlette die Antwort erst danach frei — Header und erstes
+        # Byte kamen erst nach Twin-Kontext + Web-Recherche, der Client sass
+        # vor einem stummen Socket (gemessen 14.08.2026: 9,8s bis zum ersten
+        # Zeichen, danach die ganze Antwort in 0,5s).
+        # Der SSE-Kommentar unten flusht die Header sofort; er hat keine
+        # "data:"-Zeile und wird vom Client-Parser uebersprungen.
+        yield ": warmup\n\n"
+        try:
+            # Unabhaengige Netz-I/O parallel statt nacheinander, siehe /messages.
+            request, research_response = await asyncio.gather(
+                _build_llm_request(chat, message, body.language),
+                _research_for_chat(chat, message),
+            )
+        except Exception:
+            yield _sse({"error": True})
+            return
+        request = _attach_web_research_evidence(request, research_response)
         try:
             async for event in llm_router.stream(request):
                 if event.get("type") == "delta":
