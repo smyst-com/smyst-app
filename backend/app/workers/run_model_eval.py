@@ -172,12 +172,13 @@ def build_judge_fn(chat_fn: Callable[[str], str]) -> Callable[[dict, str], int |
 
 def aggregate(rows: list[dict]) -> dict:
     """Verdichtet Einzel-Ergebnisse zu Gesamt- und Kategorie-Scores [0..1]."""
-    scored = [row for row in rows if isinstance(row.get("score"), int)]
+    scored = [row for row in rows if isinstance(row.get("score"), (int, float))]
 
     def _avg(subset: list[dict]) -> float:
         return round(sum(row["score"] for row in subset) / (len(subset) * SCORE_MAX), 4) if subset else 0.0
 
     categories = sorted({row["category"] for row in scored})
+    unstable = [row["id"] for row in scored if row.get("spread")]
     return {
         "questions_total": len(rows),
         "questions_scored": len(scored),
@@ -187,6 +188,10 @@ def aggregate(rows: list[dict]) -> dict:
             category: _avg([row for row in scored if row["category"] == category])
             for category in categories
         },
+        # Fragen, die bei Wiederholung unterschiedlich bewertet wurden. Sie
+        # begrenzen die Aussagekraft des Gesamtwerts — ohne diese Liste wuerde
+        # man Rauschen fuer Fortschritt halten (Vorfall 14.08.2026).
+        "unstable_questions": unstable,
     }
 
 
@@ -196,11 +201,20 @@ def run_eval(
     *,
     ask_fn: Callable[[str, str, str | None], tuple[str, str | None]],
     judge_fn: Callable[[dict, str], int | None],
+    repeats: int = 1,
 ) -> list[dict]:
     """Fragt jeden aufloesbaren Twin und laesst den Judge bewerten (testbar).
 
     Nicht aufloesbare Twins und Fehler ergeben skip-Zeilen (score None) statt
     stiller Luecken. Eine Not-Fallback-Antwort bricht den Lauf ab.
+
+    repeats > 1 stellt jede Frage mehrfach und mittelt — noetig, weil das
+    Instrument sonst zu unscharf ist: zwei Laeufe auf IDENTISCHEM Code ergaben
+    am 14.08.2026 95,00 % und 93,75 %, 4 von 40 Fragen wichen ab (persona-007
+    sogar 2 gegen 0). Unterschiede unter dieser Streuung sind nicht deutbar.
+    Jede Zeile fuehrt zusaetzlich 'scores' (alle Einzelwerte) und 'spread'
+    (max-min), damit instabile Fragen sichtbar bleiben statt sich im
+    Mittelwert zu verstecken.
     """
     rows: list[dict] = []
     for question in questions:
@@ -215,26 +229,43 @@ def run_eval(
         if twin is None:
             rows.append({**row, "skip": "twin nicht aufloesbar"})
             continue
-        try:
-            answer, mode = ask_fn(str(twin["id"]), question["question"], question.get("language"))
-        except DegradedProviderError:
-            raise
-        except Exception as error:
-            rows.append({**row, "skip": f"Chat-Fehler {type(error).__name__}"})
+        scores: list[int] = []
+        answer = ""
+        skip: str | None = None
+        for _ in range(max(1, repeats)):
+            try:
+                answer, mode = ask_fn(
+                    str(twin["id"]), question["question"], question.get("language")
+                )
+            except DegradedProviderError:
+                raise
+            except Exception as error:
+                skip = f"Chat-Fehler {type(error).__name__}"
+                break
+            if mode == DEGRADED_MODE:
+                raise DegradedProviderError(
+                    f"Twin {twin_name} antwortete aus dem Not-Fallback (mode={mode})"
+                )
+            row["mode"] = mode
+            if not answer.strip():
+                skip = "leere Antwort"
+                break
+            score = judge_fn(question, answer)
+            if score is None:
+                skip = "Judge-Antwort unlesbar"
+                break
+            scores.append(score)
+
+        if not scores:
+            rows.append({**row, "answer": answer or None, "skip": skip or "kein Ergebnis"})
             continue
-        if mode == DEGRADED_MODE:
-            raise DegradedProviderError(
-                f"Twin {twin_name} antwortete aus dem Not-Fallback (mode={mode})"
-            )
-        row["mode"] = mode
-        if not answer.strip():
-            rows.append({**row, "skip": "leere Antwort"})
-            continue
-        score = judge_fn(question, answer)
-        if score is None:
-            rows.append({**row, "answer": answer, "skip": "Judge-Antwort unlesbar"})
-            continue
-        rows.append({**row, "answer": answer, "score": score})
+        rows.append({
+            **row,
+            "answer": answer,
+            "score": round(sum(scores) / len(scores), 4),
+            "scores": scores,
+            "spread": max(scores) - min(scores),
+        })
     return rows
 
 
@@ -264,6 +295,11 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser.add_argument("--tag", default="baseline", help="Label des Laufs (z. B. baseline, checkpoint-1000)")
     parser.add_argument("--limit", type=int, default=None, help="max. Anzahl Fragen")
     parser.add_argument("--api-base", default=DEFAULT_API_BASE, help="Basis der oeffentlichen API")
+    parser.add_argument(
+        "--repeats", type=int, default=3,
+        help="wie oft jede Frage gestellt wird (Default 3; 1 ist zu verrauscht, "
+             "siehe run_eval)",
+    )
     parser.add_argument("--out", default="training-export", help="Zielverzeichnis fuer den Report")
     parser.add_argument("--dry-run", action="store_true", help="nur Twin-Aufloesung pruefen, keine LLM-Calls")
     args = parser.parse_args(argv)
@@ -284,7 +320,10 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
 
     from app.workers.qa_candidates import build_chat_fn
 
-    judge_base = build_chat_fn({"persona_prompt": "Du bist ein praeziser Pruefer."})
+    # temperature=0: der Judge soll dieselbe Antwort immer gleich bewerten.
+    judge_base = build_chat_fn(
+        {"persona_prompt": "Du bist ein praeziser Pruefer."}, temperature=0.0
+    )
     if judge_base is None:
         print("Kein LLM-Provider fuer den Judge konfiguriert — Eval nicht moeglich.")
         return 1
@@ -293,7 +332,8 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         return ask_twin(twin_id, question, language, api_base=args.api_base)
 
     try:
-        rows = run_eval(questions, twins, ask_fn=ask, judge_fn=build_judge_fn(judge_base))
+        rows = run_eval(questions, twins, ask_fn=ask,
+                        judge_fn=build_judge_fn(judge_base), repeats=args.repeats)
     except DegradedProviderError as error:
         print(f"Abbruch: {error} — eine degradierte Baseline waere wertlos.")
         return 1
@@ -305,6 +345,7 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         "createdAt": stamp,
         "eval_set": Path(args.eval_set).name,
         "api_base": args.api_base,
+        "repeats": args.repeats,
         "summary": summary,
         "rows": rows,
     }
