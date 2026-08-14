@@ -74,7 +74,19 @@ class PipelineConfig:
     daily_candidate_limit: int = 1000
     min_sources: int = 3
     max_death_year: int = 1955
-    min_sitelinks: int = 15
+    # 13.08.2026: 15 -> 10 (Entscheidung Betreiber nach Messung). Direkt gegen
+    # Wikidata gezaehlt, mit genau den Filtern aus build_sparql_query
+    # (gestorben 1400-1955, 18 Kategorien, COUNT je Kategorie):
+    #   >= 15 Sitelinks:  30.659 Treffer  -> bei 12.974 erfassten Kandidaten
+    #                                        nur noch ~5-6 Tage Nachschub
+    #   >= 10 Sitelinks:  55.872 Treffer  -> ~15 Tage
+    #   >=  5 Sitelinks: 133.626 Treffer  -> ~45 Tage
+    # (Zahlen mit Doppelzaehlung bei Mehrfachberufen, real 15-25 % weniger.)
+    # Bewusst EIN Schritt: nach ein paar Laeufen die QA-Durchfallquote der
+    # neuen, unbekannteren Kandidaten messen, erst dann ueber 5 entscheiden.
+    # Die Bekanntheit ist nur ein Vorfilter — die eigentliche Qualitaets-
+    # sicherung ist das QA-Gate.
+    min_sitelinks: int = 10
     qa_failure_rate_brake: float = 0.10
     review_backlog_days_brake: int = 3
 
