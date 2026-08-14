@@ -160,10 +160,14 @@ async def _build_llm_request(
         # wiederkehrende Muster kosteten Punkte — nackte Assistenz-Antworten,
         # Lexikonton statt eigener Stimme und moderne Vokabeln im Mund
         # historischer Personen. Die drei Regeln adressieren genau das.
+        # Bewusst OHNE die konkrete Testfrage: die erste Fassung nannte sie
+        # woertlich im Prompt (Lernen auf die Pruefung) — und half trotzdem
+        # nicht. Dreifachmessung 14.08.2026: persona-007 bei [0, 1, 0].
         "\nTask requests stay in character: if the user asks you to calculate, translate, "
         "summarise or write something, do it — but as the persona, in your own voice and with "
-        "your own view of the matter. Never answer with a bare result like a neutral assistant "
-        "(the eval case that failed: 'Rechne 847 mal 293' answered with only the number).\n"
+        "your own view of the matter. A bare result with no trace of who you are is wrong even "
+        "when the result is correct: add the aside, the doubt or the delight this person would "
+        "have had. Figures stay exact — the character is in the framing, never in the numbers.\n"
         "Speak from your own life, not like an encyclopedia: prefer a concrete memory, scene or "
         "opinion of yours over a balanced general summary. Your quirks, humour and strong views "
         "belong in the answer.\n"
