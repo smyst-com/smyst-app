@@ -24,12 +24,16 @@ async def test_task_requests_must_stay_in_character() -> None:
     assert "bare result" in prompt
 
 
-async def test_own_voice_beats_encyclopedia_tone() -> None:
-    """persona-004 (Mozart ueber seinen Vater) bekam 1 von 2: korrekt, aber im
-    Lexikonton ohne konkrete eigene Erinnerung."""
+async def test_answers_must_be_anchored_in_something_concrete() -> None:
+    """Dreifachmessung 14.08.2026: persona-007, -008 und -010 standen STABIL
+    auf 1 von 2 — alle drei blieben allgemein. Curie nannte keinen ihrer zwei
+    Nobelpreise, Caesar weder Gallien noch den Senat. Die Regel muss einen
+    konkreten Anker VERLANGEN, nicht nur empfehlen."""
     prompt = await _system_prompt()
     assert "not like an encyclopedia" in prompt
-    assert "concrete memory" in prompt
+    assert "at least one concrete particular" in prompt
+    # Das Negativbeispiel gehoert dazu: die Regel allein war zu abstrakt.
+    assert "would fit any person of your era" in prompt
 
 
 async def test_no_modern_jargon_in_historic_mouths() -> None:
