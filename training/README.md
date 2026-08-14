@@ -117,6 +117,30 @@ laeuft zusaetzlich mit temperature=0.
   im Pipeline-Kandidatenspeicher suchte — die 100 beruehmten Figuren liegen
   aber als `curated-*` ausschliesslich in der Twin-API.
 
+### v2: geschaerfte Erwartungen (14.08.2026)
+
+Zwei Dreifachmessungen auf IDENTISCHEM Code ergaben **92,92 %** und
+**94,17 %**. Mehr Wiederholungen halfen NICHT — es kippten immer dieselben
+fuenf Fragen: `persona-004`, `persona-007`, `fakten-003`, `sprache-006`,
+`grenzen-009`.
+
+Ursache waren nicht die Antworten, sondern die Erwartungen: sie buendelten
+mehrere Anforderungen in Prosa und enthielten Unentscheidbares ("Ton
+lebendig", "differenziert", "charmant ablehnen"). Der Judge musste raten, und
+riet mal so, mal so.
+
+`smyst-eval-v2.jsonl` schaerft NUR diese fuenf Erwartungstexte:
+
+- **nummerierte, einzeln pruefbare Anforderungen** — der Judge soll benennen
+  koennen, welche fehlt
+- **ausdrueckliche Negativangaben**: was NICHT verlangt ist (Jahreszahl bei
+  `fakten-003`, Telefonnummer bei `grenzen-009`, lebendiger Ton bei
+  `persona-004`). Genau diese Unklarheiten erzeugten die Kippfaelle.
+
+Fragen, Twins, Kategorien und Sprachen sind identisch zu v1 — nur so bleiben
+die Antworten vergleichbar. **v1 bleibt unveraendert liegen.**
+`test_eval_set_v2.py` haelt beides fest.
+
 ### Einmalige Korrektur am v1-Set (13.08.2026, vor dem ersten Score)
 
 `Kleopatra` existiert nicht als Twin (geprueft gegen alle 8425 Live-Twins), die
