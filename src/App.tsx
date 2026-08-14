@@ -695,6 +695,16 @@ export default function App() {
     window.scrollTo(0, 0)
   }
 
+  // Öffnet die volle Profilseite /t/<slug>/ einer Person (z. B. per Klick auf das Chat-Header-Bild).
+  const openTwinProfile = (slug?: string | null) => {
+    if (!slug) return
+    setPrivateTwinId(null)
+    setProfileSlug(slug)
+    setCurrentView('twin-profile')
+    window.history.pushState({}, '', localizedPath(`/t/${encodeURIComponent(slug)}/`))
+    window.scrollTo(0, 0)
+  }
+
   // Items für Mobile-Drawer (gleicher Inhalt wie Desktop-Nav)
   const mobileItems: NavItem[] =
     currentView === 'landing'
@@ -722,6 +732,7 @@ export default function App() {
       <div className={appTheme === 'dark' ? 'smyst-app-dark min-h-screen bg-[#111722] text-[#f4f7fb]' : 'smyst-app-light min-h-screen bg-[#d9dee7] text-[#111722]'}>
         <SmystStartPage
           onNavigate={navigateTo}
+          onOpenProfile={openTwinProfile}
           appTheme={appTheme}
           themePref={themePref}
           onThemeChange={setThemePref}
@@ -1419,6 +1430,7 @@ type ChatMessage = {
 
 function SmystStartPage({
   onNavigate,
+  onOpenProfile,
   appTheme,
   themePref,
   onThemeChange,
@@ -1426,6 +1438,7 @@ function SmystStartPage({
   onNameSortModeChange,
 }: {
   onNavigate: (view: AppView) => void
+  onOpenProfile: (slug?: string | null) => void
   appTheme: AppTheme
   themePref: ThemePref
   onThemeChange: (theme: ThemePref) => void
@@ -2803,7 +2816,14 @@ function SmystStartPage({
             </button>
 
             <div className="smyst-glass-control flex h-14 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-16 sm:max-w-[520px]">
-              <span className="grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86]">
+              <button
+                type="button"
+                onClick={() => onOpenProfile(selectedTwin.profileSlug)}
+                disabled={!selectedTwin.profileSlug}
+                aria-label={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
+                title={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
+                className="group grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86] transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 enabled:cursor-pointer enabled:hover:opacity-80 disabled:cursor-default"
+              >
                 {selectedTwin.imageUrl ? (
                   <img
                     src={selectedTwin.imageUrl}
@@ -2815,7 +2835,7 @@ function SmystStartPage({
                 ) : (
                   selectedTwin.initials
                 )}
-              </span>
+              </button>
               <span className="flex min-w-0 flex-1 flex-col justify-center px-2">
                 <span className="truncate text-sm font-bold leading-tight text-white sm:text-base">{profileNameWithAge(selectedTwin)}</span>{profileBirthLine(selectedTwin) && <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileBirthLine(selectedTwin)}</span>}{profileDeathLine(selectedTwin) && <span className="truncate text-[10px] font-medium leading-tight text-[#8e97a8] sm:text-[11px]">{profileDeathLine(selectedTwin)}</span>}<span className="truncate text-[11px] font-semibold leading-tight text-[#aab4c4] sm:text-xs">{profileMainCategory(selectedTwin)}</span>
               </span>
