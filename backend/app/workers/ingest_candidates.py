@@ -42,6 +42,18 @@ RETRY_DELAYS_SECONDS = (10.0, 30.0)  # WDQS liefert unter Last transiente 5xx (R
 # wenn der Store irgendwann fast alle bekannten Namen einer Kategorie enthaelt.
 MAX_PAGES_PER_CATEGORY = 8
 
+# Feste Seitengroesse fuer LIMIT/OFFSET. Frueher war das die Tagesquote geteilt
+# durch die Kategorienzahl — damit verschob jede Aenderung an Quote oder
+# Kategorienzahl die Bedeutung der gespeicherten Cursor-Seitenzahlen. 125
+# entspricht dem bisherigen Wert (250 Quote / 2 Kategorien), die vorhandenen
+# Cursor bleiben also gueltig.
+PAGE_SIZE = 125
+
+# Kategorien je Lauf. Zwei reichten nicht: ist eine davon abgegrast, blieb ihr
+# Anteil am Budget ungenutzt liegen (Messung 13.08.2026: accepted 20/125/125/0
+# bei ~1000 Dubletten je Lauf, waehrend die QA 250 verarbeiten koennte).
+CATEGORIES_PER_RUN = 4
+
 
 def fetch_bindings(
     query: str, *, timeout_seconds: float = 60.0, sleep=None
@@ -72,20 +84,33 @@ def fetch_bindings(
     raise last_error  # type: ignore[misc]
 
 
-def categories_for_run(run_date: date, *, slot: int = 0, all_categories: bool = False) -> list[str]:
-    """Zwei Kategorien je LAUF, deterministisch und replaybar.
+def categories_for_run(
+    run_date: date,
+    *,
+    slot: int = 0,
+    all_categories: bool = False,
+    count: int = CATEGORIES_PER_RUN,
+) -> list[str]:
+    """Mehrere Kategorien je LAUF, deterministisch und replaybar.
 
     Bis 06.08.2026 rotierte die Auswahl nur pro Tag (run_date) — alle 8
     Tagesläufe scannten dieselben zwei Kategorien und dieselben OFFSET-
     Seiten; Lauf 1 erntete alles, die Läufe 2-8 publizierten 2-5 Profile
     (Befund 06.08.). Der 3h-Slot (UTC-Stunde // 3) schiebt die Rotation
-    deshalb pro Lauf weiter: 8 Slots x 2 = 16 Kategorie-Besuche am Tag.
+    deshalb pro Lauf weiter.
+
+    Seit 13.08.2026 sind es vier statt zwei: das Budget ist jetzt gemeinsam
+    (siehe run_ingest), abgegraste Kategorien kosten also nichts mehr, und
+    die zusaetzlichen dienen als Reserve, wenn die ersten nichts liefern.
+    Die Auswahl bleibt ueber den Ring gleichmaessig verteilt.
     """
     names = list(CATEGORY_OCCUPATIONS)
     if all_categories:
         return names
+    count = max(1, min(count, len(names)))
     index = (run_date.toordinal() * 8 + slot) % len(names)
-    return [names[index], names[(index + len(names) // 2) % len(names)]]
+    step = len(names) // count
+    return [names[(index + offset * step) % len(names)] for offset in range(count)]
 
 
 def categories_for_today(run_date: date, *, all_categories: bool) -> list[str]:
@@ -113,7 +138,12 @@ def run_ingest(
         "errors": {},
         "totals": {"accepted": 0, "rejected": 0, "skipped_duplicates": 0},
     }
-    per_category_limit = max(1, config.daily_candidate_limit // max(1, len(categories)))
+    # GEMEINSAMES Budget statt fester Anteile je Kategorie: frueher bekam jede
+    # Kategorie Quote/Anzahl zugeteilt, und was eine abgegraste Kategorie nicht
+    # abrief, verfiel — der Lauf brachte 125 statt 250 Kandidaten, obwohl die
+    # zweite Kategorie noch Material gehabt haette (Messung 13.08.2026).
+    # Jetzt zieht jede Kategorie aus demselben Topf, bis er leer ist.
+    remaining_total = max(1, config.daily_candidate_limit)
     # Persistenter Seiten-Cursor je Kategorie: ohne ihn scannte jeder Lauf
     # wieder die Seiten 0..MAX-1 und fand nur Bekanntes (Befund 06.08.:
     # Laeufe 2-8 des Tages publizierten 2-5 Profile). Der Cursor laesst
@@ -121,10 +151,13 @@ def run_ingest(
     cursor = store.load_ingest_cursor()
 
     for category in categories:
+        if remaining_total <= 0:
+            # Topf leer — die restlichen Kategorien sind nur Reserve und werden
+            # gar nicht erst angefragt (schont WDQS).
+            break
         # OFFSET-Pagination: die Sitelink-Sortierung liefert auf Seite 1 immer
         # dieselben Top-Namen — sobald die im Store sind, kaeme ohne Blaettern
         # nie wieder Nachschub (Befund 20.07.: 0 neue Kandidaten/Tag).
-        remaining = per_category_limit
         start_page = max(0, int(cursor.get(category, 0)))
         next_start = start_page
         cat_report = {
@@ -139,8 +172,8 @@ def run_ingest(
             query = build_sparql_query(
                 category=category,
                 config=config,
-                limit=per_category_limit,
-                offset=page * per_category_limit,
+                limit=PAGE_SIZE,
+                offset=page * PAGE_SIZE,
             )
             try:
                 payload = fetch_bindings(query)
@@ -156,7 +189,7 @@ def run_ingest(
             result = screen_candidates(
                 parsed,
                 existing_qids=known,
-                config=replace(config, daily_candidate_limit=remaining),
+                config=replace(config, daily_candidate_limit=remaining_total),
             )
 
             if not dry_run:
@@ -177,14 +210,14 @@ def run_ingest(
             report["totals"]["rejected"] += len(result.rejected)
             report["totals"]["skipped_duplicates"] += len(result.skipped_duplicates)
 
-            remaining -= len(result.accepted)
-            if remaining <= 0:
+            remaining_total -= len(result.accepted)
+            if remaining_total <= 0:
                 # Budget voll, Seite evtl. nicht ausgeschoepft: naechster Lauf
                 # liest DIESE Seite erneut (Dedup macht das billig) statt
                 # ungesehene Kandidaten zu ueberspringen.
                 next_start = page
                 break
-            if len(rows) < per_category_limit:
+            if len(rows) < PAGE_SIZE:
                 # Seite kuerzer als angefragt: Kategorie ist ausgeschoepft —
                 # Cursor zurueck auf 0, damit spaetere Laeufe neu erfasste
                 # Wikidata-Eintraege am Kopf der Sortierung wieder einsammeln.

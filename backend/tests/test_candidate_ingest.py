@@ -238,10 +238,16 @@ def test_run_ingest_continues_after_category_error(monkeypatch) -> None:
 import re
 
 
-def _paged_fetch(monkeypatch, pages: dict[int, dict]):
-    """fetch_bindings-Fake, der je OFFSET eine vorbereitete Seite liefert."""
+def _paged_fetch(monkeypatch, pages: dict[int, dict], *, page_size: int = 2):
+    """fetch_bindings-Fake, der je OFFSET eine vorbereitete Seite liefert.
+
+    Die Seitengroesse wird klein gesetzt, damit die Testseiten mit zwei
+    Zeilen als "voll" gelten und die OFFSETs handliche Zahlen bleiben; in
+    Produktion ist PAGE_SIZE 125.
+    """
     from app.workers import ingest_candidates as worker
 
+    monkeypatch.setattr(worker, "PAGE_SIZE", page_size)
     calls: list[int] = []
 
     def fake_fetch(query, **kwargs):
@@ -292,7 +298,8 @@ def test_ingest_stops_when_category_exhausted(monkeypatch) -> None:
             binding("Q11", "Zweiter Neuer", "1900-01-01T00:00:00Z", 55),
         ),
     }
-    worker, calls = _paged_fetch(monkeypatch, pages)
+    # Seitengroesse 3, Seite liefert 2 Zeilen -> kuerzer als angefragt.
+    worker, calls = _paged_fetch(monkeypatch, pages, page_size=3)
     store = CandidateStore(FakeS3(), "smyst-memories")
 
     config = PipelineConfig(enabled=True, daily_candidate_limit=4, min_sitelinks=15)
@@ -394,3 +401,135 @@ def test_ingest_respects_page_cap(monkeypatch) -> None:
     assert len(calls) == MAX_PAGES_PER_CATEGORY
     assert report["categories"]["Wissenschaft"]["accepted"] == []
     assert report["categories"]["Wissenschaft"]["pages"] == MAX_PAGES_PER_CATEGORY
+
+
+def _category_fetch(monkeypatch, pages_by_category: dict[str, dict[int, dict]], *, page_size=2):
+    """fetch_bindings-Fake, der je KATEGORIE eigene Seiten liefert."""
+    from app.workers import ingest_candidates as worker
+
+    monkeypatch.setattr(worker, "PAGE_SIZE", page_size)
+    calls: list[tuple[str, int]] = []
+
+    def fake_fetch(query, **kwargs):
+        offset = int(re.search(r"OFFSET (\d+)", query).group(1))
+        category = next(
+            (name for name in pages_by_category if _occupation_of(name) in query),
+            None,
+        )
+        calls.append((category, offset))
+        return pages_by_category.get(category, {}).get(offset, payload())
+
+    monkeypatch.setattr(worker, "fetch_bindings", fake_fetch)
+    return worker, calls
+
+
+def _occupation_of(category: str) -> str:
+    from app.ai.wikidata_candidates import CATEGORY_OCCUPATIONS
+
+    return CATEGORY_OCCUPATIONS[category][0]
+
+
+def test_leere_kategorie_verschenkt_ihr_budget_nicht(monkeypatch) -> None:
+    # Messung 13.08.2026: Die QA schafft 250 Kandidaten/Lauf, der Ingest
+    # lieferte aber nur 125 — eine der beiden Kategorien war abgegrast, und
+    # ihr fester Budget-Anteil verfiel ungenutzt. Mit gemeinsamem Topf muss
+    # die ergiebige Kategorie die volle Quote fuellen duerfen.
+    ergiebig = "Musik"
+    leer = "Wissenschaft"
+    worker, _calls = _category_fetch(
+        monkeypatch,
+        {
+            leer: {},  # liefert nichts
+            ergiebig: {
+                0: payload(
+                    binding("Q90", "Neu A", "1900-01-01T00:00:00Z", 100),
+                    binding("Q91", "Neu B", "1900-01-01T00:00:00Z", 90),
+                ),
+                2: payload(
+                    binding("Q92", "Neu C", "1900-01-01T00:00:00Z", 80),
+                    binding("Q93", "Neu D", "1900-01-01T00:00:00Z", 70),
+                ),
+            },
+        },
+    )
+    store = CandidateStore(FakeS3(), "smyst-memories")
+
+    config = PipelineConfig(enabled=True, daily_candidate_limit=4, min_sitelinks=15)
+    report = worker.run_ingest(
+        categories=[leer, ergiebig], config=config, store=store,
+        dry_run=False, run_date=date(2026, 8, 13),
+    )
+
+    # Frueher: 4 // 2 Kategorien = 2 Stueck Deckel je Kategorie -> nur 2 gesamt.
+    assert report["totals"]["accepted"] == 4
+    assert report["categories"][ergiebig]["accepted"] == ["Q90", "Q91", "Q92", "Q93"]
+
+
+def test_volles_budget_stoppt_weitere_kategorien(monkeypatch) -> None:
+    # Ist der Topf leer, duerfen die Reserve-Kategorien WDQS nicht mehr
+    # belasten — sonst kostet die groessere Kategorienzahl nur Anfragen.
+    voll = "Musik"
+    reserve = "Wissenschaft"
+    worker, calls = _category_fetch(
+        monkeypatch,
+        {
+            voll: {
+                0: payload(
+                    binding("Q80", "Neu A", "1900-01-01T00:00:00Z", 100),
+                    binding("Q81", "Neu B", "1900-01-01T00:00:00Z", 90),
+                ),
+            },
+            reserve: {
+                0: payload(binding("Q82", "Neu C", "1900-01-01T00:00:00Z", 80)),
+            },
+        },
+    )
+    store = CandidateStore(FakeS3(), "smyst-memories")
+
+    config = PipelineConfig(enabled=True, daily_candidate_limit=2, min_sitelinks=15)
+    report = worker.run_ingest(
+        categories=[voll, reserve], config=config, store=store,
+        dry_run=False, run_date=date(2026, 8, 13),
+    )
+
+    assert report["totals"]["accepted"] == 2
+    assert [category for category, _ in calls] == [voll]
+    assert reserve not in report["categories"]
+
+
+def test_vier_kategorien_je_lauf_gleichmaessig_verteilt() -> None:
+    from app.ai.wikidata_candidates import CATEGORY_OCCUPATIONS
+    from app.workers.ingest_candidates import CATEGORIES_PER_RUN, categories_for_run
+
+    picks = categories_for_run(date(2026, 8, 13), slot=2)
+
+    assert len(picks) == CATEGORIES_PER_RUN == 4
+    assert len(set(picks)) == 4  # keine Kategorie doppelt
+    assert set(picks) <= set(CATEGORY_OCCUPATIONS)
+    # deterministisch: gleicher Tag + Slot -> gleiche Auswahl (replaybar)
+    assert categories_for_run(date(2026, 8, 13), slot=2) == picks
+
+
+def test_seitengroesse_ist_unabhaengig_von_der_tagesquote(monkeypatch) -> None:
+    # Der Cursor speichert SEITENZAHLEN. Haengt die Seitengroesse an der
+    # Tagesquote, verschiebt jede Quotenaenderung rueckwirkend die Bedeutung
+    # aller gespeicherten Cursor — deshalb ist sie eine feste Konstante.
+    from app.workers import ingest_candidates as worker
+
+    seen: list[int] = []
+
+    def fake_fetch(query, **kwargs):
+        seen.append(int(re.search(r"LIMIT (\d+)", query).group(1)))
+        return payload()
+
+    monkeypatch.setattr(worker, "fetch_bindings", fake_fetch)
+    store = CandidateStore(FakeS3(), "smyst-memories")
+
+    for quote in (2, 250):
+        worker.run_ingest(
+            categories=["Musik"],
+            config=PipelineConfig(enabled=True, daily_candidate_limit=quote, min_sitelinks=15),
+            store=store, dry_run=True, run_date=date(2026, 8, 13),
+        )
+
+    assert set(seen) == {worker.PAGE_SIZE}
