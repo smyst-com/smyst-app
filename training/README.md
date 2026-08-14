@@ -168,3 +168,41 @@ Nach dem Lauf fehlen noch zwei Schritte (Phase 1b): MinHash-Dedup ueber ALLE
 Quellen zusammen (14×8 Buckets, 5-Gramm) und der Tokenizer-Lauf, der die
 echte Token-Zahl liefert — die Zahlen aus `--plan-only` sind Schaetzungen
 (3,3 Zeichen/Token).
+
+## Phase 1b: Dedup ueber alle Quellen + echte Token-Zahl
+
+Phase 1 filtert jede Quelle FUER SICH. Uebrig bleiben die Dubletten ZWISCHEN
+den Quellen — ein Wikipedia-Artikel taucht im Web-Dump erneut auf, Gutenberg-
+Texte liegen auch bei Wikisource. Beim Weitertrainieren werden mehrfach
+gesehene Passagen auswendig gelernt statt verallgemeinert.
+
+```
+cd backend
+python -m app.workers.dedup_corpus --korpus ./korpus --out ./korpus-dedup --tasks 8
+python -m app.workers.dedup_corpus --korpus ./korpus-dedup --count-only \
+    --tokenizer <tokenizer-des-basismodells> --target-tokens 12e9
+```
+
+Der Dedup laeuft in **vier Stufen nacheinander**, jede braucht die
+vollstaendige Ausgabe der vorigen. Die Aufgabenzahl je Stufe setzt
+`stage_task_counts` — sie ist nicht frei waehlbar, und datatrove prueft sie
+nicht:
+
+| Stufe | Aufgaben | warum |
+|---|---|---|
+| signatures | `--tasks` | frei parallelisierbar |
+| buckets | **genau 14** | eine Aufgabe je Bucket; weniger = unbearbeitete Buckets |
+| cluster | **genau 1** | fuehrt alle Buckets zu Gruppen zusammen |
+| filter | **wie signatures** | Loeschlisten sind nach Aufgaben-Rang benannt |
+
+Falsch gesetzt scheitert nichts — es werden nur stillschweigend zu wenig
+Dubletten gefunden. Deshalb warnt der Bericht, wenn weniger als 1 % oder mehr
+als 60 % der Dokumente wegfallen (Web-Korpora liegen bei 10–40 %).
+
+Die Token-Zaehlung ist der Moment, in dem die Schaetzung 3,3 Zeichen/Token
+durch eine Messung ersetzt wird. Weicht sie um mehr als 15 % ab, sind ALLE
+Quellen-Budgets aus Phase 1 falsch dimensioniert und muessen neu gerechnet
+werden, **bevor** trainiert wird. Merkrichtung: mehr Zeichen je Token heisst
+weniger Token aus demselben Text.
+
+Zusaetzlich noetig: `pip install tokenizers`.
