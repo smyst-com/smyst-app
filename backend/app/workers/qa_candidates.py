@@ -45,13 +45,20 @@ def load_capsule_document(store: CandidateStore, qid: str) -> dict:
     return json.loads(response["Body"].read().decode("utf-8"))
 
 
-def build_chat_fn(capsule_doc: dict) -> Callable[[str], str] | None:
+def build_chat_fn(
+    capsule_doc: dict, *, temperature: float | None = None
+) -> Callable[[str], str] | None:
     """Bindet den Chat-Smoke-Test an den konfigurierten LLM-Router an.
 
     Nutzt build_default_router (Provider-Kette aus Settings; enthaelt am Ende
     einen deterministischen Fallback). Sind KEINE externen Provider-Keys
     gesetzt, liefern wir None zurueck — der Fallback wuerde die QA-Regeln
     ohnehin nicht bestehen, und 'skipped' ist ehrlicher als 'fail'.
+
+    temperature=0 nutzt der Modell-Eval fuer seinen Judge: bei der
+    Standard-Temperatur 0.2 bewertete er dieselbe Antwort unterschiedlich
+    (14.08.2026: zwei Laeufe auf IDENTISCHEM Code ergaben 95,00 % und
+    93,75 %, 4 von 40 Fragen wichen ab).
     """
     try:  # pragma: no cover - reine Verdrahtung, im Test injiziert
         import asyncio
@@ -74,6 +81,7 @@ def build_chat_fn(capsule_doc: dict) -> Callable[[str], str] | None:
                         prompt=question,
                         system_prompt=capsule_doc.get("persona_prompt", ""),
                         max_tokens=400,
+                        **({} if temperature is None else {"temperature": temperature}),
                     )
                 )
             )

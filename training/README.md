@@ -99,6 +99,15 @@ Report: lokal unter `training-export/model-eval-<tag>-<zeit>.json`, als
 Workflow-Artefakt (30 Tage) und — wenn e2 konfiguriert — dauerhaft unter
 `training-evals/` im Object Brain.
 
+**Wiederholungen sind Pflicht (`--repeats`, Standard 3).** Am 14.08.2026
+ergaben zwei Laeufe auf IDENTISCHEM Code **95,00 %** und **93,75 %**; 4 von 40
+Fragen wichen ab, persona-007 sogar 2 gegen 0. Ein Einzellauf kann Unterschiede
+dieser Groessenordnung also NICHT von Rauschen unterscheiden — und genau in
+dieser Groessenordnung werden Modellaenderungen liegen. Der Report nennt unter
+`unstable_questions` jede Frage, die bei Wiederholung unterschiedlich bewertet
+wurde; steht dort viel, ist der Gesamtwert mit Vorsicht zu lesen. Der Judge
+laeuft zusaetzlich mit temperature=0.
+
 **Zwei Schutzmechanismen**, beide aus echten Fehlschlaegen entstanden:
 
 - Antworten mit `mode=local` (deterministischer Not-Fallback) brechen den Lauf
