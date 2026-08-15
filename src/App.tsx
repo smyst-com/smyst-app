@@ -30,7 +30,7 @@ import { markServerAsrUnavailable, recordAndTranscribeOnce, serverAsrReady, serv
 import { isRemoteSpeechActive, playRemoteSpeech, prefetchSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { fetchService } from '@/lib/serviceEndpoints'
-import { useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
+import { prefetchPublicTwins, useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
 import {
   CURATED_PUBLIC_TWIN_BASE_TIME,
   CURATED_PUBLIC_TWIN_LANGUAGES,
@@ -1640,6 +1640,14 @@ function SmystStartPage({
       document.getElementById('smyst-page-schema')?.remove()
     }
   }, [lang, t])
+
+  // Katalog sofort anfordern, ohne auf /auth/me zu warten: der Effekt unten
+  // haengt an auth.status und startete die Inhalte deshalb erst nach der
+  // Anmeldepruefung. loadPublicTwins teilt die Anfrage, der spaetere Aufruf
+  // findet sie also schon laufend oder fertig vor.
+  useEffect(() => {
+    prefetchPublicTwins()
+  }, [])
 
   useEffect(() => {
     let alive = true
