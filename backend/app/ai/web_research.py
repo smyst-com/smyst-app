@@ -233,6 +233,27 @@ def classify_query(question: str) -> QueryCategory:
     return QueryCategory.GENERAL_PUBLIC_FACT
 
 
+def provider_credentials_present(active_settings: Settings | None = None) -> bool:
+    """Ist der konfigurierte Provider wirklich aufrufbar?
+
+    build_web_search_provider faellt ohne Key/URL still auf DisabledWebSearchProvider
+    zurueck. Ohne diese Pruefung meldete /web-research/preview canCallProvider=true,
+    obwohl jede Suche leer blieb (live 14.08.2026: WEB_SEARCH_PROVIDER=openai gesetzt,
+    OPENAI_API_KEY auf Zeabur nie hinterlegt — der Chat lief seither ohne Belege).
+    """
+    active_settings = active_settings or settings
+    provider = active_settings.web_search_provider.strip().lower()
+    if not active_settings.web_research_enabled or provider in {"", "disabled"}:
+        return False
+    if provider == "brave":
+        return bool(active_settings.brave_search_api_key)
+    if provider == "searxng":
+        return bool(active_settings.searxng_base_url)
+    if provider == "openai":
+        return bool(active_settings.openai_api_key)
+    return False
+
+
 def decide_search(
     question: str,
     context: ResearchContext | None = None,
@@ -242,7 +263,7 @@ def decide_search(
     active_settings = active_settings or settings
     provider = active_settings.web_search_provider.strip().lower()
     enabled = bool(active_settings.web_research_enabled)
-    can_call_provider = enabled and provider not in {"", "disabled"}
+    can_call_provider = provider_credentials_present(active_settings)
     reasons: list[str] = []
     category = classify_query(question)
 
@@ -294,6 +315,9 @@ def decide_search(
         reasons.append("web_research_feature_flag_disabled")
     if decision is not SearchDecision.NO_SEARCH and provider in {"", "disabled"}:
         reasons.append("web_search_provider_disabled")
+    if decision is not SearchDecision.NO_SEARCH and enabled and not can_call_provider:
+        if provider not in {"", "disabled"}:
+            reasons.append("web_search_provider_credentials_missing")
 
     return SearchDecisionResult(decision, category, tuple(reasons), enabled, provider, can_call_provider)
 
