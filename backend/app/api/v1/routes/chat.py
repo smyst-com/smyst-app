@@ -206,7 +206,19 @@ async def _build_llm_request(
         + language_line
         + "Keep it concise."
     )
-    return LLMRequest(prompt=prompt, system_prompt=system_prompt, max_tokens=220, temperature=0.2)
+    # language MUSS in die Metadata: der Not-Fallback (ai/degraded_messages)
+    # sucht die Sprache dort zuerst und faellt sonst auf den Voice-Marker
+    # zurueck, den nur der Sprach-Pfad setzt. Im Text-Chat blieb deshalb NICHTS
+    # uebrig und deutsche Nutzer sahen die englische Wartemeldung — live
+    # beobachtet waehrend des Provider-Ausfalls am 15.08.2026, obwohl die
+    # Uebersetzung fuer alle 15 Sprachen laengst existiert.
+    return LLMRequest(
+        prompt=prompt,
+        system_prompt=system_prompt,
+        max_tokens=220,
+        temperature=0.2,
+        metadata={"language": language} if language else {},
+    )
 
 
 def _web_research_metadata(response: WebSearchResponse | None) -> dict[str, object] | None:
