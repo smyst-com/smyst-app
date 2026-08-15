@@ -131,6 +131,21 @@ def test_feature_flag_blocks_provider_call() -> None:
     assert "web_research_feature_flag_disabled" in result.reasons
 
 
+def test_provider_without_credentials_cannot_be_called() -> None:
+    # Live-Fall 14.08.2026: WEB_SEARCH_PROVIDER=openai war auf Zeabur gesetzt, der
+    # OPENAI_API_KEY fehlte. /web-research/preview meldete trotzdem canCallProvider=true,
+    # waehrend /web-research/run stumm leer zurueckkam - die Fehlkonfiguration war unsichtbar.
+    result = decide_search(
+        "Wie ist das Wetter morgen in Berlin?",
+        ResearchContext(),
+        Settings(WEB_RESEARCH_ENABLED=True, WEB_SEARCH_PROVIDER="openai", OPENAI_API_KEY=None),
+    )
+
+    assert result.decision is SearchDecision.REQUIRED_SEARCH
+    assert result.can_call_provider is False
+    assert "web_search_provider_credentials_missing" in result.reasons
+
+
 def test_privacy_query_rewriter_removes_private_identifiers() -> None:
     rewritten = rewrite_query(
         "Mein Name ist Alan Best, email alan@example.com, Telefon +49 170 1234567: "
