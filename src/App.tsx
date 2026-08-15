@@ -1428,6 +1428,44 @@ type ChatMessage = {
   speakable?: boolean
 }
 
+// Zwischenspeicher fuer den Weg Chat -> Profilseite -> zurueck: die Startseite wird beim
+// Wechsel auf /t/<slug>/ komplett unmountet, deshalb wird der laufende Chat kurz abgelegt
+// und beim Zurueckkommen wiederhergestellt. Nur fuer diesen Rundweg, nicht als Chat-Archiv.
+const CHAT_RETURN_KEY = 'smyst-chat-return'
+// Aelteres Abbild verwerfen: der Nutzer ist zwischendurch woanders gewesen.
+const CHAT_RETURN_MAX_AGE_MS = 60 * 60 * 1000
+
+type ChatReturnSnapshot = {
+  twin: StartTwin
+  messages: ChatMessage[]
+  chatId: string | null
+  chatProfileKey: string | null
+  savedAt: number
+}
+
+function storeChatReturnSnapshot(snapshot: Omit<ChatReturnSnapshot, 'savedAt'>) {
+  try {
+    const payload: ChatReturnSnapshot = { ...snapshot, savedAt: Date.now() }
+    window.sessionStorage.setItem(CHAT_RETURN_KEY, JSON.stringify(payload))
+  } catch {
+    // sessionStorage kann blockiert oder voll sein - dann bleibt es beim alten Verhalten.
+  }
+}
+
+function takeChatReturnSnapshot(): ChatReturnSnapshot | null {
+  try {
+    const raw = window.sessionStorage.getItem(CHAT_RETURN_KEY)
+    window.sessionStorage.removeItem(CHAT_RETURN_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as ChatReturnSnapshot
+    if (!parsed?.twin?.id || !Array.isArray(parsed.messages)) return null
+    if (!Number.isFinite(parsed.savedAt) || Date.now() - parsed.savedAt > CHAT_RETURN_MAX_AGE_MS) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
 function SmystStartPage({
   onNavigate,
   onOpenProfile,
@@ -1495,10 +1533,29 @@ function SmystStartPage({
   // Schutz gegen parallele Sendungen: eine zweite Anfrage waehrend eine Antwort
   // laeuft wuerde einen zweiten Chat starten und den Kontext zerreissen.
   const sendActiveRef = useRef(false)
+  // Gesetzt, wenn der Chat gerade vom Profil-Rundweg zurueckgeholt wurde: das Nachladen
+  // der Profile darf die wiederhergestellte Auswahl dann nicht ueberschreiben.
+  const chatRestoredRef = useRef(false)
 
   useEffect(() => {
     setLastVoiceLang(preferredVoiceLanguage(lang))
   }, [lang])
+
+  // Rueckweg von der Profilseite (/t/<slug>/): den vorher abgelegten Chat wieder aufsetzen,
+  // damit der Zurueck-Knopf im laufenden Gespraech landet und nicht in der Namensauswahl.
+  useEffect(() => {
+    const snapshot = takeChatReturnSnapshot()
+    if (!snapshot) return
+    // Das Nachladen der Profile setzt die Auswahl sonst gleich wieder zurueck (siehe loadRealProfiles).
+    chatRestoredRef.current = true
+    setSelectedTwin(snapshot.twin)
+    setMessages(snapshot.messages)
+    setChatId(snapshot.chatId)
+    setChatProfileKey(snapshot.chatProfileKey)
+    setNamePickerOpen(false)
+    // Begruessung gilt als erledigt, sonst wuerde der Live-Sprachmodus sie erneut abspielen.
+    if (snapshot.messages.length) liveGreetedRef.current = snapshot.twin.name?.trim() ?? 'twin'
+  }, [])
 
   const latestAssistantText =
     [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
@@ -1599,7 +1656,9 @@ function SmystStartPage({
             .filter(isCompletePublicProfile)
             .map((profile, index) => publicProfileToStartTwin(profile, index))
           setRealStartTwins(next)
-          setSelectedTwin(null)
+          const keepRestored = chatRestoredRef.current
+          chatRestoredRef.current = false
+          if (!keepRestored) setSelectedTwin(null)
           setProfilesLoaded(true)
           return
         }
@@ -1627,7 +1686,12 @@ function SmystStartPage({
           .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
         const next = [...ownProfiles, ...publicStartProfiles]
         setRealStartTwins(next)
-        setSelectedTwin((current) => (current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null))
+        const keepRestoredTwin = chatRestoredRef.current
+        chatRestoredRef.current = false
+        setSelectedTwin((current) => {
+          if (keepRestoredTwin && current) return current
+          return current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null
+        })
         setProfilesLoaded(true)
       } catch (err) {
         if (!alive) return
@@ -2818,7 +2882,10 @@ function SmystStartPage({
             <div className="smyst-glass-control flex h-14 max-w-[min(360px,calc(100vw-104px))] items-stretch border border-white/[0.08] text-left sm:h-16 sm:max-w-[520px]">
               <button
                 type="button"
-                onClick={() => onOpenProfile(selectedTwin.profileSlug)}
+                onClick={() => {
+                  storeChatReturnSnapshot({ twin: selectedTwin, messages, chatId, chatProfileKey })
+                  onOpenProfile(selectedTwin.profileSlug)
+                }}
                 disabled={!selectedTwin.profileSlug}
                 aria-label={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
                 title={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
