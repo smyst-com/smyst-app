@@ -1,0 +1,27 @@
+# Nur Abweichungen vom Standard: use_default_settings zieht die mitgelieferte
+# settings.yml des Images als Basis. Wichtig, weil dort die Env-Overrides
+# (SEARXNG_SECRET, SEARXNG_BASE_URL, SEARXNG_PORT, SEARXNG_BIND_ADDRESS) definiert
+# sind - die Keys werden hier bewusst NICHT wiederholt, sonst gingen sie verloren.
+use_default_settings: true
+
+search:
+  # Der einzige Grund fuer diese Datei: ohne "json" antwortet /search?format=json
+  # mit 403 und der Twin bekommt nie Quellen zu sehen.
+  formats:
+    - html
+    - json
+  safe_search: 1
+  # Autocomplete braucht niemand - der Dienst wird nur vom Backend aufgerufen,
+  # nicht von Menschen im Browser.
+  autocomplete: ""
+
+server:
+  # Der Dienst ist nur im internen Zeabur-Netz erreichbar und wird ausschliesslich
+  # vom smyst-Backend aufgerufen. Ein Limiter wuerde genau diesen einen Aufrufer
+  # ausbremsen; die Mengenbegrenzung passiert bereits im Backend ueber
+  # WEB_RESEARCH_BUDGET_PER_USER_DAY / _PER_PROFILE_DAY.
+  limiter: false
+  public_instance: false
+
+ui:
+  static_use_hash: true
