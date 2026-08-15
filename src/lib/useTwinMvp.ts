@@ -306,6 +306,40 @@ function lifeMatchKey(value: string): string {
     .replace(/[^a-z0-9]+/g, '')
 }
 
+let publicTwinsPromise: Promise<PublicTwinProfile[]> | null = null
+
+/** Holt den oeffentlichen Twin-Katalog; mehrfache Aufrufe teilen eine Anfrage. */
+function loadPublicTwins(): Promise<PublicTwinProfile[]> {
+  if (!publicTwinsPromise) {
+    publicTwinsPromise = (async () => {
+      const body =
+        (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
+        (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
+      return body?.twins ?? []
+    })().catch((err) => {
+      // Fehlschlaege duerfen nicht dauerhaft haengen bleiben: Cache leeren,
+      // damit ein spaeterer Aufruf es erneut versucht.
+      publicTwinsPromise = null
+      throw err
+    })
+  }
+  return publicTwinsPromise
+}
+
+/**
+ * Startet den Katalog-Abruf, ohne auf ihn zu warten.
+ *
+ * Die Startseite lud die Profile frueher erst NACH /auth/me — obwohl die
+ * oeffentliche Liste nie von der Anmeldung abhaengt. Gemessen 15.08.2026:
+ * /auth/me lief 483–747 ms, die Inhalte starteten dadurch erst bei 753 ms.
+ * Vorgezogen laufen beide parallel.
+ */
+export function prefetchPublicTwins(): void {
+  void loadPublicTwins().catch(() => {
+    // Nur Vorwaermen — Fehler behandelt der spaetere echte Aufruf.
+  })
+}
+
 let lifeIndexPromise: Promise<Map<string, PublicTwinProfile>> | null = null
 
 async function loadPublicLifeIndex(): Promise<Map<string, PublicTwinProfile>> {
@@ -313,10 +347,8 @@ async function loadPublicLifeIndex(): Promise<Map<string, PublicTwinProfile>> {
     lifeIndexPromise = (async () => {
       const index = new Map<string, PublicTwinProfile>()
       try {
-        const body =
-          (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
-          (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
-        for (const profile of body?.twins ?? []) {
+        // Teilt den Abruf mit listPublicTwins statt denselben Katalog erneut zu holen.
+        for (const profile of await loadPublicTwins()) {
           if (profile?.name) index.set(lifeMatchKey(profile.name), profile)
         }
       } catch {
@@ -406,13 +438,7 @@ export function useTwinMvp() {
   )
 
   const listPublicTwins = useCallback(
-    () =>
-      run(async () => {
-        const body =
-          (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
-          (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
-        return body?.twins ?? []
-      }),
+    () => run(() => loadPublicTwins()),
     [run],
   )
 
