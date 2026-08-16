@@ -1466,6 +1466,33 @@ function takeChatReturnSnapshot(): ChatReturnSnapshot | null {
   }
 }
 
+// Gegenrichtung zum Rueckweg oben: "Mit X chatten" auf der Profilseite fuehrt in den
+// Startseiten-Chat, damit es nur eine Chat-Oberflaeche gibt. Uebergeben wird nur der Slug -
+// die Startseite waehlt den passenden Twin, sobald die Profile geladen sind.
+const CHAT_OPEN_KEY = 'smyst-chat-open'
+
+function storeChatOpenRequest(slug: string) {
+  try {
+    window.sessionStorage.setItem(CHAT_OPEN_KEY, JSON.stringify({ slug, savedAt: Date.now() }))
+  } catch {
+    // Ohne sessionStorage bleibt es beim bisherigen Verhalten (Namensauswahl).
+  }
+}
+
+function takeChatOpenRequest(): string | null {
+  try {
+    const raw = window.sessionStorage.getItem(CHAT_OPEN_KEY)
+    window.sessionStorage.removeItem(CHAT_OPEN_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { slug?: string; savedAt?: number }
+    if (!parsed?.slug) return null
+    if (!Number.isFinite(parsed.savedAt) || Date.now() - (parsed.savedAt as number) > CHAT_RETURN_MAX_AGE_MS) return null
+    return parsed.slug
+  } catch {
+    return null
+  }
+}
+
 function SmystStartPage({
   onNavigate,
   onOpenProfile,
@@ -1536,6 +1563,15 @@ function SmystStartPage({
   // Gesetzt, wenn der Chat gerade vom Profil-Rundweg zurueckgeholt wurde: das Nachladen
   // der Profile darf die wiederhergestellte Auswahl dann nicht ueberschreiben.
   const chatRestoredRef = useRef(false)
+  // Slug aus "Mit X chatten": wird erst benutzt, wenn die Profilliste geladen ist.
+  const pendingChatSlugRef = useRef<string | null>(null)
+  // Loest den gemerkten Slug einmalig gegen die frisch geladene Liste auf.
+  const takePendingChatTwin = (candidates: StartTwin[]): StartTwin | null => {
+    const wanted = pendingChatSlugRef.current
+    if (!wanted) return null
+    pendingChatSlugRef.current = null
+    return candidates.find((twin) => twin.profileSlug === wanted) ?? null
+  }
 
   useEffect(() => {
     setLastVoiceLang(preferredVoiceLanguage(lang))
@@ -1544,6 +1580,9 @@ function SmystStartPage({
   // Rueckweg von der Profilseite (/t/<slug>/): den vorher abgelegten Chat wieder aufsetzen,
   // damit der Zurueck-Knopf im laufenden Gespraech landet und nicht in der Namensauswahl.
   useEffect(() => {
+    // "Mit X chatten" von der Profilseite: Slug hier abholen, ausgewertet wird er nach dem
+    // Laden der Profile in loadRealProfiles.
+    pendingChatSlugRef.current = takeChatOpenRequest()
     const snapshot = takeChatReturnSnapshot()
     if (!snapshot) return
     // Das Nachladen der Profile setzt die Auswahl sonst gleich wieder zurueck (siehe loadRealProfiles).
@@ -1666,7 +1705,13 @@ function SmystStartPage({
           setRealStartTwins(next)
           const keepRestored = chatRestoredRef.current
           chatRestoredRef.current = false
-          if (!keepRestored) setSelectedTwin(null)
+          const requested = takePendingChatTwin(next)
+          if (requested) {
+            setSelectedTwin(requested)
+            setNamePickerOpen(false)
+          } else if (!keepRestored) {
+            setSelectedTwin(null)
+          }
           setProfilesLoaded(true)
           return
         }
@@ -1696,7 +1741,10 @@ function SmystStartPage({
         setRealStartTwins(next)
         const keepRestoredTwin = chatRestoredRef.current
         chatRestoredRef.current = false
+        const requestedTwin = takePendingChatTwin(next)
+        if (requestedTwin) setNamePickerOpen(false)
         setSelectedTwin((current) => {
+          if (requestedTwin) return requestedTwin
           if (keepRestoredTwin && current) return current
           return current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null
         })
@@ -3647,6 +3695,14 @@ function TwinProfileView({
               <button
                 type="button"
                 onClick={() => {
+                  // Oeffentliche Profile fuehren in den Startseiten-Chat - eine Oberflaeche
+                  // fuer alle Wege. Private Twins laufen ueber ihre ID und bleiben beim
+                  // bisherigen Weg, weil sie in der oeffentlichen Liste nicht vorkommen.
+                  if (!privateTwin && profile.slug) {
+                    storeChatOpenRequest(profile.slug)
+                    onNavigate('landing')
+                    return
+                  }
                   onNavigate('twin-chat')
                   window.history.replaceState({}, '', profile.chatPath)
                 }}
