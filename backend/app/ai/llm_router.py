@@ -13,6 +13,7 @@ import httpx
 
 from app.ai.degraded_messages import degraded_fallback_message
 from app.ai.github_oidc import ActionsIdTokenSource
+from app.core.http_client import shared_client
 from app.ai.models import LLMRequest, LLMResponse
 from app.ai.provider_catalog import (
     DEFAULT_PROVIDER_ORDER,
@@ -125,10 +126,9 @@ class OpenAICompatibleProvider(LLMProvider):
         payload = self._build_payload(request)
         headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await self._post_with_retry(
-                client, self.chat_completions_url, headers, payload
-            )
+        response = await self._post_with_retry(
+            shared_client(), self.chat_completions_url, headers, payload, self.timeout
+        )
 
         data = response.json()
         text = self._parse_text(data)
@@ -165,25 +165,28 @@ class OpenAICompatibleProvider(LLMProvider):
         """
         payload = {**self._build_payload(request), "stream": True}
         headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            async with client.stream(
-                "POST", self.chat_completions_url, headers=headers, json=payload
-            ) as response:
-                response.raise_for_status()
-                async for line in response.aiter_lines():
-                    if not line.startswith("data:"):
-                        continue
-                    data = line[5:].strip()
-                    if data == "[DONE]":
-                        return
-                    try:
-                        chunk = json.loads(data)
-                    except ValueError:
-                        continue
-                    choices = chunk.get("choices") or [{}]
-                    delta = (choices[0].get("delta") or {}).get("content")
-                    if delta:
-                        yield delta
+        async with shared_client().stream(
+            "POST",
+            self.chat_completions_url,
+            headers=headers,
+            json=payload,
+            timeout=self.timeout,
+        ) as response:
+            response.raise_for_status()
+            async for line in response.aiter_lines():
+                if not line.startswith("data:"):
+                    continue
+                data = line[5:].strip()
+                if data == "[DONE]":
+                    return
+                try:
+                    chunk = json.loads(data)
+                except ValueError:
+                    continue
+                choices = chunk.get("choices") or [{}]
+                delta = (choices[0].get("delta") or {}).get("content")
+                if delta:
+                    yield delta
 
     async def _post_with_retry(
         self,
@@ -191,6 +194,7 @@ class OpenAICompatibleProvider(LLMProvider):
         url: str,
         headers: dict[str, str],
         payload: dict[str, Any],
+        timeout: float | None = None,
     ) -> Any:
         """POST mit differenziertem Retry.
 
@@ -201,7 +205,9 @@ class OpenAICompatibleProvider(LLMProvider):
         """
         for attempt in range(2):
             try:
-                response = await client.post(url, headers=headers, json=payload)
+                response = await client.post(
+                    url, headers=headers, json=payload, timeout=timeout
+                )
                 response.raise_for_status()
                 return response
             except httpx.HTTPStatusError as exc:
@@ -228,9 +234,10 @@ class OpenAICompatibleProvider(LLMProvider):
     async def healthcheck(self, request: LLMRequest) -> dict[str, object]:
         headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
         try:
-            async with httpx.AsyncClient(timeout=min(self.timeout, 2.5)) as client:
-                response = await client.get(self.models_url, headers=headers)
-                response.raise_for_status()
+            response = await shared_client().get(
+                self.models_url, headers=headers, timeout=min(self.timeout, 2.5)
+            )
+            response.raise_for_status()
             self._assert_model_available(response.json())
             return {"mode": "credential_model_check"}
         except (httpx.TimeoutException, httpx.RequestError):
@@ -326,10 +333,9 @@ class AnthropicProvider(OpenAICompatibleProvider):
             "anthropic-version": "2023-06-01",
         }
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await self._post_with_retry(
-                client, urljoin(self.base_url, "messages"), headers, payload
-            )
+        response = await self._post_with_retry(
+            shared_client(), urljoin(self.base_url, "messages"), headers, payload, self.timeout
+        )
 
         data = response.json()
         content = data.get("content") or []
@@ -354,9 +360,10 @@ class AnthropicProvider(OpenAICompatibleProvider):
             "anthropic-version": "2023-06-01",
         }
         try:
-            async with httpx.AsyncClient(timeout=min(self.timeout, 2.5)) as client:
-                response = await client.get(urljoin(self.base_url, "models"), headers=headers)
-                response.raise_for_status()
+            response = await shared_client().get(
+                urljoin(self.base_url, "models"), headers=headers, timeout=min(self.timeout, 2.5)
+            )
+            response.raise_for_status()
             self._assert_model_available(response.json())
             return {"mode": "credential_model_check"}
         except (httpx.TimeoutException, httpx.RequestError):
@@ -405,40 +412,42 @@ class ManusProvider(LLMProvider):
             },
         }
 
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            created = await client.post(
-                f"{self.base_url}/task.create",
-                headers=headers,
-                json=task_payload,
-            )
-            created.raise_for_status()
-            task_id = self._extract_task_id(created.json())
+        client = shared_client()
+        created = await client.post(
+            f"{self.base_url}/task.create",
+            headers=headers,
+            json=task_payload,
+            timeout=self.timeout,
+        )
+        created.raise_for_status()
+        task_id = self._extract_task_id(created.json())
 
-            last_status = "unknown"
-            for _ in range(self.poll_attempts):
-                messages_response = await client.get(
-                    f"{self.base_url}/task.listMessages",
-                    headers=headers,
-                    params={"task_id": task_id, "limit": 20, "order": "desc"},
+        last_status = "unknown"
+        for _ in range(self.poll_attempts):
+            messages_response = await client.get(
+                f"{self.base_url}/task.listMessages",
+                headers=headers,
+                params={"task_id": task_id, "limit": 20, "order": "desc"},
+                timeout=self.timeout,
+            )
+            messages_response.raise_for_status()
+            messages = messages_response.json()
+            text = self._extract_answer(messages)
+            if text:
+                latency_ms = int((perf_counter() - started) * 1000)
+                return LLMResponse(
+                    text=text,
+                    provider=self.name,
+                    model=self.model,
+                    input_tokens=len(request.prompt.split()),
+                    output_tokens=len(text.split()),
+                    latency_ms=latency_ms,
+                    degraded=False,
                 )
-                messages_response.raise_for_status()
-                messages = messages_response.json()
-                text = self._extract_answer(messages)
-                if text:
-                    latency_ms = int((perf_counter() - started) * 1000)
-                    return LLMResponse(
-                        text=text,
-                        provider=self.name,
-                        model=self.model,
-                        input_tokens=len(request.prompt.split()),
-                        output_tokens=len(text.split()),
-                        latency_ms=latency_ms,
-                        degraded=False,
-                    )
-                last_status = self._extract_status(messages) or last_status
-                if last_status in {"stopped", "failed"}:
-                    break
-                await asyncio.sleep(self.poll_interval)
+            last_status = self._extract_status(messages) or last_status
+            if last_status in {"stopped", "failed"}:
+                break
+            await asyncio.sleep(self.poll_interval)
 
         raise RuntimeError(f"Manus task did not return an answer; status={last_status}")
 

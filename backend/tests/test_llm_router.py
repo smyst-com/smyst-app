@@ -34,29 +34,45 @@ class FakeResponse:
 
 
 class FakeAsyncClient:
+    """Attrappe fuer den geteilten httpx-Client.
+
+    Seit dem Umstieg auf einen prozessweiten Client (app.core.http_client) wird
+    nicht mehr je Aufruf ein Client gebaut; die Tests ersetzen darum
+    shared_client() statt httpx.AsyncClient. Das Zeitlimit reicht der Aufrufer
+    jetzt pro Anfrage durch — die Attrappe nimmt es entgegen und merkt es sich,
+    damit Tests es pruefen koennen.
+    """
+
     posts: list[dict] = []
     gets: list[dict] = []
     responses: list[FakeResponse] = []
 
-    def __init__(self, timeout: float) -> None:
-        self.timeout = timeout
-
-    async def __aenter__(self) -> "FakeAsyncClient":
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb) -> None:
-        return None
-
-    async def post(self, url: str, *, headers: dict, json: dict) -> FakeResponse:
-        self.posts.append({"url": url, "headers": headers, "json": json})
+    async def post(
+        self, url: str, *, headers: dict, json: dict, timeout: float | None = None
+    ) -> FakeResponse:
+        self.posts.append({"url": url, "headers": headers, "json": json, "timeout": timeout})
         return self.responses.pop(0)
 
-    async def get(self, url: str, *, headers: dict) -> FakeResponse:
-        self.gets.append({"url": url, "headers": headers})
+    async def get(
+        self,
+        url: str,
+        *,
+        headers: dict | None = None,
+        timeout: float | None = None,
+        **kwargs,
+    ) -> FakeResponse:
+        self.gets.append({"url": url, "headers": headers, "timeout": timeout, **kwargs})
         response = self.responses.pop(0)
         if isinstance(response, Exception):
             raise response
         return response
+
+
+def use_fake_client(monkeypatch) -> FakeAsyncClient:
+    """Haengt die Attrappe an die Stelle, an der der Router den Client holt."""
+    fake = FakeAsyncClient()
+    monkeypatch.setattr("app.ai.llm_router.shared_client", lambda: fake)
+    return fake
 
 
 class FailingProvider(LLMProvider):
@@ -104,7 +120,7 @@ async def test_openai_compatible_provider_parses_chat_completion(monkeypatch) ->
             }
         )
     ]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     provider = OpenAICompatibleProvider(
         "test",
@@ -190,7 +206,7 @@ async def test_local_fallback_prefers_metadata_language() -> None:
 async def test_provider_does_not_retry_on_auth_error(monkeypatch) -> None:
     FakeAsyncClient.posts = []
     FakeAsyncClient.responses = [FakeResponse({}, status_code=401)]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     provider = OpenAICompatibleProvider("test", "https://llm.example/v1/", "bad-key", "m")
     with pytest.raises(httpx.HTTPStatusError):
@@ -212,7 +228,7 @@ async def test_provider_retries_once_on_server_error(monkeypatch) -> None:
             }
         ),
     ]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     provider = OpenAICompatibleProvider("test", "https://llm.example/v1/", "key", "m")
     response = await provider.complete(make_request())
@@ -298,7 +314,7 @@ async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> 
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"error": "secret provider body"}, status_code=403)]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -318,7 +334,7 @@ async def test_ping_providers_uses_credential_model_check(monkeypatch) -> None:
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "gpt-4o"}]})]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -343,7 +359,7 @@ async def test_ping_providers_falls_back_when_model_check_times_out(monkeypatch)
             }
         ),
     ]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -361,7 +377,7 @@ async def test_ping_providers_accepts_dated_model_id_for_alias(monkeypatch) -> N
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "gpt-4o-2024-11-20"}]})]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -375,7 +391,7 @@ async def test_ping_providers_reports_model_unavailable_without_secret(monkeypat
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "other-model"}]})]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)

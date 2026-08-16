@@ -11,9 +11,8 @@ from enum import Enum
 from typing import Any, Protocol
 from urllib.parse import urlparse
 
-import httpx
-
 from app.core.config import Settings, settings
+from app.core.http_client import shared_client
 
 logger = logging.getLogger("smyst.ai.web_research")
 
@@ -451,13 +450,13 @@ class BraveSearchProvider:
         max_results: int = 3,
     ) -> WebSearchResponse:
         retrieved_at = utc_now_iso()
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(
-                "https://api.search.brave.com/res/v1/web/search",
-                headers={"X-Subscription-Token": self.api_key, "Accept": "application/json"},
-                params={"q": query, "count": max_results, "safesearch": "strict"},
-            )
-            response.raise_for_status()
+        response = await shared_client().get(
+            "https://api.search.brave.com/res/v1/web/search",
+            headers={"X-Subscription-Token": self.api_key, "Accept": "application/json"},
+            params={"q": query, "count": max_results, "safesearch": "strict"},
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
         data = response.json()
         items = data.get("web", {}).get("results", [])[:max_results]
         sources = tuple(source_from_raw(item, retrieved_at=retrieved_at) for item in items)
@@ -489,12 +488,12 @@ class SearxngSearchProvider:
         max_results: int = 3,
     ) -> WebSearchResponse:
         retrieved_at = utc_now_iso()
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(
-                f"{self.base_url}/search",
-                params={"q": query, "format": "json", "language": "all", "safesearch": 2},
-            )
-            response.raise_for_status()
+        response = await shared_client().get(
+            f"{self.base_url}/search",
+            params={"q": query, "format": "json", "language": "all", "safesearch": 2},
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
         items = response.json().get("results", [])[:max_results]
         sources = tuple(source_from_raw(item, retrieved_at=retrieved_at) for item in items)
         warnings = tuple(w for source in sources for w in detect_prompt_injection(source.snippet))
@@ -576,13 +575,13 @@ class OpenAIWebSearchProvider:
                 f"{query}"
             ),
         }
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.post(
-                "https://api.openai.com/v1/responses",
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                json=payload,
-            )
-            response.raise_for_status()
+        response = await shared_client().post(
+            "https://api.openai.com/v1/responses",
+            headers={"Authorization": f"Bearer {self.api_key}"},
+            json=payload,
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
         data = response.json()
         output_text, parsed_sources = self._extract_text_and_sources(data)
         sources = parsed_sources[:max_results]
