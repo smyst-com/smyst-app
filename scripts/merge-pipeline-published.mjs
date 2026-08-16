@@ -528,8 +528,11 @@ for (const record of eligible) {
 // sonst verschwinden Profile stillschweigend aus der Liste (isComplete… wird
 // falsch). scripts/check-catalog-fields.mjs prueft genau das.
 const CATALOG_FIELDS = [
-  // Identitaet und Darstellung der Karte
-  'slug', 'name', 'description', 'imageUrl', 'style',
+  // Identitaet und Darstellung der Karte.
+  // 'id' NICHT entfernen: run_model_eval.fetch_twins() verwirft jeden Eintrag
+  // ohne id, das Eval fand dadurch keinen einzigen Twin mehr (Vorfall
+  // 16.08.2026, verursacht durch die erste Fassung dieser Liste).
+  'id', 'slug', 'name', 'description', 'imageUrl', 'style',
   // Filter, Sortierung, Suche
   'categories', 'languages', 'mainCategory', 'searchIndex',
   'createdAt', 'updatedAt', 'knowledgeCount', 'mediaCount',
