@@ -89,6 +89,13 @@ class Settings(BaseSettings):
         default="smyst-ci-llm-gateway", validation_alias="CI_GATEWAY_AUDIENCE"
     )
     ci_gateway_max_tokens: int = Field(default=800, validation_alias="CI_GATEWAY_MAX_TOKENS")
+    #: Modelle, die ein CI-Job beim Gateway ausdruecklich anfordern darf
+    #: (Kommaliste). LEER = das model-Feld wird ignoriert, wie bisher. Ohne
+    #: diese Bremse koennte jeder Job aus dem Repo beliebige — auch teure —
+    #: Modelle auf den Schluessel des Servers buchen.
+    ci_gateway_allowed_models_raw: str = Field(
+        default="", validation_alias="CI_GATEWAY_ALLOWED_MODELS"
+    )
     # Client-Seite (Pipeline): Basis-URL des Gateways. Leer => Gateway-Provider
     # wird nicht in die Kette aufgenommen.
     smyst_gateway_base_url: str | None = Field(
@@ -137,6 +144,14 @@ class Settings(BaseSettings):
         default=10,
         validation_alias="WEB_RESEARCH_BUDGET_PER_PROFILE_DAY",
     )
+
+    @property
+    def ci_gateway_allowed_models(self) -> list[str]:
+        return [
+            model.strip()
+            for model in self.ci_gateway_allowed_models_raw.split(",")
+            if model.strip()
+        ]
 
     @property
     def cors_origins(self) -> list[str]:

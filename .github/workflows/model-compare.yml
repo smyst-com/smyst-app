@@ -31,6 +31,10 @@ on:
         description: 'Wiederholungen je Frage (gegen Rauschen; 1 = unbrauchbar)'
         required: false
         default: '3'
+      via_gateway:
+        description: 'Ueber das CI-Gateway (kein Repo-Secret noetig). false = direkt zu OpenRouter'
+        required: false
+        default: 'true'
 
 concurrency:
   group: model-compare
@@ -44,6 +48,11 @@ jobs:
     name: Vergleich
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: read
+      # Ausweis fuer das CI-Gateway: damit laeuft der Vergleich ueber den
+      # funktionierenden Schluessel des Servers und braucht kein Repo-Secret.
+      id-token: write
     defaults:
       run:
         working-directory: backend
@@ -72,6 +81,9 @@ jobs:
           ARGS="--models '${{ inputs.models }}' --eval-set ${{ inputs.eval_set }}"
           ARGS="$ARGS --repeats ${{ inputs.repeats }} --out ../model-compare"
           if [ -n "${{ inputs.limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.limit }}"; fi
+          if [ "${{ inputs.via_gateway }}" != "false" ]; then
+            ARGS="$ARGS --via-gateway https://api.smyst.com/api/ci/llm"
+          fi
           set -o pipefail
           eval python -m app.workers.compare_models $ARGS | tee /tmp/compare.txt
 
