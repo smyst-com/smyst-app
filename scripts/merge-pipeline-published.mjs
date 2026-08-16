@@ -509,7 +509,46 @@ for (const record of eligible) {
   merged += 1;
 }
 
-writeFileSync(apiIndexPath, JSON.stringify({ twins }), 'utf8');
+// Der Katalog enthaelt NUR die Felder, die die Listen-Ansichten lesen.
+//
+// Gemessen 16.08.2026: die vollstaendige Fassung war 38,9 MB (3,5 MB gzip) und
+// wuchs mit jedem Profil weiter — die Startseite laedt sie beim ersten Aufruf
+// komplett, um rund 20 Karten zu zeigen. Ueber 80 % davon entfielen auf
+// sources, seo, contextSummary, guardrail, imageCredit, rightsPosture,
+// uploadedContents und exampleQuestions.
+//
+// Diese Felder bleiben unveraendert im Einzelprofil unter
+// /api/public/twins/<slug>/ (siehe oben, wird vollstaendig geschrieben); die
+// Profilseite holt sie ueber getPublicTwin(). Nur die drei Listen-Verbraucher
+// sind betroffen — Startseiten-Karten, Aehnliche-Profile und der
+// Lebensdaten-Index —, und die laufen alle ueber isCompletePublicProfile() +
+// publicProfileToStartTwin() in src/App.tsx.
+//
+// WICHTIG: Wird dort ein Feld ergaenzt, muss es hier mit aufgenommen werden,
+// sonst verschwinden Profile stillschweigend aus der Liste (isComplete… wird
+// falsch). scripts/check-catalog-fields.mjs prueft genau das.
+const CATALOG_FIELDS = [
+  // Identitaet und Darstellung der Karte
+  'slug', 'name', 'description', 'imageUrl', 'style',
+  // Filter, Sortierung, Suche
+  'categories', 'languages', 'mainCategory', 'searchIndex',
+  'createdAt', 'updatedAt', 'knowledgeCount', 'mediaCount',
+  // Lebensdaten (Anzeige und hasLifeDates)
+  'birthDate', 'deathDate', 'birthYear', 'deathYear',
+  'birthLabel', 'deathLabel', 'birthPlace', 'deathPlace',
+  // Von isCompletePublicProfile geprueft
+  'status', 'visibility', 'quality',
+];
+
+function catalogEntry(twin) {
+  const entry = {};
+  for (const field of CATALOG_FIELDS) {
+    if (twin[field] !== undefined) entry[field] = twin[field];
+  }
+  return entry;
+}
+
+writeFileSync(apiIndexPath, JSON.stringify({ twins: twins.map(catalogEntry) }), 'utf8');
 
 const sitemapPath = resolve(DIST, 'sitemap.xml');
 if (merged > 0 && existsSync(sitemapPath)) {
