@@ -34,7 +34,9 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any
 
-from app.ai.llm_router import OpenAICompatibleProvider
+from app.ai.github_oidc import ActionsIdTokenSource
+from app.ai.llm_router import OpenAICompatibleProvider, SmystGatewayProvider
+from app.core.config import get_settings
 from app.workers.qa_candidates import build_chat_fn
 from app.workers.run_model_eval import (
     DEFAULT_API_BASE,
@@ -52,12 +54,17 @@ OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 NOISE_THRESHOLD_PP = 1.5
 
 
-def build_ask_fn(provider: OpenAICompatibleProvider, latencies: list[float]):
-    """Baut ask_fn fuer run_eval; misst nebenbei die Zeit bis zum ersten Token.
+def build_ask_fn(provider, latencies: list[float], *, streaming: bool = True):
+    """Baut ask_fn fuer run_eval und misst nebenbei die Antwortzeit.
 
     Der Prompt kommt aus der Produktion (_build_llm_request), damit der
     Vergleich das misst, was Nutzer tatsaechlich bekommen — und nicht einen
     kuenstlichen Testprompt.
+
+    streaming=True misst die Zeit bis zum ERSTEN Token (direkt beim Anbieter).
+    streaming=False misst die GESAMTE Antwortzeit — noetig ueber das
+    CI-Gateway, das eine fertige Antwort zurueckgibt und nicht streamt. Welche
+    Groesse gemessen wurde, sagt der Bericht in der Spaltenueberschrift.
     """
     # Import hier, nicht oben: die Route zieht die halbe App nach sich, und
     # dieser Worker soll auch importierbar sein, wenn nur Teile stehen.
@@ -68,6 +75,11 @@ def build_ask_fn(provider: OpenAICompatibleProvider, latencies: list[float]):
             chat = {"twinId": twin_id}
             request = await _build_llm_request(chat, question, language)
             started = perf_counter()
+            if not streaming:
+                response = await provider.complete(request)
+                latencies.append((perf_counter() - started) * 1000)
+                return response.text, provider.name
+
             parts: list[str] = []
             first_token_at: float | None = None
             async for delta in provider.stream(request):
@@ -117,14 +129,18 @@ def _percent(entry: dict[str, Any]) -> float | None:
     return round(quality["score"] * 100, 2)
 
 
-def build_markdown(results: list[dict[str, Any]], baseline_model: str) -> str:
+def build_markdown(
+    results: list[dict[str, Any]], baseline_model: str, *, latency_label: str = "1. Token (Median)"
+) -> str:
     lines = [
         "## Modell-Vergleich: Tempo und Qualitaet",
         "",
-        f"Massstab ist **{baseline_model}** (aktuell produktiv). Gleiches Fragenset, "
-        "gleicher Judge (temperature 0), gleiche Wiederholungen.",
+        (
+            f"Massstab ist **{baseline_model}** (aktuell produktiv). Gleiches "
+            "Fragenset, gleicher Judge (temperature 0), gleiche Wiederholungen."
+        ),
         "",
-        "| Modell | Qualitaet | 1. Token (Median) | schnellste | langsamste | bewertet | uebersprungen |",
+        f"| Modell | Qualitaet | {latency_label} | schnellste | langsamste | bewertet | uebersprungen |",
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
     baseline_score: float | None = None
@@ -189,13 +205,26 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--api-base", default=DEFAULT_API_BASE)
     parser.add_argument("--out", default="model-compare")
+    parser.add_argument(
+        "--via-gateway",
+        metavar="URL",
+        help=(
+            "Ueber das CI-Gateway statt direkt zu OpenRouter. Nutzt den "
+            "funktionierenden Schluessel des Servers (Ausweis per GitHub-OIDC) "
+            "und braucht kein Repo-Secret. Misst dann die GESAMTE Antwortzeit, "
+            "weil das Gateway nicht streamt."
+        ),
+    )
     args = parser.parse_args(argv)
 
     # Schluessel bewusst NUR aus der Umgebung: als Kommandozeilen-Argument
     # stuende er in Prozesslisten und in jedem Log, das den Aufruf zeigt.
     api_key = os.environ.get("OPENROUTER_API_KEY", "").strip()
-    if not api_key:
-        print("FEHLER: OPENROUTER_API_KEY nicht gesetzt.")
+    if not args.via_gateway and not api_key:
+        print("FEHLER: OPENROUTER_API_KEY nicht gesetzt (oder --via-gateway nutzen).")
+        return 1
+    if args.via_gateway and not ActionsIdTokenSource.available():
+        print("FEHLER: --via-gateway braucht GitHub-Actions-OIDC (permissions: id-token: write).")
         return 1
 
     models = [m.strip() for m in args.models.split(",") if m.strip()]
@@ -221,18 +250,26 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     results: list[dict[str, Any]] = []
     for model in models:
         print(f"\n== {model}", flush=True)
-        provider = OpenAICompatibleProvider(
-            name=model,
-            base_url=OPENROUTER_BASE,
-            api_key=api_key,
-            model=model,
-        )
+        if args.via_gateway:
+            provider = SmystGatewayProvider(
+                args.via_gateway, ActionsIdTokenSource(get_settings().ci_gateway_audience)
+            )
+            # Das Gateway waehlt das Modell anhand dieses Feldes — es muss in
+            # dessen Allowlist stehen (CI_GATEWAY_ALLOWED_MODELS).
+            provider.model = model
+        else:
+            provider = OpenAICompatibleProvider(
+                name=model,
+                base_url=OPENROUTER_BASE,
+                api_key=api_key,
+                model=model,
+            )
         latencies: list[float] = []
         try:
             rows = run_eval(
                 questions,
                 twins,
-                ask_fn=build_ask_fn(provider, latencies),
+                ask_fn=build_ask_fn(provider, latencies, streaming=not args.via_gateway),
                 judge_fn=judge_fn,
                 repeats=args.repeats,
             )
@@ -253,7 +290,13 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         print("FEHLER: kein Kandidat lieferte Ergebnisse.")
         return 1
 
-    markdown = build_markdown(results, models[0])
+    markdown = build_markdown(
+        results,
+        models[0],
+        latency_label=(
+            "Antwortzeit gesamt (Median)" if args.via_gateway else "1. Token (Median)"
+        ),
+    )
     print()
     print(markdown)
 

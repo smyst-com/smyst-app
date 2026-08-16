@@ -93,6 +93,46 @@ def _messages_to_request(payload: dict[str, Any], settings: Settings) -> LLMRequ
     )
 
 
+def _pinned_provider(requested: Any, settings: Settings) -> Any | JSONResponse | None:
+    """Provider fuer ein ausdruecklich angefordertes Modell — nur aus der Allowlist.
+
+    Wozu: Der Modell-Vergleich (app/workers/compare_models.py) muss dasselbe
+    Fragenset gegen VERSCHIEDENE Modelle stellen. Ueber den eigenen Repo-Key
+    ging das nicht — OpenRouter weist ihn mit 403 ab (16.08.2026), waehrend der
+    Schluessel dieses Servers funktioniert.
+
+    WICHTIG fuer die Rueckwaertsvertraeglichkeit: Die Pipeline schickt seit
+    jeher ein model-Feld ("smyst-gateway") mit, das bisher ignoriert wurde. Ein
+    unbekanntes Modell darf deshalb NICHT zum Fehler fuehren — sonst braeche der
+    Autopilot. Nur Namen aus der Allowlist werden beachtet, alles andere
+    verhaelt sich exakt wie bisher.
+
+    Die Allowlist ist die Kostenbremse: ohne sie koennte jeder Job aus dem Repo
+    beliebige — auch sehr teure — Modelle auf den Schluessel des Servers buchen.
+    """
+    if not isinstance(requested, str) or not requested.strip():
+        return None
+    model = requested.strip()
+    if model not in settings.ci_gateway_allowed_models:
+        return None
+
+    from app.ai.llm_router import OpenAICompatibleProvider
+    from app.ai.provider_catalog import PROVIDER_CONFIGS
+
+    config = PROVIDER_CONFIGS["openrouter"]
+    api_key = getattr(settings, config.api_key_attr, None)
+    if not api_key:
+        return _error(503, "model_unavailable", "Kein Schluessel fuer das angeforderte Modell.")
+    logger.info("ci gateway pinned to requested model %s", model)
+    return OpenAICompatibleProvider(
+        name="openrouter",
+        base_url=config.base_url,
+        api_key=api_key,
+        model=model,
+        timeout=settings.llm_provider_timeout_seconds,
+    )
+
+
 @router.post("/chat/completions")
 async def chat_completions(request: Request) -> JSONResponse:
     settings = get_settings()
@@ -116,13 +156,20 @@ async def chat_completions(request: Request) -> JSONResponse:
 
     from app.ai.llm_router import build_default_router
 
-    router_instance = build_default_router()
-    router_instance.providers = [
-        provider
-        for provider in router_instance.providers
-        if provider.name != SELF_PROVIDER_NAME
-    ]
-    response = await router_instance.complete(llm_request)
+    pinned = _pinned_provider(payload.get("model"), settings)
+    if isinstance(pinned, JSONResponse):
+        return pinned
+
+    if pinned is not None:
+        response = await pinned.complete(llm_request)
+    else:
+        router_instance = build_default_router()
+        router_instance.providers = [
+            provider
+            for provider in router_instance.providers
+            if provider.name != SELF_PROVIDER_NAME
+        ]
+        response = await router_instance.complete(llm_request)
 
     if response.degraded:
         # Ehrlich durchreichen: die Pipeline soll einen Provider-Ausfall als
