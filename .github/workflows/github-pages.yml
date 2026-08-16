@@ -115,6 +115,15 @@ jobs:
       - name: Remove retired profile images
         run: rm -fv dist/public/profile-images/euklid.jpg dist/public/profile-images/julius-caesar.jpg
 
+      # Katalog-Felder-Waechter: der Katalog enthaelt nur noch die Felder, die
+      # die Listen-Ansichten lesen (37,2 -> 9,1 MB). Nimmt jemand in
+      # publicProfileToStartTwin/isCompletePublicProfile ein weiteres Feld dazu,
+      # ohne CATALOG_FIELDS zu ergaenzen, waere es live undefined — Profile
+      # fielen still aus der Liste. Laeuft VOR dem Merge, damit der Fehler
+      # auffaellt, bevor ein kaputter Katalog gebaut wird.
+      - name: Check catalog fields (Startseite liest nur Vorhandenes)
+        run: node scripts/check-catalog-fields.mjs
+
       - name: Merge published pipeline profiles
         run: node scripts/merge-pipeline-published.mjs
         env:
