@@ -124,6 +124,11 @@ class Settings(BaseSettings):
     )
     brave_search_api_key: str | None = Field(default=None, validation_alias="BRAVE_SEARCH_API_KEY")
     searxng_base_url: str | None = Field(default=None, validation_alias="SEARXNG_BASE_URL")
+    # Welche Suchmaschinen SearXNG befragen soll. Ohne Vorgabe nimmt SearXNG seinen
+    # Standardsatz (google, duckduckgo, brave, startpage, ...) - und der liefert von
+    # einer Rechenzentrums-IP nichts: am 16.08.2026 aus dem Zeabur-Container gemessen
+    # lieferten google/duckduckgo/brave/mojeek/startpage je 0 Treffer, bing 10.
+    searxng_engines: str = Field(default="bing,wikipedia", validation_alias="SEARXNG_ENGINES")
     web_research_budget_per_user_day: int = Field(
         default=20,
         validation_alias="WEB_RESEARCH_BUDGET_PER_USER_DAY",

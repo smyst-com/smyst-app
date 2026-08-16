@@ -56,6 +56,7 @@ Variablen am **Backend**-Dienst, damit die Suche benutzt wird:
 | --- | --- |
 | `WEB_RESEARCH_ENABLED` | `true` |
 | `WEB_SEARCH_PROVIDER` | `searxng` |
+| `SEARXNG_ENGINES` | `bing,wikipedia` (Standard im Code) |
 | `SEARXNG_BASE_URL` | `http://smyst-searxng.zeabur.internal:8080` |
 
 ## Pruefen, ob es laeuft
@@ -77,3 +78,29 @@ Das offizielle Image liefert nur HTML aus. `backend/app/ai/web_research.py`
 403. Die Datei setzt per `use_default_settings: true` auf den Standardwerten auf und
 aendert nur das Noetige — insbesondere werden `secret_key` und `base_url` dort NICHT
 gesetzt, damit die Env-Overrides des Images greifen.
+
+
+## Warum nicht der Standard-Suchmaschinensatz
+
+SearXNG fragt ohne Vorgabe google, duckduckgo, brave, startpage & Co. Von einer
+Rechenzentrums-IP liefern die **nichts**. Am 16.08.2026 aus dem Backend-Container
+gegen die eigene Instanz gemessen, Suchbegriff „wetter berlin morgen":
+
+| Engine | Treffer |
+| --- | --- |
+| google | 0 |
+| duckduckgo | 0 |
+| brave | 0 |
+| mojeek | 0 |
+| startpage | 0 |
+| **bing** | **10** |
+
+Deshalb schickt der Provider `SEARXNG_ENGINES` (Default `bing,wikipedia`) als
+`engines=`-Parameter mit. Faellt Bing eines Tages aus, reicht ein Aendern dieser
+Variable am Backend — kein Deploy noetig. Leerer Wert = SearXNG entscheidet selbst.
+
+Messbefehl fuer den naechsten Verdacht (Command-Konsole am smyst-backend):
+
+```bash
+python -c "import httpx,os;u=os.environ['SEARXNG_BASE_URL'];[print(e, httpx.get(u+'/search',params={'q':'wetter berlin morgen','engines':e},timeout=25).text.count('article class=\"result')) for e in ['google','duckduckgo','bing','brave','mojeek','wikipedia','startpage']]"
+```
