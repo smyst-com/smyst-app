@@ -149,7 +149,9 @@ def test_run_eval_chat_error_becomes_skip() -> None:
 
     rows = _run([_question()], {"Albert Einstein": {"id": "x"}}, ask=ask)
     assert rows[0]["score"] is None
-    assert rows[0]["skip"] == "Chat-Fehler TimeoutError"
+    # Typ UND Meldung: ohne die Meldung sagt der Grund nichts darueber,
+    # was der Anbieter abgelehnt hat (16.08.2026).
+    assert rows[0]["skip"].startswith("Chat-Fehler TimeoutError")
 
 
 def test_run_eval_empty_answer_becomes_skip() -> None:

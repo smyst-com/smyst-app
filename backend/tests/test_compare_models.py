@@ -80,3 +80,25 @@ def test_markdown_names_the_baseline_and_the_noise_floor() -> None:
     assert "(aktuell)" in markdown
     assert str(NOISE_THRESHOLD_PP) in markdown
     assert "nicht deutbar" in markdown
+
+
+def test_report_names_why_questions_were_skipped() -> None:
+    """Ohne die Gruende ist der Bericht bei einem Fehlschlag wertlos.
+
+    Der erste Lauf am 16.08.2026 meldete nur "0 bewertet, 10 uebersprungen";
+    die Ursache liess sich nur aus den CI-Logs graben.
+    """
+    rows = [
+        {"id": "q-0", "category": "persona", "twin_name": "T", "score": None,
+         "skip": "Chat-Fehler HTTPStatusError: 404 fuer .../chat/completions"},
+        {"id": "q-1", "category": "persona", "twin_name": "T", "score": None,
+         "skip": "Chat-Fehler HTTPStatusError: 404 fuer .../chat/completions"},
+        {"id": "q-2", "category": "persona", "twin_name": "T", "score": None,
+         "skip": "twin nicht aufloesbar"},
+    ]
+    entry = summarise("kaputt", rows, [])
+
+    assert entry["skip_reasons"]["twin nicht aufloesbar"] == 1
+    markdown = build_markdown([entry], "kaputt")
+    assert "Warum Fragen uebersprungen wurden" in markdown
+    assert "2x Chat-Fehler HTTPStatusError" in markdown

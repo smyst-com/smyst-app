@@ -253,7 +253,12 @@ def run_eval(
             except DegradedProviderError:
                 raise
             except Exception as error:
-                skip = f"Chat-Fehler {type(error).__name__}"
+                # Mit Meldung, nicht nur Typ: "Chat-Fehler HTTPStatusError"
+                # sagt nichts darueber, WAS der Anbieter abgelehnt hat.
+                # Gekuerzt, damit ein geschwaetziger Fehler den Bericht nicht
+                # flutet; httpx nennt Status und URL, keine Schluessel.
+                detail = str(error).replace("\n", " ")[:200]
+                skip = f"Chat-Fehler {type(error).__name__}: {detail}"
                 break
             if mode == DEGRADED_MODE:
                 raise DegradedProviderError(
