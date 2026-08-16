@@ -88,4 +88,6 @@ def test_chat_error_during_repeats_becomes_a_skip() -> None:
     rows = run_eval([_question()], TWINS, ask_fn=flaky,
                     judge_fn=lambda question, answer: 2, repeats=3)
     assert rows[0]["score"] is None
-    assert rows[0]["skip"] == "Chat-Fehler TimeoutError"
+    # Typ UND Meldung: ohne die Meldung sagt der Grund nichts darueber,
+    # was der Anbieter abgelehnt hat (16.08.2026).
+    assert rows[0]["skip"].startswith("Chat-Fehler TimeoutError")

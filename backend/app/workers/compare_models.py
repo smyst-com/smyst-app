@@ -29,6 +29,7 @@ import json
 import os
 import statistics
 import sys
+from collections import Counter
 from pathlib import Path
 from time import perf_counter
 from typing import Any
@@ -85,9 +86,15 @@ def build_ask_fn(provider: OpenAICompatibleProvider, latencies: list[float]):
 def summarise(model: str, rows: list[dict], latencies: list[float]) -> dict[str, Any]:
     """Fasst einen Kandidaten zusammen. Qualitaet kommt aus aggregate(),
     damit dieser Vergleich denselben Massstab benutzt wie die Baseline."""
+    # Die Abbruchgruende gehoeren in den Bericht. Der erste Lauf am 16.08.2026
+    # meldete nur "0 bewertet, 10 uebersprungen" — warum, stand nirgends, und
+    # die Ursache liess sich nur durch Log-Archaeologie finden. Ein
+    # Diagnosewerkzeug, das seine eigenen Fehlschlaege verschweigt, ist keins.
+    reasons = Counter(str(row["skip"]) for row in rows if row.get("skip"))
     return {
         "model": model,
         "quality": aggregate(rows),
+        "skip_reasons": dict(reasons.most_common()),
         "first_token_ms": {
             "median": round(statistics.median(latencies), 1) if latencies else None,
             "min": round(min(latencies), 1) if latencies else None,
@@ -161,6 +168,16 @@ def build_markdown(results: list[dict[str, Any]], baseline_model: str) -> str:
                 else ("besser" if diff > 0 else "SCHLECHTER")
             )
             lines.append(f"- `{entry['model']}`: {diff:+.2f} pp gegenueber der Baseline — {verdict}")
+
+    problems = [
+        (entry["model"], reason, count)
+        for entry in results
+        for reason, count in (entry.get("skip_reasons") or {}).items()
+    ]
+    if problems:
+        lines += ["", "### Warum Fragen uebersprungen wurden", ""]
+        for model, reason, count in problems:
+            lines.append(f"- `{model}`: {count}x {reason}")
     return "\n".join(lines) + "\n"
 
 
@@ -223,6 +240,7 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
             print(f"  uebersprungen: {type(error).__name__}: {error}")
             continue
         entry = summarise(model, rows, latencies)
+        entry["rows"] = rows
         results.append(entry)
         print(
             f"  Qualitaet {_percent(entry)} % | "
