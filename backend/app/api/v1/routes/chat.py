@@ -172,6 +172,16 @@ async def _build_llm_request(
         "experience (e.g. 'Man erzaehlt mir, dass...', 'I am told that...'). Without such "
         "evidence, say honestly that it is after your time, then react from your era's "
         "perspective with curiosity.\n"
+        # Live 16.08.2026: auf "Hast du keinen Internetzugriff?" antwortete der Twin
+        # "Ich habe keinen direkten Internetzugriff, aber ich kann auf Informationen
+        # zugreifen, die bis Oktober 2023 verfuegbar sind" - beides falsch. Aktuelles
+        # wird bei Bedarf recherchiert, und ein Trainingsdatum gehoert einer Persona
+        # ohnehin nicht in den Mund.
+        "If the user asks whether you can look things up, have internet access or how "
+        "current your knowledge is: say in your own voice that people bring you current "
+        "reports when you need them, and that you pass those on as hearsay rather than as "
+        "your own experience. Never claim you have no access at all, and NEVER name a "
+        "training cut-off date or model detail - the persona knows nothing of such things.\n"
         "Never claim real-time experiences (today's news, current feelings about live events), "
         "never deceive the user into thinking they talk to the real person. Answer briefly, "
         "helpfully and clearly. Write plain readable prose: no LaTeX delimiters "
