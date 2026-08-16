@@ -28,12 +28,27 @@ Variablen am SearXNG-Dienst:
 
 | Variable | Wert | Zweck |
 | --- | --- | --- |
+| `SEARXNG_SECRET` | beliebiger Zufallsstring | **Pflicht**, sonst startet der Dienst nicht |
 | `SEARXNG_BIND_ADDRESS` | `0.0.0.0` | sonst nur localhost erreichbar |
 | `SEARXNG_PORT` | `8080` | Port im internen Netz |
 | `SEARXNG_BASE_URL` | `http://smyst-searxng.zeabur.internal:8080/` | Selbstreferenz |
 
-`SEARXNG_SECRET` ist nicht noetig: das Entrypoint-Skript des Images ersetzt den
-Platzhalter `ultrasecretkey` beim ersten Start durch einen Zufallswert.
+`SEARXNG_SECRET` ist wirklich Pflicht, auch wenn das Entrypoint-Skript einen
+Zufallswert erzeugen kann: es tut das nur, wenn es die settings.yml selbst aus der
+Vorlage anlegt. Sobald eine eigene Datei gemountet ist, bleibt der Standardwert
+stehen und SearXNG bricht beim Start ab:
+
+```
+ERROR:searx.webapp: server.secret_key is not changed. Please use something else.
+[ERROR] Unexpected exit from worker-1
+```
+
+Der Wert selbst ist beliebig — er signiert nur Sitzungen einer Weboberflaeche, die
+hier niemand benutzt. Zufallswert erzeugen:
+
+```bash
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
 
 Variablen am **Backend**-Dienst, damit die Suche benutzt wird:
 
