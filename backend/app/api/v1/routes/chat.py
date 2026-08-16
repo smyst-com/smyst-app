@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import json
+import logging
+from collections.abc import Awaitable
 from datetime import UTC, datetime
+from time import perf_counter
 from typing import AsyncIterator, Literal
 from uuid import uuid4
 
@@ -19,6 +22,22 @@ from app.integrations import chat_store, feedback_store
 from app.security.sanitization import normalize_text
 
 router = APIRouter(prefix="/chat", tags=["chat"])
+
+logger = logging.getLogger("smyst.api.chat")
+
+
+async def _timed[T](timings: dict[str, int], key: str, awaitable: Awaitable[T]) -> T:
+    """Fuehrt das Awaitable aus und legt seine Dauer in Millisekunden ab.
+
+    Auch im Fehlerfall wird die Dauer festgehalten — ein Abbruch nach 8 s
+    Zeitlimit ist genau die Information, die man sucht.
+    """
+    started = perf_counter()
+    try:
+        return await awaitable
+    finally:
+        timings[key] = int((perf_counter() - started) * 1000)
+
 
 _CHATS: dict[str, dict[str, object]] = {}
 
@@ -424,6 +443,8 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     message = normalize_text(body.message, max_length=4000).value
     llm_router = _chat_router()
 
+    started_at = perf_counter()
+
     def _sse(payload: dict[str, object]) -> str:
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
@@ -436,19 +457,34 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
         # Der SSE-Kommentar unten flusht die Header sofort; er hat keine
         # "data:"-Zeile und wird vom Client-Parser uebersprungen.
         yield ": warmup\n\n"
+        # Serverseitige Aufschluesselung der Zeit bis zum ersten Wort.
+        # Von aussen war nur die Summe messbar (~450 ms, US-Messung 16.08.2026);
+        # ohne die Anteile optimiert man auf Verdacht — so geschehen bei #408,
+        # das nichts brachte. Die Werte gehen in das done-Event und ins Log.
+        timings: dict[str, int] = {}
         try:
             # Unabhaengige Netz-I/O parallel statt nacheinander, siehe /messages.
+            # Beide werden EINZELN gestoppt: sie laufen gleichzeitig, die Summe
+            # waere also irrefuehrend — entscheidend ist, welcher der laengere ist.
             request, research_response = await asyncio.gather(
-                _build_llm_request(chat, message, body.language),
-                _research_for_chat(chat, message),
+                _timed(timings, "twinContextMs", _build_llm_request(chat, message, body.language)),
+                _timed(timings, "webResearchMs", _research_for_chat(chat, message)),
             )
         except Exception:
             yield _sse({"error": True})
             return
+        timings["preparationMs"] = max(
+            timings.get("twinContextMs", 0), timings.get("webResearchMs", 0)
+        )
         request = _attach_web_research_evidence(request, research_response)
+        model_started = perf_counter()
         try:
             async for event in llm_router.stream(request):
                 if event.get("type") == "delta":
+                    if "modelFirstTokenMs" not in timings:
+                        timings["modelFirstTokenMs"] = int(
+                            (perf_counter() - model_started) * 1000
+                        )
                     yield _sse({"delta": event.get("text", "")})
                 elif event.get("type") == "done":
                     assistant_message = {
@@ -461,6 +497,16 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
                     if web_research is not None:
                         assistant_message["webResearch"] = web_research
                     _persist_exchange(chat, message, assistant_message, language=body.language)
+                    timings["totalMs"] = int((perf_counter() - started_at) * 1000)
+                    logger.info(
+                        "chat stream timings provider=%s twin_context=%sms "
+                        "web_research=%sms model_first_token=%sms total=%sms",
+                        event.get("provider", "unknown"),
+                        timings.get("twinContextMs"),
+                        timings.get("webResearchMs"),
+                        timings.get("modelFirstTokenMs"),
+                        timings["totalMs"],
+                    )
                     yield _sse(
                         {
                             "done": True,
@@ -468,6 +514,7 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
                             "twinId": chat.get("twinId"),
                             "message": assistant_message,
                             "mode": event.get("provider", "unknown"),
+                            "timings": timings,
                         }
                     )
                     return
