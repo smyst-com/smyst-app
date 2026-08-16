@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from time import monotonic
 
-from app.core.http_client import shared_client
+import httpx
 
 logger = logging.getLogger("smyst.ai.twin_context")
 
@@ -57,11 +57,10 @@ async def twin_context(twin_id: str | None) -> str:
         return cached[1]
     context = ""
     try:
-        response = await shared_client().get(
-            f"{STATIC_TWIN_BASE}/{slug}/", timeout=4.0, follow_redirects=True
-        )
-        response.raise_for_status()
-        payload = response.json() or {}
+        async with httpx.AsyncClient(timeout=4.0, follow_redirects=True) as client:
+            response = await client.get(f"{STATIC_TWIN_BASE}/{slug}/")
+            response.raise_for_status()
+            payload = response.json() or {}
         twin = payload.get("twin") or {}
         if isinstance(twin, dict):
             context = _build_context(twin)

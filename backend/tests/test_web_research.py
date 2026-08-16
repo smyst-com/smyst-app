@@ -306,24 +306,23 @@ async def test_openai_provider_uses_current_web_search_payload(monkeypatch) -> N
                 ]
             }
 
-    # Der Provider holt seinen Client jetzt ueber shared_client() und reicht das
-    # Zeitlimit pro Anfrage durch (app.core.http_client).
     class FakeClient:
-        async def post(
-            self,
-            url: str,
-            *,
-            headers: dict[str, str],
-            json: dict[str, object],
-            timeout: float | None = None,
-        ) -> FakeResponse:
+        def __init__(self, timeout: float) -> None:
+            captured["timeout"] = timeout
+
+        async def __aenter__(self) -> "FakeClient":
+            return self
+
+        async def __aexit__(self, *args: object) -> None:
+            return None
+
+        async def post(self, url: str, *, headers: dict[str, str], json: dict[str, object]) -> FakeResponse:
             captured["url"] = url
             captured["headers"] = headers
             captured["json"] = json
-            captured["timeout"] = timeout
             return FakeResponse()
 
-    monkeypatch.setattr("app.ai.web_research.shared_client", FakeClient)
+    monkeypatch.setattr(httpx, "AsyncClient", FakeClient)
     provider = OpenAIWebSearchProvider("test-key", model="gpt-4.1-mini")
 
     response = await provider.search("latest public news", category=QueryCategory.NEWS)
