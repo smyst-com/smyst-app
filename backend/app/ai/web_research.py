@@ -8,6 +8,7 @@ import re
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
+from html import unescape
 from typing import Any, Protocol
 from urllib.parse import urlparse
 
@@ -314,9 +315,9 @@ def decide_search(
         reasons.append("web_research_feature_flag_disabled")
     if decision is not SearchDecision.NO_SEARCH and provider in {"", "disabled"}:
         reasons.append("web_search_provider_disabled")
-    if decision is not SearchDecision.NO_SEARCH and enabled and not can_call_provider:
-        if provider not in {"", "disabled"}:
-            reasons.append("web_search_provider_credentials_missing")
+    provider_named = provider not in {"", "disabled"}
+    if decision is not SearchDecision.NO_SEARCH and enabled and provider_named and not can_call_provider:
+        reasons.append("web_search_provider_credentials_missing")
 
     return SearchDecisionResult(decision, category, tuple(reasons), enabled, provider, can_call_provider)
 
@@ -473,6 +474,52 @@ class BraveSearchProvider:
         )
 
 
+# Eine SearXNG-Instanz liefert nur HTML aus, solange "json" nicht in search.formats
+# steht - der JSON-Aufruf endet dann mit 403 (live gemessen 16.08.2026 im Backend-
+# Container gegen searxng.zeabur.internal: JSON 403, HTML 200). Das laesst sich nicht
+# immer an der Instanz aendern, deshalb liest der Provider im Notfall die Trefferliste
+# aus der HTML-Seite. Die Struktur ist stabil: ein <article class="result"> je Treffer,
+# darin die Ueberschrift als <h3><a href>…</a></h3> und der Textausriss als
+# <p class="content">.
+SEARXNG_RESULT_RE = re.compile(r'<article class="result[^"]*">(.*?)</article>', re.IGNORECASE | re.DOTALL)
+SEARXNG_HEADING_RE = re.compile(r'<h3>\s*<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL)
+SEARXNG_CONTENT_RE = re.compile(r'<p class="content">(.*?)</p>', re.IGNORECASE | re.DOTALL)
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+# 403 = Format gesperrt, 404 = alte Instanz ohne JSON-Route. Beides ist kein Fehler,
+# sondern der Anlass, es mit HTML zu versuchen.
+SEARXNG_FORMAT_UNAVAILABLE = frozenset({403, 404})
+
+
+def html_fragment_to_text(fragment: str) -> str:
+    text = re.sub(r"\s+", " ", unescape(HTML_TAG_RE.sub(" ", fragment)))
+    # Tags werden durch Leerzeichen ersetzt; vor Satzzeichen entsteht dadurch eine Luecke
+    # ("Wetter Berlin : 16 Tage Trend" statt "Wetter Berlin: 16 Tage Trend").
+    return re.sub(r"\s+([:;,.!?)\]])", r"\1", text).strip()
+
+
+def parse_searxng_html(html: str, *, max_results: int = 3) -> list[dict[str, Any]]:
+    """Trefferliste aus der HTML-Seite lesen, wenn die Instanz kein JSON ausliefert."""
+    items: list[dict[str, Any]] = []
+    for block in SEARXNG_RESULT_RE.findall(html):
+        heading = SEARXNG_HEADING_RE.search(block)
+        if not heading:
+            continue
+        url = unescape(heading.group(1)).strip()
+        if not url.startswith("http"):
+            continue
+        content = SEARXNG_CONTENT_RE.search(block)
+        items.append(
+            {
+                "url": url,
+                "title": html_fragment_to_text(heading.group(2)),
+                "snippet": html_fragment_to_text(content.group(1)) if content else "",
+            }
+        )
+        if len(items) >= max_results:
+            break
+    return items
+
+
 class SearxngSearchProvider:
     name = "searxng"
 
@@ -488,13 +535,7 @@ class SearxngSearchProvider:
         max_results: int = 3,
     ) -> WebSearchResponse:
         retrieved_at = utc_now_iso()
-        response = await shared_client().get(
-            f"{self.base_url}/search",
-            params={"q": query, "format": "json", "language": "all", "safesearch": 2},
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-        items = response.json().get("results", [])[:max_results]
+        items = await self._fetch_items(query, max_results=max_results)
         sources = tuple(source_from_raw(item, retrieved_at=retrieved_at) for item in items)
         warnings = tuple(w for source in sources for w in detect_prompt_injection(source.snippet))
         return WebSearchResponse(
@@ -507,6 +548,30 @@ class SearxngSearchProvider:
             trust_status="unreviewed",
             injection_warnings=tuple(dict.fromkeys(warnings)),
         )
+
+    async def _fetch_items(self, query: str, *, max_results: int) -> list[dict[str, Any]]:
+        params: dict[str, Any] = {"q": query, "language": "all", "safesearch": 2}
+        response = await shared_client().get(
+            f"{self.base_url}/search",
+            params={**params, "format": "json"},
+            timeout=self.timeout,
+        )
+        if response.status_code == 200:
+            try:
+                return list(response.json().get("results", []))[:max_results]
+            except ValueError:
+                # Instanz antwortet mit 200, aber ohne JSON-Koerper: wie ein gesperrtes Format behandeln.
+                logger.info("searxng json response was not parseable, falling back to html")
+        elif response.status_code not in SEARXNG_FORMAT_UNAVAILABLE:
+            response.raise_for_status()
+
+        html_response = await shared_client().get(
+            f"{self.base_url}/search",
+            params=params,
+            timeout=self.timeout,
+        )
+        html_response.raise_for_status()
+        return parse_searxng_html(html_response.text, max_results=max_results)
 
 
 class OpenAIWebSearchProvider:
