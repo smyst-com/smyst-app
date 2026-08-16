@@ -322,6 +322,30 @@ def decide_search(
     return SearchDecisionResult(decision, category, tuple(reasons), enabled, provider, can_call_provider)
 
 
+# Frage- und Fuellwoerter fliegen aus der Suchanfrage. Live gemessen 16.08.2026 gegen die
+# eigene Instanz: als Frage formuliert lieferte "Wie ist das Wetter morgen in Berlin?"
+# IEEE Women in Engineering, Wiktionary "wie" und ein Woerterbuch - die Suchmaschine hing
+# sich am Fragewort auf. Als Stichworte ("Nachrichten Deutschland heute") kamen sofort
+# tagesschau.de, n-tv.de und t-online.de.
+QUERY_STOPWORDS = {
+    # Hoeflichkeit und Anrede
+    "please", "bitte", "kannst", "kannst du", "können", "koennen", "sag", "sage", "erzähl",
+    "erzaehl", "erzähle", "erzaehle", "mir", "meine", "mein", "du", "dir", "ich", "wir",
+    # Fragewoerter
+    "wie", "was", "wer", "wen", "wem", "wo", "wann", "warum", "wieso", "weshalb", "welche",
+    "welcher", "welches", "welchen", "how", "what", "who", "whom", "where", "when", "why",
+    "which", "does", "did", "can", "could", "would", "should",
+    # Hilfsverben und Artikel
+    "ist", "sind", "war", "waren", "hat", "haben", "wird", "werden", "gibt", "es", "is",
+    "are", "was", "were", "has", "have", "will", "the", "a", "an",
+    "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "eines",
+    # Praepositionen und Fuellwoerter
+    "about", "ueber", "über", "with", "from", "for", "of", "in", "im", "am", "an", "auf",
+    "aus", "bei", "mit", "von", "vom", "zu", "zum", "zur", "und", "and", "or", "oder",
+    "denn", "eigentlich", "gerade", "mal", "so", "auch", "noch", "schon",
+}
+
+
 def rewrite_query(question: str, *, category: QueryCategory | None = None, max_terms: int = 12) -> RewriteResult:
     removed: list[str] = []
     rewritten = question
@@ -346,11 +370,11 @@ def rewrite_query(question: str, *, category: QueryCategory | None = None, max_t
     rewritten = re.sub(r"[^0-9A-Za-zÄÖÜäöüß ._-]+", " ", rewritten)
     rewritten = re.sub(r"\s+", " ", rewritten).strip()
 
-    stopwords = {
-        "please", "bitte", "kannst", "können", "koennen", "mir", "meine", "mein",
-        "about", "ueber", "über", "with", "from", "eine", "einen", "the", "der", "die", "das",
-    }
-    terms = [term for term in rewritten.split(" ") if term.lower() not in stopwords]
+    terms = [term for term in rewritten.split(" ") if term.lower() not in QUERY_STOPWORDS]
+    # Bleibt nach dem Streichen zu wenig uebrig, lieber die ungekuerzte Frage
+    # schicken als eine sinnlose Restanfrage.
+    if len(terms) < 2:
+        terms = [term for term in rewritten.split(" ") if term]
     rewritten = " ".join(terms[:max_terms]).strip()
     if category and category is not QueryCategory.GENERAL_PUBLIC_FACT:
         rewritten = f"{rewritten} {category.value.replace('_', ' ')}".strip()
