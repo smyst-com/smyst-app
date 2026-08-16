@@ -13,6 +13,7 @@ from app.ai.web_research import (
     QueryCategory,
     ResearchContext,
     SearchDecision,
+    SearxngSearchProvider,
     VerifiedWebResearchService,
     WebSearchResponse,
     WebSource,
@@ -20,6 +21,7 @@ from app.ai.web_research import (
     cache_key,
     decide_search,
     detect_prompt_injection,
+    parse_searxng_html,
     response_to_cache_payload,
     rewrite_query,
     stable_hash,
@@ -144,6 +146,118 @@ def test_provider_without_credentials_cannot_be_called() -> None:
     assert result.decision is SearchDecision.REQUIRED_SEARCH
     assert result.can_call_provider is False
     assert "web_search_provider_credentials_missing" in result.reasons
+
+
+# Gekuerzter Originalausschnitt der eigenen Instanz (16.08.2026, Abfrage "wetter berlin").
+SEARXNG_HTML_SAMPLE = """
+<div id="urls">
+<article class="result result-default category-general">
+<a href="https://www.wetter.com/wetter_aktuell/DE0001020.html" class="url_header" rel="noreferrer">
+<div class="url_wrapper"><span class="url_o1"><span class="url_i1">https://www.wetter.com/</span></span></div></a>
+<h3><a href="https://www.wetter.com/wetter_aktuell/DE0001020.html" rel="noreferrer">
+<span class="highlight">Wetter</span> <span class="highlight">Berlin</span>: 16 Tage Trend</a></h3>
+<p class="content"> In <span class="highlight">Berlin</span> sind am Morgen anhaltende Schauer zu erwarten
+bei Temperaturen von 17&deg;C. Gegen sp&auml;ter bilden sich vereinzelt Wolken bei H&ouml;chstwerten von 23&deg;C. </p>
+<div class="engines"><span>google</span></div>
+</article>
+<article class="result result-default category-general">
+<h3><a href="https://www.dwd.de/DE/wetter/wetterundklima_vorort/berlin/berlin_node.html" rel="noreferrer">
+Wetter und Klima - Deutscher Wetterdienst - Berlin</a></h3>
+<p class="content">Amtliche Vorhersage f&uuml;r Berlin und Brandenburg.</p>
+</article>
+</div>
+"""
+
+
+def test_searxng_html_parser_reads_results_without_json_format() -> None:
+    # Die eigene Instanz liefert /search?format=json mit 403 aus, solange "json" nicht in
+    # search.formats steht (live gemessen 16.08.2026). Der HTML-Weg muss dieselben Felder liefern.
+    items = parse_searxng_html(SEARXNG_HTML_SAMPLE, max_results=3)
+
+    assert len(items) == 2
+    assert items[0]["url"] == "https://www.wetter.com/wetter_aktuell/DE0001020.html"
+    assert items[0]["title"] == "Wetter Berlin: 16 Tage Trend"
+    assert "17°C" in items[0]["snippet"]
+    assert "<span" not in items[0]["snippet"]
+    assert items[1]["url"].startswith("https://www.dwd.de/")
+
+
+def test_searxng_html_parser_respects_max_results() -> None:
+    assert len(parse_searxng_html(SEARXNG_HTML_SAMPLE, max_results=1)) == 1
+
+
+@pytest.mark.asyncio
+async def test_searxng_provider_falls_back_to_html_on_403(monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    class FakeResponse:
+        def __init__(self, status_code: int, text: str = "") -> None:
+            self.status_code = status_code
+            self.text = text
+
+        def raise_for_status(self) -> None:
+            if self.status_code >= 400:
+                raise RuntimeError(f"unexpected status {self.status_code}")
+
+        def json(self) -> dict[str, object]:
+            raise ValueError("no json")
+
+    class FakeClient:
+        async def get(
+            self,
+            url: str,
+            *,
+            params: dict[str, object],
+            timeout: float | None = None,
+        ) -> FakeResponse:
+            calls.append(dict(params))
+            if params.get("format") == "json":
+                return FakeResponse(403)
+            return FakeResponse(200, SEARXNG_HTML_SAMPLE)
+
+    monkeypatch.setattr("app.ai.web_research.shared_client", FakeClient)
+    provider = SearxngSearchProvider("http://searxng.zeabur.internal:8080")
+
+    response = await provider.search("wetter berlin", category=QueryCategory.WEATHER, max_results=2)
+
+    assert [call.get("format") for call in calls] == ["json", None]
+    assert len(response.sources) == 2
+    assert response.sources[0].publisher == "www.wetter.com"
+    assert "17°C" in response.summary
+
+
+@pytest.mark.asyncio
+async def test_searxng_provider_prefers_json_when_available(monkeypatch) -> None:
+    calls: list[dict[str, object]] = []
+
+    class FakeResponse:
+        status_code = 200
+
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict[str, object]:
+            return {"results": [{"url": "https://example.com/a", "title": "A", "content": "snippet"}]}
+
+    class FakeClient:
+        async def get(
+            self,
+            url: str,
+            *,
+            params: dict[str, object],
+            timeout: float | None = None,
+        ) -> FakeResponse:
+            calls.append(dict(params))
+            return FakeResponse()
+
+    monkeypatch.setattr("app.ai.web_research.shared_client", FakeClient)
+    provider = SearxngSearchProvider("http://searxng.zeabur.internal:8080")
+
+    response = await provider.search("berlin", category=QueryCategory.NEWS)
+
+    # Nur ein Aufruf: der HTML-Umweg bleibt aus, wenn die Instanz JSON kann.
+    assert len(calls) == 1
+    assert response.sources[0].url == "https://example.com/a"
 
 
 def test_privacy_query_rewriter_removes_private_identifiers() -> None:
