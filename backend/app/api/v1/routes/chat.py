@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 from collections.abc import Awaitable
 from datetime import UTC, datetime
 from time import perf_counter
@@ -256,6 +257,20 @@ def _web_research_metadata(response: WebSearchResponse | None) -> dict[str, obje
     }
 
 
+# Die Oberflaeche stellt der Nutzerfrage einen Regieblock voran, z.B.
+# "[Voice language: German (de). Answer in German by default. …]" (src/lib/voiceLanguage.ts).
+# Fuer das Modell ist der noetig, fuer die Suchmaschine ist er Gift: die Anfrage bestand
+# zu 450 von 490 Zeichen aus Anweisungen, SearXNG fand dazu nichts und der Twin antwortete
+# weiter "das liegt nach meiner Zeit" (live gemessen 16.08.2026).
+INSTRUCTION_PREFIX_RE = re.compile(r"\A\s*(?:\[[^\]]*\]\s*)+", re.DOTALL)
+
+
+def question_for_research(message: str) -> str:
+    """Nur die echte Nutzerfrage - ohne vorangestellte Regieblocke der Oberflaeche."""
+    stripped = INSTRUCTION_PREFIX_RE.sub("", message).strip()
+    return stripped or message.strip()
+
+
 async def _research_for_chat(chat: dict[str, object], message: str) -> WebSearchResponse | None:
     twin_id = chat.get("twinId")
     context = ResearchContext(
@@ -265,7 +280,11 @@ async def _research_for_chat(chat: dict[str, object], message: str) -> WebSearch
         public_research_allowed=True,
     )
     try:
-        return await VerifiedWebResearchService().research(message, context=context, max_results=3)
+        return await VerifiedWebResearchService().research(
+            question_for_research(message),
+            context=context,
+            max_results=3,
+        )
     except Exception:
         return None
 
