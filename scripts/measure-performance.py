@@ -144,7 +144,26 @@ def measure_chat(rounds: int) -> dict[str, Samples]:
         except (urllib.error.URLError, TimeoutError, OSError, ValueError, KeyError) as exc:
             first_byte.fail(f"{type(exc).__name__}: {exc}")
 
-    return {"first_byte": first_byte, "first_delta": first_delta, "complete": complete}
+    # Entfernungsfeste Groesse: erstes Byte und erstes Fragment werden auf
+    # DERSELBEN Verbindung gemessen, die Wegstrecke steckt in beiden gleich
+    # drin und faellt in der Differenz heraus. Uebrig bleibt die Serverarbeit
+    # vor dem ersten Wort (Twin-Kontext, Recherche, Modell-Vorlauf).
+    #
+    # Ohne diese Zeile sind Laeufe nicht vergleichbar: GitHub verteilt die
+    # Runner ueber die USA, und ein Lauf aus San Francisco (50 km zum Backend)
+    # sieht neben einem aus Virginia (4000 km) wie ein Erfolg aus, ohne dass
+    # sich am Code etwas geaendert haette. Genau darauf waere ich am
+    # 16.08.2026 fast hereingefallen.
+    preparation = Samples("Chat: Serverarbeit bis zum ersten Wort")
+    for byte_at, delta_at in zip(first_byte.values, first_delta.values):
+        preparation.add(delta_at - byte_at)
+
+    return {
+        "first_byte": first_byte,
+        "first_delta": first_delta,
+        "complete": complete,
+        "preparation": preparation,
+    }
 
 
 def vantage_point() -> dict[str, str]:
@@ -174,6 +193,14 @@ def build_markdown(report: dict[str, object]) -> str:
         "",
         "Median aus mehreren Runden. Die Referenzzeile misst eine fremde Seite: "
         "ist die ebenfalls langsam, liegt es am Messpunkt und nicht an smyst.",
+        "",
+        "> **Laeufe nur eingeschraenkt vergleichbar.** GitHub verteilt die Runner "
+        "ueber die USA; ein Lauf nahe am Backend (Santa Clara) liefert bessere "
+        "Absolutwerte als einer von der Ostkueste, ohne dass sich am Code etwas "
+        "geaendert hat. Die Referenzzeile faengt das NICHT ab, weil sie ueber ein "
+        "CDN kommt. Fuer den Vergleich zweier Staende ist **\"Chat: Serverarbeit "
+        "bis zum ersten Wort\"** die belastbare Zeile — sie misst eine Differenz "
+        "auf derselben Verbindung, aus der die Wegstrecke herausfaellt.",
         "",
         "| Messung | Median | schnellste | langsamste | Runden |",
         "|---|---:|---:|---:|---:|",
@@ -234,7 +261,9 @@ def main() -> int:
 
     if not args.skip_chat:
         chat = measure_chat(args.chat_rounds)
-        checks.extend([chat["first_byte"], chat["first_delta"], chat["complete"]])
+        checks.extend(
+            [chat["first_byte"], chat["first_delta"], chat["complete"], chat["preparation"]]
+        )
 
     report = {
         "measured_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
