@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from app.ai.crisis_guard import CRISIS_MODE, ist_krise, krisen_antwort
 from app.ai.llm_router import LLMRouter, build_default_router
 from app.ai.models import LLMRequest
 from app.ai.twin_context import twin_context
@@ -367,10 +368,35 @@ async def start_chat(body: StartChatRequest) -> dict[str, object]:
     return {"chat": {"id": chat_id, "title": title, "twinId": body.twinId}}
 
 
+def _krisen_nachricht(chat: dict[str, object], message: str, language: str | None) -> dict[str, object]:
+    """Deterministische Krisenantwort: bauen, persistieren, zurueckgeben.
+
+    Greift VOR Recherche und LLM (ai/crisis_guard) — diese eine Antwort darf
+    von keinem Modell abhaengen. Der Austausch wird normal archiviert, damit
+    Verlauf und Folge-Nachrichten konsistent bleiben.
+    """
+    assistant_message: dict[str, object] = {
+        "id": str(uuid4()),
+        "role": "assistant",
+        "content": krisen_antwort(language),
+        "createdAt": _now_ms(),
+    }
+    _persist_exchange(chat, message, assistant_message, language=language)
+    return assistant_message
+
+
 @router.post("/messages")
 async def send_message(body: SendMessageRequest) -> dict[str, object]:
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
+    if ist_krise(message):
+        assistant_message = _krisen_nachricht(chat, message, body.language)
+        return {
+            "chatId": body.chatId,
+            "twinId": chat.get("twinId"),
+            "message": assistant_message,
+            "mode": CRISIS_MODE,
+        }
     # Beide Vorarbeiten machen Netz-I/O und haengen NICHT voneinander ab
     # (_research_for_chat braucht nur chat + message). Nacheinander addierten
     # sich ihre Laufzeiten vor jeder Antwort; parallel zaehlt nur die laengere.
@@ -470,12 +496,29 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
     """
     chat = await _ensure_chat(body.chatId)
     message = normalize_text(body.message, max_length=4000).value
-    llm_router = _chat_router()
-
-    started_at = perf_counter()
 
     def _sse(payload: dict[str, object]) -> str:
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+    if ist_krise(message):
+        # Krisenantwort auch im Stream-Pfad deterministisch: ein einzelnes
+        # done-Event im selben Format, kein LLM, keine Recherche.
+        assistant_message = _krisen_nachricht(chat, message, body.language)
+
+        async def krisen_quelle() -> AsyncIterator[str]:
+            yield _sse({
+                "done": True,
+                "chatId": body.chatId,
+                "twinId": chat.get("twinId"),
+                "message": assistant_message,
+                "mode": CRISIS_MODE,
+            })
+
+        return StreamingResponse(krisen_quelle(), media_type="text/event-stream")
+
+    llm_router = _chat_router()
+
+    started_at = perf_counter()
 
     async def event_source() -> AsyncIterator[str]:
         # Vorarbeit bewusst IM Generator: solange sie in der Handler-Funktion
