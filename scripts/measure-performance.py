@@ -99,6 +99,13 @@ def measure_chat(rounds: int) -> dict[str, Samples]:
     first_byte = Samples("Chat: erstes Byte")
     first_delta = Samples("Chat: erstes Textfragment")
     complete = Samples("Chat: komplette Antwort")
+    # Serverseitige Aufschluesselung aus dem done-Event. Sie sagt, WOHIN die
+    # Zeit vor dem ersten Wort geht — von aussen war nur die Summe sichtbar.
+    server = {
+        "twinContextMs": Samples("  davon Twin-Kontext (Server)"),
+        "webResearchMs": Samples("  davon Web-Recherche (Server)"),
+        "modelFirstTokenMs": Samples("  davon Modell bis 1. Token (Server)"),
+    }
     headers = {"Content-Type": "application/json", "X-Smyst-CSRF": "1"}
 
     for index in range(rounds):
@@ -137,6 +144,11 @@ def measure_chat(rounds: int) -> dict[str, Samples]:
                         seen_first_delta = True
                     if event.get("done"):
                         complete.add((time.perf_counter() - started) * 1000)
+                        reported = event.get("timings") or {}
+                        for key, samples in server.items():
+                            value = reported.get(key)
+                            if isinstance(value, (int, float)):
+                                samples.add(float(value))
                         break
                     if event.get("error"):
                         first_delta.fail("Stream meldete einen Fehler")
@@ -163,6 +175,7 @@ def measure_chat(rounds: int) -> dict[str, Samples]:
         "first_delta": first_delta,
         "complete": complete,
         "preparation": preparation,
+        **server,
     }
 
 
@@ -262,7 +275,15 @@ def main() -> int:
     if not args.skip_chat:
         chat = measure_chat(args.chat_rounds)
         checks.extend(
-            [chat["first_byte"], chat["first_delta"], chat["complete"], chat["preparation"]]
+            [
+                chat["first_byte"],
+                chat["first_delta"],
+                chat["complete"],
+                chat["preparation"],
+                chat["twinContextMs"],
+                chat["webResearchMs"],
+                chat["modelFirstTokenMs"],
+            ]
         )
 
     report = {
