@@ -54,6 +54,26 @@ PAGE_SIZE = 125
 # bei ~1000 Dubletten je Lauf, waehrend die QA 250 verarbeiten koennte).
 CATEGORIES_PER_RUN = 4
 
+# Mindest-Bekanntheit der besten Person einer Seite. Die SPARQL-Liste ist nach
+# Sitelinks absteigend sortiert; sinkt schon der Spitzenwert einer Seite unter
+# diese Schwelle, ist die Kategorie beim aktuellen Qualitaetsanspruch
+# abgegrast — weiter unten fehlen Bilder und Quellen, und die QA laesst die
+# Kandidaten durchfallen.
+#
+# WARUM ES DIESE BREMSE BRAUCHT (teuer gelernt 14./15.08.2026): Der Cursor ist
+# PERSISTENTER Zustand. Er wanderte Lauf fuer Lauf tiefer, bis die Ausbeute von
+# ~200 auf 1-4 publizierte Profile je Lauf fiel. Sichtbar war das an den
+# Dubletten: frueher ~1000 pro Lauf (bekanntes Gebiet), zuletzt 177-461 (die
+# Pipeline war im Niemandsland). Ein Zurueckdrehen der Stufen-Limits half
+# NICHT — Konfiguration rollt keinen gespeicherten Cursor zurueck. Deshalb
+# setzt die Bremse den Cursor selbst zurueck.
+MIN_PAGE_SITELINKS = 12
+
+# Harte Obergrenze der Cursor-Tiefe als Rueckfallebene, falls die Sitelink-
+# Bremse einmal nicht greift (z.B. Kategorie mit vielen gut verlinkten, aber
+# bildlosen Personen). 40 Seiten a 125 = 5000 Eintraege je Kategorie.
+MAX_CURSOR_PAGE = 40
+
 
 def fetch_bindings(
     query: str, *, timeout_seconds: float = 60.0, sleep=None
@@ -169,6 +189,13 @@ def run_ingest(
             "skipped_duplicates": [],
         }
         for page in range(start_page, start_page + MAX_PAGES_PER_CATEGORY):
+            if page >= MAX_CURSOR_PAGE:
+                # Tiefendeckel: zurueck an den Anfang. Dort stehen inzwischen
+                # neu erfasste Wikidata-Eintraege, und Bekanntes kostet dank
+                # Dedup fast nichts.
+                next_start = 0
+                cat_report["stop_reason"] = f"Tiefendeckel (Seite {page} >= {MAX_CURSOR_PAGE})"
+                break
             query = build_sparql_query(
                 category=category,
                 config=config,
@@ -186,6 +213,22 @@ def run_ingest(
                 break
             rows = payload.get("results", {}).get("bindings", [])
             parsed = parse_sparql_bindings(payload, category=category)
+
+            # Bekanntheits-Bremse: die Liste ist nach Sitelinks absteigend
+            # sortiert. Liegt schon die BESTE Person dieser Seite unter der
+            # Schwelle, wird es weiter unten nur schlechter — Cursor zurueck
+            # auf Anfang und naechste Kategorie. Die Kandidaten dieser Seite
+            # werden bewusst NICHT aufgenommen: sie wuerden nur die QA-Queue
+            # fuellen und dort durchfallen.
+            best_sitelinks = max((c.sitelink_count for c in parsed), default=0)
+            if parsed and best_sitelinks < MIN_PAGE_SITELINKS:
+                next_start = 0
+                cat_report["stop_reason"] = (
+                    f"Bekanntheit erschoepft (beste Seite {best_sitelinks} "
+                    f"< {MIN_PAGE_SITELINKS} Sitelinks)"
+                )
+                break
+
             result = screen_candidates(
                 parsed,
                 existing_qids=known,
@@ -226,7 +269,9 @@ def run_ingest(
             next_start = page + 1
         cursor[category] = next_start
         cat_report["next_page"] = next_start
-        if cat_report["pages"]:
+        # Auch ohne gelesene Seite berichten, wenn eine Bremse gegriffen hat —
+        # sonst bliebe genau der Fall unsichtbar, der die Ausbeute erklaert.
+        if cat_report["pages"] or cat_report.get("stop_reason"):
             report["categories"][category] = cat_report
 
     report["finished_at"] = datetime.now(timezone.utc).isoformat()

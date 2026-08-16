@@ -533,3 +533,89 @@ def test_seitengroesse_ist_unabhaengig_von_der_tagesquote(monkeypatch) -> None:
         )
 
     assert set(seen) == {worker.PAGE_SIZE}
+
+
+# --- Bekanntheits-Bremse und Tiefendeckel (Vorfall 14./15.08.2026) ---
+
+def test_unbekannte_seite_setzt_cursor_zurueck(monkeypatch) -> None:
+    # Die Liste ist nach Sitelinks absteigend sortiert. Ist schon die BESTE
+    # Person einer Seite zu unbekannt, wird es weiter unten nur schlechter:
+    # Cursor zurueck auf Anfang, statt immer tiefer ins Niemandsland zu
+    # blaettern (dort fehlen Bilder/Quellen -> QA laesst alles durchfallen).
+    from app.workers.ingest_candidates import MIN_PAGE_SITELINKS
+
+    zu_unbekannt = payload(
+        binding("Q900", "Kaum Bekannt", "1900-01-01T00:00:00Z", MIN_PAGE_SITELINKS - 1),
+        binding("Q901", "Noch Unbekannter", "1900-01-01T00:00:00Z", 3),
+    )
+    worker, calls = _paged_fetch(monkeypatch, {0: zu_unbekannt})
+    store = CandidateStore(FakeS3(), "smyst-memories")
+
+    report = worker.run_ingest(
+        categories=["Musik"],
+        config=PipelineConfig(enabled=True, daily_candidate_limit=250, min_sitelinks=10),
+        store=store, dry_run=False, run_date=date(2026, 8, 15),
+    )
+
+    assert report["totals"]["accepted"] == 0          # nichts aufgenommen
+    assert calls == [0]                                # keine weitere Seite geholt
+    assert store.load_ingest_cursor()["Musik"] == 0    # Cursor zurueckgesetzt
+    assert "Bekanntheit erschoepft" in report["categories"]["Musik"]["stop_reason"]
+
+
+def test_bekannte_seite_laeuft_normal_weiter(monkeypatch) -> None:
+    # Gegenprobe: liegt die beste Person ueber der Schwelle, bremst nichts.
+    from app.workers.ingest_candidates import MIN_PAGE_SITELINKS
+
+    gut = payload(
+        binding("Q910", "Bekannt", "1900-01-01T00:00:00Z", MIN_PAGE_SITELINKS + 40),
+        binding("Q911", "Auch Bekannt", "1900-01-01T00:00:00Z", MIN_PAGE_SITELINKS),
+    )
+    worker, _calls = _paged_fetch(monkeypatch, {0: gut})
+    store = CandidateStore(FakeS3(), "smyst-memories")
+
+    report = worker.run_ingest(
+        categories=["Musik"],
+        config=PipelineConfig(enabled=True, daily_candidate_limit=250, min_sitelinks=10),
+        store=store, dry_run=False, run_date=date(2026, 8, 15),
+    )
+
+    assert report["totals"]["accepted"] == 2
+    assert "stop_reason" not in report["categories"]["Musik"]
+
+
+def test_zu_tiefer_cursor_wird_ohne_abfrage_zurueckgesetzt(monkeypatch) -> None:
+    # Selbstheilung fuer bereits abgedriftete Cursor: der Deckel greift, BEVOR
+    # eine Anfrage rausgeht — der Vorfall 15.08. hinterliess Cursor tief im
+    # Niemandsland, und eine Limit-Aenderung rollt die nicht zurueck.
+    from app.workers.ingest_candidates import MAX_CURSOR_PAGE
+
+    worker, calls = _paged_fetch(monkeypatch, {})
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    store.save_ingest_cursor({"Musik": MAX_CURSOR_PAGE + 5})
+
+    report = worker.run_ingest(
+        categories=["Musik"],
+        config=PipelineConfig(enabled=True, daily_candidate_limit=250, min_sitelinks=10),
+        store=store, dry_run=False, run_date=date(2026, 8, 15),
+    )
+
+    assert calls == []                                 # keine einzige WDQS-Anfrage
+    assert store.load_ingest_cursor()["Musik"] == 0    # zurueck an den Anfang
+    assert "Tiefendeckel" in report["categories"]["Musik"]["stop_reason"]
+
+
+def test_leere_seite_loest_die_bremse_nicht_aus(monkeypatch) -> None:
+    # Eine leere Antwort heisst "Kategorie zu Ende", nicht "zu unbekannt" —
+    # die bestehende Erschoepfungs-Logik muss weiter greifen.
+    worker, _calls = _paged_fetch(monkeypatch, {})
+    store = CandidateStore(FakeS3(), "smyst-memories")
+
+    report = worker.run_ingest(
+        categories=["Musik"],
+        config=PipelineConfig(enabled=True, daily_candidate_limit=250, min_sitelinks=10),
+        store=store, dry_run=False, run_date=date(2026, 8, 15),
+    )
+
+    assert report["categories"]["Musik"].get("stop_reason") is None
+    assert store.load_ingest_cursor()["Musik"] == 0
