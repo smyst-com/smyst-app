@@ -469,25 +469,27 @@ function VoiceWaveStatus({
   // der Text landet nur im Eingabefeld (Nutzer-Befund 29.07.).
   mode?: 'live' | 'dictation'
 }) {
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const vw = useStaticTranslations(lang).voiceWave
   if (state === 'idle' && !isSpeaking) return null
 
   const dictating = mode === 'dictation' && !isSpeaking
   const label = isSpeaking
-    ? 'Twin spricht laut'
+    ? (lang === DEFAULT_LANG ? 'Twin spricht laut' : vw.speaking)
     : state === 'listening'
-      ? (dictating ? 'Diktat hört zu' : 'Sprachwelle hört zu')
+      ? (dictating ? (lang === DEFAULT_LANG ? 'Diktat hört zu' : vw.listenDictation) : (lang === DEFAULT_LANG ? 'Sprachwelle hört zu' : vw.listenWave))
       : state === 'paused'
-        ? 'Sprachwelle pausiert'
-        : 'Antwort wird vorbereitet'
+        ? (lang === DEFAULT_LANG ? 'Sprachwelle pausiert' : vw.paused)
+        : (lang === DEFAULT_LANG ? 'Antwort wird vorbereitet' : vw.preparing)
   const detail = isSpeaking
-    ? 'Laut vorlesen aktiv'
+    ? (lang === DEFAULT_LANG ? 'Laut vorlesen aktiv' : vw.detailSpeaking)
     : state === 'listening'
       ? (dictating
-          ? 'Sprich deinen Text – er erscheint im Eingabefeld. Zum Stoppen Mikrofon erneut tippen.'
-          : 'Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.')
+          ? (lang === DEFAULT_LANG ? 'Sprich deinen Text – er erscheint im Eingabefeld. Zum Stoppen Mikrofon erneut tippen.' : vw.detailDictation)
+          : (lang === DEFAULT_LANG ? 'Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.' : vw.detailWave))
       : state === 'paused'
-        ? 'Tippe die Welle erneut, um weiterzusprechen.'
-        : 'Der Twin antwortet gleich und liest danach laut vor.'
+        ? (lang === DEFAULT_LANG ? 'Tippe die Welle erneut, um weiterzusprechen.' : vw.detailPaused)
+        : (lang === DEFAULT_LANG ? 'Der Twin antwortet gleich und liest danach laut vor.' : vw.detailPreparing)
 
   return (
     <div className={`smyst-voice-wave smyst-voice-wave-${variant}`} data-voice-state={isSpeaking ? 'speaking' : state}>
