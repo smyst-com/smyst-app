@@ -135,7 +135,15 @@ class Settings(BaseSettings):
     # Standardsatz (google, duckduckgo, brave, startpage, ...) - und der liefert von
     # einer Rechenzentrums-IP nichts: am 16.08.2026 aus dem Zeabur-Container gemessen
     # lieferten google/duckduckgo/brave/mojeek/startpage je 0 Treffer, bing 10.
-    searxng_engines: str = Field(default="bing,wikipedia", validation_alias="SEARXNG_ENGINES")
+    searxng_engines: str = Field(
+        default="google,duckduckgo,bing,wikipedia",
+        validation_alias="SEARXNG_ENGINES",
+    )
+    # Sprache der Suchanfrage. "all" (frueherer Festwert) liefert Unsinn: am 16.08.2026
+    # gemessen kamen auf "heute wichtigsten Nachrichten Deutschland news" Microsoft-Support
+    # und Ferienhaeuser zurueck; mit "de" lieferten Google und DuckDuckGo sofort
+    # tagesschau.de, n-tv.de und t-online.de.
+    searxng_language: str = Field(default="de", validation_alias="SEARXNG_LANGUAGE")
     web_research_budget_per_user_day: int = Field(
         default=20,
         validation_alias="WEB_RESEARCH_BUDGET_PER_USER_DAY",
