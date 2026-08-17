@@ -37,6 +37,23 @@ RETRY_BACKOFF_SECONDS = 0.15
 RATE_LIMIT_BACKOFF_SECONDS = 1.0
 
 
+def _provider_error_detail(response: "httpx.Response") -> str:
+    """Klartext-Grund des Anbieters, gekuerzt und ohne Zugangsdaten.
+
+    Ohne diese Zeile steht im Log nur "403 Forbidden" — und ein 403 kann alles
+    heissen: gesperrter Schluessel, Konto markiert, Modell nicht freigegeben.
+    Am 16./17.08.2026 hat genau diese fehlende Information zwei Fehldiagnosen
+    verursacht und den Live-Chat laenger als noetig auf dem Notfall-Provider
+    gelassen. Der Antwort-Body von OpenRouter & Co. nennt den Grund; er enthaelt
+    die Anfrage nicht und damit auch keinen Schluessel.
+    """
+    try:
+        text = (response.text or "").strip().replace("\n", " ")
+    except Exception:  # pragma: no cover - Body nicht lesbar (Stream bereits zu)
+        return "<Body nicht lesbar>"
+    return text[:400] if text else "<leerer Body>"
+
+
 class LLMProvider(ABC):
     name: str
     model: str
@@ -172,6 +189,16 @@ class OpenAICompatibleProvider(LLMProvider):
             json=payload,
             timeout=self.timeout,
         ) as response:
+            if response.status_code >= 400:
+                # Beim Streamen ist der Body noch nicht gelesen — ohne aread()
+                # waere die Fehlermeldung des Anbieters leer.
+                await response.aread()
+                logger.warning(
+                    "llm provider '%s' rejected stream with HTTP %s: %s",
+                    self.name,
+                    response.status_code,
+                    _provider_error_detail(response),
+                )
             response.raise_for_status()
             async for line in response.aiter_lines():
                 if not line.startswith("data:"):
@@ -213,9 +240,18 @@ class OpenAICompatibleProvider(LLMProvider):
             except httpx.HTTPStatusError as exc:
                 status = exc.response.status_code
                 if status in NO_RETRY_STATUSES or attempt == 1:
+                    logger.warning(
+                        "llm provider '%s' rejected with HTTP %s: %s",
+                        self.name,
+                        status,
+                        _provider_error_detail(exc.response),
+                    )
                     raise
                 logger.warning(
-                    "llm provider '%s' got HTTP %s, retrying once", self.name, status
+                    "llm provider '%s' got HTTP %s (%s), retrying once",
+                    self.name,
+                    status,
+                    _provider_error_detail(exc.response),
                 )
                 await asyncio.sleep(
                     RATE_LIMIT_BACKOFF_SECONDS if status == 429 else RETRY_BACKOFF_SECONDS
