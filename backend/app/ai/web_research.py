@@ -547,9 +547,18 @@ def parse_searxng_html(html: str, *, max_results: int = 3) -> list[dict[str, Any
 class SearxngSearchProvider:
     name = "searxng"
 
-    def __init__(self, base_url: str, *, timeout: float = 8.0, engines: str | None = None) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        *,
+        timeout: float = 8.0,
+        engines: str | None = None,
+        language: str = "de",
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        # "all" war ein Festwert und lieferte Unsinn (Microsoft-Support, Ferienhaeuser).
+        self.language = (language or "de").strip() or "de"
         # Ohne feste Auswahl nimmt SearXNG seinen Standardsatz - der liefert von einer
         # Rechenzentrums-IP nichts (16.08.2026 gemessen: google/duckduckgo/brave/mojeek/
         # startpage je 0 Treffer, bing 10). Leerer Wert = SearXNG entscheidet selbst.
@@ -578,7 +587,7 @@ class SearxngSearchProvider:
         )
 
     async def _fetch_items(self, query: str, *, max_results: int) -> list[dict[str, Any]]:
-        params: dict[str, Any] = {"q": query, "language": "all", "safesearch": 2}
+        params: dict[str, Any] = {"q": query, "language": self.language, "safesearch": 2}
         if self.engines:
             params["engines"] = self.engines
         response = await shared_client().get(
@@ -704,6 +713,7 @@ def build_web_search_provider(active_settings: Settings | None = None) -> WebSea
         return SearxngSearchProvider(
             active_settings.searxng_base_url,
             engines=active_settings.searxng_engines,
+            language=active_settings.searxng_language,
         )
     if provider == "openai" and active_settings.openai_api_key:
         return OpenAIWebSearchProvider(
