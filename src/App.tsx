@@ -758,7 +758,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
-              aria-label="Menü öffnen"
+              aria-label={appLang === DEFAULT_LANG ? "Menü öffnen" : ft.menuA11y.open}
               aria-expanded={mobileNavOpen}
               className="inline-flex h-11 w-11 items-center justify-center border border-white/[0.1] bg-white/[0.04] text-white backdrop-blur-md transition hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
             >
@@ -2636,7 +2636,7 @@ function SmystStartPage({
         ref={menuRef}
         role={menuOpen ? 'dialog' : undefined}
         aria-modal={menuOpen ? 'true' : undefined}
-        aria-label="Startmenü"
+        aria-label={lang === DEFAULT_LANG ? "Startmenü" : t.menuA11y.startMenu}
         aria-hidden={!menuOpen}
         style={{ left: menuOpen ? 0 : '-100%', transform: 'none' }}
         className={`smyst-glass-panel fixed inset-y-0 z-50 flex w-[90vw] max-w-[390px] flex-col border-r border-white/10 shadow-2xl ${
@@ -2654,7 +2654,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => setMenuOpen(false)}
-              aria-label="Menü schließen"
+              aria-label={lang === DEFAULT_LANG ? "Menü schließen" : t.menuA11y.close}
               className="grid h-11 w-11 place-items-center rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2771,7 +2771,7 @@ function SmystStartPage({
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Startmenü Navigation">
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label={lang === DEFAULT_LANG ? "Startmenü Navigation" : t.menuA11y.startMenuNav}>
           <div className="mb-4 grid gap-2 px-2">
             <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilbereich' : t.drawer.sectionTitle}</p>
             {profileControlCards.map(([title, text]) => (
@@ -2915,7 +2915,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              aria-label="Menü öffnen"
+              aria-label={lang === DEFAULT_LANG ? "Menü öffnen" : t.menuA11y.open}
               aria-expanded={menuOpen}
               className="absolute left-0 top-0 grid h-11 w-11 shrink-0 place-items-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
             >
@@ -2973,7 +2973,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              aria-label="Menü öffnen"
+              aria-label={lang === DEFAULT_LANG ? "Menü öffnen" : t.menuA11y.open}
               aria-expanded={menuOpen}
               className="absolute left-4 top-4 grid h-11 w-11 shrink-0 place-items-center text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:left-8 sm:h-14 sm:w-14"
             >
