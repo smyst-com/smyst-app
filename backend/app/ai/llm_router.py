@@ -13,7 +13,6 @@ import httpx
 
 from app.ai.degraded_messages import degraded_fallback_message
 from app.ai.github_oidc import ActionsIdTokenSource
-from app.core.http_client import shared_client
 from app.ai.models import LLMRequest, LLMResponse
 from app.ai.provider_catalog import (
     DEFAULT_PROVIDER_ORDER,
@@ -22,6 +21,7 @@ from app.ai.provider_catalog import (
     STALE_MODEL_ALIASES,
 )
 from app.core.config import Settings, get_settings
+from app.core.http_client import shared_client
 
 logger = logging.getLogger("smyst.ai.llm_router")
 
@@ -542,6 +542,33 @@ def provider_statuses(settings: Settings | None = None) -> list[dict[str, object
     return statuses
 
 
+def build_openrouter_provider(
+    settings: Settings, model: str, *, timeout: float | None = None
+) -> OpenAICompatibleProvider:
+    """Baut den OpenRouter-Provider — IMMER ueber diese Funktion.
+
+    OpenRouter verlangt fuer dieses Konto die Attributions-Header HTTP-Referer
+    und X-Title. Ohne sie antwortet es mit **403 Forbidden**, was wie ein
+    ungueltiger Schluessel aussieht und auch so fehlgedeutet wurde
+    (16./17.08.2026, zweimal: einmal im CI-Vergleich, einmal im CI-Gateway).
+    Wer den Provider von Hand zusammensetzt, vergisst die Header — deshalb gibt
+    es nur noch diesen einen Weg.
+    """
+    config = PROVIDER_CONFIGS["openrouter"]
+    api_key = getattr(settings, config.api_key_attr, None) or ""
+    return OpenAICompatibleProvider(
+        config.name,
+        config.base_url,
+        api_key,
+        model,
+        timeout=timeout if timeout is not None else settings.llm_provider_timeout_seconds,
+        extra_headers={
+            "HTTP-Referer": settings.public_base_url,
+            "X-Title": settings.app_name,
+        },
+    )
+
+
 def build_default_router(settings: Settings | None = None) -> LLMRouter:
     active_settings = settings or get_settings()
     model_overrides = {
@@ -584,17 +611,7 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
             )
         elif provider_name == "openrouter":
             providers.append(
-                OpenAICompatibleProvider(
-                    config.name,
-                    config.base_url,
-                    api_key,
-                    model,
-                    timeout=timeout,
-                    extra_headers={
-                        "HTTP-Referer": active_settings.public_base_url,
-                        "X-Title": active_settings.app_name,
-                    },
-                )
+                build_openrouter_provider(active_settings, model, timeout=timeout)
             )
         else:
             providers.append(

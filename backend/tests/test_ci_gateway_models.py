@@ -60,3 +60,18 @@ def test_allowlist_tolerates_spaces() -> None:
         "openai/gpt-4o-mini", _settings(allowed=" openai/gpt-4o , openai/gpt-4o-mini ")
     )
     assert provider is not None
+
+
+def test_pinned_provider_sets_the_attribution_headers() -> None:
+    """OpenRouter antwortet ohne HTTP-Referer/X-Title mit 403.
+
+    Das sah zweimal nach einem ungueltigen Schluessel aus (17.08.2026) und
+    kostete einen Umweg ueber das Gateway, der gar nicht noetig gewesen waere.
+    Wer den Provider von Hand zusammensetzt, vergisst die Header — dieser Test
+    haelt fest, dass es nicht wieder passiert.
+    """
+    provider = _pinned_provider("openai/gpt-4o-mini", _settings(allowed="openai/gpt-4o-mini"))
+
+    assert provider is not None
+    assert provider.extra_headers.get("HTTP-Referer")
+    assert provider.extra_headers.get("X-Title")
