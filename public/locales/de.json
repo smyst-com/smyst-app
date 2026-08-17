@@ -1,6 +1,7 @@
 {
   "locale": "de",
   "dir": "ltr",
+  "menuA11y": {"open":"Menü öffnen","close":"Menü schließen","startMenu":"Startmenü","startMenuNav":"Startmenü Navigation"},
   "voiceWave": { "speaking": "Twin spricht laut", "listenDictation": "Diktat hört zu", "listenWave": "Sprachwelle hört zu", "paused": "Sprachwelle pausiert", "preparing": "Antwort wird vorbereitet", "detailSpeaking": "Laut vorlesen aktiv", "detailDictation": "Sprich deinen Text – er erscheint im Eingabefeld. Zum Stoppen Mikrofon erneut tippen.", "detailWave": "Sprich weiter. Nach kurzer Ruhe wird automatisch gesendet.", "detailPaused": "Tippe die Welle erneut, um weiterzusprechen.", "detailPreparing": "Der Twin antwortet gleich und liest danach laut vor." },
   "upload": { "storagePaused": "Upload-Speichern ist gerade wegen eines temporären Speicherlimits pausiert. Bitte versuche es später erneut.", "emptyFile": "Datei ist leer.", "tooLarge": "Datei ist fuer diese Kategorie zu gross.", "wrongType": "Dateityp passt nicht zur gewählten Kategorie.", "aborted": "Upload abgebrochen." },
   "langSw": { "ariaCurrent": "Sprache wechseln, aktuell:", "searchLabel": "Sprache suchen", "searchPlaceholder": "Suche … (z. B. español, türkçe, japan)" },

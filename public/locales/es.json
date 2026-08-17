@@ -1,6 +1,7 @@
 {
   "locale": "es",
   "dir": "ltr",
+  "menuA11y": {"open":"Abrir menú","close":"Cerrar menú","startMenu":"Menú de inicio","startMenuNav":"Navegación del menú de inicio"},
   "voiceWave": { "speaking": "El gemelo está hablando", "listenDictation": "El dictado está escuchando", "listenWave": "La onda de voz está escuchando", "paused": "Onda de voz en pausa", "preparing": "Preparando la respuesta", "detailSpeaking": "Lectura en voz alta activa", "detailDictation": "Habla tu texto: aparecerá en el campo de entrada. Toca el micrófono de nuevo para detenerlo.", "detailWave": "Sigue hablando. Tras una breve pausa se envía automáticamente.", "detailPaused": "Toca la onda de nuevo para seguir hablando.", "detailPreparing": "El gemelo responderá enseguida y luego lo leerá en voz alta." },
   "upload": { "storagePaused": "El guardado de subidas está pausado temporalmente por un límite de almacenamiento. Inténtalo de nuevo más tarde.", "emptyFile": "El archivo está vacío.", "tooLarge": "El archivo es demasiado grande para esta categoría.", "wrongType": "El tipo de archivo no coincide con la categoría elegida.", "aborted": "Subida cancelada." },
   "langSw": { "ariaCurrent": "Cambiar idioma, actual:", "searchLabel": "Buscar idioma", "searchPlaceholder": "Buscar … (p. ej. español, türkçe, japan)" },
