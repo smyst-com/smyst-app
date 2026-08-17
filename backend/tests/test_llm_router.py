@@ -26,7 +26,10 @@ class FakeResponse:
     def raise_for_status(self) -> None:
         if self.status_code >= 400:
             request = httpx.Request("POST", "https://example.test/chat/completions")
-            response = httpx.Response(self.status_code, request=request)
+            # MIT Body: echte Anbieter legen den Grund der Ablehnung dort ab,
+            # und der Router liest ihn fuers Log aus. Eine Attrappe ohne Body
+            # wuerde diese Auswertung stillschweigend ungeprueft lassen.
+            response = httpx.Response(self.status_code, request=request, json=self.payload)
             raise httpx.HTTPStatusError("failed", request=request, response=response)
 
     def json(self) -> dict:
@@ -419,3 +422,26 @@ def test_payment_required_diagnostics_are_explicit() -> None:
 
     assert diagnostics["status_code"] == 402
     assert diagnostics["category"] == "payment_required"
+
+
+@pytest.mark.asyncio
+async def test_rejection_logs_the_providers_own_reason(monkeypatch, caplog) -> None:
+    """Ein nacktes "403 Forbidden" sagt nicht, WARUM.
+
+    Am 16./17.08.2026 kostete genau diese fehlende Zeile zwei Fehldiagnosen
+    (angeblich ungueltiger Schluessel, angeblich fehlende Header), waehrend der
+    Live-Chat auf dem Notfall-Provider stand.
+    """
+    fake = use_fake_client(monkeypatch)
+    fake.responses = [
+        FakeResponse({"error": {"message": "Key limit exceeded"}}, status_code=403)
+    ]
+    provider = OpenAICompatibleProvider(
+        "test", "https://llm.example/v1", "key", "test-model"
+    )
+
+    with caplog.at_level("WARNING"):
+        with pytest.raises(httpx.HTTPStatusError):
+            await provider.complete(LLMRequest(prompt="hi", system_prompt="s"))
+
+    assert any("Key limit exceeded" in record.getMessage() for record in caplog.records)
