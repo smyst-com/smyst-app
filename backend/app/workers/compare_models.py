@@ -35,7 +35,7 @@ from time import perf_counter
 from typing import Any
 
 from app.ai.github_oidc import ActionsIdTokenSource
-from app.ai.llm_router import OpenAICompatibleProvider, SmystGatewayProvider
+from app.ai.llm_router import SmystGatewayProvider, build_openrouter_provider
 from app.core.config import get_settings
 from app.workers.qa_candidates import build_chat_fn
 from app.workers.run_model_eval import (
@@ -258,12 +258,14 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
             # dessen Allowlist stehen (CI_GATEWAY_ALLOWED_MODELS).
             provider.model = model
         else:
-            provider = OpenAICompatibleProvider(
-                name=model,
-                base_url=OPENROUTER_BASE,
-                api_key=api_key,
-                model=model,
+            # Gemeinsamer Helfer statt Handarbeit: er setzt die
+            # Attributions-Header, ohne die OpenRouter 403 liefert — genau
+            # daran scheiterte der erste Vergleichslauf, und ich hielt es
+            # faelschlich fuer einen ungueltigen Schluessel.
+            provider = build_openrouter_provider(
+                get_settings().model_copy(update={"openrouter_api_key": api_key}), model
             )
+            provider.name = model
         latencies: list[float] = []
         try:
             rows = run_eval(

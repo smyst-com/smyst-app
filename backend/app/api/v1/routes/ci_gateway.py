@@ -116,21 +116,15 @@ def _pinned_provider(requested: Any, settings: Settings) -> Any | JSONResponse |
     if model not in settings.ci_gateway_allowed_models:
         return None
 
-    from app.ai.llm_router import OpenAICompatibleProvider
+    from app.ai.llm_router import build_openrouter_provider
     from app.ai.provider_catalog import PROVIDER_CONFIGS
 
-    config = PROVIDER_CONFIGS["openrouter"]
-    api_key = getattr(settings, config.api_key_attr, None)
-    if not api_key:
+    if not getattr(settings, PROVIDER_CONFIGS["openrouter"].api_key_attr, None):
         return _error(503, "model_unavailable", "Kein Schluessel fuer das angeforderte Modell.")
     logger.info("ci gateway pinned to requested model %s", model)
-    return OpenAICompatibleProvider(
-        name="openrouter",
-        base_url=config.base_url,
-        api_key=api_key,
-        model=model,
-        timeout=settings.llm_provider_timeout_seconds,
-    )
+    # Ueber den gemeinsamen Helfer: er setzt die Attributions-Header, ohne die
+    # OpenRouter mit 403 antwortet (siehe build_openrouter_provider).
+    return build_openrouter_provider(settings, model)
 
 
 @router.post("/chat/completions")
