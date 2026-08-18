@@ -2945,8 +2945,8 @@ function SmystStartPage({
                   onOpenProfile(selectedTwin.profileSlug)
                 }}
                 disabled={!selectedTwin.profileSlug}
-                aria-label={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
-                title={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
+                aria-label={selectedTwin.profileSlug ? (lang === DEFAULT_LANG ? `Profil von ${selectedTwin.name} öffnen` : t.chatA11y.openProfile.replace('{name}', selectedTwin.name)) : undefined}
+                title={selectedTwin.profileSlug ? (lang === DEFAULT_LANG ? `Profil von ${selectedTwin.name} öffnen` : t.chatA11y.openProfile.replace('{name}', selectedTwin.name)) : undefined}
                 className="group grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86] transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 enabled:cursor-pointer enabled:hover:opacity-80 disabled:cursor-default"
               >
                 {selectedTwin.imageUrl ? (
@@ -3219,16 +3219,16 @@ function SmystStartPage({
           <div className={`border-b ${composerLine} px-2 py-1 text-xs font-semibold text-[#d5dbe5] sm:px-3`}>
             {composerMenuOpen && (
               <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Foto oder Video hinzufügen" title="Foto oder Video hinzufügen">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto} title={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto}>
                   <ImageIcon className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Kamera öffnen" title="Kamera öffnen">
+                <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera} title={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera}>
                   <CameraIcon className="h-4 w-4" />
                 </button>
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Dateien" title="Dateien">
                   <FileIcon className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Audio hinzufügen" title="Audio hinzufügen">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio} title={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio}>
                   <Mic className="h-4 w-4" />
                 </button>
                 <button type="button" onClick={handleAttachLink} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Link" title="Link">
@@ -9040,16 +9040,16 @@ function TwinChatView({
               <div className="mb-1 rounded-[10px] border border-white/20 bg-white/14 px-2 py-1 text-xs font-semibold text-[#555b64]">
                 {composerMenuOpen && (
                   <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Foto oder Video hinzufügen" title="Foto oder Video hinzufügen">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto} title={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto}>
                       <ImageIcon className="h-4 w-4" />
                     </button>
-                    <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Kamera öffnen" title="Kamera öffnen">
+                    <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera} title={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera}>
                       <CameraIcon className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Dateien" title="Dateien">
                       <FileIcon className="h-4 w-4" />
                     </button>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Audio hinzufügen" title="Audio hinzufügen">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio} title={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio}>
                       <Mic className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={handleAttachLink} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Link" title="Link">

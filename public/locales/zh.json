@@ -2,6 +2,7 @@
   "locale": "zh",
   "dir": "ltr",
   "menuA11y": {"open":"打开菜单","close":"关闭菜单","startMenu":"开始菜单","startMenuNav":"开始菜单导航"},
+  "chatA11y": {"openProfile":"打开 {name} 的资料","addPhoto":"添加照片或视频","openCamera":"打开相机","addAudio":"添加音频"},
   "voiceWave": { "speaking": "分身正在朗读", "listenDictation": "听写正在聆听", "listenWave": "语音波正在聆听", "paused": "语音波已暂停", "preparing": "正在准备回答", "detailSpeaking": "朗读已启用", "detailDictation": "请说出你的文字——内容会显示在输入框中。再次点按麦克风即可停止。", "detailWave": "请继续说。短暂停顿后会自动发送。", "detailPaused": "再次点按声波即可继续说话。", "detailPreparing": "分身马上回答，然后朗读出来。" },
   "upload": { "storagePaused": "由于存储空间限制，上传保存暂时暂停。请稍后重试。", "emptyFile": "文件为空。", "tooLarge": "文件对该类别来说太大。", "wrongType": "文件类型与所选类别不符。", "aborted": "上传已取消。" },
   "langSw": { "ariaCurrent": "切换语言，当前：", "searchLabel": "搜索语言", "searchPlaceholder": "搜索 …（例如 español、türkçe、japan）" },

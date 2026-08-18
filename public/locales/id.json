@@ -2,6 +2,7 @@
   "locale": "id",
   "dir": "ltr",
   "menuA11y": {"open":"Buka menu","close":"Tutup menu","startMenu":"Menu awal","startMenuNav":"Navigasi menu awal"},
+  "chatA11y": {"openProfile":"Buka profil {name}","addPhoto":"Tambahkan foto atau video","openCamera":"Buka kamera","addAudio":"Tambahkan audio"},
   "voiceWave": { "speaking": "Kembaran sedang berbicara", "listenDictation": "Dikte sedang mendengarkan", "listenWave": "Gelombang suara sedang mendengarkan", "paused": "Gelombang suara dijeda", "preparing": "Menyiapkan jawaban", "detailSpeaking": "Baca nyaring aktif", "detailDictation": "Ucapkan teksmu – teks muncul di kolom input. Ketuk mikrofon lagi untuk berhenti.", "detailWave": "Terus bicara. Setelah jeda singkat, pesan dikirim otomatis.", "detailPaused": "Ketuk gelombang lagi untuk melanjutkan bicara.", "detailPreparing": "Kembaran akan menjawab sebentar lagi lalu membacakannya." },
   "upload": { "storagePaused": "Penyimpanan unggahan dijeda sementara karena batas penyimpanan. Silakan coba lagi nanti.", "emptyFile": "File kosong.", "tooLarge": "File terlalu besar untuk kategori ini.", "wrongType": "Jenis file tidak sesuai dengan kategori yang dipilih.", "aborted": "Unggahan dibatalkan." },
   "langSw": { "ariaCurrent": "Ganti bahasa, saat ini:", "searchLabel": "Cari bahasa", "searchPlaceholder": "Cari … (mis. español, türkçe, japan)" },

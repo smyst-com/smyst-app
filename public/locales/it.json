@@ -2,6 +2,7 @@
   "locale": "it",
   "dir": "ltr",
   "menuA11y": {"open":"Apri il menu","close":"Chiudi il menu","startMenu":"Menu iniziale","startMenuNav":"Navigazione del menu iniziale"},
+  "chatA11y": {"openProfile":"Apri il profilo di {name}","addPhoto":"Aggiungi foto o video","openCamera":"Apri la fotocamera","addAudio":"Aggiungi audio"},
   "voiceWave": { "speaking": "Il gemello sta parlando", "listenDictation": "La dettatura è in ascolto", "listenWave": "L'onda vocale è in ascolto", "paused": "Onda vocale in pausa", "preparing": "Preparazione della risposta", "detailSpeaking": "Lettura ad alta voce attiva", "detailDictation": "Detta il tuo testo: apparirà nel campo di inserimento. Tocca di nuovo il microfono per fermarti.", "detailWave": "Continua a parlare. Dopo una breve pausa viene inviato automaticamente.", "detailPaused": "Tocca di nuovo l'onda per continuare a parlare.", "detailPreparing": "Il gemello risponderà a breve e poi leggerà ad alta voce." },
   "upload": { "storagePaused": "Il salvataggio degli upload è temporaneamente in pausa per un limite di archiviazione. Riprova più tardi.", "emptyFile": "Il file è vuoto.", "tooLarge": "Il file è troppo grande per questa categoria.", "wrongType": "Il tipo di file non corrisponde alla categoria scelta.", "aborted": "Upload annullato." },
   "langSw": { "ariaCurrent": "Cambia lingua, attuale:", "searchLabel": "Cerca lingua", "searchPlaceholder": "Cerca … (ad es. español, türkçe, japan)" },
