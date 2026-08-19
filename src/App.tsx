@@ -4130,6 +4130,8 @@ function SignInRequiredCard({ title, text, returnTo }: { title: string; text: st
 function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const auth = useAuth()
   const twinMvp = useTwinMvp()
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const ps = useStaticTranslations(lang).privacyStatus
   const [privacyStatus, setPrivacyStatus] = useState<string | null>(null)
   const [profile, setProfile] = useState<UserProfileRecord | null>(null)
   const [memories, setMemories] = useState<MemoryRecord[]>([])
@@ -4211,7 +4213,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     if (!result?.profile) return
     setProfile(result.profile)
     hydrateProfileDraft(result.profile)
-    setPrivacyStatus('Profil gespeichert und für IDrive-e2-Objektpersistenz vorgemerkt.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Profil gespeichert und für IDrive-e2-Objektpersistenz vorgemerkt.' : ps.profileSaved)
   }
 
   const createManualMemory = async () => {
@@ -4229,7 +4231,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     if (!memory) return
     setMemoryDraft('')
     await refreshProfileData()
-    setPrivacyStatus('Memory gespeichert.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Memory gespeichert.' : ps.memorySaved)
   }
 
   const confirmMemory = async (memory: MemoryRecord) => {
@@ -4243,7 +4245,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     if (!result) return
     setMemories((current) => current.filter((item) => item.id !== memory.id))
     setMemoryDeleteCandidate(null)
-    setPrivacyStatus('Memory gelöscht.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Memory gelöscht.' : ps.memoryDeleted)
   }
 
   const searchChats = async () => {
@@ -4298,12 +4300,12 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     setProfile(result.profile)
     hydrateProfileDraft(result.profile)
     setPublicKnowledgeSuggestion((current) => current ? { ...current, status: 'approved' } : current)
-    setPrivacyStatus('Public Knowledge nach Review übernommen.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Public Knowledge nach Review übernommen.' : ps.pkAccepted)
   }
 
   const rejectPublicKnowledgeSuggestion = () => {
     setPublicKnowledgeSuggestion((current) => current ? { ...current, status: 'rejected' } : current)
-    setPrivacyStatus('Public-Knowledge-Vorschlag abgelehnt.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Public-Knowledge-Vorschlag abgelehnt.' : ps.pkRejected)
   }
 
   const exportAccount = async () => {
@@ -4316,7 +4318,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     link.download = `smyst-account-export-${new Date().toISOString().slice(0, 10)}.json`
     link.click()
     URL.revokeObjectURL(url)
-    setPrivacyStatus('Export erstellt.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Export erstellt.' : ps.exportCreated)
   }
 
   const deleteAccount = async () => {
@@ -4324,7 +4326,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     const result = await twinMvp.deleteAccount()
     if (!result) return
     setAccountDeleteWord('')
-    setPrivacyStatus('Account-Löschung ausgeführt. Du wirst abgemeldet.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Account-Löschung ausgeführt. Du wirst abgemeldet.' : ps.accountDeleted)
     window.setTimeout(() => {
       window.location.href = '/'
     }, 800)
