@@ -3,6 +3,7 @@
   "dir": "ltr",
   "menuA11y": {"open":"メニューを開く","close":"メニューを閉じる","startMenu":"スタートメニュー","startMenuNav":"スタートメニューのナビゲーション"},
   "chatA11y": {"openProfile":"{name}のプロフィールを開く","addPhoto":"写真または動画を追加","openCamera":"カメラを開く","addAudio":"音声を追加"},
+  "privacyStatus": {"profileSaved":"プロフィールを保存し、IDrive e2 のオブジェクト保存を予約しました。","memorySaved":"メモリーを保存しました。","memoryDeleted":"メモリーを削除しました。","pkAccepted":"レビュー後に Public Knowledge を取り込みました。","pkRejected":"Public Knowledge の提案を却下しました。","exportCreated":"エクスポートを作成しました。","accountDeleted":"アカウントの削除が完了しました。ログアウトします。"},
   "voiceWave": { "speaking": "ツインが話しています", "listenDictation": "音声入力が聞き取り中", "listenWave": "音声ウェーブが聞き取り中", "paused": "音声ウェーブは一時停止中", "preparing": "回答を準備しています", "detailSpeaking": "読み上げが有効です", "detailDictation": "テキストを話してください。入力欄に表示されます。停止するにはマイクをもう一度タップします。", "detailWave": "話し続けてください。少し止まると自動的に送信されます。", "detailPaused": "もう一度ウェーブをタップすると話を続けられます。", "detailPreparing": "ツインがまもなく回答し、その後読み上げます。" },
   "upload": { "storagePaused": "ストレージ上限のため、アップロードの保存を一時停止しています。しばらくしてからもう一度お試しください。", "emptyFile": "ファイルが空です。", "tooLarge": "このカテゴリにはファイルが大きすぎます。", "wrongType": "ファイル形式が選択したカテゴリと一致しません。", "aborted": "アップロードをキャンセルしました。" },
   "langSw": { "ariaCurrent": "言語を変更、現在:", "searchLabel": "言語を検索", "searchPlaceholder": "検索 …（例: español、türkçe、japan）" },
