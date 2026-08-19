@@ -3,6 +3,7 @@
   "dir": "rtl",
   "menuA11y": {"open":"فتح القائمة","close":"إغلاق القائمة","startMenu":"قائمة البداية","startMenuNav":"التنقل في قائمة البداية"},
   "chatA11y": {"openProfile":"فتح ملف {name}","addPhoto":"إضافة صورة أو فيديو","openCamera":"فتح الكاميرا","addAudio":"إضافة صوت"},
+  "privacyStatus": {"profileSaved":"تم حفظ الملف الشخصي وإدراجه لحفظ الكائنات في IDrive e2.","memorySaved":"تم حفظ الذاكرة.","memoryDeleted":"تم حذف الذاكرة.","pkAccepted":"تم قبول Public Knowledge بعد المراجعة.","pkRejected":"تم رفض اقتراح Public Knowledge.","exportCreated":"تم إنشاء التصدير.","accountDeleted":"تم حذف الحساب. سيتم تسجيل خروجك."},
   "voiceWave": { "speaking": "التوأم يتحدث بصوت مسموع", "listenDictation": "الإملاء يستمع", "listenWave": "موجة الصوت تستمع", "paused": "موجة الصوت متوقفة مؤقتًا", "preparing": "يتم تحضير الإجابة", "detailSpeaking": "القراءة بصوت عالٍ مفعّلة", "detailDictation": "انطق نصك – سيظهر في حقل الإدخال. اضغط على الميكروفون مرة أخرى للإيقاف.", "detailWave": "واصل الحديث. بعد توقف قصير يتم الإرسال تلقائيًا.", "detailPaused": "اضغط على الموجة مرة أخرى لمتابعة الحديث.", "detailPreparing": "سيجيب التوأم بعد قليل ثم يقرأ بصوت مسموع." },
   "upload": { "storagePaused": "حفظ الرفع متوقف مؤقتًا بسبب حد التخزين. يُرجى المحاولة لاحقًا.", "emptyFile": "الملف فارغ.", "tooLarge": "الملف كبير جدًا لهذه الفئة.", "wrongType": "نوع الملف لا يطابق الفئة المختارة.", "aborted": "تم إلغاء الرفع." },
   "langSw": { "ariaCurrent": "تغيير اللغة، الحالية:", "searchLabel": "البحث عن لغة", "searchPlaceholder": "بحث … (مثل español وtürkçe وjapan)" },
