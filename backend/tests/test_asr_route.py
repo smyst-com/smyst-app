@@ -8,7 +8,7 @@ from app.api.v1.routes import asr as asr_route
 from app.api.v1.routes import tts as tts_route
 from app.main import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 
 def test_asr_status_is_transient_and_lists_required_languages(monkeypatch) -> None:

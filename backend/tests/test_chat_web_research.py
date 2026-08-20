@@ -68,7 +68,7 @@ def test_chat_attaches_web_research_sources_without_raw_web_instructions(monkeyp
     monkeypatch.setattr(chat_route, "_schedule_archive", lambda chat: None)
     monkeypatch.setattr(chat_route, "build_default_router", lambda: CapturingRouter())
     monkeypatch.setattr(chat_route, "VerifiedWebResearchService", ResearchServiceWithResult)
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     chat = client.post("/api/chat/start", json={"twinId": "public-profile"}).json()["chat"]
 
     response = client.post(
@@ -88,7 +88,7 @@ def test_private_chat_question_can_continue_without_web_research(monkeypatch) ->
     monkeypatch.setattr(chat_route, "_schedule_archive", lambda chat: None)
     monkeypatch.setattr(chat_route, "build_default_router", lambda: CapturingRouter())
     monkeypatch.setattr(chat_route, "VerifiedWebResearchService", ResearchServiceWithoutResult)
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     chat = client.post("/api/chat/start", json={"twinId": "private-twin"}).json()["chat"]
 
     response = client.post(

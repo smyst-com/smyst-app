@@ -11,7 +11,7 @@ from app.api.v1.routes.auth import _make_token
 from app.integrations import user_store
 from app.main import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 
 def _token(sub: str = "email:storage-test") -> str:

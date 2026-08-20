@@ -26,7 +26,7 @@ def client(monkeypatch) -> TestClient:
         "_session_from_request",
         lambda request: {"sub": "test-user", "email": "t@example.com", "picture": GOOGLE_PICTURE},
     )
-    return TestClient(app)
+    return TestClient(app, base_url="https://testserver")
 
 
 @pytest.fixture()
@@ -37,7 +37,7 @@ def client_without_picture(monkeypatch) -> TestClient:
         "_session_from_request",
         lambda request: {"sub": "test-user", "email": "t@example.com"},
     )
-    return TestClient(app)
+    return TestClient(app, base_url="https://testserver")
 
 
 def test_profile_seeds_avatar_from_google_session(client: TestClient) -> None:

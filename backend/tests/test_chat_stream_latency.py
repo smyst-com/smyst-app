@@ -75,7 +75,7 @@ def test_twin_context_and_web_research_run_concurrently(monkeypatch) -> None:
     """Beide Vorarbeiten sind unabhaengig — sie muessen sich zeitlich ueberlappen."""
     intervals = Intervals()
     _patch(monkeypatch, intervals)
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     chat = client.post("/api/chat/start", json={"twinId": "t"}).json()["chat"]
 
     started = time.perf_counter()
@@ -99,10 +99,14 @@ def test_stream_flushes_before_slow_preparation(monkeypatch) -> None:
     """
     intervals = Intervals()
     _patch(monkeypatch, intervals)
-    client = TestClient(app)
-    chat = client.post("/api/chat/start", json={"twinId": "t"}).json()["chat"]
+    client = TestClient(app, base_url="https://testserver")
+    client.post("/api/chat/start", json={"twinId": "t"})
+    chat = client.get("/api/chat/list").json()["chats"][0]
 
     body = json.dumps({"chatId": chat["id"], "message": "Hallo!"}).encode()
+    # Der Chat ist seit dem Owner-Fix (21.08.) an das Start-Cookie gebunden;
+    # die raw-ASGI-Anfrage unten muss dasselbe Cookie mitbringen.
+    owner_token = client.cookies.get("smyst_chat_owner", "")
     scope = {
         "type": "http",
         "asgi": {"version": "3.0", "spec_version": "2.1"},
@@ -117,6 +121,7 @@ def test_stream_flushes_before_slow_preparation(monkeypatch) -> None:
             (b"host", b"testserver"),
             (b"content-type", b"application/json"),
             (b"content-length", str(len(body)).encode()),
+            (b"cookie", f"smyst_chat_owner={owner_token}".encode()),
         ],
         "client": ("testclient", 123),
         "server": ("testserver", 80),
@@ -158,7 +163,7 @@ def test_stream_still_delivers_delta_and_done(monkeypatch) -> None:
     """Der Umbau darf das Event-Protokoll nicht veraendern."""
     intervals = Intervals()
     _patch(monkeypatch, intervals)
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     chat = client.post("/api/chat/start", json={"twinId": "t"}).json()["chat"]
 
     response = client.post(

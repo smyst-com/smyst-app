@@ -55,7 +55,7 @@ def setup_function() -> None:
 
 def _done_event(monkeypatch) -> dict:
     _patch(monkeypatch)
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     chat = client.post("/api/chat/start", json={"twinId": "t"}).json()["chat"]
     response = client.post(
         "/api/chat/messages/stream",

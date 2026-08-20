@@ -7,7 +7,7 @@ from app.core.config import AUTH_SESSION_SECRET_PLACEHOLDER, settings
 from app.main import app
 
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 
 def test_me_is_anonymous_without_session() -> None:

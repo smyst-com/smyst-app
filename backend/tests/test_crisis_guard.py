@@ -109,7 +109,7 @@ def client(monkeypatch):
     monkeypatch.setattr(chat_route, "_schedule_archive", lambda chat: None)
     app = FastAPI()
     app.include_router(chat_route.router, prefix="/api")
-    return TestClient(app)
+    return TestClient(app, base_url="https://testserver")
 
 
 def test_messages_endpoint_kurzschliesst_bei_krise(client) -> None:
