@@ -1,6 +1,13 @@
 # 14 Frontend Implementation
 
-> Status: Partially superseded. UI notes remain useful; backend endpoint references are legacy only unless they target Salad API in the Free-Only architecture.
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
+> Status: Partially superseded. UI notes remain useful; backend endpoint references are legacy only unless they target Zeabur-Backend in the Free-Only architecture.
 
 Status: UI-Referenz. Die aktive Production-App ist die Vite/React/PWA-App im Repository-Root und laeuft ueber IDrive e2 static hosting Free.
 
@@ -37,7 +44,7 @@ Status: UI-Referenz. Die aktive Production-App ist die Vite/React/PWA-App im Rep
 - Die aktive UI lebt im Vite/React-Root-Projekt.
 - `/frontend` bleibt historische Referenz, solange sie nicht Free-Only-kompatibel migriert ist.
 - Schreibende Aktionen sind noch nicht mit Backend-APIs verbunden.
-- Chat-Antworten sind lokal simuliert, bis Legacy edge provider-Worker-Chat- und Free-Only-Twin-Kontext-Endpunkte produktiv angeschlossen sind.
+- Chat-Antworten sind lokal simuliert, bis Cloudflare-Worker-Chat- und Free-Only-Twin-Kontext-Endpunkte produktiv angeschlossen sind.
 - Twin Creator speichert noch nicht persistent.
 - Mehrsprachigkeit startet mit 10 statischen Sprachen, weil externe Uebersetzungsdienste keine Production-Pflicht sein duerfen.
 - PWA ist als Manifest + Service Worker Baseline implementiert. Spaeter folgen Install Prompt, Offline-Strategie pro Route und Push/Background Sync.

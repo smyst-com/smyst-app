@@ -1,5 +1,12 @@
 # 10 Coding Standards
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 ## Ziel
 
 Coding Standards sichern Wartbarkeit, Erweiterbarkeit, Security und Performance.
@@ -7,9 +14,9 @@ Coding Standards sichern Wartbarkeit, Erweiterbarkeit, Security und Performance.
 ## Free-Only Production Standards
 
 - Production-Code darf keine bezahlten Zusatzdienste voraussetzen.
-- Production-Code darf nur GitHub Free, Legacy edge provider Free und IDrive e2 verwenden.
+- Production-Code darf nur GitHub Free, Cloudflare und IDrive e2 verwenden.
 - Legacy-Servercode muss als lokal/optional markiert bleiben.
-- Secrets gehoeren in Legacy edge provider Secrets oder GitHub Secrets, nie in den Browser.
+- Secrets gehoeren in Cloudflare Secrets oder GitHub Secrets, nie in den Browser.
 - Uploads laufen direkt zu IDrive e2 ueber signed URLs.
 - Quotas sind Pflicht, bevor Uploads oder AI-relevante Aktionen freigegeben werden.
 

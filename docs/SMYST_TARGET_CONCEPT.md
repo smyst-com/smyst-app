@@ -17,8 +17,8 @@ Smyst wird als speicherstarkes und rechen-effizientes System geplant:
 - IDrive e2 uebernimmt 99 % aller Speicheraufgaben.
 - GitHub Free wird nur fuer Code, Versionierung, Releases, Issues und Dokumentation genutzt.
 - Spaceship wird fuer Domain-Besitz, Registrar-Sicherheit und Nameserver-Verwaltung genutzt.
-- Spaceship DNS ist aktuell aktiv, weil IDrive e2 static hosting fuer die Apex-Domain `smyst.com` und Worker-Routes Legacy edge provider-Nameserver benoetigt.
-- Salad wird nur fuer echte Rechenarbeit genutzt.
+- Spaceship verwaltet die DNS-Zone; die Nameserver sind `launch1.spaceship.net` und `launch2.spaceship.net`.
+- Zeabur wird nur fuer echte Rechenarbeit genutzt.
 
 Der wichtigste Architekturgedanke: Speicher zuerst, Server nur bei Bedarf.
 
@@ -34,7 +34,11 @@ Spaceship uebernimmt dauerhaft:
 - Domain-Sicherheit
 - 2FA-Schutz fuer Domain-Zugriff
 
-Aktueller Produktionsstand: Die Nameserver von `smyst.com` zeigen auf Legacy edge provider (`anahi.ns.legacy-edge-provider.com`, `graham.ns.legacy-edge-provider.com`), damit IDrive e2 static hosting, TLS, Proxy und Worker-Routes fuer die Uebergangsphase korrekt funktionieren.
+Aktueller Produktionsstand (am 2026-08-20 per DNS-Abfrage geprueft): Die
+Nameserver von `smyst.com` zeigen auf Spaceship (`launch1.spaceship.net`,
+`launch2.spaceship.net`). Der Apex-A-Record zeigt auf GitHub Pages
+(`185.199.108.153` bis `185.199.111.153`), `api.smyst.com` per CNAME auf
+`smyst-api.zeabur.app`. Cloudflare ist nicht mehr eingebunden.
 
 ### GitHub Free
 
@@ -65,9 +69,9 @@ IDrive e2 ist der zentrale Hauptspeicher. Es speichert insbesondere:
 
 IDrive e2 ist Speicher, aber kein vollstaendiger Server-Ersatz. Login, Echtzeit-Chat, Live-Datenbank, Berechtigungslogik, Zahlungen, API-Logik, KI-Antwortgenerierung, Suche und Live-Admin-Dashboards laufen nicht direkt in IDrive e2.
 
-### Salad
+### Zeabur
 
-Salad wird nur fuer echte Rechenarbeit genutzt:
+Zeabur betreibt den Backend-Container `smyst-backend` unter `api.smyst.com` und uebernimmt die gesamte Rechenarbeit:
 
 - API-Server bei Bedarf
 - KI-Antwortgenerierung
@@ -75,7 +79,7 @@ Salad wird nur fuer echte Rechenarbeit genutzt:
 - Suche, Indexierung, Embedding-Erstellung und RAG-Verarbeitung
 - Cronjobs, Batch-Jobs, Datenaufbereitung, Importe, Exporte, Qualitaetspruefungen und automatische Tests
 
-Salad speichert keine sensiblen Daten dauerhaft. Ergebnisse werden nach der Verarbeitung wieder in IDrive e2 gespeichert.
+Zeabur speichert keine Daten dauerhaft: der Container haelt nur Laufzeit und Service-Variablen. Alle Ergebnisse werden nach der Verarbeitung in IDrive e2 geschrieben.
 
 ## Subdomains
 
@@ -83,7 +87,7 @@ Zielstruktur:
 
 - `smyst.com`: Hauptwebsite, Landingpage und PWA-Einstieg
 - `app.smyst.com`: Web-App und Nutzerbereich
-- `api.smyst.com`: dynamische API ueber Salad
+- `api.smyst.com`: dynamische API ueber Zeabur
 - `cdn.smyst.com`: oeffentliche Dateien und Downloads aus IDrive e2
 - `media.smyst.com`: Videos, Audio, Thumbnails, Vorschauen und Profilbilder
 - `backup.smyst.com`: private Backups, verschluesselte Sicherungen und Rollback-Dateien
@@ -95,7 +99,7 @@ Zielstruktur:
 1. Zuerst eine starke, installierbare PWA bauen.
 2. Danach iOS-, Android- und Huawei-Apps als Wrapper oder native Apps anbinden.
 3. Dateien, Medien, Profilwissen, Backups, Archive, Exporte, RAG und App-Dateien nach IDrive e2 legen.
-4. Nur echte Logik und Rechenarbeit ueber Salad ausfuehren.
+4. Nur echte Logik und Rechenarbeit ueber Zeabur ausfuehren.
 5. Profilwissen, Prompts, RAG-Dokumente, Embeddings, haeufige Antworten und Profil-DNA vorberechnen.
 6. Statische Daten aus IDrive e2 ausliefern und Live-Rechenarbeit nur bei Bedarf starten.
 
@@ -116,11 +120,11 @@ Zielstruktur:
 - Secrets nur in GitHub Secrets oder Server-Umgebung speichern.
 - Backups verschluesseln.
 - Spaceship, GitHub und Admin-Zugaenge mit 2FA absichern.
-- Salad ohne dauerhafte sensible Speicherung betreiben.
+- Zeabur ohne dauerhafte sensible Speicherung betreiben.
 - Uploads pruefen, begrenzen und getrennt speichern.
 - Audit-Logs und Fehlerberichte sicher archivieren.
 - Regelmaessige Rollback-Dateien in IDrive e2 speichern.
 
-## Aktueller Uebergang
+## Aktueller Stand
 
-Legacy edge provider ist aktuell aktiver Uebergang fuer DNS, Pages, TLS, Proxy und Workers. Das ist fuer die jetzige Legacy edge provider-Pages-Apex-Domain und API-Worker-Routes notwendig. Spaceship bleibt Registrar und Domain-Sicherheitsanker. Langfristig kann DNS wieder zu Spaceship wandern, wenn statische Auslieferung, API und Subdomain-Routing ohne IDrive e2 static hosting/Worker-Abhaengigkeit produktionsreif ueber IDrive e2 und Salad laufen. Neue Architekturentscheidungen duerfen Legacy edge provider nicht als Hauptspeicher oder dauerhafte Rechenplattform voraussetzen.
+Der Uebergang ist abgeschlossen. Spaceship verwaltet Domain und DNS-Zone, GitHub Pages liefert die statischen Dateien aus, Zeabur betreibt die API unter `api.smyst.com`, IDrive e2 haelt Daten und Dateien. Cloudflare ist kein Produktionsbestandteil mehr; in aelteren Dokumenten taucht es als "Legacy edge provider" auf. Neue Architekturentscheidungen duerfen weder Cloudflare noch Salad voraussetzen.

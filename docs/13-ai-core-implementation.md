@@ -1,5 +1,12 @@
 # 13 AI Core Implementation
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 Status: Free-Only-MVP-Pfad. Alte Backend-/Vektor-Experimente sind nur lokale Referenz.
 
 ## Ziel fuer Phase 1
@@ -8,8 +15,8 @@ Der KI-Zwilling funktioniert ohne kostenpflichtige externe AI-Dienste. Er erstel
 
 ## Erlaubte Production-Komponenten
 
-- Legacy edge provider Worker fuer Chat-API und Kontextauswahl.
-- Salad/IDrive metadata fuer kleine Twin-Metadaten, Slugs, Sichtbarkeit und kurze Chat-Sessiondaten.
+- Zeabur-Backend fuer Chat-API und Kontextauswahl.
+- IDrive e2 fuer kleine Twin-Metadaten, Slugs, Sichtbarkeit und kurze Chat-Sessiondaten.
 - IDrive e2 fuer Wissenstexte, Dokumente, Medien, Backups und groessere Twin-Kontextobjekte.
 - Statische oder lokal vorbereitete Regeln/Antwortvorlagen im Repository.
 

@@ -1,5 +1,12 @@
 # SEO, GEO, AEO, AIO And AI Visibility Architecture
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 > Status: Partially superseded. SEO/AEO/GEO remains active, but external services and server/database assumptions are not production requirements.
 
 ## Goal
@@ -341,8 +348,8 @@ All public APIs need:
 
 1. Keep production release blocked until full foundation tests run.
 2. Finish real dynamic public page routes for profiles, twins, knowledge, Q&A, documents, and media.
-3. Store public-safe profile snapshots in Salad/IDrive metadata.
-4. Build consent-aware indexing/export logic in Salad API.
+3. Store public-safe profile snapshots in IDrive e2.
+4. Build consent-aware indexing/export logic in Zeabur-Backend.
 5. Build deindexing service for deletion and consent revocation.
 6. Generate per-page JSON-LD from resource data.
 7. Generate dynamic sitemap indexes from `public_pages`.

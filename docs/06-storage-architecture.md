@@ -1,8 +1,15 @@
 # 06 Storage Architecture
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 ## Ziel
 
-IDrive e2 ist der zentrale Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten. Salad API erzeugen signed URLs und setzen Quotas.
+IDrive e2 ist der zentrale Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten. Zeabur-Backend erzeugen signed URLs und setzen Quotas.
 
 ## Production-Regel
 
@@ -28,12 +35,12 @@ Keine E-Mail-Adressen, Klarnamen oder sensiblen Rohdaten im Key.
 ## Upload-Flow
 
 `GET /storage/capabilities` gibt Kategorien, Content-Type-Regeln, Limits,
-IDrive-e2-Pfadvorlagen und Rollen von GitHub, IDrive e2, Salad und Spaceship
+IDrive-e2-Pfadvorlagen und Rollen von GitHub, IDrive e2, Zeabur und Spaceship
 maschinenlesbar aus.
 
 1. Client fragt `POST /storage/upload-url`.
 2. Worker prueft Session, Dateityp, Dateigroesse, User-Quota und Global-Quota.
-3. Worker reserviert Quota in Salad/IDrive metadata und schreibt einen Upload-Intent.
+3. Worker reserviert Quota in IDrive e2 und schreibt einen Upload-Intent.
 4. Worker erstellt eine kurzlebige signed PUT URL fuer IDrive e2.
 5. Client laedt direkt zu IDrive e2 hoch.
 6. Client meldet `POST /storage/upload-complete`.

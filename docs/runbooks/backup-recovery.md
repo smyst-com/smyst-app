@@ -3,7 +3,7 @@
 ## Scope
 
 Production backup and recovery targets GitHub source, IDrive e2 objects/static
-artifacts, Salad backend deployments and Spaceship DNS. Legacy edge provider is legacy
+artifacts, Zeabur backend deployments and Spaceship DNS. Cloudflare and Salad are legacy
 only and must not be a required restore target.
 
 The machine-readable release contract lives in
@@ -16,8 +16,8 @@ The machine-readable release contract lives in
 |---|---:|---:|---|
 | Code and config | latest pushed commit | 30 minutes | Restore through Git revert/cherry-pick and gated redeploy. |
 | IDrive e2 static deployment | last successful gated deployment | 30 minutes | Re-sync known-good `dist/` artifact to website buckets. |
-| Salad backend | committed source plus deployed image/deployment id | 30 minutes | Roll Salad container group to a known-good image or redeploy backend. |
-| Salad/IDrive metadata | 24 hours for MVP metadata after first production release | 4 hours for small restore dry-run | Restore selected prefixes into staging metadata first. |
+| Zeabur backend | committed source plus deployed image/deployment id | 30 minutes | Reactivate a known-good Zeabur deployment in the portal or redeploy backend. |
+| IDrive e2 | 24 hours for MVP metadata after first production release | 4 hours for small restore dry-run | Restore selected prefixes into staging metadata first. |
 | IDrive e2 user objects | acknowledged object write | 4 hours for small user restore test | Restore user-scoped objects only. |
 | Legacy SQL | not applicable | not applicable | Blocked for production. |
 
@@ -34,7 +34,7 @@ The machine-readable release contract lives in
 
 ## Metadata Export And Restore
 
-Salad/IDrive metadata is operational production state. It must be treated as
+IDrive e2 is operational production state. It must be treated as
 small, sensitive metadata while large files remain in IDrive e2.
 
 Minimum backup evidence before production:
@@ -64,11 +64,11 @@ Excluded prefixes:
 These are intentionally short-lived security records. They must not be restored
 into production from a backup artifact.
 
-## Legacy Legacy edge provider State
+## Legacy Cloudflare State
 
-- If any Salad/IDrive metadata state still exists, export or intentionally discard it
-  before deleting the Legacy edge provider account.
-- Legacy edge provider is not a permanent archive and not a production target.
+- If any IDrive e2 state still exists, export or intentionally discard it
+  before deleting the Cloudflare account.
+- Cloudflare is not a permanent archive and not a production target.
 - Critical user-owned files and backups belong in IDrive e2.
 
 ## Release Restore Drill
@@ -76,10 +76,10 @@ into production from a backup artifact.
 Before a production release, record:
 
 1. Latest Git commit and IDrive e2 static deployment artifact id.
-2. Salad backend deployment/container image id.
+2. Zeabur backend deployment/container image id.
 3. Metadata inventory and a small restore dry-run result.
 4. IDrive e2 bucket, region, CORS, encryption and lifecycle confirmation.
-5. Rollback target for static artifacts and Salad backend.
+5. Rollback target for static artifacts and Zeabur backend.
 
 If any restore step cannot be demonstrated, production release is blocked.
 
@@ -91,14 +91,14 @@ If any restore step cannot be demonstrated, production release is blocked.
 | IDrive object exists but metadata is missing | User file cannot be discovered through app | Orphan-object audit and signed object restore test. |
 | Metadata exists but IDrive object is missing | Broken downloads and profile media | Signed HEAD/GET verification in restore drill. |
 | IDrive static deploy is bad | Broken app shell or missing static files | Gated deploy, artifact check, live smoke, static artifact rollback. |
-| Salad backend deploy is bad | Auth/API/Storage outage | Salad image rollback and route contract smoke test. |
+| Zeabur backend deploy is bad | Auth/API/Storage outage | Reactivate the previous Zeabur deployment and run the route contract smoke test. |
 | Secrets lost or rotated incorrectly | Auth/storage outage | Secret inventory, scoped recreation procedure and post-rotation smoke test. |
 | Legacy SQL assumed as source of truth | False restore path and data loss | Legacy SQL scripts remain blocked for production. |
 
 ## Backup Frequency
 
 - Code/config: every commit through GitHub history.
-- Static/Salad deploys: every gated deployment records deploy/version ids.
+- Static/Zeabur deploys: every gated deployment records deploy/version ids.
 - Metadata: daily export after first approved production release, plus manual
   export before risky migrations.
 - IDrive e2: object durability is the primary backup layer in the free-only phase;

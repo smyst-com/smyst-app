@@ -43,7 +43,7 @@ AI-Provider ohne Freigabe.
 - Salad.com - Compute bis Ende Juli 2026. Die Workflows
   `salad-backend-deploy.yml` und `voice-worker-deploy.yml` stehen seit
   29.07.2026 auf `if: false` und dienen nur noch als Rollback-Pfad.
-- Cloudflare Pages/Workers/KV - in aelteren Dokumenten "Legacy edge provider".
+- Cloudflare Pages/Workers/KV - in aelteren Dokumenten als "Legacy edge provider" bezeichnet.
 - IDrive e2 als Website-Host - Public Bucket Access ist im Free-Plan
   serverseitig gesperrt (`PutBucketPolicy` -> `AccessDenied`).
 - Codeberg als Ersatz fuer GitHub - Codeberg dient ausschliesslich als

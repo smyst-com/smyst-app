@@ -78,8 +78,10 @@ IDrive e2 uebernimmt fuer `smyst.com` 99 % aller Speicheraufgaben. Jeder neue Sp
 
 - GitHub Free: nur Code, Versionierung, Releases und GitHub Actions.
 - Spaceship: Domain `smyst.com`, DNS und Subdomains.
-- Salad.com: nur echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
-- Legacy edge provider: nur Uebergang/Legacy, bis Spaceship DNS und IDrive e2 Static Hosting produktiv sind.
+- Zeabur: Rechenarbeit wie API, KI, Verarbeitung, Suche und Sprachdienste. (Salad.com war bis Ende Juli 2026 der Compute-Layer und ist abgeschaltet.)
+- Cloudflare: abgeschaltet, kein Produktionsbestandteil mehr. IDrive e2 Static
+  Hosting wurde nie produktiv - Public Bucket Access ist im Free-Plan gesperrt,
+  die statische Auslieferung laeuft ueber GitHub Pages.
 
 ## Aktueller Blocker
 

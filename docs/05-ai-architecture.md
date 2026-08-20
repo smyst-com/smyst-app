@@ -1,5 +1,12 @@
 # 05 AI Architecture
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 Status: Free-Only-MVP-Architektur fuer digitale KI-Zwillinge.
 
 ## Ziel
@@ -17,8 +24,8 @@ Der verbindliche Free-Only-Plan fuer Profile, Chatverlaeufe, Memory und spaetere
 - Chat-Archive: private Chatverlaeufe und Chat-Summaries in IDrive e2.
 - Memory-Layer: bestaetigte, quellengebundene Erinnerungen mit Sichtbarkeit und Sensitivity.
 - Dateiablage: IDrive e2.
-- Kleine Metadaten: Salad/IDrive metadata.
-- Chat-API: Legacy edge provider Worker.
+- Kleine Metadaten: IDrive e2.
+- Chat-API: Zeabur-Backend.
 - Antwortlogik: statische Regeln, einfache Kontextauswahl und sichere Fallbacks.
 
 ## Datenfluss
@@ -54,7 +61,7 @@ Spaetere echte AI-Funktionen muessen ueber Adapter kommen:
 
 Jeder Adapter braucht Timeout, Kostenbremse, Datenschutzfilter und eine neue Freigabe, wenn er nicht innerhalb der Free-Only-Regel funktioniert.
 
-Nicht erlaubt als Phase-1-Production-Pflicht sind Training auf rohen privaten Chats, bezahlte AI-Provider, Legacy edge provider AI, Legacy edge provider Vectorize, Legacy edge provider Queues, D1 Paid, R2 Paid, GitHub Codespaces oder kostenpflichtige GitHub-Actions-Minuten.
+Nicht erlaubt als Phase-1-Production-Pflicht sind Training auf rohen privaten Chats, bezahlte AI-Provider, Cloudflare AI, Cloudflare Vectorize, Cloudflare Queues, D1 Paid, R2 Paid, GitHub Codespaces oder kostenpflichtige GitHub-Actions-Minuten.
 
 ## Skalierungsrealitaet
 

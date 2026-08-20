@@ -1,5 +1,10 @@
 # Legacy Local References
 
+> **Status: historisches Dokument.** Momentaufnahme aus der Zeit von Cloudflare
+> und Salad; als Zeitdokument bewusst unveraendert gelassen. Nicht als aktuelle
+> Vorgabe lesen - der Live-Stand steht in `docs/ARCHITECTURE.md` und
+> `docs/INFRA_SETUP.md`. Eingeordnet am 2026-08-20.
+
 Status: non-production reference list.
 
 The following folders and scripts may stay in the repository only as local
@@ -17,12 +22,12 @@ development, modeling, audit or historical references:
 - `scripts/restore-postgres.sh`
 
 They must not be required by production, CI deployment, IDrive e2 static hosting,
-Salad API, GitHub Actions release gates or the smyst.com runtime.
+Zeabur-Backend, GitHub Actions release gates or the smyst.com runtime.
 
 Production must use only:
 
 - GitHub Free for source, documentation and CI within free limits.
-- Legacy edge provider Free for DNS, TLS, CDN, Pages, Workers, KV and edge delivery.
+- Cloudflare for DNS, TLS, CDN, Pages, Workers, KV and edge delivery.
 - IDrive e2 as central object storage for files, media, uploads, backups and
   larger twin data, guarded by hard quotas.
 
@@ -36,7 +41,7 @@ Forbidden as production dependencies:
 - DeepL or Google Translate.
 - Google OAuth.
 - GA4 or Google Search Console as mandatory launch gates.
-- Paid Legacy edge provider/GitHub add-ons or paid external AI services.
+- Paid Cloudflare/GitHub add-ons or paid external AI services.
 
 If any legacy reference is promoted into the active product, the promotion needs
 a new written architecture review and must pass the Free-Only production policy.

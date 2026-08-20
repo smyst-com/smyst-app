@@ -1,5 +1,12 @@
 # 04 Security Architecture
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 > Status: Partially superseded by the Free-Only architecture. Google-service references are legacy/historical only and must not be required in production.
 
 ## Ziel
@@ -20,7 +27,7 @@ Smyst verarbeitet extrem sensible personenbezogene Daten. Sicherheit, Datenschut
 
 Erlaubt in Production:
 
-- GitHub OAuth oder Passkey/WebAuthn ueber Salad API/KV.
+- GitHub OAuth oder Passkey/WebAuthn ueber Zeabur-Backend/KV.
 - Sicheres Demo-Login nur fuer klar markierte MVP-/Preview-Umgebungen.
 - HttpOnly Secure SameSite Cookies.
 - Worker-seitige Sessionvalidierung.

@@ -38,7 +38,7 @@ Nicht mehr in Production:
 
 - Salad.com (Compute bis Ende Juli 2026, Deploy-Workflows seit 29.07.2026
   `if: false`).
-- Cloudflare Pages/Workers/KV (in aelteren Dokus "Legacy edge provider").
+- Cloudflare Pages/Workers/KV (in aelteren Dokus als "Legacy edge provider" bezeichnet).
 - IDrive e2 als Website-Host (Public Bucket Access im Free-Plan gesperrt).
 
 Nicht erlaubt in Production:

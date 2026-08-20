@@ -23,6 +23,9 @@ Nicht mehr im Betrieb:
   Der Salad-Host antwortet seit Mitte August 2026 nicht mehr.
 - Cloudflare: frueherer Edge-Provider, in aelteren Dokus als
   "Legacy edge provider" bezeichnet. Kein Produktionsbestandteil mehr.
+  Die Nameserver von `smyst.com` zeigen auf Spaceship
+  (`launch1.spaceship.net`, `launch2.spaceship.net`), der Apex-A-Record auf
+  GitHub Pages (185.199.108-111.153). Am 2026-08-20 per DNS-Abfrage geprueft.
 - Codeberg ist KEIN Ersatz und kein Betriebssystembestandteil, sondern ein
   reiner Spiegel (siehe unten).
 

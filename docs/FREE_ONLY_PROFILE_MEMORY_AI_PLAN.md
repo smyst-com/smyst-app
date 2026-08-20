@@ -1,22 +1,29 @@
 # Free-Only Profil-, Chat-, Memory- und AI-Plan
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 Status: verbindliche Produkt- und Architekturvorgabe fuer Smyst Phase 1.
 
 ## 1. Haerteste Regel
 
-Smyst nutzt fuer dieses Projekt ausschliesslich dauerhaft kostenlose Dienste von GitHub.com und Legacy edge provider.
+Smyst nutzt fuer dieses Projekt ausschliesslich dauerhaft kostenlose Dienste von GitHub.com und Cloudflare.
 
 - GitHub.com darf nur im dauerhaft kostenlosen Free-Tarif genutzt werden.
 - Keine GitHub Pro-, Team-, Enterprise-, kostenpflichtigen Actions-Minuten, Storage-, Codespaces- oder sonstigen kostenpflichtigen GitHub-Dienste.
-- Legacy edge provider darf nur im dauerhaft kostenlosen Free-Tarif genutzt werden.
-- Keine Legacy edge provider Pro-, Business-, Enterprise-, Workers-Paid-, R2-Paid-, Images-, Stream-, Queues-, D1-Paid-, KV-Paid-, Vectorize-, AI- oder sonstigen kostenpflichtigen Legacy edge provider-Dienste.
+- Cloudflare darf nur im dauerhaft kostenlosen Free-Tarif genutzt werden.
+- Keine Cloudflare Pro-, Business-, Enterprise-, Workers-Paid-, R2-Paid-, Images-, Stream-, Queues-, D1-Paid-, KV-Paid-, Vectorize-, AI- oder sonstigen kostenpflichtigen Cloudflare-Dienste.
 - Keine Loesung, die nur am Anfang kostenlos ist und spaeter nach einem Limit automatisch Geld kostet.
 - Keine Trial-Angebote, Testpakete, Auto-Billing-Produkte oder versteckten Zusatzkosten.
-- Wenn eine GitHub- oder Legacy edge provider-Funktion nach einem Limit Kosten erzeugen kann, darf sie nicht als Kernbestandteil der Architektur geplant werden.
+- Wenn eine GitHub- oder Cloudflare-Funktion nach einem Limit Kosten erzeugen kann, darf sie nicht als Kernbestandteil der Architektur geplant werden.
 - IDrive e2 / S3-kompatibler Storage ist der zentrale Hauptspeicher fuer Dateien, Medien, Modelle, Backups, Chat-Archive, Profilobjekte und Twin-Daten.
 - IDrive e2 wird nur mit harten Quotas, manueller Kostenkontrolle und Stop-before-cost-Regeln verwendet.
 
-Wenn eine Anforderung mit GitHub Free, Legacy edge provider Free und IDrive e2 unter harten Quotas nicht sicher moeglich ist, wird die Funktion reduziert, manuell geloest, lokal vorbereitet oder auf eine spaetere schriftlich freigegebene Architektur verschoben.
+Wenn eine Anforderung mit GitHub Free, Cloudflare und IDrive e2 unter harten Quotas nicht sicher moeglich ist, wird die Funktion reduziert, manuell geloest, lokal vorbereitet oder auf eine spaetere schriftlich freigegebene Architektur verschoben.
 
 ## 2. Grundsatz fuer Profile und Chatverlaeufe
 
@@ -25,7 +32,7 @@ Chatverlaeufe sollen im Nutzerprofil erhalten bleiben, aber nicht ungefiltert al
 Das System trennt:
 
 - Chat-Archiv: vollstaendige oder gekuerzte Chatverlaeufe als private, nutzereigene Objekte in IDrive e2.
-- Chat-Metadaten: kleine Index- und Statusdaten in Salad/IDrive metadata Free.
+- Chat-Metadaten: kleine Index- und Statusdaten in IDrive e2.
 - Memory-Kandidaten: aus Chats abgeleitete Fakten, Vorlieben, Ziele, Beziehungen und Entscheidungen.
 - Bestaetigte Memories: vom Nutzer bestaetigte oder bearbeitete Informationen, die ein Twin verwenden darf.
 - Persona-Profil: kuratierte professionelle Darstellung eines Nutzers oder Twins.
@@ -35,7 +42,7 @@ Der Twin darf nur auf Inhalte zugreifen, die fuer den aktuellen Nutzer, Twin, Si
 
 ## 3. Speichermodell
 
-Salad/IDrive metadata Free speichert nur kleine, nicht rohe Daten:
+IDrive e2 speichert nur kleine, nicht rohe Daten:
 
 ```text
 meta:profile:{userSub}:{profileId}
@@ -152,7 +159,7 @@ Antwortfluss:
 6. Antwort entsteht regelbasiert, simuliert oder ueber einen spaeter freigegebenen Adapter.
 7. Antwort nennt Grenzen, wenn Kontext fehlt.
 
-Langfristig kann ein Modelladapter hinzukommen. Er darf aber kein GitHub- oder Legacy edge provider-Paid-Produkt, keinen bezahlten AI-Provider und keinen Dienst mit Auto-Billing als Production-Pflicht einfuehren.
+Langfristig kann ein Modelladapter hinzukommen. Er darf aber kein GitHub- oder Cloudflare-Paid-Produkt, keinen bezahlten AI-Provider und keinen Dienst mit Auto-Billing als Production-Pflicht einfuehren.
 
 ## 8. Training-Policy
 
@@ -160,7 +167,7 @@ Nicht erlaubt in Phase 1:
 
 - Training auf rohen privaten Chats.
 - Fine-Tuning mit unbestaetigten Memories.
-- Legacy edge provider AI, Vectorize, Queues, D1 Paid, R2 Paid oder externe bezahlte AI als Production-Pflicht.
+- Cloudflare AI, Vectorize, Queues, D1 Paid, R2 Paid oder externe bezahlte AI als Production-Pflicht.
 - GitHub Codespaces oder kostenpflichtige Actions-Minuten fuer Training.
 - Automatische Verarbeitung, die Kosten erzeugt, wenn Limits ueberschritten werden.
 
@@ -287,8 +294,8 @@ Pflichtregeln:
 - Stop-before-cost.
 - Degraded Mode.
 - Keine bezahlten GitHub-Dienste.
-- Keine bezahlten Legacy edge provider-Dienste.
-- Keine Legacy edge provider R2/D1/Queues/Vectorize/AI als Kernbestandteil.
+- Keine bezahlten Cloudflare-Dienste.
+- Keine Cloudflare R2/D1/Queues/Vectorize/AI als Kernbestandteil.
 - Keine GitHub Codespaces.
 - Keine kostenpflichtigen Actions-Minuten als Voraussetzung.
 - Keine externen AI-Provider als Production-Pflicht.
