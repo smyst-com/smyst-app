@@ -4,6 +4,7 @@
   "menuA11y": {"open":"메뉴 열기","close":"메뉴 닫기","startMenu":"시작 메뉴","startMenuNav":"시작 메뉴 탐색"},
   "chatA11y": {"openProfile":"{name} 프로필 열기","addPhoto":"사진 또는 동영상 추가","openCamera":"카메라 열기","addAudio":"오디오 추가"},
   "privacyStatus": {"profileSaved":"프로필이 저장되었으며 IDrive e2 객체 보존이 예약되었습니다.","memorySaved":"메모리를 저장했습니다.","memoryDeleted":"메모리를 삭제했습니다.","pkAccepted":"검토 후 Public Knowledge를 반영했습니다.","pkRejected":"Public Knowledge 제안을 거부했습니다.","exportCreated":"내보내기를 만들었습니다.","accountDeleted":"계정 삭제가 완료되었습니다. 로그아웃됩니다."},
+  "greet": {"withName":"안녕하세요! {name}입니다. 만나서 반가워요. 무엇을 도와드릴까요?","withoutName":"안녕하세요! 만나서 반가워요. 무엇을 도와드릴까요?"},
   "voiceWave": { "speaking": "트윈이 말하고 있습니다", "listenDictation": "받아쓰기가 듣고 있습니다", "listenWave": "음성 웨이브가 듣고 있습니다", "paused": "음성 웨이브 일시정지", "preparing": "답변을 준비하는 중", "detailSpeaking": "소리 내어 읽기 활성", "detailDictation": "텍스트를 말하세요 – 입력창에 표시됩니다. 중지하려면 마이크를 다시 탭하세요.", "detailWave": "계속 말하세요. 잠시 멈추면 자동으로 전송됩니다.", "detailPaused": "계속 말하려면 웨이브를 다시 탭하세요.", "detailPreparing": "트윈이 곧 답변한 뒤 소리 내어 읽어 줍니다." },
   "upload": { "storagePaused": "저장 용량 한도로 인해 업로드 저장이 일시 중지되었습니다. 나중에 다시 시도해 주세요.", "emptyFile": "파일이 비어 있습니다.", "tooLarge": "이 카테고리에 비해 파일이 너무 큽니다.", "wrongType": "파일 형식이 선택한 카테고리와 맞지 않습니다.", "aborted": "업로드가 취소되었습니다." },
   "langSw": { "ariaCurrent": "언어 변경, 현재:", "searchLabel": "언어 검색", "searchPlaceholder": "검색 … (예: español, türkçe, japan)" },
