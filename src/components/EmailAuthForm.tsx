@@ -54,11 +54,17 @@ export default function EmailAuthForm({ onClose, labels }: { onClose?: () => voi
           window.location.reload();
           return;
         }
-        setError(data.error?.message ?? labels?.errorLogin ?? 'Anmeldung fehlgeschlagen.');
+        setError(data.error?.message ?? labels?.errorLogin ?? 'E-Mail oder Passwort falsch. Bitte prüfen oder oben auf „Registrieren“ wechseln.');
       } else if (mode === 'register') {
         const { ok, data } = await postJson('/email/register', { email, password, name });
         if (ok) {
-          // Konto ist sofort aktiv und die Session gesetzt — direkt einloggen.
+          // Konto ist sofort aktiv und die Session gesetzt — direkt einloggen
+          // und als geführten Highway in den Start-Assistenten bringen.
+          try {
+            window.sessionStorage.setItem('smyst:goto-onboarding', '1');
+          } catch {
+            /* sessionStorage nicht verfügbar */
+          }
           window.location.reload();
           return;
         }
@@ -148,6 +154,22 @@ export default function EmailAuthForm({ onClose, labels }: { onClose?: () => voi
           {busy ? (labels?.submitBusy ?? 'Bitte warten…') : mode === 'login' ? (labels?.submitLogin ?? 'Anmelden') : mode === 'register' ? (labels?.submitRegister ?? 'Konto erstellen') : (labels?.submitForgot ?? 'Link senden')}
         </button>
       </form>
+
+      {mode === 'login' && !busy && (
+        <p className="mt-2 text-center text-xs text-[#8e97a8]">
+          Neu hier?{' '}
+          <button
+            type="button"
+            onClick={() => {
+              setMode('register');
+              reset();
+            }}
+            className="font-bold text-[#59C7FF] underline underline-offset-2 hover:text-white"
+          >
+            Kostenloses Konto erstellen
+          </button>
+        </p>
+      )}
 
       {onClose && (
         <button type="button" onClick={onClose} className="mt-2 w-full text-center text-xs text-[#8e97a8] hover:text-white">
