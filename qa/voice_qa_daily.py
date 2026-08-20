@@ -41,22 +41,30 @@ REQUIRED_LANGUAGES = {
     "en", "zh", "es", "ar", "fr", "de", "pt", "ru", "tr", "ja", "ko", "it", "hi", "id", "bn",
 }
 
+#: Voice-Worker-Stilllegung 29.07.2026 (siehe voice-worker-deploy.yml,
+#: "STILLGELEGT"-Kommentar + PR #261): Der GPU-Worker lief bewusst nur noch
+#: bis zur Kostensenkung; seitdem synthetisieren die 12 Worker-Sprachen
+#: ueber den dokumentierten Fallback (en-male). DE/EN/TR haben lokale
+#: Piper-Stimmen. Fuer die 12 Sprachen prueft der QA deshalb nur, dass die
+#: Synthese UEBERHAUPT funktioniert (WAV, Groesse, Latenz) — die Stimme
+#: wird als INFO gemeldet. Worker-XX-Stimmen gaebe es nur nach bewusster
+#: Reaktivierung des GPU-Workers (Paid-Service, Freigabe Adam noetig).
 SMOKE_TESTS = [
     {"name": "Englisch", "payload": {"text": "The republic is a form of government for the people.", "lang": "en", "gender": "female"}, "expect_voice_prefixes": ("en-", "worker-en")},
-    {"name": "Chinesisch", "payload": {"text": "你好，这是一个简短的语音测试。", "lang": "zh"}, "expect_voice_prefixes": ("worker-zh",)},
-    {"name": "Spanisch", "payload": {"text": "Hola, esta es una prueba breve de voz natural.", "lang": "es"}, "expect_voice_prefixes": ("worker-es",)},
-    {"name": "Arabisch", "payload": {"text": "مرحبا، هذا اختبار صوتي قصير لمنصة smyst.com.", "lang": "ar"}, "expect_voice_prefixes": ("worker-ar",)},
-    {"name": "Franzoesisch", "payload": {"text": "Bonjour, ceci est un court test vocal naturel.", "lang": "fr"}, "expect_voice_prefixes": ("worker-fr",)},
+    {"name": "Chinesisch", "payload": {"text": "你好，这是一个简短的语音测试。", "lang": "zh"}, "expect_voice_prefixes": None},
+    {"name": "Spanisch", "payload": {"text": "Hola, esta es una prueba breve de voz natural.", "lang": "es"}, "expect_voice_prefixes": None},
+    {"name": "Arabisch", "payload": {"text": "مرحبا، هذا اختبار صوتي قصير لمنصة smyst.com.", "lang": "ar"}, "expect_voice_prefixes": None},
+    {"name": "Franzoesisch", "payload": {"text": "Bonjour, ceci est un court test vocal naturel.", "lang": "fr"}, "expect_voice_prefixes": None},
     {"name": "Deutsch", "payload": {"text": "Die Republik ist eine Staatsform des Volkes.", "lang": "de", "gender": "male"}, "expect_voice_prefixes": ("de-", "worker-de")},
-    {"name": "Portugiesisch", "payload": {"text": "Ola, este e um breve teste de voz natural.", "lang": "pt"}, "expect_voice_prefixes": ("worker-pt",)},
-    {"name": "Russisch", "payload": {"text": "Здравствуйте, это короткий тест голосового режима.", "lang": "ru"}, "expect_voice_prefixes": ("worker-ru",)},
+    {"name": "Portugiesisch", "payload": {"text": "Ola, este e um breve teste de voz natural.", "lang": "pt"}, "expect_voice_prefixes": None},
+    {"name": "Russisch", "payload": {"text": "Здравствуйте, это короткий тест голосового режима.", "lang": "ru"}, "expect_voice_prefixes": None},
     {"name": "Tuerkisch", "payload": {"text": "Cumhuriyet, milletin egemenligine dayanan bir yonetim seklidir.", "lang": "tr", "gender": "male"}, "expect_voice_prefixes": ("tr-", "worker-tr")},
-    {"name": "Japanisch", "payload": {"text": "こんにちは、これは短い音声テストです。", "lang": "ja"}, "expect_voice_prefixes": ("worker-ja",)},
-    {"name": "Koreanisch", "payload": {"text": "안녕하세요, 이것은 짧은 음성 테스트입니다.", "lang": "ko"}, "expect_voice_prefixes": ("worker-ko",)},
-    {"name": "Italienisch", "payload": {"text": "Ciao, questo e un breve test vocale naturale.", "lang": "it"}, "expect_voice_prefixes": ("worker-it",)},
-    {"name": "Hindi", "payload": {"text": "नमस्ते, यह एक छोटा आवाज परीक्षण है।", "lang": "hi"}, "expect_voice_prefixes": ("worker-hi",)},
-    {"name": "Indonesisch", "payload": {"text": "Halo, ini adalah tes suara singkat yang alami.", "lang": "id"}, "expect_voice_prefixes": ("worker-id",)},
-    {"name": "Bengalisch", "payload": {"text": "নমস্কার, এটি একটি ছোট ভয়েস পরীক্ষা।", "lang": "bn"}, "expect_voice_prefixes": ("worker-bn",)},
+    {"name": "Japanisch", "payload": {"text": "こんにちは、これは短い音声テストです。", "lang": "ja"}, "expect_voice_prefixes": None},
+    {"name": "Koreanisch", "payload": {"text": "안녕하세요, 이것은 짧은 음성 테스트입니다.", "lang": "ko"}, "expect_voice_prefixes": None},
+    {"name": "Italienisch", "payload": {"text": "Ciao, questo e un breve test vocale naturale.", "lang": "it"}, "expect_voice_prefixes": None},
+    {"name": "Hindi", "payload": {"text": "नमस्ते, यह एक छोटा आवाज परीक्षण है।", "lang": "hi"}, "expect_voice_prefixes": None},
+    {"name": "Indonesisch", "payload": {"text": "Halo, ini adalah tes suara singkat yang alami.", "lang": "id"}, "expect_voice_prefixes": None},
+    {"name": "Bengalisch", "payload": {"text": "নমস্কার, এটি একটি ছোট ভয়েস পরীক্ষা।", "lang": "bn"}, "expect_voice_prefixes": None},
 ]
 
 MAX_LATENCY_SECONDS = 8.0
@@ -156,14 +164,21 @@ def main() -> int:
                 problems.append("kein WAV")
             if len(audio) < 1000:
                 problems.append(f"Audio zu klein ({len(audio)} B)")
-            if not any(voice_used.startswith(prefix) for prefix in test["expect_voice_prefixes"]):
-                problems.append(f"falsche Stimme: {voice_used} (erwartet {test['expect_voice_prefixes']})")
+            expected = test["expect_voice_prefixes"]
+            if expected is not None and not any(voice_used.startswith(prefix) for prefix in expected):
+                problems.append(f"falsche Stimme: {voice_used} (erwartet {expected})")
             if elapsed > MAX_LATENCY_SECONDS:
                 problems.append(f"zu langsam: {elapsed:.1f}s")
+            if expected is None and not problems:
+                # Dokumentierter Fallback (Worker-Stilllegung 29.07.2026):
+                # Synthese muss funktionieren; die konkrete Stimme ist INFO.
+                suffix = " [Fallback-Stimme, Worker bewusst stillgelegt]"
+            else:
+                suffix = ""
             findings.append({
                 "check": f"Synthese: {test['name']}",
                 "status": "OK" if not problems else "FEHLER",
-                "detail": f"{voice_used}, {len(audio) // 1024} KB, {elapsed:.1f}s" + (f" | {'; '.join(problems)}" if problems else ""),
+                "detail": f"{voice_used}, {len(audio) // 1024} KB, {elapsed:.1f}s{suffix}" + (f" | {'; '.join(problems)}" if problems else ""),
             })
             if problems:
                 ok = False
