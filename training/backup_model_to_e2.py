@@ -117,8 +117,7 @@ def main() -> int:
                       retries={"max_attempts": 10}),
     )
     for path, name in vorhanden:
-        client.upload_file(str(path), BUCKET, f"{key_prefix}/{name}")
-        print(f"  hochgeladen: {name}")
+        _upload_robust(client, path, f"{key_prefix}/{name}", name)
     client.put_object(
         Bucket=BUCKET, Key=f"{key_prefix}/MANIFEST.json",
         Body=json.dumps(manifest, indent=2, ensure_ascii=False).encode("utf-8"),
@@ -126,6 +125,62 @@ def main() -> int:
     )
     print(f"FERTIG — inkl. MANIFEST.json unter s3://{BUCKET}/{key_prefix}/")
     return 0
+
+
+def _upload_robust(client, path: Path, key: str, name: str, part_mb: int = 16,
+                   part_retries: int = 8) -> None:
+    """Datei-Upload mit eigenem Multipart-Teil-Retry.
+
+    Warum nicht client.upload_file: Bei instabiler Anbindung (gemesen:
+    Verbindungsabbruch alle 1-2 Minuten unter Dauerlast) bricht botocore
+    den GESAMTEN Upload mitten im Teil ab und startet von vorn — bei 1 GB
+    unbrauchbar. Hier ist nur der aktuelle Teil vom Abbruch betroffen und
+    wird mit frischer Verbindung wiederholt.
+    """
+    size = path.stat().st_size
+    if size <= part_mb * 1024 * 1024:
+        for versuch in range(1, part_retries + 1):
+            try:
+                client.put_object(Bucket=BUCKET, Key=key, Body=path.read_bytes())
+                print(f"  hochgeladen: {name}")
+                return
+            except Exception as error:
+                print(f"  {name}: Versuch {versuch} fehlgeschlagen ({type(error).__name__}), erneut...", flush=True)
+        raise RuntimeError(f"{name} konnte nicht hochgeladen werden")
+
+    upload = client.create_multipart_upload(Bucket=BUCKET, Key=key)
+    upload_id = upload["UploadId"]
+    parts: list[dict[str, object]] = []
+    anzahl = (size + part_mb * 1024 * 1024 - 1) // (part_mb * 1024 * 1024)
+    try:
+        with path.open("rb") as handle:
+            for nr in range(1, anzahl + 1):
+                chunk = handle.read(part_mb * 1024 * 1024)
+                for versuch in range(1, part_retries + 1):
+                    try:
+                        antwort = client.upload_part(
+                            Bucket=BUCKET, Key=key, UploadId=upload_id,
+                            PartNumber=nr, Body=chunk,
+                        )
+                        parts.append({"PartNumber": nr, "ETag": antwort["ETag"]})
+                        if nr % 10 == 0 or nr == anzahl:
+                            print(f"  {name}: Teil {nr}/{anzahl}", flush=True)
+                        break
+                    except Exception as error:
+                        print(f"  {name}: Teil {nr}, Versuch {versuch} ({type(error).__name__})", flush=True)
+                else:
+                    raise RuntimeError(f"{name}: Teil {nr} endgueltig gescheitert")
+        client.complete_multipart_upload(
+            Bucket=BUCKET, Key=key, UploadId=upload_id,
+            MultipartUpload={"Parts": parts},
+        )
+        print(f"  hochgeladen: {name} ({anzahl} Teile)")
+    except Exception:
+        try:
+            client.abort_multipart_upload(Bucket=BUCKET, Key=key, UploadId=upload_id)
+        except Exception:
+            pass
+        raise
 
 
 if __name__ == "__main__":
