@@ -11,9 +11,13 @@ Pfad hoch, z. B.:
     models/smyst-1.0/2026-08-20/adapters.safetensors
     models/smyst-1.0/2026-08-20/MANIFEST.json
 
-Start (Keys wie beim Backend, als Umgebungsvariablen):
-    IDRIVE_E2_ACCESS_KEY=... IDRIVE_E2_SECRET_KEY=... \
-      ../backend/.venv/bin/python backup_model_to_e2.py --version 2026-08-20
+Start (Keys wie beim Backend — automatisch aus backend/.env gelesen,
+        oder als Umgebungsvariablen):
+    ../backend/.venv/bin/python backup_model_to_e2.py --version 2026-08-20
+
+backend/.env (gitignored) braucht nur:
+    IDRIVE_E2_ACCESS_KEY=...
+    IDRIVE_E2_SECRET_KEY=...
 
 Ohne Keys: --dry-run zeigt nur, was hochgeladen wuerde.
 """
@@ -85,7 +89,20 @@ def main() -> int:
     access = os.environ.get("IDRIVE_E2_ACCESS_KEY", "").strip()
     secret = os.environ.get("IDRIVE_E2_SECRET_KEY", "").strip()
     if not access or not secret:
-        sys.exit("IDRIVE_E2_ACCESS_KEY/IDRIVE_E2_SECRET_KEY fehlen (Umgebungsvariablen)")
+        # Fallback: backend/.env (liegt neben training/), ist gitignored und
+        # wird von nichts anderem eingelesen — nur fuer lokale Laeuufe.
+        env_file = base.parent / "backend" / ".env"
+        if env_file.exists():
+            for line in env_file.read_text().splitlines():
+                if line.startswith("IDRIVE_E2_ACCESS_KEY="):
+                    access = access or line.split("=", 1)[1].strip()
+                elif line.startswith("IDRIVE_E2_SECRET_KEY="):
+                    secret = secret or line.split("=", 1)[1].strip()
+    if not access or not secret:
+        sys.exit(
+            "IDRIVE_E2_ACCESS_KEY/IDRIVE_E2_SECRET_KEY fehlen: entweder als "
+            "Umgebungsvariablen oder in backend/.env eintragen."
+        )
 
     import boto3
     from botocore.config import Config
