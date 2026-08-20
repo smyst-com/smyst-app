@@ -388,7 +388,10 @@ function speakText(
   return true
 }
 
-function liveGreetingText(twinName: string | undefined, lang: string): string {
+function liveGreetingText(twinName: string | undefined, lang: string, labels?: { withName: string; withoutName: string }): string {
+  if (labels) {
+    return twinName ? labels.withName.replace('{name}', twinName) : labels.withoutName
+  }
   return lang === 'de'
     ? twinName
       ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
@@ -421,10 +424,10 @@ function hasUsedVoice(): boolean {
 
 // Begruessungs-Audio vorab erzeugen und persistent cachen (P5). Muss dieselben
 // Stimm-Parameter aufloesen wie speakText, damit der Cache-Key identisch ist.
-function prefetchGreetingSpeech(twinName: string | undefined, lang: string, voiceGender?: 'female' | 'male') {
+function prefetchGreetingSpeech(twinName: string | undefined, lang: string, voiceGender?: 'female' | 'male', labels?: { withName: string; withoutName: string }) {
   const gender = voiceGenderFor(twinName) ?? voiceGender
   prefetchSpeech(
-    liveGreetingText(twinName, lang),
+    liveGreetingText(twinName, lang, labels),
     lang,
     gender,
     userVoiceIdFor(twinName) ?? remoteVoiceIdFor(twinName, lang, gender),
@@ -1619,8 +1622,8 @@ function SmystStartPage({
   const prefetchTwinGender = selectedTwin?.voiceGender
   useEffect(() => {
     if (!prefetchTwinName || !hasUsedVoice()) return
-    prefetchGreetingSpeech(prefetchTwinName, lang, prefetchTwinGender)
-  }, [prefetchTwinName, prefetchTwinGender, lang])
+    prefetchGreetingSpeech(prefetchTwinName, lang, prefetchTwinGender, lang === DEFAULT_LANG ? undefined : t.greet)
+  }, [prefetchTwinName, prefetchTwinGender, lang, t])
 
   const genericMessageLabel =
     lang === DEFAULT_LANG
@@ -2378,7 +2381,7 @@ function SmystStartPage({
           return
         }
         liveGreetedRef.current = greetKey
-        const greeting = liveGreetingText(twinName, lang)
+        const greeting = liveGreetingText(twinName, lang, lang === DEFAULT_LANG ? undefined : t.greet)
         setVoiceState('replying')
         const started = speakText(greeting, lang, () => {
           setIsSpeaking(false)
