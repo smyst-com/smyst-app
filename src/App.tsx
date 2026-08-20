@@ -5937,6 +5937,7 @@ function AdminControlCenterInner() {
   const [adminMfaMessage, setAdminMfaMessage] = useState<string | null>(null)
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
   const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
+  const [adminLiveOps, setAdminLiveOps] = useState<{ visits?: { totalToday: number; totalAll: number }; ads?: { total: number }; chatFeedback?: { up: number; down: number; dislikeRate: number } }>({})
   const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
   const [computeCapabilities, setComputeCapabilities] = useState<ComputeCapabilitiesApi | null>(null)
@@ -5998,6 +5999,22 @@ function AdminControlCenterInner() {
       alive = false
     }
   }, [activeSection])
+  // Live-Betrieb (Autopilot): Besucher, Werbe-Impressions, Feedback-Quote
+  useEffect(() => {
+    if (activeSection !== 'aiQuality') return
+    let alive = true
+    Promise.all([
+      fetchService('/api/v1/visits/stats').then((r) => r.json()).catch(() => null),
+      fetchService('/api/v1/ads/stats').then((r) => r.json()).catch(() => null),
+      fetchService('/api/v1/chat/feedback/stats').then((r) => r.json()).catch(() => null),
+    ]).then(([visits, ads, chatFeedback]) => {
+      if (alive) setAdminLiveOps({ visits, ads, chatFeedback })
+    })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
 
   useEffect(() => {
     let alive = true
@@ -6555,6 +6572,23 @@ function AdminControlCenterInner() {
 
     return (
       <div className="grid gap-5">
+        <div className="grid gap-3 rounded-lg border border-[#d9e2ec] bg-white p-4 sm:grid-cols-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Besucher (Autopilot)</p>
+            <p className="mt-1 text-2xl font-bold text-[#101828]">{adminLiveOps.visits?.totalAll ?? 0}</p>
+            <p className="text-xs text-[#667085]">Heute: {adminLiveOps.visits?.totalToday ?? 0} Profilaufrufe</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Werbe-Impressions (25%-Basis)</p>
+            <p className="mt-1 text-2xl font-bold text-[#101828]">{adminLiveOps.ads?.total ?? 0}</p>
+            <p className="text-xs text-[#667085]">Auszahlung: 25 % der Erlöse, pro-rata nach Impressions</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Chat-Feedback</p>
+            <p className="mt-1 text-2xl font-bold text-[#101828]">👍 {adminLiveOps.chatFeedback?.up ?? 0} · 👎 {adminLiveOps.chatFeedback?.down ?? 0}</p>
+            <p className="text-xs text-[#667085]">Dislike-Rate: {Math.round((adminLiveOps.chatFeedback?.dislikeRate ?? 0) * 100)} %</p>
+          </div>
+        </div>
         {adminQualityStatus === 'denied' && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
             Qualitätsdaten nur für Admin-Rollen sichtbar. Bitte mit einem Admin-Konto anmelden.
