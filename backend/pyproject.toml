@@ -16,6 +16,7 @@ dependencies = [
   # Signaturpruefung der GitHub-OIDC-Tokens im CI-LLM-Gateway.
   "pyjwt[crypto]>=2.9.0",
   "redis>=5.2.0",
+  "stripe>=11.0.0",
   "sqlalchemy[asyncio]>=2.0.0",
   "uvicorn[standard]>=0.32.0",
 ]

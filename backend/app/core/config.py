@@ -114,6 +114,13 @@ class Settings(BaseSettings):
         default=20.0, validation_alias="LLM_CHAT_TOTAL_DEADLINE_SECONDS"
     )
 
+    # Stripe Premium-Abo (Phase 2); ohne Keys ist Billing sauber deaktiviert (503)
+    stripe_secret_key: str | None = Field(default=None, validation_alias="STRIPE_SECRET_KEY")
+    stripe_webhook_secret: str | None = Field(default=None, validation_alias="STRIPE_WEBHOOK_SECRET")
+    stripe_premium_price_id: str | None = Field(
+        default=None, validation_alias="STRIPE_PREMIUM_PRICE_ID"
+    )
+
     cors_origin_raw: str = Field(
         default="http://localhost:3000,http://localhost:5173,http://127.0.0.1:4173",
         validation_alias="CORS_ORIGINS",

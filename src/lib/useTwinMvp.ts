@@ -842,6 +842,29 @@ export function useTwinMvp() {
     [run],
   )
 
+  const startPremiumCheckout = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ checkoutUrl: string; sessionId: string }>(
+          '/api/billing/checkout-session',
+          { method: 'POST', body: JSON.stringify({}) },
+        )
+        return body
+      }),
+    [run],
+  )
+
+  const getPremiumStatus = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ premiumActive: boolean; premiumSince?: number; stripeCustomerId?: string }>(
+          '/api/billing/status',
+        )
+        return body
+      }),
+    [run],
+  )
+
   return {
     loading,
     error,
@@ -872,5 +895,7 @@ export function useTwinMvp() {
     exportAccount,
     deleteAccount,
     submitSupportReport,
+    startPremiumCheckout,
+    getPremiumStatus,
   }
 }
