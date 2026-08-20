@@ -24,7 +24,11 @@ import sys
 import time
 import urllib.request
 
-DEFAULT_BASE_URL = "https://cherry-asparagus-a32jleuk8dgn22zu.salad.cloud"
+# Backend-Umzug Salad -> Zeabur (siehe Memory_Bank 08/2026): der Salad-Host
+# antwortet seit dem Umzug mit 403; der Live-Service laeuft auf api.smyst.com
+# (dort auch der Piper-TTS + Voice-Worker). Verifiziert 20.08.2026: Stimmliste
+# 200, Deutsch- und Chinesisch-Synthese liefern gueltige WAVs unter 8 s.
+DEFAULT_BASE_URL = "https://api.smyst.com"
 
 EXPECTED_VOICES = {
     "de-thorsten", "de-karlsson", "de-pavoque", "de-kerstin", "de-ramona", "de-eva",
