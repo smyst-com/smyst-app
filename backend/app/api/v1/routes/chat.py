@@ -380,6 +380,7 @@ def _krisen_nachricht(chat: dict[str, object], message: str, language: str | Non
         "role": "assistant",
         "content": krisen_antwort(language),
         "createdAt": _now_ms(),
+        "aiGenerated": True,
     }
     _persist_exchange(chat, message, assistant_message, language=language)
     return assistant_message
@@ -411,6 +412,7 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
         "role": "assistant",
         "content": llm_response.text,
         "createdAt": _now_ms(),
+        "aiGenerated": True,
     }
     web_research = _web_research_metadata(research_response)
     if web_research is not None:
@@ -564,6 +566,7 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
                         "role": "assistant",
                         "content": event.get("text", ""),
                         "createdAt": _now_ms(),
+                        "aiGenerated": True,
                     }
                     web_research = _web_research_metadata(research_response)
                     if web_research is not None:
