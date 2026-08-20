@@ -23,6 +23,9 @@ Kostenlos:
 - Groq - LLM-Free-Tier, erster Provider in Pipeline, QA und Evals.
 - Resend - E-Mail-Versand im Free-Tier, optional.
 - Spaceship - Domain und DNS (nur die Domain-Gebuehr selbst).
+- Codeberg - privater Spiegel des Repositories als Ausfallsicherung
+  (`codeberg.org/smyst/smyst-app`, Automatik ueber
+  `.github/workflows/codeberg-mirror.yml`). Nur Sicherung, kein Betriebspfad.
 
 Kostenpflichtig, bewusst freigegeben:
 
@@ -43,8 +46,8 @@ AI-Provider ohne Freigabe.
 - Cloudflare Pages/Workers/KV - in aelteren Dokumenten "Legacy edge provider".
 - IDrive e2 als Website-Host - Public Bucket Access ist im Free-Plan
   serverseitig gesperrt (`PutBucketPolicy` -> `AccessDenied`).
-- Codeberg oder andere Git-Hoster - werden nicht genutzt. Einziges Remote ist
-  `https://github.com/smyst-com/smyst-app.git`.
+- Codeberg als Ersatz fuer GitHub - Codeberg dient ausschliesslich als
+  privater Spiegel des Repositories, nicht als Betriebsplattform.
 
 ## Zielarchitektur
 

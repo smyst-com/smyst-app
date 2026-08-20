@@ -23,8 +23,8 @@ Nicht mehr im Betrieb:
   Der Salad-Host antwortet seit Mitte August 2026 nicht mehr.
 - Cloudflare: frueherer Edge-Provider, in aelteren Dokus als
   "Legacy edge provider" bezeichnet. Kein Produktionsbestandteil mehr.
-- Codeberg oder andere Git-Hoster: werden nicht genutzt. Einziges Remote ist
-  `https://github.com/smyst-com/smyst-app.git`.
+- Codeberg ist KEIN Ersatz und kein Betriebssystembestandteil, sondern ein
+  reiner Spiegel (siehe unten).
 
 ## Kette einer Anfrage
 
@@ -117,6 +117,25 @@ IDrive e2 (siehe `backend/app/integrations/*_store.py`).
 
 PostgreSQL und Redis existieren nur in `docker-compose.yml` unter dem Profil
 `legacy-local` fuer lokale Entwicklung.
+
+## Codeberg-Spiegel
+
+`codeberg.org/smyst/smyst-app` (privat, Account `smyst`) ist eine
+Ausfallsicherung des Repositories. GitHub bleibt die Quelle: Pages, Actions,
+Pipeline und Deploys laufen ausschliesslich dort. Codeberg wird nur
+beschrieben, nie gelesen.
+
+- Automatik: `.github/workflows/codeberg-mirror.yml` spiegelt `main` und Tags
+  bei jedem Push auf `main`, zusaetzlich woechentlich per Cron.
+- Benoetigtes Secret: `CODEBERG_TOKEN` (Scope `write:repository`). Einrichtung
+  steht im Kopf der Workflow-Datei; Secrets traegt ausschliesslich der
+  Inhaber ein.
+- Schreibrechte: der Codeberg-Account `iMild` ist Collaborator mit
+  Write-Recht auf `smyst/smyst-app`.
+- Codeberg ist eine Plattform fuer freie und quelloffene Projekte. Dass dort
+  ein geschlossenes Produktions-Repo als privater Spiegel liegt, ist bewusst
+  so entschieden und sollte bei Aenderungen an deren Nutzungsbedingungen
+  neu geprueft werden.
 
 ## Google Login
 
