@@ -36,14 +36,17 @@ ENDPOINT = "https://s3.us-west-2.idrivee2.com"
 REGION = "us-west-2"
 BUCKET = "smyst-memories"
 
-#: Was gesichert wird: (lokaler Pfad relativ zu training/, e2-Dateiname)
+#: Was gesichert wird: (lokaler Pfad relativ zu training/, e2-Dateiname).
+#: Bewusst KLEINE DATEIEN ZUERST — bei wackliger Anbindung kommen die sicher
+#: durch, und das 1-GB-Modell als Letztes (ein Abbruch kostet dann nur den
+#: grossen Teil, nicht die kleinen).
 ARTEFAKTE = [
-    ("fused/smyst-1.0-sft/model.safetensors", "fused-model.safetensors"),
     ("fused/smyst-1.0-sft/config.json", "fused-config.json"),
     ("fused/smyst-1.0-sft/generation_config.json", "fused-generation-config.json"),
-    ("fused/smyst-1.0-sft/tokenizer.json", "fused-tokenizer.json"),
     ("fused/smyst-1.0-sft/tokenizer_config.json", "fused-tokenizer-config.json"),
+    ("fused/smyst-1.0-sft/tokenizer.json", "fused-tokenizer.json"),
     ("adapters/smyst-1.0-sft/adapters.safetensors", "adapters.safetensors"),
+    ("fused/smyst-1.0-sft/model.safetensors", "fused-model.safetensors"),
 ]
 
 
