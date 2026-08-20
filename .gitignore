@@ -80,3 +80,9 @@ public/favicon.ico
 
 # Trainings-Export (enthaelt Nutzereingaben, NIE einchecken)
 training-export/
+
+# MLX-Fast-Track-Artefakte (Modelle/Daten, NIE einchecken)
+training/mlx-data/
+training/adapters/
+training/fused/
+training/.venv-mlx/

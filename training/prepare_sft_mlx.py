@@ -2,24 +2,32 @@
 """Konvertiert smyst-Trainingsexporte in das Chat-Format von MLX (mlx_lm.lora).
 
 Eingabe (aus dem Artefakt des Workflows Trainingsdaten-Export):
-    sft-<datum>.jsonl          User->Twin-Austausche (Pflicht)
-    qa-judgments-<datum>.jsonl QA-Urteile der Pipeline (optional, --with-qa)
+    sft-<datum>.jsonl          User->Twin-Austausche (immer dabei)
+    qa-judgments-<datum>.jsonl QA-Urteile der Pipeline (optional)
+
+Quellen aus qa-judgments (Schalter):
+    --from-qa   Die Antwort-Texte der Urteile sind GPT-4o-generierte
+                Twin-Antworten MIT Profilkontext — mit --from-qa werden alle
+                verdict=pass-Paare als Persona-SFT-Beispiele aufbereitet
+                ("Du bist <Name> (<Kategorie>, <Lebensdaten>) ..."). Das ist
+                der Fast-Track-Datensatz: die Pipeline erzeugt ihr eigenes
+                Trainingsmaterial als Nebenprodukt (Beschluss 20.08.).
+    --with-qa   Urteils-Training (pass/fail) — NUR mit >= 5 % fail_ratio,
+                sonst bricht das Skript ab (siehe export_qa_judgments).
 
 Ausgabe (je Zeile ein dict mit "messages"): train.jsonl / valid.jsonl im
 Zielverzeichnis. mlx_lm.lora erwartet genau dieses Format.
 
 Regeln:
-- Nur Records mit nicht-leerem prompt UND response.
+- Nur Records mit nicht-leerem prompt UND response bzw. answer.
 - history (max. 8 Turns laut Export) wird als Vorverlauf uebernommen.
-- Deduplizierung ueber (twinId, prompt) — dieselbe Frage mehrfach bringt
-  kein zusaetzliches Signal, verzoerrt aber die Verteilung.
+- Deduplizierung ueber den user-Turn-Inhalt — dieselbe Frage mehrfach
+  bringt kein zusaetzliches Signal, verzoerrt aber die Verteilung.
 - Deterministischer Shuffle (seed 42) vor dem 98/2-Split.
-- QA-Urteile NUR auf ausdruecklichen Wunsch: ein Datensatz mit ~100 % pass
-  lehrt einen Pruefer 'immer pass' (siehe export_qa_judgments) — deshalb
-- bricht das Skript bei --with-qa ab, wenn fail_ratio unter 5 % liegt.
 
 Nutzung:
     python3 prepare_sft_mlx.py --in ../training-export --out ../mlx-data
+    python3 prepare_sft_mlx.py --in ../training-export --out ../mlx-data --from-qa
     python3 prepare_sft_mlx.py --in ../training-export --out ../mlx-data --with-qa
 """
 
@@ -89,6 +97,43 @@ def sft_examples(records: list[dict]) -> list[dict]:
     return examples
 
 
+def qa_answer_examples(records: list[dict]) -> list[dict]:
+    """Persona-SFT aus QA-Antworten: nur verdict=pass, Persona im Prompt.
+
+    Ohne Profilkontext waeren die Antworten verwaist (die Antwort gehoert zu
+    einer konkreten Person); das Profil-Feld des Urteils liefert genau den
+    noetigen Kontext in kompakter Form.
+    """
+    examples: list[dict] = []
+    for record in records:
+        if record.get("verdict") != "pass":
+            continue
+        question = str(record.get("question") or "").strip()
+        answer = str(record.get("answer") or "").strip()
+        profile = record.get("profile") if isinstance(record.get("profile"), dict) else {}
+        name = str(profile.get("name") or "").strip()
+        if not question or not answer or not name:
+            continue
+        facts = [str(profile.get("category") or "").strip()]
+        birth = str(profile.get("birth_date") or "").strip()
+        death = str(profile.get("death_date") or "").strip()
+        if birth:
+            facts.append(f"{birth}–{death}" if death else birth)
+        persona = f"Du bist {name}"
+        if facts:
+            persona += f" ({', '.join(f for f in facts if f)})"
+        examples.append(
+            {
+                "messages": [
+                    {"role": "system", "content": TWIN_SYSTEM_PROMPT},
+                    {"role": "user", "content": f"{persona}. {question}"},
+                    {"role": "assistant", "content": answer},
+                ]
+            }
+        )
+    return examples
+
+
 def qa_examples(records: list[dict]) -> list[dict]:
     if not records:
         return []
@@ -123,7 +168,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="smyst-Export -> MLX-Chat-Format")
     parser.add_argument("--in", dest="indir", required=True, help="Verzeichnis mit den Export-JSONLs")
     parser.add_argument("--out", dest="outdir", required=True, help="Zielverzeichnis (train/valid)")
-    parser.add_argument("--with-qa", action="store_true", help="QA-Urteile zumischen (mit fail_ratio-Gate)")
+    parser.add_argument("--from-qa", action="store_true", help="QA-Antworten (nur pass) als Persona-SFT aufbereiten — der Fast-Track-Datensatz")
+    parser.add_argument("--with-qa", action="store_true", help="QA-Urteile (pass/fail) zumischen (mit fail_ratio-Gate)")
     parser.add_argument("--valid-frac", type=float, default=0.02, help="Anteil Validierung (Default 0.02)")
     args = parser.parse_args()
 
@@ -135,6 +181,8 @@ def main() -> int:
     qa_files = sorted(glob.glob(str(Path(args.indir) / "qa-judgments-*.jsonl")))
     if args.with_qa and qa_files:
         examples += qa_examples(_records(qa_files))
+    if args.from_qa and qa_files:
+        examples += qa_answer_examples(_records(qa_files))
 
     if len(examples) < 50:
         sys.exit(f"nur {len(examples)} Beispiele — fuer ein SFT sind 50 das absolute Minimum, mehr Sammeln lohnt")
@@ -150,7 +198,11 @@ def main() -> int:
             for row in rows:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
-    print(f"train: {split}  valid: {valid_count}  (SFT-Quellen: {len(sft_files)}, QA zugemischt: {args.with_qa})")
+    print(
+        f"train: {split}  valid: {valid_count}  "
+        f"(SFT-Chats: {len(sft_files)} Quelldatei(en), QA-Persona: {'an' if args.from_qa else 'aus'}, "
+        f"QA-Urteile: {'an' if args.with_qa else 'aus'})"
+    )
     return 0
 
 
