@@ -1,8 +1,10 @@
 # 01 System Architecture
 
+Stand: 2026-08-20. Beschreibt den Live-Stand.
+
 ## Ziel
 
-Smyst ist eine Plattform fuer digitale KI-Zwillinge. Nutzer laden Wissen, Gedanken, Erfahrungen, Dokumente, Bilder, Audio und Video hoch. Daraus entsteht ein KI-Zwilling, der spaeter in Gesprächen persoenlich, kontextbewusst und sicher antwortet.
+smyst.com ist eine Plattform fuer digitale KI-Zwillinge. Nutzer laden Wissen, Gedanken, Erfahrungen, Dokumente, Bilder, Audio und Video hoch. Daraus entsteht ein KI-Zwilling, der spaeter in Gesprächen persoenlich, kontextbewusst und sicher antwortet.
 
 ## Systemgrenzen
 
@@ -17,10 +19,10 @@ In Scope:
 
 Globale Zielanforderung:
 
-- Smyst muss langfristig Web, PWA, iPhone, Android und zukuenftige Plattformen mit demselben API-Kern bedienen.
-- Die Architektur haelt das Milliarden-Nutzer-Ziel als Langfristvision fest. Die aktuelle Free-only-Betriebsstufe ist jedoch ein MVP und keine Milliarden-Nutzer-Infrastruktur.
+- smyst.com muss langfristig Web, PWA, iPhone, Android und zukuenftige Plattformen mit demselben API-Kern bedienen.
+- Die Architektur haelt das Milliarden-Nutzer-Ziel als Langfristvision fest. Die aktuelle Betriebsstufe - ein Backend-Container plus Objektspeicher - ist ein kleiner Produktivbetrieb und keine Milliarden-Nutzer-Infrastruktur.
 - Chat-Interaktionen sind der kritischste Echtzeitpfad und werden getrennt von langsamer Verarbeitung optimiert.
-- AI-Provider, Storage, Compute und Retrieval bleiben konzeptionell austauschbar. In der Free-only-Phase sind aber keine kostenpflichtigen Zusatzdienste erlaubt.
+- AI-Provider, Storage, Compute und Retrieval bleiben austauschbar. Neue kostenpflichtige Anbieter brauchen eine Freigabe und einen Eintrag in `docs/FREE_ONLY_INFRASTRUCTURE.md`.
 
 Out of Scope fuer das Fundament:
 
@@ -34,33 +36,34 @@ Out of Scope fuer das Fundament:
 
 ```text
 Client Layer
-  Web/PWA on IDrive e2 static hosting Free
+  Web/PWA on GitHub Pages (smyst.com, app., cdn.)
   Existing Capacitor shells for iOS/Android
 
 Edge Layer
-  Spaceship DNS, TLS, CDN, WAF baseline on Free plan
-  Static asset caching
-  Basic bot and rate protections
+  Spaceship DNS
+  GitHub Pages TLS and static caching
 
 API Layer
-  Salad API Free
-  Auth, storage, free-only chat/API, language routing and upload signing
+  Zeabur - smyst-backend (FastAPI) on api.smyst.com
+  Auth, storage signing, chat, search, TTS/ASR, admin
 
 Domain Services
-  Worker modules for auth, storage, chat/API, translation/static language routing and metadata
+  Backend modules under backend/app/api, /ai, /services, /workers
 
 AI Services
-  Static/demo responses in Free-only phase
-  No paid external AI provider
+  OpenRouter for the live twin chat
+  Groq free tier first for pipeline, QA and evals
+  Deterministic crisis guard in front of every model call
 
 Data Layer
-  Salad API KV Free for small metadata and sessions
-  IDrive e2 object storage with hard quota before paid usage
+  IDrive e2 object storage - users, chats, feedback, pipeline artefacts,
+  uploads and backups as JSON/objects
+  No PostgreSQL and no Redis in production
 
 Operations
-  GitHub Actions
-  IDrive e2 static hosting/Workers deployment
-  Legacy edge provider Free analytics/observability only where available
+  GitHub Actions for CI, cron pipelines, quality loop and deploys
+  GitHub Pages deploy for the frontend
+  Zeabur auto-deploy for the backend
 ```
 
 ## Domain Boundaries
@@ -81,33 +84,37 @@ Operations
 ### Upload Flow
 
 ```text
-Client -> Legacy edge provider Worker: POST /storage/upload-url
-Worker -> KV: store upload intent, quota counters and user upload index
-Worker -> IDrive e2: create signed upload URL
-Client -> IDrive e2: upload file directly
-Client -> Legacy edge provider Worker: POST /storage/upload-complete
-Worker -> KV: mark upload as uploaded
+Client  -> Backend: POST /storage/upload-url
+Backend -> checks session, role, visibility, mime, size and quota
+Backend -> IDrive e2: create signed upload URL
+Client  -> IDrive e2: upload file directly
+Client  -> Backend: POST /storage/upload-complete
+Backend -> IDrive e2: verify object via HEAD, persist status object
 ```
 
 ### Chat Flow
 
 ```text
-Client -> Legacy edge provider Worker: POST /api/chat/start
-Worker -> KV: store lightweight session state
-Client -> Legacy edge provider Worker: POST /api/chat/messages
-Worker -> KV: store small chat state
-Worker -> Client: static/free-only response without external model API
+Client  -> Backend: POST /api/chat/...
+Backend -> IDrive e2: load twin context and chat archive
+Backend -> crisis guard, moderation, retrieval
+Backend -> LLM provider chain (OpenRouter, fallback order per settings)
+Backend -> Client: answer with sources
+Backend -> IDrive e2: append chat archive and feedback objects
 ```
+
+Faellt die gesamte Provider-Kette aus, antwortet ein deterministischer
+Not-Fallback (`mode=local`). Das ist ein Stoerungssignal, kein Normalbetrieb.
 
 ## Startarchitektur vs. Zielarchitektur
 
-Start:
+Aktuell:
 
-- IDrive e2 static hosting Free fuer Web/PWA.
-- Salad API Free fuer API/Auth/Upload-Signing.
-- Salad/IDrive metadata Free fuer kleine Metadaten und Sessions.
-- IDrive e2 fuer Objekt-Speicher, mit harter Kostenbremse.
+- GitHub Pages fuer Web/PWA.
+- Zeabur fuer API, Auth, Chat, TTS/ASR und Upload-Signing.
+- IDrive e2 fuer Objekt-Speicher und Datenhaltung, mit harter Kostenbremse.
 - GitHub Free fuer Repository, Dokumentation und CI/CD.
+- OpenRouter und Groq fuer LLM-Inferenz.
 
 Ziel:
 
@@ -123,9 +130,9 @@ Ziel:
 
 ## Architekturentscheidungen
 
-- Salad API sind in der Free-only-Phase der Systemkern.
-- Langsame Aufgaben verlassen sofort den Request-Pfad.
-- Es gibt keine Production-Abhaengigkeit auf PostgreSQL, pgvector, Redis, VPS oder FastAPI.
+- Der Backend-Container auf Zeabur ist der Systemkern; GitHub Pages liefert nur Statisches aus.
+- Langsame Aufgaben verlassen sofort den Request-Pfad und laufen als GitHub-Actions-Cronjobs.
+- Es gibt keine Production-Abhaengigkeit auf PostgreSQL, pgvector, Redis oder einen eigenen VPS. Persistenz laeuft ausschliesslich ueber IDrive-e2-Objekte.
 - Alle AI-Antworten muessen auf Berechtigungen, Moderation und Quellenlogik Ruecksicht nehmen.
 - Der Chat-Pfad wird so kurz wie moeglich gehalten: Auth, Permission, Retrieval, Routing, Streaming.
 - Kein langsamer Upload-, Parsing-, Embedding- oder Twin-Build-Schritt darf den Chat-Pfad blockieren.

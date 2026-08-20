@@ -1,257 +1,163 @@
-# Smyst Free-Only Data Map
+# smyst.com Data Map
 
-Status: verbindliche Production-Datenlandkarte.
+Stand: 2026-08-20. Status: verbindliche Production-Datenlandkarte.
+
+Diese Datei hiess frueher "Free-Only Data Map" und beschrieb eine
+Cloudflare-KV-Architektur mit `s:{sessionId}`- und `meta:*`-Schluesseln. Diese
+Architektur wurde nie so gebaut. Der Dateiname bleibt, weil andere Dokumente
+darauf verweisen.
 
 ## Production-Bausteine
 
 | Ebene | Dienst | Aufgabe | Gespeicherte Daten |
 |---|---|---|---|
 | Code | GitHub Free | Repository, Versionierung, CI/CD, Dokumentation | Quellcode, Markdown-Doku, Workflows, Release-Notizen |
-| Web/PWA | IDrive e2 static hosting Free | Vite/React Build ausliefern | statische Assets aus `dist/`, HTML, CSS, JS, Manifest, Sitemap, `robots.txt`, `llms.txt` |
-| API | Salad API Free | Auth, Storage-Signing, kleine API-Flows, Sprache/Edge-Routing | keine grossen Dateien, keine dauerhafte grosse Datenbank |
-| Sessions | Salad/IDrive metadata Free | Session-, User-, Rollen-/Rechte- und OAuth-State | `s:{sessionId}`, `auth:sessions:{userSub}`, `auth:user:{sub}`, `state:{nonce}` |
-| Metadaten | Salad/IDrive metadata Free | kleine User-/Upload-/Twin-/Profil-/Chat-/Quota-/Support-/Statusdaten | `meta:upload:{userSub}:{uploadId}`, `meta:uploads:{userSub}`, `meta:upload-by-key:{userSub}:{sha256(key)}`, `meta:twin:{userSub}:{twinId}`, `meta:twins:{userSub}`, `public:twin:{slug}`, `meta:chat:{userSub}:{chatId}`, `meta:chats:{userSub}`, `meta:support-report:{createdAt}:{reportId}`, `quota:user:{userSub}:{month}`, `quota:global:{month}` |
-| Dateien | IDrive e2 | zentraler Speicher fuer Uploads, Profilbilder, Backups und Twin-Daten | `users/{userSub}/uploads/...`, `users/{userSub}/profile/images/...`, `users/{userSub}/backups/...`, `users/{userSub}/twins/{twinId}/data/...` |
+| Web/PWA | GitHub Pages | Vite/React-Build ausliefern | statische Assets aus `dist/`, HTML, CSS, JS, Manifest, Sitemap, `robots.txt`, `llms.txt`, prerenderte Profilseiten, statische JSON-API |
+| API | Zeabur (`smyst-backend`) | Auth, Storage-Signing, Chat, Suche, TTS/ASR, Admin | keine dauerhafte Datenhaltung, nur Laufzeit und Service-Variablen |
+| Daten | IDrive e2 | zentraler Objektspeicher UND Persistenz | Nutzerdokumente, Chat-Archive, Feedback, Pipeline-Artefakte, Stimmproben, Trainings-Evals |
+| LLM | OpenRouter / Groq | Inferenz | keine dauerhafte Speicherung von Nutzerdaten beim Provider |
+
+Es gibt in Production keine relationale Datenbank und keinen Redis. Alle
+Stores unter `backend/app/integrations/` schreiben JSON-Objekte per S3-API
+nach IDrive e2. PostgreSQL und Redis existieren nur im Profil `legacy-local`
+von `docker-compose.yml` fuer lokale Entwicklung.
+
+Arbeitsbucket: `IDRIVE_E2_BUCKET`, Default `smyst-memories`
+(`backend/app/core/config.py`).
+
+## Objekt-Praefixe in IDrive e2
+
+Verbindlich, aus dem Code (`backend/app/integrations/`, `backend/app/workers/`):
+
+```text
+user-mvp/{sha-sicherer-user-sub}.json      Nutzerdokument: Profil, Twins, Memories
+                                           max. 400 KB pro Nutzer
+voice-samples/...                          private Stimmprobe je Nutzer
+chat-archives/{chatId}.json                Chat-Archiv
+chat-feedback/{twinId}/{messageId}.json    Daumen hoch/runter je Nachricht
+auth/email-accounts/v1/{digest}.json       E-Mail-Konten der Auth-Schicht
+
+pipeline/candidates/{QID}.json             Kandidat, Wikidata-QID als Dedup-Anker
+pipeline/status/{status}/{QID}             Status-Marker der State Machine
+pipeline/research/{QID}.json               Rechercheergebnis
+pipeline/sources/{QID}/{filename}          Quell-Snapshots
+pipeline/capsules/...                      generierte Persona-Kapseln
+pipeline/changelogs/{YYYY-MM-DD}.json      Lauf-Changelog
+pipeline/ingest/cursor.json                Cursor des Ingest-Workers
+pipeline/published/index.json              Index der freigegebenen Profile
+pipeline/published/sitemap-fragment.json   Sitemap-Fragment fuer den Pages-Build
+pipeline/quality/summary.json              Ergebnis der Qualitaetsschleife
+
+training-evals/...                         Eval-Laeufe und Modellvergleiche
+```
+
+Der Pages-Build laedt `pipeline/published/index.json` aus IDrive e2 und merged
+die freigegebenen Profile in die statische JSON-API, die prerenderten
+`/t/{slug}`-Seiten und die Sitemap (`scripts/merge-pipeline-published.mjs`).
+Fehlt der Index, ist der Schritt ein No-op.
 
 ## Nicht in Production speichern
 
 - Keine privaten Dateien in GitHub.
 - Keine IDrive-e2-Secrets im Browser.
-- Keine grossen Dateien in Salad/IDrive metadata.
 - Keine permanenten Tokens im Client.
 - Keine Produktdaten in externen Analytics- oder Translation-Diensten.
 - Keine Production-Daten in Legacy-Server-, Docker- oder Datenbankpfaden.
 
-## User Session
+## Sessions
 
-Salad/IDrive metadata:
+Sessions sind zustandslos: Nach dem Google-OAuth-Callback setzt das Backend
+ein signiertes HttpOnly Secure SameSite Cookie. Es gibt keinen Session-Store.
+`POST /auth/logout` und `POST /auth/logout-all` invalidieren ueber das
+Cookie/Secret, nicht ueber eine Session-Tabelle.
 
-```text
-s:{sessionId}
-auth:sessions:{userSub}
-```
+Der Browser sieht nur das Cookie; JavaScript liest die Session nicht direkt.
 
-Inhalt:
+Wichtig: `smyst.com` (GitHub Pages) und `api.smyst.com` (Zeabur) sind
+verschiedene Origins. Jeder Frontend-Aufruf mit Session braucht
+`credentials: 'include'` und muss ueber `fetchService` aus
+`src/lib/serviceEndpoints.ts` laufen.
 
-```json
-{
-  "sub": "github:123456",
-  "email": "user@example.com",
-  "name": "User",
-  "picture": "https://...",
-  "createdAt": 1760000000000,
-  "expiresAt": 1762592000000
-}
-```
+## Rollen und Rechte
 
-Der Browser sieht nur ein HttpOnly Secure Cookie. JavaScript liest die Session nicht direkt.
-
-`auth:sessions:{userSub}` enthaelt eine kleine Liste aktiver Session-IDs. Sie dient nur dazu, `POST /auth/logout-all` ohne externen Dienst auszufuehren und alle bekannten Sessions eines Users zu loeschen.
-
-## Auth Rollen Und Rechte
-
-Salad/IDrive metadata:
+Owner/Admin-Zuordnung erfolgt ueber Service-Variablen auf Zeabur:
 
 ```text
-auth:user:{sub}
-```
-
-Rollen:
-
-```text
-member
-admin
-owner
-```
-
-Rechte:
-
-```text
-auth:read
-profile:read
-storage:read
-storage:write
-storage:delete
-twin:read
-twin:write
-chat:read
-chat:write
-admin:read
-admin:write
-```
-
-Owner/Admin-Zuordnung erfolgt ueber Worker-Variablen:
-
-```text
-SMYST_OWNER_GITHUB_IDS
 SMYST_OWNER_EMAILS
-SMYST_ADMIN_GITHUB_IDS
+SMYST_OWNER_GITHUB_IDS
 SMYST_ADMIN_EMAILS
+SMYST_ADMIN_GITHUB_IDS
 ```
 
-## Upload Intent
+Rollen: `member`, `admin`, `owner`.
 
-Salad/IDrive metadata:
+## Upload Flow
 
-```text
-meta:upload:{userSub}:{uploadId}
-meta:uploads:{userSub}
-meta:upload-by-key:{userSub}:{sha256(key)}
-quota:user:{userSub}:{YYYY-MM}
-quota:global:{YYYY-MM}
-```
+1. Client fragt beim Backend eine Upload-URL an.
+2. Backend prueft Auth, Dateityp, Dateigroesse und Quotas.
+3. Backend gibt eine signierte PUT-URL fuer IDrive e2 zurueck.
+4. Client laedt direkt zu IDrive e2 hoch.
+5. Client meldet den Abschluss.
+6. Backend verifiziert das Objekt per signiertem `HEAD` und schreibt den
+   Status als JSON-Objekt.
+7. Downloads laufen ueber das Backend und pruefen Besitz und Status.
 
-IDrive e2:
-
-```text
-users/{userSub}/uploads/audio/{uuid}.{ext}
-users/{userSub}/uploads/images/{uuid}.{ext}
-users/{userSub}/uploads/videos/{uuid}.{ext}
-users/{userSub}/uploads/documents/{uuid}.{ext}
-users/{userSub}/profile/images/{uuid}.{ext}
-users/{userSub}/backups/{YYYY-MM}/{uuid}.{ext}
-users/{userSub}/twins/{twinId}/data/{uuid}.{ext}
-```
-
-Flow:
-
-1. Client fragt `POST /storage/upload-url`.
-2. Worker prueft Auth, Dateityp, Dateigroesse und Quotas.
-3. Worker schreibt kleines Intent-Objekt in KV.
-4. Worker gibt signed PUT URL fuer IDrive e2 zurueck.
-5. Client laedt direkt zu IDrive e2 hoch.
-6. Client ruft `POST /storage/upload-complete`.
-7. Worker prueft das Objekt per signed `HEAD`.
-8. Worker setzt KV-Status auf `uploaded`.
-9. Downloads ueber `GET /storage/file/{key}` brauchen User-Prefix, KV-Metadaten und Status `uploaded`.
-10. Der direkte `meta:upload-by-key:{userSub}:{sha256(key)}` Index verhindert Upload-Listen-Scans beim Dateiabruf.
-
-Direct-PUT ist der aktive Phase-1-Pfad. Chunk Upload und bytegenaue Wiederaufnahme
-sind noch nicht aktiviert und werden in der Upload-URL-Antwort explizit als
+Direct-PUT ist der aktive Pfad. Chunk Upload und bytegenaue Wiederaufnahme
+sind nicht aktiviert und werden in der Upload-URL-Antwort als
 `supportsChunkUpload: false` und `supportsResume: false` gemeldet.
-
-## Backup
-
-Backups liegen als User-scoped Objekte in IDrive e2:
-
-```text
-users/{userSub}/backups/{YYYY-MM}/{uuid}.{ext}
-```
-
-Backup-Metadaten duerfen klein in KV liegen. Der eigentliche Backup-Inhalt gehoert nach IDrive e2.
 
 ## Chat
 
-Salad/IDrive metadata:
+Chat-Verlaeufe liegen als JSON unter `chat-archives/`, Bewertungen unter
+`chat-feedback/`. Antworten entstehen ueber die LLM-Provider-Kette
+(`backend/app/ai/llm_router.py`); vor jedem Modellaufruf greift eine
+deterministische Krisen-Schutzschicht. Faellt die gesamte Kette aus, antwortet
+ein deterministischer Not-Fallback (`mode=local`) - ein Stoerungssignal, kein
+Normalbetrieb.
+
+Ohne konfigurierte IDrive-e2-Keys laufen Nutzer- und Chat-Stores auf einen
+In-Process-RAM-Fallback, damit die API auch dann antwortet. In Produktion ist
+das kein zulaessiger Dauerzustand.
+
+## Oeffentliche und private Profile
+
+Oeffentliche Profile:
 
 ```text
-meta:chat:{userSub}:{chatId}
-meta:chats:{userSub}
+/t/{slug}                        prerendert im Pages-Build
+GET /api/public/twins/{slug}     statische JSON-API aus dist/
+pipeline/published/index.json    Quelle der Pipeline-Profile
 ```
 
-In der Free-Only-Phase speichert der API-Worker nur kleine Chat-Zustaende. Es werden keine externen Modell-APIs verwendet. Twin-Chats koennen optional `twinId` enthalten und nutzen eine regelbasierte MVP-Antwortlogik.
+Oeffentliche Profile enthalten Name, Bildreferenz, Beschreibung, Kategorien,
+Sprachen, Sichtbarkeit, Chat-Pfad, Canonical-URL und Schema.org-ProfilePage-
+Daten. Nur `visible` und `qa_passed` Profile werden gemerged; bei
+Slug-Kollisionen gewinnen kuratierte Profile.
 
-## Support, Abuse Und Privacy Reports
+Private Profile liegen im Nutzerdokument unter `user-mvp/` und werden nur fuer
+den authentifizierten Owner gelesen. Sie muessen `noindex,nofollow` setzen.
 
-Salad/IDrive metadata:
+## Backup
 
-```text
-meta:support-report:{createdAt}:{reportId}
-```
-
-Diese Records speichern kleine In-App-Meldungen fuer Fehler, Missbrauch, Datenschutz, Sicherheit und Feedback. Erlaubt sind nur begrenzte Textfelder, optionale Kontaktangaben und ein same-origin Pfad aus der App. Es werden keine externen Ticketing-, Analytics- oder Support-Dienste genutzt.
-
-## KI-Zwilling MVP
-
-Salad/IDrive metadata:
-
-```text
-meta:twin:{userSub}:{twinId}
-meta:twins:{userSub}
-public:twin:{slug}
-```
-
-Inhalt:
-
-```json
-{
-  "id": "uuid",
-  "userSub": "github:123456",
-  "name": "Maya",
-  "slug": "maya",
-  "description": "Kurzprofil",
-  "imageUrl": "https://...",
-  "categories": ["KI-Zwilling", "Wissen"],
-  "languages": ["de", "en"],
-  "visibility": "private",
-  "style": "warm",
-  "knowledgeTexts": [{ "id": "uuid", "title": "Werte", "text": "...", "createdAt": 1760000000000 }],
-  "mediaRefs": [{ "id": "uuid", "key": "users/github:123456/uploads/images/file.jpg", "category": "image" }],
-  "contextSummary": "kleiner regelbasierter Kontext",
-  "status": "ready",
-  "createdAt": 1760000000000,
-  "updatedAt": 1760000000000
-}
-```
-
-Der MVP-Kontext bleibt klein genug fuer KV. Dokumente, Bilder, Videos, Audio, Backups und groessere Twin-Daten liegen als Objekte in IDrive e2 und werden nur referenziert. Phase 1 erzeugt Antworten regelbasiert aus `description`, `knowledgeTexts`, `mediaRefs`, `categories`, `languages` und `style`; echte Modelle duerfen spaeter nur als austauschbare Schicht angebunden werden, ohne GitHub-Free/Legacy edge provider-Free/IDrive-e2 als Production-Regel zu brechen.
-
-## Öffentliche Und Private Profile
-
-Öffentliche Profile:
-
-```text
-/t/{slug}
-GET /api/public/twins/{slug}
-public:twin:{slug}
-```
-
-Öffentliche Profile sind kleine, suchmaschinenlesbare Profilobjekte aus Salad/IDrive metadata. Sie enthalten Name, Bild-URL oder Bildreferenz, Beschreibung, Kategorien, Sprachen, Sichtbarkeit, Inhaltszaehler, Chat-Pfad, Canonical-URL und Schema.org-ProfilePage-Daten. Grosse Medieninhalte bleiben in IDrive e2.
-
-Private Profile:
-
-```text
-/private/twins/{twinId}
-meta:twin:{userSub}:{twinId}
-```
-
-Private Profile werden nur fuer den authentifizierten Owner aus `meta:twin:{userSub}:{twinId}` gelesen. Sie muessen `noindex,nofollow` setzen und duerfen keinen `public:twin:{slug}` Eintrag behalten. Wenn ein Profil von public auf private umgestellt wird, entfernt der API-Worker den alten Public-Slug.
-
-IDrive e2 Twin-Daten:
-
-```text
-users/{userSub}/twins/{twinId}/data/{uuid}.json
-users/{userSub}/twins/{twinId}/data/{uuid}.txt
-users/{userSub}/twins/{twinId}/data/{uuid}.md
-```
-
-`twinId` ist fuer `twin_data` Uploads Pflicht.
+- Pipeline-Stand: Branch `pipeline-backup` im Repository
+  (`.github/workflows/pipeline-backup.yml`).
+- IDrive-e2-Objekte: siehe `docs/runbooks/backup-recovery.md`.
+- Nutzerbezogene Backups liegen als Objekte im Arbeitsbucket.
 
 ## Speicherlimits
 
-Der Storage-Worker prueft:
+Geprueft werden erlaubte Kategorie, erlaubter MIME-Type pro Kategorie,
+Extension passend zum MIME-Type, maximale Dateigroesse pro Kategorie,
+monatliche User- und Global-Uploadlimits sowie aktive Speicherlimits. Das
+Nutzerdokument ist auf 400 KB begrenzt (`MAX_DOC_BYTES`).
 
-- erlaubte Kategorie,
-- erlaubten MIME-Type pro Kategorie,
-- Extension passend zum MIME-Type,
-- maximale Dateigroesse pro Kategorie,
-- monatliches User-Uploadlimit,
-- monatliches globales Uploadlimit,
-- aktives User-Speicherlimit,
-- aktives globales Speicherlimit.
-
-Aktive Speicherzaehler:
-
-```text
-storage:user:{userSub}:active
-storage:global:active
-```
-
-Sie werden nach erfolgreicher IDrive-e2-`HEAD`-Verifikation hochgezaehlt und bei Delete wieder reduziert.
-
-Dokumente, Backups und `twin_data` werden beim Abruf als Attachment ausgeliefert.
-Bilder, Videos, Audio und Avatare duerfen inline streamen.
+Dokumente, Backups und Twin-Daten werden beim Abruf als Attachment
+ausgeliefert. Bilder, Videos, Audio und Avatare duerfen inline streamen.
 
 ## Skalierungsgrenze
 
-Diese Datenlandkarte ist fuer die Free-Only-Phase gebaut. Sie minimiert Kosten und externe Abhaengigkeiten, ersetzt aber keine echte Milliarden-Nutzer-Infrastruktur. Fuer globale Massenlast braucht Smyst spaeter dedizierte Daten-, Compute-, Retrieval- und AI-Kapazitaeten.
+Diese Datenlandkarte minimiert Kosten und externe Abhaengigkeiten. Ein
+Objektspeicher ohne Index ersetzt keine Datenbank: Listen-Operationen ueber
+viele Objekte werden mit wachsender Datenmenge teuer. Fuer globale Massenlast
+braucht smyst.com spaeter dedizierte Daten-, Compute-, Retrieval- und
+AI-Kapazitaeten.
