@@ -8795,6 +8795,23 @@ function TwinChatView({
     if (outcome === 'failed') addNotice('Teilen wird von diesem Browser nicht unterstützt.')
   }
 
+  const handleUpgradePremium = async () => {
+    if (auth.status !== 'authenticated') {
+      addNotice('Melde dich an, um smyst Premium abzuschließen.')
+      return
+    }
+    try {
+      const result = await twinMvp.startPremiumCheckout()
+      if (result?.checkoutUrl) {
+        window.location.href = result.checkoutUrl
+      } else {
+        addNotice('Premium ist gerade nicht verfügbar. Bitte später erneut versuchen.')
+      }
+    } catch {
+      addNotice('Premium ist gerade nicht verfügbar. Bitte später erneut versuchen.')
+    }
+  }
+
   const handleAnswerFeedback = async (msg: TwinChatUiMessage, rating: 'up' | 'down') => {
     if (msg.role !== 'ai' || !msg.content.trim()) return
     if (!chatId || answerFeedback[msg.id] || feedbackSendingId) return
@@ -9336,6 +9353,16 @@ function TwinChatView({
             >
               Nachfragen
             </button>
+            <button
+              type="button"
+              onClick={() => void handleUpgradePremium()}
+              className="rounded-md border border-[#59C7FF]/45 bg-[#59C7FF]/20 px-3 py-1.5 text-sm font-semibold text-[#0b1c44] transition-colors hover:bg-[#59C7FF]/30"
+            >
+              ✦ Premium – 4,99 €/Monat
+            </button>
+            <p className="px-1 text-[11px] leading-relaxed text-[#555b64]">
+              Unbegrenzte Chats, werbefrei, alle Funktionen. Jederzeit kündbar.
+            </p>
           </div>
         </aside>
       </div>
