@@ -10,7 +10,7 @@ from time import perf_counter
 from typing import AsyncIterator, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -18,8 +18,10 @@ from app.ai.crisis_guard import CRISIS_MODE, ist_krise, krisen_antwort
 from app.ai.llm_router import LLMRouter, build_default_router
 from app.ai.models import LLMRequest
 from app.ai.twin_context import twin_context
+from app.ai.user_memory import extract_user_memories, memory_block, remember
 from app.ai.web_research import ResearchContext, VerifiedWebResearchService, WebSearchResponse
 from app.core.config import get_settings
+from app.api.v1.routes.auth import _session_from_request
 from app.integrations import chat_store, feedback_store
 from app.security.sanitization import normalize_text
 
@@ -150,8 +152,36 @@ def _language_name(language: str | None) -> str | None:
     return _LANGUAGE_NAMES.get(base)
 
 
+
+
+def _user_sub_from(http_request: Request) -> str | None:
+    """Nutzerkennung aus der Session (optional – anonyme Chats bleiben erlaubt)."""
+    try:
+        session = _session_from_request(http_request)
+    except Exception:
+        return None
+    if not session:
+        return None
+    sub = str(session.get("sub", "")).strip()
+    return sub or None
+
+
+def _remember_from_message(user_sub: str | None, message: str) -> None:
+    """Langzeit-Gedaechtnis: Gedaechtnis-wuerdige Aussagen speichern (wirft nie)."""
+    if not user_sub:
+        return
+    try:
+        for fact in extract_user_memories(message):
+            remember(user_sub, fact)
+    except Exception:
+        logger.warning("user memory extraction failed", exc_info=True)
+
+
 async def _build_llm_request(
-    chat: dict[str, object], message: str, language: str | None = None
+    chat: dict[str, object],
+    message: str,
+    language: str | None = None,
+    user_memory: str = "",
 ) -> LLMRequest:
     twin_id = chat.get("twinId")
     context = await twin_context(twin_id if isinstance(twin_id, str) else None)
@@ -217,6 +247,7 @@ async def _build_llm_request(
         "sentences), follow it exactly while staying in character."
     )
     context_block = f"Curated public profile knowledge:\n{context}\n" if context else ""
+    memory_block_text = f"{user_memory}\n" if user_memory else ""
     # Standardsprache mit Wechsel-Erlaubnis: der fruehere harte Zwang ("Answer
     # strictly ... Do not switch languages") liess Twins Sprachwechsel-Bitten
     # ablehnen ("Ich kann nur auf Deutsch antworten", live 28.07.).
@@ -233,6 +264,7 @@ async def _build_llm_request(
     prompt = (
         f"Twin/profile: {_title_for_twin(twin_id if isinstance(twin_id, str) else None)}\n"
         + context_block
+        + memory_block_text
         + f"User message: {message}\n"
         + language_line
         + "Keep it concise."
@@ -387,8 +419,9 @@ def _krisen_nachricht(chat: dict[str, object], message: str, language: str | Non
 
 
 @router.post("/messages")
-async def send_message(body: SendMessageRequest) -> dict[str, object]:
+async def send_message(body: SendMessageRequest, request: Request) -> dict[str, object]:
     chat = await _ensure_chat(body.chatId)
+    user_sub = _user_sub_from(request)
     message = normalize_text(body.message, max_length=4000).value
     if ist_krise(message):
         assistant_message = _krisen_nachricht(chat, message, body.language)
@@ -401,8 +434,9 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
     # Beide Vorarbeiten machen Netz-I/O und haengen NICHT voneinander ab
     # (_research_for_chat braucht nur chat + message). Nacheinander addierten
     # sich ihre Laufzeiten vor jeder Antwort; parallel zaehlt nur die laengere.
+    user_memory = memory_block(user_sub)
     llm_request, research_response = await asyncio.gather(
-        _build_llm_request(chat, message, body.language),
+        _build_llm_request(chat, message, body.language, user_memory=user_memory),
         _research_for_chat(chat, message),
     )
     llm_request = _attach_web_research_evidence(llm_request, research_response)
@@ -418,6 +452,7 @@ async def send_message(body: SendMessageRequest) -> dict[str, object]:
     if web_research is not None:
         assistant_message["webResearch"] = web_research
     _persist_exchange(chat, message, assistant_message, language=body.language)
+    _remember_from_message(user_sub, message)
     return {
         "chatId": body.chatId,
         "twinId": chat.get("twinId"),
@@ -488,7 +523,9 @@ async def submit_feedback(body: ChatFeedbackRequest) -> dict[str, object]:
 
 
 @router.post("/messages/stream")
-async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
+async def send_message_stream(
+    body: SendMessageRequest, http_request: Request
+) -> StreamingResponse:
     """SSE-Variante von /messages: streamt Antwort-Deltas, dann ein done-Event.
 
     Event-Format (jeweils eine "data:"-Zeile mit JSON):
@@ -541,7 +578,13 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
             # Beide werden EINZELN gestoppt: sie laufen gleichzeitig, die Summe
             # waere also irrefuehrend — entscheidend ist, welcher der laengere ist.
             request, research_response = await asyncio.gather(
-                _timed(timings, "twinContextMs", _build_llm_request(chat, message, body.language)),
+                _timed(
+                    timings,
+                    "twinContextMs",
+                    _build_llm_request(
+                        chat, message, body.language, user_memory=memory_block(_user_sub_from(http_request))
+                    ),
+                ),
                 _timed(timings, "webResearchMs", _research_for_chat(chat, message)),
             )
         except Exception:
@@ -572,6 +615,7 @@ async def send_message_stream(body: SendMessageRequest) -> StreamingResponse:
                     if web_research is not None:
                         assistant_message["webResearch"] = web_research
                     _persist_exchange(chat, message, assistant_message, language=body.language)
+                    _remember_from_message(_user_sub_from(http_request), message)
                     timings["totalMs"] = int((perf_counter() - started_at) * 1000)
                     logger.info(
                         "chat stream timings provider=%s twin_context=%sms "
