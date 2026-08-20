@@ -51,7 +51,12 @@ if [ ! -x .venv-mlx/bin/mlx_lm.lora ]; then
 fi
 
 echo "== 1/4 Daten konvertieren ($EXPORT_DIR -> $DATA_DIR) =="
-./prepare_sft_mlx.py --in "$EXPORT_DIR" --out "$DATA_DIR"
+# --from-qa ist der Fast-Track-Datensatz: die QA-Antworten der Pipeline
+# (GPT-4o, verdict=pass, mit Profilkontext) — ohne ihn sind es nur die
+# wenigen echten Chat-Austausche. Deaktivierbar via WITH_QA_DATA=0.
+QA_FLAG="--from-qa"
+if [ "${WITH_QA_DATA:-1}" = "0" ]; then QA_FLAG=""; fi
+./prepare_sft_mlx.py --in "$EXPORT_DIR" --out "$DATA_DIR" $QA_FLAG
 
 echo "== 2/4 LoRA-SFT: $MODEL, $ITERS Iterationen =="
 ./.venv-mlx/bin/mlx_lm.lora \
