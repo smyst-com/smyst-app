@@ -1,0 +1,69 @@
+# Trainingsdaten-Export fuer smyst 1.0 (Fast-Track, 20.08.2026):
+# fuehrt die beiden Export-Worker IM VOLLMODUS aus und laedt das Ergebnis
+# als Artefakt hoch — damit kann der SFT-Lauf auf dem Entwickler-Mac (MLX)
+# ohne e2-Zugriff starten: Artefakt laden -> prepare_sft_mlx.py -> train.
+#
+# Enthaelt Nutzereingaben (Chat-Texte): deshalb NUR als Artefakt mit kurzer
+# Haltezeit (14 Tage), NIE einchecken (siehe training/README.md).
+name: Trainingsdaten-Export (smyst 1.0)
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "max. Chat-Archive / Kandidaten (leer = alle)"
+        required: false
+        default: ""
+
+concurrency:
+  group: training-export
+  cancel-in-progress: false
+
+jobs:
+  export:
+    name: Export (SFT + QA-Urteile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install backend
+        run: pip install -e "."
+
+      - name: Export (vollstaendig, kein --dry-run)
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          ARGS="--out ../training-export"
+          if [ -n "${{ inputs.limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.limit }}"; fi
+          set -o pipefail
+          {
+            echo "## Trainingsdaten-Export"
+            echo ""
+            echo "### Chat-Archive -> SFT/Praeferenz"
+            echo '```'
+            python -m app.workers.export_training_data $ARGS 2>&1 | tee /tmp/sft.txt
+            echo '```'
+            echo "### QA-Urteile (Pipeline)"
+            echo '```'
+            python -m app.workers.export_qa_judgments $ARGS 2>&1 | tee /tmp/qa.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Artefakt hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-export
+          path: training-export/
+          if-no-files-found: error
+          retention-days: 14

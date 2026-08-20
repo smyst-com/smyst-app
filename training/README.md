@@ -191,6 +191,35 @@ Feldherren). **Die Einfrier-Regel gilt ab dem ersten bewerteten Lauf** — zu
 diesem Zeitpunkt existierte noch kein Score, die Vergleichbarkeit ist also
 nicht verletzt. Ab jetzt: keine Aenderung mehr, Erweiterungen nur als v2.
 
+## Fast-Track: SFT auf dem Mac (MLX) — smyst 1.0 in Tagen statt Wochen
+
+Beschluss Adam 20.08.: Pipeline-Kosten Richtung 0 $ (Groq Free-Tier zuerst,
+siehe pipeline-run.yml) UND das eigene Modell so schnell wie moeglich fit.
+Der Fast-Track umgeht die GPU-Miete: LoRA-SFT auf dem Entwickler-Mac mit
+[MLX](https://ml-explore.github.io/mlx/) — 0 $ Hardware-Kosten.
+
+Loop (einmal einrichten, dann wiederholbar):
+
+1. **Daten holen:** Actions → *Trainingsdaten-Export (smyst 1.0)* → Run
+   workflow. Artefakt `training-export` (14 Tage) herunterladen und nach
+   `training-export/` neben dem Repo entpacken. Enthaelt `sft-*.jsonl`
+   (Chat-Archive) und `qa-judgments-*.jsonl` (Pipeline-Urteile).
+2. **Trainieren:** `training/train_smyst_fasttrack.sh` — konvertiert die
+   Daten (`prepare_sft_mlx.py`, Chat-Format, dedupliziert, 98/2-Split),
+   LoRA-Feintuning auf Qwen2.5-0.5B-Instruct (staerkere Basis als Argument),
+   verschmilzt den Adapter und erzeugt eine Beispiel-Antwort zum Gegenlesen.
+3. **Bewerten:** Ausgabe gegen `eval/smyst-eval-v2.jsonl` messen — erst bei
+   deutlichem Gewinn gegen den Live-Stand ist es ein smyst-1.x-Kandidat
+   (Promotions-Gate siehe oben). 
+4. **Ausrollen:** GGUF-Export (llama.cpp `convert_hf_to_gguf.py`) →
+   `docker/Dockerfile.llamacpp` → als zusaetzlicher Provider hinter dem
+   Gateway, zuerst fuer Entwuerfe (5 %, dann mehr).
+
+Grenzen, die man kennen muss: Ein 0.5B-SFT-Modell ersetzt keinen GPT-4o —
+es uebernimmt Masse (Entwuerfe, strukturierte Felder), nicht die QA. Der
+CPT-Korpus (Phase 1/1b unten) bleibt der Hebel fuer echte Deutsch-Qualitaet;
+der Fast-Track liefert das erste einsatzfaehige smyst 1.0 und den Loop.
+
 ## Phase 1: Korpus (Continued Pretraining)
 
 Stellt den deutschen Pretraining-Korpus zusammen (Ziel 10–15 Mrd Token) und

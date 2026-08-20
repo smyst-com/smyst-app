@@ -73,7 +73,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           # Der Judge nimmt die normale Provider-Kette (Gateway zuerst) und
           # bleibt damit fuer alle Kandidaten derselbe.
-          LLM_PROVIDER_ORDER: 'smyst_gateway,openrouter,anthropic,openai'
+          LLM_PROVIDER_ORDER: 'groq,smyst_gateway,openrouter,anthropic,openai'
           SMYST_GATEWAY_BASE_URL: 'https://api.smyst.com/api/ci/llm'
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}

@@ -65,7 +65,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_PROVIDER_ORDER: "smyst_gateway,anthropic,xai,groq,gemini,deepseek,openrouter,openai,mistral,together,cohere,perplexity,zhipu,dashscope"
+          LLM_PROVIDER_ORDER: "groq,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
           SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: python -m app.workers.eval_profiles --enabled --limit 80
