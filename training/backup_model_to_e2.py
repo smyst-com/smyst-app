@@ -107,10 +107,14 @@ def main() -> int:
     import boto3
     from botocore.config import Config
 
+    # e2 von diesem Anschluss aus langsam (gemesen ~3 MB/s): grosszuegige
+    # Zeitlimits + Wiederholungen, sonst bricht der 1-GB-Upload mitten im
+    # Multipart-Teil ab (ReadTimeout ab Part ~6 am 20.08. erlebt).
     client = boto3.client(
         "s3", endpoint_url=ENDPOINT, region_name=REGION,
         aws_access_key_id=access, aws_secret_access_key=secret,
-        config=Config(connect_timeout=5, read_timeout=120, retries={"max_attempts": 3}),
+        config=Config(connect_timeout=10, read_timeout=900,
+                      retries={"max_attempts": 10}),
     )
     for path, name in vorhanden:
         client.upload_file(str(path), BUCKET, f"{key_prefix}/{name}")
