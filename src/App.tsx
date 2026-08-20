@@ -3528,6 +3528,17 @@ function TwinProfileView({
   const [similarTwins, setSimilarTwins] = useState<StartTwin[]>([])
   const [publicProfileCount, setPublicProfileCount] = useState(0)
   const { lang } = useLanguage({ reloadOnChange: false })
+
+  // Besucher-Zaehlung (Verbesserung 3): ein Ping pro Profilaufruf, fire-and-forget
+  useEffect(() => {
+    if (!slug) return
+    void fetchService('/api/v1/visits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug }),
+      keepalive: true,
+    }).catch(() => undefined)
+  }, [slug])
   const t = useStaticTranslations(lang)
   const isPrivate = Boolean(privateTwinId)
 
