@@ -8,9 +8,18 @@
 # Der erste Lauf mit tag=baseline ist der Massstab, den ein eigenes Modell
 # spaeter schlagen muss. Danach laeuft derselbe Workflow pro Trainings-
 # Checkpoint gegen dieselben, NIE veraenderten Fragen.
+#
+# Taeglicher Rhythmus (seit 2026-08-20): der Schedule-Lauf um 02:30 UTC
+# zaehlt zuerst die neuen Trainingsdaten (Export-Worker, nur --dry-run,
+# keine LLM-Calls) und misst dann den Live-Stand auf Eval-Set v2 (tag=daily).
+# Damit entsteht die Trendkurve, an der sich spaetere smyst-1.x-Promotion
+# orientiert (siehe training/README.md, "Ziel & Versionsstrategie").
 name: Modell-Eval (smyst 1.0 Baseline & Checkpoints)
 
 on:
+  schedule:
+    # 02:30 UTC = 04:30 Berlin — vor dem ersten Pipeline-Lauf des Tages.
+    - cron: "30 2 * * *"
   workflow_dispatch:
     inputs:
       eval_set:
@@ -36,7 +45,8 @@ concurrency:
 
 jobs:
   eval:
-    name: Eval-Lauf (${{ inputs.tag }})
+    # Schedule-Laefe haben leere inputs -> per || auf Tagesdefaults fallen.
+    name: Eval-Lauf (${{ inputs.tag || 'daily' }})
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -57,6 +67,30 @@ jobs:
       - name: Install backend
         run: pip install -e ".[dev]"
 
+      # Schritt 1 des taeglichen Rhythmus: wie viel neue Trainingsdaten sind
+      # seit gestern dazu gekommen? Nur Zaehlung (dry-run), keine LLM-Calls,
+      # nichts wird geschrieben. Das ist der Trigger-Messer fuer den
+      # automatischen GPU-Trainingslauf (Schwellen siehe training/README.md).
+      - name: Trainingsdaten-Zaehlung (dry-run)
+        if: github.event_name == 'schedule'
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          set -o pipefail
+          {
+            echo "## Trainingsdaten-Zuwachs (Zaehlung)"
+            echo ""
+            echo "### Chat-Archive -> SFT/Praeferenz"
+            echo '```'
+            python -m app.workers.export_training_data --dry-run 2>&1 | tee /tmp/sft-count.txt
+            echo '```'
+            echo "### QA-Urteile (Pipeline)"
+            echo '```'
+            python -m app.workers.export_qa_judgments --dry-run 2>&1 | tee /tmp/qa-count.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Eval-Lauf
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
@@ -74,7 +108,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
         run: |
-          ARGS="--eval-set ${{ inputs.eval_set }} --tag ${{ inputs.tag }} --out ../eval-report"
+          ARGS="--eval-set ${{ inputs.eval_set || '../training/eval/smyst-eval-v2.jsonl' }} --tag ${{ inputs.tag || 'daily' }} --out ../eval-report"
           if [ -n "${{ inputs.limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.limit }}"; fi
           if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           # Ausgabe doppelt verwenden: Konsole fuer die Log-Suche, Datei fuer die
@@ -87,7 +121,7 @@ jobs:
         if: always()
         run: |
           {
-            echo "## Modell-Eval: ${{ inputs.tag }}"
+            echo "## Modell-Eval: ${{ inputs.tag || 'daily' }}"
             echo ""
             echo '```'
             tail -n 20 /tmp/eval-out.txt 2>/dev/null || echo "keine Ausgabe"
@@ -101,7 +135,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: model-eval-${{ inputs.tag }}
+          name: model-eval-${{ inputs.tag || 'daily' }}
           path: eval-report/
           if-no-files-found: warn
           retention-days: 30

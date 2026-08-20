@@ -93,7 +93,7 @@ PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
         name="groq",
         base_url="https://api.groq.com/openai/v1",
         api_key_attr="groq_api_key",
-        default_model="llama-3.3-70b-versatile",
+        default_model="openai/gpt-oss-120b",
     ),
     "together": ProviderConfig(
         name="together",
@@ -153,4 +153,8 @@ STALE_MODEL_ALIASES: dict[tuple[str, str], str] = {
     # deepseek-chat wird am 2026-07-24 abgeschaltet; Nachfolger (non-thinking):
     ("deepseek", "deepseek-chat"): "deepseek-v4-flash",
     ("deepseek", "deepseek-reasoner"): "deepseek-v4-pro",
+    # Groq hat llama-3.3-70b-versatile und llama-3.1-8b-instant am
+    # 2026-08-16 abgeschaltet; offizielle Nachfolger laut Deprecation-Hinweis:
+    ("groq", "llama-3.3-70b-versatile"): "openai/gpt-oss-120b",
+    ("groq", "llama-3.1-8b-instant"): "openai/gpt-oss-20b",
 }

@@ -312,6 +312,20 @@ def test_provider_statuses_migrate_retired_deepseek_models() -> None:
     assert deepseek["model"] == "deepseek-v4-flash"
 
 
+def test_provider_statuses_migrate_retired_groq_models() -> None:
+    # Groq hat llama-3.3-70b-versatile/-llama-3.1-8b-instant am 2026-08-16 abgeschaltet.
+    settings = Settings(
+        GROQ_API_KEY="secret-groq",
+        LLM_PROVIDER_ORDER="groq",
+        LLM_DEFAULT_MODELS="groq=llama-3.3-70b-versatile",
+    )
+
+    statuses = provider_statuses(settings)
+
+    groq = next(status for status in statuses if status["provider"] == "groq")
+    assert groq["model"] == "openai/gpt-oss-120b"
+
+
 @pytest.mark.asyncio
 async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> None:
     FakeAsyncClient.posts = []
