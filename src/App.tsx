@@ -26,6 +26,7 @@ import {
 } from '@/lib/voiceLanguage'
 import { pickVoiceSettings, remoteRateFor, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
+import { shareTwinAnswer } from '@/lib/shareCard'
 import { markServerAsrUnavailable, recordAndTranscribeOnce, serverAsrReady, serverAsrSupported } from '@/lib/serverAsrClient'
 import { isRemoteSpeechActive, playRemoteSpeech, prefetchSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
@@ -8786,6 +8787,14 @@ function TwinChatView({
     }
   }
 
+  const handleShareAnswer = async (msg: TwinChatUiMessage) => {
+    if (msg.role !== 'ai' || !msg.content.trim()) return
+    const twinName = activeTwin?.name ?? 'KI-Persönlichkeit'
+    const outcome = await shareTwinAnswer(twinName, msg.content)
+    if (outcome === 'copied') addNotice('Antwort wurde in die Zwischenablage kopiert – jetzt überall einfügen und teilen!')
+    if (outcome === 'failed') addNotice('Teilen wird von diesem Browser nicht unterstützt.')
+  }
+
   const handleAnswerFeedback = async (msg: TwinChatUiMessage, rating: 'up' | 'down') => {
     if (msg.role !== 'ai' || !msg.content.trim()) return
     if (!chatId || answerFeedback[msg.id] || feedbackSendingId) return
@@ -9051,6 +9060,15 @@ function TwinChatView({
                         : savingMemoryId === msg.id
                           ? 'Speichern…'
                           : 'Im Memory speichern'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleShareAnswer(msg)}
+                      aria-label="Antwort teilen"
+                      title="Antwort als Karte teilen"
+                      className="rounded-full border border-white/30 bg-white/14 px-2.5 py-1 text-[11px] font-medium text-[#555b64] transition-colors hover:bg-white/28"
+                    >
+                      Teilen ↗
                     </button>
                     {chatId && (
                       <>
