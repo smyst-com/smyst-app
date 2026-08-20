@@ -34,10 +34,20 @@ if ! ls "$EXPORT_DIR"/sft-*.jsonl >/dev/null 2>&1; then
   exit 1
 fi
 
-# Eigene venv, damit das Projekt-Backend unberuehrt bleibt.
+# Eigene venv, damit das Projekt-Backend unberuehrt bleibt. Bevorzugt uv
+# (bringt eigene Python-Builds mit, mlx_lm will >= 3.10); ohne uv reicht
+# python3.12, falls vorhanden. python3.9 (Mac-Systempython) reicht NICHT.
 if [ ! -x .venv-mlx/bin/mlx_lm.lora ]; then
-  python3 -m venv .venv-mlx
-  ./.venv-mlx/bin/pip install -q --upgrade mlx mlx_lm
+  if command -v uv >/dev/null 2>&1; then
+    uv venv -q --python 3.12 .venv-mlx
+    uv pip install -q --python .venv-mlx/bin/python mlx mlx_lm
+  elif command -v python3.12 >/dev/null 2>&1; then
+    python3.12 -m venv .venv-mlx
+    ./.venv-mlx/bin/pip install -q --upgrade mlx mlx_lm
+  else
+    echo "FEHLER: braucht uv oder python3.12 fuer mlx_lm (Systempython 3.9 reicht nicht)." >&2
+    exit 1
+  fi
 fi
 
 echo "== 1/4 Daten konvertieren ($EXPORT_DIR -> $DATA_DIR) =="
