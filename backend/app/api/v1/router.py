@@ -16,6 +16,7 @@ from app.api.v1.routes.security import router as security_router
 from app.api.v1.routes.social_links import router as social_links_router
 from app.api.v1.routes.storage import router as storage_router
 from app.api.v1.routes.tts import router as tts_router
+from app.api.v1.routes.visits import router as visits_router
 from app.api.v1.routes.twins_delete import router as twins_delete_router
 from app.api.v1.routes.user_mvp import router as user_mvp_router
 from app.api.v1.routes.web_research import router as web_research_router
@@ -38,6 +39,7 @@ api_router.include_router(twins_delete_router)
 api_router.include_router(web_research_router)
 api_router.include_router(admin_quality_router)
 api_router.include_router(ads_router)
+api_router.include_router(visits_router)
 api_router.include_router(billing_router)
 api_router.include_router(ci_gateway_router)
 
