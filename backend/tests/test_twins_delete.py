@@ -8,7 +8,7 @@ from app.api.v1.routes.auth import SESSION_COOKIE, _make_token
 from app.integrations import user_store
 from app.main import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 
 def _cookies(sub: str) -> dict[str, str]:

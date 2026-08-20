@@ -539,7 +539,7 @@ def test_api_run_response_marks_search_and_returns_clickable_sources(monkeypatch
             )
 
     monkeypatch.setattr(web_research_route, "VerifiedWebResearchService", FakeService)
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
 
     response = client.post(
         "/api/v1/web-research/run",

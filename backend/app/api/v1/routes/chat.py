@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import re
+import secrets
 from collections.abc import Awaitable
 from datetime import UTC, datetime
 from time import perf_counter
 from typing import AsyncIterator, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
@@ -23,11 +25,88 @@ from app.ai.web_research import ResearchContext, VerifiedWebResearchService, Web
 from app.core.config import get_settings
 from app.api.v1.routes.auth import _session_from_request
 from app.integrations import chat_store, feedback_store
+from app.security.rate_limit import InMemoryRateLimiter
 from app.security.sanitization import normalize_text
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 logger = logging.getLogger("smyst.api.chat")
+
+#: Besitzer-Bindung fuer Chats (Security-Fix 21.08.2026): Vorher lieferte
+#: /chat/list ALLE Chats ALLER Nutzer inkl. Nachrichten zurueck und jeder
+#: Chat war ohne Anmeldung fortsetzbar. Jetzt setzt der Server beim ersten
+#: /chat/start ein unsichtbares Owner-Cookie (httpOnly, auf /api/chat
+#: begrenzt) und bindet jeden Chat an dessen SHA-256-Hash. Gaeste
+#: funktionieren unveraendert (Cookie fliesst automatisch mit, das Frontend
+#: sendet credentials:include) — nur fremde Chats sind seither unsichtbar
+#: bzw. gesperrt. In den e2-Archiven landet ausschliesslich der Hash, nie
+#: der Cookie-Wert.
+OWNER_COOKIE = "smyst_chat_owner"
+OWNER_HASH_KEY = "_ownerHash"
+OWNER_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
+
+#: Deutlich strengeres Eigen-Limit fuer LLM-Nachrichten: Das globale
+#: Middleware-Limit (120/60s) schuetzt allgemeine Endpoints; ein einzelner
+#: Chat-Nutzer braucht aber keine 120 Modellaufrufe pro Minute — das waere
+#: ein reiner Kredit-Abfluss-Vektor. 30/60s deckt jedes menschliche Tempo.
+CHAT_MESSAGE_LIMIT = 30
+CHAT_MESSAGE_WINDOW = 60
+
+_chat_message_limiter = InMemoryRateLimiter()
+
+
+def _owner_hash_from(request: Request) -> str | None:
+    token = request.cookies.get(OWNER_COOKIE, "")
+    return hashlib.sha256(token.encode("utf-8")).hexdigest() if token else None
+
+
+def _bind_owner(request: Request, response: Response) -> str:
+    """Bestehendes Owner-Cookie uebernehmen oder neu ausstellen; Hash zurueck."""
+    token = request.cookies.get(OWNER_COOKIE, "")
+    if not token:
+        token = secrets.token_urlsafe(24)
+        response.set_cookie(
+            OWNER_COOKIE,
+            token,
+            max_age=OWNER_COOKIE_MAX_AGE,
+            httponly=True,
+            secure=True,
+            samesite="none",
+            path="/api/chat",
+        )
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def _owner_matches(chat: dict[str, object], request: Request) -> bool:
+    """True, wenn der Chat diesem Aufrufer gehoert (oder ein Altchat ohne Bindung)."""
+    owner = chat.get(OWNER_HASH_KEY)
+    if not isinstance(owner, str) or not owner:
+        return True  # Chats von vor dem Fix (Archive): UUID-Chat-IDs sind unerratbar
+    return owner == _owner_hash_from(request)
+
+
+def _reject_foreign_chat(chat: dict[str, object], request: Request) -> None:
+    if not _owner_matches(chat, request):
+        raise HTTPException(status_code=403, detail="Chat gehoert einem anderen Nutzer.")
+
+
+def _enforce_chat_rate_limit(request: Request) -> None:
+    client_ip = request.client.host if request.client else "unbekannt"
+    decision = _chat_message_limiter.check(
+        key=f"chat-message:{client_ip}",
+        limit=CHAT_MESSAGE_LIMIT,
+        window_seconds=CHAT_MESSAGE_WINDOW,
+    )
+    if not decision.allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"Zu viele Nachrichten — bitte in {decision.reset_seconds}s erneut versuchen.",
+        )
+
+
+def _public_chat(chat: dict[str, object]) -> dict[str, object]:
+    """Chat ohne interne Schluessel (Owner-Hash) fuer API-Antworten."""
+    return {key: value for key, value in chat.items() if not key.startswith("_")}
 
 
 async def _timed[T](timings: dict[str, int], key: str, awaitable: Awaitable[T]) -> T:
@@ -384,7 +463,7 @@ def _persist_exchange(
 
 
 @router.post("/start")
-async def start_chat(body: StartChatRequest) -> dict[str, object]:
+async def start_chat(body: StartChatRequest, request: Request, response: Response) -> dict[str, object]:
     chat_id = str(uuid4())
     title = _title_for_twin(body.twinId)
     chat: dict[str, object] = {
@@ -394,6 +473,7 @@ async def start_chat(body: StartChatRequest) -> dict[str, object]:
         "messages": [],
         "createdAt": _now_ms(),
         "updatedAt": _now_ms(),
+        OWNER_HASH_KEY: _bind_owner(request, response),
     }
     _CHATS[chat_id] = chat
     _schedule_archive(chat)
@@ -419,8 +499,10 @@ def _krisen_nachricht(chat: dict[str, object], message: str, language: str | Non
 
 
 @router.post("/messages")
-async def send_message(body: SendMessageRequest, request: Request) -> dict[str, object]:
+async def send_message(body: SendMessageRequest, request: Request, response: Response) -> dict[str, object]:
+    _enforce_chat_rate_limit(request)
     chat = await _ensure_chat(body.chatId)
+    _reject_foreign_chat(chat, request)
     user_sub = _user_sub_from(request)
     message = normalize_text(body.message, max_length=4000).value
     if ist_krise(message):
@@ -462,7 +544,7 @@ async def send_message(body: SendMessageRequest, request: Request) -> dict[str, 
 
 
 @router.post("/feedback")
-async def submit_feedback(body: ChatFeedbackRequest) -> dict[str, object]:
+async def submit_feedback(body: ChatFeedbackRequest, request: Request) -> dict[str, object]:
     """Nutzerfeedback (Daumen hoch/runter, Meldung) zu einer Twin-Antwort.
 
     Das Feedback wird am Nachrichten-Objekt gespeichert (ueberlebt via
@@ -471,6 +553,7 @@ async def submit_feedback(body: ChatFeedbackRequest) -> dict[str, object]:
     Regressions-Testfaelle (app/workers/eval_profiles).
     """
     chat = await _ensure_chat(body.chatId)
+    _reject_foreign_chat(chat, request)
     messages = chat.get("messages")
     if not isinstance(messages, list):
         raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
@@ -523,9 +606,7 @@ async def submit_feedback(body: ChatFeedbackRequest) -> dict[str, object]:
 
 
 @router.post("/messages/stream")
-async def send_message_stream(
-    body: SendMessageRequest, http_request: Request
-) -> StreamingResponse:
+async def send_message_stream(body: SendMessageRequest, http_request: Request) -> StreamingResponse:
     """SSE-Variante von /messages: streamt Antwort-Deltas, dann ein done-Event.
 
     Event-Format (jeweils eine "data:"-Zeile mit JSON):
@@ -533,7 +614,9 @@ async def send_message_stream(
     - {"done": true, "chatId": ..., "twinId": ..., "message": {...}, "mode": ...}
     - {"error": true}   Stream abgebrochen; Client faellt auf /messages zurueck
     """
+    _enforce_chat_rate_limit(http_request)
     chat = await _ensure_chat(body.chatId)
+    _reject_foreign_chat(chat, http_request)
     message = normalize_text(body.message, max_length=4000).value
 
     def _sse(payload: dict[str, object]) -> str:
@@ -652,15 +735,27 @@ async def send_message_stream(
 
 
 @router.get("/list")
-async def list_chats() -> dict[str, object]:
-    return {"chats": list(_CHATS.values())}
+async def list_chats(request: Request) -> dict[str, object]:
+    owner = _owner_hash_from(request)
+    if not owner:
+        return {"chats": []}
+    owned = [
+        _public_chat(chat)
+        for chat in _CHATS.values()
+        if chat.get(OWNER_HASH_KEY) == owner
+    ]
+    owned.sort(key=lambda chat: chat.get("updatedAt", 0), reverse=True)
+    return {"chats": owned}
 
 
 @router.get("/search")
-async def search_chats(q: str = "", twinId: str | None = None) -> dict[str, object]:
+async def search_chats(q: str = "", twinId: str | None = None, request: Request = None) -> dict[str, object]:  # type: ignore[assignment]
+    owner = _owner_hash_from(request)
     query = q.strip().lower()
     results = []
     for chat in _CHATS.values():
+        if owner is None or chat.get(OWNER_HASH_KEY) != owner:
+            continue
         if twinId and chat.get("twinId") != twinId:
             continue
         text = " ".join(

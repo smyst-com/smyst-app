@@ -13,7 +13,7 @@ from app.integrations import email_account_store as store_module
 from app.integrations.email_account_store import EmailAccountAlreadyExists, normalize_email
 from app.main import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 CSRF = {"X-Smyst-CSRF": "1"}
 DELETE_HEADERS = {"X-Smyst-CSRF": "1", "X-Smyst-Erase-Confirm": "KONTO-ENDGUELTIG-LOESCHEN"}

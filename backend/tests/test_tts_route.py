@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from app.api.v1.routes import tts as tts_route
 from app.main import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 
 class _FakeWorkerResponse:

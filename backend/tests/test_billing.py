@@ -14,7 +14,7 @@ from app.main import app
 
 @pytest.fixture()
 def client() -> TestClient:
-    return TestClient(app)
+    return TestClient(app, base_url="https://testserver")
 
 
 def _auth_cookie(sub: str = "user-123") -> dict[str, str]:
