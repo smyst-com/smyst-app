@@ -4049,7 +4049,7 @@ function TwinProfileView({
           </section>
         )}
 
-        {profile.visibility === 'public' && <AdSlot placement="profile-footer" />}
+        {profile.visibility === 'public' && <AdSlot placement="profile-footer" profileSlug={profile.slug ?? undefined} />}
       </section>
     </div>
   )
