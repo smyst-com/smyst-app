@@ -4,6 +4,46 @@ Bausteine fuer das eigene Modell (Continued Pretraining auf Apache-2.0-Basis,
 Fahrplan siehe Memory_Bank). Dieses Verzeichnis enthaelt **keine Nutzerdaten** —
 nur das eingefrorene Eval-Set und Dokumentation.
 
+## Ziel & Versionsstrategie (Adam, 2026-08-20)
+
+**Nordstern:** smyst soll die Profil-Pipeline (spaeter auch den Twin-Chat)
+VOLLSTAENDIG ueber eigene Modelle betreiben. Fremde Provider sind
+Uebergangstechnik: sie halten heute die 2000 Profile/Tag am Laufen und
+liefern nebenbei die Trainingsdaten (Chat-Archive, QA-Urteile), mit denen
+sie sich selbst uefluessig machen. Das Betriebsziel 2000 Profile/Tag gilt
+unabhaengig vom Modellstand — eigene Modelle senken die Kosten pro Profil
+und beseitigen die Abhaengigkeit, ersetzen die Provider aber schrittweise:
+erst Entwuerfe/strukturierte Felder (steigender Anteil), zuletzt das
+QA-Gate.
+
+**Versionierung (semantisch):**
+
+- `smyst 1.x` — Qwen2.5-0.5B-Basis (CPT + SFT). Neue Trainingsstaende
+  mit gewachsenen Daten = naechste Minor-Version (1.1, 1.2, ...).
+- `smyst 2.0` — groessere Basisarchitektur/-groesse (_major bump_).
+- PATCH (1.0.1) = nur Serving-Fixes (z. B. Quantisierung), kein neues
+  Training.
+
+**Taeglicher Rhythmus (automatisiert, aber kein blindes Taeglich-Training):**
+
+1. *Immer:* Betrieb sammelt Trainingsdaten als Nebenprodukt
+   (chat-archives/, qa_reports) — kein eigener Job noetig.
+2. *Taeglich nachts:* Export-Worker zaehlen neue Beispiele; der Eval-Lauf
+   (`model-eval.yml`) misst den Live-Stand und schreibt die Trendkurve
+   (`training-evals/`).
+3. *Training automatisch getriggert, nicht nach Kalender:* ein GPU-Lauf
+   (on demand gemietet, nie auf GitHub Actions) startet nur, wenn seit
+   dem letzten Stand genug neue Daten da sind (Richtwert: >= 5000 neue
+   SFT-Bspa. oder >= 20000 neue QA-Urteile). Ein CPT-Lauf ist Wochen-
+   sache, SFT-Verfeinerungen koennen haeufiger laufen.
+4. *Promotions-Gate (hart):* ein neuer Checkpoint wird nur dann zum
+   produktiven smyst 1.x, wenn er im eingefrorenen Eval (v2, mit
+   Wiederholungen gegen Messrauschen) den produktiven Stand schlaegt.
+   Sonst: kein Deploy, Alarm im Morgenbericht, alter Stand bleibt.
+5. *Rollout gestuft:* neuer Stand uebernimmt zunaechst 5 % der
+   Entwurfs-Generierung, bei stabilen Zahlen steigend; Rollback immer
+   moeglich (alte Checkpoints bleiben versioniert im Object Brain).
+
 ## Trainings-Export (Chat-Archive -> JSONL)
 
 Die App archiviert bereits jeden Twin-Chat nach IDrive e2 (`chat-archives/`)
