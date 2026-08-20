@@ -721,6 +721,20 @@ export default function App() {
     window.scrollTo(0, 0)
   }
 
+  // Nach der Registrierung direkt in den Start-Assistenten führen (UX-Highway;
+  // Flag wird von EmailAuthForm nach erfolgreicher Konto-Erstellung gesetzt).
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem('smyst:goto-onboarding') === '1') {
+        window.sessionStorage.removeItem('smyst:goto-onboarding')
+        navigateTo('onboarding')
+      }
+    } catch {
+      /* sessionStorage nicht verfügbar */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Öffnet die volle Profilseite /t/<slug>/ einer Person (z. B. per Klick auf das Chat-Header-Bild).
   const openTwinProfile = (slug?: string | null) => {
     if (!slug) return
@@ -2681,7 +2695,7 @@ function SmystStartPage({
     { label: lang === DEFAULT_LANG ? 'Mein Profil' : t.nav.profile, view: 'account-profile', detail: lang === DEFAULT_LANG ? 'Identität, Bio, Rollen und Profilqualität' : t.nav.profileDetail },
     { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate, view: 'twin-builder', detail: lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit' : t.nav.twinCreateDetail },
     { label: lang === DEFAULT_LANG ? 'Meine Twins' : t.nav.myTwins, view: 'my-twins', detail: lang === DEFAULT_LANG ? 'Private und öffentliche AI Twins' : t.nav.myTwinsDetail },
-    { label: lang === DEFAULT_LANG ? 'Memories' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'Dateien, Wissen und Erinnerungen hochladen' : t.nav.memoriesDetail },
+    { label: lang === DEFAULT_LANG ? 'Dateien & Erinnerungen' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'Bilder, Video, Audio, Texte und Erinnerungen hochladen' : t.nav.memoriesDetail },
     { label: lang === DEFAULT_LANG ? 'Chats' : t.nav.chats, view: 'twin-chat', detail: lang === DEFAULT_LANG ? 'Letzte Gespräche und Twin-Auswahl' : t.nav.chatsDetail },
     { label: lang === DEFAULT_LANG ? 'Admin' : t.nav.admin, view: 'admin', detail: lang === DEFAULT_LANG ? 'User, Werbung, Umsatz, Sicherheit und Betrieb' : t.nav.adminDetail, adminOnly: true },
     { label: lang === DEFAULT_LANG ? 'Datenschutz' : t.nav.privacy, view: 'trust', detail: lang === DEFAULT_LANG ? 'Privatsphäre, Export und Löschung' : t.nav.privacyDetail },
@@ -2718,7 +2732,7 @@ function SmystStartPage({
   const profileControlCards = [
     [lang === DEFAULT_LANG ? 'Identität' : t.drawer.cardIdentityTitle, lang === DEFAULT_LANG ? 'Name, Rollen, Expertise und Bio sauber pflegen.' : t.drawer.cardIdentityText],
     [lang === DEFAULT_LANG ? 'AI Twin' : t.drawer.cardTwinTitle, lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit steuern.' : t.drawer.cardTwinText],
-    [lang === DEFAULT_LANG ? 'Memories' : t.drawer.cardMemoriesTitle, lang === DEFAULT_LANG ? 'Uploads, Quellen und Erinnerungen als Kontext verwalten.' : t.drawer.cardMemoriesText],
+    [lang === DEFAULT_LANG ? 'Dateien & Erinnerungen' : t.drawer.cardMemoriesTitle, lang === DEFAULT_LANG ? 'Bilder, Videos, Quellen und Erinnerungen als Twin-Wissen verwalten.' : t.drawer.cardMemoriesText],
     [lang === DEFAULT_LANG ? 'Datenschutz' : t.drawer.cardPrivacyTitle, lang === DEFAULT_LANG ? 'Freigaben, Export, Löschung und private Standards.' : t.drawer.cardPrivacyText],
   ]
 
@@ -2810,7 +2824,7 @@ function SmystStartPage({
               <div className="mb-3">
                 <p className="text-sm font-bold text-white">Anmelden oder registrieren</p>
                 <p className="mt-1 text-xs leading-relaxed text-[#9aa3b2]">
-                  Dein Profil, Twins, Memories und Chats bleiben an einem sicheren Account.
+                  Dein Profil, Twins, Dateien und Chats bleiben an einem sicheren Account.
                 </p>
               </div>
               <div className="grid gap-2">
@@ -2887,7 +2901,11 @@ function SmystStartPage({
                 <button
                   type="button"
                   onClick={() => goFromMenu(item.view)}
-                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  className={
+                    item.view === 'onboarding'
+                      ? 'flex min-h-[58px] w-full items-center justify-between gap-3 rounded-lg border border-[#59C7FF]/50 bg-[#59C7FF]/10 px-4 py-3 text-left transition hover:bg-[#59C7FF]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50'
+                      : 'flex min-h-[58px] w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50'
+                  }
                 >
                   <span className="min-w-0">
                     <span className="block text-sm font-bold text-white">{item.label}</span>
@@ -4848,7 +4866,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 </div>
               ))}
               {!memories.length && (
-                <div className="rounded-lg bg-white/12 p-4 text-sm text-[#555b64]">Noch keine Memories gespeichert.</div>
+                <div className="rounded-lg bg-white/12 p-4 text-sm text-[#555b64]">Noch keine Dateien oder Erinnerungen gespeichert.</div>
               )}
             </div>
           </Card>
@@ -5010,7 +5028,7 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
         </div>
         <SignInRequiredCard
           title="Erst anmelden, dann speichern"
-          text="Private Profile, Memories und Chats werden erst nach Login dauerhaft gespeichert."
+          text="Private Profile, Dateien und Chats werden erst nach Login dauerhaft gespeichert."
           returnTo="/onboarding"
         />
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -5089,7 +5107,7 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
               <span className="font-bold">{loading ? 'lädt…' : twinCount}</span>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/12 px-3 py-2 text-sm">
-              <span>Memories</span>
+              <span>Dateien & Erinnerungen</span>
               <span className="font-bold">{loading ? 'lädt…' : memoryCount}</span>
             </div>
           </div>
@@ -7049,7 +7067,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
-                <p className="text-sm font-medium">{isAuthenticated ? 'Memories' : 'Memory Upload'}</p>
+                <p className="text-sm font-medium">{isAuthenticated ? 'Dateien & Erinnerungen' : 'Dateien & Erinnerungen'}</p>
                 <p className="text-xs text-[#767d87]">{isAuthenticated ? t.dashboard.manageUploads : t.dashboard.uploadAfterLogin}</p>
               </div>
               <Button variant="ghost" size="sm" onClick={() => onNavigate('memory-upload')}>{t.dashboard.view}</Button>
@@ -7074,7 +7092,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
               <span className="text-sm font-bold">{dashStats ? dashStats.twins : '–'}</span>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/10 p-3">
-              <span className="text-sm font-medium">Memories</span>
+              <span className="text-sm font-medium">Dateien & Erinnerungen</span>
               <span className="text-sm font-bold">{dashStats ? dashStats.memories : '–'}</span>
             </div>
             {!isAuthenticated && (
@@ -7863,7 +7881,7 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
             <h3 className="mb-4 text-lg font-semibold">Heute hochgeladen</h3>
             <div className="space-y-4">
               <div>
-                <p className="mb-1 text-sm text-[#767d87]">Gesamte Memories</p>
+                <p className="mb-1 text-sm text-[#767d87]">Gesamte Dateien & Erinnerungen</p>
                 <p className="text-2xl font-bold">{visibleUploads.length}</p>
               </div>
               <div>
