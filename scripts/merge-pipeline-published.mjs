@@ -448,6 +448,12 @@ function renderPage(profile) {
   });
 
   let html = template;
+  // hreflang-Bereinigung (SEO-Audit 21.08.): Das Template traegt die hreflang-
+  // Zeilen der STARTSEITE (-> /<lang>/). Auf einer Pipeline-Profilseite ist
+  // das falsch (es existieren keine Sprachvarianten dieser Profil-URL), und
+  // falsche hreflang-Angaben wertet Google als Fehler. Entfernen statt
+  // umbiegen: eine Seite ohne hreflang ist korrekt.
+  html = html.replace(/\s*<link rel="alternate" hreflang="[^"]*" href="[^"]*" \/>/g, '');
   html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeAttr(title)}</title>`);
   html = html.replace(/(<meta name="description" content=")[^"]*(")/, `$1${escapeAttr(description)}$2`);
   html = html.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${pageUrl}$2`);

@@ -135,6 +135,24 @@ jobs:
       - name: Check twin duplicates (deploy gate)
         run: node scripts/check-twin-duplicates.mjs
 
+      # Bild-Diät (Performance-Audit 21.08.): Ausreißer bis 1,67 MB (Kant,
+      # Bach) werden im Grid mit ~104 px dargestellt. Alles über 300 KB wird
+      # auf max 512 px verkleinert und als JPEG q82 neu kodiert; kleinere
+      # Dateien bleiben unberührt (idempotent — bereits komprimierte Bilder
+      # fallen unter die Schwelle und werden nicht erneut kodiert, Quality-
+      # Verluste durch Wiederholung sind ausgeschlossen). ImageMagick ist auf
+      # ubuntu-latest vorinstalliert.
+      - name: Shrink oversized profile images
+        run: |
+          cd dist/public/profile-images
+          BIG=$(find . -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -size +300k)
+          if [ -n "$BIG" ]; then
+            echo "$BIG" | wc -l | xargs echo "Bilder über 300 KB:"
+            mogrify -resize '512x512>' -quality 82 $BIG
+          else
+            echo "Keine Bilder über 300 KB — nichts zu tun."
+          fi
+
       # Schwund-Waechter (Vorfall 30.07.2026, Deploys #360/#361): der Schritt
       # oben faengt nur den TOTALausfall des Publish-Index ab. Ein halb
       # geschriebener Index oder ein fehlgeschlagener Merge ergibt dagegen einen
