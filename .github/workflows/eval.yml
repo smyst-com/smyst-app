@@ -1,0 +1,51 @@
+name: Chat-Qualitaets-Eval
+
+on:
+  push:
+    paths:
+      - "backend/**"
+  pull_request:
+    paths:
+      - "backend/**"
+  schedule:
+    # Taeglich 03:15 UTC: Eval gegen die live konfigurierten Provider
+    - cron: "15 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 3.12 einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Abhaengigkeiten installieren
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Unit- und Regressionstests
+        run: pytest -q
+
+      - name: Eval-Lauf (Regel-Checks + LLM-Judge wenn Keys vorhanden)
+        env:
+          LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+        run: python scripts/run_eval.py
+
+      - name: Eval-Report als Artefakt sichern
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: backend/evals/reports/*.json
+          retention-days: 90

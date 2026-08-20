@@ -651,6 +651,18 @@ export default function App() {
     const stored = window.localStorage.getItem('smyst-name-sort')
     return isNameSortMode(stored) ? stored : 'famous'
   })
+  // Jugendschutz (DSGVO-K/COPPA): Altersbestaetigung vor der ersten Chat-Nutzung.
+  const [ageConfirmation, setAgeConfirmation] = useState<'pending' | '13plus' | 'under13'>(() => {
+    const stored = window.localStorage.getItem('smyst-age-confirmation')
+    return stored === '13plus' || stored === 'under13' ? stored : 'pending'
+  })
+  const confirmAge = (value: '13plus' | 'under13') => {
+    window.localStorage.setItem('smyst-age-confirmation', value)
+    setAgeConfirmation(value)
+  }
+  const chatRelevantView = currentView === 'twin-chat' || currentView === 'twin-profile'
+  const showAgeGate = ageConfirmation === 'pending' && chatRelevantView
+  const chatBlockedForMinors = ageConfirmation === 'under13' && chatRelevantView
   const auth = useAuth()
   const canSeeAdmin = Boolean(
     auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
@@ -819,6 +831,59 @@ export default function App() {
         </div>
       </header>
 
+      {/* Jugendschutz: Altersabfrage vor der ersten Chat-Nutzung (DSGVO-K) */}
+      {showAgeGate && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/70 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/12 bg-[#10141c] p-6 text-center shadow-2xl">
+            <h2 className="text-lg font-bold text-white">Wie alt bist du?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[#9aa6b7]">
+              smyst nutzt KI-Chats. Damit wir den Jugendschutz und deine Privatsphäre einhalten
+              können, brauchen wir einmalig deine Altersbestätigung. Unter 13 Jahren ist der Chat
+              nur mit Zustimmung der Eltern erlaubt.
+            </p>
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => confirmAge('13plus')}
+                className="rounded-lg bg-[#59C7FF] px-4 py-2.5 text-sm font-semibold text-[#0b1c44] transition-colors hover:brightness-110"
+              >
+                Ich bin 13 Jahre oder älter
+              </button>
+              <button
+                type="button"
+                onClick={() => confirmAge('under13')}
+                className="rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Ich bin unter 13
+              </button>
+            </div>
+            <p className="mt-4 text-[11px] leading-relaxed text-[#9aa6b7]/70">
+              Deine Angabe wird nur lokal in deinem Browser gespeichert und nicht an Server
+              übertragen.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {currentView === 'twin-profile' && chatBlockedForMinors && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/80 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/12 bg-[#10141c] p-6 text-center shadow-2xl">
+            <h2 className="text-lg font-bold text-white">Chat gesperrt (unter 13)</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[#9aa6b7]">
+              Der Chat ist aus Datenschutzgründen erst ab 13 Jahren freigeschaltet. Profilinfos
+              bleiben sichtbar, sobald du dieses Fenster schließt.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigateTo('landing')}
+              className="mt-5 rounded-lg border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            >
+              Zurück zum Start
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Drawer */}
       <Suspense fallback={null}>
         <MobileNav
@@ -864,7 +929,29 @@ export default function App() {
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
         {currentView === 'memory-upload' && <MemoryUploadView onNavigate={navigateTo} />}
-        {currentView === 'twin-chat' && <TwinChatView initialTwinId={profileSlug} onNavigate={navigateTo} />}
+        {currentView === 'twin-chat' &&
+          (chatBlockedForMinors ? (
+            <section className="mx-auto grid min-h-[60vh] max-w-xl place-items-center px-4 py-12 text-center">
+              <div>
+                <h2 className="text-xl font-bold text-white">Chat erst ab 13 Jahren</h2>
+                <p className="mt-3 text-sm leading-relaxed text-[#9aa6b7]">
+                  Aus Datenschutzgründen (DSGVO) können Nutzer unter 13 Jahren den Chat nur mit
+                  Zustimmung der Eltern nutzen. Bitte lass deine Eltern den smyst-Support
+                  kontaktieren, um einen Familien-Zugang einzurichten. Alle Profilseiten kannst du
+                  trotzdem ohne Chat ansehen.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('landing')}
+                  className="mt-5 rounded-md border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+                >
+                  Zurück zum Start
+                </button>
+              </div>
+            </section>
+          ) : (
+            <TwinChatView initialTwinId={profileSlug} onNavigate={navigateTo} />
+          ))}
         {currentView === 'settings' && (
           <SettingsView
             onNavigate={navigateTo}
@@ -3167,6 +3254,11 @@ function SmystStartPage({
                     ) : (
                       <p className="whitespace-pre-wrap break-words">{message.content}</p>
                     )}
+                    {message.role !== 'user' && !message.streaming && message.content ? (
+                      <p className="mt-1 text-[10px] uppercase tracking-wide text-[#aeb6c4]/70">
+                        KI-generierte Antwort
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -8902,6 +8994,11 @@ function TwinChatView({
                   {msg.streaming && msg.content && (
                     <span className="ml-0.5 inline-block h-4 w-1 translate-y-0.5 animate-pulse rounded-full bg-[#59C7FF] align-middle"></span>
                   )}
+                  {msg.role === 'ai' && !msg.streaming && msg.content ? (
+                    <p className="mt-1 text-[10px] uppercase tracking-wide text-[#555b64]/80">
+                      KI-generierte Antwort
+                    </p>
+                  ) : null}
                 </div>
                 {msg.role === 'ai' && !msg.streaming && msg.webResearch?.searched && (
                   <div className="mt-1 max-w-[calc(100%-8px)] rounded-md border border-white/24 bg-white/16 px-3 py-2 text-xs text-[#555b64] sm:max-w-[94%]">
