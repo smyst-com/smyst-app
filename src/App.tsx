@@ -38,6 +38,14 @@ import {
   CURATED_PUBLIC_TWIN_SPECS,
   type CuratedPublicTwinSpec,
 } from './data/curated-public-twin-data'
+
+/**
+ * Bezahl-Abos (Stripe Premium) sind bewusst deaktiviert: smyst bleibt vorerst
+ * komplett kostenlos (Wachstums-Strategie, Master-Plan). Das komplette
+ * Billing-Backend bleibt im Code und laesst sich spaeter durch setzen dieser
+ * Flag + der Stripe-Secrets ohne Umbau aktivieren.
+ */
+const PREMIUM_SUBSCRIPTIONS_ENABLED = false
 import { profileNameWithAge, profileBirthLine, profileDeathLine } from './data/life-display'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
@@ -9353,16 +9361,20 @@ function TwinChatView({
             >
               Nachfragen
             </button>
-            <button
-              type="button"
-              onClick={() => void handleUpgradePremium()}
-              className="rounded-md border border-[#59C7FF]/45 bg-[#59C7FF]/20 px-3 py-1.5 text-sm font-semibold text-[#0b1c44] transition-colors hover:bg-[#59C7FF]/30"
-            >
-              ✦ Premium – 4,99 €/Monat
-            </button>
-            <p className="px-1 text-[11px] leading-relaxed text-[#555b64]">
-              Unbegrenzte Chats, werbefrei, alle Funktionen. Jederzeit kündbar.
-            </p>
+            {PREMIUM_SUBSCRIPTIONS_ENABLED && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void handleUpgradePremium()}
+                  className="rounded-md border border-[#59C7FF]/45 bg-[#59C7FF]/20 px-3 py-1.5 text-sm font-semibold text-[#0b1c44] transition-colors hover:bg-[#59C7FF]/30"
+                >
+                  ✦ Premium – 4,99 €/Monat
+                </button>
+                <p className="px-1 text-[11px] leading-relaxed text-[#555b64]">
+                  Unbegrenzte Chats, werbefrei, alle Funktionen. Jederzeit kündbar.
+                </p>
+              </>
+            )}
           </div>
         </aside>
       </div>
