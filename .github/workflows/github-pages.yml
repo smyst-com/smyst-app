@@ -81,6 +81,19 @@ jobs:
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
             || { if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; else cat s3-index-err.log; echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."; exit 1; fi; }
 
+      # FAQ-Antworten pro Profil (SEO, 21.08.): die QA der Autopilot-Pipeline
+      # erzeugt fuer jedes Profil fuenf individuelle Antworten (bisher nur
+      # Trainingsmaterial). Als FAQPage-JSON-LD auf den Profilseiten sind sie
+      # einmaliger, substanzieller Inhalt pro Seite — Googles Scaled-Content-
+      # Regeln (Maerz 2026) verlangen genau das. Datei fehlt -> Build laeuft
+      # ohne FAQ weiter (tolerant, kein Silent-Wipe-Thema: nur Zusatzcontent).
+      - name: Fetch profile FAQ answers (optional)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          aws s3 cp s3://smyst-memories/pipeline/published/qa-answers.json pipeline-qa-answers.json             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2             || echo "Keine FAQ-Antworten in e2 (ok — Seiten ohne FAQ-Schema)."
+
       # Egress-Sparer (Vorfall 31.07.2026: 10-GB-Frei-Egress von IDrive e2
       # aufgebraucht, alle e2-Zugriffe gesperrt, Deploys/Pipeline rot): die
       # gespiegelten Profilbilder zwischen Builds im kostenlosen GitHub-

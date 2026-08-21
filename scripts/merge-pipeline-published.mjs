@@ -41,6 +41,21 @@ if (existsSync(CORRECTIONS_FILE)) {
   }
 }
 
+// FAQ-Antworten pro Profil (SEO 21.08.): Slug -> [{q, a}]. Quelle ist der
+// QA-Lauf der Pipeline (fuenf individuelle Fragen je Profil) — als
+// FAQPage-JSON-LD pro Profilseite einmaliger Content gegen Googles
+// Scaled-Content-Regeln. Datei fehlt -> leeres Mapping, Seiten ohne FAQ.
+const FAQ_FILE = process.env.PIPELINE_QA_ANSWERS || resolve(ROOT, 'pipeline-qa-answers.json');
+let FAQ_BY_SLUG = {};
+if (existsSync(FAQ_FILE)) {
+  try {
+    FAQ_BY_SLUG = JSON.parse(readFileSync(FAQ_FILE, 'utf-8'));
+    console.log(`merge-pipeline-published: FAQ-Antworten fuer ${Object.keys(FAQ_BY_SLUG).length} Profile geladen.`);
+  } catch (error) {
+    console.warn(`merge-pipeline-published: FAQ-Datei unlesbar, wird ignoriert: ${error.message}`);
+  }
+}
+
 if (!existsSync(INDEX_FILE)) {
   console.log('merge-pipeline-published: kein Publish-Index gefunden — nichts zu tun (ok).');
   process.exit(0);
@@ -448,6 +463,19 @@ function renderPage(profile) {
   });
 
   let html = template;
+  const faq = FAQ_BY_SLUG[profile.slug];
+  if (faq?.length) {
+    const faqLd = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map((eintrag) => ({
+        '@type': 'Question',
+        name: eintrag.q,
+        acceptedAnswer: { '@type': 'Answer', text: eintrag.a },
+      })),
+    });
+    html = html.replace('</head>', `  <script type="application/ld+json">${faqLd}</script>\n</head>`);
+  }
   // hreflang-Bereinigung (SEO-Audit 21.08.): Das Template traegt die hreflang-
   // Zeilen der STARTSEITE (-> /<lang>/). Auf einer Pipeline-Profilseite ist
   // das falsch (es existieren keine Sprachvarianten dieser Profil-URL), und
