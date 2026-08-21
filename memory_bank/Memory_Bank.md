@@ -1,5 +1,13 @@
 # Memory Bank
 
+## Update 2026-08-21 (Nacht, Adam-ZCode): STUFE A UMGESETZT — Chat-Security PR #455, hreflang+Bilddiaet #458, Checkpoint-Eval #459; Katalog/Sitemap waren bereits vollstaendig (veraltete Messung)
+
+- A1 CHAT-SECURITY (PR #455): /chat/list/search gaben ALLE Chats preis, Chats fremd fortsetzbar, LLM-Limit 120/min — Owner-Cookie (nur Hash im Archiv, Gaeste unberuehrt), 403, 30/60s-Limit. 535 Tests gruen. WIRD ERST MIT NAECHESTEM ZEABUR-DEPLOY AKTIV (Redeploy = Adams 1 Klick).
+- A2: Katalog 12 508 Profile + Sitemap 13 924 URLs LIVE VOLLSTAENDIG (Deploy-Log '12 234 gemergt') — die kleineren Systemcheck-Zahlen waren veraltete CDN-Staende. Behoben stattdessen (PR #458): hreflang-Pipeline-Seiten entfernt, Bild-Diaet >300-KB-JPEG -> 512px/q82.
+- A3: Analytics durch #454 (/api/visits, e2-Tagesarchiv) + Search Console abgedeckt.
+- B6 (PR #459): eval_checkpoint_mlx.py — smyst-1.0-sft besteht Screening (deutsch 91,7% vs Basis 83,3%, Persona 100%); Halluzinations-Befund bestaetigt Entwurfs-Rolle.
+- OFFEN: Zeabur-Redeploy, Katalog-Lazyloading (11 MB!), Virtualisierung, smyst-1.0-GGUF, C-Stufe.
+
 ## Update 2026-08-20 (Abend 2, Adam-ZCode): SYSTEMCHECK — Voice-Worker-Abkoppelung entdeckt (12/15 Sprachen falsche Stimme), Pipeline-Backup-Fix, Voice-QA zeigt wieder echte Ergebnisse
 
 - VOICE-BEFUND (Produktionsmangel seit Backend-Umzug Salad->Zeabur, ~17.08.): qa/voice_qa_daily.py lief seit 17.08. rot mit HTTP 403 — URSACHE 1: der QA pruefte noch den TOTEN Salad-Host; DEFAULT_BASE_URL jetzt https://api.smyst.com (Stimmliste 200, Deutsch-/Chinesisch-Synthese als WAV verifiziert). URSACHE 2 (der echte Mangel): /api/tts/voices meldet workerConfigured=false — dem smyst-backend auf Zeabur fehlen VOICE_WORKER_URL und VOICE_WORKER_TOKEN (beim Umzug verloren gegangen; Variablenliste des Services hat sie nicht). Folge: 12 von 15 Sprachen (zh,es,ar,fr,pt,ru,ja,ko,it,hi,id,bn) synthetisieren mit en-male statt worker-XX-Stimme. DE/EN/TR (Piper lokal) sind ok.
