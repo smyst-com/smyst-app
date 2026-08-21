@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-08-21 (Abend, Adam-ZCode): STUFE B VOLLSTAENDIG LIVE — FAQPage-JSON-LD auf 13 544 Profilseiten, Grid-Virtualisierung, alle Deploys grün (PRs #477/#479)
+
+- FAQ-SCHEMA LIVE (PR #479, Deploy 20:34 UTC SUCCESS, live geprüft: /t/oscar-levy enthält FAQPage): 13 544 Profile tragen jetzt je 5 individuelle Fragen+Antworten aus der eigenen Pipeline-QA als FAQPage-JSON-LD (17,4 MB qa-answers.json in e2 unter pipeline/published/). Googles Scaled-Content-Regeln (März 2026) verlangen genau solchen einmaligen Content pro Seite — die 2000/Tag-Strategie ist damit abgesichert. Rich-Snippet-fähig. 1 798 Namen ohne Slug-Treffer (Duplikate/unveröffentlicht) bewusst übergangen.
+- GRID-VIRTUALISIERUNG (PR #477): Start-Grid rendert 60 Karten + 120er-Schritte beim Scrollen (IntersectionObserver, 600px Vorlauf) statt 13k DOM-Knoten auf einmal. Filterwechsel resettet. Gesamtzahl-Anzeige unverändert, kein Design-Delta (Freeze unberührt).
+- DAMIT IST STUFE B KOMPLETT: Slim-Katalog 59 KB (statt 11 MB) + virtuelles Grid + og:image-PNG + Bilder-Diät + FAQPage-Schema + smyst-1.0-GGUF/Provider einschaltbereit. Alle Live-Verifikationen grün.
+- VERBLEIBEND (C-Stufe): Retention-Digest-Mail (Resend-Infra steht), Education-Landingpage, Premium-Flag-Aktivierung, smyst-1.0-Service-Deploy + SMYST_LLM_BASE_URL (Aktivierung des eigenen Modells in der Pipeline).
+
 ## Update 2026-08-21 (Morgen, Adam-ZCode): STUFE B KERN UMGESETZT + LIVE VERIFIZIERT — Slim-Katalog 59 KB statt 11 MB, og:image-PNG, smyst-1.0-GGUF in e2, smyst_llm-Provider einschaltbereit (PRs #474/#475)
 
 - PERFORMANCE (PR #474, Deploy 09:42 UTC ERFOLG, live geprüft): slim.json (100 kuratierte + 300 neueste, 400 Einträge) rendert das Start-Grid nach **59 KB** statt 11 MB Vollkatalog; useTwinMvp.listPublicTwinsProgressive upgradet im Hintergrund nach. og:image von SVG-Profilen jetzt Standard-PNG (live: /t/oscar-levy -> /og-image.png). Vollkatalog unangetastet: 13 079 Profile.
