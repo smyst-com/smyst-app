@@ -1,5 +1,13 @@
 # Memory Bank
 
+## Update 2026-08-21 (Morgen, Adam-ZCode): STUFE B KERN UMGESETZT + LIVE VERIFIZIERT — Slim-Katalog 59 KB statt 11 MB, og:image-PNG, smyst-1.0-GGUF in e2, smyst_llm-Provider einschaltbereit (PRs #474/#475)
+
+- PERFORMANCE (PR #474, Deploy 09:42 UTC ERFOLG, live geprüft): slim.json (100 kuratierte + 300 neueste, 400 Einträge) rendert das Start-Grid nach **59 KB** statt 11 MB Vollkatalog; useTwinMvp.listPublicTwinsProgressive upgradet im Hintergrund nach. og:image von SVG-Profilen jetzt Standard-PNG (live: /t/oscar-levy -> /og-image.png). Vollkatalog unangetastet: 13 079 Profile.
+- EIGENES MODELL EINSCHALTBEREIT (PR #475): smyst-1.0-f16.gguf (994 MB, SHA256 aaf34ebe...) in e2 unter models/smyst-1.0/2026-08-20/. Neuer Provider 'smyst_llm' (OpenAI-kompatibel) aktiviert sich allein über SMYST_LLM_BASE_URL — ohne URL läuft die Kette unangetastet weiter (Test abgedeckt). docker/Dockerfile.llamacpp quantisiert das f16 IM BUILD auf Q4_K_M (lokal kein cmake nötig). AKTIVIERUNG sobald gewünscht: llama.cpp-Service deployen (Zeabur/Salad-CPU) + SMYST_LLM_BASE_URL im Backend.
+- GGUF-ERZEUGUNG: llama.cpp-Clone + torch via uv (--index-strategy unsafe-best-match, uv-venvs haben KEIN pip!) im MLX-venv; convert_hf_to_gguf f16 in Sekunden.
+- VERIFIKATION RUND: slim 200/59 KB/400 Einträge, og:image PNG, Katalog 13 079, Gast-Chat mit Cookie mode=openrouter. ZWISCHENZEIT api.smyst.com scheinbar tot (HTTP 000) — URSACHE: lokales wackeliges Netz des Macs (5x 200 in <1s danach); Backend ununterbrochen gesund.
+- OFFEN VON B/C: Katalog-Virtualisierung (Grid-Rendering bei 13k Karten), inhaltliche Tiefe pro Profil (Google-Scaled-Content), C-Stufe (Retention-Mail, Education-LP, Premium-Flag).
+
 ## Update 2026-08-21 (Morgenlauf): Cron 8/8 gruen (#299-#306), PUBLISH LAEUFT WIEDER (20.08. 686 + 21.08. 195 neue Profile) — 12703 Twins live, Etappe 30 live verifiziert, i18n-Etappe 31 Chat-Eingabeleiste (PR #471)
 
 - CRON (#299-#309 seit dem letzten Morgenbericht): #299-#306 ALLE GRUEN (8 Laeufe). #307 (workflow_dispatch, github-actions Bot / Autopilot-Watchdog, Start 21.08. 02:09 UTC) lief zum Berichtszeitpunkt noch. #308 (Sched 02:37 UTC) CANCELLED — Abbruchzeitpunkt exakt 04:56 UTC, also Queue-Verdraengung durch den Start von #309 (bekanntes Muster, kein Fehler). #309 = heutiger Scheduled (04:56 UTC / 06:56 Berlin) war pending. KEIN roter Lauf, KEIN manuelles Nachholen noetig (Auto-Publish lief in jedem Lauf).
