@@ -1,0 +1,34 @@
+# smyst 1.0 — llama.cpp-Server (CPU) fuer Zeabur/Salad
+#
+# Bedient GGUF ueber die OpenAI-kompatible API (/v1/chat/completions) und
+# laesst sich damit als zusaetzlicher Provider in die Backend-Kette haengen.
+#
+# Das Modell kommt zur BUILD-ZEIT herein (nicht ins Git-Repo!):
+#   docker build -f docker/Dockerfile.llamacpp \
+#     --build-arg MODEL_URL="<https...>/smyst-1.0-f16.gguf" -t smyst-llm .
+# MODEL_URL zeigt auf das f16-GGUF im Object Brain (z. B. e2-Link aus der
+# Konsole). Der Build quantisiert selbst auf Q4_K_M — deshalb ist auf dem
+# Entwickler-Mac kein cmake/llama.cpp noetig (21.08.2026: dort nicht
+# vorhanden). Liegt bereits ein Q4_K_M vor, einfach MODEL_Q4_URL statt
+# MODEL_URL uebergeben und die Quantisierungs-Stufe laeuft leer durch.
+#
+# Laufzeit:   PORT=8080 (llama-server), Modell ~350 MB RAM-optimiert (Q4).
+# Auth:       LLM_API_KEY als Env setzen — der Server prueft ihn als Bearer.
+
+FROM ghcr.io/ggml-org/llama.cpp:full-cpu AS quantisierer
+ARG MODEL_URL=""
+ARG MODEL_Q4_URL=""
+WORKDIR /work
+# shellcheck disable=SC2216 — Download bricht ab, wenn nichts uebergeben wurde
+RUN if [ -n "$MODEL_Q4_URL" ]; then curl -fsSL "$MODEL_Q4_URL" -o smyst-1.0-Q4_K_M.gguf; fi
+RUN if [ -z "$MODEL_Q4_URL" ]; then curl -fsSL "$MODEL_URL" -o smyst-1.0-f16.gguf \
+      && /app/llama-quantize smyst-1.0-f16.gguf smyst-1.0-Q4_K_M.gguf Q4_K_M; fi
+
+FROM ghcr.io/ggml-org/llama.cpp:server-cpu
+COPY --from=quantisierer /work/smyst-1.0-Q4_K_M.gguf /models/smyst-1.0-Q4_K_M.gguf
+ENV LLAMA_ARG_MODEL=/models/smyst-1.0-Q4_K_M.gguf \
+    LLAMA_ARG_HOST=0.0.0.0 \
+    LLAMA_ARG_PORT=8080 \
+    LLAMA_ARG_CTX_SIZE=4096 \
+    LLAMA_ARG_PARALLEL=4
+EXPOSE 8080

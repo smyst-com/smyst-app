@@ -627,7 +627,22 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
             AnthropicProvider if provider_name == "anthropic" else OpenAICompatibleProvider
         )
         timeout = active_settings.llm_provider_timeout_seconds
-        if provider_name == "smyst_gateway":
+        if provider_name == "smyst_llm":
+            # Eigenes Modell (llama.cpp-Server): ohne URL laeuft die Kette
+            # einfach ohne ihn weiter — genau wie beim Gateway.
+            base_url = (active_settings.smyst_llm_base_url or "").strip().rstrip("/")
+            if not base_url:
+                continue
+            providers.append(
+                OpenAICompatibleProvider(
+                    provider_name,
+                    base_url,
+                    api_key or "smyst",
+                    model,
+                    timeout=timeout,
+                )
+            )
+        elif provider_name == "smyst_gateway":
             # Ohne Actions-OIDC (lokal, oder Workflow ohne id-token-Permission)
             # gibt es nichts, womit sich der Lauf ausweisen koennte.
             if not ActionsIdTokenSource.available():
