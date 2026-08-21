@@ -9118,9 +9118,9 @@ function TwinChatView({
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? 'Kein Profil ausgewählt'}</h1>
+              <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? (lang === DEFAULT_LANG ? 'Kein Profil ausgewählt' : t.chatBar.noProfile)}</h1>
               <p className="mt-0.5 truncate text-[11px] font-semibold leading-none text-[#555b64] sm:text-xs">
-                {activeTwin ? activeTwin.branch : 'Profil auswählen'}
+                {activeTwin ? activeTwin.branch : lang === DEFAULT_LANG ? 'Profil auswählen' : t.chatBar.selectProfile}
               </p>
               {activeTwin && (
                 <p className="mt-0.5 truncate text-[10px] font-medium leading-none text-[#667085] sm:text-[11px]">
@@ -9427,8 +9427,8 @@ function TwinChatView({
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
                   composerMenuOpen || attachments.length > 0 ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
-                aria-label="Medien hinzufügen"
-                title="Medien hinzufügen"
+                aria-label={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
+                title={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -9445,10 +9445,16 @@ function TwinChatView({
                 }}
                 placeholder={
                   activeTwin
-                      ? `Nachricht an ${activeTwin.name}...`
+                      ? lang === DEFAULT_LANG
+                        ? `Nachricht an ${activeTwin.name}...`
+                        : t.chatBar.messageTo.replace('{name}', activeTwin.name)
                       : auth.status !== 'authenticated'
-                        ? 'Öffentliches Profil auswählen'
-                        : 'Zuerst KI-Profil auswählen'
+                        ? lang === DEFAULT_LANG
+                          ? 'Öffentliches Profil auswählen'
+                          : t.chatBar.selectPublicProfile
+                        : lang === DEFAULT_LANG
+                          ? 'Zuerst KI-Profil auswählen'
+                          : t.chatBar.selectAiProfileFirst
                 }
                 disabled={!activeTwin || (auth.status !== 'authenticated' && !activeTwin.publicProfile)}
                 className="max-h-[96px] min-h-[36px] flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-5 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
@@ -9459,8 +9465,8 @@ function TwinChatView({
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
                   voiceState === 'listening' ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
-                aria-label="Spracheingabe"
-                title={speechRecognitionSupported() ? 'Spracheingabe' : 'Spracheingabe nicht unterstützt'}
+                aria-label={lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput}
+                title={speechRecognitionSupported() ? (lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput) : lang === DEFAULT_LANG ? 'Spracheingabe nicht unterstützt' : t.chatBar.voiceInputUnsupported}
               >
                 <Mic className="h-4 w-4" />
               </button>
@@ -9494,8 +9500,8 @@ function TwinChatView({
                   canSend ? 'bg-[#59C7FF] text-[#0b1c44] hover:bg-[#7dd5ff]' : 'bg-white/28 text-[#767d87]'
                 }`}
                 data-ready={canSend ? 'true' : 'false'}
-                aria-label="Nachricht senden"
-                title="Nachricht senden"
+                aria-label={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
+                title={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
               >
                 <ArrowUp className="h-5 w-5" />
               </button>
@@ -9516,7 +9522,7 @@ function TwinChatView({
             <textarea
               value={noteText}
               onChange={(event) => setNoteText(event.target.value)}
-              placeholder="Kernidee, einfache Erklärung, Folgefragen …"
+              placeholder={lang === DEFAULT_LANG ? 'Kernidee, einfache Erklärung, Folgefragen …' : t.chatBar.notePlaceholder}
               rows={5}
               className="w-full resize-none rounded-md border border-[#0b1c44]/16 bg-white/70 px-2 py-1.5 text-sm text-[#16181b] outline-none focus:border-[#0b1c44]/40"
             />
