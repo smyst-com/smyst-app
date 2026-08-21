@@ -1722,6 +1722,31 @@ function SmystStartPage({
     return rankProfiles(categoryFiltered, query, nameSortMode) as StartTwin[]
   }, [activeCategory, nameSortMode, query, realStartTwins])
 
+  // Schrittweises Rendern des Grids (Performance, 21.08.): bei 13k+ Profilen
+  // landeten ALLE Karten auf einmal im DOM — Suche und Scrollen ruckelten.
+  // Zunaechst werden 60 Karten gerendert; ein unsichtbarer Wächter am Grid-
+  // Ende lädt beim Herunterscrollen weitere 120 nach. Filterwechsel setzt
+  // zurueck. Am sichtbaren Design ändert das nichts (Design-Freeze).
+  const [gridVisibleCount, setGridVisibleCount] = useState(60)
+  const gridEndRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    setGridVisibleCount(60)
+  }, [query, activeCategory, nameSortMode, realStartTwins])
+  useEffect(() => {
+    const node = gridEndRef.current
+    if (!node || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setGridVisibleCount((current) => current + 120)
+        }
+      },
+      { rootMargin: '600px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [gridVisibleCount, query, activeCategory, nameSortMode])
+
   const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
 
   // P5: Begruessungs-Audio vorab erzeugen, sobald ein Twin geoeffnet wird.
@@ -3249,7 +3274,10 @@ function SmystStartPage({
                 <span>{filteredTwins.length} {filteredTwins.length === 1 ? 'Profil' : 'Profile'}</span>
               </div>
               <div>
-                {filteredTwins.map((twin) => renderProfileCard(twin))}
+                {filteredTwins.slice(0, gridVisibleCount).map((twin) => renderProfileCard(twin))}
+                {gridVisibleCount < filteredTwins.length && (
+                  <div ref={gridEndRef} aria-hidden="true" className="h-px w-full" />
+                )}
                 {filteredTwins.length === 0 && (
                   <div className="px-5 py-8 text-sm font-semibold text-[#8e97a8]">
                     {profilesLoaded
