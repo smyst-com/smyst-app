@@ -145,16 +145,28 @@ jobs:
       # fallen unter die Schwelle und werden nicht erneut kodiert, Quality-
       # Verluste durch Wiederholung sind ausgeschlossen). ImageMagick ist auf
       # ubuntu-latest vorinstalliert.
+      # Pillow statt ImageMagick: mogrify ist auf ubuntu-latest NICHT
+      # vorinstalliert (Deploy 32432444735 rot, 21.08.) — pip install ist in
+      # Sekunden erledigt und der Resize reines Python.
       - name: Shrink oversized profile images
         run: |
-          cd dist/public/profile-images
-          BIG=$(find . -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -size +300k)
-          if [ -n "$BIG" ]; then
-            echo "$BIG" | wc -l | xargs echo "Bilder über 300 KB:"
-            mogrify -resize '512x512>' -quality 82 $BIG
-          else
-            echo "Keine Bilder über 300 KB — nichts zu tun."
-          fi
+          python3 -m pip install --quiet --disable-pip-version-check Pillow
+          python3 - <<'PY'
+          import glob, os
+          from PIL import Image
+          grenze = 300 * 1024
+          grosse = [p for p in glob.glob("dist/public/profile-images/*.jpg")
+                    + glob.glob("dist/public/profile-images/*.jpeg")
+                    + glob.glob("dist/public/profile-images/*.JPG")
+                    + glob.glob("dist/public/profile-images/*.JPEG")
+                    if os.path.getsize(p) > grenze]
+          print(f"Bilder ueber 300 KB: {len(grosse)}")
+          for pfad in grosse:
+              with Image.open(pfad) as bild:
+                  bild.thumbnail((512, 512), Image.LANCZOS)
+                  bild.save(pfad, "JPEG", quality=82, optimize=True)
+          print("Diaet fertig.")
+          PY
 
       # Schwund-Waechter (Vorfall 30.07.2026, Deploys #360/#361): der Schritt
       # oben faengt nur den TOTALausfall des Publish-Index ab. Ein halb
