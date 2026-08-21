@@ -307,6 +307,28 @@ function lifeMatchKey(value: string): string {
 }
 
 let publicTwinsPromise: Promise<PublicTwinProfile[]> | null = null
+let slimTwinsPromise: Promise<PublicTwinProfile[] | null> | null = null
+
+/**
+ * Slim-Katalog (kuratierte + neueste Profile, ~350 KB statt ~11 MB).
+ *
+ * Die Startseite wartete vorher auf den VOLLSTAENDIGEN Katalog, bevor das
+ * Grid renderte — bei 12k+ Profilen ein spuerbarer erster Eindruck. slim.json
+ * kommt vom Pages-Build (merge-pipeline-published.mjs); fehlt es (aelterer
+ * Deploy), liefert diese Funktion null und der Aufrufer nutzt den Vollweg.
+ */
+function loadSlimPublicTwins(): Promise<PublicTwinProfile[] | null> {
+  if (!slimTwinsPromise) {
+    slimTwinsPromise = (async () => {
+      const body = await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/slim.json')
+      return body?.twins?.length ? body.twins : null
+    })().catch(() => {
+      slimTwinsPromise = null
+      return null
+    })
+  }
+  return slimTwinsPromise
+}
 
 /** Holt den oeffentlichen Twin-Katalog; mehrfache Aufrufe teilen eine Anfrage. */
 function loadPublicTwins(): Promise<PublicTwinProfile[]> {
@@ -407,6 +429,28 @@ export function useTwinMvp() {
       setLoading(false)
     }
   }, [])
+
+  /**
+   * Katalog zweistufig: erst slim (schnelles erstes Grid), dann Upgrade auf
+   * den Vollbestand, sobald der im Hintergrund angekommen ist. onUpgrade
+   * feuert NUR wenn der Vollbestand mehr enthaelt als der Slim-Stand.
+   */
+  const listPublicTwinsProgressive = useCallback(
+    (onUpgrade?: (alle: PublicTwinProfile[]) => void) =>
+      run(async () => {
+        const slim = await loadSlimPublicTwins()
+        const voll = loadPublicTwins()
+        if (slim) {
+          void voll.then((alle) => {
+            if (alle.length > slim.length) onUpgrade?.(alle)
+          })
+          return slim
+        }
+        const body = await voll.then((alle) => ({ twins: alle }))
+        return body.twins
+      }),
+    [run],
+  )
 
   const listTwins = useCallback(
     () =>
@@ -872,6 +916,7 @@ export function useTwinMvp() {
     getTwin,
     getPublicTwin,
     listPublicTwins,
+    listPublicTwinsProgressive,
     createTwin,
     updateTwin,
     deleteTwin,

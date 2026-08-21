@@ -461,7 +461,11 @@ function renderPage(profile) {
   html = html.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${escapeAttr(description)}$2`);
   html = html.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${pageUrl}$2`);
   if (profile.imageUrl) {
-    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttr(absoluteUrl(profile.imageUrl))}$2`);
+    // og:image muss PNG/JPG sein: WhatsApp/Facebook/LinkedIn rendern KEINE SVGs
+    // (SEO-Audit 21.08.) — generierte SVG-Portraets bekommen das Standard-OG-
+    // Bild, echte Fotos (jpg/png) bleiben.
+    const ogImage = profile.imageUrl.endsWith('.svg') ? `${HOST}/og-image.png` : profile.imageUrl;
+    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttr(absoluteUrl(ogImage))}$2`);
     html = html.replace(
       /(<meta property="og:image:alt" content=")[^"]*(")/,
       `$1${escapeAttr(`${profile.name} – KI-Profil auf smyst.com`)}$2`,
@@ -558,6 +562,23 @@ function catalogEntry(twin) {
 }
 
 writeFileSync(apiIndexPath, JSON.stringify({ twins: twins.map(catalogEntry) }), 'utf8');
+
+// Slim-Katalog (Performance, 21.08.): die Vollversion ist auf ~11 MB gewachsen
+// (12k+ Profile) — die Startseite wartete darauf, bevor das Grid ueberhaupt
+// renderte. slim.json liefert kuratierte + die 300 neuesten Pipeline-Profile
+// (~350 KB); die App laedt den Rest im Hintergrund nach (useTwinMvp,
+// listPublicTwinsProgressive). Gleiches Format — nur kuerzer.
+const kuratiert = twins.filter((twin) => !String(twin.id || '').startsWith('pipeline-'));
+const neuestePipeline = twins
+  .filter((twin) => String(twin.id || '').startsWith('pipeline-'))
+  .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+  .slice(0, 300);
+writeFileSync(
+  resolve(DIST, 'api', 'public', 'twins', 'slim.json'),
+  JSON.stringify({ twins: [...kuratiert, ...neuestePipeline].map(catalogEntry) }),
+  'utf8',
+);
+console.log(`merge-pipeline-published: slim.json mit ${kuratiert.length + neuestePipeline.length} Eintraegen.`);
 
 const sitemapPath = resolve(DIST, 'sitemap.xml');
 if (merged > 0 && existsSync(sitemapPath)) {
