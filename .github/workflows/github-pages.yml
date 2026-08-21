@@ -162,12 +162,15 @@ jobs:
                     if os.path.getsize(p) > grenze]
           print(f"Bilder ueber 300 KB: {len(grosse)}")
           for pfad in grosse:
-              with Image.open(pfad) as bild:
-                  bild.thumbnail((512, 512), Image.LANCZOS)
-                  # JPEG kann Palette- (P) und CMYK-Modi nicht direkt speichern
-                  if bild.mode not in ("RGB", "L"):
-                      bild = bild.convert("RGB")
-                  bild.save(pfad, "JPEG", quality=82, optimize=True)
+              try:
+                  with Image.open(pfad) as bild:
+                      bild.thumbnail((512, 512), Image.LANCZOS)
+                      # JPEG kann Palette- (P) und CMYK-Modi nicht direkt speichern
+                      if bild.mode not in ("RGB", "L"):
+                          bild = bild.convert("RGB")
+                      bild.save(pfad, "JPEG", quality=82, optimize=True)
+              except Exception as fehler:  # noqa: BLE001
+                  print(f"  uebersprungen {pfad}: {fehler}")
           print("Diaet fertig.")
           PY
 
