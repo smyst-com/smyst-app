@@ -5,6 +5,7 @@
 # 2) GitHub-Workflows (Eval + Quality-Autopilot): letzter Erfolg juenger als 2 Tage?
 set -uo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO_ROOT" || exit 1
 LOG="$REPO_ROOT/training/watchdog.log"
 ALERT=""
 log() { echo "[$(date '+%F %T')] $*" >> "$LOG"; }
@@ -28,6 +29,11 @@ for WF in "Chat-Qualitaets-Eval" "Quality-Autopilot"; do
     [ "$AGE" -gt $((2*24*3600)) ] && ALERT="${ALERT}Workflow '$WF': letzter Erfolg $((AGE/86400)) Tage her. "
   fi
 done
+
+# 3) Codeberg-Mirror synchron halten (Master-Prompt: nach jedem Merge)
+git -C "$REPO_ROOT" push codeberg --all --quiet >> "$LOG" 2>&1 \
+  && git -C "$REPO_ROOT" push codeberg --tags --quiet >> "$LOG" 2>&1 \
+  && log "Codeberg-Mirror synchron." || log "WARNUNG: Codeberg-Sync fehlgeschlagen."
 
 if [ -n "$ALERT" ]; then
   log "ALARM: $ALERT"
