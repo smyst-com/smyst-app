@@ -5094,6 +5094,25 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
         ))}
       </div>
 
+      {auth.status === 'authenticated' && (
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <h2 className="mb-1 text-lg font-bold tracking-tight">Dateien & Erinnerungen direkt hier hochladen</h2>
+            <p className="mb-4 text-sm text-[#555b64]">
+              Zieh einfach alles in den Upload-Bereich — Bilder, Video, Audio, PDF und Texte. Wir sortieren automatisch.
+            </p>
+            <MemoryUploadView onNavigate={onNavigate} embedded />
+          </div>
+          <div>
+            <h2 className="mb-1 text-lg font-bold tracking-tight">Social-Media verknüpfen</h2>
+            <p className="mb-4 text-sm text-[#555b64]">
+              Instagram, TikTok und Co. — öffentliche Infos werden geprüft und als Twin-Wissen importiert.
+            </p>
+            <SocialLinksCard />
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Card className="p-5">
           <h2 className="text-lg font-bold">Dein aktueller Stand</h2>
@@ -7274,6 +7293,8 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
   const [style, setStyle] = useState<TwinStyle>('warm')
   const [visibility, setVisibility] = useState<'private' | 'public'>('private')
   const [savedTwin, setSavedTwin] = useState<TwinRecord | null>(null)
+  const [justCreated, setJustCreated] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const totalSteps = 4
   const auth = useAuth()
   const twinMvp = useTwinMvp()
@@ -7323,7 +7344,69 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
     }
 
     setSavedTwin(twin)
-    onNavigate('twin-chat')
+    setJustCreated(true)
+    setShareCopied(false)
+  }
+
+  // Erfolgs-Moment nach dem Erstellen: großes „Dein Twin ist bereit" mit
+  // Chatten-/Teilen-Aktionen, bevor der Nutzer weitergeleitet wird.
+  if (justCreated && savedTwin) {
+    const shareUrl = `${window.location.origin}/t/${encodeURIComponent(savedTwin.slug)}/`
+    const isPublic = savedTwin.visibility === 'public'
+    const copyShareLink = async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        setShareCopied(true)
+        window.setTimeout(() => setShareCopied(false), 3000)
+      } catch {
+        /* Clipboard nicht verfügbar */
+      }
+    }
+    return (
+      <div className="mx-auto max-w-xl px-4 pt-10 text-center">
+        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full border-2 border-[#59C7FF] bg-[#59C7FF]/12 text-3xl text-[#59C7FF]">✓</div>
+        <h1 className="text-2xl font-black">Dein Twin ist bereit!</h1>
+        <p className="mt-2 text-sm text-[#767d87]">
+          „{savedTwin.name}“ wurde gespeichert. Dein Twin lernt mit jedem Chat weiter.
+        </p>
+        <div className="mt-6 rounded-xl border border-white/26 bg-white/12 p-4 text-left">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#5eead4] to-[#60a5fa] font-black text-[#0b0f18]">
+              {savedTwin.name.trim().charAt(0).toUpperCase() || 'T'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold">{savedTwin.name}</p>
+              <p className="text-xs text-[#767d87]">{isPublic ? 'Öffentlich – für alle sichtbar' : 'Privat – nur du siehst ihn'}</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <Button className="w-full justify-center" onClick={() => onNavigate('twin-chat')}>Mit Twin chatten 💬</Button>
+          {isPublic ? (
+            <Button variant="secondary" className="w-full justify-center" onClick={() => void copyShareLink()}>
+              {shareCopied ? 'Link kopiert ✓' : 'Share-Link kopieren 🔗'}
+            </Button>
+          ) : (
+            <Button variant="secondary" className="w-full justify-center" onClick={() => onNavigate('my-twins')}>
+              Sichtbarkeit ändern 🔒
+            </Button>
+          )}
+        </div>
+        {isPublic && (
+          <p className="mt-3 text-xs text-[#767d87]">{shareCopied ? `Kopiert: ${shareUrl}` : shareUrl}</p>
+        )}
+        <button
+          type="button"
+          className="mt-6 text-xs text-[#8e97a8] underline underline-offset-2 hover:text-[#111722]"
+          onClick={() => {
+            setJustCreated(false)
+            setStep(1)
+          }}
+        >
+          Weiteren Twin erstellen
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -7499,7 +7582,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
         {step === 4 && (
           <div className="space-y-6">
             <div>
-              <h2 className="mb-2 text-2xl font-semibold">Zugriff & Legacy</h2>
+              <h2 className="mb-2 text-2xl font-semibold">Zugriff: Wer soll deinen Twin sehen?</h2>
               <p className="text-sm text-[#555b64]">Wer soll Zugriff auf deinen Twin haben?</p>
             </div>
             {savedTwin && (
@@ -7692,7 +7775,7 @@ function MemoryMediaPreview({ file }: { file: MemoryLibraryItem }) {
   )
 }
 
-function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+function MemoryUploadView({ onNavigate, embedded = false }: { onNavigate: (view: AppView) => void; embedded?: boolean }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const auth = useAuth()
   const memoryUpload = useMemoryUpload()
@@ -7828,11 +7911,13 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
   }
 
   return (
-    <div className="pt-6">
-      <div className="mb-5">
-        <h1 className="mb-1 text-2xl font-bold tracking-tight">Memory Upload</h1>
-        <p className="text-sm text-[#555b64]">Lade nur Dateien hoch, die dein Twin wirklich verwenden darf.</p>
-      </div>
+    <div className={embedded ? '' : 'pt-6'}>
+      {!embedded && (
+        <div className="mb-5">
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">Dateien & Erinnerungen</h1>
+          <p className="text-sm text-[#555b64]">Lade nur Dateien hoch, die dein Twin wirklich verwenden darf.</p>
+        </div>
+      )}
 
       <Card className="mb-6 p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
