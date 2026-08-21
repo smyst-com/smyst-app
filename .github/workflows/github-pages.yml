@@ -12,7 +12,10 @@ permissions:
 
 concurrency:
   group: github-pages-${{ github.ref }}
-  cancel-in-progress: true
+  # false statt true: Bei parallelen Agenten-Pushes wurden Deploy-Läufe
+  # wiederholt abgebrochen, bevor sie fertig waren (kein Deploy landete mehr).
+  # Läufe queue'n sich jetzt sequenziell — der letzte Stand gewinnt.
+  cancel-in-progress: false
 
 jobs:
   build:
