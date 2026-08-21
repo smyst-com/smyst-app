@@ -5639,6 +5639,7 @@ function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
 type AdminSection =
   | 'overview'
   | 'autopilot'
+  | 'approvals'
   | 'look'
   | 'users'
   | 'registrations'
@@ -5746,6 +5747,24 @@ type AdminAutopilotApi = {
     } | null
   }>
   checkedAt?: number
+}
+
+type AdminApprovalCard = {
+  qid: string
+  name: string
+  status?: string | null
+  qa_passed: boolean
+  risk_score?: number | null
+  image_status?: string | null
+  status_reason?: string | null
+  reviewed_at?: string | null
+}
+
+type AdminApprovalsApi = {
+  ok: boolean
+  ready?: AdminApprovalCard[]
+  blocked?: AdminApprovalCard[]
+  counts?: { ready: number; blocked: number }
 }
 
 type ComputeJobSummary = {
@@ -5867,6 +5886,7 @@ type ComputeJobsApi = {
 const adminSections: Array<{ id: AdminSection; label: string; detail: string }> = [
   { id: 'overview', label: 'Overview', detail: 'Live Status' },
   { id: 'autopilot', label: 'Autopilot', detail: 'Ampeln aller Automatiken' },
+  { id: 'approvals', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen' },
   { id: 'look', label: 'Look', detail: 'Design System' },
   { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export' },
   { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots' },
@@ -5987,6 +6007,9 @@ function AdminControlCenterInner() {
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
   const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
   const [adminAutopilot, setAdminAutopilot] = useState<AdminAutopilotApi | null>(null)
+  const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
+  const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
+  const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
   const [adminLiveOps, setAdminLiveOps] = useState<{ visits?: { totalToday: number; totalAll: number }; ads?: { total: number }; chatFeedback?: { up: number; down: number; dislikeRate: number } }>({})
   const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
@@ -6049,6 +6072,57 @@ function AdminControlCenterInner() {
       alive = false
     }
   }, [activeSection])
+  const refreshAdminApprovals = useCallback(() => {
+    let alive = true
+    fetchService('/api/admin/approvals', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminApprovals(response.ok && payload?.ok ? payload as AdminApprovalsApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminApprovals(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'approvals') return
+    return refreshAdminApprovals()
+  }, [activeSection, refreshAdminApprovals])
+
+  const decideApproval = async (qid: string, action: 'approve' | 'reject') => {
+    let body: string | null = null
+    if (action === 'reject') {
+      const reason = window.prompt('Warum wird dieser Kandidat abgelehnt? (Pflichtfeld)')?.trim()
+      if (!reason || reason.length < 3) {
+        setAdminApprovalsMessage('Ablehnen braucht einen Grund (mindestens 3 Zeichen).')
+        return
+      }
+      body = JSON.stringify({ reason })
+    }
+    setAdminApprovalsBusy(qid)
+    setAdminApprovalsMessage(null)
+    try {
+      const response = await fetchService(`/api/admin/approvals/${encodeURIComponent(qid)}/${action}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: body ?? undefined,
+      })
+      const payload = await response.json().catch(() => ({}))
+      setAdminApprovalsMessage(typeof payload?.result === 'string' ? payload.result : 'Aktion abgeschlossen.')
+      refreshAdminApprovals()
+    } catch {
+      setAdminApprovalsMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
+    } finally {
+      setAdminApprovalsBusy(null)
+    }
+  }
+
   // Autopilot-Ampeln: Status aller geplanten Workflows
   useEffect(() => {
     if (activeSection !== 'autopilot') return
@@ -6269,6 +6343,67 @@ function AdminControlCenterInner() {
   ]
 
   const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
+
+  const renderApprovalCard = (card: AdminApprovalCard, tone: 'ready' | 'blocked') => (
+    <section key={card.qid} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-black text-[#111722]">{card.name}</h3>
+          <p className="mt-0.5 text-xs font-semibold text-[#667085]">
+            {card.qid}{card.risk_score !== null && card.risk_score !== undefined ? ` · Risiko ${card.risk_score}` : ''}
+            {card.image_status ? ` · Bild: ${card.image_status}` : ''}
+          </p>
+        </div>
+        <span className={`inline-flex items-center gap-2 rounded-md border border-[#d9e2ec] px-2 py-1 text-xs font-bold ${card.qa_passed ? 'text-emerald-600' : 'text-amber-600'}`}>
+          {card.qa_passed ? 'QA bestanden' : 'QA offen'}
+        </span>
+      </div>
+      {card.status_reason ? <p className="mt-2 text-sm font-semibold text-[#5d6776]">{card.status_reason}</p> : null}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {tone === 'ready' ? (
+          <button
+            type="button"
+            disabled={adminApprovalsBusy === card.qid}
+            onClick={() => decideApproval(card.qid, 'approve')}
+            className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-50"
+          >
+            Freigeben
+          </button>
+        ) : null}
+        <button
+          type="button"
+          disabled={adminApprovalsBusy === card.qid}
+          onClick={() => decideApproval(card.qid, 'reject')}
+          className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
+        >
+          Ablehnen
+        </button>
+      </div>
+    </section>
+  )
+
+  const renderApprovals = () => {
+    const counts = adminApprovals?.counts
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Freigabe-Postfach</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminApprovals === null
+              ? 'Freigaben werden geladen oder Object Brain nicht erreichbar.'
+              : (counts?.ready ?? 0) === 0 && (counts?.blocked ?? 0) === 0
+                ? 'Alles erledigt – keine Kandidaten warten auf deine Entscheidung.'
+                : `${counts?.ready ?? 0} bereit zur Freigabe, ${counts?.blocked ?? 0} mit offener QA.`}
+          </p>
+          {adminApprovalsMessage ? (
+            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminApprovalsMessage}</p>
+          ) : null}
+        </section>
+        {(adminApprovals?.ready ?? []).map((card) => renderApprovalCard(card, 'ready'))}
+        {(adminApprovals?.blocked ?? []).map((card) => renderApprovalCard(card, 'blocked'))}
+      </div>
+    )
+  }
 
   const renderAutopilot = () => {
     const lightDot: Record<string, string> = {
@@ -6970,6 +7105,7 @@ function AdminControlCenterInner() {
   const renderActiveSection = () => {
     if (activeSection === 'overview') return renderOverview()
     if (activeSection === 'autopilot') return renderAutopilot()
+    if (activeSection === 'approvals') return renderApprovals()
     if (activeSection === 'look') return renderLook()
     if (activeSection === 'users') return renderUsers()
     if (activeSection === 'registrations') return renderRegistrations()
