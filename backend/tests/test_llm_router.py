@@ -5,6 +5,7 @@ import pytest
 
 from app.ai.degraded_messages import DEGRADED_FALLBACK_MESSAGES
 from app.ai.llm_router import (
+    build_default_router,
     LLMProvider,
     LLMRouter,
     LocalDeterministicProvider,
@@ -310,6 +311,18 @@ def test_provider_statuses_migrate_retired_deepseek_models() -> None:
 
     deepseek = next(status for status in statuses if status["provider"] == "deepseek")
     assert deepseek["model"] == "deepseek-v4-flash"
+
+
+def test_smyst_llm_only_in_chain_when_configured() -> None:
+    # Ohne URL wird der eigene Modell-Provider uebersprungen (wie das Gateway).
+    ohne = Settings()
+    ketten_ohne = [p.name for p in build_default_router(ohne).providers]
+    assert "smyst_llm" not in ketten_ohne
+
+    # Mit URL steht er in der Kette.
+    mit = Settings(SMYST_LLM_BASE_URL="http://localhost:8080/v1", SMYST_LLM_API_KEY="test")
+    ketten_mit = [p.name for p in build_default_router(mit).providers]
+    assert "smyst_llm" in ketten_mit
 
 
 def test_provider_statuses_migrate_retired_groq_models() -> None:

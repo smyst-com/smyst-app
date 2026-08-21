@@ -102,6 +102,16 @@ class Settings(BaseSettings):
         default=None, validation_alias="SMYST_GATEWAY_BASE_URL"
     )
 
+    # Eigenes Modell smyst 1.0 (llama.cpp, OpenAI-kompatibel; siehe
+    # docker/Dockerfile.llamacpp). Leer => Provider wird nicht aufgenommen —
+    # erst mit gesetzter URL steht er der Kette zur Verfuegung.
+    smyst_llm_base_url: str | None = Field(
+        default=None, validation_alias="SMYST_LLM_BASE_URL"
+    )
+    smyst_llm_api_key: str | None = Field(
+        default=None, validation_alias="SMYST_LLM_API_KEY"
+    )
+
     llm_provider_order_raw: str = Field(default="", validation_alias="LLM_PROVIDER_ORDER")
     llm_default_models_raw: str = Field(default="", validation_alias="LLM_DEFAULT_MODELS")
     llm_provider_timeout_seconds: float = Field(
