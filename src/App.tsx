@@ -5619,6 +5619,7 @@ function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
 
 type AdminSection =
   | 'overview'
+  | 'autopilot'
   | 'look'
   | 'users'
   | 'registrations'
@@ -5698,6 +5699,34 @@ type AdminOverviewApi = {
     note?: string
   }
   computeQueue?: ComputeJobSummary
+}
+
+type AdminAutopilotApi = {
+  ok: boolean
+  summary?: {
+    total: number
+    green: number
+    yellow: number
+    red: number
+    unknown: number
+    allGreen: boolean
+    source: string
+    repo: string
+  }
+  workflows?: Array<{
+    file: string
+    name: string
+    cadence: string
+    kind: 'github' | 'local'
+    light: 'green' | 'yellow' | 'red' | 'unknown'
+    lastRun?: {
+      status?: string | null
+      conclusion?: string | null
+      createdAt?: string | null
+      htmlUrl?: string | null
+    } | null
+  }>
+  checkedAt?: number
 }
 
 type ComputeJobSummary = {
@@ -5818,6 +5847,7 @@ type ComputeJobsApi = {
 
 const adminSections: Array<{ id: AdminSection; label: string; detail: string }> = [
   { id: 'overview', label: 'Overview', detail: 'Live Status' },
+  { id: 'autopilot', label: 'Autopilot', detail: 'Ampeln aller Automatiken' },
   { id: 'look', label: 'Look', detail: 'Design System' },
   { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export' },
   { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots' },
@@ -5937,6 +5967,7 @@ function AdminControlCenterInner() {
   const [adminMfaMessage, setAdminMfaMessage] = useState<string | null>(null)
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
   const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
+  const [adminAutopilot, setAdminAutopilot] = useState<AdminAutopilotApi | null>(null)
   const [adminLiveOps, setAdminLiveOps] = useState<{ visits?: { totalToday: number; totalAll: number }; ads?: { total: number }; chatFeedback?: { up: number; down: number; dislikeRate: number } }>({})
   const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
@@ -5999,6 +6030,25 @@ function AdminControlCenterInner() {
       alive = false
     }
   }, [activeSection])
+  // Autopilot-Ampeln: Status aller geplanten Workflows
+  useEffect(() => {
+    if (activeSection !== 'autopilot') return
+    let alive = true
+    fetchService('/api/admin/autopilot', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminAutopilot(response.ok && payload?.ok ? payload as AdminAutopilotApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminAutopilot(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
   // Live-Betrieb (Autopilot): Besucher, Werbe-Impressions, Feedback-Quote
   useEffect(() => {
     if (activeSection !== 'aiQuality') return
@@ -6164,20 +6214,20 @@ function AdminControlCenterInner() {
   const overviewMetrics: AdminMetric[] = [
     {
       label: 'Live Nutzer',
-      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : '18.4M',
+      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : (adminOverview ? '–' : '18.4M'),
       detail: adminOverview ? `${adminOverview.metrics?.blockedUsers ?? 0} blockiert, KV-User sichtbar.` : 'Web, PWA, iPhone, Android und API zusammen.',
       tone: 'green',
     },
     { label: 'Chat Start', value: '142 ms', detail: 'Ziel: Chat sofort offen, Streaming sofort sichtbar.', tone: 'cyan' },
     {
       label: 'Ad Revenue',
-      value: adminOverview ? formatCents(adminOverview.metrics?.validRevenueCents) : '$248K',
+      value: adminOverview ? (adminOverview.metrics?.validRevenueCents !== undefined ? formatCents(adminOverview.metrics.validRevenueCents) : '–') : '$248K',
       detail: 'Nur gültige Anzeigenumsätze nach Policy-Filter.',
       tone: 'amber',
     },
     {
       label: 'User Share',
-      value: adminOverview ? formatCents(adminOverview.metrics?.userShareCents) : '$62K',
+      value: adminOverview ? (adminOverview.metrics?.userShareCents !== undefined ? formatCents(adminOverview.metrics.userShareCents) : '–') : '$62K',
       detail: `${adminOverview?.metrics?.userSharePercent ?? 25} % Pool für genutzte AI-Profile.`,
       tone: 'green',
     },
@@ -6200,6 +6250,77 @@ function AdminControlCenterInner() {
   ]
 
   const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
+
+  const renderAutopilot = () => {
+    const lightDot: Record<string, string> = {
+      green: 'bg-emerald-500',
+      yellow: 'bg-amber-400',
+      red: 'bg-red-500',
+      unknown: 'bg-slate-300',
+    }
+    const lightLabel: Record<string, string> = {
+      green: 'läuft',
+      yellow: 'überfällig',
+      red: 'fehlgeschlagen',
+      unknown: 'unbekannt',
+    }
+    const summary = adminAutopilot?.summary
+    const checkedAt = adminAutopilot?.checkedAt
+      ? new Date(adminAutopilot.checkedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      : null
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-[#111722]">Autopilot-Cockpit</h2>
+              <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+                {adminAutopilot === null
+                  ? 'Status wird geladen oder Backend nicht erreichbar.'
+                  : summary?.allGreen
+                    ? `Alle ${summary.green} von ${summary.green + summary.yellow + summary.red} geprüften Automatiken laufen.${checkedAt ? ` Letzter Check ${checkedAt} Uhr.` : ''}`
+                    : `Ampeln: ${summary?.green ?? 0} grün, ${summary?.yellow ?? 0} gelb, ${summary?.red ?? 0} rot, ${summary?.unknown ?? 0} unbekannt.${checkedAt ? ` Letzter Check ${checkedAt} Uhr.` : ''}`}
+              </p>
+            </div>
+            {summary && (
+              <span className={`inline-flex items-center gap-2 rounded-md border border-[#d9e2ec] px-3 py-1.5 text-sm font-bold text-[#172033]`}>
+                <span className={`h-2.5 w-2.5 rounded-full ${summary.allGreen ? 'bg-emerald-500' : (summary.red > 0 ? 'bg-red-500' : 'bg-amber-400')}`} />
+                {summary.allGreen ? 'Alles okay' : summary.red > 0 ? 'Handlung nötig' : 'Beobachten'}
+              </span>
+            )}
+          </div>
+        </section>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {(adminAutopilot?.workflows ?? []).map((workflow) => (
+            <section key={workflow.file} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-black text-[#111722]">{workflow.name}</h3>
+                  <p className="mt-0.5 text-xs font-semibold text-[#667085]">{workflow.cadence}</p>
+                </div>
+                <span className={`mt-1 h-3 w-3 shrink-0 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-300'}`} title={lightLabel[workflow.light] ?? 'unbekannt'} />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-[#5d6776]">
+                {workflow.kind === 'local'
+                  ? 'Läuft auf der Mac-Workstation (launchd).'
+                  : workflow.lastRun?.createdAt
+                    ? `Letzter Lauf: ${new Date(workflow.lastRun.createdAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} – ${lightLabel[workflow.light] ?? workflow.lastRun.conclusion ?? workflow.lastRun.status ?? 'unbekannt'}`
+                    : 'Kein Lauf gefunden.'}
+              </p>
+              {workflow.lastRun?.htmlUrl && (
+                <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-bold text-sky-500 hover:underline">
+                  Lauf in GitHub ansehen
+                </a>
+              )}
+            </section>
+          ))}
+          {adminAutopilot === null && (
+            <p className="text-sm font-semibold text-[#5d6776]">Keine Autopilot-Daten – Backend /api/admin/autopilot prüfen.</p>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const renderLook = () => {
     const colors = [
@@ -6829,6 +6950,7 @@ function AdminControlCenterInner() {
 
   const renderActiveSection = () => {
     if (activeSection === 'overview') return renderOverview()
+    if (activeSection === 'autopilot') return renderAutopilot()
     if (activeSection === 'look') return renderLook()
     if (activeSection === 'users') return renderUsers()
     if (activeSection === 'registrations') return renderRegistrations()
