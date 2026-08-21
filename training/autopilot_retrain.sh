@@ -38,8 +38,8 @@ if [ ! -d "$EXPORT_DIR" ]; then
   log "Kein Trainingsdaten-Export in $EXPORT_DIR – kein Training. (Export-Workflow in GitHub starten.)"
   exit 0
 fi
-if [ -f "$MARKER" ] && [ "$EXPORT_DIR" -nt "$MARKER" ]; then
-  log "NEUE Trainingsdaten erkannt – starte Fast-Track-Training."
+if [ ! -f "$MARKER" ] || [ "$EXPORT_DIR" -nt "$MARKER" ]; then
+  log "NEUE/erste Trainingsdaten erkannt – starte Fast-Track-Training."
 else
   log "Trainingsdaten unverändert seit letztem Lauf – kein Training nötig."
   exit 0
