@@ -1812,7 +1812,15 @@ function SmystStartPage({
       setProfilesLoadError('')
       try {
         if (auth.status !== 'authenticated') {
-          const publicProfiles = await twinMvp.listPublicTwins()
+          // Zweistufig (Performance 21.08.): slim.json (~350 KB) baut das Grid
+          // sofort; der Vollkatalog (~11 MB) upgradet ihn im Hintergrund, sobald
+          // er da ist.(selectedTwin/requested bleibt vom Erststand unberuehrt.)
+          const publicProfiles = await twinMvp.listPublicTwinsProgressive((alle) => {
+            if (!alive) return
+            setRealStartTwins(
+              alle.filter(isCompletePublicProfile).map((profile, index) => publicProfileToStartTwin(profile, index)),
+            )
+          })
           if (!alive) return
           const next = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
             .filter(isCompletePublicProfile)
