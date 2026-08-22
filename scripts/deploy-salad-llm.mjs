@@ -51,7 +51,9 @@ const containerSpec = {
   image,
   resources: {
     cpu: Number(process.env.SALAD_CPU || 2),
-    ram_gb: Number(process.env.SALAD_RAM_GB || 3),
+    // Salad erwartet Speicher in MB (Validierung 1024..1073741824, Fehler
+    // 05:28 UTC: 'Memory must be between 1024 and ...').
+    memory: 3072,
     gpu_class: null,
     vram_gb: null,
   },
@@ -77,8 +79,8 @@ const payload = {
     port: 8080,
     protocol: 'http',
     auth: false,
-    client_request_timeout: 120000,
-    server_response_timeout: 120000,
+    client_request_timeout: 90000,
+    server_response_timeout: 90000,
     load_balancer: 'least_number_of_connections',
     single_connection_limit: false,
   },
