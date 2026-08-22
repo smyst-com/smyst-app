@@ -38,6 +38,9 @@ echte Person täuschen (siehe Master-Prompt, Datenschutz & Sicherheit).
   `--length_scale`. Abwärtskompatibel: `rate` ist auf allen Ebenen optional.
 - Deploy: Frontend automatisch; Backend und Worker über die Actions-Workflows
   "Salad Backend Deploy" und "Voice Worker Deploy" (approval-Feld exakt "Ja OK").
+  HINWEIS: Beide Workflows sind seit 29.07.2026 stillgelegt (`if: false`). Das
+  Backend deployt Zeabur automatisch aus `main`; Standard-TTS laeuft ueber Piper
+  im Backend-Image.
 - Live verifiziert 23.07.2026: gleicher Text mit rate 0.7/1.0/1.3 → 169/156/128 KB WAV
   (monoton fallend); ohne `rate` unverändert; `tr-dfki` mit rate 0.93 ok.
 

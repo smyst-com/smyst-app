@@ -4,7 +4,7 @@
 
 Production deployment is manual and requires the exact approval phrase configured in `.github/workflows/deploy.yml`.
 
-IDrive e2 static deploys and Salad backend deploys must not bypass this gate. A
+GitHub Pages deploys and Zeabur backend deploys must not bypass this gate. A
 release is blocked when a direct push to `main` can publish production without
 the `workflow_dispatch` approval phrase.
 
@@ -25,7 +25,7 @@ the `workflow_dispatch` approval phrase.
   contract responses, never HTML fallback.
 - IDrive e2 static deploy plan reviewed.
 - IDrive e2 public website bucket policy reviewed and confirmed gated.
-- Salad backend deploy plan reviewed.
+- Zeabur backend deploy plan reviewed.
 - IDrive e2 quotas reviewed.
 - IDrive e2 CORS, server-side encryption, lifecycle rules and incomplete upload
   cleanup reviewed.
@@ -35,7 +35,7 @@ the `workflow_dispatch` approval phrase.
 
 Block release if any production path requires:
 
-- paid GitHub or Legacy edge provider add-ons,
+- paid GitHub or Cloudflare add-ons,
 - a hosted server,
 - a server-side database/cache/queue,
 - external translation API,
@@ -45,7 +45,7 @@ Block release if any production path requires:
 ## Rollback
 
 Rollback uses Git revert/cherry-pick, known-good IDrive e2 static artifacts and
-known-good Salad backend deployments.
+known-good Zeabur backend deployments.
 
 ## Production Go/No-Go
 
@@ -70,7 +70,7 @@ Protected mode blocks production release unless all of these are true:
 - `scripts/preflight-release.sh` is green with the release gate variables.
 - `scripts/live-test.sh` is green against the approved production URL.
 - Backup/restore and rollback evidence have been reviewed.
-- The deploy goes through the official GitHub Actions workflow to IDrive e2 and Salad.
+- The deploy goes through the official GitHub Pages workflow and the Zeabur backend deploy.
 
 Critical production files listed in the change-protection manifest require
 written approval, diff review and a rollback plan before they are changed. This

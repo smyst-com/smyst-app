@@ -1,6 +1,13 @@
 # Free-Only Performance und Mobile
 
-Status: Phase-1-MVP auf GitHub Free, Legacy edge provider Free und IDrive e2.
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
+Status: Phase-1-MVP auf GitHub Free, Cloudflare und IDrive e2.
 
 ## Ziel fuer Phase 1
 
@@ -8,7 +15,7 @@ Die erste Oberfläche soll sofort reagieren: Startseite, Twin-Auswahl und Chat-E
 
 ## Web und PWA
 
-- Legacy edge provider Pages liefert die statische Vite-App.
+- GitHub Pages liefert die statische Vite-App.
 - `manifest.webmanifest` aktiviert Installierbarkeit fuer Web, iPhone, Android und PWA.
 - PNG-App-Icons, Maskable Icon, Apple Touch Icon und Manifest-Screenshots liegen im Repo.
 - `sw.js` cached nur App-Shell, Locale-Dateien und öffentliche Standarddateien.
@@ -20,7 +27,7 @@ Die erste Oberfläche soll sofort reagieren: Startseite, Twin-Auswahl und Chat-E
 - Cookie-Banner, Mobile-Drawer und GitHub-Login werden lazy geladen.
 - Landing nutzt `useAuth({ enabled: false })`, damit kein unnötiger `/auth/me` Request beim Sofort-Chat entsteht.
 - Vite splittet React, Icons und Deferred-UI in cachebare Chunks.
-- Legacy edge provider Headers cachen `/assets/*` immutable und `/locales/*` mit `stale-while-revalidate`.
+- Cloudflare Headers cachen `/assets/*` immutable und `/locales/*` mit `stale-while-revalidate`.
 
 ## Mobile Uploads
 
@@ -50,4 +57,4 @@ Die erste Oberfläche soll sofort reagieren: Startseite, Twin-Auswahl und Chat-E
 - Browser-Textzoom bleibt erlaubt, aber iOS-Input-Zoom wird durch 16px Inputs vermieden.
 - Push-Benachrichtigungen sind in Phase 1 nicht aktiv. Sie brauchen spaeter einen
   separaten Einwilligungsflow, VAPID-Keys und Abuse-Schutz innerhalb des erlaubten
-  GitHub/Legacy edge provider/IDrive-e2-Rahmens.
+  GitHub/Cloudflare/IDrive-e2-Rahmens.

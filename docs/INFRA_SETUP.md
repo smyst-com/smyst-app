@@ -1,122 +1,147 @@
-# Smyst Infrastructure Setup
+# smyst.com Infrastructure Setup
 
-## Verbindliches Konzept
+Stand: 2026-08-20. Diese Datei beschreibt den LIVE-Stand, nicht eine Zielvorstellung.
 
-Die Infrastruktur fuer `smyst.com` folgt diesem Aufbau:
+## Anbieter im Betrieb
 
-- Spaceship: Domain, DNS und Subdomains.
-- GitHub Free: Code, Releases und Actions.
-- IDrive e2: 99 % aller Speicheraufgaben, Hauptspeicher und statisches Hosting.
-- Salad.com: nur bei Bedarf fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
-- PWA zuerst, native Apps spaeter.
+| Anbieter | Aufgabe | Kosten |
+|---|---|---|
+| Spaceship | Domain `smyst.com`, DNS-Zone, Subdomains | Domain-Gebuehr |
+| GitHub Free | Code, Pull Requests, Releases, GitHub Actions (CI, Cronjobs, Deploys) | 0 |
+| GitHub Pages | Auslieferung der Website/PWA (`smyst.com`, `app.`, `cdn.`) | 0 |
+| Zeabur | Backend-Container `smyst-backend` unter `api.smyst.com` | kostenpflichtig |
+| IDrive e2 | S3-kompatibler Objektspeicher, zugleich Datenhaltung des Backends | Free-Tier |
+| OpenRouter | LLM-Provider fuer den Live-Twin-Chat auf dem Server | ca. 5-6 USD/Tag |
+| Groq | LLM-Free-Tier, in Pipeline/QA/Evals als erster Provider | 0 |
+| Resend | E-Mail-Versand, nur aktiv wenn `RESEND_API_KEY` gesetzt ist | Free-Tier |
+
+Nicht mehr im Betrieb:
+
+- Salad.com: war bis Ende Juli 2026 der Compute-Layer. Die Workflows
+  `salad-backend-deploy.yml` und `voice-worker-deploy.yml` stehen seit
+  29.07.2026 auf `if: false` und existieren nur noch als Rollback-Pfad.
+  Der Salad-Host antwortet seit Mitte August 2026 nicht mehr.
+- Cloudflare: frueherer Edge-Provider, in aelteren Dokus als
+  "Legacy edge provider" bezeichnet. Kein Produktionsbestandteil mehr.
+  Die Nameserver von `smyst.com` zeigen auf Spaceship
+  (`launch1.spaceship.net`, `launch2.spaceship.net`), der Apex-A-Record auf
+  GitHub Pages (185.199.108-111.153). Am 2026-08-20 per DNS-Abfrage geprueft.
+- Codeberg ist KEIN Ersatz und kein Betriebssystembestandteil, sondern ein
+  reiner Spiegel (siehe unten).
+
+## Kette einer Anfrage
+
+```text
+Nutzer
+  -> Spaceship DNS
+  -> GitHub Pages          statische Website/PWA (smyst.com)
+  -> Zeabur                api.smyst.com, FastAPI-Backend
+       -> IDrive e2        Nutzer, Chats, Profile, Pipeline-Daten (JSON-Objekte)
+       -> OpenRouter/Groq  KI-Antworten
+```
 
 ## Subdomains
 
 ```text
-smyst.com        -> Website/PWA
-app.smyst.com    -> Web-App
-api.smyst.com    -> Auth/API auf Salad, sobald Google Login live geht
-cdn.smyst.com    -> IDrive e2 Assets und oeffentliche Dateien
-backup.smyst.com -> private IDrive e2 Backups
+smyst.com        -> GitHub Pages (CNAME smyst-com.github.io), Website/PWA
+app.smyst.com    -> GitHub Pages
+cdn.smyst.com    -> GitHub Pages
+api.smyst.com    -> Zeabur (smyst-backend), Alias von smyst-api.zeabur.app
+files.smyst.com  -> IDrive e2, privat (403), von der App nicht genutzt
+media.smyst.com  -> IDrive e2, privat (403), von der App nicht genutzt
 ```
+
+Wichtig fuer Frontend-Code: `smyst.com` ist statisch. Relative `fetch()`-Aufrufe
+auf `/api/...` laufen dort ins Leere. API-Aufrufe muessen immer ueber
+`fetchService` aus `src/lib/serviceEndpoints.ts` gehen (404-Fallback auf
+`smyst-api.zeabur.app`, Cross-Origin-Cookies brauchen `credentials: 'include'`).
+
+## Warum GitHub Pages und nicht IDrive e2
+
+IDrive e2 sperrt Public Bucket Access im Free-Plan serverseitig. Nachgewiesen
+per S3-API (Run #26 `idrive-static-deploy`): `PutBucketPolicy` liefert
+`AccessDenied` fuer alle Buckets. `smyst.com` lief nie ueber IDrive e2, sondern
+immer ueber GitHub Pages. Der Workflow `idrive-static-deploy.yml` bleibt als
+Reserve erhalten, ist aber kein aktiver Auslieferungspfad.
+
+IDrive e2 bleibt Primaerspeicher fuer alle Backend-Daten (privat, ueber
+S3-API/Signed URLs) - dafuer ist kein Public Access noetig.
 
 ## IDrive e2 Buckets
 
-Empfohlene Buckets:
+Region Los Angeles (`us-west-2`). Buckets: `smyst.com`, `app.smyst.com`,
+`cdn.smyst.com`, `backup.smyst.com`, `smyst-memories`. Alle privat.
 
-```text
-smyst.com
-app.smyst.com
-cdn.smyst.com
-backup.smyst.com
-smyst-memories
-```
+`smyst-memories` ist der Arbeitsbucket des Backends (`IDRIVE_E2_BUCKET`,
+Default in `backend/app/core/config.py`). Die Objekt-Praefixe stehen in
+`docs/FREE_ONLY_DATA_MAP.md`.
 
-Aktueller Stand:
+## Zeabur
 
-- Die Buckets `smyst.com`, `app.smyst.com`, `cdn.smyst.com`, `backup.smyst.com` und `smyst-memories` sind in der Region Los Angeles (`us-west-2`) angelegt.
-- Die PWA-Dateien sind nach `smyst.com` und `app.smyst.com` hochgeladen.
-- Die CDN-Dateien sind nach `cdn.smyst.com` hochgeladen.
-- `smyst.com` zeigt den IDrive-Endpunkt `smyst.com.s3.us-west-2.idrivee2.com`.
-- Der bestehende Bucket `smyst.com` ist aktuell privat; die IDrive-Konsole deaktiviert den Umschalter auf `Oeffentlich`.
-
-Oeffentlich:
-
-- `smyst.com`
-- `app.smyst.com`
-- `cdn.smyst.com`
-
-Privat:
-
-- `backup.smyst.com`
-- `smyst-memories`
-
-## IDrive e2 Speicherumfang
-
-IDrive e2 ist der Primaerspeicher fuer:
-
-- Bilder, Videos, Audio, PDFs und Profilbilder.
-- Nutzer-Uploads, temporaere Uploads und grosse Mediendateien.
-- App-/PWA-Dateien, statische Website-Dateien, Downloads und Release-Dateien.
-- Backups, Exporte, Admin-Exporte, Versionen und verschluesselte Sicherungen.
-- Logs, Fehlerberichte und Audit-Logs.
-- KI-Profilwissen, Prompt-Dateien, Chat-Archive und Wissensdaten.
-- Modell-Dateien, Trainingsdaten, Medien-Archiv, App-Builds, APK/AAB/IPA-Dateien, Update-Pakete, Rollback-Dateien, Thumbnails, Video-Vorschauen, Untertitel, Uebersetzungen, statische JSON-Daten, Profil-Datensaetze, Kategorien, Sitemap/SEO-Dateien, Hilfedateien, rechtliche Dokumente, Testberichte, Screenshots, QA-Videos, Datenbank-Backups, Suchindex-Backups, RAG-Dokumente, Embedding-Dateien, Import-/Export-Pakete, Design-Assets, Feature-Config-Dateien, Wartungsseiten, Offline-Dateien, Cache-Dateien, oeffentliche CDN-Dateien und private signierte Dateien.
-
-GitHub Free ist nur fuer Code, Versionierung, Releases und Actions. Spaceship ist nur fuer Domain/DNS. Salad.com ist nur fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
-
-## Spaceship DNS
-
-Spaceship soll die DNS-Zone verwalten.
-
-Empfohlene Records:
-
-```text
-@      ALIAS  <IDrive e2 website/custom-domain target>
-app    CNAME  <IDrive e2 website/custom-domain target>
-cdn    CNAME  <IDrive e2 public/custom-domain target>
-api    CNAME  <Salad/API target>
-backup CNAME  <IDrive e2 target, nur wenn wirklich benoetigt>
-```
-
-DNS darf erst auf IDrive e2 umgestellt werden, wenn die oeffentlichen Buckets wirklich per Browser erreichbar sind. Bis dahin bleibt die bisherige Auslieferung als Uebergang aktiv, damit `smyst.com` nicht ausfaellt.
+- Service `smyst-backend`: gebaut aus `backend/Dockerfile` mit dem Repo-Root
+  als Build-Kontext. Enthaelt Piper-TTS (13 Stimmen, DE/EN/TR) und
+  Whisper `small` (int8) fest im Image - Standard-Sprachausgabe und
+  Server-Diktat brauchen keinen separaten GPU-Dienst.
+- Auto-Deploy aus GitHub. Der Auto-Deploy ist schon einmal ausgefallen
+  (nach PR #266); dann im Portal manuell "Redeploy" ausloesen.
+- Nach Aenderungen am Dockerfile: in Zeabur Settings -> Dockerfile
+  "Load from GitHub" -> Save -> Redeploy.
+- Log-Suche ist ein Pro-Feature (19 USD/Monat) und ist nicht aktiviert.
+  Diagnose laeuft ueber Live-Endpunkte statt Logsuche.
+- Secrets (`GOOGLE_OAUTH_CLIENT_SECRET`, `AUTH_SESSION_SECRET`,
+  `OPENROUTER_API_KEY`, IDrive-Keys) liegen als Service-Variablen in Zeabur,
+  niemals im Repository und niemals als IDrive-Objekt.
 
 ## GitHub Actions
 
-GitHub Actions baut die PWA und synchronisiert das Build-Artefakt nach IDrive e2.
+Aktive Deploy-Wege:
 
-Minimaler Ablauf:
+- `github-pages.yml`: baut die PWA bei jedem Push auf `main` und deployt sie
+  nach GitHub Pages. Setzt `VITE_API_BASE_URL=https://smyst-api.zeabur.app`
+  und schreibt `dist/CNAME` mit `smyst.com`.
+- `deploy.yml` (CI): install, typecheck, tests, build fuer PRs und `main`.
+- `pipeline-run.yml`: die Profil-Pipeline als Cronjob (Worker 1-5), publiziert
+  und triggert danach den Pages-Deploy.
+- `quality-loop.yml`, `model-eval.yml`, `voice-qa-daily.yml`,
+  `pipeline-backup.yml`, `pipeline-watchdog.yml`: wiederkehrende Qualitaets-,
+  Mess- und Sicherungslaeufe.
 
-```text
-1. npm build
-2. dist/ pruefen
-3. dist/ nach IDrive e2 Website-Bucket synchronisieren
-4. optional: cdn assets nach cdn.smyst.com synchronisieren
-```
+Stillgelegt (`if: false`, nur Rollback): `salad-backend-deploy.yml`,
+`voice-worker-deploy.yml`.
 
-## Salad
+Reserve, nicht im Regelbetrieb: `idrive-static-deploy.yml`,
+`idrive-static-reset.yml`.
 
-Salad bleibt ohne laufende Container, bis echte Rechenarbeit benoetigt wird. Google Login zaehlt als echte Auth/API-Rechenarbeit, sobald `api.smyst.com` produktiv genutzt wird.
+## Datenhaltung
 
-Erlaubte Nutzung:
+Es gibt in Produktion keine relationale Datenbank und keinen Redis. Nutzer,
+Chats, Feedback, Profile und Pipeline-Status liegen als JSON-Objekte in
+IDrive e2 (siehe `backend/app/integrations/*_store.py`).
 
-- Batch-Jobs
-- AI-Jobs
-- Medienverarbeitung
-- Suche und Indexierung
-- temporaere API
-- Google OAuth Auth/API fuer `api.smyst.com`
+PostgreSQL und Redis existieren nur in `docker-compose.yml` unter dem Profil
+`legacy-local` fuer lokale Entwicklung.
 
-Nicht erlaubt als Startzustand:
+## Codeberg-Spiegel
 
-- dauerhaft laufende Container ohne Nutzen
-- monatliche Grundgebuehr
-- sensible Daten dauerhaft in Salad speichern
+`codeberg.org/smyst/smyst-app` (privat, Account `smyst`) ist eine
+Ausfallsicherung des Repositories. GitHub bleibt die Quelle: Pages, Actions,
+Pipeline und Deploys laufen ausschliesslich dort. Codeberg wird nur
+beschrieben, nie gelesen.
 
-## Legacy edge provider Legacy
+- Automatik: `.github/workflows/codeberg-mirror.yml` spiegelt `main` und Tags
+  bei jedem Push auf `main`, zusaetzlich woechentlich per Cron.
+- Benoetigtes Secret: `CODEBERG_TOKEN` (Scope `write:repository`). Einrichtung
+  steht im Kopf der Workflow-Datei; Secrets traegt ausschliesslich der
+  Inhaber ein.
+- Schreibrechte: der Codeberg-Account `iMild` ist Collaborator mit
+  Write-Recht auf `smyst/smyst-app`.
+- Codeberg ist eine Plattform fuer freie und quelloffene Projekte. Dass dort
+  ein geschlossenes Produktions-Repo als privater Spiegel liegt, ist bewusst
+  so entschieden und sollte bei Aenderungen an deren Nutzungsbedingungen
+  neu geprueft werden.
 
-Legacy edge provider Pages/Workers/KV koennen als Uebergang existieren. Ziel ist aber, dass die Startversion mit Spaceship DNS und IDrive e2 als Hauptsystem arbeitet.
+## Google Login
 
-## Google Login ohne Legacy edge provider
-
-Das verbindliche Runbook liegt unter `docs/runbooks/google-salad-auth.md`.
+Runbook: `docs/runbooks/google-salad-auth.md`. Die dort beschriebenen
+Salad-Schritte sind durch Zeabur-Service-Variablen ersetzt; Google-Console-
+und DNS-Schritte gelten unveraendert.

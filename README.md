@@ -8,22 +8,37 @@ Das langfristige Ziel ist ein globales AI-System fuer Web, PWA, iPhone, Android 
 
 Chats sollen sofort starten, Antworten nahezu verzogerungsfrei erscheinen und jede Interaktion durchgehend fluessig wirken. Die Nutzererfahrung soll nahtlos, natuerlich und hochwertig sein, ohne Wartezeiten, Ausfaelle oder Unterbrechungen. Die langfristige Architektur muss auf Milliarden Nutzer pro Tag und weltweite parallele Nutzung ausgerichtet werden. Die guenstige Startarchitektur ist der erste Schritt, nicht die finale Milliarden-Infrastruktur.
 
-## Zielarchitektur
+## Architektur (Stand 2026-08-20)
 
 - Spaceship: Domain `smyst.com`, DNS und Subdomains.
 - GitHub Free: Quellcode, Versionierung, Releases und GitHub Actions.
-- IDrive e2: 99 % aller Speicheraufgaben fuer Dateien, Medien, App-/PWA-Dateien, statische Website-Dateien, Uploads, Backups, Logs, Exporte, AI-Datenartefakte, App-Builds, Suchindex-Backups, RAG-Dokumente, Embedding-Dateien und Archive.
-- Salad.com: nur bei Bedarf fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung, Cronjobs oder temporaere Rechenleistung.
+- GitHub Pages: liefert Website und PWA aus (`smyst.com`, `app.`, `cdn.`).
+- Zeabur: Backend-Container `smyst-backend` unter `api.smyst.com` - API, Auth,
+  Chat, TTS/ASR, Admin.
+- IDrive e2: Objektspeicher und zugleich Datenhaltung des Backends - Nutzer,
+  Chats, Feedback, Profile, Pipeline-Artefakte, Uploads, Backups. Keine
+  relationale Datenbank, kein Redis in Produktion.
+- OpenRouter: LLM-Provider des Live-Twin-Chats. Groq: Free-Tier, erster
+  Provider in Pipeline, QA und Evals.
 - PWA: Web-App ueber `smyst.com`, installierbar auf Desktop, Android und iOS.
-- iOS/Android/Huawei Apps: spaeter als Wrapper oder native Apps, die Inhalte/API von `smyst.com` laden.
+- iOS/Android/Huawei Apps: Capacitor-Shells, die API und Inhalte von
+  `smyst.com` laden.
+
+Nicht mehr im Betrieb: Salad.com (Compute bis Ende Juli 2026), Cloudflare
+(frueherer Edge-Provider), IDrive e2 als Website-Host (Public Bucket Access im
+Free-Plan gesperrt).
+
+Details: `docs/INFRA_SETUP.md`, `docs/ARCHITECTURE.md`,
+`docs/07-deployment-architecture.md`.
 
 ## Domainstruktur
 
-- `smyst.com` -> Website/PWA.
-- `app.smyst.com` -> Web-App.
-- `api.smyst.com` -> nur wenn noetig ueber Salad oder einen kleinen API-Dienst.
-- `cdn.smyst.com` -> IDrive e2 fuer Dateien und Assets.
-- `backup.smyst.com` -> private Backups in IDrive e2.
+- `smyst.com` -> GitHub Pages, Website/PWA.
+- `app.smyst.com` -> GitHub Pages.
+- `cdn.smyst.com` -> GitHub Pages.
+- `api.smyst.com` -> Zeabur, Backend.
+- `files.smyst.com`, `media.smyst.com` -> IDrive e2, privat, von der App nicht
+  genutzt.
 
 ## IDrive e2 99%-Speicherregel
 
@@ -39,20 +54,15 @@ IDrive e2 uebernimmt 99 % aller Speicheraufgaben. Alles, was Datei, Medienobjekt
 
 IDrive e2 ist nicht der richtige Ort fuer Login, aktive Datenbank-Abfragen, Zahlungen, Echtzeit-Chat, Live-Admin-Dashboards, AI-Inferenz, aktive Suche/Indexierung oder serverseitige API-Logik.
 
-GitHub Free bleibt nur fuer Code, Versionierung, Releases und GitHub Actions. Spaceship verwaltet Domain und DNS. Salad.com bleibt nur fuer echte Rechenarbeit wie API, KI, Verarbeitung, Suche, Indexierung und Cronjobs.
+GitHub Free bleibt nur fuer Code, Versionierung, Releases und GitHub Actions. Spaceship verwaltet Domain und DNS. Zeabur uebernimmt die Rechenarbeit: API, KI-Aufrufe, Verarbeitung, Suche und Sprachdienste.
 
-## Startregel
-
-Die guenstigste Start-Version ist:
-
-1. Domain bei Spaceship.
-2. DNS und Subdomains bei Spaceship.
-3. Code auf GitHub.
-4. Statische Web-/PWA-Dateien in IDrive e2.
-5. Medien und Uploads in IDrive e2.
-6. Kleine API nur bauen, wenn Login oder dynamische Funktionen noetig werden.
-7. Salad erst aktivieren, wenn echte Rechenleistung gebraucht wird.
+## Aenderungsregeln
 
 Neue Deployments, DNS-Aenderungen, Speicherpfade und API-Pfade muessen ueber
-Spaceship, IDrive e2, Salad und GitHub geplant werden. Alte Edge-/CDN-Ressourcen
-gelten als Abschaltbestand und duerfen nicht als Zielarchitektur erweitert werden.
+Spaceship, GitHub, Zeabur und IDrive e2 geplant werden. Ein neuer Anbieter
+braucht eine Freigabe des Inhabers und einen Eintrag in
+`docs/FREE_ONLY_INFRASTRUCTURE.md`. Alte Edge-/CDN-Ressourcen gelten als
+Abschaltbestand und duerfen nicht als Zielarchitektur erweitert werden.
+
+Arbeitsregeln fuer Code-Aenderungen stehen in `AGENTS.md` (Design-Freeze
+Startseite, Funktions-Freeze Sprachsystem, Branch- und PR-Pflicht).

@@ -1,11 +1,15 @@
-# Google Login On Salad
+# Google Login On Zeabur
+
+HINWEIS: Der Dateiname `google-salad-auth.md` bleibt aus Verlinkungsgruenden
+erhalten. Salad.com ist seit Ende Juli 2026 abgeschaltet; die Auth laeuft auf
+Zeabur.
 
 ## Target
 
-Google Login runs without Legacy edge provider:
+Google Login runs without Cloudflare:
 
 - `smyst.com` serves the web/PWA surface.
-- `api.smyst.com` serves auth/API from Salad.
+- `api.smyst.com` serves auth/API from Zeabur.
 - Google redirects to `https://api.smyst.com/auth/google/callback`.
 - IDrive e2 stores objects and static artifacts, not plaintext OAuth secrets.
 
@@ -35,9 +39,9 @@ https://smyst.com/auth/google/callback
 
 The `smyst.com` callback can remain during migration. The production target is `api.smyst.com`.
 
-## Salad Runtime Secrets
+## Zeabur Service Variables
 
-Set these in the Salad container/app environment. Never store the Google client secret as a plain IDrive object.
+Set these as Zeabur service variables. Never store the Google client secret as a plain IDrive object.
 
 ```text
 APP_ENV=production
@@ -53,10 +57,10 @@ SMYST_OWNER_EMAILS=smyst247@gmail.com
 
 Current portal status:
 
-- Salad organization created: `smyst-com`.
+- Zeabur project holds the service `smyst-backend`.
 - Default project exists.
 - Container group creation is blocked until credits are added.
-- Because no container group exists yet, there is currently no safe Salad runtime target for `GOOGLE_OAUTH_CLIENT_SECRET`.
+- Because no container group exists yet, there is currently no safe Zeabur-Laufzeit target for `GOOGLE_OAUTH_CLIENT_SECRET`.
 
 Frontend build:
 
@@ -69,7 +73,7 @@ VITE_AUTH_BASE_URL=https://api.smyst.com/auth
 Spaceship DNS should point:
 
 ```text
-api.smyst.com -> Salad public endpoint
+api.smyst.com -> Zeabur-Endpunkt
 ```
 
 Use HTTPS only. Do not route auth through IDrive static hosting.

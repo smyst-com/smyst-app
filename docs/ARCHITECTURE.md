@@ -1,22 +1,23 @@
-# Smyst Active Architecture
+# smyst.com Active Architecture
 
-Status: verbindliche Free-Only-Architektur fuer Phase 1.
+Stand: 2026-08-20. Status: verbindliche Beschreibung des Live-Systems.
 
 ## Grundregel
 
 Production verwendet ausschliesslich:
 
-- GitHub.com Free fuer Code, Issues, Pull Requests, Dokumentation und GitHub Actions.
-- Legacy edge provider Free fuer DNS, TLS, CDN, Pages, Workers, KV, Security Headers, Caching und Edge-Auslieferung.
-- IDrive e2 als zentralen S3-kompatiblen Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und Twin-Daten, nur mit harten Quotas und Kostenbremse.
+- GitHub Free fuer Code, Issues, Pull Requests, Dokumentation und Actions.
+- GitHub Pages fuer die Auslieferung von Website und PWA.
+- Zeabur fuer das Backend `smyst-backend` unter `api.smyst.com`.
+- IDrive e2 als S3-kompatiblen Speicher - zugleich die Datenhaltung des
+  Backends.
+- OpenRouter (Live-Chat) und Groq (Pipeline, QA, Evals) fuer LLM-Inferenz.
+- Spaceship fuer Domain und DNS.
+- Resend fuer E-Mail, optional ueber `RESEND_API_KEY`.
 
-Alle anderen Server-, Datenbank-, Cache-, Uebersetzungs-, Analytics-, AI- oder Monitoring-Dienste sind keine Production-Abhaengigkeit.
-
-## Phase 1
-
-Phase 1 ist ein Free-Only-MVP. Ziel ist eine saubere, sichere, schnelle und erweiterbare Plattformbasis, nicht ein echtes Milliarden-Nutzer-Betriebssystem.
-
-Die Milliarden-Nutzer-Skalierung bleibt die Langfristvision. Sie darf in dieser Phase nicht als Leistungsversprechen der kostenlosen Infrastruktur beschrieben werden.
+Alle anderen Server-, Datenbank-, Cache-, Uebersetzungs-, Analytics- oder
+Monitoring-Dienste sind keine Production-Abhaengigkeit. Die vollstaendige
+Anbieterliste mit Kosten steht in `docs/FREE_ONLY_INFRASTRUCTURE.md`.
 
 ## Zielbild
 
@@ -25,85 +26,106 @@ Web / PWA / Capacitor iOS / Capacitor Android
         |
         | HTTPS
         v
-IDrive e2 static hosting Free
+GitHub Pages
         |
         +--> statisches Vite/React-Frontend
         +--> Manifest, Service Worker, SEO-Dateien
+        +--> prerenderte oeffentliche Profile /t/{slug}
+        +--> statische JSON-API dist/api/public/twins/
         |
+        | fetchService (src/lib/serviceEndpoints.ts)
         v
-Salad API Free
+Zeabur - smyst-backend (FastAPI, api.smyst.com)
         |
-        +--> Auth und Sessions
-        +--> API fuer Profile, Twins, Chat und Suche
+        +--> Auth und Sessions (Google OAuth, signiertes HttpOnly-Cookie)
+        +--> API fuer Profile, Twins, Chat, Suche und Admin
+        +--> TTS (Piper im Container) und ASR (Whisper small im Container)
         +--> Upload-Signing und Storage-Gates
-        +--> Translation aus statischen Repository-Dateien
         +--> Security Headers, CORS, Rate Limits
         |
-        +--> Salad/IDrive metadata Free
-        |    Sessions, OAuth-State, Quotas, kleine Metadaten, Upload-Status
+        +--> OpenRouter / Groq
+        |    LLM-Inferenz mit Provider-Kette und Fallback
         |
         +--> IDrive e2
-             Dateien, Bilder, Videos, Audio, Dokumente, Backups, Twin-Daten
+             Nutzer, Chats, Feedback, Profile, Pipeline-Artefakte,
+             Dateien, Medien, Backups
 ```
 
 ## Datenablage
 
-- GitHub: Quellcode, Dokumentation, statische Uebersetzungsdateien, CI/CD-Konfiguration.
-- IDrive e2 static hosting: gebautes Frontend, PWA-Artefakte, statische SEO/AEO/GEO-Dateien.
-- Salad API: API-, Auth-, Upload-, Chat- und Storage-Logik.
-- Salad/IDrive metadata: kleine, kurzlebige oder einfache Daten wie Sessions, Quotas, Upload-Intents, Upload-Status, Rollen und oeffentliche Index-Snapshots.
-- IDrive e2: alle grossen, nutzerbezogenen und dauerhaften Objekte.
+- GitHub: Quellcode, Dokumentation, statische Uebersetzungsdateien,
+  CI/CD-Konfiguration.
+- GitHub Pages: gebautes Frontend, PWA-Artefakte, prerenderte Profilseiten,
+  statische SEO/AEO/GEO-Dateien.
+- Zeabur: nur Laufzeit und Service-Variablen, keine dauerhafte Datenhaltung.
+- IDrive e2: alles Dauerhafte - Nutzerdokumente, Chat-Archive, Feedback,
+  Pipeline-Status, Uploads, Backups.
 
-Details stehen in `docs/FREE_ONLY_DATA_MAP.md`.
+Es gibt keine relationale Datenbank und keinen Redis in Production. Details in
+`docs/FREE_ONLY_DATA_MAP.md`.
 
 ## Upload Flow
 
 ```text
 Client
-  -> fragt Legacy edge provider Worker nach Upload-Intent
-Worker
+  -> fragt das Backend nach einem Upload-Intent
+Backend
   -> prueft Session, Rolle, Sichtbarkeit, Dateityp, Dateigroesse und Quota
   -> erstellt kurzlebige IDrive-e2-Signatur
 Client
   -> laedt direkt zu IDrive e2 hoch
-Worker
+Backend
   -> bestaetigt Upload per HEAD/Metadatenpruefung
-  -> speichert Status und sichere Metadaten in KV
+  -> schreibt Status und sichere Metadaten als JSON-Objekt nach IDrive e2
 ```
 
 Clients erhalten niemals permanente Storage Keys.
 
 ## Auth
 
-Erlaubte Free-Only-Optionen:
+Aktiv:
 
-- GitHub OAuth mit HttpOnly Secure SameSite Session-Cookies.
-- Passkey/WebAuthn ueber Salad API und KV.
-- Sicheres Demo-Login nur fuer MVP/Preview, klar als Demo markiert.
+- Google OAuth ueber `GET /auth/google/start` und
+  `GET /auth/google/callback`, danach ein HttpOnly Secure SameSite
+  Session-Cookie.
+- `GET /auth/me` liefert den Session-Kontrakt fuer das Frontend.
+- `POST /auth/logout` und `POST /auth/logout-all`.
 
-Google-basierte Auth ist keine Production-Pflicht und darf nicht als notwendige Login-Bedingung dokumentiert werden.
+Cross-Origin-Hinweis: `smyst.com` (GitHub Pages) und `api.smyst.com` (Zeabur)
+sind verschiedene Origins. Jeder Frontend-Aufruf mit Session braucht
+`credentials: 'include'` und muss ueber `fetchService` laufen.
 
-## AI Twin MVP
+## KI-Antworten
 
-Der erste KI-Zwilling ist ein regelbasierter oder simulierter MVP:
+Der Chat laeuft ueber eine Provider-Kette mit Fallback
+(`backend/app/ai/llm_router.py`, `provider_catalog.py`). Live-Chat nutzt
+OpenRouter; Pipeline, QA und Evals starten bei Groq (Free-Tier). Faellt die
+gesamte Kette aus, antwortet ein deterministischer Not-Fallback
+(`mode=local`) - das ist ein sichtbares Stoerungssignal, kein Normalbetrieb.
 
-- Profil, Name, Beschreibung und Sichtbarkeit.
-- Wissenstexte und hochgeladene Inhalte.
-- Einfacher Twin-Kontext aus KV-Metadaten und IDrive-e2-Objekten.
-- Chat-Antworten ohne kostenpflichtige externe AI-Inferenz.
+Vor jedem Modellaufruf greift eine deterministische Krisen-Schutzschicht.
 
-Spaetere echte AI-Modelle muessen ueber austauschbare Adapter angebunden werden und brauchen eine neue Architektur- und Kostenfreigabe.
+## Sprachsystem
+
+Sprachausgabe und Diktat sind in AGENTS.md unter Funktions-Freeze gestellt.
+
+- Piper-TTS mit 13 kuratierten Stimmen (DE/EN/TR) liegt im Backend-Image.
+- Whisper `small` (int8) liegt ebenfalls im Image, fuer Server-Diktat ohne
+  Kaltstart-Download.
+- Weitere Sprachen brauchen einen externen Voice-Worker ueber
+  `VOICE_WORKER_URL`/`VOICE_WORKER_TOKEN`. Diese Variablen fehlen aktuell auf
+  Zeabur, daher fallen 12 von 15 Sprachen auf eine englische Ersatzstimme.
+- Pflicht-Smoke nach jedem Backend-Deploy: `GET /api/tts/voices` muss 200 mit
+  `ready:true` liefern.
 
 ## Performance
 
-Phase 1 optimiert auf:
-
-- statisches Frontend ueber IDrive e2 static hosting,
-- kleine JS-Bundles,
-- lazy geladene UI,
+- statisches Frontend ueber GitHub Pages,
+- kleine JS-Bundles und lazy geladene UI,
 - lokale/statische Uebersetzungen,
 - Service Worker fuer App-Shell und Offline-Fallback,
-- Worker-Antworten mit klaren Timeouts,
+- prerenderte Profilseiten statt API-Roundtrip beim ersten Aufruf,
+- klare Timeouts pro Provider in der LLM-Kette,
 - harte Upload- und Storage-Limits.
 
 ## Sicherheit
@@ -111,31 +133,28 @@ Phase 1 optimiert auf:
 Pflicht fuer alle Production-Pfade:
 
 - sichere Headers und CSP,
-- strenge CORS-Regeln,
+- strenge CORS-Regeln (`CORS_ORIGINS`),
 - CSRF-Schutz fuer Cookie-basierte Mutationen,
-- Input-Validation,
-- Rate Limits,
+- Input-Validation und Rate Limits,
 - Upload-Dateityp- und Groessenpruefung,
 - private Sichtbarkeit als Standard,
-- keine sensiblen Felder in oeffentlichen KV-Snapshots,
+- Prompt-Injection-Markierung in der Web-Recherche,
 - keine Secrets im Repository.
 
 ## SEO, AEO, GEO und KI-Suche
 
-Erlaubte Grundlagen:
-
-- `robots.txt`
-- `sitemap.xml`
-- `llms.txt`
-- OpenGraph und Twitter Cards
-- Schema.org/JSON-LD
-- statische mehrsprachige Landingpages
-- SEO-freundliche oeffentliche Twin-URLs
-
-Private Profile und private Uploads duerfen nicht indexierbar sein.
+`robots.txt`, `sitemap.xml`, `llms.txt`, OpenGraph, Twitter Cards,
+Schema.org/JSON-LD, statische mehrsprachige Landingpages und SEO-freundliche
+oeffentliche Twin-URLs. Private Profile und private Uploads duerfen nicht
+indexierbar sein.
 
 ## Skalierungsrealitaet
 
-Die Architektur haelt Modulgrenzen sauber, damit spaeter horizontal erweitert werden kann. Kostenlos nutzbare Kontingente koennen aber keine Milliarden Nutzer pro Tag garantieren.
+Die Architektur haelt Modulgrenzen sauber, damit spaeter horizontal erweitert
+werden kann. Ein einzelner Backend-Container plus Objektspeicher garantiert
+aber keine Milliarden Nutzer pro Tag.
 
-Langfristige globale Skalierung erfordert eigene Entscheidungen zu Datenbanken, AI-Inferenz, Realtime, Observability, Multi-Region-Betrieb, Kostenkontrolle und Compliance. Diese Entscheidungen sind nicht Teil der Free-Only-MVP-Freigabe.
+Langfristige globale Skalierung erfordert eigene Entscheidungen zu
+Datenbanken, AI-Inferenz, Realtime, Observability, Multi-Region-Betrieb,
+Kostenkontrolle und Compliance. Diese Entscheidungen sind nicht Teil des
+aktuellen Aufbaus.
