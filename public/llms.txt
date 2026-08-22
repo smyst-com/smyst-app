@@ -13,6 +13,7 @@ Voice and language support:
 
 Important URLs:
 - Main site: https://smyst.com/
+- Education page for schools (German): https://smyst.com/bildung/ — checked historical AI profiles for classroom use, sources and AI labeling, 15 languages.
 - German landing page: https://smyst.com/de/
 - English landing page: https://smyst.com/en/
 - Turkish landing page: https://smyst.com/tr/
