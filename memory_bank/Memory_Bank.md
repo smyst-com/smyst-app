@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-08-22 (Nacht, Adam-ZCode): C-STUFE FAST KOMPLETT — Education-Landingpage /bildung/ LIVE (PR #484, verifiziert: HTTP 200, FAQ-Schema, Sitemap-Eintrag)
+
+- BILDUNG-LP LIVE: Statische Schulen-Seite im Markendesign (Muster bildnachweise/): 13.000+ geprüfte KI-Profile für Unterricht, Quellen-/Lizenzbasierung, ausdrückliche KI-Kennzeichnung, 15 Sprachen, DSGVO-Verweise, FAQPage-JSON-LD, Sitemap-Eintrag (0.8), llms.txt-Verweis. Live verifiziert 04:2x UTC. Startseiten-Freeze unberührt (separate URL, keine Startseiten-Änderung).
+- DIGEST-MAIL BEWUSST NICHT AUTONOM GEBAUT: Werbe-/Newsletter-Mails an registrierte Nutzer brauchen nach DSGVO ein Opt-In — Produktentscheidung Adams (Inhalt, Frequenz, Opt-In-Flow), erst danach technischer Aufbau (Resend-Infra steht).
+- PREMIUM-FLAG: bewusst inaktiv (Produktentscheidung des Parallel-Agenten, 'Fokus Wachstum' 21.08.) — Reaktivierung = Flag + Stripe-Secrets (Adam).
+- DAMIT IST DIE VERBESSERUNGSROADMAP A+B+C bis auf die zwei bewussten Produkt-Entscheidungen abgeschlossen. smyst-1.0-Aktivierung wartet auf 'Ja OK' (llm-deploy-Workflow).
+
 ## Update 2026-08-21 (Nacht, Adam-ZCode): SMYST-1.0-AKTIVIERUNGSKETTE FERTIG (PR #482) — ein Klick bis zum eigenen Modell in der Pipeline
 
 - KOMPLETT VORBEREITET: docker/llm-server (Q4-Modell zur Build-Zeit aus e2 via presigned BuildKit-Secret eingebrannt — kein Runtime-Download, keine Credentials im Image), scripts/deploy-salad-llm.mjs (CPU-Container smyst-llm, 2 vCPU/3 GB, ~$5-15/Monat, jederzeit stoppbar ohne Folgekosten), Workflow llm-deploy.yml mit 'Ja OK'-Kostentor (Muster Voice-Worker), automatisches Setzen der Repo-Variable SMYST_LLM_BASE_URL nach Deploy.
