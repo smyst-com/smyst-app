@@ -12,9 +12,12 @@ FROM ghcr.io/ggml-org/llama.cpp:full AS quantisierer
 WORKDIR /work
 # Die Secret-Datei enthaelt NUR die presigned URL (ein Objekt, <=7 Tage
 # gueltig) — sie landet nicht im Image.
+# Die llama.cpp-Binaries liegen mit ihren Shared Libraries in /app — im
+# RUN-Kontext ist LD_LIBRARY_PATH nicht gesetzt (Fehler 04:44 UTC: libllama-
+# quantize-impl.so nicht gefunden), deshalb inline.
 RUN --mount=type=secret,id=modelurl,required=true \
     curl -fsSL "$(cat /run/secrets/modelurl)" -o smyst-1.0-f16.gguf \
-    && /app/llama-quantize smyst-1.0-f16.gguf smyst-1.0-Q4_K_M.gguf Q4_K_M
+    && LD_LIBRARY_PATH=/app /app/llama-quantize smyst-1.0-f16.gguf smyst-1.0-Q4_K_M.gguf Q4_K_M
 
 FROM ghcr.io/ggml-org/llama.cpp:full
 COPY --from=quantisierer /work/smyst-1.0-Q4_K_M.gguf /models/smyst-1.0-Q4_K_M.gguf
