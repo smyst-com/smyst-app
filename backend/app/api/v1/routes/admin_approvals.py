@@ -79,14 +79,24 @@ def _load_approvals() -> dict[str, Any]:
     store = _store()
     ready: list[dict[str, Any]] = []
     blocked: list[dict[str, Any]] = []
-    for document in store.candidate_documents_by_status(
-        PipelineStatus.REVIEWED.value, limit=APPROVALS_LIMIT
-    ):
-        qid = str(document.get("qid") or document.get("id") or "")
-        if not qid:
+    # Schneller Weg ueber die Status-Marker (ein LIST-Aufruf). Der Voll-Scan-
+    # Fallback wuerde bei Tausenden Kandidaten Minuten dauern und den Request
+    # haengen lassen — ohne Index liefern wir deshalb nur die markierten QIDs.
+    try:
+        qids = store.qids_by_status(PipelineStatus.REVIEWED.value)
+    except Exception:
+        qids = []
+    for qid in qids[: APPROVALS_LIMIT * 2]:
+        try:
+            document = store.load_candidate_document(qid)
+        except Exception:
+            continue
+        if document.get("status") != PipelineStatus.REVIEWED.value:
             continue
         card = _card(qid, document)
         (ready if card["qa_passed"] else blocked).append(card)
+        if len(ready) + len(blocked) >= APPROVALS_LIMIT:
+            break
     ready.sort(key=lambda card: card["name"].casefold())
     blocked.sort(key=lambda card: card["name"].casefold())
     return {
