@@ -86,17 +86,24 @@ def _load_approvals() -> dict[str, Any]:
         qids = store.qids_by_status(PipelineStatus.REVIEWED.value)
     except Exception:
         qids = []
-    for qid in qids[: APPROVALS_LIMIT * 2]:
+    # Paralleles Laden: ein GET kostet Zeabur(Tencent SV) -> IDrive(LA) rund
+    # eine Sekunde; sequenziell waeren 200 QIDs ~4 Minuten (Live-Befund 22.08.).
+    from concurrent.futures import ThreadPoolExecutor
+
+    def _load(qid: str) -> dict[str, Any] | None:
         try:
             document = store.load_candidate_document(qid)
         except Exception:
-            continue
+            return None
         if document.get("status") != PipelineStatus.REVIEWED.value:
-            continue
-        card = _card(qid, document)
+            return None
+        return _card(qid, document)
+
+    with ThreadPoolExecutor(max_workers=20) as pool:
+        cards = [c for c in pool.map(_load, qids[: APPROVALS_LIMIT * 2]) if c]
+    cards = cards[:APPROVALS_LIMIT]
+    for card in cards:
         (ready if card["qa_passed"] else blocked).append(card)
-        if len(ready) + len(blocked) >= APPROVALS_LIMIT:
-            break
     ready.sort(key=lambda card: card["name"].casefold())
     blocked.sort(key=lambda card: card["name"].casefold())
     return {
