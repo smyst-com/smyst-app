@@ -147,7 +147,10 @@ def generate_ideas(*, limit: int = 3, dry_run: bool = False) -> int:
         )
     )
     if getattr(response, "degraded", False):
-        print("LLM-Antwort degradiert – keine Ideen.")
+        print(
+            "LLM-Antwort degradiert – keine Ideen "
+            f"(provider={getattr(response, 'provider', '?')} model={getattr(response, 'model', '?')})."
+        )
         return 0
 
     ideas = _parse_ideas(response.text)[:limit]
