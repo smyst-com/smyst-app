@@ -51,7 +51,7 @@ jobs:
         with:
           registry: ghcr.io
           username: smyst-com
-          password: ${{ secrets.ADMIN_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # Presigned URL fuer genau EIN Objekt (f16-GGUF), 1 Stunde gultig.
       # Sie verlaesst den Runner nur als BuildKit-Secret — nicht im Image,
