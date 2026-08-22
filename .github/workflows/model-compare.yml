@@ -1,0 +1,103 @@
+name: Modell-Vergleich (Tempo und Qualitaet)
+
+# Vergleicht Kandidaten-Modelle auf demselben Fragenset gegen das aktuell
+# produktive Modell — Tempo UND Persona-Qualitaet nebeneinander.
+#
+# Hintergrund: Die Wartezeit im Chat ist zu ~100 % der Vorlauf des Modells
+# (16.08.2026: 455 ms gesamt, davon 454 ms Modell). Am eigenen Code ist nichts
+# mehr zu holen. Ein Modellwechsel taeuscht aber leicht: schneller ist leicht
+# zu messen, schlechter nicht. Darum laufen beide Seiten in einem Lauf.
+#
+# KOSTET GELD: jede Frage geht an jedes Kandidatenmodell, dazu der Judge.
+# Bei 40 Fragen x 3 Wiederholungen x N Modellen summiert sich das — deshalb
+# nur manuell, mit limit als Bremse.
+
+on:
+  workflow_dispatch:
+    inputs:
+      models:
+        description: 'Kommaliste, ERSTES ist die Baseline (aktuell produktiv)'
+        required: false
+        default: 'openai/gpt-4o,openai/gpt-4o-mini'
+      eval_set:
+        description: 'Fragenset (relativ zu backend/)'
+        required: false
+        default: '../training/eval/smyst-eval-v2.jsonl'
+      limit:
+        description: 'Nur die ersten N Fragen (leer = alle 40)'
+        required: false
+        default: '10'
+      repeats:
+        description: 'Wiederholungen je Frage (gegen Rauschen; 1 = unbrauchbar)'
+        required: false
+        default: '3'
+      via_gateway:
+        description: 'Ueber das CI-Gateway (kein Repo-Secret noetig). false = direkt zu OpenRouter'
+        required: false
+        default: 'true'
+
+concurrency:
+  group: model-compare
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Vergleich
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      # Ausweis fuer das CI-Gateway: damit laeuft der Vergleich ueber den
+      # funktionierenden Schluessel des Servers und braucht kein Repo-Secret.
+      id-token: write
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install backend
+        run: pip install -e ".[dev]"
+
+      - name: Vergleich ausfuehren
+        env:
+          # Die Kandidaten laufen ALLE ueber OpenRouter, damit der Vergleich
+          # nicht zusaetzlich Anbieter gegeneinander stellt.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          # Der Judge nimmt die normale Provider-Kette (Gateway zuerst) und
+          # bleibt damit fuer alle Kandidaten derselbe.
+          LLM_PROVIDER_ORDER: 'groq,smyst_gateway,openrouter,anthropic,openai'
+          SMYST_GATEWAY_BASE_URL: 'https://api.smyst.com/api/ci/llm'
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          ARGS="--models '${{ inputs.models }}' --eval-set ${{ inputs.eval_set }}"
+          ARGS="$ARGS --repeats ${{ inputs.repeats }} --out ../model-compare"
+          if [ -n "${{ inputs.limit }}" ]; then ARGS="$ARGS --limit ${{ inputs.limit }}"; fi
+          if [ "${{ inputs.via_gateway }}" != "false" ]; then
+            ARGS="$ARGS --via-gateway https://api.smyst.com/api/ci/llm"
+          fi
+          set -o pipefail
+          eval python -m app.workers.compare_models $ARGS | tee /tmp/compare.txt
+
+      - name: Ergebnis in die Lauf-Zusammenfassung
+        if: always()
+        run: cat ../model-compare/model-compare.md >> "$GITHUB_STEP_SUMMARY" || tail -n 30 /tmp/compare.txt >> "$GITHUB_STEP_SUMMARY"
+
+      # Der Bericht enthaelt die Antworten nicht, nur Kennzahlen — trotzdem als
+      # Artefakt und nicht ins Repo.
+      - name: Bericht als Artefakt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-compare
+          path: model-compare/
+          retention-days: 30
+          if-no-files-found: warn

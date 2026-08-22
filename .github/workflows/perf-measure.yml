@@ -1,0 +1,70 @@
+name: Performance Measurement
+
+# Misst smyst.com von einem GitHub-Runner aus. Die stehen in den USA und damit
+# im Zielmarkt — Messungen vom Entwicklerrechner in Europa sind dafuer nicht
+# repraesentativ (14.08.2026: /auth/me 592 ms aus Deutschland, davon der
+# groesste Teil reine Wegstrecke).
+#
+# Kein zusaetzlicher Anbieter noetig: GitHub Actions ist bereits in Benutzung
+# und im Free-Kontingent enthalten.
+
+on:
+  workflow_dispatch:
+    inputs:
+      rounds:
+        description: 'Runden je HTTP-Messung'
+        required: false
+        default: '5'
+      chat_rounds:
+        description: 'Chat-Runden (jede kostet einen echten LLM-Aufruf)'
+        required: false
+        default: '3'
+      skip_chat:
+        description: 'Chat-Messung auslassen (spart LLM-Aufrufe)'
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    # Montags 06:20 UTC — eine Messung pro Woche reicht, um einen Trend zu
+    # sehen, ohne unnoetig LLM-Aufrufe zu verbrauchen.
+    - cron: '20 6 * * 1'
+
+concurrency:
+  group: perf-measure
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  measure:
+    name: Messung aus den USA
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Messung ausfuehren
+        id: measure
+        run: |
+          python3 scripts/measure-performance.py \
+            --rounds "${{ inputs.rounds || '5' }}" \
+            --chat-rounds "${{ inputs.chat_rounds || '3' }}" \
+            ${{ inputs.skip_chat && '--skip-chat' || '' }} \
+            --json-out perf-report.json \
+            --markdown-out perf-report.md
+
+      - name: Ergebnis in die Lauf-Zusammenfassung schreiben
+        if: always()
+        run: cat perf-report.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Bericht als Artefakt sichern
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-report
+          path: |
+            perf-report.json
+            perf-report.md
+          retention-days: 90
+          if-no-files-found: warn

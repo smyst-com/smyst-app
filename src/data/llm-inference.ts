@@ -330,7 +330,7 @@ const OPENAI_COMPATIBLE_BASES: Record<string, string> = {
 
 const DEFAULT_MODELS: Record<string, string> = {
   openrouter: 'openai/gpt-4o',
-  groq: 'llama-3.3-70b-versatile',
+  groq: 'openai/gpt-oss-120b',
   gemini: 'gemini-1.5-flash',
   claude: 'claude-3-5-sonnet-latest',
   grok: 'grok-2-latest',

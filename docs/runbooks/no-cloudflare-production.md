@@ -1,20 +1,24 @@
 # Smyst Production Without Cloudflare
 
-Status: target architecture for the Cloudflare exit.
+Status: ABGESCHLOSSEN. Der Cloudflare-Ausstieg ist vollzogen - am 2026-08-20
+per DNS geprueft: die Nameserver von `smyst.com` zeigen auf Spaceship
+(`launch1/launch2.spaceship.net`), der Apex-A-Record auf GitHub Pages.
+Dieses Runbook bleibt als Nachweis und fuer die Restpunkte der
+Loesch-Checkliste erhalten.
 
 ## Target
 
 - Spaceship owns DNS for `smyst.com`.
 - GitHub Free is used only for source code, CI, releases and GitHub Actions.
 - IDrive e2 stores static PWA files, user files, media, AI data, archives, backups and knowledge data.
-- Salad runs compute: FastAPI, auth/API, AI inference, indexing, search and scheduled jobs.
+- Zeabur runs compute: FastAPI, auth/API, AI inference, indexing, search and speech services.
 - Cloudflare Pages, Workers, KV, routes, DNS and API tokens are not part of the active production path.
 
 ## GitHub Actions
 
 Use only these production workflows:
 
-- `Salad Backend Deploy`: builds `backend/`, pushes GHCR image and deploys `smyst-backend-api` on Salad.
+- Zeabur auto-deploy: builds `backend/Dockerfile` from `main` and rolls out `smyst-backend`. (The old `Salad Backend Deploy` workflow is disabled since 29.07.2026 and only kept as a rollback path.)
 - `IDrive e2 Static Deploy`: builds the PWA and uploads `dist/` to IDrive e2 static buckets.
 - `CI`: type-checks and builds only. It does not deploy.
 
@@ -22,7 +26,7 @@ Do not use Cloudflare workflows. They have been removed from the active workflow
 
 ## GitHub Secrets
 
-Required for Salad:
+Required for Zeabur:
 
 - `SALAD_API_KEY`
 - `GOOGLE_OAUTH_CLIENT_SECRET`
@@ -75,10 +79,10 @@ Important current IDrive constraint:
 
 ## Deploy Order
 
-1. Run `Salad Backend Deploy` on `main` with approval `Ja OK`.
-2. Copy the Salad public endpoint from the workflow output.
+1. Merge to `main`; Zeabur deploys automatically. If the auto-deploy does not fire, trigger a manual redeploy in the Zeabur portal.
+2. Copy the Zeabur-Endpunkt from the workflow output.
 3. Run `IDrive e2 Static Deploy` on `main` with approval `Ja OK`.
-4. In Spaceship DNS, point `api.smyst.com` to the Salad public endpoint.
+4. In Spaceship DNS, point `api.smyst.com` to the Zeabur-Endpunkt.
 5. In Spaceship DNS, point `smyst.com`, `www.smyst.com`, `app.smyst.com` and `cdn.smyst.com` to the IDrive e2 static website/custom-domain targets.
 6. Verify all endpoints.
 7. Only after verification, delete Cloudflare Worker routes, Workers, Pages projects, KV namespaces and DNS zone.
@@ -90,7 +94,7 @@ Create the DNS zone in Spaceship and remove Cloudflare nameservers at the regist
 
 Records:
 
-- `api.smyst.com` -> CNAME to the Salad public endpoint host, for example `cherry-asparagus-a32jleuk8dgn22zu.salad.cloud`.
+- `api.smyst.com` -> CNAME to the Zeabur-Endpunkt host, for example `cherry-asparagus-a32jleuk8dgn22zu.salad.cloud`.
 - `www.smyst.com` -> CNAME to the IDrive e2 static website/custom-domain target for the `smyst.com` bucket.
 - `app.smyst.com` -> CNAME to the IDrive e2 static website/custom-domain target for the `app.smyst.com` bucket.
 - `cdn.smyst.com` -> CNAME to the IDrive e2 static website/custom-domain target for the `cdn.smyst.com` bucket.

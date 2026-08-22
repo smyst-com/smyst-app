@@ -67,7 +67,7 @@ def _session_cookie(roles: list[str], permissions: list[str]) -> dict[str, str]:
 
 
 def test_quality_endpoint_requires_admin(monkeypatch) -> None:
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     assert client.get("/api/admin/quality").status_code == 401
 
     member = client.get(
@@ -87,7 +87,7 @@ def test_quality_endpoint_returns_summary_and_feedback(monkeypatch) -> None:
             {"twinId": "mata-hari", "rating": "up", "question": "Ok?", "answer": "B", "createdAt": 5},
         ],
     )
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     response = client.get(
         "/api/admin/quality", cookies=_session_cookie(["admin"], ["admin:read"])
     )

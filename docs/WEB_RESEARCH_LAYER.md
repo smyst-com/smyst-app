@@ -4,7 +4,7 @@ Stand: 2026-07-06
 
 ## Architektur
 
-Der Verified Web Research Layer ist additiv im Salad-Control-Backend umgesetzt. Der Control Server entscheidet nur, ob Recherche erlaubt und nötig ist, minimiert die Query, prüft Cache/Budgets und liefert kleine Quellen-/Status-Antworten. Große Inhalte, Snapshots, Chunks, Embeddings und spätere Index-Backups gehören nach IDrivee2.com oder in stateless Worker-Jobs.
+Der Verified Web Research Layer ist additiv im Backend umgesetzt (laeuft auf Zeabur). Der Control Server entscheidet nur, ob Recherche erlaubt und nötig ist, minimiert die Query, prüft Cache/Budgets und liefert kleine Quellen-/Status-Antworten. Große Inhalte, Snapshots, Chunks, Embeddings und spätere Index-Backups gehören nach IDrivee2.com oder in stateless Worker-Jobs.
 
 Module:
 

@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { canRequestAds, adsenseClient, ensureAdsenseScript, isAdsenseConfigured, requestAdRender } from '@/lib/ads';
+import { fetchService } from '@/lib/serviceEndpoints';
 
 type AdPlacement = 'profile-footer';
 
 type AdSlotProps = {
   placement: AdPlacement;
   className?: string;
+  /** Profil-Slug fuer die 25%-Beteiligungs-Abrechnung (Impressions-Zaehlung). */
+  profileSlug?: string;
 };
 
 const slots: Record<AdPlacement, string> = {
@@ -16,7 +19,7 @@ function isSlotConfigured(slot: string): boolean {
   return /^\d{6,}$/.test(slot);
 }
 
-export default function AdSlot({ placement, className = '' }: AdSlotProps) {
+export default function AdSlot({ placement, className = '', profileSlug }: AdSlotProps) {
   const slot = slots[placement];
   const configured = isAdsenseConfigured() && isSlotConfigured(slot);
   const [ready, setReady] = useState(() => configured && canRequestAds());
@@ -36,6 +39,15 @@ export default function AdSlot({ placement, className = '' }: AdSlotProps) {
   useEffect(() => {
     if (!ready) return;
     let cancelled = false;
+    // 25%-Modell: jede ausgelieferte Werbung pro Profil zaehlen (fire-and-forget)
+    if (profileSlug) {
+      void fetchService('/api/v1/ads/impression', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: profileSlug, placement }),
+        keepalive: true,
+      }).catch(() => undefined);
+    }
     void ensureAdsenseScript()
       .then(() => {
         if (!cancelled) requestAdRender();
@@ -46,7 +58,7 @@ export default function AdSlot({ placement, className = '' }: AdSlotProps) {
     return () => {
       cancelled = true;
     };
-  }, [ready, slot]);
+  }, [ready, slot, placement, profileSlug]);
 
   if (!configured) {
     return null;

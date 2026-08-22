@@ -1,5 +1,12 @@
 # 11 Complete Inventory And Roadmap
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 Status: Free-Only-Konsolidierung.
 
 ## Aktiver Production-Pfad
@@ -7,8 +14,8 @@ Status: Free-Only-Konsolidierung.
 - Vite/React/TypeScript Root-App.
 - Capacitor fuer mobile Shells.
 - IDrive e2 static hosting fuer Web/PWA.
-- Salad API fuer Auth, Storage, Translation und Edge-Routing.
-- Salad/IDrive metadata fuer Sessions, OAuth-State, Translation Cache und Quotas.
+- Zeabur-Backend fuer Auth, Storage, Translation und Edge-Routing.
+- IDrive e2 fuer Sessions, OAuth-State, Translation Cache und Quotas.
 - IDrive e2 fuer Dateien, Medien, Dokumente, Uploads, Backups und sonstige Daten.
 - GitHub Actions fuer CI/CD.
 

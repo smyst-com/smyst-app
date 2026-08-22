@@ -1,0 +1,59 @@
+name: Pipeline Skalierung 2k Profile per Tag
+
+# Fuehrt die smyst.com Autopilot-Pipeline auf 2.000 Profile/Tag skaliert aus.
+# Verwendet 10 parallele Matrix-Jobs (Shards 0..9) und IDrive e2 State-Management.
+
+on:
+  schedule:
+    # Alle 2 Stunden (12 Läufe pro Tag * 10 Shards * 17 Profile = ~2.040 Profile/Tag)
+    - cron: "0 */2 * * *"
+  workflow_dispatch:
+    inputs:
+      batch_size_per_shard:
+        description: "Anzahl Kandidaten pro Shard"
+        required: true
+        default: "17"
+
+concurrency:
+  group: pipeline-scale-2k
+  cancel-in-progress: false
+
+jobs:
+  run-sharded-pipeline:
+    name: Shard ${{ matrix.shard_index }}/10
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        shard_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install backend dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Executieren Sharded Batch Worker
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          SHARD_INDEX: ${{ matrix.shard_index }}
+          TOTAL_SHARDS: 10
+          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '17' }}
+        run: |
+          python -m app.workers.sharded_runner \
+            --shard-index $SHARD_INDEX \
+            --total-shards $TOTAL_SHARDS \
+            --limit $BATCH_LIMIT \
+            --enabled

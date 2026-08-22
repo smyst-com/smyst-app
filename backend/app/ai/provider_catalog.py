@@ -23,6 +23,15 @@ PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
         api_key_attr="smyst_gateway_base_url",
         default_model="smyst-gateway",
     ),
+    "smyst_llm": ProviderConfig(
+        name="smyst_llm",
+        # Basis-URL kommt zur Laufzeit aus den Settings (SMYST_LLM_BASE_URL);
+        # api_key_attr zeigt auf dieselbe Einstellung wie beim Gateway: ohne
+        # konfigurierten Key/URL wird der Eintrag uebersprungen.
+        base_url="",
+        api_key_attr="smyst_llm_api_key",
+        default_model="smyst-1.0",
+    ),
     "openrouter": ProviderConfig(
         name="openrouter",
         base_url="https://openrouter.ai/api/v1",
@@ -93,7 +102,7 @@ PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
         name="groq",
         base_url="https://api.groq.com/openai/v1",
         api_key_attr="groq_api_key",
-        default_model="llama-3.3-70b-versatile",
+        default_model="openai/gpt-oss-120b",
     ),
     "together": ProviderConfig(
         name="together",
@@ -129,6 +138,7 @@ PROVIDER_ALIASES = {
 
 DEFAULT_PROVIDER_ORDER = [
     "smyst_gateway",
+    "smyst_llm",
     "openrouter",
     "openai",
     "anthropic",
@@ -153,4 +163,8 @@ STALE_MODEL_ALIASES: dict[tuple[str, str], str] = {
     # deepseek-chat wird am 2026-07-24 abgeschaltet; Nachfolger (non-thinking):
     ("deepseek", "deepseek-chat"): "deepseek-v4-flash",
     ("deepseek", "deepseek-reasoner"): "deepseek-v4-pro",
+    # Groq hat llama-3.3-70b-versatile und llama-3.1-8b-instant am
+    # 2026-08-16 abgeschaltet; offizielle Nachfolger laut Deprecation-Hinweis:
+    ("groq", "llama-3.3-70b-versatile"): "openai/gpt-oss-120b",
+    ("groq", "llama-3.1-8b-instant"): "openai/gpt-oss-20b",
 }

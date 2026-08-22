@@ -1,5 +1,12 @@
 # 12 Foundation Decisions
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 Status: verbindliche Entscheidungsbasis fuer das technische Fundament.
 
 ## Entscheidung 1: Zielstack
@@ -7,15 +14,15 @@ Status: verbindliche Entscheidungsbasis fuer das technische Fundament.
 Smyst wird in der aktuellen Produktionsvorgabe ausschliesslich auf diesem Free-only-Stack aufgebaut:
 
 - GitHub Free fuer Repository, Issues, Pull Requests und GitHub Actions.
-- Legacy edge provider Free fuer DNS, TLS, CDN, Basisschutz, Pages/Workers als Edge-Schicht.
-- Salad API Free als einzig erlaubter Server-/API-Layer.
-- Salad API KV Free fuer Sessions, kleine Metadaten, Konfiguration und einfache Indexe.
+- Cloudflare fuer DNS, TLS, CDN, Basisschutz, Pages/Workers als Edge-Schicht.
+- das Zeabur-Backend als einzig erlaubter Server-/API-Layer.
+- Zeabur-Backend KV Free fuer Sessions, kleine Metadaten, Konfiguration und einfache Indexe.
 - IDrive e2 static hosting Free fuer Web/PWA-Auslieferung.
 - IDrive e2 als zentraler S3-kompatibler Objekt-Speicher fuer Dateien, Medien, Dokumente und Backups, nur solange keine kostenpflichtige Nutzung entsteht.
 
-Nicht erlaubt sind RackNerd/VPS, Docker-Compose-Production, PostgreSQL, pgvector, Redis, FastAPI-Production, externe AI-Provider, externe Uebersetzungsdienste, Analytics-SaaS und bezahlte Legacy edge provider/GitHub-Upgrades.
+Nicht erlaubt sind RackNerd/VPS, Docker-Compose-Production, PostgreSQL, pgvector, Redis, FastAPI-Production, externe AI-Provider, externe Uebersetzungsdienste, Analytics-SaaS und bezahlte Cloudflare/GitHub-Upgrades.
 
-Begruendung: Die Nutzeranforderung setzt strikt kostenlose GitHub- und Legacy edge provider-Dienste sowie IDrive e2 als zentralen Speicher voraus. Die Architektur wird deshalb als Free-only-MVP entworfen, nicht als echte Milliarden-Nutzer-Betriebsplattform.
+Begruendung: Die Nutzeranforderung setzt strikt kostenlose GitHub- und Cloudflare-Dienste sowie IDrive e2 als zentralen Speicher voraus. Die Architektur wird deshalb als Free-only-MVP entworfen, nicht als echte Milliarden-Nutzer-Betriebsplattform.
 
 ## Entscheidung 2: Aktueller Prototyp bleibt erhalten
 
@@ -23,9 +30,9 @@ Der bestehende Vite/React/Capacitor/Worker-Code wird nicht geloescht. Er bleibt 
 
 Begruendung: Bestehende Arbeit wird nicht verworfen. Gleichzeitig wird verhindert, dass der Prototyp die Zielarchitektur bestimmt.
 
-## Entscheidung 3: Salad API statt eigenem Backend
+## Entscheidung 3: Zeabur-Backend statt eigenem Backend
 
-Salad API sind in der Free-only-Phase der verbindliche API- und Auth-Layer. FastAPI-, Fastify- oder andere Server-Backends duerfen nicht als Production-Abhaengigkeit geplant werden, solange dafuer ein kostenpflichtiger Server, VPS oder Managed Service noetig waere.
+Zeabur-Backend sind in der Free-only-Phase der verbindliche API- und Auth-Layer. FastAPI-, Fastify- oder andere Server-Backends duerfen nicht als Production-Abhaengigkeit geplant werden, solange dafuer ein kostenpflichtiger Server, VPS oder Managed Service noetig waere.
 
 Begruendung: Eigene Server widersprechen der aktuellen Free-only-Vorgabe.
 
@@ -62,13 +69,13 @@ Begruendung: Externe AI-Inferenz verursacht Kosten oder abhaengige Zusatzdienste
 
 ## Entscheidung 8: KV und IDrive e2 statt Production-Datenbank
 
-Salad/IDrive metadata speichert in der Free-only-Phase nur kleine, einfache Daten wie Sessions, Upload-Intents, Profil-Metadaten, einfache Indexe und Konfiguration. IDrive e2 speichert Objekte und Backups. Eine relationale Production-Datenbank ist nicht Teil der erlaubten Zielarchitektur.
+IDrive e2 speichert in der Free-only-Phase nur kleine, einfache Daten wie Sessions, Upload-Intents, Profil-Metadaten, einfache Indexe und Konfiguration. IDrive e2 speichert Objekte und Backups. Eine relationale Production-Datenbank ist nicht Teil der erlaubten Zielarchitektur.
 
 Begruendung: PostgreSQL/pgvector erfordern eigene oder gemanagte Compute-/Datenbank-Infrastruktur und widersprechen der Free-only-Vorgabe.
 
 ## Entscheidung 9: Kein Redis in Production
 
-Redis ist in Production nicht erlaubt. Rate Limits, leichte Locks und temporaere Zustaende muessen mit Salad API, KV und Cache-Strategien innerhalb der Free-Limits geloest werden.
+Redis ist in Production nicht erlaubt. Rate Limits, leichte Locks und temporaere Zustaende muessen mit Zeabur-Backend, KV und Cache-Strategien innerhalb der Free-Limits geloest werden.
 
 Begruendung: Redis benoetigt separate Infrastruktur.
 
@@ -80,6 +87,6 @@ Begruendung: Storage Keys im Client waeren ein schwerer Sicherheitsfehler.
 
 ## Entscheidung 11: Milliarden-Skalierung als Vision, Free-only als Gate 1
 
-GitHub Free, Legacy edge provider Free und IDrive e2 sind Startbedingungen, keine globale Milliarden-Nutzer-Infrastruktur. Die Free-only-Phase darf nur als MVP- und Lernplattform beschrieben werden. Milliarden-Nutzer-Skalierung bleibt eine Langfristvision und darf nicht als Leistungsversprechen dieser Infrastruktur formuliert werden.
+GitHub Free, Cloudflare und IDrive e2 sind Startbedingungen, keine globale Milliarden-Nutzer-Infrastruktur. Die Free-only-Phase darf nur als MVP- und Lernplattform beschrieben werden. Milliarden-Nutzer-Skalierung bleibt eine Langfristvision und darf nicht als Leistungsversprechen dieser Infrastruktur formuliert werden.
 
 Begruendung: Realistische Skalierung entsteht durch Gates, Messung, Partitionierung, horizontale Skalierung und operative Disziplin.

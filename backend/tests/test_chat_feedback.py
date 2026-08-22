@@ -34,7 +34,7 @@ def _chat_with_answer(monkeypatch) -> tuple[TestClient, str, str]:
     monkeypatch.setattr(chat_route, "_schedule_archive", lambda chat: None)
     monkeypatch.setattr(chat_route, "build_default_router", lambda: StubRouter())
     monkeypatch.setattr(chat_route, "VerifiedWebResearchService", NoResearch)
-    client = TestClient(app)
+    client = TestClient(app, base_url="https://testserver")
     chat = client.post("/api/chat/start", json={"twinId": "mata-hari"}).json()["chat"]
     reply = client.post(
         "/api/chat/messages",

@@ -50,6 +50,11 @@ jobs:
       - name: Aenderungen committen (Branch pipeline-backup, nur bei Diff)
         run: |
           cp backup/pipeline-published-index.json /tmp/index-neu.json
+          # Die frisch geladene Datei liegt als UNTRACKED im Baum und auf dem
+          # Backup-Branch als TRACKED Datei — genau diese Kombination liess
+          # seit 17.08. jeden Checkout scheitern ("would be overwritten").
+          # Nach /tmp kopiert kann sie hier bedenkenlos weg.
+          rm -f backup/pipeline-published-index.json
           git fetch origin pipeline-backup 2>/dev/null \
             && git checkout -B pipeline-backup origin/pipeline-backup \
             || git checkout -B pipeline-backup

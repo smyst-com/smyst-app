@@ -24,6 +24,7 @@ const PAGES = [
     priority: lang === 'de' || lang === 'en' ? '0.9' : '0.8',
     changefreq: 'weekly',
   })),
+  { loc: '/bildung/', priority: '0.8', changefreq: 'monthly' },
 ];
 
 function landingAlternates() {

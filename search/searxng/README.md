@@ -10,16 +10,19 @@ Anbieter, kein Key. Die Infrastruktur bleibt bei GitHub + Zeabur + iDrive e2.
 
 ## Deployment (Zeabur)
 
-Eigener Dienst im Projekt, Quelle = dieses Repo, Root-Verzeichnis `search/searxng`.
+Dienst **`SearXNG`** im Projekt, angelegt aus dem offiziellen Zeabur-Template
+(`zeabur.com/templates/77FSH6`, Add Service → Template → SearXNG). Das Template
+erzeugt `SEARXNG_SECRET` selbst — ohne diesen Wert startet SearXNG nicht
+("server.secret_key is not changed"), und genau daran scheiterte der erste,
+selbst gebaute Anlauf.
 
-Variablen am SearXNG-Dienst:
-
-| Variable | Wert | Zweck |
-| --- | --- | --- |
-| `SEARXNG_SECRET` | zufaelliger String | Signier-Secret, Pflicht |
-| `SEARXNG_BIND_ADDRESS` | `0.0.0.0` | sonst nur localhost erreichbar |
-| `SEARXNG_PORT` | `8080` | Port im internen Netz |
-| `SEARXNG_BASE_URL` | interne URL des Dienstes | Selbstreferenz von SearXNG |
+- Erreichbar nur intern: `searxng.zeabur.internal:8080` (Private Port, HTTP)
+- **Keine oeffentliche Domain** — einziger Aufrufer ist das Backend
+- Das Dockerfile und die settings.yml in diesem Ordner sind **nicht mehr im Einsatz**;
+  sie bleiben als Vorlage liegen, falls der Dienst je ohne Template neu gebaut wird.
+  Achtung dabei: Zeabur baut "Arbitrary Git"-Dienste mit inline hinterlegtem
+  Dockerfile **ohne Build-Kontext** (`transferring context: 2B`), ein `COPY` schlaegt
+  dort fehl.
 
 Variablen am **Backend**-Dienst, damit die Suche benutzt wird:
 
@@ -27,29 +30,42 @@ Variablen am **Backend**-Dienst, damit die Suche benutzt wird:
 | --- | --- |
 | `WEB_RESEARCH_ENABLED` | `true` |
 | `WEB_SEARCH_PROVIDER` | `searxng` |
-| `SEARXNG_BASE_URL` | interne URL des SearXNG-Dienstes |
-
-Der Dienst braucht **keine** oeffentliche Domain - er wird nur aus dem internen
-Zeabur-Netz vom Backend aufgerufen.
+| `SEARXNG_ENGINES` | `bing,wikipedia` (Standard im Code) |
+| `SEARXNG_BASE_URL` | `http://searxng.zeabur.internal:8080` |
 
 ## Pruefen, ob es laeuft
 
 ```bash
-curl -s -X POST https://smyst-api.zeabur.app/api/v1/web-research/preview \
-  -H 'Content-Type: application/json' \
-  -d '{"question":"Wie ist das Wetter morgen in Berlin?","context":{"context_type":"chat","public_research_allowed":true}}'
+curl -s -X POST https://smyst-api.zeabur.app/api/v1/web-research/preview -H 'Content-Type: application/json' -d '{"question":"Wie ist das Wetter morgen in Berlin?","context":{"context_type":"chat","public_research_allowed":true}}'
 ```
 
 Erwartet: `provider: searxng`, `canCallProvider: true`. Meldet die Antwort
 `web_search_provider_credentials_missing`, fehlt `SEARXNG_BASE_URL` am Backend.
 
-Der zweite Test zeigt, ob wirklich Quellen zurueckkommen - `/api/v1/web-research/run`
+Der zweite Test zeigt, ob wirklich Quellen zurueckkommen — `/api/v1/web-research/run`
 mit derselben Nutzlast muss `searched: true` und gefuellte `sources` liefern.
 
-## Warum eine eigene settings.yml
+## Warum nicht der Standard-Suchmaschinensatz
 
-Das offizielle Image liefert nur HTML aus. `backend/app/ai/web_research.py`
-(`SearxngSearchProvider`) ruft `/search?format=json` auf und bekaeme sonst dauerhaft
-403. Die Datei setzt per `use_default_settings: true` auf den Standardwerten auf und
-aendert nur das Noetige - insbesondere werden `secret_key` und `base_url` dort NICHT
-gesetzt, damit die Env-Overrides des Images greifen.
+SearXNG fragt ohne Vorgabe google, duckduckgo, brave, startpage & Co. Von einer
+Rechenzentrums-IP liefern die **nichts**. Am 16.08.2026 aus dem Backend-Container
+gegen die eigene Instanz gemessen, Suchbegriff „wetter berlin morgen":
+
+| Engine | Treffer |
+| --- | --- |
+| google | 0 |
+| duckduckgo | 0 |
+| brave | 0 |
+| mojeek | 0 |
+| startpage | 0 |
+| **bing** | **10** |
+
+Deshalb schickt der Provider `SEARXNG_ENGINES` (Default `bing,wikipedia`) als
+`engines=`-Parameter mit. Faellt Bing eines Tages aus, reicht ein Aendern dieser
+Variable am Backend — kein Deploy noetig. Leerer Wert = SearXNG entscheidet selbst.
+
+Messbefehl fuer den naechsten Verdacht (Command-Konsole am smyst-backend):
+
+```bash
+python -c "import httpx,os;u=os.environ['SEARXNG_BASE_URL'];[print(e, httpx.get(u+'/search',params={'q':'wetter berlin morgen','engines':e},timeout=25).text.count('article class=\"result')) for e in ['google','duckduckgo','bing','brave','mojeek','wikipedia','startpage']]"
+```

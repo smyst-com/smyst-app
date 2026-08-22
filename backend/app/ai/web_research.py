@@ -8,12 +8,12 @@ import re
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
+from html import unescape
 from typing import Any, Protocol
 from urllib.parse import urlparse
 
-import httpx
-
 from app.core.config import Settings, settings
+from app.core.http_client import shared_client
 
 logger = logging.getLogger("smyst.ai.web_research")
 
@@ -315,11 +315,35 @@ def decide_search(
         reasons.append("web_research_feature_flag_disabled")
     if decision is not SearchDecision.NO_SEARCH and provider in {"", "disabled"}:
         reasons.append("web_search_provider_disabled")
-    if decision is not SearchDecision.NO_SEARCH and enabled and not can_call_provider:
-        if provider not in {"", "disabled"}:
-            reasons.append("web_search_provider_credentials_missing")
+    provider_named = provider not in {"", "disabled"}
+    if decision is not SearchDecision.NO_SEARCH and enabled and provider_named and not can_call_provider:
+        reasons.append("web_search_provider_credentials_missing")
 
     return SearchDecisionResult(decision, category, tuple(reasons), enabled, provider, can_call_provider)
+
+
+# Frage- und Fuellwoerter fliegen aus der Suchanfrage. Live gemessen 16.08.2026 gegen die
+# eigene Instanz: als Frage formuliert lieferte "Wie ist das Wetter morgen in Berlin?"
+# IEEE Women in Engineering, Wiktionary "wie" und ein Woerterbuch - die Suchmaschine hing
+# sich am Fragewort auf. Als Stichworte ("Nachrichten Deutschland heute") kamen sofort
+# tagesschau.de, n-tv.de und t-online.de.
+QUERY_STOPWORDS = {
+    # Hoeflichkeit und Anrede
+    "please", "bitte", "kannst", "kannst du", "können", "koennen", "sag", "sage", "erzähl",
+    "erzaehl", "erzähle", "erzaehle", "mir", "meine", "mein", "du", "dir", "ich", "wir",
+    # Fragewoerter
+    "wie", "was", "wer", "wen", "wem", "wo", "wann", "warum", "wieso", "weshalb", "welche",
+    "welcher", "welches", "welchen", "how", "what", "who", "whom", "where", "when", "why",
+    "which", "does", "did", "can", "could", "would", "should",
+    # Hilfsverben und Artikel
+    "ist", "sind", "war", "waren", "hat", "haben", "wird", "werden", "gibt", "es", "is",
+    "are", "was", "were", "has", "have", "will", "the", "a", "an",
+    "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "eines",
+    # Praepositionen und Fuellwoerter
+    "about", "ueber", "über", "with", "from", "for", "of", "in", "im", "am", "an", "auf",
+    "aus", "bei", "mit", "von", "vom", "zu", "zum", "zur", "und", "and", "or", "oder",
+    "denn", "eigentlich", "gerade", "mal", "so", "auch", "noch", "schon",
+}
 
 
 def rewrite_query(question: str, *, category: QueryCategory | None = None, max_terms: int = 12) -> RewriteResult:
@@ -346,11 +370,11 @@ def rewrite_query(question: str, *, category: QueryCategory | None = None, max_t
     rewritten = re.sub(r"[^0-9A-Za-zÄÖÜäöüß ._-]+", " ", rewritten)
     rewritten = re.sub(r"\s+", " ", rewritten).strip()
 
-    stopwords = {
-        "please", "bitte", "kannst", "können", "koennen", "mir", "meine", "mein",
-        "about", "ueber", "über", "with", "from", "eine", "einen", "the", "der", "die", "das",
-    }
-    terms = [term for term in rewritten.split(" ") if term.lower() not in stopwords]
+    terms = [term for term in rewritten.split(" ") if term.lower() not in QUERY_STOPWORDS]
+    # Bleibt nach dem Streichen zu wenig uebrig, lieber die ungekuerzte Frage
+    # schicken als eine sinnlose Restanfrage.
+    if len(terms) < 2:
+        terms = [term for term in rewritten.split(" ") if term]
     rewritten = " ".join(terms[:max_terms]).strip()
     if category and category is not QueryCategory.GENERAL_PUBLIC_FACT:
         rewritten = f"{rewritten} {category.value.replace('_', ' ')}".strip()
@@ -451,13 +475,13 @@ class BraveSearchProvider:
         max_results: int = 3,
     ) -> WebSearchResponse:
         retrieved_at = utc_now_iso()
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(
-                "https://api.search.brave.com/res/v1/web/search",
-                headers={"X-Subscription-Token": self.api_key, "Accept": "application/json"},
-                params={"q": query, "count": max_results, "safesearch": "strict"},
-            )
-            response.raise_for_status()
+        response = await shared_client().get(
+            "https://api.search.brave.com/res/v1/web/search",
+            headers={"X-Subscription-Token": self.api_key, "Accept": "application/json"},
+            params={"q": query, "count": max_results, "safesearch": "strict"},
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
         data = response.json()
         items = data.get("web", {}).get("results", [])[:max_results]
         sources = tuple(source_from_raw(item, retrieved_at=retrieved_at) for item in items)
@@ -474,12 +498,71 @@ class BraveSearchProvider:
         )
 
 
+# Eine SearXNG-Instanz liefert nur HTML aus, solange "json" nicht in search.formats
+# steht - der JSON-Aufruf endet dann mit 403 (live gemessen 16.08.2026 im Backend-
+# Container gegen searxng.zeabur.internal: JSON 403, HTML 200). Das laesst sich nicht
+# immer an der Instanz aendern, deshalb liest der Provider im Notfall die Trefferliste
+# aus der HTML-Seite. Die Struktur ist stabil: ein <article class="result"> je Treffer,
+# darin die Ueberschrift als <h3><a href>…</a></h3> und der Textausriss als
+# <p class="content">.
+SEARXNG_RESULT_RE = re.compile(r'<article class="result[^"]*">(.*?)</article>', re.IGNORECASE | re.DOTALL)
+SEARXNG_HEADING_RE = re.compile(r'<h3>\s*<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', re.IGNORECASE | re.DOTALL)
+SEARXNG_CONTENT_RE = re.compile(r'<p class="content">(.*?)</p>', re.IGNORECASE | re.DOTALL)
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+# 403 = Format gesperrt, 404 = alte Instanz ohne JSON-Route. Beides ist kein Fehler,
+# sondern der Anlass, es mit HTML zu versuchen.
+SEARXNG_FORMAT_UNAVAILABLE = frozenset({403, 404})
+
+
+def html_fragment_to_text(fragment: str) -> str:
+    text = re.sub(r"\s+", " ", unescape(HTML_TAG_RE.sub(" ", fragment)))
+    # Tags werden durch Leerzeichen ersetzt; vor Satzzeichen entsteht dadurch eine Luecke
+    # ("Wetter Berlin : 16 Tage Trend" statt "Wetter Berlin: 16 Tage Trend").
+    return re.sub(r"\s+([:;,.!?)\]])", r"\1", text).strip()
+
+
+def parse_searxng_html(html: str, *, max_results: int = 3) -> list[dict[str, Any]]:
+    """Trefferliste aus der HTML-Seite lesen, wenn die Instanz kein JSON ausliefert."""
+    items: list[dict[str, Any]] = []
+    for block in SEARXNG_RESULT_RE.findall(html):
+        heading = SEARXNG_HEADING_RE.search(block)
+        if not heading:
+            continue
+        url = unescape(heading.group(1)).strip()
+        if not url.startswith("http"):
+            continue
+        content = SEARXNG_CONTENT_RE.search(block)
+        items.append(
+            {
+                "url": url,
+                "title": html_fragment_to_text(heading.group(2)),
+                "snippet": html_fragment_to_text(content.group(1)) if content else "",
+            }
+        )
+        if len(items) >= max_results:
+            break
+    return items
+
+
 class SearxngSearchProvider:
     name = "searxng"
 
-    def __init__(self, base_url: str, *, timeout: float = 8.0) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        *,
+        timeout: float = 8.0,
+        engines: str | None = None,
+        language: str = "de",
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
+        # "all" war ein Festwert und lieferte Unsinn (Microsoft-Support, Ferienhaeuser).
+        self.language = (language or "de").strip() or "de"
+        # Ohne feste Auswahl nimmt SearXNG seinen Standardsatz - der liefert von einer
+        # Rechenzentrums-IP nichts (16.08.2026 gemessen: google/duckduckgo/brave/mojeek/
+        # startpage je 0 Treffer, bing 10). Leerer Wert = SearXNG entscheidet selbst.
+        self.engines = (engines or "").strip()
 
     async def search(
         self,
@@ -489,13 +572,7 @@ class SearxngSearchProvider:
         max_results: int = 3,
     ) -> WebSearchResponse:
         retrieved_at = utc_now_iso()
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.get(
-                f"{self.base_url}/search",
-                params={"q": query, "format": "json", "language": "all", "safesearch": 2},
-            )
-            response.raise_for_status()
-        items = response.json().get("results", [])[:max_results]
+        items = await self._fetch_items(query, max_results=max_results)
         sources = tuple(source_from_raw(item, retrieved_at=retrieved_at) for item in items)
         warnings = tuple(w for source in sources for w in detect_prompt_injection(source.snippet))
         return WebSearchResponse(
@@ -508,6 +585,32 @@ class SearxngSearchProvider:
             trust_status="unreviewed",
             injection_warnings=tuple(dict.fromkeys(warnings)),
         )
+
+    async def _fetch_items(self, query: str, *, max_results: int) -> list[dict[str, Any]]:
+        params: dict[str, Any] = {"q": query, "language": self.language, "safesearch": 2}
+        if self.engines:
+            params["engines"] = self.engines
+        response = await shared_client().get(
+            f"{self.base_url}/search",
+            params={**params, "format": "json"},
+            timeout=self.timeout,
+        )
+        if response.status_code == 200:
+            try:
+                return list(response.json().get("results", []))[:max_results]
+            except ValueError:
+                # Instanz antwortet mit 200, aber ohne JSON-Koerper: wie ein gesperrtes Format behandeln.
+                logger.info("searxng json response was not parseable, falling back to html")
+        elif response.status_code not in SEARXNG_FORMAT_UNAVAILABLE:
+            response.raise_for_status()
+
+        html_response = await shared_client().get(
+            f"{self.base_url}/search",
+            params=params,
+            timeout=self.timeout,
+        )
+        html_response.raise_for_status()
+        return parse_searxng_html(html_response.text, max_results=max_results)
 
 
 class OpenAIWebSearchProvider:
@@ -576,13 +679,13 @@ class OpenAIWebSearchProvider:
                 f"{query}"
             ),
         }
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            response = await client.post(
-                "https://api.openai.com/v1/responses",
-                headers={"Authorization": f"Bearer {self.api_key}"},
-                json=payload,
-            )
-            response.raise_for_status()
+        response = await shared_client().post(
+            "https://api.openai.com/v1/responses",
+            headers={"Authorization": f"Bearer {self.api_key}"},
+            json=payload,
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
         data = response.json()
         output_text, parsed_sources = self._extract_text_and_sources(data)
         sources = parsed_sources[:max_results]
@@ -607,7 +710,11 @@ def build_web_search_provider(active_settings: Settings | None = None) -> WebSea
     if provider == "brave" and active_settings.brave_search_api_key:
         return BraveSearchProvider(active_settings.brave_search_api_key)
     if provider == "searxng" and active_settings.searxng_base_url:
-        return SearxngSearchProvider(active_settings.searxng_base_url)
+        return SearxngSearchProvider(
+            active_settings.searxng_base_url,
+            engines=active_settings.searxng_engines,
+            language=active_settings.searxng_language,
+        )
     if provider == "openai" and active_settings.openai_api_key:
         return OpenAIWebSearchProvider(
             active_settings.openai_api_key,

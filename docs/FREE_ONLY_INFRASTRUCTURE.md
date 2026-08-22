@@ -1,107 +1,122 @@
-# Smyst Free-Only Infrastructure Policy
+# smyst.com Infrastructure Policy
 
-Status: verbindliche Produktionsvorgabe.
+Stand: 2026-08-20. Status: verbindliche Produktionsvorgabe.
+
+Diese Datei hiess frueher "Free-Only Infrastructure Policy" und verbot jeden
+kostenpflichtigen Dienst. Diese Regel ist ueberholt: smyst.com betreibt seit
+Ende Juli 2026 ein bezahltes Backend-Hosting (Zeabur) und einen bezahlten
+LLM-Provider (OpenRouter). Die Regel lautet jetzt "Free zuerst, bezahlte
+Ausnahmen namentlich benannt" - nicht mehr "Free-only". Der Dateiname bleibt,
+weil andere Dokumente darauf verweisen.
 
 ## Grundregel
 
-Smyst darf in der aktuellen Zielvorgabe ausschliesslich diese Plattformen nutzen:
+Erlaubt sind ausschliesslich die hier namentlich gelisteten Anbieter. Ein
+neuer Anbieter braucht eine ausdrueckliche Freigabe des Inhabers und einen
+Eintrag in dieser Liste.
 
-- GitHub Free
-- Legacy edge provider Free
-- IDrive e2 als zentraler Objekt-Speicher, nur solange keine kostenpflichtige Nutzung entsteht
+Kostenlos:
 
-Kostenpflichtige Zusatzdienste sind nicht erlaubt. Das gilt auch fuer guenstige VPS-Angebote, Managed Databases, Redis-Hosting, externe AI-APIs, externe Uebersetzungs-APIs, Analytics-SaaS, Monitoring-SaaS, Payment-Dienste und bezahlte Legacy edge provider/GitHub-Upgrades.
+- GitHub Free - Code, Pull Requests, Releases, Actions.
+- GitHub Pages - Auslieferung von Website und PWA.
+- IDrive e2 - Objektspeicher und Datenhaltung, solange der Free-Tier reicht.
+- Groq - LLM-Free-Tier, erster Provider in Pipeline, QA und Evals.
+- Resend - E-Mail-Versand im Free-Tier, optional.
+- Spaceship - Domain und DNS (nur die Domain-Gebuehr selbst).
+- Codeberg - privater Spiegel des Repositories als Ausfallsicherung
+  (`codeberg.org/smyst/smyst-app`, Automatik ueber
+  `.github/workflows/codeberg-mirror.yml`). Nur Sicherung, kein Betriebspfad.
 
-## Erlaubte Produktionsbausteine
+Kostenpflichtig, bewusst freigegeben:
 
-- GitHub Repository fuer Quellcode, Dokumentation, Issues und Pull Requests.
-- GitHub Actions nur innerhalb kostenloser Limits.
-- Spaceship DNS, TLS, CDN, Caching und Basisschutz im Free-Plan.
-- IDrive e2 static hosting Free fuer Web/PWA-Auslieferung.
-- Salad API Free fuer kleine API-, Chat-, Auth-, Routing- und Upload-Signing-Logik.
-- Salad API KV Free fuer Sessions, kleine Metadaten, Konfiguration und einfache Indexe.
-- IDrive e2 fuer Uploads, Medien, Dokumente, Backups und Archivobjekte, sofern die Nutzung ohne Kosten bleibt.
+- Zeabur - Hosting des Backend-Containers `smyst-backend` unter
+  `api.smyst.com`. Ersetzt seit Ende Juli 2026 Salad.com.
+- OpenRouter - LLM-Provider des Live-Twin-Chats, rund 5-6 USD/Tag.
 
-## Nicht erlaubt
+Alles andere ist keine Production-Abhaengigkeit: keine VPS, keine Managed
+Databases, kein Redis-Hosting, keine Analytics-SaaS, keine Monitoring-SaaS,
+keine Payment-Dienste, keine externen Uebersetzungs-APIs, keine weiteren
+AI-Provider ohne Freigabe.
 
-- RackNerd VPS oder andere VPS/Server.
-- Docker-Compose-Production-Stack.
-- FastAPI als Production-Backend, solange dafuer ein Server benoetigt wird.
-- PostgreSQL, pgvector, Redis oder andere separat betriebene Datenbanken in Production.
-- DeepL, Google Translate oder andere externe Uebersetzungsdienste.
-- Google OAuth, Google Analytics, Google Search Console oder andere Google-Dienste als Pflichtbestandteil.
-- OpenAI, Anthropic, Gemini, Mistral oder andere bezahlte AI-Provider in der Free-only-Phase.
-- Legacy edge provider Paid, Workers Paid, R2 Paid, Images Paid, Stream Paid, Turnstile Enterprise oder Enterprise-WAF.
+## Nicht mehr im Betrieb
 
-## Zielarchitektur fuer die Free-only-Phase
+- Salad.com - Compute bis Ende Juli 2026. Die Workflows
+  `salad-backend-deploy.yml` und `voice-worker-deploy.yml` stehen seit
+  29.07.2026 auf `if: false` und dienen nur noch als Rollback-Pfad.
+- Cloudflare Pages/Workers/KV - in aelteren Dokumenten als "Legacy edge provider" bezeichnet.
+- IDrive e2 als Website-Host - Public Bucket Access ist im Free-Plan
+  serverseitig gesperrt (`PutBucketPolicy` -> `AccessDenied`).
+- Codeberg als Ersatz fuer GitHub - Codeberg dient ausschliesslich als
+  privater Spiegel des Repositories, nicht als Betriebsplattform.
+
+## Zielarchitektur
 
 ```text
 Clients
   Web / PWA / Capacitor Shells
 
-GitHub Free
-  Code, Docs, Issues, CI within free limits
+Spaceship
+  Domain smyst.com, DNS-Zone, Subdomains
 
-Legacy edge provider Free
-  DNS, TLS, CDN, Pages, Workers, KV
+GitHub Free
+  Code, Docs, Issues, Actions (CI, Cronjobs, Deploys)
+
+GitHub Pages
+  smyst.com, app.smyst.com, cdn.smyst.com - statische Auslieferung
+
+Zeabur
+  api.smyst.com - FastAPI-Backend, Auth, Chat, TTS/ASR, Admin
+  Piper-TTS und Whisper small liegen im Container
 
 IDrive e2
-  Object storage for files, media, documents and backups
-  Hard quota: uploads stop before paid usage starts
+  Objektspeicher UND Datenhaltung: Nutzer, Chats, Feedback,
+  Pipeline-Artefakte, Backups, Exporte - alles als JSON/Objekte
+
+OpenRouter (Live-Chat) / Groq (Pipeline, QA, Evals)
+  LLM-Inferenz
 ```
 
-Salad API bilden den einzigen erlaubten Server-Layer. IDrive e2 ist zentraler Speicher, aber kein klassischer Compute-Server und keine relationale Datenbank.
+## Keine Datenbank in Production
 
-## Verbindliche Datenlandkarte
+Es laeuft weder PostgreSQL noch Redis in Produktion. Die Stores unter
+`backend/app/integrations/` schreiben JSON-Objekte direkt per S3-API nach
+IDrive e2. PostgreSQL und Redis existieren nur im Profil `legacy-local` von
+`docker-compose.yml` fuer lokale Entwicklung.
 
 Die genaue Ablage pro Datentyp steht in `docs/FREE_ONLY_DATA_MAP.md`.
 
-Kurzfassung:
+## Produktgrenzen
 
-- GitHub Free: Code, Doku, CI/CD.
-- IDrive e2 static hosting Free: statische Web-/PWA-Artefakte.
-- Salad API Free: API, Auth, Upload-Signing und Edge-Routing.
-- Salad/IDrive metadata Free: Sessions, OAuth-State, kleine Metadaten, Quotas und Status.
-- IDrive e2: Dateien, Medien, Dokumente, Uploads, Backups und Archivobjekte.
+Dieser Aufbau traegt:
 
-## Produktgrenzen der Free-only-Phase
+- Landingpage, PWA und oeffentliche Profile.
+- Auth mit Google-Login und signierten Session-Cookies.
+- Live-Twin-Chat mit echter LLM-Inferenz.
+- Sprachausgabe (Piper, DE/EN/TR) und Server-Diktat (Whisper small).
+- Eine taegliche Profil-Pipeline mit QA-Gate.
 
-Diese Phase kann einen MVP, Prototypen und fruehe Tests tragen:
-
-- Landingpage und PWA.
-- Oeffentliche statische Profile.
-- Einfache Auth- und Session-Logik.
-- Direct Upload zu IDrive e2 ueber signed URLs.
-- Kleine Metadaten in KV.
-- Manuell gepflegte Mehrsprachigkeit.
-- Statische SEO-Dateien, Schema.org, Sitemap und llms.txt.
-
-Diese Phase kann nicht ehrlich zusagen:
+Dieser Aufbau kann nicht zusagen:
 
 - Milliarden Nutzer pro Tag.
 - Unbegrenzte Uploads.
-- Grosse Datenbanken.
+- Grosse relationale Datenbanken.
 - Professionelle semantische Suche ueber riesige Datenmengen.
-- Nahezu verzögerungsfreie AI-Antworten fuer globale Massenlast.
-- Eigene Modellqualitaet oberhalb von Gemini, Claude, Grok, DeepSeek, Kimi, Manus oder Mistral.
+- Eigene Modellqualitaet oberhalb der grossen Anbieter.
 
-Das Milliarden-Ziel bleibt eine langfristige Produktvision, aber nicht die Leistungszusage der Free-only-Infrastruktur.
+Das Milliarden-Ziel bleibt Produktvision, nicht Leistungszusage dieses Aufbaus.
 
 ## Harte Betriebsregeln
 
-- Kein Deployment darf einen kostenpflichtigen Dienst voraussetzen.
-- Uploads muessen vor kostenpflichtiger IDrive-e2-Nutzung automatisch blockieren.
-- Workers muessen mit Free-Plan-Limits entworfen werden.
-- Caches, Sessions und Metadaten duerfen nicht so wachsen, dass KV-Limits ueberschritten werden.
-- Mehrsprachigkeit wird statisch/manuell gepflegt, bis ein kostenlos erlaubter Mechanismus definiert ist.
-- Alle Doku, Workflows und Runbooks muessen kostenpflichtige Zielpfade klar als nicht erlaubt markieren.
-
-## Kontrollpunkte im Repository
-
-1. Legacy-Server-, Datenbank-, Cache-, Container- und AI-Pfade bleiben lokale Referenz, aber keine Production-Pflicht.
-2. Auth laeuft ueber GitHub OAuth, Passkey/WebAuthn oder klar markiertes Demo-Login.
-3. Translation nutzt statische Repository-Dateien und keine externe Translation-API.
-4. Analytics und Search-Console-Tools sind kein Production-Gate.
-5. Upload-Quotas fuer IDrive e2 muessen aktiv bleiben.
-6. GitHub Actions muessen innerhalb kostenloser Limits bleiben.
-7. Dokumentation beschreibt Phase 1 als Free-Only-MVP und Milliarden-Skalierung als Langfristvision.
+- Keine Secrets im Repository. Backend-Secrets leben als Zeabur-Service-
+  Variablen, CI-Secrets als GitHub-Actions-Secrets.
+- Free-Tier zuerst: `LLM_PROVIDER_ORDER` beginnt mit `groq`, OpenRouter ist
+  Rueckfall. Ausnahme: der Live-Chat-Server nutzt bewusst OpenRouter.
+- OpenRouter-Guthaben UND Key-Limit aktiv nachfuehren. Ein erschoepftes
+  Key-Limit hat am 17.08.2026 den Live-Chat auf den Not-Fallback
+  (`mode=local`) fallen lassen und die Pipeline vier Tage blockiert.
+- Uploads muessen stoppen, bevor IDrive e2 kostenpflichtig wird.
+- GitHub Actions bleiben innerhalb der kostenlosen Limits.
+- Mehrsprachigkeit wird statisch im Repository gepflegt, ohne externe
+  Translation-API.
+- Kein Deployment darf einen nicht gelisteten kostenpflichtigen Dienst
+  voraussetzen.

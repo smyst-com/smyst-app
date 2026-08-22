@@ -21,7 +21,7 @@ from app.api.v1.routes import ci_gateway
 from app.core.config import Settings
 from app.main import app
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 ENDPOINT = "/api/ci/llm/chat/completions"
 BODY = {"messages": [{"role": "system", "content": "Du bist X."}, {"role": "user", "content": "Hi"}]}

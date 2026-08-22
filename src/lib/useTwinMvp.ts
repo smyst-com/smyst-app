@@ -307,6 +307,28 @@ function lifeMatchKey(value: string): string {
 }
 
 let publicTwinsPromise: Promise<PublicTwinProfile[]> | null = null
+let slimTwinsPromise: Promise<PublicTwinProfile[] | null> | null = null
+
+/**
+ * Slim-Katalog (kuratierte + neueste Profile, ~350 KB statt ~11 MB).
+ *
+ * Die Startseite wartete vorher auf den VOLLSTAENDIGEN Katalog, bevor das
+ * Grid renderte — bei 12k+ Profilen ein spuerbarer erster Eindruck. slim.json
+ * kommt vom Pages-Build (merge-pipeline-published.mjs); fehlt es (aelterer
+ * Deploy), liefert diese Funktion null und der Aufrufer nutzt den Vollweg.
+ */
+function loadSlimPublicTwins(): Promise<PublicTwinProfile[] | null> {
+  if (!slimTwinsPromise) {
+    slimTwinsPromise = (async () => {
+      const body = await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/slim.json')
+      return body?.twins?.length ? body.twins : null
+    })().catch(() => {
+      slimTwinsPromise = null
+      return null
+    })
+  }
+  return slimTwinsPromise
+}
 
 /** Holt den oeffentlichen Twin-Katalog; mehrfache Aufrufe teilen eine Anfrage. */
 function loadPublicTwins(): Promise<PublicTwinProfile[]> {
@@ -407,6 +429,37 @@ export function useTwinMvp() {
       setLoading(false)
     }
   }, [])
+
+  /**
+   * Katalog zweistufig: erst slim (schnelles erstes Grid), dann Upgrade auf
+   * den Vollbestand, sobald der im Hintergrund angekommen ist. onUpgrade
+   * feuert NUR wenn der Vollbestand mehr enthaelt als der Slim-Stand.
+   */
+  const listPublicTwinsProgressive = useCallback(
+    (onUpgrade?: (alle: PublicTwinProfile[]) => void) =>
+      run(async () => {
+        const slim = await loadSlimPublicTwins()
+        const voll = loadPublicTwins()
+        if (slim) {
+          void voll.then((alle) => {
+            if (alle.length > slim.length) {
+              // Macrotask, nicht Microtask: Ist der Vollbestand per prefetch
+              // schon VOR slim.json bereit (gemessen live 21.08.2026: voll
+              // 360 ms, slim 580 ms), lief das Upgrade im alten Microtask-
+              // Timing VOR dem Slim-Render und wurde vom Aufrufer sofort mit
+              // dem Slim-Stand (400 Profile) ueberschrieben — die Startseite
+              // blieb dauerhaft bei 400 statt 13.915 Profilen. Der Upgrade-
+              // Callback muss NACH dem Slim-Render des Aufrufers landen.
+              window.setTimeout(() => onUpgrade?.(alle), 0)
+            }
+          })
+          return slim
+        }
+        const body = await voll.then((alle) => ({ twins: alle }))
+        return body.twins
+      }),
+    [run],
+  )
 
   const listTwins = useCallback(
     () =>
@@ -842,6 +895,29 @@ export function useTwinMvp() {
     [run],
   )
 
+  const startPremiumCheckout = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ checkoutUrl: string; sessionId: string }>(
+          '/api/billing/checkout-session',
+          { method: 'POST', body: JSON.stringify({}) },
+        )
+        return body
+      }),
+    [run],
+  )
+
+  const getPremiumStatus = useCallback(
+    () =>
+      run(async () => {
+        const body = await apiJson<{ premiumActive: boolean; premiumSince?: number; stripeCustomerId?: string }>(
+          '/api/billing/status',
+        )
+        return body
+      }),
+    [run],
+  )
+
   return {
     loading,
     error,
@@ -849,6 +925,7 @@ export function useTwinMvp() {
     getTwin,
     getPublicTwin,
     listPublicTwins,
+    listPublicTwinsProgressive,
     createTwin,
     updateTwin,
     deleteTwin,
@@ -872,5 +949,7 @@ export function useTwinMvp() {
     exportAccount,
     deleteAccount,
     submitSupportReport,
+    startPremiumCheckout,
+    getPremiumStatus,
   }
 }

@@ -1,10 +1,17 @@
 # 15 Security And GDPR Implementation
 
+> **Status: ueberholtes Zielbild.** Dieses Dokument beschreibt eine geplante
+> Architektur aus der Free-only-Phase (Cloudflare Pages/Workers/KV, Salad), die
+> so nie gebaut wurde. Es ist KEINE Beschreibung des Live-Systems.
+> Verbindlich sind `docs/ARCHITECTURE.md`, `docs/INFRA_SETUP.md`,
+> `docs/07-deployment-architecture.md` und `docs/FREE_ONLY_DATA_MAP.md`.
+> Eingeordnet am 2026-08-20.
+
 Status: Free-Only-Security- und Datenschutzbasis fuer Phase 1.
 
 ## Implementierte Production-Basis
 
-- Legacy edge provider-Worker-Security-Headers.
+- Cloudflare-Worker-Security-Headers.
 - Strenge CORS-Preflights.
 - Same-Origin/CSRF-Schutz fuer Cookie-basierte Mutationen.
 - HttpOnly Secure SameSite Session-Cookies.
@@ -68,7 +75,7 @@ Lokale Backend-, SQL-, Container- oder Vektor-Experimente koennen als Referenz b
 ## Offene Security-Gates
 
 - Vollstaendige negative Zugriffstests fuer Auth, Upload, Twin-Sichtbarkeit und Chat-Kontext.
-- CSRF/CORS Browser-Smoke-Test gegen Legacy edge provider Preview.
+- CSRF/CORS Browser-Smoke-Test gegen Preview.
 - IDrive-e2-Loesch- und Restore-Test.
 - Dokumentierter Incident- und Deindexing-Prozess.
 - Passkey/WebAuthn als spaetere Free-Only-Alternative zu OAuth.

@@ -1,6 +1,12 @@
 # Smyst Global Scale Production Plan
 
-Status: execution runbook for the non-Cloudflare production path.
+> **Status: Zielplan, kein Ist-Stand.** Der Anbieter-Stack ist auf den
+> Live-Stand gezogen (GitHub Pages, Zeabur, IDrive e2); die beschriebenen
+> Skalierungsstufen sind aber Planung, nicht das laufende System. Verbindlich
+> fuer den Ist-Stand sind `docs/ARCHITECTURE.md` und `docs/INFRA_SETUP.md`.
+> Eingeordnet am 2026-08-20.
+
+Status: execution runbook for the GitHub Pages + Zeabur production path.
 
 ## Goal
 
@@ -12,7 +18,7 @@ remaining secure, observable and resilient. The architecture target is:
 - IDrive e2 for the storage plane: media, uploads, exports, backups, archives,
   app artifacts, RAG documents, embeddings, prompt files, logs and private
   signed files.
-- Salad for the compute plane: API, auth, AI inference, processing, indexing,
+- Zeabur for the compute plane: API, auth, AI inference, processing, indexing,
   search and cron jobs.
 - Provider-router driven AI so Smyst can use Gemini, Claude, Grok, DeepSeek,
   Kimi, Manus, Mistral and other providers without coupling the product to one
@@ -95,7 +101,7 @@ Until IDrive public access is enabled:
 
 ## Compute Plane
 
-Salad runs:
+Zeabur runs:
 
 - FastAPI backend.
 - Auth/session endpoints.
@@ -125,7 +131,7 @@ Spaceship owns:
 
 DNS targets:
 
-- `api.smyst.com` -> Salad public endpoint.
+- `api.smyst.com` -> Zeabur-Endpunkt.
 - Static domains -> IDrive public/static targets only after IDrive public access
   is enabled and verified.
 - Before that, `smyst.com` can remain on GitHub Pages while IDrive stores the
@@ -135,15 +141,15 @@ DNS targets:
 
 Gate 1: Keys and secrets
 
-- All provider keys present in GitHub Actions/Salad secret store.
+- All provider keys present in GitHub Actions/Zeabur-Service-Variablen.
 - IDrive access keys present and rotated.
 - No secret values committed to git.
 
 Gate 2: Runtime health
 
 - `https://smyst.com/` returns `200`.
-- Salad live health returns `200`.
-- Salad ready health returns `200` only when backing services are healthy.
+- Zeabur live health returns `200`.
+- Zeabur ready health returns `200` only when backing services are healthy.
 - Provider status endpoint reports configured providers without exposing
   plaintext secrets.
 
@@ -165,9 +171,9 @@ Gate 4: Scale controls
 ## Immediate Next Actions
 
 1. Enable IDrive public bucket access or upgrade the IDrive account.
-2. Add the missing provider secrets to GitHub Actions and Salad.
-3. Fix `api.smyst.com` DNS so it points to the Salad public endpoint.
-4. Run the Salad backend deploy.
+2. Add the missing provider secrets to GitHub Actions and the Zeabur service variables.
+3. Fix `api.smyst.com` DNS so it points to the Zeabur-Endpunkt.
+4. Trigger the Zeabur backend deploy (automatic on `main`, or manual redeploy in the portal).
 5. Run the IDrive static deploy after public access is enabled.
 6. Verify live endpoints with curl and browser checks.
 7. Add monitoring and alert thresholds before broader traffic.

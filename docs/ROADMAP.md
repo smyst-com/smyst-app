@@ -16,7 +16,7 @@ Ziel: PWA live machen, mit IDrive e2 als Hauptspeicher und Spaceship als DNS-Ver
 - PWA bauen und statische Dateien nach IDrive e2 synchronisieren.
 - IDrive e2 als 99%-Speicher fuer Bilder, Videos, Audio, PDFs, Profilbilder, Nutzer-Uploads, App-/PWA-Dateien, statische Website-Dateien, Downloads, Backups, Exporte, Logs, KI-Profilwissen, Prompt-Dateien, Chat-Archive, Wissensdaten, Modell-Dateien, Trainingsdaten, Versionen, Release-Dateien, Medien-Archiv, Admin-Exporte, Fehlerberichte, Audit-Logs, temporaere Uploads, verschluesselte Sicherungen, App-Builds, APK/AAB/IPA-Dateien, Update-Pakete, Rollback-Dateien, Thumbnails, Video-Vorschauen, Untertitel, Uebersetzungen, statische JSON-Daten, Profil-Datensaetze, Kategorien, Sitemap/SEO-Dateien, Hilfedateien, rechtliche Dokumente, Testberichte, Screenshots, QA-Videos, Datenbank-Backups, Suchindex-Backups, RAG-Dokumente, Embedding-Dateien, Import-/Export-Pakete, Design-Assets, Feature-Config-Dateien, Wartungsseiten, Offline-Dateien, Cache-Dateien, oeffentliche CDN-Dateien und private signierte Dateien verwenden.
 - API nur bauen, wenn Login oder dynamische Funktionen wirklich noetig sind.
-- Salad erst aktivieren, wenn Rechenleistung fuer API, KI, Verarbeitung, Suche, Indexierung oder Cronjobs gebraucht wird.
+- Zeabur betreibt die Rechenarbeit fuer API, KI, Verarbeitung, Suche und Sprachdienste.
 
 Erfolg:
 
@@ -24,7 +24,7 @@ Erfolg:
 - `app.smyst.com` kann die Web-App ausliefern.
 - `cdn.smyst.com` kann oeffentliche IDrive-e2-Assets ausliefern.
 - `backup.smyst.com` bleibt privat.
-- Keine laufenden Salad-Kosten.
+- Zeabur-Kosten bewusst freigegeben und in `docs/FREE_ONLY_INFRASTRUCTURE.md` gelistet.
 
 ## Phase 2: Login und private Dateien
 
@@ -46,7 +46,7 @@ Ziel: Nutzer koennen einen einfachen AI Twin erstellen.
 - Basis-Chat.
 - Chat-Archive und Exports in IDrive e2.
 
-## Phase 4: Salad bei Bedarf
+## Phase 4: Zeabur-Compute
 
 Ziel: Nur echte Rechenarbeit auslagern.
 
@@ -60,7 +60,7 @@ Regel:
 
 - Kein dauerhaft laufender Container ohne Nutzen.
 - Keine monatliche Grundgebuehr als Pflicht.
-- Keine dauerhafte Speicherung sensibler Daten in Salad.
+- Keine dauerhafte Speicherung sensibler Daten in Zeabur.
 
 ## Phase 5: Apps
 

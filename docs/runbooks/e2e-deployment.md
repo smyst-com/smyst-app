@@ -6,8 +6,8 @@ Validate the free-only production path:
 
 - GitHub Actions.
 - IDrive e2 static hosting.
-- Salad API.
-- Salad/IDrive metadata.
+- Zeabur-Backend.
+- IDrive e2.
 - IDrive e2 signed uploads.
 
 ## Checks

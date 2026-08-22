@@ -12,7 +12,10 @@ permissions:
 
 concurrency:
   group: github-pages-${{ github.ref }}
-  cancel-in-progress: true
+  # false statt true: Bei parallelen Agenten-Pushes wurden Deploy-Läufe
+  # wiederholt abgebrochen, bevor sie fertig waren (kein Deploy landete mehr).
+  # Läufe queue'n sich jetzt sequenziell — der letzte Stand gewinnt.
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -78,6 +81,19 @@ jobs:
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
             || { if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; else cat s3-index-err.log; echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."; exit 1; fi; }
 
+      # FAQ-Antworten pro Profil (SEO, 21.08.): die QA der Autopilot-Pipeline
+      # erzeugt fuer jedes Profil fuenf individuelle Antworten (bisher nur
+      # Trainingsmaterial). Als FAQPage-JSON-LD auf den Profilseiten sind sie
+      # einmaliger, substanzieller Inhalt pro Seite — Googles Scaled-Content-
+      # Regeln (Maerz 2026) verlangen genau das. Datei fehlt -> Build laeuft
+      # ohne FAQ weiter (tolerant, kein Silent-Wipe-Thema: nur Zusatzcontent).
+      - name: Fetch profile FAQ answers (optional)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          aws s3 cp s3://smyst-memories/pipeline/published/qa-answers.json pipeline-qa-answers.json             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2             || echo "Keine FAQ-Antworten in e2 (ok — Seiten ohne FAQ-Schema)."
+
       # Egress-Sparer (Vorfall 31.07.2026: 10-GB-Frei-Egress von IDrive e2
       # aufgebraucht, alle e2-Zugriffe gesperrt, Deploys/Pipeline rot): die
       # gespiegelten Profilbilder zwischen Builds im kostenlosen GitHub-
@@ -115,6 +131,15 @@ jobs:
       - name: Remove retired profile images
         run: rm -fv dist/public/profile-images/euklid.jpg dist/public/profile-images/julius-caesar.jpg
 
+      # Katalog-Felder-Waechter: der Katalog enthaelt nur noch die Felder, die
+      # die Listen-Ansichten lesen (37,2 -> 9,1 MB). Nimmt jemand in
+      # publicProfileToStartTwin/isCompletePublicProfile ein weiteres Feld dazu,
+      # ohne CATALOG_FIELDS zu ergaenzen, waere es live undefined — Profile
+      # fielen still aus der Liste. Laeuft VOR dem Merge, damit der Fehler
+      # auffaellt, bevor ein kaputter Katalog gebaut wird.
+      - name: Check catalog fields (Startseite liest nur Vorhandenes)
+        run: node scripts/check-catalog-fields.mjs
+
       - name: Merge published pipeline profiles
         run: node scripts/merge-pipeline-published.mjs
         env:
@@ -125,6 +150,42 @@ jobs:
       # Umschrift ue/oe/ae/ss) denselben Namen oder Slug tragen.
       - name: Check twin duplicates (deploy gate)
         run: node scripts/check-twin-duplicates.mjs
+
+      # Bild-Diät (Performance-Audit 21.08.): Ausreißer bis 1,67 MB (Kant,
+      # Bach) werden im Grid mit ~104 px dargestellt. Alles über 300 KB wird
+      # auf max 512 px verkleinert und als JPEG q82 neu kodiert; kleinere
+      # Dateien bleiben unberührt (idempotent — bereits komprimierte Bilder
+      # fallen unter die Schwelle und werden nicht erneut kodiert, Quality-
+      # Verluste durch Wiederholung sind ausgeschlossen). ImageMagick ist auf
+      # ubuntu-latest vorinstalliert.
+      # Pillow statt ImageMagick: mogrify ist auf ubuntu-latest NICHT
+      # vorinstalliert (Deploy 32432444735 rot, 21.08.) — pip install ist in
+      # Sekunden erledigt und der Resize reines Python.
+      - name: Shrink oversized profile images
+        run: |
+          python3 -m pip install --quiet --disable-pip-version-check Pillow
+          python3 - <<'PY'
+          import glob, os
+          from PIL import Image
+          grenze = 300 * 1024
+          grosse = [p for p in glob.glob("dist/public/profile-images/*.jpg")
+                    + glob.glob("dist/public/profile-images/*.jpeg")
+                    + glob.glob("dist/public/profile-images/*.JPG")
+                    + glob.glob("dist/public/profile-images/*.JPEG")
+                    if os.path.getsize(p) > grenze]
+          print(f"Bilder ueber 300 KB: {len(grosse)}")
+          for pfad in grosse:
+              try:
+                  with Image.open(pfad) as bild:
+                      bild.thumbnail((512, 512), Image.LANCZOS)
+                      # JPEG kann Palette- (P) und CMYK-Modi nicht direkt speichern
+                      if bild.mode not in ("RGB", "L"):
+                          bild = bild.convert("RGB")
+                      bild.save(pfad, "JPEG", quality=82, optimize=True)
+              except Exception as fehler:  # noqa: BLE001
+                  print(f"  uebersprungen {pfad}: {fehler}")
+          print("Diaet fertig.")
+          PY
 
       # Schwund-Waechter (Vorfall 30.07.2026, Deploys #360/#361): der Schritt
       # oben faengt nur den TOTALausfall des Publish-Index ab. Ein halb

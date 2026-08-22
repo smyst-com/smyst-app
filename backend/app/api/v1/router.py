@@ -1,6 +1,11 @@
 from fastapi import APIRouter
 
+from app.api.v1.routes.admin_approvals import router as admin_approvals_router
+from app.api.v1.routes.admin_ideas import router as admin_ideas_router
+from app.api.v1.routes.admin_overview import router as admin_overview_router
 from app.api.v1.routes.admin_quality import router as admin_quality_router
+from app.api.v1.routes.billing import router as billing_router
+from app.api.v1.routes.ads import router as ads_router
 from app.api.v1.routes.ai import router as ai_router
 from app.api.v1.routes.asr import router as asr_router
 from app.api.v1.routes.auth import router as auth_router
@@ -14,6 +19,7 @@ from app.api.v1.routes.security import router as security_router
 from app.api.v1.routes.social_links import router as social_links_router
 from app.api.v1.routes.storage import router as storage_router
 from app.api.v1.routes.tts import router as tts_router
+from app.api.v1.routes.visits import router as visits_router
 from app.api.v1.routes.twins_delete import router as twins_delete_router
 from app.api.v1.routes.user_mvp import router as user_mvp_router
 from app.api.v1.routes.web_research import router as web_research_router
@@ -35,5 +41,11 @@ api_router.include_router(user_mvp_router)
 api_router.include_router(twins_delete_router)
 api_router.include_router(web_research_router)
 api_router.include_router(admin_quality_router)
+api_router.include_router(admin_overview_router)
+api_router.include_router(admin_approvals_router)
+api_router.include_router(admin_ideas_router)
+api_router.include_router(ads_router)
+api_router.include_router(visits_router)
+api_router.include_router(billing_router)
 api_router.include_router(ci_gateway_router)
 

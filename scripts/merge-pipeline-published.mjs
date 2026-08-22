@@ -41,6 +41,21 @@ if (existsSync(CORRECTIONS_FILE)) {
   }
 }
 
+// FAQ-Antworten pro Profil (SEO 21.08.): Slug -> [{q, a}]. Quelle ist der
+// QA-Lauf der Pipeline (fuenf individuelle Fragen je Profil) — als
+// FAQPage-JSON-LD pro Profilseite einmaliger Content gegen Googles
+// Scaled-Content-Regeln. Datei fehlt -> leeres Mapping, Seiten ohne FAQ.
+const FAQ_FILE = process.env.PIPELINE_QA_ANSWERS || resolve(ROOT, 'pipeline-qa-answers.json');
+let FAQ_BY_SLUG = {};
+if (existsSync(FAQ_FILE)) {
+  try {
+    FAQ_BY_SLUG = JSON.parse(readFileSync(FAQ_FILE, 'utf-8'));
+    console.log(`merge-pipeline-published: FAQ-Antworten fuer ${Object.keys(FAQ_BY_SLUG).length} Profile geladen.`);
+  } catch (error) {
+    console.warn(`merge-pipeline-published: FAQ-Datei unlesbar, wird ignoriert: ${error.message}`);
+  }
+}
+
 if (!existsSync(INDEX_FILE)) {
   console.log('merge-pipeline-published: kein Publish-Index gefunden — nichts zu tun (ok).');
   process.exit(0);
@@ -448,6 +463,25 @@ function renderPage(profile) {
   });
 
   let html = template;
+  const faq = FAQ_BY_SLUG[profile.slug];
+  if (faq?.length) {
+    const faqLd = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map((eintrag) => ({
+        '@type': 'Question',
+        name: eintrag.q,
+        acceptedAnswer: { '@type': 'Answer', text: eintrag.a },
+      })),
+    });
+    html = html.replace('</head>', `  <script type="application/ld+json">${faqLd}</script>\n</head>`);
+  }
+  // hreflang-Bereinigung (SEO-Audit 21.08.): Das Template traegt die hreflang-
+  // Zeilen der STARTSEITE (-> /<lang>/). Auf einer Pipeline-Profilseite ist
+  // das falsch (es existieren keine Sprachvarianten dieser Profil-URL), und
+  // falsche hreflang-Angaben wertet Google als Fehler. Entfernen statt
+  // umbiegen: eine Seite ohne hreflang ist korrekt.
+  html = html.replace(/\s*<link rel="alternate" hreflang="[^"]*" href="[^"]*" \/>/g, '');
   html = html.replace(/<title>[\s\S]*?<\/title>/, `<title>${escapeAttr(title)}</title>`);
   html = html.replace(/(<meta name="description" content=")[^"]*(")/, `$1${escapeAttr(description)}$2`);
   html = html.replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${pageUrl}$2`);
@@ -455,7 +489,11 @@ function renderPage(profile) {
   html = html.replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${escapeAttr(description)}$2`);
   html = html.replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${pageUrl}$2`);
   if (profile.imageUrl) {
-    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttr(absoluteUrl(profile.imageUrl))}$2`);
+    // og:image muss PNG/JPG sein: WhatsApp/Facebook/LinkedIn rendern KEINE SVGs
+    // (SEO-Audit 21.08.) — generierte SVG-Portraets bekommen das Standard-OG-
+    // Bild, echte Fotos (jpg/png) bleiben.
+    const ogImage = profile.imageUrl.endsWith('.svg') ? `${HOST}/og-image.png` : profile.imageUrl;
+    html = html.replace(/(<meta property="og:image" content=")[^"]*(")/, `$1${escapeAttr(absoluteUrl(ogImage))}$2`);
     html = html.replace(
       /(<meta property="og:image:alt" content=")[^"]*(")/,
       `$1${escapeAttr(`${profile.name} – KI-Profil auf smyst.com`)}$2`,
@@ -509,7 +547,66 @@ for (const record of eligible) {
   merged += 1;
 }
 
-writeFileSync(apiIndexPath, JSON.stringify({ twins }), 'utf8');
+// Der Katalog enthaelt NUR die Felder, die die Listen-Ansichten lesen.
+//
+// Gemessen 16.08.2026: die vollstaendige Fassung war 38,9 MB (3,5 MB gzip) und
+// wuchs mit jedem Profil weiter — die Startseite laedt sie beim ersten Aufruf
+// komplett, um rund 20 Karten zu zeigen. Ueber 80 % davon entfielen auf
+// sources, seo, contextSummary, guardrail, imageCredit, rightsPosture,
+// uploadedContents und exampleQuestions.
+//
+// Diese Felder bleiben unveraendert im Einzelprofil unter
+// /api/public/twins/<slug>/ (siehe oben, wird vollstaendig geschrieben); die
+// Profilseite holt sie ueber getPublicTwin(). Nur die drei Listen-Verbraucher
+// sind betroffen — Startseiten-Karten, Aehnliche-Profile und der
+// Lebensdaten-Index —, und die laufen alle ueber isCompletePublicProfile() +
+// publicProfileToStartTwin() in src/App.tsx.
+//
+// WICHTIG: Wird dort ein Feld ergaenzt, muss es hier mit aufgenommen werden,
+// sonst verschwinden Profile stillschweigend aus der Liste (isComplete… wird
+// falsch). scripts/check-catalog-fields.mjs prueft genau das.
+const CATALOG_FIELDS = [
+  // Identitaet und Darstellung der Karte.
+  // 'id' NICHT entfernen: run_model_eval.fetch_twins() verwirft jeden Eintrag
+  // ohne id, das Eval fand dadurch keinen einzigen Twin mehr (Vorfall
+  // 16.08.2026, verursacht durch die erste Fassung dieser Liste).
+  'id', 'slug', 'name', 'description', 'imageUrl', 'style',
+  // Filter, Sortierung, Suche
+  'categories', 'languages', 'mainCategory', 'searchIndex',
+  'createdAt', 'updatedAt', 'knowledgeCount', 'mediaCount',
+  // Lebensdaten (Anzeige und hasLifeDates)
+  'birthDate', 'deathDate', 'birthYear', 'deathYear',
+  'birthLabel', 'deathLabel', 'birthPlace', 'deathPlace',
+  // Von isCompletePublicProfile geprueft
+  'status', 'visibility', 'quality',
+];
+
+function catalogEntry(twin) {
+  const entry = {};
+  for (const field of CATALOG_FIELDS) {
+    if (twin[field] !== undefined) entry[field] = twin[field];
+  }
+  return entry;
+}
+
+writeFileSync(apiIndexPath, JSON.stringify({ twins: twins.map(catalogEntry) }), 'utf8');
+
+// Slim-Katalog (Performance, 21.08.): die Vollversion ist auf ~11 MB gewachsen
+// (12k+ Profile) — die Startseite wartete darauf, bevor das Grid ueberhaupt
+// renderte. slim.json liefert kuratierte + die 300 neuesten Pipeline-Profile
+// (~350 KB); die App laedt den Rest im Hintergrund nach (useTwinMvp,
+// listPublicTwinsProgressive). Gleiches Format — nur kuerzer.
+const kuratiert = twins.filter((twin) => !String(twin.id || '').startsWith('pipeline-'));
+const neuestePipeline = twins
+  .filter((twin) => String(twin.id || '').startsWith('pipeline-'))
+  .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+  .slice(0, 300);
+writeFileSync(
+  resolve(DIST, 'api', 'public', 'twins', 'slim.json'),
+  JSON.stringify({ twins: [...kuratiert, ...neuestePipeline].map(catalogEntry) }),
+  'utf8',
+);
+console.log(`merge-pipeline-published: slim.json mit ${kuratiert.length + neuestePipeline.length} Eintraegen.`);
 
 const sitemapPath = resolve(DIST, 'sitemap.xml');
 if (merged > 0 && existsSync(sitemapPath)) {

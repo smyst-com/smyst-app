@@ -5,6 +5,7 @@ import pytest
 
 from app.ai.degraded_messages import DEGRADED_FALLBACK_MESSAGES
 from app.ai.llm_router import (
+    build_default_router,
     LLMProvider,
     LLMRouter,
     LocalDeterministicProvider,
@@ -26,7 +27,10 @@ class FakeResponse:
     def raise_for_status(self) -> None:
         if self.status_code >= 400:
             request = httpx.Request("POST", "https://example.test/chat/completions")
-            response = httpx.Response(self.status_code, request=request)
+            # MIT Body: echte Anbieter legen den Grund der Ablehnung dort ab,
+            # und der Router liest ihn fuers Log aus. Eine Attrappe ohne Body
+            # wuerde diese Auswertung stillschweigend ungeprueft lassen.
+            response = httpx.Response(self.status_code, request=request, json=self.payload)
             raise httpx.HTTPStatusError("failed", request=request, response=response)
 
     def json(self) -> dict:
@@ -34,29 +38,45 @@ class FakeResponse:
 
 
 class FakeAsyncClient:
+    """Attrappe fuer den geteilten httpx-Client.
+
+    Seit dem Umstieg auf einen prozessweiten Client (app.core.http_client) wird
+    nicht mehr je Aufruf ein Client gebaut; die Tests ersetzen darum
+    shared_client() statt httpx.AsyncClient. Das Zeitlimit reicht der Aufrufer
+    jetzt pro Anfrage durch — die Attrappe nimmt es entgegen und merkt es sich,
+    damit Tests es pruefen koennen.
+    """
+
     posts: list[dict] = []
     gets: list[dict] = []
     responses: list[FakeResponse] = []
 
-    def __init__(self, timeout: float) -> None:
-        self.timeout = timeout
-
-    async def __aenter__(self) -> "FakeAsyncClient":
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb) -> None:
-        return None
-
-    async def post(self, url: str, *, headers: dict, json: dict) -> FakeResponse:
-        self.posts.append({"url": url, "headers": headers, "json": json})
+    async def post(
+        self, url: str, *, headers: dict, json: dict, timeout: float | None = None
+    ) -> FakeResponse:
+        self.posts.append({"url": url, "headers": headers, "json": json, "timeout": timeout})
         return self.responses.pop(0)
 
-    async def get(self, url: str, *, headers: dict) -> FakeResponse:
-        self.gets.append({"url": url, "headers": headers})
+    async def get(
+        self,
+        url: str,
+        *,
+        headers: dict | None = None,
+        timeout: float | None = None,
+        **kwargs,
+    ) -> FakeResponse:
+        self.gets.append({"url": url, "headers": headers, "timeout": timeout, **kwargs})
         response = self.responses.pop(0)
         if isinstance(response, Exception):
             raise response
         return response
+
+
+def use_fake_client(monkeypatch) -> FakeAsyncClient:
+    """Haengt die Attrappe an die Stelle, an der der Router den Client holt."""
+    fake = FakeAsyncClient()
+    monkeypatch.setattr("app.ai.llm_router.shared_client", lambda: fake)
+    return fake
 
 
 class FailingProvider(LLMProvider):
@@ -104,7 +124,7 @@ async def test_openai_compatible_provider_parses_chat_completion(monkeypatch) ->
             }
         )
     ]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     provider = OpenAICompatibleProvider(
         "test",
@@ -190,7 +210,7 @@ async def test_local_fallback_prefers_metadata_language() -> None:
 async def test_provider_does_not_retry_on_auth_error(monkeypatch) -> None:
     FakeAsyncClient.posts = []
     FakeAsyncClient.responses = [FakeResponse({}, status_code=401)]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     provider = OpenAICompatibleProvider("test", "https://llm.example/v1/", "bad-key", "m")
     with pytest.raises(httpx.HTTPStatusError):
@@ -212,7 +232,7 @@ async def test_provider_retries_once_on_server_error(monkeypatch) -> None:
             }
         ),
     ]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     provider = OpenAICompatibleProvider("test", "https://llm.example/v1/", "key", "m")
     response = await provider.complete(make_request())
@@ -293,12 +313,38 @@ def test_provider_statuses_migrate_retired_deepseek_models() -> None:
     assert deepseek["model"] == "deepseek-v4-flash"
 
 
+def test_smyst_llm_only_in_chain_when_configured() -> None:
+    # Ohne URL wird der eigene Modell-Provider uebersprungen (wie das Gateway).
+    ohne = Settings()
+    ketten_ohne = [p.name for p in build_default_router(ohne).providers]
+    assert "smyst_llm" not in ketten_ohne
+
+    # Mit URL steht er in der Kette.
+    mit = Settings(SMYST_LLM_BASE_URL="http://localhost:8080/v1", SMYST_LLM_API_KEY="test")
+    ketten_mit = [p.name for p in build_default_router(mit).providers]
+    assert "smyst_llm" in ketten_mit
+
+
+def test_provider_statuses_migrate_retired_groq_models() -> None:
+    # Groq hat llama-3.3-70b-versatile/-llama-3.1-8b-instant am 2026-08-16 abgeschaltet.
+    settings = Settings(
+        GROQ_API_KEY="secret-groq",
+        LLM_PROVIDER_ORDER="groq",
+        LLM_DEFAULT_MODELS="groq=llama-3.3-70b-versatile",
+    )
+
+    statuses = provider_statuses(settings)
+
+    groq = next(status for status in statuses if status["provider"] == "groq")
+    assert groq["model"] == "openai/gpt-oss-120b"
+
+
 @pytest.mark.asyncio
 async def test_ping_providers_returns_redacted_http_diagnostics(monkeypatch) -> None:
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"error": "secret provider body"}, status_code=403)]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -318,7 +364,7 @@ async def test_ping_providers_uses_credential_model_check(monkeypatch) -> None:
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "gpt-4o"}]})]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -343,7 +389,7 @@ async def test_ping_providers_falls_back_when_model_check_times_out(monkeypatch)
             }
         ),
     ]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -361,7 +407,7 @@ async def test_ping_providers_accepts_dated_model_id_for_alias(monkeypatch) -> N
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "gpt-4o-2024-11-20"}]})]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -375,7 +421,7 @@ async def test_ping_providers_reports_model_unavailable_without_secret(monkeypat
     FakeAsyncClient.posts = []
     FakeAsyncClient.gets = []
     FakeAsyncClient.responses = [FakeResponse({"data": [{"id": "other-model"}]})]
-    monkeypatch.setattr("app.ai.llm_router.httpx.AsyncClient", FakeAsyncClient)
+    use_fake_client(monkeypatch)
 
     settings = Settings(OPENAI_API_KEY="secret-openai", LLM_PROVIDER_ORDER="openai")
     result = await ping_providers(settings)
@@ -403,3 +449,26 @@ def test_payment_required_diagnostics_are_explicit() -> None:
 
     assert diagnostics["status_code"] == 402
     assert diagnostics["category"] == "payment_required"
+
+
+@pytest.mark.asyncio
+async def test_rejection_logs_the_providers_own_reason(monkeypatch, caplog) -> None:
+    """Ein nacktes "403 Forbidden" sagt nicht, WARUM.
+
+    Am 16./17.08.2026 kostete genau diese fehlende Zeile zwei Fehldiagnosen
+    (angeblich ungueltiger Schluessel, angeblich fehlende Header), waehrend der
+    Live-Chat auf dem Notfall-Provider stand.
+    """
+    fake = use_fake_client(monkeypatch)
+    fake.responses = [
+        FakeResponse({"error": {"message": "Key limit exceeded"}}, status_code=403)
+    ]
+    provider = OpenAICompatibleProvider(
+        "test", "https://llm.example/v1", "key", "test-model"
+    )
+
+    with caplog.at_level("WARNING"):
+        with pytest.raises(httpx.HTTPStatusError):
+            await provider.complete(LLMRequest(prompt="hi", system_prompt="s"))
+
+    assert any("Key limit exceeded" in record.getMessage() for record in caplog.records)

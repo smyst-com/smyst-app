@@ -10,7 +10,7 @@ This includes:
 
 - DNS changes at Spaceship.
 - IDrive e2 bucket, policy, object, website-hosting or backup changes.
-- Salad compute, API, cron, indexer or backend deployment changes.
+- Zeabur compute, API, cron, indexer or backend deployment changes.
 - GitHub `main` merges, production workflow runs and release tags.
 - Database schema, migration, seed, backup or restore changes.
 - API key, OAuth, secret, token or provider configuration changes.

@@ -26,6 +26,7 @@ import {
 } from '@/lib/voiceLanguage'
 import { pickVoiceSettings, remoteRateFor, remoteVoiceIdFor, voiceGenderFor } from '@/lib/voiceProfiles'
 import { userVoiceIdFor } from '@/lib/userVoice'
+import { shareTwinAnswer } from '@/lib/shareCard'
 import { markServerAsrUnavailable, recordAndTranscribeOnce, serverAsrReady, serverAsrSupported } from '@/lib/serverAsrClient'
 import { isRemoteSpeechActive, playRemoteSpeech, prefetchSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
@@ -37,6 +38,14 @@ import {
   CURATED_PUBLIC_TWIN_SPECS,
   type CuratedPublicTwinSpec,
 } from './data/curated-public-twin-data'
+
+/**
+ * Bezahl-Abos (Stripe Premium) sind bewusst deaktiviert: smyst bleibt vorerst
+ * komplett kostenlos (Wachstums-Strategie, Master-Plan). Das komplette
+ * Billing-Backend bleibt im Code und laesst sich spaeter durch setzen dieser
+ * Flag + der Stripe-Secrets ohne Umbau aktivieren.
+ */
+const PREMIUM_SUBSCRIPTIONS_ENABLED = false
 import { profileNameWithAge, profileBirthLine, profileDeathLine } from './data/life-display'
 
 const CookieConsent = lazy(() => import('@/components/CookieConsent'))
@@ -388,7 +397,10 @@ function speakText(
   return true
 }
 
-function liveGreetingText(twinName: string | undefined, lang: string): string {
+function liveGreetingText(twinName: string | undefined, lang: string, labels?: { withName: string; withoutName: string }): string {
+  if (labels) {
+    return twinName ? labels.withName.replace('{name}', twinName) : labels.withoutName
+  }
   return lang === 'de'
     ? twinName
       ? 'Hallo! Hier ist ' + twinName + '. Schön, dass du da bist. Was kann ich für dich tun?'
@@ -421,10 +433,10 @@ function hasUsedVoice(): boolean {
 
 // Begruessungs-Audio vorab erzeugen und persistent cachen (P5). Muss dieselben
 // Stimm-Parameter aufloesen wie speakText, damit der Cache-Key identisch ist.
-function prefetchGreetingSpeech(twinName: string | undefined, lang: string, voiceGender?: 'female' | 'male') {
+function prefetchGreetingSpeech(twinName: string | undefined, lang: string, voiceGender?: 'female' | 'male', labels?: { withName: string; withoutName: string }) {
   const gender = voiceGenderFor(twinName) ?? voiceGender
   prefetchSpeech(
-    liveGreetingText(twinName, lang),
+    liveGreetingText(twinName, lang, labels),
     lang,
     gender,
     userVoiceIdFor(twinName) ?? remoteVoiceIdFor(twinName, lang, gender),
@@ -648,6 +660,18 @@ export default function App() {
     const stored = window.localStorage.getItem('smyst-name-sort')
     return isNameSortMode(stored) ? stored : 'famous'
   })
+  // Jugendschutz (DSGVO-K/COPPA): Altersbestaetigung vor der ersten Chat-Nutzung.
+  const [ageConfirmation, setAgeConfirmation] = useState<'pending' | '13plus' | 'under13'>(() => {
+    const stored = window.localStorage.getItem('smyst-age-confirmation')
+    return stored === '13plus' || stored === 'under13' ? stored : 'pending'
+  })
+  const confirmAge = (value: '13plus' | 'under13') => {
+    window.localStorage.setItem('smyst-age-confirmation', value)
+    setAgeConfirmation(value)
+  }
+  const chatRelevantView = currentView === 'twin-chat' || currentView === 'twin-profile'
+  const showAgeGate = ageConfirmation === 'pending' && chatRelevantView
+  const chatBlockedForMinors = ageConfirmation === 'under13' && chatRelevantView
   const auth = useAuth()
   const canSeeAdmin = Boolean(
     auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
@@ -696,6 +720,20 @@ export default function App() {
     if (view !== 'twin-profile' && view !== 'not-found') window.history.pushState({}, '', localizedPath(viewPaths[view]))
     window.scrollTo(0, 0)
   }
+
+  // Nach der Registrierung direkt in den Start-Assistenten führen (UX-Highway;
+  // Flag wird von EmailAuthForm nach erfolgreicher Konto-Erstellung gesetzt).
+  useEffect(() => {
+    try {
+      if (window.sessionStorage.getItem('smyst:goto-onboarding') === '1') {
+        window.sessionStorage.removeItem('smyst:goto-onboarding')
+        navigateTo('onboarding')
+      }
+    } catch {
+      /* sessionStorage nicht verfügbar */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Öffnet die volle Profilseite /t/<slug>/ einer Person (z. B. per Klick auf das Chat-Header-Bild).
   const openTwinProfile = (slug?: string | null) => {
@@ -758,7 +796,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setMobileNavOpen(true)}
-              aria-label="Menü öffnen"
+              aria-label={appLang === DEFAULT_LANG ? "Menü öffnen" : ft.menuA11y.open}
               aria-expanded={mobileNavOpen}
               className="inline-flex h-11 w-11 items-center justify-center border border-white/[0.1] bg-white/[0.04] text-white backdrop-blur-md transition hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
             >
@@ -816,6 +854,59 @@ export default function App() {
         </div>
       </header>
 
+      {/* Jugendschutz: Altersabfrage vor der ersten Chat-Nutzung (DSGVO-K) */}
+      {showAgeGate && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/70 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/12 bg-[#10141c] p-6 text-center shadow-2xl">
+            <h2 className="text-lg font-bold text-white">Wie alt bist du?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[#9aa6b7]">
+              smyst nutzt KI-Chats. Damit wir den Jugendschutz und deine Privatsphäre einhalten
+              können, brauchen wir einmalig deine Altersbestätigung. Unter 13 Jahren ist der Chat
+              nur mit Zustimmung der Eltern erlaubt.
+            </p>
+            <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => confirmAge('13plus')}
+                className="rounded-lg bg-[#59C7FF] px-4 py-2.5 text-sm font-semibold text-[#0b1c44] transition-colors hover:brightness-110"
+              >
+                Ich bin 13 Jahre oder älter
+              </button>
+              <button
+                type="button"
+                onClick={() => confirmAge('under13')}
+                className="rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                Ich bin unter 13
+              </button>
+            </div>
+            <p className="mt-4 text-[11px] leading-relaxed text-[#9aa6b7]/70">
+              Deine Angabe wird nur lokal in deinem Browser gespeichert und nicht an Server
+              übertragen.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {currentView === 'twin-profile' && chatBlockedForMinors && (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/80 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl border border-white/12 bg-[#10141c] p-6 text-center shadow-2xl">
+            <h2 className="text-lg font-bold text-white">Chat gesperrt (unter 13)</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[#9aa6b7]">
+              Der Chat ist aus Datenschutzgründen erst ab 13 Jahren freigeschaltet. Profilinfos
+              bleiben sichtbar, sobald du dieses Fenster schließt.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigateTo('landing')}
+              className="mt-5 rounded-lg border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+            >
+              Zurück zum Start
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Drawer */}
       <Suspense fallback={null}>
         <MobileNav
@@ -861,7 +952,29 @@ export default function App() {
         {currentView === 'my-twins' && <MyTwinsView onNavigate={navigateTo} />}
         {currentView === 'twin-builder' && <TwinBuilderView onNavigate={navigateTo} />}
         {currentView === 'memory-upload' && <MemoryUploadView onNavigate={navigateTo} />}
-        {currentView === 'twin-chat' && <TwinChatView initialTwinId={profileSlug} onNavigate={navigateTo} />}
+        {currentView === 'twin-chat' &&
+          (chatBlockedForMinors ? (
+            <section className="mx-auto grid min-h-[60vh] max-w-xl place-items-center px-4 py-12 text-center">
+              <div>
+                <h2 className="text-xl font-bold text-white">Chat erst ab 13 Jahren</h2>
+                <p className="mt-3 text-sm leading-relaxed text-[#9aa6b7]">
+                  Aus Datenschutzgründen (DSGVO) können Nutzer unter 13 Jahren den Chat nur mit
+                  Zustimmung der Eltern nutzen. Bitte lass deine Eltern den smyst-Support
+                  kontaktieren, um einen Familien-Zugang einzurichten. Alle Profilseiten kannst du
+                  trotzdem ohne Chat ansehen.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigateTo('landing')}
+                  className="mt-5 rounded-md border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/20"
+                >
+                  Zurück zum Start
+                </button>
+              </div>
+            </section>
+          ) : (
+            <TwinChatView initialTwinId={profileSlug} onNavigate={navigateTo} />
+          ))}
         {currentView === 'settings' && (
           <SettingsView
             onNavigate={navigateTo}
@@ -1468,6 +1581,33 @@ function takeChatReturnSnapshot(): ChatReturnSnapshot | null {
   }
 }
 
+// Gegenrichtung zum Rueckweg oben: "Mit X chatten" auf der Profilseite fuehrt in den
+// Startseiten-Chat, damit es nur eine Chat-Oberflaeche gibt. Uebergeben wird nur der Slug -
+// die Startseite waehlt den passenden Twin, sobald die Profile geladen sind.
+const CHAT_OPEN_KEY = 'smyst-chat-open'
+
+function storeChatOpenRequest(slug: string) {
+  try {
+    window.sessionStorage.setItem(CHAT_OPEN_KEY, JSON.stringify({ slug, savedAt: Date.now() }))
+  } catch {
+    // Ohne sessionStorage bleibt es beim bisherigen Verhalten (Namensauswahl).
+  }
+}
+
+function takeChatOpenRequest(): string | null {
+  try {
+    const raw = window.sessionStorage.getItem(CHAT_OPEN_KEY)
+    window.sessionStorage.removeItem(CHAT_OPEN_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { slug?: string; savedAt?: number }
+    if (!parsed?.slug) return null
+    if (!Number.isFinite(parsed.savedAt) || Date.now() - (parsed.savedAt as number) > CHAT_RETURN_MAX_AGE_MS) return null
+    return parsed.slug
+  } catch {
+    return null
+  }
+}
+
 function SmystStartPage({
   onNavigate,
   onOpenProfile,
@@ -1538,6 +1678,15 @@ function SmystStartPage({
   // Gesetzt, wenn der Chat gerade vom Profil-Rundweg zurueckgeholt wurde: das Nachladen
   // der Profile darf die wiederhergestellte Auswahl dann nicht ueberschreiben.
   const chatRestoredRef = useRef(false)
+  // Slug aus "Mit X chatten": wird erst benutzt, wenn die Profilliste geladen ist.
+  const pendingChatSlugRef = useRef<string | null>(null)
+  // Loest den gemerkten Slug einmalig gegen die frisch geladene Liste auf.
+  const takePendingChatTwin = (candidates: StartTwin[]): StartTwin | null => {
+    const wanted = pendingChatSlugRef.current
+    if (!wanted) return null
+    pendingChatSlugRef.current = null
+    return candidates.find((twin) => twin.profileSlug === wanted) ?? null
+  }
 
   useEffect(() => {
     setLastVoiceLang(preferredVoiceLanguage(lang))
@@ -1546,6 +1695,9 @@ function SmystStartPage({
   // Rueckweg von der Profilseite (/t/<slug>/): den vorher abgelegten Chat wieder aufsetzen,
   // damit der Zurueck-Knopf im laufenden Gespraech landet und nicht in der Namensauswahl.
   useEffect(() => {
+    // "Mit X chatten" von der Profilseite: Slug hier abholen, ausgewertet wird er nach dem
+    // Laden der Profile in loadRealProfiles.
+    pendingChatSlugRef.current = takeChatOpenRequest()
     const snapshot = takeChatReturnSnapshot()
     if (!snapshot) return
     // Das Nachladen der Profile setzt die Auswahl sonst gleich wieder zurueck (siehe loadRealProfiles).
@@ -1570,6 +1722,31 @@ function SmystStartPage({
     return rankProfiles(categoryFiltered, query, nameSortMode) as StartTwin[]
   }, [activeCategory, nameSortMode, query, realStartTwins])
 
+  // Schrittweises Rendern des Grids (Performance, 21.08.): bei 13k+ Profilen
+  // landeten ALLE Karten auf einmal im DOM — Suche und Scrollen ruckelten.
+  // Zunaechst werden 60 Karten gerendert; ein unsichtbarer Wächter am Grid-
+  // Ende lädt beim Herunterscrollen weitere 120 nach. Filterwechsel setzt
+  // zurueck. Am sichtbaren Design ändert das nichts (Design-Freeze).
+  const [gridVisibleCount, setGridVisibleCount] = useState(60)
+  const gridEndRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    setGridVisibleCount(60)
+  }, [query, activeCategory, nameSortMode, realStartTwins])
+  useEffect(() => {
+    const node = gridEndRef.current
+    if (!node || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setGridVisibleCount((current) => current + 120)
+        }
+      },
+      { rootMargin: '600px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [gridVisibleCount, query, activeCategory, nameSortMode])
+
   const activeTwin = selectedTwin ?? realStartTwins[0] ?? null
 
   // P5: Begruessungs-Audio vorab erzeugen, sobald ein Twin geoeffnet wird.
@@ -1580,8 +1757,8 @@ function SmystStartPage({
   const prefetchTwinGender = selectedTwin?.voiceGender
   useEffect(() => {
     if (!prefetchTwinName || !hasUsedVoice()) return
-    prefetchGreetingSpeech(prefetchTwinName, lang, prefetchTwinGender)
-  }, [prefetchTwinName, prefetchTwinGender, lang])
+    prefetchGreetingSpeech(prefetchTwinName, lang, prefetchTwinGender, lang === DEFAULT_LANG ? undefined : t.greet)
+  }, [prefetchTwinName, prefetchTwinGender, lang, t])
 
   const genericMessageLabel =
     lang === DEFAULT_LANG
@@ -1660,7 +1837,21 @@ function SmystStartPage({
       setProfilesLoadError('')
       try {
         if (auth.status !== 'authenticated') {
-          const publicProfiles = await twinMvp.listPublicTwins()
+          // Zweistufig (Performance 21.08.): slim.json (~350 KB) baut das Grid
+          // sofort; der Vollkatalog (~11 MB) upgradet ihn im Hintergrund, sobald
+          // er da ist.(selectedTwin/requested bleibt vom Erststand unberuehrt.)
+          const publicProfiles = await twinMvp.listPublicTwinsProgressive((alle) => {
+            if (!alive) return
+            // Funktionales Update: ein mal gelandetes Voll-Upgrade darf durch
+            // einen spaeteren Slim-Stand (Effekt-Neustart) nie zurueckgesetzt
+            // werden.
+            setRealStartTwins((bisher) => {
+              const next = alle
+                .filter(isCompletePublicProfile)
+                .map((profile, index) => publicProfileToStartTwin(profile, index))
+              return next.length >= bisher.length ? next : bisher
+            })
+          })
           if (!alive) return
           const next = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
             .filter(isCompletePublicProfile)
@@ -1668,7 +1859,13 @@ function SmystStartPage({
           setRealStartTwins(next)
           const keepRestored = chatRestoredRef.current
           chatRestoredRef.current = false
-          if (!keepRestored) setSelectedTwin(null)
+          const requested = takePendingChatTwin(next)
+          if (requested) {
+            setSelectedTwin(requested)
+            setNamePickerOpen(false)
+          } else if (!keepRestored) {
+            setSelectedTwin(null)
+          }
           setProfilesLoaded(true)
           return
         }
@@ -1698,7 +1895,10 @@ function SmystStartPage({
         setRealStartTwins(next)
         const keepRestoredTwin = chatRestoredRef.current
         chatRestoredRef.current = false
+        const requestedTwin = takePendingChatTwin(next)
+        if (requestedTwin) setNamePickerOpen(false)
         setSelectedTwin((current) => {
+          if (requestedTwin) return requestedTwin
           if (keepRestoredTwin && current) return current
           return current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null
         })
@@ -2330,7 +2530,7 @@ function SmystStartPage({
           return
         }
         liveGreetedRef.current = greetKey
-        const greeting = liveGreetingText(twinName, lang)
+        const greeting = liveGreetingText(twinName, lang, lang === DEFAULT_LANG ? undefined : t.greet)
         setVoiceState('replying')
         const started = speakText(greeting, lang, () => {
           setIsSpeaking(false)
@@ -2534,7 +2734,7 @@ function SmystStartPage({
     { label: lang === DEFAULT_LANG ? 'Mein Profil' : t.nav.profile, view: 'account-profile', detail: lang === DEFAULT_LANG ? 'Identität, Bio, Rollen und Profilqualität' : t.nav.profileDetail },
     { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate, view: 'twin-builder', detail: lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit' : t.nav.twinCreateDetail },
     { label: lang === DEFAULT_LANG ? 'Meine Twins' : t.nav.myTwins, view: 'my-twins', detail: lang === DEFAULT_LANG ? 'Private und öffentliche AI Twins' : t.nav.myTwinsDetail },
-    { label: lang === DEFAULT_LANG ? 'Memories' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'Dateien, Wissen und Erinnerungen hochladen' : t.nav.memoriesDetail },
+    { label: lang === DEFAULT_LANG ? 'Dateien & Erinnerungen' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'Bilder, Video, Audio, Texte und Erinnerungen hochladen' : t.nav.memoriesDetail },
     { label: lang === DEFAULT_LANG ? 'Chats' : t.nav.chats, view: 'twin-chat', detail: lang === DEFAULT_LANG ? 'Letzte Gespräche und Twin-Auswahl' : t.nav.chatsDetail },
     { label: lang === DEFAULT_LANG ? 'Admin' : t.nav.admin, view: 'admin', detail: lang === DEFAULT_LANG ? 'User, Werbung, Umsatz, Sicherheit und Betrieb' : t.nav.adminDetail, adminOnly: true },
     { label: lang === DEFAULT_LANG ? 'Datenschutz' : t.nav.privacy, view: 'trust', detail: lang === DEFAULT_LANG ? 'Privatsphäre, Export und Löschung' : t.nav.privacyDetail },
@@ -2571,7 +2771,7 @@ function SmystStartPage({
   const profileControlCards = [
     [lang === DEFAULT_LANG ? 'Identität' : t.drawer.cardIdentityTitle, lang === DEFAULT_LANG ? 'Name, Rollen, Expertise und Bio sauber pflegen.' : t.drawer.cardIdentityText],
     [lang === DEFAULT_LANG ? 'AI Twin' : t.drawer.cardTwinTitle, lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit steuern.' : t.drawer.cardTwinText],
-    [lang === DEFAULT_LANG ? 'Memories' : t.drawer.cardMemoriesTitle, lang === DEFAULT_LANG ? 'Uploads, Quellen und Erinnerungen als Kontext verwalten.' : t.drawer.cardMemoriesText],
+    [lang === DEFAULT_LANG ? 'Dateien & Erinnerungen' : t.drawer.cardMemoriesTitle, lang === DEFAULT_LANG ? 'Bilder, Videos, Quellen und Erinnerungen als Twin-Wissen verwalten.' : t.drawer.cardMemoriesText],
     [lang === DEFAULT_LANG ? 'Datenschutz' : t.drawer.cardPrivacyTitle, lang === DEFAULT_LANG ? 'Freigaben, Export, Löschung und private Standards.' : t.drawer.cardPrivacyText],
   ]
 
@@ -2588,7 +2788,7 @@ function SmystStartPage({
         ref={menuRef}
         role={menuOpen ? 'dialog' : undefined}
         aria-modal={menuOpen ? 'true' : undefined}
-        aria-label="Startmenü"
+        aria-label={lang === DEFAULT_LANG ? "Startmenü" : t.menuA11y.startMenu}
         aria-hidden={!menuOpen}
         style={{ left: menuOpen ? 0 : '-100%', transform: 'none' }}
         className={`smyst-glass-panel fixed inset-y-0 z-50 flex w-[90vw] max-w-[390px] flex-col border-r border-white/10 shadow-2xl ${
@@ -2606,7 +2806,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => setMenuOpen(false)}
-              aria-label="Menü schließen"
+              aria-label={lang === DEFAULT_LANG ? "Menü schließen" : t.menuA11y.close}
               className="grid h-11 w-11 place-items-center rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
             >
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2663,7 +2863,7 @@ function SmystStartPage({
               <div className="mb-3">
                 <p className="text-sm font-bold text-white">Anmelden oder registrieren</p>
                 <p className="mt-1 text-xs leading-relaxed text-[#9aa3b2]">
-                  Dein Profil, Twins, Memories und Chats bleiben an einem sicheren Account.
+                  Dein Profil, Twins, Dateien und Chats bleiben an einem sicheren Account.
                 </p>
               </div>
               <div className="grid gap-2">
@@ -2723,7 +2923,7 @@ function SmystStartPage({
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Startmenü Navigation">
+        <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label={lang === DEFAULT_LANG ? "Startmenü Navigation" : t.menuA11y.startMenuNav}>
           <div className="mb-4 grid gap-2 px-2">
             <p className="px-2 text-xs font-bold uppercase tracking-[0.16em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilbereich' : t.drawer.sectionTitle}</p>
             {profileControlCards.map(([title, text]) => (
@@ -2735,12 +2935,24 @@ function SmystStartPage({
           </div>
 
           <ul className="space-y-1">
-            {visibleMenuItems.map((item) => (
+            {visibleMenuItems.map((item, index) => (
               <li key={item.label}>
+                {/* Struktur wie im UX-Mockup: 1 Highway (Start-Assistent, cyan
+                    hervorgehoben) — danach die weiteren Bereiche unter einer
+                    eigenen Ueberschrift. Nichts wird entfernt oder versteckt. */}
+                {index === 1 && (
+                  <p className="mb-1 mt-4 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8e97a8]">
+                    {lang === DEFAULT_LANG ? 'Alles andere' : t.drawer.sectionTitle}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={() => goFromMenu(item.view)}
-                  className="flex min-h-[58px] w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                  className={
+                    item.view === 'onboarding'
+                      ? 'flex min-h-[58px] w-full items-center justify-between gap-3 rounded-lg border border-[#59C7FF]/50 bg-[#59C7FF]/10 px-4 py-3 text-left transition hover:bg-[#59C7FF]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50'
+                      : 'flex min-h-[58px] w-full items-center justify-between gap-3 rounded-lg px-4 py-3 text-left transition hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50'
+                  }
                 >
                   <span className="min-w-0">
                     <span className="block text-sm font-bold text-white">{item.label}</span>
@@ -2867,7 +3079,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              aria-label="Menü öffnen"
+              aria-label={lang === DEFAULT_LANG ? "Menü öffnen" : t.menuA11y.open}
               aria-expanded={menuOpen}
               className="absolute left-0 top-0 grid h-11 w-11 shrink-0 place-items-center text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45"
             >
@@ -2897,8 +3109,8 @@ function SmystStartPage({
                   onOpenProfile(selectedTwin.profileSlug)
                 }}
                 disabled={!selectedTwin.profileSlug}
-                aria-label={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
-                title={selectedTwin.profileSlug ? `Profil von ${selectedTwin.name} öffnen` : undefined}
+                aria-label={selectedTwin.profileSlug ? (lang === DEFAULT_LANG ? `Profil von ${selectedTwin.name} öffnen` : t.chatA11y.openProfile.replace('{name}', selectedTwin.name)) : undefined}
+                title={selectedTwin.profileSlug ? (lang === DEFAULT_LANG ? `Profil von ${selectedTwin.name} öffnen` : t.chatA11y.openProfile.replace('{name}', selectedTwin.name)) : undefined}
                 className="group grid aspect-square h-full shrink-0 place-items-center overflow-hidden border-r border-white/[0.08] bg-white/[0.045] text-xs font-bold text-white/[0.86] transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 enabled:cursor-pointer enabled:hover:opacity-80 disabled:cursor-default"
               >
                 {selectedTwin.imageUrl ? (
@@ -2925,7 +3137,7 @@ function SmystStartPage({
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
-              aria-label="Menü öffnen"
+              aria-label={lang === DEFAULT_LANG ? "Menü öffnen" : t.menuA11y.open}
               aria-expanded={menuOpen}
               className="absolute left-4 top-4 grid h-11 w-11 shrink-0 place-items-center text-white/90 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:left-8 sm:h-14 sm:w-14"
             >
@@ -3076,7 +3288,10 @@ function SmystStartPage({
                 <span>{filteredTwins.length} {filteredTwins.length === 1 ? 'Profil' : 'Profile'}</span>
               </div>
               <div>
-                {filteredTwins.map((twin) => renderProfileCard(twin))}
+                {filteredTwins.slice(0, gridVisibleCount).map((twin) => renderProfileCard(twin))}
+                {gridVisibleCount < filteredTwins.length && (
+                  <div ref={gridEndRef} aria-hidden="true" className="h-px w-full" />
+                )}
                 {filteredTwins.length === 0 && (
                   <div className="px-5 py-8 text-sm font-semibold text-[#8e97a8]">
                     {profilesLoaded
@@ -3116,6 +3331,11 @@ function SmystStartPage({
                     ) : (
                       <p className="whitespace-pre-wrap break-words">{message.content}</p>
                     )}
+                    {message.role !== 'user' && !message.streaming && message.content ? (
+                      <p className="mt-1 text-[10px] uppercase tracking-wide text-[#aeb6c4]/70">
+                        KI-generierte Antwort
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -3171,16 +3391,16 @@ function SmystStartPage({
           <div className={`border-b ${composerLine} px-2 py-1 text-xs font-semibold text-[#d5dbe5] sm:px-3`}>
             {composerMenuOpen && (
               <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Foto oder Video hinzufügen" title="Foto oder Video hinzufügen">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto} title={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto}>
                   <ImageIcon className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Kamera öffnen" title="Kamera öffnen">
+                <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera} title={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera}>
                   <CameraIcon className="h-4 w-4" />
                 </button>
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Dateien" title="Dateien">
                   <FileIcon className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Audio hinzufügen" title="Audio hinzufügen">
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio} title={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio}>
                   <Mic className="h-4 w-4" />
                 </button>
                 <button type="button" onClick={handleAttachLink} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label="Link" title="Link">
@@ -3376,6 +3596,17 @@ function TwinProfileView({
   const [similarTwins, setSimilarTwins] = useState<StartTwin[]>([])
   const [publicProfileCount, setPublicProfileCount] = useState(0)
   const { lang } = useLanguage({ reloadOnChange: false })
+
+  // Besucher-Zaehlung (Verbesserung 3): ein Ping pro Profilaufruf, fire-and-forget
+  useEffect(() => {
+    if (!slug) return
+    void fetchService('/api/v1/visits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug }),
+      keepalive: true,
+    }).catch(() => undefined)
+  }, [slug])
   const t = useStaticTranslations(lang)
   const isPrivate = Boolean(privateTwinId)
 
@@ -3649,6 +3880,14 @@ function TwinProfileView({
               <button
                 type="button"
                 onClick={() => {
+                  // Oeffentliche Profile fuehren in den Startseiten-Chat - eine Oberflaeche
+                  // fuer alle Wege. Private Twins laufen ueber ihre ID und bleiben beim
+                  // bisherigen Weg, weil sie in der oeffentlichen Liste nicht vorkommen.
+                  if (!privateTwin && profile.slug) {
+                    storeChatOpenRequest(profile.slug)
+                    onNavigate('landing')
+                    return
+                  }
                   onNavigate('twin-chat')
                   window.history.replaceState({}, '', profile.chatPath)
                 }}
@@ -3889,7 +4128,7 @@ function TwinProfileView({
           </section>
         )}
 
-        {profile.visibility === 'public' && <AdSlot placement="profile-footer" />}
+        {profile.visibility === 'public' && <AdSlot placement="profile-footer" profileSlug={profile.slug ?? undefined} />}
       </section>
     </div>
   )
@@ -4074,6 +4313,8 @@ function SignInRequiredCard({ title, text, returnTo }: { title: string; text: st
 function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
   const auth = useAuth()
   const twinMvp = useTwinMvp()
+  const { lang } = useLanguage({ reloadOnChange: false })
+  const ps = useStaticTranslations(lang).privacyStatus
   const [privacyStatus, setPrivacyStatus] = useState<string | null>(null)
   const [profile, setProfile] = useState<UserProfileRecord | null>(null)
   const [memories, setMemories] = useState<MemoryRecord[]>([])
@@ -4155,7 +4396,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     if (!result?.profile) return
     setProfile(result.profile)
     hydrateProfileDraft(result.profile)
-    setPrivacyStatus('Profil gespeichert und für IDrive-e2-Objektpersistenz vorgemerkt.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Profil gespeichert und für IDrive-e2-Objektpersistenz vorgemerkt.' : ps.profileSaved)
   }
 
   const createManualMemory = async () => {
@@ -4173,7 +4414,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     if (!memory) return
     setMemoryDraft('')
     await refreshProfileData()
-    setPrivacyStatus('Memory gespeichert.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Memory gespeichert.' : ps.memorySaved)
   }
 
   const confirmMemory = async (memory: MemoryRecord) => {
@@ -4187,7 +4428,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     if (!result) return
     setMemories((current) => current.filter((item) => item.id !== memory.id))
     setMemoryDeleteCandidate(null)
-    setPrivacyStatus('Memory gelöscht.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Memory gelöscht.' : ps.memoryDeleted)
   }
 
   const searchChats = async () => {
@@ -4242,12 +4483,12 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     setProfile(result.profile)
     hydrateProfileDraft(result.profile)
     setPublicKnowledgeSuggestion((current) => current ? { ...current, status: 'approved' } : current)
-    setPrivacyStatus('Public Knowledge nach Review übernommen.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Public Knowledge nach Review übernommen.' : ps.pkAccepted)
   }
 
   const rejectPublicKnowledgeSuggestion = () => {
     setPublicKnowledgeSuggestion((current) => current ? { ...current, status: 'rejected' } : current)
-    setPrivacyStatus('Public-Knowledge-Vorschlag abgelehnt.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Public-Knowledge-Vorschlag abgelehnt.' : ps.pkRejected)
   }
 
   const exportAccount = async () => {
@@ -4260,7 +4501,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     link.download = `smyst-account-export-${new Date().toISOString().slice(0, 10)}.json`
     link.click()
     URL.revokeObjectURL(url)
-    setPrivacyStatus('Export erstellt.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Export erstellt.' : ps.exportCreated)
   }
 
   const deleteAccount = async () => {
@@ -4268,7 +4509,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
     const result = await twinMvp.deleteAccount()
     if (!result) return
     setAccountDeleteWord('')
-    setPrivacyStatus('Account-Löschung ausgeführt. Du wirst abgemeldet.')
+    setPrivacyStatus(lang === DEFAULT_LANG ? 'Account-Löschung ausgeführt. Du wirst abgemeldet.' : ps.accountDeleted)
     window.setTimeout(() => {
       window.location.href = '/'
     }, 800)
@@ -4675,7 +4916,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                 </div>
               ))}
               {!memories.length && (
-                <div className="rounded-lg bg-white/12 p-4 text-sm text-[#555b64]">Noch keine Memories gespeichert.</div>
+                <div className="rounded-lg bg-white/12 p-4 text-sm text-[#555b64]">Noch keine Dateien oder Erinnerungen gespeichert.</div>
               )}
             </div>
           </Card>
@@ -4837,7 +5078,7 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
         </div>
         <SignInRequiredCard
           title="Erst anmelden, dann speichern"
-          text="Private Profile, Memories und Chats werden erst nach Login dauerhaft gespeichert."
+          text="Private Profile, Dateien und Chats werden erst nach Login dauerhaft gespeichert."
           returnTo="/onboarding"
         />
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -4903,6 +5144,25 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
         ))}
       </div>
 
+      {auth.status === 'authenticated' && (
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <h2 className="mb-1 text-lg font-bold tracking-tight">Dateien & Erinnerungen direkt hier hochladen</h2>
+            <p className="mb-4 text-sm text-[#555b64]">
+              Zieh einfach alles in den Upload-Bereich — Bilder, Video, Audio, PDF und Texte. Wir sortieren automatisch.
+            </p>
+            <MemoryUploadView onNavigate={onNavigate} embedded />
+          </div>
+          <div>
+            <h2 className="mb-1 text-lg font-bold tracking-tight">Social-Media verknüpfen</h2>
+            <p className="mb-4 text-sm text-[#555b64]">
+              Instagram, TikTok und Co. — öffentliche Infos werden geprüft und als Twin-Wissen importiert.
+            </p>
+            <SocialLinksCard />
+          </div>
+        </div>
+      )}
+
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Card className="p-5">
           <h2 className="text-lg font-bold">Dein aktueller Stand</h2>
@@ -4916,7 +5176,7 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
               <span className="font-bold">{loading ? 'lädt…' : twinCount}</span>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/12 px-3 py-2 text-sm">
-              <span>Memories</span>
+              <span>Dateien & Erinnerungen</span>
               <span className="font-bold">{loading ? 'lädt…' : memoryCount}</span>
             </div>
           </div>
@@ -5428,6 +5688,9 @@ function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
 
 type AdminSection =
   | 'overview'
+  | 'autopilot'
+  | 'approvals'
+  | 'ideas'
   | 'look'
   | 'users'
   | 'registrations'
@@ -5507,6 +5770,76 @@ type AdminOverviewApi = {
     note?: string
   }
   computeQueue?: ComputeJobSummary
+}
+
+type AdminAutopilotApi = {
+  ok: boolean
+  summary?: {
+    total: number
+    green: number
+    yellow: number
+    red: number
+    unknown: number
+    allGreen: boolean
+    source: string
+    repo: string
+  }
+  workflows?: Array<{
+    file: string
+    name: string
+    cadence: string
+    kind: 'github' | 'local'
+    light: 'green' | 'yellow' | 'red' | 'unknown'
+    lastRun?: {
+      status?: string | null
+      conclusion?: string | null
+      createdAt?: string | null
+      htmlUrl?: string | null
+    } | null
+  }>
+  checkedAt?: number
+}
+
+type AdminApprovalCard = {
+  qid: string
+  name: string
+  status?: string | null
+  qa_passed: boolean
+  risk_score?: number | null
+  image_status?: string | null
+  status_reason?: string | null
+  reviewed_at?: string | null
+}
+
+type AdminApprovalsApi = {
+  ok: boolean
+  ready?: AdminApprovalCard[]
+  blocked?: AdminApprovalCard[]
+  counts?: { ready: number; blocked: number }
+}
+
+type AdminIdeaCard = {
+  id: string
+  title: string
+  description: string
+  expected_benefit?: string | null
+  status?: string | null
+  created_at?: string | null
+}
+
+type AdminModelReport = {
+  key: string
+  tag?: string | null
+  score?: number | null
+  answered?: number | null
+  total?: number | null
+}
+
+type AdminIdeasApi = {
+  ok: boolean
+  ideas?: AdminIdeaCard[]
+  counts?: { proposed: number; approved: number; rejected: number }
+  modelReports?: AdminModelReport[]
 }
 
 type ComputeJobSummary = {
@@ -5627,6 +5960,9 @@ type ComputeJobsApi = {
 
 const adminSections: Array<{ id: AdminSection; label: string; detail: string }> = [
   { id: 'overview', label: 'Overview', detail: 'Live Status' },
+  { id: 'autopilot', label: 'Autopilot', detail: 'Ampeln aller Automatiken' },
+  { id: 'approvals', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen' },
+  { id: 'ideas', label: 'Ideen & Modell', detail: 'Autopilot-Vorschläge + smyst 1.0' },
   { id: 'look', label: 'Look', detail: 'Design System' },
   { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export' },
   { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots' },
@@ -5746,6 +6082,14 @@ function AdminControlCenterInner() {
   const [adminMfaMessage, setAdminMfaMessage] = useState<string | null>(null)
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
   const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
+  const [adminAutopilot, setAdminAutopilot] = useState<AdminAutopilotApi | null>(null)
+  const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
+  const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
+  const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
+  const [adminIdeas, setAdminIdeas] = useState<AdminIdeasApi | null>(null)
+  const [adminIdeasBusy, setAdminIdeasBusy] = useState<string | null>(null)
+  const [adminIdeasMessage, setAdminIdeasMessage] = useState<string | null>(null)
+  const [adminLiveOps, setAdminLiveOps] = useState<{ visits?: { totalToday: number; totalAll: number }; ads?: { total: number }; chatFeedback?: { up: number; down: number; dislikeRate: number } }>({})
   const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
   const [computeCapabilities, setComputeCapabilities] = useState<ComputeCapabilitiesApi | null>(null)
@@ -5807,6 +6151,143 @@ function AdminControlCenterInner() {
       alive = false
     }
   }, [activeSection])
+  const refreshAdminApprovals = useCallback(() => {
+    let alive = true
+    fetchService('/api/admin/approvals', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminApprovals(response.ok && payload?.ok ? payload as AdminApprovalsApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminApprovals(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'approvals') return
+    return refreshAdminApprovals()
+  }, [activeSection, refreshAdminApprovals])
+
+  const decideApproval = async (qid: string, action: 'approve' | 'reject') => {
+    let body: string | null = null
+    if (action === 'reject') {
+      const reason = window.prompt('Warum wird dieser Kandidat abgelehnt? (Pflichtfeld)')?.trim()
+      if (!reason || reason.length < 3) {
+        setAdminApprovalsMessage('Ablehnen braucht einen Grund (mindestens 3 Zeichen).')
+        return
+      }
+      body = JSON.stringify({ reason })
+    }
+    setAdminApprovalsBusy(qid)
+    setAdminApprovalsMessage(null)
+    try {
+      const response = await fetchService(`/api/admin/approvals/${encodeURIComponent(qid)}/${action}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: body ?? undefined,
+      })
+      const payload = await response.json().catch(() => ({}))
+      setAdminApprovalsMessage(typeof payload?.result === 'string' ? payload.result : 'Aktion abgeschlossen.')
+      refreshAdminApprovals()
+    } catch {
+      setAdminApprovalsMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
+    } finally {
+      setAdminApprovalsBusy(null)
+    }
+  }
+
+  const refreshAdminIdeas = useCallback(() => {
+    let alive = true
+    fetchService('/api/admin/ideas', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminIdeas(response.ok && payload?.ok ? payload as AdminIdeasApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminIdeas(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'ideas') return
+    return refreshAdminIdeas()
+  }, [activeSection, refreshAdminIdeas])
+
+  const decideIdea = async (id: string, action: 'approve' | 'reject') => {
+    let body: string | null = null
+    if (action === 'reject') {
+      const reason = window.prompt('Warum wird diese Idee abgelehnt? (Pflichtfeld)')?.trim()
+      if (!reason || reason.length < 3) {
+        setAdminIdeasMessage('Ablehnen braucht einen Grund (mindestens 3 Zeichen).')
+        return
+      }
+      body = JSON.stringify({ reason })
+    }
+    setAdminIdeasBusy(id)
+    setAdminIdeasMessage(null)
+    try {
+      const response = await fetchService(`/api/admin/ideas/${encodeURIComponent(id)}/${action}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: body ?? undefined,
+      })
+      const payload = await response.json().catch(() => ({}))
+      setAdminIdeasMessage(typeof payload?.result === 'string' ? payload.result : 'Aktion abgeschlossen.')
+      refreshAdminIdeas()
+    } catch {
+      setAdminIdeasMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
+    } finally {
+      setAdminIdeasBusy(null)
+    }
+  }
+
+  // Autopilot-Ampeln: Status aller geplanten Workflows
+  useEffect(() => {
+    if (activeSection !== 'autopilot') return
+    let alive = true
+    fetchService('/api/admin/autopilot', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminAutopilot(response.ok && payload?.ok ? payload as AdminAutopilotApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminAutopilot(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
+  // Live-Betrieb (Autopilot): Besucher, Werbe-Impressions, Feedback-Quote
+  useEffect(() => {
+    if (activeSection !== 'aiQuality') return
+    let alive = true
+    Promise.all([
+      fetchService('/api/v1/visits/stats').then((r) => r.json()).catch(() => null),
+      fetchService('/api/v1/ads/stats').then((r) => r.json()).catch(() => null),
+      fetchService('/api/v1/chat/feedback/stats').then((r) => r.json()).catch(() => null),
+    ]).then(([visits, ads, chatFeedback]) => {
+      if (alive) setAdminLiveOps({ visits, ads, chatFeedback })
+    })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
 
   useEffect(() => {
     let alive = true
@@ -5956,20 +6437,20 @@ function AdminControlCenterInner() {
   const overviewMetrics: AdminMetric[] = [
     {
       label: 'Live Nutzer',
-      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : '18.4M',
+      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : (adminOverview ? '–' : '18.4M'),
       detail: adminOverview ? `${adminOverview.metrics?.blockedUsers ?? 0} blockiert, KV-User sichtbar.` : 'Web, PWA, iPhone, Android und API zusammen.',
       tone: 'green',
     },
     { label: 'Chat Start', value: '142 ms', detail: 'Ziel: Chat sofort offen, Streaming sofort sichtbar.', tone: 'cyan' },
     {
       label: 'Ad Revenue',
-      value: adminOverview ? formatCents(adminOverview.metrics?.validRevenueCents) : '$248K',
+      value: adminOverview ? (adminOverview.metrics?.validRevenueCents !== undefined ? formatCents(adminOverview.metrics.validRevenueCents) : '–') : '$248K',
       detail: 'Nur gültige Anzeigenumsätze nach Policy-Filter.',
       tone: 'amber',
     },
     {
       label: 'User Share',
-      value: adminOverview ? formatCents(adminOverview.metrics?.userShareCents) : '$62K',
+      value: adminOverview ? (adminOverview.metrics?.userShareCents !== undefined ? formatCents(adminOverview.metrics.userShareCents) : '–') : '$62K',
       detail: `${adminOverview?.metrics?.userSharePercent ?? 25} % Pool für genutzte AI-Profile.`,
       tone: 'green',
     },
@@ -5992,6 +6473,203 @@ function AdminControlCenterInner() {
   ]
 
   const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
+
+  const renderIdeas = () => {
+    const counts = adminIdeas?.counts
+    const modelle = adminIdeas?.modelReports ?? []
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Ideen-Autopilot &amp; Modell-Loop</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminIdeas === null
+              ? 'Ideen werden geladen oder Object Brain nicht erreichbar.'
+              : `${counts?.proposed ?? 0} Vorschläge warten auf deine Entscheidung, ${counts?.approved ?? 0} freigegeben, ${counts?.rejected ?? 0} abgelehnt.`}
+          </p>
+          {adminIdeasMessage ? (
+            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminIdeasMessage}</p>
+          ) : null}
+        </section>
+        {(adminIdeas?.ideas ?? []).filter((idea) => idea.status === 'proposed').map((idea) => (
+          <section key={idea.id} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-black text-[#111722]">{idea.title}</h3>
+                <p className="mt-1 text-sm font-semibold text-[#5d6776]">{idea.description}</p>
+                {idea.expected_benefit ? <p className="mt-1 text-xs font-semibold text-emerald-600">Nutzen: {idea.expected_benefit}</p> : null}
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={adminIdeasBusy === idea.id}
+                onClick={() => decideIdea(idea.id, 'approve')}
+                className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-50"
+              >
+                Freigeben
+              </button>
+              <button
+                type="button"
+                disabled={adminIdeasBusy === idea.id}
+                onClick={() => decideIdea(idea.id, 'reject')}
+                className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
+              >
+                Ablehnen
+              </button>
+            </div>
+          </section>
+        ))}
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-lg font-bold text-[#111722]">smyst 1.0 – Modell-Evals</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">Neueste Läufe des Modell-Eval-Autopilots (Score = Anteil bestandener Fragen).</p>
+          <div className="mt-3 grid gap-2">
+            {modelle.length === 0 ? (
+              <p className="text-sm font-semibold text-[#5d6776]">Noch keine Modell-Eval-Reports im Object Brain.</p>
+            ) : modelle.map((report) => (
+              <div key={report.key} className="flex items-center justify-between rounded-md border border-[#edf2f7] bg-[#f7fafd] px-3 py-2">
+                <span className="text-sm font-bold text-[#172033]">{report.key}</span>
+                <span className={`text-sm font-black ${typeof report.score === 'number' && report.score >= 0.9 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  {typeof report.score === 'number' ? `${Math.round(report.score * 100)} %` : '–'}{report.answered !== null && report.answered !== undefined ? ` (${report.answered}/${report.total ?? '?'})` : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    )
+  }
+
+  const renderApprovalCard = (card: AdminApprovalCard, tone: 'ready' | 'blocked') => (
+    <section key={card.qid} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-black text-[#111722]">{card.name}</h3>
+          <p className="mt-0.5 text-xs font-semibold text-[#667085]">
+            {card.qid}{card.risk_score !== null && card.risk_score !== undefined ? ` · Risiko ${card.risk_score}` : ''}
+            {card.image_status ? ` · Bild: ${card.image_status}` : ''}
+          </p>
+        </div>
+        <span className={`inline-flex items-center gap-2 rounded-md border border-[#d9e2ec] px-2 py-1 text-xs font-bold ${card.qa_passed ? 'text-emerald-600' : 'text-amber-600'}`}>
+          {card.qa_passed ? 'QA bestanden' : 'QA offen'}
+        </span>
+      </div>
+      {card.status_reason ? <p className="mt-2 text-sm font-semibold text-[#5d6776]">{card.status_reason}</p> : null}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {tone === 'ready' ? (
+          <button
+            type="button"
+            disabled={adminApprovalsBusy === card.qid}
+            onClick={() => decideApproval(card.qid, 'approve')}
+            className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-50"
+          >
+            Freigeben
+          </button>
+        ) : null}
+        <button
+          type="button"
+          disabled={adminApprovalsBusy === card.qid}
+          onClick={() => decideApproval(card.qid, 'reject')}
+          className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
+        >
+          Ablehnen
+        </button>
+      </div>
+    </section>
+  )
+
+  const renderApprovals = () => {
+    const counts = adminApprovals?.counts
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Freigabe-Postfach</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminApprovals === null
+              ? 'Freigaben werden geladen oder Object Brain nicht erreichbar.'
+              : (counts?.ready ?? 0) === 0 && (counts?.blocked ?? 0) === 0
+                ? 'Alles erledigt – keine Kandidaten warten auf deine Entscheidung.'
+                : `${counts?.ready ?? 0} bereit zur Freigabe, ${counts?.blocked ?? 0} mit offener QA.`}
+          </p>
+          {adminApprovalsMessage ? (
+            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminApprovalsMessage}</p>
+          ) : null}
+        </section>
+        {(adminApprovals?.ready ?? []).map((card) => renderApprovalCard(card, 'ready'))}
+        {(adminApprovals?.blocked ?? []).map((card) => renderApprovalCard(card, 'blocked'))}
+      </div>
+    )
+  }
+
+  const renderAutopilot = () => {
+    const lightDot: Record<string, string> = {
+      green: 'bg-emerald-500',
+      yellow: 'bg-amber-400',
+      red: 'bg-red-500',
+      unknown: 'bg-slate-300',
+    }
+    const lightLabel: Record<string, string> = {
+      green: 'läuft',
+      yellow: 'überfällig',
+      red: 'fehlgeschlagen',
+      unknown: 'unbekannt',
+    }
+    const summary = adminAutopilot?.summary
+    const checkedAt = adminAutopilot?.checkedAt
+      ? new Date(adminAutopilot.checkedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+      : null
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-[#111722]">Autopilot-Cockpit</h2>
+              <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+                {adminAutopilot === null
+                  ? 'Status wird geladen oder Backend nicht erreichbar.'
+                  : summary?.allGreen
+                    ? `Alle ${summary.green} von ${summary.green + summary.yellow + summary.red} geprüften Automatiken laufen.${checkedAt ? ` Letzter Check ${checkedAt} Uhr.` : ''}`
+                    : `Ampeln: ${summary?.green ?? 0} grün, ${summary?.yellow ?? 0} gelb, ${summary?.red ?? 0} rot, ${summary?.unknown ?? 0} unbekannt.${checkedAt ? ` Letzter Check ${checkedAt} Uhr.` : ''}`}
+              </p>
+            </div>
+            {summary && (
+              <span className={`inline-flex items-center gap-2 rounded-md border border-[#d9e2ec] px-3 py-1.5 text-sm font-bold text-[#172033]`}>
+                <span className={`h-2.5 w-2.5 rounded-full ${summary.allGreen ? 'bg-emerald-500' : (summary.red > 0 ? 'bg-red-500' : 'bg-amber-400')}`} />
+                {summary.allGreen ? 'Alles okay' : summary.red > 0 ? 'Handlung nötig' : 'Beobachten'}
+              </span>
+            )}
+          </div>
+        </section>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {(adminAutopilot?.workflows ?? []).map((workflow) => (
+            <section key={workflow.file} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-black text-[#111722]">{workflow.name}</h3>
+                  <p className="mt-0.5 text-xs font-semibold text-[#667085]">{workflow.cadence}</p>
+                </div>
+                <span className={`mt-1 h-3 w-3 shrink-0 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-300'}`} title={lightLabel[workflow.light] ?? 'unbekannt'} />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-[#5d6776]">
+                {workflow.kind === 'local'
+                  ? 'Läuft auf der Mac-Workstation (launchd).'
+                  : workflow.lastRun?.createdAt
+                    ? `Letzter Lauf: ${new Date(workflow.lastRun.createdAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} – ${lightLabel[workflow.light] ?? workflow.lastRun.conclusion ?? workflow.lastRun.status ?? 'unbekannt'}`
+                    : 'Kein Lauf gefunden.'}
+              </p>
+              {workflow.lastRun?.htmlUrl && (
+                <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-bold text-sky-500 hover:underline">
+                  Lauf in GitHub ansehen
+                </a>
+              )}
+            </section>
+          ))}
+          {adminAutopilot === null && (
+            <p className="text-sm font-semibold text-[#5d6776]">Keine Autopilot-Daten – Backend /api/admin/autopilot prüfen.</p>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const renderLook = () => {
     const colors = [
@@ -6364,6 +7042,23 @@ function AdminControlCenterInner() {
 
     return (
       <div className="grid gap-5">
+        <div className="grid gap-3 rounded-lg border border-[#d9e2ec] bg-white p-4 sm:grid-cols-3">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Besucher (Autopilot)</p>
+            <p className="mt-1 text-2xl font-bold text-[#101828]">{adminLiveOps.visits?.totalAll ?? 0}</p>
+            <p className="text-xs text-[#667085]">Heute: {adminLiveOps.visits?.totalToday ?? 0} Profilaufrufe</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Werbe-Impressions (25%-Basis)</p>
+            <p className="mt-1 text-2xl font-bold text-[#101828]">{adminLiveOps.ads?.total ?? 0}</p>
+            <p className="text-xs text-[#667085]">Auszahlung: 25 % der Erlöse, pro-rata nach Impressions</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Chat-Feedback</p>
+            <p className="mt-1 text-2xl font-bold text-[#101828]">👍 {adminLiveOps.chatFeedback?.up ?? 0} · 👎 {adminLiveOps.chatFeedback?.down ?? 0}</p>
+            <p className="text-xs text-[#667085]">Dislike-Rate: {Math.round((adminLiveOps.chatFeedback?.dislikeRate ?? 0) * 100)} %</p>
+          </div>
+        </div>
         {adminQualityStatus === 'denied' && (
           <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
             Qualitätsdaten nur für Admin-Rollen sichtbar. Bitte mit einem Admin-Konto anmelden.
@@ -6604,6 +7299,9 @@ function AdminControlCenterInner() {
 
   const renderActiveSection = () => {
     if (activeSection === 'overview') return renderOverview()
+    if (activeSection === 'autopilot') return renderAutopilot()
+    if (activeSection === 'approvals') return renderApprovals()
+    if (activeSection === 'ideas') return renderIdeas()
     if (activeSection === 'look') return renderLook()
     if (activeSection === 'users') return renderUsers()
     if (activeSection === 'registrations') return renderRegistrations()
@@ -6876,7 +7574,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/12 p-3">
               <div>
-                <p className="text-sm font-medium">{isAuthenticated ? 'Memories' : 'Memory Upload'}</p>
+                <p className="text-sm font-medium">{isAuthenticated ? 'Dateien & Erinnerungen' : 'Dateien & Erinnerungen'}</p>
                 <p className="text-xs text-[#767d87]">{isAuthenticated ? t.dashboard.manageUploads : t.dashboard.uploadAfterLogin}</p>
               </div>
               <Button variant="ghost" size="sm" onClick={() => onNavigate('memory-upload')}>{t.dashboard.view}</Button>
@@ -6901,7 +7599,7 @@ function DashboardView({ onNavigate }: { onNavigate: (view: AppView) => void }) 
               <span className="text-sm font-bold">{dashStats ? dashStats.twins : '–'}</span>
             </div>
             <div className="flex items-center justify-between rounded-lg bg-white/10 p-3">
-              <span className="text-sm font-medium">Memories</span>
+              <span className="text-sm font-medium">Dateien & Erinnerungen</span>
               <span className="text-sm font-bold">{dashStats ? dashStats.memories : '–'}</span>
             </div>
             {!isAuthenticated && (
@@ -6927,6 +7625,8 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
   const [style, setStyle] = useState<TwinStyle>('warm')
   const [visibility, setVisibility] = useState<'private' | 'public'>('private')
   const [savedTwin, setSavedTwin] = useState<TwinRecord | null>(null)
+  const [justCreated, setJustCreated] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
   const totalSteps = 4
   const auth = useAuth()
   const twinMvp = useTwinMvp()
@@ -6976,7 +7676,69 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
     }
 
     setSavedTwin(twin)
-    onNavigate('twin-chat')
+    setJustCreated(true)
+    setShareCopied(false)
+  }
+
+  // Erfolgs-Moment nach dem Erstellen: großes „Dein Twin ist bereit" mit
+  // Chatten-/Teilen-Aktionen, bevor der Nutzer weitergeleitet wird.
+  if (justCreated && savedTwin) {
+    const shareUrl = `${window.location.origin}/t/${encodeURIComponent(savedTwin.slug)}/`
+    const isPublic = savedTwin.visibility === 'public'
+    const copyShareLink = async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        setShareCopied(true)
+        window.setTimeout(() => setShareCopied(false), 3000)
+      } catch {
+        /* Clipboard nicht verfügbar */
+      }
+    }
+    return (
+      <div className="mx-auto max-w-xl px-4 pt-10 text-center">
+        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full border-2 border-[#59C7FF] bg-[#59C7FF]/12 text-3xl text-[#59C7FF]">✓</div>
+        <h1 className="text-2xl font-black">Dein Twin ist bereit!</h1>
+        <p className="mt-2 text-sm text-[#767d87]">
+          „{savedTwin.name}“ wurde gespeichert. Dein Twin lernt mit jedem Chat weiter.
+        </p>
+        <div className="mt-6 rounded-xl border border-white/26 bg-white/12 p-4 text-left">
+          <div className="flex items-center gap-3">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#5eead4] to-[#60a5fa] font-black text-[#0b0f18]">
+              {savedTwin.name.trim().charAt(0).toUpperCase() || 'T'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-bold">{savedTwin.name}</p>
+              <p className="text-xs text-[#767d87]">{isPublic ? 'Öffentlich – für alle sichtbar' : 'Privat – nur du siehst ihn'}</p>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-2 sm:grid-cols-2">
+          <Button className="w-full justify-center" onClick={() => onNavigate('twin-chat')}>Mit Twin chatten 💬</Button>
+          {isPublic ? (
+            <Button variant="secondary" className="w-full justify-center" onClick={() => void copyShareLink()}>
+              {shareCopied ? 'Link kopiert ✓' : 'Share-Link kopieren 🔗'}
+            </Button>
+          ) : (
+            <Button variant="secondary" className="w-full justify-center" onClick={() => onNavigate('my-twins')}>
+              Sichtbarkeit ändern 🔒
+            </Button>
+          )}
+        </div>
+        {isPublic && (
+          <p className="mt-3 text-xs text-[#767d87]">{shareCopied ? `Kopiert: ${shareUrl}` : shareUrl}</p>
+        )}
+        <button
+          type="button"
+          className="mt-6 text-xs text-[#8e97a8] underline underline-offset-2 hover:text-[#111722]"
+          onClick={() => {
+            setJustCreated(false)
+            setStep(1)
+          }}
+        >
+          Weiteren Twin erstellen
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -7152,7 +7914,7 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
         {step === 4 && (
           <div className="space-y-6">
             <div>
-              <h2 className="mb-2 text-2xl font-semibold">Zugriff & Legacy</h2>
+              <h2 className="mb-2 text-2xl font-semibold">Zugriff: Wer soll deinen Twin sehen?</h2>
               <p className="text-sm text-[#555b64]">Wer soll Zugriff auf deinen Twin haben?</p>
             </div>
             {savedTwin && (
@@ -7345,7 +8107,7 @@ function MemoryMediaPreview({ file }: { file: MemoryLibraryItem }) {
   )
 }
 
-function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
+function MemoryUploadView({ onNavigate, embedded = false }: { onNavigate: (view: AppView) => void; embedded?: boolean }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const auth = useAuth()
   const memoryUpload = useMemoryUpload()
@@ -7481,11 +8243,13 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
   }
 
   return (
-    <div className="pt-6">
-      <div className="mb-5">
-        <h1 className="mb-1 text-2xl font-bold tracking-tight">Memory Upload</h1>
-        <p className="text-sm text-[#555b64]">Lade nur Dateien hoch, die dein Twin wirklich verwenden darf.</p>
-      </div>
+    <div className={embedded ? '' : 'pt-6'}>
+      {!embedded && (
+        <div className="mb-5">
+          <h1 className="mb-1 text-2xl font-bold tracking-tight">Dateien & Erinnerungen</h1>
+          <p className="text-sm text-[#555b64]">Lade nur Dateien hoch, die dein Twin wirklich verwenden darf.</p>
+        </div>
+      )}
 
       <Card className="mb-6 p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -7690,7 +8454,7 @@ function MemoryUploadView({ onNavigate }: { onNavigate: (view: AppView) => void 
             <h3 className="mb-4 text-lg font-semibold">Heute hochgeladen</h3>
             <div className="space-y-4">
               <div>
-                <p className="mb-1 text-sm text-[#767d87]">Gesamte Memories</p>
+                <p className="mb-1 text-sm text-[#767d87]">Gesamte Dateien & Erinnerungen</p>
                 <p className="text-2xl font-bold">{visibleUploads.length}</p>
               </div>
               <div>
@@ -8633,6 +9397,31 @@ function TwinChatView({
     }
   }
 
+  const handleShareAnswer = async (msg: TwinChatUiMessage) => {
+    if (msg.role !== 'ai' || !msg.content.trim()) return
+    const twinName = activeTwin?.name ?? 'KI-Persönlichkeit'
+    const outcome = await shareTwinAnswer(twinName, msg.content)
+    if (outcome === 'copied') addNotice('Antwort wurde in die Zwischenablage kopiert – jetzt überall einfügen und teilen!')
+    if (outcome === 'failed') addNotice('Teilen wird von diesem Browser nicht unterstützt.')
+  }
+
+  const handleUpgradePremium = async () => {
+    if (auth.status !== 'authenticated') {
+      addNotice('Melde dich an, um smyst Premium abzuschließen.')
+      return
+    }
+    try {
+      const result = await twinMvp.startPremiumCheckout()
+      if (result?.checkoutUrl) {
+        window.location.href = result.checkoutUrl
+      } else {
+        addNotice('Premium ist gerade nicht verfügbar. Bitte später erneut versuchen.')
+      }
+    } catch {
+      addNotice('Premium ist gerade nicht verfügbar. Bitte später erneut versuchen.')
+    }
+  }
+
   const handleAnswerFeedback = async (msg: TwinChatUiMessage, rating: 'up' | 'down') => {
     if (msg.role !== 'ai' || !msg.content.trim()) return
     if (!chatId || answerFeedback[msg.id] || feedbackSendingId) return
@@ -8746,9 +9535,9 @@ function TwinChatView({
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? 'Kein Profil ausgewählt'}</h1>
+              <h1 className="truncate text-sm font-bold tracking-tight sm:text-base">{activeTwin?.name ?? (lang === DEFAULT_LANG ? 'Kein Profil ausgewählt' : t.chatBar.noProfile)}</h1>
               <p className="mt-0.5 truncate text-[11px] font-semibold leading-none text-[#555b64] sm:text-xs">
-                {activeTwin ? activeTwin.branch : 'Profil auswählen'}
+                {activeTwin ? activeTwin.branch : lang === DEFAULT_LANG ? 'Profil auswählen' : t.chatBar.selectProfile}
               </p>
               {activeTwin && (
                 <p className="mt-0.5 truncate text-[10px] font-medium leading-none text-[#667085] sm:text-[11px]">
@@ -8841,6 +9630,11 @@ function TwinChatView({
                   {msg.streaming && msg.content && (
                     <span className="ml-0.5 inline-block h-4 w-1 translate-y-0.5 animate-pulse rounded-full bg-[#59C7FF] align-middle"></span>
                   )}
+                  {msg.role === 'ai' && !msg.streaming && msg.content ? (
+                    <p className="mt-1 text-[10px] uppercase tracking-wide text-[#555b64]/80">
+                      KI-generierte Antwort
+                    </p>
+                  ) : null}
                 </div>
                 {msg.role === 'ai' && !msg.streaming && msg.webResearch?.searched && (
                   <div className="mt-1 max-w-[calc(100%-8px)] rounded-md border border-white/24 bg-white/16 px-3 py-2 text-xs text-[#555b64] sm:max-w-[94%]">
@@ -8893,6 +9687,15 @@ function TwinChatView({
                         : savingMemoryId === msg.id
                           ? 'Speichern…'
                           : 'Im Memory speichern'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleShareAnswer(msg)}
+                      aria-label="Antwort teilen"
+                      title="Antwort als Karte teilen"
+                      className="rounded-full border border-white/30 bg-white/14 px-2.5 py-1 text-[11px] font-medium text-[#555b64] transition-colors hover:bg-white/28"
+                    >
+                      Teilen ↗
                     </button>
                     {chatId && (
                       <>
@@ -8984,16 +9787,16 @@ function TwinChatView({
               <div className="mb-1 rounded-[10px] border border-white/20 bg-white/14 px-2 py-1 text-xs font-semibold text-[#555b64]">
                 {composerMenuOpen && (
                   <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Foto oder Video hinzufügen" title="Foto oder Video hinzufügen">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto} title={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto}>
                       <ImageIcon className="h-4 w-4" />
                     </button>
-                    <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Kamera öffnen" title="Kamera öffnen">
+                    <button type="button" onClick={() => cameraInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera} title={lang === DEFAULT_LANG ? "Kamera öffnen" : t.chatA11y.openCamera}>
                       <CameraIcon className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Dateien" title="Dateien">
                       <FileIcon className="h-4 w-4" />
                     </button>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Audio hinzufügen" title="Audio hinzufügen">
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio} title={lang === DEFAULT_LANG ? "Audio hinzufügen" : t.chatA11y.addAudio}>
                       <Mic className="h-4 w-4" />
                     </button>
                     <button type="button" onClick={handleAttachLink} className="grid h-8 w-8 shrink-0 place-items-center rounded-md border border-white/30 bg-white/20 transition-colors hover:bg-white/30" aria-label="Link" title="Link">
@@ -9041,8 +9844,8 @@ function TwinChatView({
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
                   composerMenuOpen || attachments.length > 0 ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
-                aria-label="Medien hinzufügen"
-                title="Medien hinzufügen"
+                aria-label={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
+                title={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -9059,10 +9862,16 @@ function TwinChatView({
                 }}
                 placeholder={
                   activeTwin
-                      ? `Nachricht an ${activeTwin.name}...`
+                      ? lang === DEFAULT_LANG
+                        ? `Nachricht an ${activeTwin.name}...`
+                        : t.chatBar.messageTo.replace('{name}', activeTwin.name)
                       : auth.status !== 'authenticated'
-                        ? 'Öffentliches Profil auswählen'
-                        : 'Zuerst KI-Profil auswählen'
+                        ? lang === DEFAULT_LANG
+                          ? 'Öffentliches Profil auswählen'
+                          : t.chatBar.selectPublicProfile
+                        : lang === DEFAULT_LANG
+                          ? 'Zuerst KI-Profil auswählen'
+                          : t.chatBar.selectAiProfileFirst
                 }
                 disabled={!activeTwin || (auth.status !== 'authenticated' && !activeTwin.publicProfile)}
                 className="max-h-[96px] min-h-[36px] flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-5 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
@@ -9073,8 +9882,8 @@ function TwinChatView({
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
                   voiceState === 'listening' ? 'bg-white/24 text-[#16181b]' : ''
                 }`}
-                aria-label="Spracheingabe"
-                title={speechRecognitionSupported() ? 'Spracheingabe' : 'Spracheingabe nicht unterstützt'}
+                aria-label={lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput}
+                title={speechRecognitionSupported() ? (lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput) : lang === DEFAULT_LANG ? 'Spracheingabe nicht unterstützt' : t.chatBar.voiceInputUnsupported}
               >
                 <Mic className="h-4 w-4" />
               </button>
@@ -9108,8 +9917,8 @@ function TwinChatView({
                   canSend ? 'bg-[#59C7FF] text-[#0b1c44] hover:bg-[#7dd5ff]' : 'bg-white/28 text-[#767d87]'
                 }`}
                 data-ready={canSend ? 'true' : 'false'}
-                aria-label="Nachricht senden"
-                title="Nachricht senden"
+                aria-label={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
+                title={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
               >
                 <ArrowUp className="h-5 w-5" />
               </button>
@@ -9130,7 +9939,7 @@ function TwinChatView({
             <textarea
               value={noteText}
               onChange={(event) => setNoteText(event.target.value)}
-              placeholder="Kernidee, einfache Erklärung, Folgefragen …"
+              placeholder={lang === DEFAULT_LANG ? 'Kernidee, einfache Erklärung, Folgefragen …' : t.chatBar.notePlaceholder}
               rows={5}
               className="w-full resize-none rounded-md border border-[#0b1c44]/16 bg-white/70 px-2 py-1.5 text-sm text-[#16181b] outline-none focus:border-[#0b1c44]/40"
             />
@@ -9160,6 +9969,20 @@ function TwinChatView({
             >
               Nachfragen
             </button>
+            {PREMIUM_SUBSCRIPTIONS_ENABLED && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void handleUpgradePremium()}
+                  className="rounded-md border border-[#59C7FF]/45 bg-[#59C7FF]/20 px-3 py-1.5 text-sm font-semibold text-[#0b1c44] transition-colors hover:bg-[#59C7FF]/30"
+                >
+                  ✦ Premium – 4,99 €/Monat
+                </button>
+                <p className="px-1 text-[11px] leading-relaxed text-[#555b64]">
+                  Unbegrenzte Chats, werbefrei, alle Funktionen. Jederzeit kündbar.
+                </p>
+              </>
+            )}
           </div>
         </aside>
       </div>

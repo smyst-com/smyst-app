@@ -16,7 +16,7 @@ from app.integrations.email_account_store import (
 from app.main import app
 from app.security.passwords import hash_password, verify_password
 
-client = TestClient(app)
+client = TestClient(app, base_url="https://testserver")
 
 CSRF = {"X-Smyst-CSRF": "1"}
 

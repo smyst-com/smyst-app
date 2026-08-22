@@ -1,5 +1,10 @@
 # Build, Tests And Open Items
 
+> **Status: historisches Dokument.** Momentaufnahme aus der Zeit von Cloudflare
+> und Salad; als Zeitdokument bewusst unveraendert gelassen. Nicht als aktuelle
+> Vorgabe lesen - der Live-Stand steht in `docs/ARCHITECTURE.md` und
+> `docs/INFRA_SETUP.md`. Eingeordnet am 2026-08-20.
+
 Status: local verification report for the Free-Only MVP.
 
 ## Fixed During This Pass
@@ -59,4 +64,4 @@ npm run build
 python3 scripts/validate-foundation.py
 ```
 
-Production must still stay within GitHub Free, Legacy edge provider Free and IDrive e2 with no paid add-on services.
+Production must still stay within GitHub Free, Cloudflare and IDrive e2 with no paid add-on services.

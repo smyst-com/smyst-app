@@ -89,10 +89,27 @@ class Settings(BaseSettings):
         default="smyst-ci-llm-gateway", validation_alias="CI_GATEWAY_AUDIENCE"
     )
     ci_gateway_max_tokens: int = Field(default=800, validation_alias="CI_GATEWAY_MAX_TOKENS")
+    #: Modelle, die ein CI-Job beim Gateway ausdruecklich anfordern darf
+    #: (Kommaliste). LEER = das model-Feld wird ignoriert, wie bisher. Ohne
+    #: diese Bremse koennte jeder Job aus dem Repo beliebige — auch teure —
+    #: Modelle auf den Schluessel des Servers buchen.
+    ci_gateway_allowed_models_raw: str = Field(
+        default="", validation_alias="CI_GATEWAY_ALLOWED_MODELS"
+    )
     # Client-Seite (Pipeline): Basis-URL des Gateways. Leer => Gateway-Provider
     # wird nicht in die Kette aufgenommen.
     smyst_gateway_base_url: str | None = Field(
         default=None, validation_alias="SMYST_GATEWAY_BASE_URL"
+    )
+
+    # Eigenes Modell smyst 1.0 (llama.cpp, OpenAI-kompatibel; siehe
+    # docker/Dockerfile.llamacpp). Leer => Provider wird nicht aufgenommen —
+    # erst mit gesetzter URL steht er der Kette zur Verfuegung.
+    smyst_llm_base_url: str | None = Field(
+        default=None, validation_alias="SMYST_LLM_BASE_URL"
+    )
+    smyst_llm_api_key: str | None = Field(
+        default=None, validation_alias="SMYST_LLM_API_KEY"
     )
 
     llm_provider_order_raw: str = Field(default="", validation_alias="LLM_PROVIDER_ORDER")
@@ -105,6 +122,13 @@ class Settings(BaseSettings):
     )
     llm_chat_total_deadline_seconds: float = Field(
         default=20.0, validation_alias="LLM_CHAT_TOTAL_DEADLINE_SECONDS"
+    )
+
+    # Stripe Premium-Abo (Phase 2); ohne Keys ist Billing sauber deaktiviert (503)
+    stripe_secret_key: str | None = Field(default=None, validation_alias="STRIPE_SECRET_KEY")
+    stripe_webhook_secret: str | None = Field(default=None, validation_alias="STRIPE_WEBHOOK_SECRET")
+    stripe_premium_price_id: str | None = Field(
+        default=None, validation_alias="STRIPE_PREMIUM_PRICE_ID"
     )
 
     cors_origin_raw: str = Field(
@@ -124,6 +148,19 @@ class Settings(BaseSettings):
     )
     brave_search_api_key: str | None = Field(default=None, validation_alias="BRAVE_SEARCH_API_KEY")
     searxng_base_url: str | None = Field(default=None, validation_alias="SEARXNG_BASE_URL")
+    # Welche Suchmaschinen SearXNG befragen soll. Ohne Vorgabe nimmt SearXNG seinen
+    # Standardsatz (google, duckduckgo, brave, startpage, ...) - und der liefert von
+    # einer Rechenzentrums-IP nichts: am 16.08.2026 aus dem Zeabur-Container gemessen
+    # lieferten google/duckduckgo/brave/mojeek/startpage je 0 Treffer, bing 10.
+    searxng_engines: str = Field(
+        default="google,duckduckgo,bing,wikipedia",
+        validation_alias="SEARXNG_ENGINES",
+    )
+    # Sprache der Suchanfrage. "all" (frueherer Festwert) liefert Unsinn: am 16.08.2026
+    # gemessen kamen auf "heute wichtigsten Nachrichten Deutschland news" Microsoft-Support
+    # und Ferienhaeuser zurueck; mit "de" lieferten Google und DuckDuckGo sofort
+    # tagesschau.de, n-tv.de und t-online.de.
+    searxng_language: str = Field(default="de", validation_alias="SEARXNG_LANGUAGE")
     web_research_budget_per_user_day: int = Field(
         default=20,
         validation_alias="WEB_RESEARCH_BUDGET_PER_USER_DAY",
@@ -132,6 +169,14 @@ class Settings(BaseSettings):
         default=10,
         validation_alias="WEB_RESEARCH_BUDGET_PER_PROFILE_DAY",
     )
+
+    @property
+    def ci_gateway_allowed_models(self) -> list[str]:
+        return [
+            model.strip()
+            for model in self.ci_gateway_allowed_models_raw.split(",")
+            if model.strip()
+        ]
 
     @property
     def cors_origins(self) -> list[str]:

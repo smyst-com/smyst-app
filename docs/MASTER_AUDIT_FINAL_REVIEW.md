@@ -1,8 +1,13 @@
 # smyst.com Master Audit & Final Review
 
+> **Status: historisches Dokument.** Momentaufnahme aus der Zeit von Cloudflare
+> und Salad; als Zeitdokument bewusst unveraendert gelassen. Nicht als aktuelle
+> Vorgabe lesen - der Live-Stand steht in `docs/ARCHITECTURE.md` und
+> `docs/INFRA_SETUP.md`. Eingeordnet am 2026-08-20.
+
 Datum: 2026-06-10  
 Scope: gesamtes Repository, lokale Konfigurationen, aktive Source-Dateien, Worker, PWA-Dateien, Native-Konfigurationen, Dokumentation und vorhandene Build-Artefakte.  
-Regel: Production darf nur GitHub Free, Legacy edge provider Free und IDrive e2 verwenden. Kostenpflichtige Zusatzdienste sind nicht erlaubt. IDrive e2 ist zentraler Objekt-Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und Twin-Daten.
+Regel: Production darf nur GitHub Free, Cloudflare und IDrive e2 verwenden. Kostenpflichtige Zusatzdienste sind nicht erlaubt. IDrive e2 ist zentraler Objekt-Speicher fuer Dateien, Medien, Dokumente, Uploads, Backups und Twin-Daten.
 
 ## 1. Pruefgrundlage
 
@@ -48,7 +53,7 @@ Nicht live verifiziert:
 | Performance | 72% | Lazy Loading und Edge-Architektur vorhanden, Build/Lighthouse/Native-Assets offen |
 | SEO/AEO/GEO/KI-Suche | 76% | robots/sitemap/llms/schema/i18n vorhanden, OG-Asset und dynamische Profil-Indexierung offen |
 
-Ehrliche Kernaussage: smyst.com ist als Free-only-MVP technisch deutlich vorstrukturiert, aber noch nicht 100 Prozent bereit fuer Production. Der groesste Abstand entsteht nicht durch fehlende Konzepte, sondern durch stale Build-Artefakte, nicht live getestete Legacy edge provider-/IDrive-Flows, KV-Grenzen, fehlende Native-Link-Dateien und fehlende echte KI.
+Ehrliche Kernaussage: smyst.com ist als Free-only-MVP technisch deutlich vorstrukturiert, aber noch nicht 100 Prozent bereit fuer Production. Der groesste Abstand entsteht nicht durch fehlende Konzepte, sondern durch stale Build-Artefakte, nicht live getestete Cloudflare-/IDrive-Flows, KV-Grenzen, fehlende Native-Link-Dateien und fehlende echte KI.
 
 ## 3. Architektur-Audit
 
@@ -58,11 +63,11 @@ Ehrliche Kernaussage: smyst.com ist als Free-only-MVP technisch deutlich vorstru
 - Aktive Worker liegen in `workers/` und brauchen keinen VPS, kein FastAPI-Backend, keine externe Datenbank und keine Redis-Instanz.
 - `scripts/validate-foundation.py` blockiert Production-Verstoesse gegen verbotene Dienste.
 - `docs/FREE_ONLY_INFRASTRUCTURE.md`, `docs/FREE_ONLY_DATA_MAP.md`, `docs/ARCHITECTURE.md` und `docs/12-foundation-decisions.md` beschreiben die Free-only-Regel korrekt.
-- `legacy-edge-cli.toml` setzt API, Auth, Storage und Translation als Salad API auf.
+- `legacy-edge-cli.toml` setzt API, Auth, Storage und Translation als Zeabur-Backend auf.
 
 ### Funktioniert teilweise
 
-- Salad/IDrive metadata wird fuer Sessions, OAuth-State, Quotas, Upload-Status, kleine Twin-Metadaten und oeffentliche Snapshots verwendet. Das passt fuer ein MVP, ist aber keine dauerhaft starke Datenbank.
+- IDrive e2 wird fuer Sessions, OAuth-State, Quotas, Upload-Status, kleine Twin-Metadaten und oeffentliche Snapshots verwendet. Das passt fuer ein MVP, ist aber keine dauerhaft starke Datenbank.
 - IDrive e2 ist als S3-kompatibler Speicher angebunden, aber der echte Bucket-Flow wurde lokal nicht live verifiziert.
 - Deployment ueber GitHub Actions und Wrangler ist vorbereitet, aber nicht in dieser lokalen Umgebung end-to-end deployed.
 
@@ -139,7 +144,7 @@ Empfehlung: Altlasten nicht blind loeschen, aber in `legacy/` verschieben oder m
 - Frontend nutzt Vite/React und lazy geladene Feature-Komponenten.
 - Landing-Auth-Request wird im Source vermieden, solange die Landing-View aktiv ist.
 - PWA Service Worker cached App Shell und statische SEO-Dateien.
-- API/Storage/Chat liegen am Legacy edge provider Edge.
+- API/Storage/Chat liegen am Cloudflare Edge.
 - Uploads laufen direkt zu IDrive e2 und belasten Worker-Bandbreite nicht.
 - Worker-Bundles sind klein genug fuer MVP:
   - `workers/api.ts`: ca. 33,3 KB
@@ -152,7 +157,7 @@ Empfehlung: Altlasten nicht blind loeschen, aber in `legacy/` verschieben oder m
 
 - Vorhandene gebaute Native-/Dist-Assets sind nicht aktuell. Sie sind technisch klein genug, aber inhaltlich falsch.
 - Caching ist vorhanden, aber keine Lighthouse-/Web-Vitals-Abnahme wurde lokal erfolgreich durchgefuehrt.
-- Salad/IDrive metadata ist global schnell fuer einfache Reads, aber nicht fuer hohe Schreiblast, Listen/Indizes oder Milliarden-Nutzer-Datenmodelle geeignet.
+- IDrive e2 ist global schnell fuer einfache Reads, aber nicht fuer hohe Schreiblast, Listen/Indizes oder Milliarden-Nutzer-Datenmodelle geeignet.
 
 ### Performance-Probleme
 
@@ -287,7 +292,7 @@ Empfehlung: Altlasten nicht blind loeschen, aber in `legacy/` verschieben oder m
 
 - Finaler Production-Build in dieser Umgebung
 - Android/iOS Builds
-- Live Legacy edge provider Deploy/Smoke-Test
+- Live Cloudflare Deploy/Smoke-Test
 - Live IDrive-e2 Upload/Download/Delete
 - Real AI/LLM-Schicht
 - Milliarden-Skalierung
@@ -308,7 +313,7 @@ Empfehlung: Altlasten nicht blind loeschen, aber in `legacy/` verschieben oder m
    - Problem: `METADATA` und `SESSIONS` nutzen dieselbe KV-ID in `env.storage` und `env.api`.
    - Loesung: separaten `METADATA` Namespace erstellen und IDs ersetzen.
 
-3. Echten Legacy edge provider/IDrive/GitHub Live-Smoke-Test ausfuehren
+3. Echten Cloudflare/IDrive/GitHub Live-Smoke-Test ausfuehren
    - Dateien: `.github/workflows/deploy.yml`, `legacy-edge-cli.toml`, `workers/*`
    - Problem: Code ist vorbereitet, aber Production-Flow wurde lokal nicht live verifiziert.
    - Loesung: Preview-Deploy, Login, `/auth/me`, Upload-URL, IDrive PUT, Upload-Complete, GET, DELETE, Twin-Create, Public-Profile testen.
@@ -391,8 +396,8 @@ Empfehlung: Altlasten nicht blind loeschen, aber in `legacy/` verschieben oder m
 
 18. Observability-Free-Grenzen dokumentieren
     - Datei: `legacy-edge-cli.toml`, `docs/07-deployment-architecture.md`
-    - Problem: Legacy edge provider Observability kann je nach Plan/Funktion Grenzen haben.
-    - Loesung: Release-Check: nur kostenlose Legacy edge provider-Funktionen aktivieren.
+    - Problem: Cloudflare Observability kann je nach Plan/Funktion Grenzen haben.
+    - Loesung: Release-Check: nur kostenlose Cloudflare-Funktionen aktivieren.
 
 ## 12. Dateien, die konkret geaendert werden muessen
 
@@ -427,13 +432,13 @@ Empfehlung: Altlasten nicht blind loeschen, aber in `legacy/` verschieben oder m
 
 ## 14. Fazit
 
-Die Richtung stimmt: Die aktive Architektur ist ein ernsthafter Free-only-MVP auf GitHub, Legacy edge provider und IDrive e2. Sie ist bewusst nicht als echte Milliarden-Nutzer-Plattform zu bewerten. Fuer Milliarden Nutzer pro Tag braucht es langfristig andere Daten-, Compute-, Queue-, Search-, AI- und Observability-Schichten. Innerhalb der aktuellen Regel ist das Projekt aber sinnvoll auf maximale Disziplin, niedrige Kosten, Edge-Auslieferung, Direkt-Uploads und kleine KV-Metadaten ausgerichtet.
+Die Richtung stimmt: Die aktive Architektur ist ein ernsthafter Free-only-MVP auf GitHub, Cloudflare und IDrive e2. Sie ist bewusst nicht als echte Milliarden-Nutzer-Plattform zu bewerten. Fuer Milliarden Nutzer pro Tag braucht es langfristig andere Daten-, Compute-, Queue-, Search-, AI- und Observability-Schichten. Innerhalb der aktuellen Regel ist das Projekt aber sinnvoll auf maximale Disziplin, niedrige Kosten, Edge-Auslieferung, Direkt-Uploads und kleine KV-Metadaten ausgerichtet.
 
 Vor einem echten smyst.com-MVP-Release muessen vor allem vier Dinge passieren:
 
 1. Frischen Build erzeugen und stale Web/Native-Artefakte ersetzen.
 2. KV-Namespaces sauber trennen.
-3. Live Legacy edge provider/GitHub/IDrive-e2 End-to-End testen.
+3. Live Cloudflare/GitHub/IDrive-e2 End-to-End testen.
 4. CSRF, Quota-Cleanup, OG-Bild und App-Link-Dateien nachziehen.
 
 Danach kann der MVP realistisch von etwa 78 Prozent auf 88 bis 92 Prozent steigen. 100 Prozent sind erst nach Live-Abnahme, Native Builds, Browser-E2E, Datenschutz-Export/Loeschung und stabilen Release-Gates erreichbar.

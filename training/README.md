@@ -4,6 +4,46 @@ Bausteine fuer das eigene Modell (Continued Pretraining auf Apache-2.0-Basis,
 Fahrplan siehe Memory_Bank). Dieses Verzeichnis enthaelt **keine Nutzerdaten** —
 nur das eingefrorene Eval-Set und Dokumentation.
 
+## Ziel & Versionsstrategie (Adam, 2026-08-20)
+
+**Nordstern:** smyst soll die Profil-Pipeline (spaeter auch den Twin-Chat)
+VOLLSTAENDIG ueber eigene Modelle betreiben. Fremde Provider sind
+Uebergangstechnik: sie halten heute die 2000 Profile/Tag am Laufen und
+liefern nebenbei die Trainingsdaten (Chat-Archive, QA-Urteile), mit denen
+sie sich selbst uefluessig machen. Das Betriebsziel 2000 Profile/Tag gilt
+unabhaengig vom Modellstand — eigene Modelle senken die Kosten pro Profil
+und beseitigen die Abhaengigkeit, ersetzen die Provider aber schrittweise:
+erst Entwuerfe/strukturierte Felder (steigender Anteil), zuletzt das
+QA-Gate.
+
+**Versionierung (semantisch):**
+
+- `smyst 1.x` — Qwen2.5-0.5B-Basis (CPT + SFT). Neue Trainingsstaende
+  mit gewachsenen Daten = naechste Minor-Version (1.1, 1.2, ...).
+- `smyst 2.0` — groessere Basisarchitektur/-groesse (_major bump_).
+- PATCH (1.0.1) = nur Serving-Fixes (z. B. Quantisierung), kein neues
+  Training.
+
+**Taeglicher Rhythmus (automatisiert, aber kein blindes Taeglich-Training):**
+
+1. *Immer:* Betrieb sammelt Trainingsdaten als Nebenprodukt
+   (chat-archives/, qa_reports) — kein eigener Job noetig.
+2. *Taeglich nachts:* Export-Worker zaehlen neue Beispiele; der Eval-Lauf
+   (`model-eval.yml`) misst den Live-Stand und schreibt die Trendkurve
+   (`training-evals/`).
+3. *Training automatisch getriggert, nicht nach Kalender:* ein GPU-Lauf
+   (on demand gemietet, nie auf GitHub Actions) startet nur, wenn seit
+   dem letzten Stand genug neue Daten da sind (Richtwert: >= 5000 neue
+   SFT-Bspa. oder >= 20000 neue QA-Urteile). Ein CPT-Lauf ist Wochen-
+   sache, SFT-Verfeinerungen koennen haeufiger laufen.
+4. *Promotions-Gate (hart):* ein neuer Checkpoint wird nur dann zum
+   produktiven smyst 1.x, wenn er im eingefrorenen Eval (v2, mit
+   Wiederholungen gegen Messrauschen) den produktiven Stand schlaegt.
+   Sonst: kein Deploy, Alarm im Morgenbericht, alter Stand bleibt.
+5. *Rollout gestuft:* neuer Stand uebernimmt zunaechst 5 % der
+   Entwurfs-Generierung, bei stabilen Zahlen steigend; Rollback immer
+   moeglich (alte Checkpoints bleiben versioniert im Object Brain).
+
 ## Trainings-Export (Chat-Archive -> JSONL)
 
 Die App archiviert bereits jeden Twin-Chat nach IDrive e2 (`chat-archives/`)
@@ -150,6 +190,35 @@ die Antworten vergleichbar. **v1 bleibt unveraendert liegen.**
 Feldherren). **Die Einfrier-Regel gilt ab dem ersten bewerteten Lauf** — zu
 diesem Zeitpunkt existierte noch kein Score, die Vergleichbarkeit ist also
 nicht verletzt. Ab jetzt: keine Aenderung mehr, Erweiterungen nur als v2.
+
+## Fast-Track: SFT auf dem Mac (MLX) — smyst 1.0 in Tagen statt Wochen
+
+Beschluss Adam 20.08.: Pipeline-Kosten Richtung 0 $ (Groq Free-Tier zuerst,
+siehe pipeline-run.yml) UND das eigene Modell so schnell wie moeglich fit.
+Der Fast-Track umgeht die GPU-Miete: LoRA-SFT auf dem Entwickler-Mac mit
+[MLX](https://ml-explore.github.io/mlx/) — 0 $ Hardware-Kosten.
+
+Loop (einmal einrichten, dann wiederholbar):
+
+1. **Daten holen:** Actions → *Trainingsdaten-Export (smyst 1.0)* → Run
+   workflow. Artefakt `training-export` (14 Tage) herunterladen und nach
+   `training-export/` neben dem Repo entpacken. Enthaelt `sft-*.jsonl`
+   (Chat-Archive) und `qa-judgments-*.jsonl` (Pipeline-Urteile).
+2. **Trainieren:** `training/train_smyst_fasttrack.sh` — konvertiert die
+   Daten (`prepare_sft_mlx.py`, Chat-Format, dedupliziert, 98/2-Split),
+   LoRA-Feintuning auf Qwen2.5-0.5B-Instruct (staerkere Basis als Argument),
+   verschmilzt den Adapter und erzeugt eine Beispiel-Antwort zum Gegenlesen.
+3. **Bewerten:** Ausgabe gegen `eval/smyst-eval-v2.jsonl` messen — erst bei
+   deutlichem Gewinn gegen den Live-Stand ist es ein smyst-1.x-Kandidat
+   (Promotions-Gate siehe oben). 
+4. **Ausrollen:** GGUF-Export (llama.cpp `convert_hf_to_gguf.py`) →
+   `docker/Dockerfile.llamacpp` → als zusaetzlicher Provider hinter dem
+   Gateway, zuerst fuer Entwuerfe (5 %, dann mehr).
+
+Grenzen, die man kennen muss: Ein 0.5B-SFT-Modell ersetzt keinen GPT-4o —
+es uebernimmt Masse (Entwuerfe, strukturierte Felder), nicht die QA. Der
+CPT-Korpus (Phase 1/1b unten) bleibt der Hebel fuer echte Deutsch-Qualitaet;
+der Fast-Track liefert das erste einsatzfaehige smyst 1.0 und den Loop.
 
 ## Phase 1: Korpus (Continued Pretraining)
 

@@ -101,7 +101,10 @@ Schutzprinzipien wie die Pipeline:
 - Keine Nutzerdaten, Medien, Chats oder Profile löschen
 - Bestehende Funktionen nicht beschädigen; die 100 kuratierten Profile sind geschützt
 - Startseiten-Design nicht ohne schriftliche Freigabe ändern (siehe Design-Freeze)
-- Keine Paid-Services einführen (GitHub Free, Spaceship DNS, IDrive e2, Salad only)
+- Keine neuen Paid-Services einführen. Erlaubt sind nur: GitHub Free/Pages,
+  Spaceship DNS, IDrive e2, Zeabur (Backend), OpenRouter und Groq (LLM),
+  Resend (E-Mail). Alles andere braucht schriftliche Freigabe des Inhabers
+  und einen Eintrag in `docs/FREE_ONLY_INFRASTRUCTURE.md`.
 - Private Inhalte niemals öffentlich machen; `/private/` bleibt noindex
 - Keine Secrets in Code, Logs oder Doku
 
@@ -109,5 +112,8 @@ Schutzprinzipien wie die Pipeline:
 
 - GitHub Pages liefert alles Statische (App, Profilseiten, sitemap, robots, llms.txt,
   statisches JSON-API `/api/public/twins/`)
-- IDrive e2 ist privater Objektspeicher (Object Brain), Salad nur echte Rechenarbeit
+- IDrive e2 ist privater Objektspeicher (Object Brain) und zugleich die Persistenz;
+  es gibt keine relationale Datenbank und keinen Redis in Produktion
+- Zeabur (`smyst-backend`, `api.smyst.com`) macht die Rechenarbeit: API, Auth, Chat,
+  TTS/ASR, Admin. Salad.com ist seit Ende Juli 2026 abgeschaltet
 - Kuratierte Profildaten haben genau eine Quelle: `src/data/curated-public-twin-data.ts`
