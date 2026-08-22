@@ -1842,9 +1842,15 @@ function SmystStartPage({
           // er da ist.(selectedTwin/requested bleibt vom Erststand unberuehrt.)
           const publicProfiles = await twinMvp.listPublicTwinsProgressive((alle) => {
             if (!alive) return
-            setRealStartTwins(
-              alle.filter(isCompletePublicProfile).map((profile, index) => publicProfileToStartTwin(profile, index)),
-            )
+            // Funktionales Update: ein mal gelandetes Voll-Upgrade darf durch
+            // einen spaeteren Slim-Stand (Effekt-Neustart) nie zurueckgesetzt
+            // werden.
+            setRealStartTwins((bisher) => {
+              const next = alle
+                .filter(isCompletePublicProfile)
+                .map((profile, index) => publicProfileToStartTwin(profile, index))
+              return next.length >= bisher.length ? next : bisher
+            })
           })
           if (!alive) return
           const next = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())

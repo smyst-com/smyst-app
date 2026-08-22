@@ -442,7 +442,16 @@ export function useTwinMvp() {
         const voll = loadPublicTwins()
         if (slim) {
           void voll.then((alle) => {
-            if (alle.length > slim.length) onUpgrade?.(alle)
+            if (alle.length > slim.length) {
+              // Macrotask, nicht Microtask: Ist der Vollbestand per prefetch
+              // schon VOR slim.json bereit (gemessen live 21.08.2026: voll
+              // 360 ms, slim 580 ms), lief das Upgrade im alten Microtask-
+              // Timing VOR dem Slim-Render und wurde vom Aufrufer sofort mit
+              // dem Slim-Stand (400 Profile) ueberschrieben — die Startseite
+              // blieb dauerhaft bei 400 statt 13.915 Profilen. Der Upgrade-
+              // Callback muss NACH dem Slim-Render des Aufrufers landen.
+              window.setTimeout(() => onUpgrade?.(alle), 0)
+            }
           })
           return slim
         }
