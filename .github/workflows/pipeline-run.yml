@@ -287,8 +287,9 @@ jobs:
           # nur noch Rueckfallebene — Pipeline-Kosten Richtung 0 $ (Beschluss
           # Adam 20.08.). Anthropic (kein Guthaben) und xAI (Key ungueltig)
           # bewusst ganz hinten, bis die Keys erneuert sind.
-          LLM_PROVIDER_ORDER: "groq,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
+          LLM_PROVIDER_ORDER: "groq,smyst_llm,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
           SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
+          SMYST_LLM_BASE_URL: ${{ vars.SMYST_LLM_BASE_URL || '' }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
           if [ "$MODE" = "run-batch" ]; then
@@ -387,8 +388,9 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_PROVIDER_ORDER: "groq,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
+          LLM_PROVIDER_ORDER: "groq,smyst_llm,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
           SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
+          SMYST_LLM_BASE_URL: ${{ vars.SMYST_LLM_BASE_URL || '' }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: python -m app.workers.eval_profiles --enabled --limit 20
 
@@ -428,8 +430,9 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LLM_PROVIDER_ORDER: "groq,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
+          LLM_PROVIDER_ORDER: "groq,smyst_llm,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
           SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
+          SMYST_LLM_BASE_URL: ${{ vars.SMYST_LLM_BASE_URL || '' }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
           if [ -z "${{ inputs.qids }}" ]; then
