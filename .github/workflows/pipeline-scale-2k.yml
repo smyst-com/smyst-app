@@ -55,4 +55,5 @@ jobs:
           python -m app.workers.sharded_runner \
             --shard-index $SHARD_INDEX \
             --total-shards $TOTAL_SHARDS \
-            --limit $BATCH_LIMIT
+            --limit $BATCH_LIMIT \
+            --enabled
