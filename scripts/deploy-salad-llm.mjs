@@ -19,6 +19,41 @@ if (!saladApiKey) throw new Error('Missing SALAD_API_KEY');
 const llmApiKey = (process.env.LLM_API_KEY || '').trim();
 if (llmApiKey && llmApiKey.length < 24) throw new Error('LLM_API_KEY too short');
 
+// GPU-Klasse (Option B, Freigabe Adam 22.08.): CPU-only-Container wurden auf
+// Salads GPU-Netzwerk kaum alloziert (Stunden in 'allocating', mehrfach
+// gefallen). Eine guenstige GPU garantiert sofortige Allokation — das
+// Voice-Worker-Muster lief monatelang stabil. ~$0,01-0,02/h.
+const gpuResponse = await salad(`/organizations/${organizationName}/gpu-classes`);
+const gpuClasses = Array.isArray(gpuResponse?.items) ? gpuResponse.items : [];
+if (!gpuClasses.length) throw new Error('No GPU classes returned by Salad API');
+
+function priceOf(gpuClass) {
+  const prices = Array.isArray(gpuClass?.prices) ? gpuClass.prices : [];
+  const entry = prices.find((p) => (p?.priority || '').toLowerCase() === 'high') || prices[0];
+  const value = Number(entry?.price ?? entry?.amount ?? NaN);
+  return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY;
+}
+
+const gpuPreference = (process.env.SALAD_GPU_PREFERENCE || 'rtx 3060,rtx 2080,rtx 3060 ti,rtx 3070,rtx 4060')
+  .split(',')
+  .map((s) => s.trim().toLowerCase())
+  .filter(Boolean);
+
+let chosenGpu = null;
+for (const wanted of gpuPreference) {
+  const matches = gpuClasses.filter((g) => (g?.name || '').toLowerCase().includes(wanted));
+  if (matches.length) {
+    matches.sort((a, b) => priceOf(a) - priceOf(b));
+    chosenGpu = matches[0];
+    break;
+  }
+}
+if (!chosenGpu) {
+  const sorted = [...gpuClasses].sort((a, b) => priceOf(a) - priceOf(b));
+  chosenGpu = sorted[0];
+}
+console.log(`GPU-Klasse: ${chosenGpu.name} (id ${chosenGpu.id}, Preis ~${priceOf(chosenGpu)}/h)`);
+
 const saladApiBase = process.env.SALAD_API_BASE_URL || 'https://api.salad.com/api/public';
 const organizationName = process.env.SALAD_ORGANIZATION_NAME || 'smyst-com';
 const projectName = process.env.SALAD_PROJECT_NAME || 'default';
@@ -51,12 +86,10 @@ const containerSpec = {
   image,
   resources: {
     cpu: Number(process.env.SALAD_CPU || 2),
-    // Salad erwartet Speicher in MB (Validierung 1024..1073741824, Fehler
-    // 05:28 UTC). gpu_class/vram_gb bewusst GANZ WEGLASSEN: explizites null
-    // hielt die Gruppe 40+ Min im Zustand 'allocating' fest (06:08 UTC,
-    // allocating_count: 1, running: 0) — ohne die Felder ist es eine
-    // normale CPU-Gruppe, die jeden Knoten annehmen darf.
+    // GPU-Klasse fuer sofortige Allokation (Option B): CPU-only wurde auf
+    // Salads GPU-Netzwerk nicht zuverlaessig alloziert.
     memory: 3072,
+    gpu_classes: [chosenGpu.id],
   },
   command: [],
   environment_variables: llmApiKey ? { LLM_API_KEY: llmApiKey } : {},
