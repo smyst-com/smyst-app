@@ -1,11 +1,42 @@
 name: smyst-llm Diagnose
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'start, stop oder diag'
+        required: false
+        default: 'diag'
+
 jobs:
   diag:
     runs-on: ubuntu-latest
     steps:
+      - name: Salad action
+        env:
+          SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          BASE="https://api.salad.com/api/public/organizations/smyst-com/projects/default/containers/smyst-llm"
+          H="Salad-Api-Key: $SALAD_API_KEY"
+          if [ "$ACTION" = "stop" ]; then
+            echo "Stopping..."
+            curl -s -X POST -H "$H" "$BASE/stop" | head -c 200
+          elif [ "$ACTION" = "start" ]; then
+            echo "Starting..."
+            curl -s -X POST -H "$H" "$BASE/start" | head -c 200
+          fi
+          echo ""
+          echo "=== Status nach Aktion:"
+          sleep 5
+          curl -s -H "$H" "$BASE" | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)
+          c=d.get('current_state',{})
+          print('Status:', c.get('status'), '| allocating:', c.get('instance_status_counts',{}).get('allocating_count'), '| creating:', c.get('instance_status_counts',{}).get('creating_count'), '| running:', c.get('instance_status_counts',{}).get('running_count'))
+          print('autostart:', d.get('autostart_policy'))"
+
       - name: Salad-Status, Events und Logs
+        if: inputs.action == 'diag' || inputs.action == ''
         env:
           SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
         run: |
