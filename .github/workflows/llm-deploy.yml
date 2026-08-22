@@ -66,6 +66,12 @@ jobs:
           context: docker/llm-server
           push: true
           tags: ${{ env.IMAGE }}
+          # Provenance/Attestation aus: deren Manifest-Push nutzt einen anderen
+          # Token-Austausch, der mit GITHUB_TOKEN genau den Fehler
+          # 'unauthenticated: User cannot be authenticated' erzeugt (04:5x UTC,
+          # zweimal reproduziert) — ohne Attestierung laeuft der normale
+          # Layer-Push durch.
+          provenance: false
           secrets: |
             modelurl=${{ steps.presign.outputs.url }}
 
