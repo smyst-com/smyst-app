@@ -37,6 +37,7 @@ jobs:
 
       - name: Ideen generieren
         env:
+          SMYST_GATEWAY_BASE_URL: https://api.smyst.com/api/ci/llm
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
           LLM_PROVIDER_ORDER: ${{ secrets.LLM_PROVIDER_ORDER }}
