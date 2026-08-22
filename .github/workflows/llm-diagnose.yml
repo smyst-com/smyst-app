@@ -1,0 +1,18 @@
+name: smyst-llm Diagnose
+on:
+  workflow_dispatch:
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Salad-Status und Logs
+        env:
+          SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
+        run: |
+          curl -s -H "Salad-Api-Key: $SALAD_API_KEY" \
+            "https://api.salad.com/api/public/organizations/smyst-com/projects/default/containers/smyst-llm" \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); print('Status:', d.get('current_state')); print('DNS:', (d.get('networking') or {}).get('dns'))"
+          echo "=== Letzte Logs:"
+          curl -s -H "Salad-Api-Key: $SALAD_API_KEY" \
+            "https://api.salad.com/api/public/organizations/smyst-com/projects/default/containers/smyst-llm/events" \
+            | python3 -c "import json,sys; [print(e.get('create_time',''), e.get('message','')[:150]) for e in (json.load(sys.stdin).get('items') or [])[-10:]]" 2>/dev/null || echo "(Events-Endpoint nicht verfuegbar)"
