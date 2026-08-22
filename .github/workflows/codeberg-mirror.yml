@@ -1,0 +1,64 @@
+name: Codeberg Mirror
+
+# Spiegelt das Repository nach codeberg.org/smyst/smyst-app (privat).
+# GitHub bleibt die Quelle: Pages, Actions, Pipeline und Deploys laufen
+# unveraendert. Codeberg ist reine Ausfallsicherung und wird nur beschrieben.
+#
+# Einmalige Einrichtung (nur der Inhaber, Secrets sind Inhaber-Sache):
+#   1) Codeberg -> Settings -> Applications -> Access Tokens -> neuer Token
+#      mit Scope "write:repository". Token EINMAL kopieren.
+#   2) GitHub -> Settings -> Secrets and variables -> Actions -> New secret:
+#        Name:  CODEBERG_TOKEN
+#        Wert:  der Token aus Schritt 1
+#      Optional, falls der Token einem anderen Konto gehoert:
+#        CODEBERG_USER  (Default: iMild)
+#   3) Actions -> "Codeberg Mirror" -> Run workflow (erster Testlauf).
+#
+# Ohne CODEBERG_TOKEN meldet der Lauf das fehlende Secret und bricht ab.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Woechentlicher Sicherungslauf, falls ein Push-Spiegel ausgefallen ist.
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: codeberg-mirror
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    name: Push main and tags to Codeberg
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout mit voller Historie
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Nach Codeberg spiegeln
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          CODEBERG_USER: ${{ vars.CODEBERG_USER || 'iMild' }}
+        run: |
+          set -eu
+          if [ -z "${CODEBERG_TOKEN:-}" ]; then
+            echo "missing secret CODEBERG_TOKEN - siehe Kopf dieser Datei"
+            exit 1
+          fi
+          # Token nur ueber den Credential-Helper, nie in der Remote-URL:
+          # so taucht er weder in Logs noch in .git/config auf.
+          git config --local credential.helper ""
+          git remote add codeberg https://codeberg.org/smyst/smyst-app.git
+          git config --local \
+            "http.https://codeberg.org/.extraheader" \
+            "Authorization: Basic $(printf '%s:%s' "$CODEBERG_USER" "$CODEBERG_TOKEN" | base64 -w0)"
+          git push --force codeberg "HEAD:refs/heads/main"
+          git push --force --tags codeberg
+          echo "Spiegel aktualisiert: codeberg.org/smyst/smyst-app"
