@@ -1,5 +1,12 @@
 # Memory Bank
 
+## Update 2026-08-21 (Nacht, Adam-ZCode): SMYST-1.0-AKTIVIERUNGSKETTE FERTIG (PR #482) — ein Klick bis zum eigenen Modell in der Pipeline
+
+- KOMPLETT VORBEREITET: docker/llm-server (Q4-Modell zur Build-Zeit aus e2 via presigned BuildKit-Secret eingebrannt — kein Runtime-Download, keine Credentials im Image), scripts/deploy-salad-llm.mjs (CPU-Container smyst-llm, 2 vCPU/3 GB, ~$5-15/Monat, jederzeit stoppbar ohne Folgekosten), Workflow llm-deploy.yml mit 'Ja OK'-Kostentor (Muster Voice-Worker), automatisches Setzen der Repo-Variable SMYST_LLM_BASE_URL nach Deploy.
+- PIPELINE-VERDRAHTUNG: pipeline-run.yml hat smyst_llm hinter groq in der Kette; SMYST_LLM_BASE_URL kommt aus der Repo-Variable. Ohne Variable bleibt alles wie heute (Provider inaktiv) — Null Risiko im Leerlauf.
+- AKTIVIERUNG = GENAU EIN SCHRITT: Actions -> 'smyst 1.0 LLM Deploy (Salad CPU)' -> Run workflow -> approval 'Ja OK'. Danach erzeugt smyst 1.0 automatisch die Pipeline-Entwuerfe (QA bleibt bei groq/gateway), Kosten ~$5-15/Monat, stoppbar im Salad-Portal.
+- UMGEBUNGS-HINWEIS: gh/node liegen in ~/.local/bin (PATH im Bash-Tool gelegentlich unvollstaendig — export PATH="$HOME/.local/bin:$PATH" hilft).
+
 ## Update 2026-08-21 (Abend, Adam-ZCode): STUFE B VOLLSTAENDIG LIVE — FAQPage-JSON-LD auf 13 544 Profilseiten, Grid-Virtualisierung, alle Deploys grün (PRs #477/#479)
 
 - FAQ-SCHEMA LIVE (PR #479, Deploy 20:34 UTC SUCCESS, live geprüft: /t/oscar-levy enthält FAQPage): 13 544 Profile tragen jetzt je 5 individuelle Fragen+Antworten aus der eigenen Pipeline-QA als FAQPage-JSON-LD (17,4 MB qa-answers.json in e2 unter pipeline/published/). Googles Scaled-Content-Regeln (März 2026) verlangen genau solchen einmaligen Content pro Seite — die 2000/Tag-Strategie ist damit abgesichert. Rich-Snippet-fähig. 1 798 Namen ohne Slug-Treffer (Duplikate/unveröffentlicht) bewusst übergangen.
