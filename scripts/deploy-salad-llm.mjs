@@ -52,10 +52,11 @@ const containerSpec = {
   resources: {
     cpu: Number(process.env.SALAD_CPU || 2),
     // Salad erwartet Speicher in MB (Validierung 1024..1073741824, Fehler
-    // 05:28 UTC: 'Memory must be between 1024 and ...').
+    // 05:28 UTC). gpu_class/vram_gb bewusst GANZ WEGLASSEN: explizites null
+    // hielt die Gruppe 40+ Min im Zustand 'allocating' fest (06:08 UTC,
+    // allocating_count: 1, running: 0) — ohne die Felder ist es eine
+    // normale CPU-Gruppe, die jeden Knoten annehmen darf.
     memory: 3072,
-    gpu_class: null,
-    vram_gb: null,
   },
   command: [],
   environment_variables: llmApiKey ? { LLM_API_KEY: llmApiKey } : {},
