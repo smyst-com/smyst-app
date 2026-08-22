@@ -12,6 +12,8 @@ on:
 
 permissions:
   contents: read
+  # id-token:write fuer das CI-LLM-Gateway (erster Provider, kein Key noetig)
+  id-token: write
 
 jobs:
   generate-ideas:
