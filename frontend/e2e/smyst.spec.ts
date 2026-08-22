@@ -197,7 +197,19 @@ test.describe("Smyst current app", () => {
     // PATCH, die Meldung erscheint nie, und der Test starb am 5s-Timeout.
     // Genau dieser Flake trat am 06.08., 13.08. und 15.08.2026 auf und wurde
     // jedes Mal per "Re-run failed jobs" weggeklickt.
-    await expect(page.getByDisplayValue("Smyst Owner")).toBeVisible();
+    // getByDisplayValue ist in der CI-Playwright-Version nicht verfuegbar;
+    // stattdessen warten, bis irgendein Eingabefeld den geladenen
+    // Profilnamen als Wert hat — gleiche Wirkung: Ankerpunkt erst NACH der
+    // React-Hydration des geladenen Profils.
+    await expect
+      .poll(async () => {
+        const felder = await page.locator("input, textarea").all();
+        for (const feld of felder) {
+          if ((await feld.inputValue().catch(() => "")) === "Smyst Owner") return true;
+        }
+        return false;
+      }, { timeout: 10_000 })
+      .toBe(true);
 
     // Auf den PATCH warten statt nur auf den Text: geht der Klick doch einmal
     // ins Leere, scheitert der Test hier mit klarer Ursache, statt 5 Sekunden
