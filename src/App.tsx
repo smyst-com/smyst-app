@@ -2729,16 +2729,18 @@ function SmystStartPage({
     void handleSend()
   }
 
-  const menuItems: Array<{ label: string; view: AppView; detail: string; adminOnly?: boolean }> = [
-    { label: lang === DEFAULT_LANG ? 'Start-Assistent' : t.nav.onboarding, view: 'onboarding', detail: lang === DEFAULT_LANG ? 'Schritt für Schritt zum fertigen Twin' : t.nav.onboardingDetail },
-    { label: lang === DEFAULT_LANG ? 'Mein Profil' : t.nav.profile, view: 'account-profile', detail: lang === DEFAULT_LANG ? 'Identität, Bio, Rollen und Profilqualität' : t.nav.profileDetail },
-    { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate, view: 'twin-builder', detail: lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit' : t.nav.twinCreateDetail },
-    { label: lang === DEFAULT_LANG ? 'Meine Twins' : t.nav.myTwins, view: 'my-twins', detail: lang === DEFAULT_LANG ? 'Private und öffentliche AI Twins' : t.nav.myTwinsDetail },
-    { label: lang === DEFAULT_LANG ? 'Dateien & Erinnerungen' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'Bilder, Video, Audio, Texte und Erinnerungen hochladen' : t.nav.memoriesDetail },
-    { label: lang === DEFAULT_LANG ? 'Chats' : t.nav.chats, view: 'twin-chat', detail: lang === DEFAULT_LANG ? 'Letzte Gespräche und Twin-Auswahl' : t.nav.chatsDetail },
-    { label: lang === DEFAULT_LANG ? 'Admin' : t.nav.admin, view: 'admin', detail: lang === DEFAULT_LANG ? 'User, Werbung, Umsatz, Sicherheit und Betrieb' : t.nav.adminDetail, adminOnly: true },
-    { label: lang === DEFAULT_LANG ? 'Datenschutz' : t.nav.privacy, view: 'trust', detail: lang === DEFAULT_LANG ? 'Privatsphäre, Export und Löschung' : t.nav.privacyDetail },
-    { label: lang === DEFAULT_LANG ? 'Einstellungen' : t.nav.settings, view: 'settings', detail: lang === DEFAULT_LANG ? 'Sprache, Theme, Account und Logout' : t.nav.settingsDetail },
+  const menuItems: Array<{ label: string; view: AppView; detail: string; adminOnly?: boolean; more?: boolean }> = [
+    // Struktur wie im UX-Mockup 6: 1 Highway (Start-Assistent) + 4 klare
+    // Bereiche — Profi-Funktionen bleiben unter „Mehr“ erreichbar.
+    { label: lang === DEFAULT_LANG ? '✨ Weiter im Start-Assistenten' : t.nav.onboarding, view: 'onboarding', detail: lang === DEFAULT_LANG ? 'Schritt für Schritt zum fertigen Twin' : t.nav.onboardingDetail },
+    { label: lang === DEFAULT_LANG ? 'Mein Profil & Twin' : t.nav.profile, view: 'account-profile', detail: lang === DEFAULT_LANG ? 'alles über mich' : t.nav.profileDetail },
+    { label: lang === DEFAULT_LANG ? 'Dateien & Erinnerungen' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'statt „Memories“ – Bilder, Video, Texte' : t.nav.memoriesDetail },
+    { label: lang === DEFAULT_LANG ? 'Chats' : t.nav.chats, view: 'twin-chat', detail: lang === DEFAULT_LANG ? 'letzte Gespräche' : t.nav.chatsDetail },
+    { label: lang === DEFAULT_LANG ? 'Privatsphäre & Einstellungen' : t.nav.privacy, view: 'trust', detail: lang === DEFAULT_LANG ? 'zusammengefasst – Freigaben, Export, Account' : t.nav.privacyDetail },
+    { label: lang === DEFAULT_LANG ? 'Twin erstellen' : t.nav.twinCreate, view: 'twin-builder', detail: lang === DEFAULT_LANG ? 'Persönlichkeit, Wissen und Sichtbarkeit' : t.nav.twinCreateDetail, more: true },
+    { label: lang === DEFAULT_LANG ? 'Meine Twins' : t.nav.myTwins, view: 'my-twins', detail: lang === DEFAULT_LANG ? 'privat & öffentlich' : t.nav.myTwinsDetail, more: true },
+    { label: lang === DEFAULT_LANG ? 'Einstellungen' : t.nav.settings, view: 'settings', detail: lang === DEFAULT_LANG ? 'Sprache, Theme, Account und Logout' : t.nav.settingsDetail, more: true },
+    { label: lang === DEFAULT_LANG ? 'Admin' : t.nav.admin, view: 'admin', detail: lang === DEFAULT_LANG ? 'User, Werbung, Umsatz, Sicherheit und Betrieb' : t.nav.adminDetail, adminOnly: true, more: true },
   ]
   const canSeeAdmin = Boolean(
     auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
@@ -2943,6 +2945,11 @@ function SmystStartPage({
                 {index === 1 && (
                   <p className="mb-1 mt-4 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8e97a8]">
                     {lang === DEFAULT_LANG ? 'Alles andere' : t.drawer.sectionTitle}
+                  </p>
+                )}
+                {item.more && !(index > 0 && visibleMenuItems[index - 1]?.more) && (
+                  <p className="mb-1 mt-4 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8e97a8]">
+                    {lang === DEFAULT_LANG ? 'Mehr' : 'More'}
                   </p>
                 )}
                 <button
@@ -4998,12 +5005,12 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
 
   const quality = profile?.qualityScore ?? 0
   const onboardingPreviewSteps = [
-    'Konto sichern',
+    'Konto gesichert',
     'Profil vervollständigen',
     'Twin erstellen',
-    'Erinnerungen hinzufügen',
-    'Twin testen',
-    'Datenkontrolle prüfen',
+    'Dateien & Erinnerungen',
+    'Twin testen & teilen',
+    'Dein Twin ist bereit',
   ]
   const steps: Array<{
     id: string
@@ -5039,27 +5046,19 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
     },
     {
       id: 'memory',
-      title: 'Erinnerungen hinzufügen',
-      text: 'Lade nur Dateien und Fakten hoch, die dein Twin wirklich verwenden darf.',
+      title: 'Dateien & Erinnerungen',
+      text: 'Bilder, Video, Audio, PDF und Texte hochladen – wir sortieren automatisch.',
       done: memoryCount > 0,
       action: 'Daten hochladen',
       target: 'memory-upload',
     },
     {
       id: 'chat',
-      title: 'Twin testen',
-      text: 'Starte einen kurzen Test-Chat und prüfe, ob der Twin verständlich und respektvoll antwortet.',
+      title: 'Twin testen & teilen',
+      text: 'Starte einen kurzen Test-Chat – 1 Chat-Nachricht genügt – und teile deinen Twin.',
       done: chatCount > 0,
       action: 'Chat starten',
       target: 'twin-chat',
-    },
-    {
-      id: 'privacy',
-      title: 'Datenkontrolle prüfen',
-      text: 'Export, Löschung und private Standards bleiben erreichbar, bevor Inhalte geteilt werden.',
-      done: true,
-      action: 'Datenschutz prüfen',
-      target: 'trust',
     },
   ]
   const completed = steps.filter((step) => step.done).length
@@ -5093,35 +5092,23 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
     )
   }
 
+  const greetingName = (profile?.displayName || auth.user?.name || '').trim().split(' ')[0]
+
   return (
     <div className="pt-6">
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.16em] text-[#667085]">Geführter Start</p>
-          <h1 className="mb-1 text-2xl font-bold tracking-tight">Dein Twin-Assistent</h1>
-          <p className="max-w-2xl text-sm text-[#555b64]">
-            Eine klare Reihenfolge: Profil sichern, Twin erstellen, Erinnerungen hinzufügen und danach testen.
+      <div className="mb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="text-2xl font-black tracking-tight">
+            {greetingName ? `Schön, dass du da bist, ${greetingName} 👋` : 'Schön, dass du da bist 👋'}
+          </h1>
+          <p className="text-xs text-[#667085]">
+            Fortschritt <span className="font-bold text-white">{progress}%</span>
           </p>
         </div>
-        <Button onClick={() => onNavigate(nextStep.target)}>{nextStep.action}</Button>
-      </div>
-
-      <div className="mb-6 rounded-lg border border-white/24 bg-white/14 p-5 sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-[#555b64]">Fortschritt</p>
-            <p className="mt-1 text-3xl font-bold tracking-tight">{progress}%</p>
-          </div>
-          <div className="grid gap-2 sm:min-w-[320px]">
-            <div className="h-2 w-full rounded-full bg-white/24">
-              <div className="h-2 rounded-full bg-[#59C7FF]" style={{ width: `${progress}%` }}></div>
-            </div>
-            <p className="text-sm text-[#555b64]">
-              {completed} von {steps.length} Schritten erledigt. Nächster Schritt: {nextStep.title}.
-            </p>
-            {loading && <p className="text-xs font-semibold text-[#667085]">Status wird gerade aktualisiert.</p>}
-          </div>
+        <div className="mt-3 h-1.5 w-full rounded-full bg-[#1b2434]">
+          <div className="h-1.5 rounded-full bg-[#59C7FF]" style={{ width: `${progress}%` }}></div>
         </div>
+        {loading && <p className="mt-2 text-xs font-semibold text-[#667085]">Status wird gerade aktualisiert.</p>}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -5142,6 +5129,35 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
             </Button>
           </Card>
         ))}
+      </div>
+
+      {/* Abschluss-Karte wie im UX-Mockup: „Dein Twin ist bereit“ mit Share-Link */}
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <Card className={`p-5 ${completed === steps.length ? 'border-[#59C7FF] shadow-[0_0_0_1px_rgba(89,199,255,0.35)]' : ''}`}>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-[#59C7FF]/15 text-sm font-bold text-[#59C7FF]">★</span>
+            <span className={`rounded-full px-3 py-1 text-xs font-bold ${completed === steps.length ? 'bg-[#59C7FF]/18 text-[#0b2635]' : 'bg-white/18 text-[#555b64]'}`}>
+              {completed === steps.length ? 'Bereit' : 'Offen'}
+            </span>
+          </div>
+          <h2 className="text-lg font-bold tracking-tight">Dein Twin ist bereit</h2>
+          <p className="mt-2 min-h-[54px] text-sm leading-relaxed text-[#555b64]">
+            {completed === steps.length
+              ? 'Alle Schritte geschafft – teile deinen Twin mit deinem Share-Link.'
+              : `Erledige alle ${steps.length} Schritte – dann ist dein Twin mit Share-Link bereit.`}
+          </p>
+          <Button className="mt-5 w-full justify-center" variant="secondary" onClick={() => onNavigate('my-twins')}>
+            Twin & Share-Link ansehen
+          </Button>
+        </Card>
+        <div className="lg:col-span-2">
+          <Button className="min-h-[46px] w-full justify-center text-base" onClick={() => onNavigate(nextStep.target)}>
+            Weiter: {nextStep.title} →
+          </Button>
+          <p className="mt-2 text-center text-xs text-[#8b95a7]">
+            Jeder Schritt speichert automatisch – du kannst jederzeit weitermachen.
+          </p>
+        </div>
       </div>
 
       {auth.status === 'authenticated' && (
@@ -7694,12 +7710,13 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
         /* Clipboard nicht verfügbar */
       }
     }
+    const ownerFirstName = (auth.user?.name || '').trim().split(' ')[0]
     return (
       <div className="mx-auto max-w-xl px-4 pt-10 text-center">
         <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full border-2 border-[#59C7FF] bg-[#59C7FF]/12 text-3xl text-[#59C7FF]">✓</div>
-        <h1 className="text-2xl font-black">Dein Twin ist bereit!</h1>
+        <h1 className="text-2xl font-black">{ownerFirstName ? `Dein Twin ist bereit, ${ownerFirstName}!` : 'Dein Twin ist bereit!'}</h1>
         <p className="mt-2 text-sm text-[#767d87]">
-          „{savedTwin.name}“ wurde gespeichert. Dein Twin lernt mit jedem Chat weiter.
+          5 von 5 Schritten geschafft · „{savedTwin.name}“ lernt mit jedem Chat weiter.
         </p>
         <div className="mt-6 rounded-xl border border-white/26 bg-white/12 p-4 text-left">
           <div className="flex items-center gap-3">
@@ -7708,24 +7725,28 @@ function TwinBuilderView({ onNavigate }: { onNavigate: (view: AppView) => void }
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">{savedTwin.name}</p>
-              <p className="text-xs text-[#767d87]">{isPublic ? 'Öffentlich – für alle sichtbar' : 'Privat – nur du siehst ihn'}</p>
+              <p className="text-xs text-[#767d87]">{isPublic ? 'Öffentlich – für alle sichtbar' : 'Privat · nur du siehst ihn'}</p>
             </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('my-twins')}
+              className="shrink-0 rounded-lg border border-white/14 bg-white/6 px-3 py-2 text-xs font-bold text-[#dfe6f2] transition hover:bg-white/10"
+            >
+              {isPublic ? 'Öffentlich ▾' : 'Privat / Öffentlich ▾'}
+            </button>
           </div>
         </div>
         <div className="mt-4 grid gap-2 sm:grid-cols-2">
           <Button className="w-full justify-center" onClick={() => onNavigate('twin-chat')}>Mit Twin chatten 💬</Button>
-          {isPublic ? (
-            <Button variant="secondary" className="w-full justify-center" onClick={() => void copyShareLink()}>
-              {shareCopied ? 'Link kopiert ✓' : 'Share-Link kopieren 🔗'}
-            </Button>
-          ) : (
-            <Button variant="secondary" className="w-full justify-center" onClick={() => onNavigate('my-twins')}>
-              Sichtbarkeit ändern 🔒
-            </Button>
-          )}
+          <Button variant="secondary" className="w-full justify-center" onClick={() => (isPublic ? void copyShareLink() : onNavigate('my-twins'))}>
+            {isPublic ? (shareCopied ? 'Link kopiert ✓' : 'Share-Link kopieren 🔗') : 'Sichtbarkeit ändern 🔒'}
+          </Button>
         </div>
         {isPublic && (
-          <p className="mt-3 text-xs text-[#767d87]">{shareCopied ? `Kopiert: ${shareUrl}` : shareUrl}</p>
+          <div className="mx-auto mt-4 flex max-w-xl items-center justify-center gap-2 rounded-lg border border-[#59C7FF]/45 bg-[#59C7FF]/12 px-3 py-2 text-xs text-[#a8ddff]">
+            <span aria-hidden>✓</span>
+            <span>{shareCopied ? `Link kopiert: ${shareUrl}` : shareUrl} – jederzeit deaktivierbar.</span>
+          </div>
         )}
         <button
           type="button"

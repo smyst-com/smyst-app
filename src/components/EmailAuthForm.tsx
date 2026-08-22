@@ -54,7 +54,7 @@ export default function EmailAuthForm({ onClose, labels }: { onClose?: () => voi
           window.location.reload();
           return;
         }
-        setError(data.error?.message ?? labels?.errorLogin ?? 'E-Mail oder Passwort falsch. Bitte prüfen oder oben auf „Registrieren“ wechseln.');
+        setError(data.error?.message ?? labels?.errorLogin ?? 'E-Mail oder Passwort falsch. Bitte prüfen –');
       } else if (mode === 'register') {
         const { ok, data } = await postJson('/email/register', { email, password, name });
         if (ok) {
@@ -83,6 +83,10 @@ export default function EmailAuthForm({ onClose, labels }: { onClose?: () => voi
       setBusy(false);
     }
   };
+
+  // Passwort-Stärke wie im UX-Mockup: 0-4 Segmente, ab 8 Zeichen „stark genug".
+  const strength = Math.min(4, Math.floor(password.length / 3));
+  const strengthOk = password.length >= 8;
 
   const tab = (m: Mode, label: string) => (
     <button
@@ -131,27 +135,80 @@ export default function EmailAuthForm({ onClose, labels }: { onClose?: () => voi
           onChange={(e) => setEmail(e.target.value)}
         />
         {mode !== 'forgot' && (
-          <input
-            className={inputClass}
-            type="password"
-            required
-            minLength={8}
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            placeholder={mode === 'register' ? (labels?.passwordPlaceholderNew ?? 'Passwort (min. 8 Zeichen)') : (labels?.passwordPlaceholder ?? 'Passwort')}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <>
+            <input
+              className={inputClass}
+              type="password"
+              required
+              minLength={8}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              placeholder={mode === 'register' ? (labels?.passwordPlaceholderNew ?? 'Passwort (min. 8 Zeichen)') : (labels?.passwordPlaceholder ?? 'Passwort')}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {mode === 'register' && (
+              <div>
+                <div className="flex items-center justify-between text-[11px] text-[#8b95a7]">
+                  <span>Passwort-Stärke</span>
+                  {strengthOk && <span className="font-bold text-[#59C7FF]">✓ stark genug</span>}
+                </div>
+                <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-[#232c3d]">
+                  <div
+                    className="h-1 rounded-full bg-[#59C7FF] transition-all"
+                    style={{ width: `${(strength / 4) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
 
-        {error && <p className="text-xs font-semibold text-[#ff9b9b]">{error}</p>}
-        {message && <p className="text-xs font-semibold text-[#8af0c2]">{message}</p>}
+        {mode === 'register' && (
+          <div className="flex items-center gap-2">
+            <div className="h-1 flex-1 rounded-full bg-[#59C7FF]" />
+            <span className="text-[11px] font-bold text-[#a8ddff]">Schritt 1 von 3 · 30 Sekunden</span>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-start gap-2 rounded-lg border border-[#f87171]/45 bg-[#f87171]/12 px-3 py-2 text-xs text-[#ff9b9b]">
+            <span aria-hidden>⚠</span>
+            <span>
+              {error}{' '}
+              {mode === 'login' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('forgot');
+                    reset();
+                  }}
+                  className="font-bold underline underline-offset-2 hover:text-white"
+                >
+                  Passwort zurücksetzen
+                </button>
+              )}
+            </span>
+          </div>
+        )}
+        {message && (
+          <div className="flex items-center gap-2 rounded-lg border border-[#59C7FF]/45 bg-[#59C7FF]/12 px-3 py-2 text-xs text-[#a8ddff]">
+            <span aria-hidden>✓</span>
+            <span>{message}</span>
+          </div>
+        )}
+        {mode === 'register' && !error && (
+          <div className="flex items-center gap-2 rounded-lg border border-[#59C7FF]/45 bg-[#59C7FF]/12 px-3 py-2 text-xs text-[#a8ddff]">
+            <span aria-hidden>✓</span>
+            <span>Sofort startklar – direkt zum Start-Assistenten.</span>
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={busy}
           className="mt-1 min-h-[44px] rounded-lg bg-white px-3 text-sm font-bold text-[#111722] transition hover:bg-[#eef6ff] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {busy ? (labels?.submitBusy ?? 'Bitte warten…') : mode === 'login' ? (labels?.submitLogin ?? 'Anmelden') : mode === 'register' ? (labels?.submitRegister ?? 'Konto erstellen') : (labels?.submitForgot ?? 'Link senden')}
+          {busy ? (mode === 'login' ? 'Anmelden …' : mode === 'register' ? 'Konto erstellen …' : (labels?.submitBusy ?? 'Bitte warten…')) : mode === 'login' ? (labels?.submitLogin ?? 'Anmelden') : mode === 'register' ? 'Konto erstellen & loslegen →' : (labels?.submitForgot ?? 'Link senden')}
         </button>
       </form>
 
