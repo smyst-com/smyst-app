@@ -2729,10 +2729,20 @@ function SmystStartPage({
     void handleSend()
   }
 
+  // Mockup 6: Prozent aus dem vom Start-Assistenten gepflegten Cache lesen
+  // (keine zusaetzlichen Backend-Abrufe beim Menue-Oeffnen).
+  let onboardingProgressPercent: number | null = null
+  try {
+    const cached = Number.parseInt(window.localStorage.getItem('smyst:onboarding-progress') ?? '', 10)
+    if (Number.isFinite(cached) && cached >= 0 && cached <= 100) onboardingProgressPercent = cached
+  } catch {
+    /* localStorage nicht verfügbar */
+  }
+
   const menuItems: Array<{ label: string; view: AppView; detail: string; adminOnly?: boolean; more?: boolean }> = [
     // Struktur wie im UX-Mockup 6: 1 Highway (Start-Assistent) + 4 klare
     // Bereiche — Profi-Funktionen bleiben unter „Mehr“ erreichbar.
-    { label: lang === DEFAULT_LANG ? '✨ Weiter im Start-Assistenten' : t.nav.onboarding, view: 'onboarding', detail: lang === DEFAULT_LANG ? 'Schritt für Schritt zum fertigen Twin' : t.nav.onboardingDetail },
+    { label: lang === DEFAULT_LANG ? `✨ Weiter im Start-Assistenten${onboardingProgressPercent !== null ? ` – ${onboardingProgressPercent} %` : ''}` : t.nav.onboarding, view: 'onboarding', detail: lang === DEFAULT_LANG ? 'Schritt für Schritt zum fertigen Twin' : t.nav.onboardingDetail },
     { label: lang === DEFAULT_LANG ? 'Mein Profil & Twin' : t.nav.profile, view: 'account-profile', detail: lang === DEFAULT_LANG ? 'alles über mich' : t.nav.profileDetail },
     { label: lang === DEFAULT_LANG ? 'Dateien & Erinnerungen' : t.nav.memories, view: 'memory-upload', detail: lang === DEFAULT_LANG ? 'statt „Memories“ – Bilder, Video, Texte' : t.nav.memoriesDetail },
     { label: lang === DEFAULT_LANG ? 'Chats' : t.nav.chats, view: 'twin-chat', detail: lang === DEFAULT_LANG ? 'letzte Gespräche' : t.nav.chatsDetail },
@@ -5064,6 +5074,17 @@ function GuidedOnboardingView({ onNavigate }: { onNavigate: (view: AppView) => v
   const completed = steps.filter((step) => step.done).length
   const progress = Math.round((completed / steps.length) * 100)
   const nextStep = steps.find((step) => !step.done) ?? steps[steps.length - 1]
+
+  // Fortschritt fuer das Seitenmenue zwischenspeichern (Mockup 6: „✨ Weiter
+  // im Start-Assistenten 40 %“) — das Menue liest nur den Cache, es entstehen
+  // keine zusaetzlichen Backend-Abrufe pro Menue-Oeffnen.
+  if (auth.status === 'authenticated') {
+    try {
+      window.localStorage.setItem('smyst:onboarding-progress', String(progress))
+    } catch {
+      /* localStorage nicht verfügbar */
+    }
+  }
 
   if (auth.status !== 'authenticated') {
     return (
