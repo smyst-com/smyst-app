@@ -1,18 +1,33 @@
 name: smyst-llm Diagnose
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 jobs:
   diag:
     runs-on: ubuntu-latest
     steps:
-      - name: Salad-Status und Logs
+      - name: Salad-Status, Events und Logs
         env:
           SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
         run: |
-          curl -s -H "Salad-Api-Key: $SALAD_API_KEY" \
-            "https://api.salad.com/api/public/organizations/smyst-com/projects/default/containers/smyst-llm" \
-            | python3 -c "import json,sys; d=json.load(sys.stdin); print('Status:', d.get('current_state')); print('DNS:', (d.get('networking') or {}).get('dns'))"
-          echo "=== Letzte Logs:"
-          curl -s -H "Salad-Api-Key: $SALAD_API_KEY" \
-            "https://api.salad.com/api/public/organizations/smyst-com/projects/default/containers/smyst-llm/events" \
-            | python3 -c "import json,sys; [print(e.get('create_time',''), e.get('message','')[:150]) for e in (json.load(sys.stdin).get('items') or [])[-10:]]" 2>/dev/null || echo "(Events-Endpoint nicht verfuegbar)"
+          BASE="https://api.salad.com/api/public/organizations/smyst-com/projects/default/containers/smyst-llm"
+          H="Salad-Api-Key: $SALAD_API_KEY"
+          echo "=== Status:"
+          curl -s -H "$H" "$BASE" | python3 -m json.tool | head -30
+          echo "=== Events:"
+          curl -s -H "$H" "$BASE/events" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            items=d.get('items') or []
+            for e in items[-15:]:
+              print(e.get('create_time',''), e.get('type',''), str(e.get('message',''))[:200])
+          except Exception as ex: print('events parse:', ex)"
+          echo "=== Logs (recent):"
+          curl -s -H "$H" "$BASE/logs?cursor=&batch_size=50" | python3 -c "
+          import json,sys
+          try:
+            d=json.load(sys.stdin)
+            entries=d.get('entries') or []
+            for e in entries[-15:]:
+              print(str(e.get('insert_time',''))[:19], str(e.get('message',''))[:200])
+          except Exception as ex: print('logs parse:', ex)"
