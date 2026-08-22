@@ -1,0 +1,100 @@
+name: smyst 1.0 LLM Deploy (Salad CPU)
+
+# Deployt den smyst-1.0-llama.cpp-Server als CPU-Container auf SaladCloud.
+# LAUFENDE KOSTEN (~$5-15/Monat je nach CPU-Klasse, 1 Replica) — deshalb
+# wie beim Voice-Worker ein explizites Freigabe-Tor: approval = "Ja OK".
+# Stoppen jederzeit: Salad-Portal -> smyst-llm -> Stop (keine Kosten mehr);
+# die Pipeline faellt automatisch auf groq/gateway zurueck, weil der
+# Provider smyst_llm nur mit gesetzter SMYST_LLM_BASE_URL aktiv wird.
+#
+# Nach erfolgreichem Deploy setzt der Workflow die Repo-Variable
+# SMYST_LLM_BASE_URL — die Pipeline-Workflows reichen sie als Env durch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      approval:
+        description: 'Kostenfreigabe. Exakt "Ja OK" eintragen.'
+        required: true
+        type: string
+
+concurrency:
+  group: llm-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, push und deploy auf Salad
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/smyst-llm:${{ github.sha }}
+    steps:
+      - name: Validate approval and secrets
+        env:
+          APPROVAL: ${{ inputs.approval }}
+          SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          test "$APPROVAL" = "Ja OK" || { echo "approval must be exactly 'Ja OK'"; exit 1; }
+          test -n "$SALAD_API_KEY" || { echo "missing secret SALAD_API_KEY"; exit 1; }
+          test -n "$IDRIVE_E2_ACCESS_KEY" || { echo "missing e2 key"; exit 1; }
+
+      - uses: actions/checkout@v6
+
+      # Presigned URL fuer genau EIN Objekt (f16-GGUF), 1 Stunde gultig.
+      # Sie verlaesst den Runner nur als BuildKit-Secret — nicht im Image,
+      # nicht in den Logs (add-mask).
+      - name: Presign model URL
+        id: presign
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          URL=$(aws s3 presign s3://smyst-memories/models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 --expires-in 3600)
+          echo "::add-mask::$URL"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push LLM image
+        uses: docker/build-push-action@v6
+        with:
+          context: docker/llm-server
+          push: true
+          tags: ${{ env.IMAGE }}
+          secrets: |
+            modelurl=${{ steps.presign.outputs.url }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+
+      - name: Deploy Salad container group
+        id: deploy_llm
+        run: node scripts/deploy-salad-llm.mjs
+        env:
+          IMAGE: ${{ env.IMAGE }}
+          SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
+          SALAD_ORGANIZATION_NAME: smyst-com
+          SALAD_PROJECT_NAME: default
+          SALAD_CONTAINER_GROUP: smyst-llm
+          REGISTRY_USERNAME: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ secrets.GHCR_PULL_TOKEN }}
+
+      # Repo-Variable fuer die Pipeline-Workflows (Provider-Aktivierung).
+      - name: Set repo variable SMYST_LLM_BASE_URL
+        if: steps.deploy_llm.outputs.endpoint
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BASE="${{ steps.deploy_llm.outputs.endpoint }}/v1"
+          gh api -X PUT repos/${{ github.repository }}/variables/SMYST_LLM_BASE_URL \
+            -f name=SMYST_LLM_BASE_URL -f value="$BASE" || \
+          gh secret set SMYST_LLM_BASE_URL --body "$BASE"
+          echo "SMYST_LLM_BASE_URL gesetzt — Pipeline nutzt smyst_llm ab dem naechsten Lauf."
