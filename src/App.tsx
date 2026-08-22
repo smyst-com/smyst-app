@@ -2929,8 +2929,16 @@ function SmystStartPage({
           </div>
 
           <ul className="space-y-1">
-            {visibleMenuItems.map((item) => (
+            {visibleMenuItems.map((item, index) => (
               <li key={item.label}>
+                {/* Struktur wie im UX-Mockup: 1 Highway (Start-Assistent, cyan
+                    hervorgehoben) — danach die weiteren Bereiche unter einer
+                    eigenen Ueberschrift. Nichts wird entfernt oder versteckt. */}
+                {index === 1 && (
+                  <p className="mb-1 mt-4 px-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#8e97a8]">
+                    {lang === DEFAULT_LANG ? 'Alles andere' : t.drawer.sectionTitle}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={() => goFromMenu(item.view)}
