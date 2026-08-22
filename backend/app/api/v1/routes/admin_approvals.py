@@ -82,8 +82,22 @@ def _load_approvals() -> dict[str, Any]:
     # Schneller Weg ueber die Status-Marker (ein LIST-Aufruf). Der Voll-Scan-
     # Fallback wuerde bei Tausenden Kandidaten Minuten dauern und den Request
     # haengen lassen — ohne Index liefern wir deshalb nur die markierten QIDs.
+    # LIST vorzeitig begrenzen: 4.240 reviewed-Marker (Stand 22.08.) waeren
+    # ~43 List-Seiten; die Freigabe-Sicht braucht hoechstens 200 QIDs.
+    from app.core.config import settings
+
+    prefix = f"pipeline/status/{PipelineStatus.REVIEWED.value}/"
+    qids: list[str] = []
     try:
-        qids = store.qids_by_status(PipelineStatus.REVIEWED.value)
+        kwargs = {"Bucket": settings.idrive_e2_bucket, "Prefix": prefix, "MaxKeys": 1000}
+        while len(qids) <= APPROVALS_LIMIT * 2:
+            response = store._client.list_objects_v2(**kwargs)  # noqa: SLF001
+            qids.extend(
+                obj["Key"][len(prefix):] for obj in response.get("Contents", []) or [] if obj["Key"][len(prefix):]
+            )
+            if not response.get("IsTruncated"):
+                break
+            kwargs["ContinuationToken"] = response.get("NextContinuationToken")
     except Exception:
         qids = []
     # Paralleles Laden: ein GET kostet Zeabur(Tencent SV) -> IDrive(LA) rund
