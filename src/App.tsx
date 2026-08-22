@@ -5684,6 +5684,7 @@ type AdminSection =
   | 'overview'
   | 'autopilot'
   | 'approvals'
+  | 'ideas'
   | 'look'
   | 'users'
   | 'registrations'
@@ -5811,6 +5812,30 @@ type AdminApprovalsApi = {
   counts?: { ready: number; blocked: number }
 }
 
+type AdminIdeaCard = {
+  id: string
+  title: string
+  description: string
+  expected_benefit?: string | null
+  status?: string | null
+  created_at?: string | null
+}
+
+type AdminModelReport = {
+  key: string
+  tag?: string | null
+  score?: number | null
+  answered?: number | null
+  total?: number | null
+}
+
+type AdminIdeasApi = {
+  ok: boolean
+  ideas?: AdminIdeaCard[]
+  counts?: { proposed: number; approved: number; rejected: number }
+  modelReports?: AdminModelReport[]
+}
+
 type ComputeJobSummary = {
   total: number
   queued: number
@@ -5931,6 +5956,7 @@ const adminSections: Array<{ id: AdminSection; label: string; detail: string }> 
   { id: 'overview', label: 'Overview', detail: 'Live Status' },
   { id: 'autopilot', label: 'Autopilot', detail: 'Ampeln aller Automatiken' },
   { id: 'approvals', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen' },
+  { id: 'ideas', label: 'Ideen & Modell', detail: 'Autopilot-Vorschläge + smyst 1.0' },
   { id: 'look', label: 'Look', detail: 'Design System' },
   { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export' },
   { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots' },
@@ -6054,6 +6080,9 @@ function AdminControlCenterInner() {
   const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
+  const [adminIdeas, setAdminIdeas] = useState<AdminIdeasApi | null>(null)
+  const [adminIdeasBusy, setAdminIdeasBusy] = useState<string | null>(null)
+  const [adminIdeasMessage, setAdminIdeasMessage] = useState<string | null>(null)
   const [adminLiveOps, setAdminLiveOps] = useState<{ visits?: { totalToday: number; totalAll: number }; ads?: { total: number }; chatFeedback?: { up: number; down: number; dislikeRate: number } }>({})
   const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
@@ -6164,6 +6193,57 @@ function AdminControlCenterInner() {
       setAdminApprovalsMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
     } finally {
       setAdminApprovalsBusy(null)
+    }
+  }
+
+  const refreshAdminIdeas = useCallback(() => {
+    let alive = true
+    fetchService('/api/admin/ideas', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminIdeas(response.ok && payload?.ok ? payload as AdminIdeasApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminIdeas(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'ideas') return
+    return refreshAdminIdeas()
+  }, [activeSection, refreshAdminIdeas])
+
+  const decideIdea = async (id: string, action: 'approve' | 'reject') => {
+    let body: string | null = null
+    if (action === 'reject') {
+      const reason = window.prompt('Warum wird diese Idee abgelehnt? (Pflichtfeld)')?.trim()
+      if (!reason || reason.length < 3) {
+        setAdminIdeasMessage('Ablehnen braucht einen Grund (mindestens 3 Zeichen).')
+        return
+      }
+      body = JSON.stringify({ reason })
+    }
+    setAdminIdeasBusy(id)
+    setAdminIdeasMessage(null)
+    try {
+      const response = await fetchService(`/api/admin/ideas/${encodeURIComponent(id)}/${action}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: body ?? undefined,
+      })
+      const payload = await response.json().catch(() => ({}))
+      setAdminIdeasMessage(typeof payload?.result === 'string' ? payload.result : 'Aktion abgeschlossen.')
+      refreshAdminIdeas()
+    } catch {
+      setAdminIdeasMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
+    } finally {
+      setAdminIdeasBusy(null)
     }
   }
 
@@ -6387,6 +6467,71 @@ function AdminControlCenterInner() {
   ]
 
   const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
+
+  const renderIdeas = () => {
+    const counts = adminIdeas?.counts
+    const modelle = adminIdeas?.modelReports ?? []
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Ideen-Autopilot &amp; Modell-Loop</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminIdeas === null
+              ? 'Ideen werden geladen oder Object Brain nicht erreichbar.'
+              : `${counts?.proposed ?? 0} Vorschläge warten auf deine Entscheidung, ${counts?.approved ?? 0} freigegeben, ${counts?.rejected ?? 0} abgelehnt.`}
+          </p>
+          {adminIdeasMessage ? (
+            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminIdeasMessage}</p>
+          ) : null}
+        </section>
+        {(adminIdeas?.ideas ?? []).filter((idea) => idea.status === 'proposed').map((idea) => (
+          <section key={idea.id} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-base font-black text-[#111722]">{idea.title}</h3>
+                <p className="mt-1 text-sm font-semibold text-[#5d6776]">{idea.description}</p>
+                {idea.expected_benefit ? <p className="mt-1 text-xs font-semibold text-emerald-600">Nutzen: {idea.expected_benefit}</p> : null}
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={adminIdeasBusy === idea.id}
+                onClick={() => decideIdea(idea.id, 'approve')}
+                className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-600 disabled:opacity-50"
+              >
+                Freigeben
+              </button>
+              <button
+                type="button"
+                disabled={adminIdeasBusy === idea.id}
+                onClick={() => decideIdea(idea.id, 'reject')}
+                className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
+              >
+                Ablehnen
+              </button>
+            </div>
+          </section>
+        ))}
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-lg font-bold text-[#111722]">smyst 1.0 – Modell-Evals</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">Neueste Läufe des Modell-Eval-Autopilots (Score = Anteil bestandener Fragen).</p>
+          <div className="mt-3 grid gap-2">
+            {modelle.length === 0 ? (
+              <p className="text-sm font-semibold text-[#5d6776]">Noch keine Modell-Eval-Reports im Object Brain.</p>
+            ) : modelle.map((report) => (
+              <div key={report.key} className="flex items-center justify-between rounded-md border border-[#edf2f7] bg-[#f7fafd] px-3 py-2">
+                <span className="text-sm font-bold text-[#172033]">{report.key}</span>
+                <span className={`text-sm font-black ${typeof report.score === 'number' && report.score >= 0.9 ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  {typeof report.score === 'number' ? `${Math.round(report.score * 100)} %` : '–'}{report.answered !== null && report.answered !== undefined ? ` (${report.answered}/${report.total ?? '?'})` : ''}
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   const renderApprovalCard = (card: AdminApprovalCard, tone: 'ready' | 'blocked') => (
     <section key={card.qid} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
@@ -7150,6 +7295,7 @@ function AdminControlCenterInner() {
     if (activeSection === 'overview') return renderOverview()
     if (activeSection === 'autopilot') return renderAutopilot()
     if (activeSection === 'approvals') return renderApprovals()
+    if (activeSection === 'ideas') return renderIdeas()
     if (activeSection === 'look') return renderLook()
     if (activeSection === 'users') return renderUsers()
     if (activeSection === 'registrations') return renderRegistrations()
