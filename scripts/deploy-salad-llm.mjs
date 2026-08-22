@@ -19,6 +19,13 @@ if (!saladApiKey) throw new Error('Missing SALAD_API_KEY');
 const llmApiKey = (process.env.LLM_API_KEY || '').trim();
 if (llmApiKey && llmApiKey.length < 24) throw new Error('LLM_API_KEY too short');
 
+const saladApiBase = process.env.SALAD_API_BASE_URL || 'https://api.salad.com/api/public';
+const organizationName = process.env.SALAD_ORGANIZATION_NAME || 'smyst-com';
+const projectName = process.env.SALAD_PROJECT_NAME || 'default';
+const containerGroup = process.env.SALAD_CONTAINER_GROUP || 'smyst-llm';
+const image = process.env.IMAGE || 'ghcr.io/smyst-com/smyst-llm:latest';
+
+
 // GPU-Klasse (Option B, Freigabe Adam 22.08.): CPU-only-Container wurden auf
 // Salads GPU-Netzwerk kaum alloziert (Stunden in 'allocating', mehrfach
 // gefallen). Eine guenstige GPU garantiert sofortige Allokation — das
@@ -54,11 +61,6 @@ if (!chosenGpu) {
 }
 console.log(`GPU-Klasse: ${chosenGpu.name} (id ${chosenGpu.id}, Preis ~${priceOf(chosenGpu)}/h)`);
 
-const saladApiBase = process.env.SALAD_API_BASE_URL || 'https://api.salad.com/api/public';
-const organizationName = process.env.SALAD_ORGANIZATION_NAME || 'smyst-com';
-const projectName = process.env.SALAD_PROJECT_NAME || 'default';
-const containerGroup = process.env.SALAD_CONTAINER_GROUP || 'smyst-llm';
-const image = process.env.IMAGE || 'ghcr.io/smyst-com/smyst-llm:latest';
 
 async function salad(path, init = {}) {
   const response = await fetch(`${saladApiBase}${path}`, {
