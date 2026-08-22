@@ -90,7 +90,7 @@ const containerSpec = {
     cpu: Number(process.env.SALAD_CPU || 2),
     // GPU-Klasse fuer sofortige Allokation (Option B): CPU-only wurde auf
     // Salads GPU-Netzwerk nicht zuverlaessig alloziert.
-    memory: 3072,
+    memory: 12288,
     gpu_classes: [chosenGpu.id],
   },
   command: [],
