@@ -12,6 +12,8 @@ ENV PIPER_BIN=/opt/piper/piper
 ENV PIPER_VOICES_DIR=/voices
 ENV ASR_LOCAL_MODEL=small
 ENV ASR_MODEL_DIR=/models
+ENV SMYST_LLM_BASE_URL=http://localhost:8080/v1
+ENV SMYST_LLM_MODEL_PATH=/models/smyst-1.0-Q4_K_M.gguf
 
 # Piper-TTS (CPU) + kuratierte synthetische Stimmen — ersetzt den frueheren
 # Salad-Voice-Worker fuer Standard-TTS. Kein Code-Change: tts.py nutzt den
@@ -21,6 +23,16 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/* \
  && curl -fsSL https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz | tar -xz -C /opt \
  && test -x /opt/piper/piper
+
+# smyst 1.0 — eigener LLM-Server (llama.cpp, laeuft IM Backend-Container)
+# Kein separater Zeabur-Service noetig: llama-server startet als Hintergrund-
+#prozess neben der FastAPI auf Port 8080. Das Q4-Modell (350 MB) wird beim
+# Container-Start aus IDrive e2 geladen (MODEL_URL als Env-Variable).
+RUN curl -fsSL https://github.com/ggml-org/llama.cpp/releases/latest/download/llama-server-linux-x86_64.tar.gz | tar -xz -C /usr/local/bin/ || true
+
+# Start-Skript: Modell laden + beide Server starten
+COPY backend/start-llm.sh /app/start-llm.sh
+RUN chmod +x /app/start-llm.sh
 
 RUN mkdir -p /voices && cd /voices \
  && for v in \
@@ -56,4 +68,5 @@ RUN python -c "from faster_whisper import WhisperModel; WhisperModel('small', de
 
 EXPOSE 8000
 
+ENTRYPOINT ["/app/start-llm.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
