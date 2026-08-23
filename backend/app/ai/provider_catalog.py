@@ -139,12 +139,16 @@ PROVIDER_ALIASES = {
 DEFAULT_PROVIDER_ORDER = [
     "smyst_gateway",
     "smyst_llm",
+    # Notfall-Kette (23.08.): Keys vorhanden + Free-Tier-stark zuerst;
+    # openrouter fiel mehrfach hintereinander aus und stand bisher an vorderster
+    # Stelle – jetzt erst hinter den verfuegbaren Alternativen.
+    "gemini",
+    "deepseek",
+    "groq",
     "openrouter",
     "openai",
     "anthropic",
-    "gemini",
     "xai",
-    "deepseek",
     "moonshot",
     "manus",
     "zhipu",
