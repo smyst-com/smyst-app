@@ -1,34 +1,27 @@
-# smyst 1.0 — llama.cpp-Server als Salad-CPU-Container
+# smyst 1.0 — llama.cpp-Server als Salad-Container (Mini-Image ~100 MB)
 #
-# Build (im Workflow "smyst 1.0 LLM Deploy"): das f16-GGUF kommt per BuildKit-
-# Secret (presigned e2-URL) in die Quantisierungs-Stufe — das fertige Q4-Modell
-# liegt IM IMAGE, zur Laufzeit braucht der Container keinerlei Zugangsdaten und
-# keinen Download (Neustarts sind dadurch sicher).
-#
-# Laufzeit: llama-server auf :8080, OpenAI-kompatibel (/v1/chat/completions),
-# Health unter /health. Auth: LLM_API_KEY (Bearer) — im Deploy-Skript gesetzt.
-
-FROM ghcr.io/ggml-org/llama.cpp:full AS quantisierer
-WORKDIR /work
-# Die Secret-Datei enthaelt NUR die presigned URL (ein Objekt, <=7 Tage
-# gueltig) — sie landet nicht im Image.
-# Die llama.cpp-Binaries liegen mit ihren Shared Libraries in /app — im
-# RUN-Kontext ist LD_LIBRARY_PATH nicht gesetzt (Fehler 04:44 UTC: libllama-
-# quantize-impl.so nicht gefunden), deshalb inline.
-RUN --mount=type=secret,id=modelurl,required=true \
-    curl -fsSL "$(cat /run/secrets/modelurl)" -o smyst-1.0-f16.gguf \
-    && LD_LIBRARY_PATH=/app /app/llama-quantize smyst-1.0-f16.gguf smyst-1.0-Q4_K_M.gguf Q4_K_M
-
+# Das Q4-Modell (350 MB) wird NICHT ins Image gebrannt, sondern beim Start
+# aus IDrive e2 geladen (wie der Voice-Worker sein Modell laedt). Dadurch
+# ist das Image ~100 MB statt 1,5 GB — jeder Salad-Knoten laedt es in
+# Sekunden statt Minuten (das war die Blockade: Consumer-Knoten fielen
+# waehrend des 1,5-GB-Downloads zurueck in 'allocating').
 FROM ghcr.io/ggml-org/llama.cpp:light
-COPY --from=quantisierer /work/smyst-1.0-Q4_K_M.gguf /models/smyst-1.0-Q4_K_M.gguf
-# Das 'light'-Image ist der reine llama-Server mit korrektem ENTRYPOINT.
-# Die LLAMA_ARG_*-Env steuern Modell/Port/Kontext (offiziell unterstuetzt).
-# LD_LIBRARY_PATH noetig, weil die Shared Libs neben dem Binary liegen.
-ENV LD_LIBRARY_PATH=/app \
-    LLAMA_ARG_MODEL=/models/smyst-1.0-Q4_K_M.gguf \
-    LLAMA_ARG_HOST=0.0.0.0 \
-    LLAMA_ARG_PORT=8080 \
-    LLAMA_ARG_CTX_SIZE=4096 \
-    LLAMA_ARG_PARALLEL=4
+
+COPY <<'SCRIPT' /app/start.sh
+#!/bin/sh
+set -e
+MODEL=/models/smyst-1.0-Q4_K_M.gguf
+if [ ! -f "$MODEL" ]; then
+  echo "Lade smyst-1.0 aus e2..."
+  mkdir -p /models
+  curl -fsSL --retry 5 --retry-delay 3 "$MODEL_URL" -o /tmp/model-f16.gguf
+  LD_LIBRARY_PATH=/app /app/llama-quantize /tmp/model-f16.gguf "$MODEL" Q4_K_M
+  rm /tmp/model-f16.gguf
+  echo "Modell bereit."
+fi
+exec /app/llama-server --model "$MODEL" --host 0.0.0.0 --port 8080 --ctx-size 4096 --parallel 4
+SCRIPT
+RUN chmod +x /app/start.sh
+ENV LD_LIBRARY_PATH=/app
 EXPOSE 8080
-CMD ["/app/llama-server"]
+ENTRYPOINT ["/app/start.sh"]
