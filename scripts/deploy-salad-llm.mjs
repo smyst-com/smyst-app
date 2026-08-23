@@ -94,7 +94,13 @@ const containerSpec = {
     gpu_classes: [chosenGpu.id],
   },
   command: [],
-  environment_variables: llmApiKey ? { LLM_API_KEY: llmApiKey } : {},
+  environment_variables: {
+    ...(llmApiKey ? { LLM_API_KEY: llmApiKey } : {}),
+    // Mini-Image: das Modell wird beim Container-Start aus e2 geladen.
+    // 7 Tage gueltig (Container-Restarts ueberleben); nach Ablauf reicht
+    // ein Redeploy (neue URL). salad laedt das ~100-MB-Image in Sekunden.
+    ...(process.env.MODEL_URL ? { MODEL_URL: process.env.MODEL_URL } : {}),
+  },
   logging: { isEnabled: true },
 };
 if (process.env.REGISTRY_USERNAME && process.env.REGISTRY_PASSWORD) {

@@ -63,7 +63,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           URL=$(aws s3 presign s3://smyst-memories/models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf \
-            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 --expires-in 3600)
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 --expires-in 604800)
           echo "::add-mask::$URL"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
@@ -93,6 +93,7 @@ jobs:
         run: node scripts/deploy-salad-llm.mjs
         env:
           IMAGE: ${{ env.IMAGE }}
+          MODEL_URL: ${{ steps.presign.outputs.url }}
           SALAD_API_KEY: ${{ secrets.SALAD_API_KEY }}
           SALAD_ORGANIZATION_NAME: smyst-com
           SALAD_PROJECT_NAME: default
