@@ -25,10 +25,12 @@ def test_google_start_requires_runtime_config() -> None:
 
 
 def test_google_token_login_requires_runtime_config() -> None:
+    # Die Client-ID hat seit dem Google-Login-Fix einen oeffentlichen Default
+    # (siehe config.py); ohne Signier-Secret bleibt der Token-Login aber 503.
     response = client.post("/auth/google/token", json={})
 
     assert response.status_code == 503
-    assert "Google OAuth is not configured" in response.text
+    assert "Auth session secret is not configured" in response.text
 
 
 def test_google_token_login_rejects_missing_token(monkeypatch) -> None:
