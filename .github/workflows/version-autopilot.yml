@@ -1,0 +1,75 @@
+name: Versions-Autopilot (Profil-Verbesserung)
+
+# Endlose, bewachte Verbesserungsschleife fuer published-Profile (4x/Tag):
+# schlechteste Evals / Freshness-Bedarf zuerst -> Rebuild mit Version+1 ->
+# QA-Gate -> Eval-Direktvergleich -> STAGING statt Livegang.
+#
+# Der Live-Tausch passiert ausschliesslich ueber die Freigabe im Admin-
+# Cockpit (POST /api/admin/versions/...). Nichts wird geloescht, kein
+# Statuswechsel — die Live-Capsule bleibt bis zur Freigabe unberuehrt.
+#
+# Mengen ohne Deploy konfigurierbar im Object Brain:
+#   pipeline/autopilot/config.json  { "batch_per_run": 5, "daily_limit": 40 }
+
+on:
+  schedule:
+    - cron: "23 1,7,13,19 * * *"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max. Profile pro Lauf (leer = Config-Wert)"
+        required: false
+        default: ""
+
+concurrency:
+  group: version-autopilot
+  cancel-in-progress: false
+
+jobs:
+  stage-versions:
+    name: Versionen bauen + pruefen (staged)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install backend (inkl. Test-Extras)
+        run: pip install -e ".[dev]"
+
+      - name: "Versions-Autopilot: Rebuild + QA + Eval-Vergleich (Staging)"
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
+          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          LLM_PROVIDER_ORDER: "groq,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
+          SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
+          LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.limit }}" ]; then
+            ARGS="--limit ${{ github.event.inputs.limit }}"
+          fi
+          python -m app.workers.version_autopilot --enabled $ARGS

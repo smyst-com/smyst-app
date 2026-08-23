@@ -4,6 +4,7 @@ from app.api.v1.routes.admin_approvals import router as admin_approvals_router
 from app.api.v1.routes.admin_ideas import router as admin_ideas_router
 from app.api.v1.routes.admin_overview import router as admin_overview_router
 from app.api.v1.routes.admin_quality import router as admin_quality_router
+from app.api.v1.routes.admin_versions import router as admin_versions_router
 from app.api.v1.routes.billing import router as billing_router
 from app.api.v1.routes.ads import router as ads_router
 from app.api.v1.routes.ai import router as ai_router
@@ -41,6 +42,7 @@ api_router.include_router(user_mvp_router)
 api_router.include_router(twins_delete_router)
 api_router.include_router(web_research_router)
 api_router.include_router(admin_quality_router)
+api_router.include_router(admin_versions_router)
 api_router.include_router(admin_overview_router)
 api_router.include_router(admin_approvals_router)
 api_router.include_router(admin_ideas_router)

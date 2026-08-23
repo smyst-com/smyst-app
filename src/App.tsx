@@ -5809,6 +5809,23 @@ type AdminOverviewApi = {
   computeQueue?: ComputeJobSummary
 }
 
+type AdminVersionPendingCard = {
+  qid: string
+  name?: string
+  slug?: string
+  old_version?: number
+  new_version?: number
+  old_score?: number | null
+  new_score?: number | null
+  staged_at?: string
+}
+
+type AdminVersionsApi = {
+  ok: boolean
+  pending?: AdminVersionPendingCard[]
+  counts?: { pending: number }
+}
+
 type AdminAutopilotApi = {
   ok: boolean
   summary?: {
@@ -6120,6 +6137,9 @@ function AdminControlCenterInner() {
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
   const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
   const [adminAutopilot, setAdminAutopilot] = useState<AdminAutopilotApi | null>(null)
+  const [adminVersions, setAdminVersions] = useState<AdminVersionsApi | null>(null)
+  const [adminVersionsBusy, setAdminVersionsBusy] = useState<string | null>(null)
+  const [adminVersionsMessage, setAdminVersionsMessage] = useState<string | null>(null)
   const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
@@ -6309,7 +6329,58 @@ function AdminControlCenterInner() {
     }
   }, [activeSection])
 
-  // Live-Betrieb (Autopilot): Besucher, Werbe-Impressions, Feedback-Quote
+  // Versions-Autopilot: gestagte, gepruefte Profil-Versionen zur Freigabe
+  const refreshAdminVersions = () => {
+    fetchService('/api/admin/versions/pending', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        setAdminVersions(response.ok && payload?.ok ? payload as AdminVersionsApi : null)
+      })
+      .catch(() => setAdminVersions(null))
+  }
+
+  useEffect(() => {
+    if (activeSection !== 'autopilot') return
+    refreshAdminVersions()
+  }, [activeSection]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const actAdminVersion = async (action: 'approve' | 'approve-all' | 'reject', qid?: string) => {
+    let reason: string | undefined
+    if (action === 'reject') {
+      reason = window.prompt('Grund fürs Verwerfen (Pflichtfeld):') ?? undefined
+      if (!reason || reason.trim().length < 3) {
+        setAdminVersionsMessage('Verworfen – Grund fehlt oder ist zu kurz.')
+        return
+      }
+    }
+    const key = action === 'reject' ? `${qid}:${action}` : action
+    setAdminVersionsBusy(key)
+    setAdminVersionsMessage(null)
+    try {
+      const url = action === 'approve-all'
+        ? '/api/admin/versions/approve-all'
+        : `/api/admin/versions/${qid}/${action}`
+      const response = await fetchService(url, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: action === 'reject' ? JSON.stringify({ reason }) : undefined,
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (action === 'approve-all') {
+        setAdminVersionsMessage(
+          payload?.ok ? `${payload.applied} von ${payload.total} Versionen live geschaltet.` : 'Freigeben fehlgeschlagen.',
+        )
+      } else {
+        setAdminVersionsMessage(typeof payload?.result === 'string' ? payload.result : 'Aktion abgeschlossen.')
+      }
+      refreshAdminVersions()
+    } catch {
+      setAdminVersionsMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
+    } finally {
+      setAdminVersionsBusy(null)
+    }
+  }
   useEffect(() => {
     if (activeSection !== 'aiQuality') return
     let alive = true
@@ -6675,6 +6746,82 @@ function AdminControlCenterInner() {
               </span>
             )}
           </div>
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-[#111722]">Versions-Autopilot – Freigabe</h2>
+              <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+                {adminVersions === null
+                  ? 'Freigabe-Daten werden geladen oder Object Brain nicht erreichbar.'
+                  : (adminVersions.counts?.pending ?? 0) === 0
+                    ? 'Keine neuen Versionen – der Autopilot baut und prüft weiter, alles Live bleibt unangetastet.'
+                    : `${adminVersions.counts?.pending ?? 0} geprüfte, bessere Versionen warten auf deine Freigabe.`}
+              </p>
+            </div>
+            {(adminVersions?.counts?.pending ?? 0) > 0 && (
+              <button
+                type="button"
+                disabled={adminVersionsBusy !== null}
+                onClick={() => actAdminVersion('approve-all')}
+                className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                {adminVersionsBusy === 'approve-all' ? 'Freigeben …' : 'Alle freigeben'}
+              </button>
+            )}
+          </div>
+          {adminVersionsMessage ? (
+            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminVersionsMessage}</p>
+          ) : null}
+          {(adminVersions?.pending ?? []).length > 0 && (
+            <div className="mt-4 overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-[#d9e2ec] text-left text-xs font-bold uppercase tracking-wide text-[#667085]">
+                    <th className="py-2 pr-3">Profil</th>
+                    <th className="py-2 pr-3">Version</th>
+                    <th className="py-2 pr-3">Eval alt → neu</th>
+                    <th className="py-2 pr-3">Gestaget</th>
+                    <th className="py-2 pr-3">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(adminVersions?.pending ?? []).map((card) => (
+                    <tr key={card.qid} className="border-b border-[#eef2f7] align-middle">
+                      <td className="py-2 pr-3 font-semibold text-[#111722]">{card.name ?? card.qid}</td>
+                      <td className="py-2 pr-3 font-semibold text-[#5d6776]">v{card.old_version ?? '?'} → v{card.new_version ?? '?'}</td>
+                      <td className="py-2 pr-3 font-semibold text-[#5d6776]">
+                        {card.old_score != null ? card.old_score.toFixed(2) : '–'} → <span className="text-emerald-700">{card.new_score != null ? card.new_score.toFixed(2) : '–'}</span>
+                      </td>
+                      <td className="py-2 pr-3 text-[#667085]">
+                        {card.staged_at ? new Date(card.staged_at).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
+                      </td>
+                      <td className="py-2 pr-3">
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            disabled={adminVersionsBusy !== null}
+                            onClick={() => actAdminVersion('approve', card.qid)}
+                            className="rounded-md border border-emerald-600 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                          >
+                            {adminVersionsBusy === `${card.qid}:approve` ? '…' : 'Freigeben'}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={adminVersionsBusy !== null}
+                            onClick={() => actAdminVersion('reject', card.qid)}
+                            className="rounded-md border border-[#d9e2ec] px-3 py-1.5 text-xs font-bold text-[#5d6776] hover:bg-[#f7fafd] disabled:opacity-50"
+                          >
+                            Verwerfen
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {(adminAutopilot?.workflows ?? []).map((workflow) => (
