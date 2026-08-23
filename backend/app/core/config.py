@@ -56,7 +56,14 @@ class Settings(BaseSettings):
         default="replace-with-48-byte-random-secret",
         validation_alias="AUTH_SESSION_SECRET",
     )
-    google_oauth_client_id: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_ID")
+    # Default ist die oeffentliche GIS-Client-ID (steht identisch im
+    # Frontend-Bundle, siehe src/lib/googleIdentity.ts). Damit laeuft der
+    # Popup-Token-Login (/auth/google/token) auch ohne gesetzte Env-Variable;
+    # GOOGLE_OAUTH_CLIENT_ID in der Umgebung ueberschreibt weiterhin.
+    google_oauth_client_id: str | None = Field(
+        default="449969912847-ngp703eu4et2pt6ucmjb39v7lblvp2un.apps.googleusercontent.com",
+        validation_alias="GOOGLE_OAUTH_CLIENT_ID",
+    )
     google_oauth_client_secret: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_CLIENT_SECRET")
     google_oauth_redirect_uri: str | None = Field(default=None, validation_alias="GOOGLE_OAUTH_REDIRECT_URI")
     smyst_owner_emails_raw: str = Field(default="", validation_alias="SMYST_OWNER_EMAILS")
