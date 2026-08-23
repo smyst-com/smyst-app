@@ -275,6 +275,10 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
             ensure_ascii=False,
         )
     )
+    # Pro-QID-Ergebnis ins Lauf-Log: Verwurfgruende (Provider, QA, Eval) sind
+    # im Actions-Log sofort sichtbar, ohne den Changelog im Object Brain zu oeffnen.
+    for qid, result in report["results"].items():
+        print(f"version-autopilot: {qid} -> {result}", flush=True)
     return 0
 
 
