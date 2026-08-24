@@ -56,9 +56,10 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
-          set +e
-          python -m app.workers.provider_health | tee /tmp/health.json
-          echo "exit=$?" >> "$GITHUB_OUTPUT"
+          python -m app.workers.provider_health > /tmp/health.json
+          EXIT=$?
+          cat /tmp/health.json
+          echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
 
       - name: "Alarm: GitHub-Issue bei Provider-Krise"
         if: steps.health.outputs.exit == '2'
