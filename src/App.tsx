@@ -6012,36 +6012,38 @@ type ComputeJobsApi = {
   }>
 }
 
-const adminSections: Array<{ id: AdminSection; label: string; detail: string }> = [
-  { id: 'overview', label: 'Overview', detail: 'Live Status' },
-  { id: 'autopilot', label: 'Autopilot', detail: 'Ampeln aller Automatiken' },
-  { id: 'approvals', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen' },
-  { id: 'ideas', label: 'Ideen & Modell', detail: 'Autopilot-Vorschläge + smyst 1.0' },
-  { id: 'look', label: 'Look', detail: 'Design System' },
-  { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export' },
-  { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots' },
-  { id: 'profiles', label: 'Profiles', detail: 'AI Twins und Qualität' },
-  { id: 'aiQuality', label: 'AI Quality', detail: 'Modelle, RAG, Tests' },
-  { id: 'ads', label: 'Ads', detail: 'AdSense Slots' },
-  { id: 'revenue', label: 'Revenue', detail: '25 % User-Anteil' },
-  { id: 'finance', label: 'Finance', detail: 'Payouts, KYC, Tax' },
-  { id: 'moderation', label: 'Moderation', detail: 'Abuse Queue' },
-  { id: 'security', label: 'Security', detail: 'Audit und Privacy' },
-  { id: 'storage', label: 'Storage', detail: 'IDrive E2, Salad' },
-  { id: 'idrive', label: 'IDrive e2', detail: 'Object Map, Signed URLs' },
-  { id: 'salad', label: 'Salad', detail: 'Compute, Job-Pipeline, Jobs' },
-  { id: 'support', label: 'Support', detail: 'Tickets und Rollen' },
-  { id: 'releases', label: 'Releases', detail: 'Apps, PWA, Rollback' },
-  { id: 'apps', label: 'Apps', detail: 'PWA, iPhone, Android' },
-  { id: 'checklist', label: 'A-Z', detail: 'Launch Kontrolle' },
+const adminSections: Array<{ id: AdminSection; label: string; detail: string; group: string }> = [
+  { id: 'overview', label: 'Overview', detail: 'Live Status', group: 'Status' },
+  { id: 'autopilot', label: 'Autopilot', detail: 'Ampeln aller Automatiken', group: 'Status' },
+  { id: 'approvals', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen', group: 'Status' },
+  { id: 'ideas', label: 'Ideen & Modell', detail: 'Autopilot-Vorschläge + smyst 1.0', group: 'Status' },
+  { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export', group: 'Nutzer & Inhalte' },
+  { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots', group: 'Nutzer & Inhalte' },
+  { id: 'profiles', label: 'Profiles', detail: 'AI Twins und Qualität', group: 'Nutzer & Inhalte' },
+  { id: 'aiQuality', label: 'AI Quality', detail: 'Modelle, RAG, Tests', group: 'Nutzer & Inhalte' },
+  { id: 'moderation', label: 'Moderation', detail: 'Abuse Queue', group: 'Nutzer & Inhalte' },
+  { id: 'ads', label: 'Ads', detail: 'AdSense Slots', group: 'Umsatz' },
+  { id: 'revenue', label: 'Revenue', detail: '25 % User-Anteil', group: 'Umsatz' },
+  { id: 'finance', label: 'Finance', detail: 'Payouts, KYC, Tax', group: 'Umsatz' },
+  { id: 'security', label: 'Security', detail: 'Audit und Privacy', group: 'Sicherheit & Recht' },
+  { id: 'support', label: 'Support', detail: 'Tickets und Rollen', group: 'Sicherheit & Recht' },
+  { id: 'storage', label: 'Storage', detail: 'IDrive E2, Salad', group: 'Technik' },
+  { id: 'idrive', label: 'IDrive e2', detail: 'Object Map, Signed URLs', group: 'Technik' },
+  { id: 'salad', label: 'Salad', detail: 'Compute, Job-Pipeline, Jobs', group: 'Technik' },
+  { id: 'releases', label: 'Releases', detail: 'Apps, PWA, Rollback', group: 'Technik' },
+  { id: 'apps', label: 'Apps', detail: 'PWA, iPhone, Android', group: 'Technik' },
+  { id: 'look', label: 'Look', detail: 'Design System', group: 'Referenz' },
+  { id: 'checklist', label: 'A-Z', detail: 'Launch Kontrolle', group: 'Referenz' },
 ]
+
+const adminSectionOrder: string[] = ['Status', 'Nutzer & Inhalte', 'Umsatz', 'Sicherheit & Recht', 'Technik', 'Referenz']
 
 const adminMetricTone: Record<AdminMetric['tone'], string> = {
   green: 'bg-emerald-500',
   cyan: 'bg-sky-400',
   amber: 'bg-amber-400',
   red: 'bg-red-500',
-  navy: 'bg-[#111722]',
+  navy: 'bg-slate-500',
 }
 
 function AdminStatusChip({ children, tone = 'green' }: { children: string; tone?: AdminMetric['tone'] }) {
@@ -6725,6 +6727,10 @@ function AdminControlCenterInner() {
     const checkedAt = adminAutopilot?.checkedAt
       ? new Date(adminAutopilot.checkedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
       : null
+    const lightRank: Record<string, number> = { red: 0, yellow: 1, unknown: 2, green: 3 }
+    const workflows = [...(adminAutopilot?.workflows ?? [])].sort(
+      (a, b) => (lightRank[a.light] ?? 2) - (lightRank[b.light] ?? 2),
+    )
     return (
       <div className="grid gap-5">
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
@@ -6746,6 +6752,16 @@ function AdminControlCenterInner() {
               </span>
             )}
           </div>
+          {summary && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                { label: 'Läuft (grün)', value: summary.green, tone: 'green' as const },
+                { label: 'Überfällig (gelb)', value: summary.yellow, tone: 'amber' as const },
+                { label: 'Fehlgeschlagen (rot)', value: summary.red, tone: 'red' as const },
+                { label: 'Unbekannt', value: summary.unknown, tone: 'navy' as const },
+              ].map((metric) => <AdminMetricCard key={metric.label} metric={{ label: metric.label, value: String(metric.value), detail: 'Automatiken mit diesem Status.', tone: metric.tone }} />)}
+            </div>
+          )}
         </section>
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -6823,8 +6839,11 @@ function AdminControlCenterInner() {
             </div>
           )}
         </section>
+        {(adminAutopilot?.workflows ?? []).length > 0 && (
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#667085]">Automatiken – kritische zuerst</p>
+        )}
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {(adminAutopilot?.workflows ?? []).map((workflow) => (
+          {workflows.map((workflow) => (
             <section key={workflow.file} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -7512,18 +7531,23 @@ function AdminControlCenterInner() {
             <p className="mt-2 text-sm font-semibold text-[#aeb6c4]">Global control</p>
           </div>
           <nav className="grid gap-2" aria-label="Admin Navigation">
-            {adminSections.map((section) => {
-              const selected = section.id === activeSection
-              return (
-                <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[52px] items-center gap-3 rounded-md border px-3 text-left transition ${selected ? 'border-[#314158] bg-[#223044] text-white' : 'border-transparent bg-transparent text-[#c7cfda] hover:bg-white/[0.06]'}`}>
-                  <span className={`h-3 w-3 shrink-0 rounded-sm ${selected ? 'bg-[#59c7ff]' : 'bg-[#66758a]'}`} />
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-bold">{section.label}</span>
-                    <span className="block truncate text-xs font-semibold text-[#8996a8]">{section.detail}</span>
-                  </span>
-                </button>
-              )
-            })}
+            {adminSectionOrder.map((group) => (
+              <div key={group} className="grid gap-2">
+                <p className="mt-3 px-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#66758a] first:mt-0">{group}</p>
+                {adminSections.filter((section) => section.group === group).map((section) => {
+                  const selected = section.id === activeSection
+                  return (
+                    <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[52px] items-center gap-3 rounded-md border px-3 text-left transition ${selected ? 'border-[#314158] bg-[#223044] text-white' : 'border-transparent bg-transparent text-[#c7cfda] hover:bg-white/[0.06]'}`}>
+                      <span className={`h-3 w-3 shrink-0 rounded-sm ${selected ? 'bg-[#59c7ff]' : 'bg-[#66758a]'}`} />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-bold">{section.label}</span>
+                        <span className="block truncate text-xs font-semibold text-[#8996a8]">{section.detail}</span>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
           </nav>
         </aside>
         <section className="rounded-lg border border-[#d9e2ec] bg-[#f7fafd] p-4 shadow-sm sm:p-6">
