@@ -21,17 +21,25 @@ print('Modell geladen.')
 " && echo "smyst 1.0: Modell bereit."
 fi
 
-if [ -f "$MODEL" ] && [ -x /usr/local/bin/llama-server ]; then
+# Binary-Pfad: Dockerfile entpackt nach /opt/llama/llama-b*/ (inkl. Shared
+# Libs) — LD_LIBRARY_PATH zeigt auf das Archiv-Verzeichnis.
+LLAMA_BIN=$(find /opt/llama -maxdepth 2 -type f -name llama-server 2>/dev/null | head -1)
+LLAMA_DIR=$(dirname "$LLAMA_BIN" 2>/dev/null)
+
+if [ -f "$MODEL" ] && [ -n "$LLAMA_BIN" ] && [ -x "$LLAMA_BIN" ]; then
   echo "smyst 1.0: Starte llama-server auf :8080 (f16, ~1.5 GB RAM)..."
-  /usr/local/bin/llama-server \
+  export LD_LIBRARY_PATH="$LLAMA_DIR:${LD_LIBRARY_PATH:-}"
+  # Threads: alle verfuegbaren Kerne (frueher 1 Thread — bei 20 s LLM-Timeout
+  # lief jede Anfrage ins Timeout, bevor das Modell antworten konnte).
+  "$LLAMA_BIN" \
     --model "$MODEL" \
     --host 127.0.0.1 --port 8080 \
     --ctx-size 2048 --parallel 2 \
-    --threads 1 &
+    --threads "$(nproc)" &
   export SMYST_LLM_BASE_URL=http://127.0.0.1:8080/v1
   echo "smyst 1.0: LLM-Server aktiv auf $SMYST_LLM_BASE_URL"
 else
-  echo "smyst 1.0: Nicht verfuegbar — Fallback auf groq/gateway."
+  echo "smyst 1.0: Nicht verfuegbar (Modell: $([ -f "$MODEL" ] && echo ja || echo fehlt), Binary: ${LLAMA_BIN:-fehlt}) — Fallback auf groq/gateway."
   unset SMYST_LLM_BASE_URL
 fi
 

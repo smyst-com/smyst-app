@@ -26,9 +26,18 @@ RUN apt-get update \
 
 # smyst 1.0 — eigener LLM-Server (llama.cpp, laeuft IM Backend-Container)
 # Kein separater Zeabur-Service noetig: llama-server startet als Hintergrund-
-#prozess neben der FastAPI auf Port 8080. Das Q4-Modell (350 MB) wird beim
-# Container-Start aus IDrive e2 geladen (MODEL_URL als Env-Variable).
-RUN curl -fsSL https://github.com/ggml-org/llama.cpp/releases/latest/download/llama-server-linux-x86_64.tar.gz | tar -xz -C /usr/local/bin/ || true
+#prozess neben der FastAPI auf Port 8080. Das Modell wird beim Container-Start
+# aus IDrive e2 geladen (start-llm.sh).
+# 24.08. Bugfix: Das alte 'latest/download/llama-server-linux-x86_64.tar.gz'
+# existiert nicht (Asset-Namen enthalten die Build-Nummer) — das || true hat
+# den Fehler seit PR #515 verschluckt: llama-server war NIE im Image, smyst 1.0
+# konnte im Backend nicht starten. Gepinnter Release + hartes test-x, damit
+# ein Download-Fehler den Build sofort abbricht. Archiv entpackt in ein
+# Unterverzeichnis inkl. Shared Libs — /opt/llama/llama-b*/llama-server.
+RUN mkdir -p /opt/llama \
+ && curl -fsSL https://github.com/ggml-org/llama.cpp/releases/download/b10606/llama-b10606-bin-ubuntu-x64.tar.gz \
+    | tar -xz -C /opt/llama/ \
+ && test -x /opt/llama/llama-b10606/llama-server
 
 # Start-Skript: Modell laden + beide Server starten
 COPY backend/start-llm.sh /app/start-llm.sh
