@@ -1,0 +1,74 @@
+name: Dependency-Security-Pilot
+
+# Autopilot 15: Prueft woechentlich npm- und Python-Abhaengigkeiten auf
+# bekannte Schwachstellen (npm audit / pip-audit). Read-only; Findings
+# werden als kommentiertes Issue (Label dependency-vulnerability)
+# gemeldet — Fixes laufen ueber den normalen PR-Weg, nichts automatisch.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "package-lock.json"
+      - "backend/uv.lock"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    name: npm audit + pip-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+      - name: npm audit (production)
+        id: npm_audit
+        run: |
+          set +e
+          npm audit --omit=dev --audit-level=high > npm_audit.txt 2>&1
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+          cat npm_audit.txt
+      - name: pip-audit (Backend)
+        id: pip_audit
+        run: |
+          pipx install pip-audit >/dev/null
+          set +e
+          cd backend
+          uv export --format requirements-txt --no-dev --no-emit-project > /tmp/requirements.txt
+          pip-audit -r /tmp/requirements.txt --desc --progress-spinner off > ../pip_audit.txt 2>&1
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+          cd ..
+          cat pip_audit.txt
+      - name: Issue bei Schwachstellen (idempotent)
+        if: steps.npm_audit.outputs.exit != '0' || steps.pip_audit.outputs.exit != '0'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create "dependency-vulnerability" --color b60205 --description "Dependency-Security-Pilot: bekannte Schwachstelle" 2>/dev/null || true
+          {
+            echo "Gefunden am $(date -u '+%Y-%m-%d %H:%M UTC'). Keine automatischen Fixes — PR-Weg nutzen."
+            echo
+            echo "## npm audit"
+            echo '```'
+            cat npm_audit.txt
+            echo '```'
+            echo
+            echo "## pip-audit"
+            echo '```'
+            cat pip_audit.txt
+            echo '```'
+          } > body.md
+          OPEN=$(gh issue list --label dependency-vulnerability --state open --json number --jq 'length')
+          if [ "$OPEN" = "0" ]; then
+            gh issue create --title "Sicherheitslücken in Abhängigkeiten ($(date -u '+%Y-%m-%d'))" --label dependency-vulnerability --body-file body.md
+          else
+            NUMBER=$(gh issue list --label dependency-vulnerability --state open --json number --jq '.[0].number')
+            gh issue comment "$NUMBER" --body-file body.md
+          fi

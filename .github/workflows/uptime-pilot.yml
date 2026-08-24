@@ -1,0 +1,73 @@
+name: Uptime-Pilot
+
+# Autopilot 14: Prueft alle 15 Minuten, ob die wichtigen Dienste
+# erreichbar sind (Frontend, Backend, TTS-Pflicht-Smoke laut AGENTS.md).
+# Read-only; bei Ausfall wird genau ein offenes Issue (Label
+# uptime-incident) angelegt oder aktualisiert — nichts geht automatisch live.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  uptime-check:
+    name: Uptime-Check Frontend/Backend/TTS
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dienste pruefen
+        id: check
+        run: |
+          set -u
+          FAILURES=""
+          check() {
+            local name="$1" url="$2" extra="${3:-}"
+            local body
+            if body=$(curl -fsS --max-time 20 "$url" 2>&1); then
+              if [ -n "$extra" ] && ! printf '%s' "$body" | grep -q "$extra"; then
+                FAILURES="${FAILURES}- ${name}: HTTP OK, aber Pflicht-Inhalt fehlt (erwartet: ${extra})\n"
+                echo "::error title=${name}::Inhalt fehlt"
+              else
+                echo "${name}: OK"
+              fi
+            else
+              FAILURES="${FAILURES}- ${name}: NICHT ERREICHBAR (${url})\n"
+              echo "::error title=${name}::nicht erreichbar"
+            fi
+          }
+          check "Frontend smyst.com" "https://smyst.com/" "smyst.com"
+          check "Statische API /api/public/twins/" "https://smyst.com/api/public/twins/" ""
+          check "Backend api.smyst.com" "https://api.smyst.com/api/tts/voices" '"ready": *true\|"ready":true'
+          if [ -n "$FAILURES" ]; then
+            printf 'FAILURES<<EOF\n%s\nEOF\n' "$FAILURES" >> "$GITHUB_OUTPUT"
+            echo "status=down" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=up" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Issue bei Ausfall (idempotent)
+        if: steps.check.outputs.status == 'down'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FAILURES: ${{ steps.check.outputs.FAILURES }}
+        run: |
+          gh label create "uptime-incident" --color d73a4a --description "Uptime-Pilot: Dienst nicht erreichbar" 2>/dev/null || true
+          OPEN=$(gh issue list --label uptime-incident --state open --json number --jq 'length')
+          BODY="Uptime-Pilot hat um $(date -u '+%Y-%m-%d %H:%M UTC') einen Ausfall erkannt:
+
+          ${FAILURES}
+
+          Automatische Wiederherstellung findet nicht statt (AGENTS.md).
+          Der Pilot kommentiert laufend, solange der Ausfall anhält;
+          Issue manuell schliessen, sobald alles wieder OK ist."
+          if [ "$OPEN" = "0" ]; then
+            gh issue create --title "Uptime-Vorfall: Dienst(e) nicht erreichbar ($(date -u '+%Y-%m-%d %H:%M') UTC)" --label uptime-incident --body "$BODY"
+          else
+            NUMBER=$(gh issue list --label uptime-incident --state open --json number --jq '.[0].number')
+            gh issue comment "$NUMBER" --body "Noch down um $(date -u '+%Y-%m-%d %H:%M UTC'):
+
+          ${FAILURES}"
+          fi
