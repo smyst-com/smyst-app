@@ -60,11 +60,16 @@ jobs:
           OPEN=$(gh issue list --label cost-report --state open --json number --jq 'length')
           if [ "$OPEN" = "0" ]; then
             gh issue create --title "$TITLE" --label cost-report --body "$BODY"
-            NUMBER=$(gh issue list --label cost-report --state open --json number --jq '.[0].number')
           else
             NUMBER=$(gh issue list --label cost-report --state open --json number --jq '.[0].number')
             gh issue comment "$NUMBER" --body "$BODY"
           fi
+          # Issue-Nummer erst nach kurzem Settlement auslesen (Indexierung kann nachholen)
+          for i in 1 2 3 4 5; do
+            NUMBER=$(gh issue list --label cost-report --state open --json number --jq '.[0].number // empty')
+            [ -n "$NUMBER" ] && break
+            sleep 5
+          done
           # Alarm-Schwelle: weniger als $5 Restguthaben
           if [ "$REMAINING" != "unknown" ] && jq -e '. < 5' <<<"$REMAINING" >/dev/null; then
             gh issue comment "$NUMBER" --body "WARNUNG: Restguthaben unter 5 USD — Aufladung pruefen (nur Inhaber entscheidet, AGENTS.md Rote Linien)."
