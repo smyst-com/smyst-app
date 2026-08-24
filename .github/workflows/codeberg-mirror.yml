@@ -49,8 +49,8 @@ jobs:
         run: |
           set -eu
           if [ -z "${CODEBERG_TOKEN:-}" ]; then
-            echo "missing secret CODEBERG_TOKEN - siehe Kopf dieser Datei"
-            exit 1
+            echo "::warning::Secret CODEBERG_TOKEN fehlt — Spiegel uebersprungen. Einrichtung: siehe Kopf dieser Datei (nur Inhaber)."
+            exit 0
           fi
           # Token nur ueber den Credential-Helper, nie in der Remote-URL:
           # so taucht er weder in Logs noch in .git/config auf.
