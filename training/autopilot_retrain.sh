@@ -91,7 +91,8 @@ else
 fi
 
 # 6) Promotions-Gate: neuer Checkpoint gegen den produktiven Stand messen.
-#    Score = persona + deutsch + erste_person − leer_abgebrochen (je %).
+#    Score = persona + deutsch + erste_person + keine_wiederholung +
+#            kein_zeitbruch + vollstaendig − leer_abgebrochen (je %, Max 600).
 REPORT="$EVAL_OUT/eval-$(date +%F-%H%M).json"
 if ! ./.venv-mlx/bin/python eval_checkpoint_mlx.py \
       --model fused/smyst-1.0-sft \
@@ -103,7 +104,10 @@ fi
 NEW_SCORE=$(python3 - "$REPORT" << 'PY'
 import json, sys
 r = json.load(open(sys.argv[1]))["checkpoint"]
-print(round(r["persona_nennung"] + r["deutsch"] + r["erste_person"] - r["leer_abgebrochen"], 2))
+if "score" in r:
+    print(r["score"])
+else:  # aeltere Reports ohne Gesamtscore
+    print(round(r["persona_nennung"] + r["deutsch"] + r["erste_person"] - r["leer_abgebrochen"], 2))
 PY
 )
 CURRENT_SCORE=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['score'])" "$REGISTRY" 2>/dev/null || echo "")

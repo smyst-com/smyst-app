@@ -56,7 +56,11 @@ echo "== 1/4 Daten konvertieren ($EXPORT_DIR -> $DATA_DIR) =="
 # wenigen echten Chat-Austausche. Deaktivierbar via WITH_QA_DATA=0.
 QA_FLAG="--from-qa"
 if [ "${WITH_QA_DATA:-1}" = "0" ]; then QA_FLAG=""; fi
-./prepare_sft_mlx.py --in "$EXPORT_DIR" --out "$DATA_DIR" $QA_FLAG
+# Daumen-hoch-Feedback ( preference-*.jsonl) ist belohntes Verhalten und
+# gehoert in jeden Lauf — abschaltbar via WITH_PREFERENCE_DATA=0.
+PREF_FLAG="--from-preference"
+if [ "${WITH_PREFERENCE_DATA:-1}" = "0" ]; then PREF_FLAG=""; fi
+./prepare_sft_mlx.py --in "$EXPORT_DIR" --out "$DATA_DIR" $QA_FLAG $PREF_FLAG
 
 echo "== 2/4 LoRA-SFT: $MODEL, $ITERS Iterationen =="
 ./.venv-mlx/bin/mlx_lm.lora \
