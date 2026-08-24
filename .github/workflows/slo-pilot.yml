@@ -1,0 +1,101 @@
+name: SLO-Pilot
+
+# Autopilot 20: Woechentlicher Report gegen die Service-Ziele (SRE-Standard):
+#   SLO 1 Pipeline: >= 10 erfolgreiche Scale-2k-Laeufe/Tag an >= 95 % der Tage
+#                   (10 Laeufe x 12 Shards x 17 = 2.040 Profile => 2.000-Ziel)
+#   SLO 2 Erreichbarkeit: >= 99,9 % gruene Uptime-Messpunkte pro Woche
+#   SLO 3 Qualitaet: keine offene quality-regression aelter als 7 Tage
+# Report als kommentiertes Issue (Label slo-report); bei Verletzung zusaetzlich
+# E-Mail. Read-only, keine Automatik auf Live-Systeme.
+on:
+  schedule:
+    - cron: "45 6 * * 1"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  slo-report:
+    name: Woechentlicher SLO-Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: SLOs berechnen
+        id: slo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          WEEK_AGO=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+
+          # SLO 1: pro Tag erfolgreiche Scale-2k-Laeufe zaehlen
+          gh run list --workflow 'Pipeline Skalierung 2k Profile per Tag.yml' --branch main \
+            -L 200 --json conclusion,createdAt --arg since "$WEEK_AGO" \
+            --jq '.[] | select(.createdAt >= $since and .conclusion=="success") | .createdAt[:10]' \
+            | sort | uniq -c | awk '{print $2, $1}' > days.txt
+          cat days.txt
+          GOOD_DAYS=$(awk '$2 >= 10 {n++} END {print n+0}' days.txt)
+          TOTAL_DAYS=$(wc -l < days.txt | tr -d ' ')
+          [ "$TOTAL_DAYS" = "0" ] && TOTAL_DAYS=7
+          PIPE_PCT=$(jq -n --argjson g "$GOOD_DAYS" --argjson t "$TOTAL_DAYS" '100 * $g / $t')
+
+          # SLO 2: Uptime-Messpunkte
+          UP=$(gh run list --workflow 'Uptime-Pilot.yml' --branch main -L 700 \
+            --json conclusion,createdAt --arg since "$WEEK_AGO" \
+            --jq '[.[] | select(.createdAt >= $since)] as $r
+                  | {ok: ([$r[] | select(.conclusion=="success")] | length), all: ($r | length)}')
+          UP_OK=$(jq -r .ok <<<"$UP"); UP_ALL=$(jq -r .all <<<"$UP")
+          UP_PCT=$([ "$UP_ALL" = "0" ] && echo 0 || jq -n --argjson o "$UP_OK" --argjson a "$UP_ALL" '100 * $o / $a')
+
+          # SLO 3: offene quality-regression inkl. Alter
+          QR=$(gh issue list --label quality-regression --state open --json number,createdAt --jq 'length')
+
+          VIOLATIONS=0
+          [ "$(jq -n "$PIPE_PCT >= 95" )" != "true" ] && VIOLATIONS=$((VIOLATIONS+1)) || true
+          [ "$(jq -n "$UP_PCT >= 99.9")" != "true" ] && VIOLATIONS=$((VIOLATIONS+1)) || true
+          [ "$QR" -gt 0 ] && VIOLATIONS=$((VIOLATIONS+1)) || true
+
+          {
+            echo "## SLO-Report (KW $(date -u '+%V')) — $(date -u '+%d.%m.%Y')"
+            echo
+            echo "| Ziel | Messwert | Status |"
+            echo "|---|---|---|"
+            PIPE_BADGE=$([ "$(jq -n "$PIPE_PCT >= 95")" = "true" ] && echo "✅" || echo "❌")
+            UP_BADGE=$([ "$(jq -n "$UP_PCT >= 99.9")" = "true" ] && echo "✅" || echo "❌")
+            QR_BADGE=$([ "$QR" -eq 0 ] && echo "✅" || echo "❌")
+            echo "| Pipeline: Ziel-Tage (≥10 Läufe/Tag) ≥ 95 % | $(printf '%.0f' "$PIPE_PCT") % (${GOOD_DAYS}/${TOTAL_DAYS} Tage) | ${PIPE_BADGE} |"
+            echo "| Erreichbarkeit ≥ 99,9 % | $(printf '%.2f' "$UP_PCT") % (${UP_OK}/${UP_ALL} Messpunkte) | ${UP_BADGE} |"
+            echo "| Keine offene Qualitäts-Regression | ${QR} offen | ${QR_BADGE} |"
+            echo
+            if [ "$VIOLATIONS" -gt 0 ]; then
+              echo "**${VIOLATIONS} SLO(s) verletzt.** Error-Budget aufgebraucht: Ursachen diese Woche prioritieren (Details in den verlinkten Issues/Actions)."
+            else
+              echo "Alle Ziele gehalten. ✅"
+            fi
+          } > slo.md
+          cat slo.md
+          echo "violations=$VIOLATIONS" >> "$GITHUB_OUTPUT"
+      - name: Report als Issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          VIOLATIONS: ${{ steps.slo.outputs.violations }}
+        run: |
+          gh label create "slo-report" --color 5319e7 --description "SLO-Pilot: woechentlicher Zielerreichungs-Report" 2>/dev/null || true
+          OPEN=$(gh issue list --label slo-report --state open --json number --jq 'length')
+          if [ "$OPEN" = "0" ]; then
+            gh issue create --title "SLO-Report KW $(date -u '+%V/%Y')" --label slo-report --body-file slo.md
+          else
+            NUMBER=$(gh issue list --label slo-report --state open --json number --jq '.[0].number')
+            gh issue comment "$NUMBER" --body-file slo.md
+          fi
+          if [ "$VIOLATIONS" -gt 0 ] && [ -n "${RESEND_API_KEY:-}" ]; then
+            curl -fsS --max-time 20 https://api.resend.com/emails \
+              -H "Authorization: Bearer $RESEND_API_KEY" -H "Content-Type: application/json" \
+              -d "$(jq -Rs --arg to "${{ vars.ALERT_EMAIL || 's@smyst.com' }}" \
+                    '{from: "smyst.com Alarm <no-reply@smyst.com>", to: [$to],
+                      subject: ("smyst.com: " + $ENV.VIOLATIONS + " SLO(s) verletzt (KW " + (now | strftime("%V")) + ")"),
+                      text: .}' < slo.md)" || true
+          fi

@@ -1,0 +1,94 @@
+name: Chef-Briefing
+
+# Autopilot 19: Taegliches Briefing fuer den Inhaber (6:00 UTC = 8:00 MESZ).
+# EINE Übersicht statt 18 Stellen: Pipeline-Ertrag, Vorfälle, Qualitaet
+# und Hinweis auf offene Freigaben im Admin-Cockpit. Read-only;
+# eroeffnet/aktualisiert genau ein Issue (Label chef-briefing) und sendet
+# es per Resend, sofern RESEND_API_KEY in GitHub hinterlegt ist.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  briefing:
+    name: Taegliches Briefing erstellen
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Fakten sammeln und Briefing schreiben
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          set -euo pipefail
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          DAY_AGO=$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+
+          counts() { # workflow -> "erfolg total" (nur letzte 24h)
+            gh run list --workflow "$1" --branch main -L 100 \
+              --json conclusion,createdAt --arg since "$DAY_AGO" \
+              --jq '[.[] | select(.createdAt >= $since)] as $r
+                    | "\([$r[] | select(.conclusion=="success")] | length) \($r | length)"'
+          }
+          read PIPE_OK PIPE_ALL <<< "$(counts 'Pipeline Skalierung 2k Profile per Tag.yml')"
+          read UP_OK UP_ALL <<< "$(counts 'Uptime-Pilot.yml')"
+          read QA_OK QA_ALL <<< "$(counts 'Quality-Loop (Evals + Freshness).yml')"
+          KAP=$(( PIPE_OK * 12 * 17 ))
+
+          OFFENE_VORFAELLE=$(gh issue list --state open --json labels --jq '[.[] | .labels[]?.name] | unique | map(select(. != "cost-report" and . != "chef-briefing" and . != "slo-report" and . != "dependencies")) | length')
+          VORFALL_LISTE=$(gh issue list --state open -L 30 --json number,title,labels \
+            --jq '.[] | select([.labels[]?.name] | (inside(["cost-report","chef-briefing","slo-report","dependencies"]) | not)) | "- #\(.number) \(.title)"' | head -10)
+
+          UP_PCT="n/a"
+          if [ "${UP_ALL:-0}" != "0" ] 2>/dev/null && [ -n "${UP_ALL:-}" ]; then
+            UP_PCT=$(jq -n --argjson o "${UP_OK:-0}" --argjson a "$UP_ALL" '100 * $o / $a' | xargs printf '%.1f')
+          fi
+
+          {
+            echo "## Chef-Briefing $(date -u '+%d.%m.%Y')"
+            echo
+            echo "### Pipeline (Ziel: 2.000 Profile/Tag)"
+            echo "- Erfolgreiche Scale-2k-Läufe (24h): **${PIPE_OK:-0}**${PIPE_ALL:+ / ${PIPE_ALL}} → Kapazität ~${KAP:-0} Profile"
+            if [ "${PIPE_OK:-0}" -ge 10 ]; then echo "- ✅ Ziel erreichbar"; else echo "- ⚠️ Unter 10 Läufen — Watchdog holt nach; wiederholter Minderertrag → SLO-Report prüfen"; fi
+            echo
+            echo "### Erreichbarkeit (Uptime-Pilot, alle 15 Min)"
+            echo "- Messpunkte: ${UP_OK:-0}/${UP_ALL:-0} grün (${UP_PCT} %)"
+            echo
+            echo "### Qualität (Quality-Loop)"
+            echo "- Läufe 24h: ${QA_OK:-0} erfolgreich${QA_ALL:+ / ${QA_ALL}}"
+            echo
+            echo "### Offene Vorfälle: ${OFFENE_VORFAELLE:-0}"
+            echo "${VORFALL_LISTE:-- Keine offenen Vorfälle}"
+            echo
+            echo "### Deine 1 % heute"
+            echo "1. Admin-Cockpit öffnen (smyst.com → Admin) und Freigaben prüfen: neue Profil-Versionen und Ideen warten dort."
+            echo "2. Nur bei Bedarf: offene Vorfälle oben durcharbeiten."
+            echo
+            echo "_Automatisch erstellt um ${NOW}. Details: Actions- und Issues-Tabs._"
+          } > briefing.md
+          cat briefing.md
+
+          gh label create "chef-briefing" --color 0e8a16 --description "Chef-Briefing: taegliche Gesamtübersicht" 2>/dev/null || true
+          OPEN=$(gh issue list --label chef-briefing --state open --json number --jq 'length')
+          if [ "$OPEN" = "0" ]; then
+            gh issue create --title "Chef-Briefing $(date -u '+%d.%m.%Y')" --label chef-briefing --body-file briefing.md
+          else
+            NUMBER=$(gh issue list --label chef-briefing --state open --json number --jq '.[0].number')
+            gh issue comment "$NUMBER" --body-file briefing.md
+          fi
+
+          if [ -n "${RESEND_API_KEY:-}" ]; then
+            curl -fsS --max-time 20 https://api.resend.com/emails \
+              -H "Authorization: Bearer $RESEND_API_KEY" -H "Content-Type: application/json" \
+              -d "$(jq -Rs --arg to "${{ vars.ALERT_EMAIL || 's@smyst.com' }}" \
+                    '{from: "smyst.com Briefing <no-reply@smyst.com>", to: [$to],
+                      subject: ("Chef-Briefing " + (now | strftime("%d.%m.%Y"))),
+                      text: .}' < briefing.md)" || echo "E-Mail-Versand fehlgeschlagen (Resend) — Issue ist erstellt."
+          else
+            echo "::warning::RESEND_API_KEY fehlt — Briefing nur als Issue, keine E-Mail."
+          fi
