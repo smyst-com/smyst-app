@@ -8,7 +8,9 @@ Provider (Credential-Check ohne Generierungskosten) und
 
 1. schreibt den Statusbericht in den Object Brain
    (pipeline/health/providers-YYYY-MM-DD.json, ein Lauf pro Stunde bleibt
-   erhalten — Trend erkennbar),
+   erhalten — Trend erkennbar). Ping-Art: ECHTE Mini-Generierung (8 Tokens)
+   je Provider — der Credential-Check verschwieg am 24.08. Credits-Ausfaelle
+   (models-Endpoint antwortete trotzdem),
 2. druckt eine Zusammenfassung ins Workflow-Log,
 3. beendet mit Exit-Code 2, wenn weniger als MIN_HEALTHY_PROVIDER Provider
    erreichbar sind — das GitHub-Workflow alarmiert dann (Issue-Label
@@ -29,7 +31,7 @@ import json
 import sys
 from datetime import date, datetime, timezone
 
-from app.ai.llm_router import ping_providers, provider_statuses
+from app.ai.llm_router import provider_statuses
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 
 HEALTH_PREFIX = "pipeline/health/"
@@ -39,9 +41,44 @@ HEALTH_PREFIX = "pipeline/health/"
 MIN_HEALTHY_PROVIDERS = 2
 
 
+async def _generation_pings() -> dict[str, dict]:
+    # Mini-Generierung je Provider: faengt 402 (Credits) und generations-
+    # seitige 403/429 ein, die der models-Endpoint verschweigt (Erstlauf
+    # 24.08.: 5/7 Credential-ok trotz unbrauchbarer Keys).
+    from time import perf_counter
+
+    from app.ai.llm_router import LocalDeterministicProvider, build_default_router
+    from app.ai.models import LLMRequest
+
+    router = build_default_router()
+    request = LLMRequest(
+        prompt="Antworte mit einem Wort: ja", system_prompt="", max_tokens=8, temperature=0.0
+    )
+
+    async def _ping(provider):
+        started = perf_counter()
+        try:
+            response = await provider.complete(request)
+            ok = not getattr(response, "degraded", False)
+            return provider.name, {
+                "ok": ok,
+                "latency_ms": int((perf_counter() - started) * 1000),
+                "error": None if ok else "degraded",
+            }
+        except Exception as exc:
+            return provider.name, {
+                "ok": False,
+                "latency_ms": int((perf_counter() - started) * 1000),
+                "error": f"{type(exc).__name__}: {exc}"[:160],
+            }
+
+    remote = [p for p in router.providers if not isinstance(p, LocalDeterministicProvider)]
+    return dict(await asyncio.gather(*(_ping(p) for p in remote)))
+
+
 def run_health_check(*, min_healthy: int, with_storage: bool) -> tuple[dict, int]:
     now = datetime.now(timezone.utc)
-    pings = asyncio.run(ping_providers())
+    pings = asyncio.run(_generation_pings())
     configured = {s["provider"]: s for s in provider_statuses() if s.get("configured")}
 
     providers: list[dict] = []
