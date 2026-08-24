@@ -256,7 +256,7 @@ class OpenAICompatibleProvider(LLMProvider):
                     )
                     raise
                 backoff = (
-                    RATE_LIMIT_BACKOFF_SECONDS * (attempt + 1) if rate_limited
+                    RATE_LIMIT_BACKOFF_SECONDS if status == 429
                     else RETRY_BACKOFF_SECONDS
                 )
                 logger.warning(
