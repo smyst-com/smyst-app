@@ -97,7 +97,7 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
           # Gateway zuerst: es leiht sich die funktionierende Provider-Kette des
           # Servers. Die Einzel-Keys bleiben als Rueckfallebene dahinter.
-          LLM_PROVIDER_ORDER: "groq,smyst_gateway,together,mistral,deepseek,openrouter,openai,gemini,zhipu,dashscope,cohere,perplexity,anthropic,xai"
+          LLM_PROVIDER_ORDER: "groq,smyst_llm,smyst_gateway"
           SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
