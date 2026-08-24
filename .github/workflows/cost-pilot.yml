@@ -73,4 +73,10 @@ jobs:
           # Alarm-Schwelle: weniger als $5 Restguthaben
           if [ "$REMAINING" != "unknown" ] && jq -e '. < 5' <<<"$REMAINING" >/dev/null; then
             gh issue comment "$NUMBER" --body "WARNUNG: Restguthaben unter 5 USD — Aufladung pruefen (nur Inhaber entscheidet, AGENTS.md Rote Linien)."
+            ALERT_TEXT=$(printf 'Cost-Pilot: OpenRouter-Restguthaben nur noch %s USD. Aufladung pruefen (nur Inhaber entscheidet).' "$REMAINING")
+            curl -fsS --max-time 20 https://api.resend.com/emails \
+              -H "Authorization: Bearer ${{ secrets.RESEND_API_KEY }}" -H "Content-Type: application/json" \
+              -d "$(jq -n --arg to "${{ vars.ALERT_EMAIL || 's@smyst.com' }}" \
+                    --arg text "$ALERT_TEXT" \
+                    '{from: "smyst.com Alarm <no-reply@smyst.com>", to: [$to], subject: "smyst.com: OpenRouter-Guthaben kritisch", text: $text}')" || true
           fi

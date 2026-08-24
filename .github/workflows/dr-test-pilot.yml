@@ -1,0 +1,72 @@
+name: DR-Test-Pilot
+
+# Autopilot 18: Woechentlicher Disaster-Recovery-Test (read-only).
+# 1) Backup-Recovery-Manifest validieren (scripts/check-backup-recovery.py)
+# 2) Sicherstellen, dass der Pipeline-Backup-Branch juenger als 48h ist
+# 3) Restore-Smoke: index.json aus dem Backup-Branch laden und pruefen,
+#    dass es gueltiges JSON mit Profil-Eintraegen ist.
+# Bei Fehlschlag: Issue (Label dr-test-failed) + E-Mail ueber Resend.
+on:
+  schedule:
+    - cron: "30 6 * * 4"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  dr-test:
+    name: Backup pruefen und Restore-Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Manifest validieren
+        run: python3 scripts/check-backup-recovery.py
+      - name: Backup-Frische und Restore-Smoke
+        id: smoke
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          LAST=$(gh api "repos/{owner}/{repo}/commits?sha=pipeline-backup&per_page=1" --jq '.[0].commit.committer.date // empty')
+          if [ -z "$LAST" ]; then
+            echo "Kein Commit auf Branch pipeline-backup gefunden." >&2
+            echo "result=fail" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          AGE_H=$(( ( $(date +%s) - $(date -u -d "$LAST" +%s) ) / 3600 ))
+          echo "Letzter Backup-Commit: ${LAST} (Alter: ${AGE_H}h)"
+          if [ "$AGE_H" -gt 48 ]; then
+            echo "Backup ist aelter als 48h." >&2
+            echo "result=fail" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          curl -fsS --max-time 30 "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/pipeline-backup/index.json" -o index_backup.json
+          COUNT=$(jq '.published | length? // 0' index_backup.json 2>/dev/null || echo 0)
+          echo "Restore-Smoke: index.json gueltig, ${COUNT} Eintraege."
+          if [ "${COUNT:-0}" -lt 100 ]; then
+            echo "index.json enthaelt weniger als 100 Eintraege — Restore waere unvollstaendig." >&2
+            echo "result=fail" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "result=pass" >> "$GITHUB_OUTPUT"
+      - name: Alarm bei Fehlschlag (Issue + E-Mail)
+        if: steps.smoke.outputs.result == 'fail' || failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          gh label create "dr-test-failed" --color 5319e7 --description "DR-Test-Pilot: Backup/Recovery-Test fehlgeschlagen" 2>/dev/null || true
+          BODY="DR-Test-Pilot fehlgeschlagen am $(date -u '+%Y-%m-%d %H:%M UTC'). Details im Workflow-Log (Manifest-Validierung, Backup-Alter oder Restore-Smoke)."
+          OPEN=$(gh issue list --label dr-test-failed --state open --json number --jq 'length')
+          if [ "$OPEN" = "0" ]; then
+            gh issue create --title "Disaster-Recovery-Test fehlgeschlagen ($(date -u '+%Y-%m-%d'))" --label dr-test-failed --body "$BODY"
+          else
+            NUMBER=$(gh issue list --label dr-test-failed --state open --json number --jq '.[0].number')
+            gh issue comment "$NUMBER" --body "$BODY"
+          fi
+          curl -fsS --max-time 20 https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" -H "Content-Type: application/json" \
+            -d "$(jq -n --arg to "${{ vars.ALERT_EMAIL || 's@smyst.com' }}" \
+                  --arg text "$BODY" \
+                  '{from: "smyst.com Alarm <no-reply@smyst.com>", to: [$to], subject: "smyst.com: DR-Test fehlgeschlagen", text: $text}')" || true
+          exit 1

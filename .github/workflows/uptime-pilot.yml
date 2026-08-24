@@ -49,6 +49,7 @@ jobs:
             echo "status=up" >> "$GITHUB_OUTPUT"
           fi
       - name: Issue bei Ausfall (idempotent)
+        id: issue
         if: steps.check.outputs.status == 'down'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,9 +66,21 @@ jobs:
           Issue manuell schliessen, sobald alles wieder OK ist."
           if [ "$OPEN" = "0" ]; then
             gh issue create --title "Uptime-Vorfall: Dienst(e) nicht erreichbar ($(date -u '+%Y-%m-%d %H:%M') UTC)" --label uptime-incident --body "$BODY"
+            echo "new_incident=true" >> "$GITHUB_OUTPUT"
           else
             NUMBER=$(gh issue list --label uptime-incident --state open --json number --jq '.[0].number')
             gh issue comment "$NUMBER" --body "Noch down um $(date -u '+%Y-%m-%d %H:%M UTC'):
 
           ${FAILURES}"
           fi
+      - name: E-Mail-Alarm bei neuem Vorfall (Resend)
+        if: steps.check.outputs.status == 'down' && steps.issue.outputs.new_incident == 'true'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FAILURES: ${{ steps.check.outputs.FAILURES }}
+        run: |
+          curl -fsS --max-time 20 https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" -H "Content-Type: application/json" \
+            -d "$(jq -n --arg to "${{ vars.ALERT_EMAIL || 's@smyst.com' }}" \
+                  --arg text "Uptime-Pilot: Ausfall erkannt um $(date -u '+%Y-%m-%d %H:%M UTC'):\n${FAILURES}\nDetails im GitHub-Issue (Label uptime-incident)." \
+                  '{from: "smyst.com Alarm <no-reply@smyst.com>", to: [$to], subject: ("smyst.com Ausfall " + (now | strftime("%Y-%m-%d %H:%M"))), text: $text}')"
