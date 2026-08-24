@@ -105,13 +105,13 @@ jobs:
           else:
               raise SystemExit("Weder Q4_K_M noch f16 in e2 gefunden.")
           PY
-          # 4 Runner-vCPUs statt 1 Thread (Zeabur-Container) — das war der
-          # Grund, warum smyst_llm im Backend stets ins 20-s-Timeout lief.
-          # Ein Kern frei lassen: saettigt llama-server alle vCPUs, wird der Runner-
-# AgentCPU-verhungert und kann das 90-min-Timeout nicht mehr abarbeiten —
-# der Lauf wandert als Zombie ueber die Zeit und blockiert die Concurrency-
-# Gruppe (14:36-Uhr-Lauf 24.08.: 100+ min statt 90).
-THREADS=$(( $(nproc) > 1 ? $(nproc) - 1 : 1 ))
+          # Mehr Kerne statt 1 Thread (Zeabur-Container) — das war der Grund,
+          # warum smyst_llm im Backend stets ins 20-s-Timeout lief. ABER: ein
+          # Kern bleibt frei — saettigt llama-server alle vCPUs, verhungert der
+          # Runner-Agent und kann das 90-min-Timeout nicht abarbeiten; der Lauf
+          # wandert als Zombie ueber die Zeit und blockiert die Concurrency-
+          # Gruppe (14:36-Uhr-Lauf 24.08.: 100+ min statt 90, manueller Cancel).
+          THREADS=$(( $(nproc) > 1 ? $(nproc) - 1 : 1 ))
           nohup "$LLAMA_BIN" \
             --model "$MODEL" \
             --host 127.0.0.1 --port 8080 \
