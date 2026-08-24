@@ -36,9 +36,9 @@ jobs:
               --jq "[.[] | select(.createdAt >= \"$DAY_AGO\")] as \$r
                     | \"\([\$r[] | select(.conclusion==\"success\")] | length) \(\$r | length)\""
           }
-          read PIPE_OK PIPE_ALL <<< "$(counts 'Pipeline Skalierung 2k Profile per Tag.yml')"
-          read UP_OK UP_ALL <<< "$(counts 'Uptime-Pilot.yml')"
-          read QA_OK QA_ALL <<< "$(counts 'Quality-Loop (Evals + Freshness).yml')"
+          read PIPE_OK PIPE_ALL <<< "$(counts pipeline-scale-2k.yml)"
+          read UP_OK UP_ALL <<< "$(counts uptime-pilot.yml)"
+          read QA_OK QA_ALL <<< "$(counts quality-loop.yml)"
           KAP=$(( PIPE_OK * 12 * 17 ))
 
           OFFENE_VORFAELLE=$(gh issue list --state open --json labels --jq '[.[] | .labels[]?.name] | unique | map(select(. != "cost-report" and . != "chef-briefing" and . != "slo-report" and . != "dependencies")) | length')
