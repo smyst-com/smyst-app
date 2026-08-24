@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v6
       - name: SLOs berechnen
         id: slo
         env:
@@ -32,8 +33,8 @@ jobs:
 
           # SLO 1: pro Tag erfolgreiche Scale-2k-Laeufe zaehlen
           gh run list --workflow 'Pipeline Skalierung 2k Profile per Tag.yml' --branch main \
-            -L 200 --json conclusion,createdAt --arg since "$WEEK_AGO" \
-            --jq '.[] | select(.createdAt >= $since and .conclusion=="success") | .createdAt[:10]' \
+            -L 200 --json conclusion,createdAt \
+            --jq ".[] | select(.createdAt >= \"$WEEK_AGO\" and .conclusion==\"success\") | .createdAt[:10]" \
             | sort | uniq -c | awk '{print $2, $1}' > days.txt
           cat days.txt
           GOOD_DAYS=$(awk '$2 >= 10 {n++} END {print n+0}' days.txt)
@@ -43,9 +44,9 @@ jobs:
 
           # SLO 2: Uptime-Messpunkte
           UP=$(gh run list --workflow 'Uptime-Pilot.yml' --branch main -L 700 \
-            --json conclusion,createdAt --arg since "$WEEK_AGO" \
-            --jq '[.[] | select(.createdAt >= $since)] as $r
-                  | {ok: ([$r[] | select(.conclusion=="success")] | length), all: ($r | length)}')
+            --json conclusion,createdAt \
+            --jq "[.[] | select(.createdAt >= \"$WEEK_AGO\")] as \$r
+                  | {ok: ([\$r[] | select(.conclusion==\"success\")] | length), all: (\$r | length)}")
           UP_OK=$(jq -r .ok <<<"$UP"); UP_ALL=$(jq -r .all <<<"$UP")
           UP_PCT=$([ "$UP_ALL" = "0" ] && echo 0 || jq -n --argjson o "$UP_OK" --argjson a "$UP_ALL" '100 * $o / $a')
 

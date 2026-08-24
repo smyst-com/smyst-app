@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v6
       - name: Fakten sammeln und Briefing schreiben
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -31,9 +32,9 @@ jobs:
 
           counts() { # workflow -> "erfolg total" (nur letzte 24h)
             gh run list --workflow "$1" --branch main -L 100 \
-              --json conclusion,createdAt --arg since "$DAY_AGO" \
-              --jq '[.[] | select(.createdAt >= $since)] as $r
-                    | "\([$r[] | select(.conclusion=="success")] | length) \($r | length)"'
+              --json conclusion,createdAt \
+              --jq "[.[] | select(.createdAt >= \"$DAY_AGO\")] as \$r
+                    | \"\([\$r[] | select(.conclusion==\"success\")] | length) \(\$r | length)\""
           }
           read PIPE_OK PIPE_ALL <<< "$(counts 'Pipeline Skalierung 2k Profile per Tag.yml')"
           read UP_OK UP_ALL <<< "$(counts 'Uptime-Pilot.yml')"
