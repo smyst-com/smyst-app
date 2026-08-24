@@ -90,29 +90,20 @@ jobs:
           # Workflow als approved_by-Default smyst247@gmail.com dokumentiert.
           # Das QA-Gate bleibt vollstaendig intakt: publish_profiles publiziert
           # ausschliesslich qa_passed reviewed-Kandidaten; Tagesdeckel 2500 bleibt.
-          # Der Modus steht nicht im Run-Namen, sondern im Job-Namen
-          # ("Worker-Kette (publish-reviewed)") — deshalb Jobs je Run pruefen.
-          RECENT_RUN_IDS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=15" \
-            --jq '.workflow_runs[] | select((now - (.created_at | fromdateiso8601)) < 7200) | .id')
-          PUBLISHED_RECENT=0
-          for RUN_ID in ${RECENT_RUN_IDS}; do
-            JOB_MODE=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=5" \
-              --jq '[.jobs[].name] | join(" ")' 2>/dev/null || echo "")
-            case "${JOB_MODE}" in
-              *publish-reviewed*) PUBLISHED_RECENT=1; break ;;
-            esac
-          done
-          echo "Publish-reviewed-Lauf in den letzten 120 min: ${PUBLISHED_RECENT}"
-          if [ "${PUBLISHED_RECENT}" -eq 0 ]; then
-            echo "Kein Publish im Fenster — publish-reviewed anstossen (approved_by-Default: smyst247@gmail.com)."
-            # publish_limit=2500: dokumentierter Betreiber-Deckel (pipeline-run.yml,
-            # Anweisung 02.08.2026 'Publish-Deckel 2500/Tag'). Ohne Override gilt
-            # der Code-Default daily_publish_limit=5 — der lehnte am 24.08. alle 33
-            # QA-bestandenen Kandidaten ab ('Tageslimit erreicht'). QA-Gate bleibt
-            # unberuehrt: Nur reviewed+qa_passed wird publiziert.
-            gh workflow run pipeline-run.yml --ref main --repo "${GITHUB_REPOSITORY}" \
-              -f mode=publish-reviewed -f approved_by=smyst247@gmail.com -f publish_limit=2500
-            echo "### Watchdog hat Auto-Publish (publish-reviewed, Deckel 2500/Tag) angestossen" >> "$GITHUB_STEP_SUMMARY"
+          #
+          # 25.08.: Dispatch geht an den EIGENEN Workflow pipeline-publish.yml
+          # (eigene Concurrency-Gruppe). Frueher lief das Publish als Modus in
+          # pipeline-run.yml (Gruppe 'main') und wurde von langlaufenden
+          # run-small-Zombies verdraengt — reviewed-Profile lagen stundenlang
+          # im Store, ohne live zu gehen.
+          RECENT_PUBLISH=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-publish.yml/runs?per_page=10" \
+            --jq '[.workflow_runs[] | select((now - (.created_at | fromdateiso8601)) < 7200)] | length')
+          echo "Auto-Publish-Laeufe in den letzten 120 min: ${RECENT_PUBLISH}"
+          if [ "${RECENT_PUBLISH}" -eq 0 ]; then
+            echo "Kein Publish im Fenster — pipeline-publish anstossen (approved_by-Default: smyst247@gmail.com, Deckel 2500/Tag)."
+            gh workflow run pipeline-publish.yml --ref main --repo "${GITHUB_REPOSITORY}" \
+              -f approved_by=smyst247@gmail.com -f publish_limit=2500
+            echo "### Watchdog hat Auto-Publish (pipeline-publish, Deckel 2500/Tag) angestossen" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Publish-Takt in Ordnung — nichts zu tun."
           fi

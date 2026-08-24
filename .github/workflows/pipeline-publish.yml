@@ -1,0 +1,78 @@
+name: Pipeline Auto-Publish
+
+# Publiziert QA-freigegebene Kandidaten (reviewed + qa_passed) live.
+#
+# EIGENER Workflow mit EIGENER Concurrency-Gruppe (24./25.08.2026): Der
+# Publish Schritt steckte bisher in pipeline-run.yml (Gruppe 'main') und
+# wurde wiederholt von langlaufenden run-small-Zombies verdraengt —
+# Profile lagen stundenlang reviewed im Store, ohne live zu gehen.
+#
+# Freigabe-Basis: Pauschal-Freigabe Adam King 2026-07-04/17, approved_by
+# wird im Audit-Trail dokumentiert. QA-Gate unveraendert: publish_profiles
+# publiziert ausschliesslich qa_passed reviewed-Kandidaten. Tagesdeckel
+# 2500 (dokumentierter Betreiber-Deckel, pipeline-run.yml).
+
+on:
+  workflow_dispatch:
+    inputs:
+      approved_by:
+        description: "Freigabe-E-Mail (Audit-Trail)"
+        required: true
+        default: "smyst247@gmail.com"
+      publish_limit:
+        description: "Tageslimit (dokumentierter Deckel 2500)"
+        required: false
+        default: "2500"
+      qids:
+        description: "Optional: kommagetrennte QIDs — nur diese publizieren"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pipeline-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: "Publish reviewed"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: pip install -e ".[dev]"
+
+      - name: "Publish (nur mit dokumentierter Freigabe)"
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          if [ -z "${{ inputs.approved_by }}" ]; then
+            echo "Publish erfordert approved_by (Freigabe-E-Mail)."; exit 2
+          fi
+          LIMIT_ARGS=""
+          if [ -n "${{ inputs.publish_limit }}" ]; then
+            LIMIT_ARGS="--daily-limit ${{ inputs.publish_limit }}"
+          fi
+          if [ -n "${{ inputs.qids }}" ]; then
+            for qid in $(echo "${{ inputs.qids }}" | tr ',' ' '); do
+              python -m app.workers.publish_profiles publish --qid "$qid" \
+                --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
+            done
+          else
+            python -m app.workers.publish_profiles publish --all-reviewed \
+              --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
+          fi
