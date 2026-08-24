@@ -24,6 +24,15 @@ from app.workers.research_candidates import research_one
 
 logger = logging.getLogger(__name__)
 
+# Alle LLM-Provider tot (z. B. Kontingent erschöpft -> 403): Jeder gescheiterte
+# QA-Kandidat blockt ~10-12 min (Provider-Kette mit Timeouts). Ohne Abbruch
+# brannten die Scale-2k-Laeufe die vollen 90 min Runner-Zeit ab, ohne ein einziges
+# Profil zu liefern (24.08.2026: 10+ Läufe timeout-cancelled). Nach dieser Zahl
+# aufeinanderfolgend degradierter Kandidaten bricht der Shard ab; die Kandidaten
+# bleiben unangetastet (kein Status-Wechsel) und werden im nächsten Lauf
+# erneut geprüft, sobald wieder ein Provider antwortet.
+MAX_CONSECUTIVE_DEGRADED = 3
+
 
 def qid_belongs_to_shard(qid: str, shard_index: int, total_shards: int) -> bool:
     # Stabiler Hash: Pythons hash() ist prozesszufaellig — verschiedene Runner
@@ -53,6 +62,8 @@ def run_shard(
     config = DEFAULT_CONFIG if not enabled else PipelineConfig(enabled=True)
     store = CandidateStore(client=client, bucket=settings.idrive_e2_bucket)
 
+    consecutive_degraded = 0
+
     stages = [
         ("candidate", "Research", research_one),
         ("researched", "Build Capsule", build_one),
@@ -66,11 +77,34 @@ def run_shard(
         ][:limit]
         logger.info("Shard %d: %d Kandidaten in Stufe '%s' gefunden.", shard_index, len(shard_docs), status)
         for doc in shard_docs:
+            if consecutive_degraded >= MAX_CONSECUTIVE_DEGRADED:
+                logger.error(
+                    "Shard %d: %d Kandidaten hintereinander ohne LLM-Antwort "
+                    "(Provider-Kontingent/-Erreichbarkeit) — Lauf abgebrochen, "
+                    "verbleibende Kandidaten unangetastet. Nach Aufladen des "
+                    "Provider-Kontos automatisch wieder produktiv.",
+                    shard_index, consecutive_degraded,
+                )
+                raise RuntimeError(
+                    f"LLM provider circuit breaker: {consecutive_degraded} consecutive "
+                    "degraded candidates — aborting shard run to save runner minutes."
+                )
             logger.info("%s: %s (%s)", label, doc.get("name"), doc.get("wikidata_qid"))
             if dry_run:
                 continue
             try:
-                worker(doc, store=store, config=config, dry_run=False)
+                result = worker(doc, store=store, config=config, dry_run=False)
+                # qa_one meldet Provider-Ausfall als "skipped (Chat-Provider
+                # degradiert: ...)" — Kandidat unbewertet, kein Status-Wechsel.
+                result_text = result[1] if isinstance(result, tuple) else ""
+                if isinstance(result, tuple) and str(result_text).startswith("skipped (Chat-Provider degradiert"):
+                    consecutive_degraded += 1
+                    logger.warning(
+                        "Shard %d: Kandidat ohne LLM-Antwort (%d/%d).",
+                        shard_index, consecutive_degraded, MAX_CONSECUTIVE_DEGRADED,
+                    )
+                else:
+                    consecutive_degraded = 0
             except Exception as err:
                 logger.error("Fehler bei %s fuer %s: %s", label, doc.get("wikidata_qid"), err)
 
