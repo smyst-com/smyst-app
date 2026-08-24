@@ -152,7 +152,9 @@ if [ -f "$REPO_ROOT/backend/.env" ] || [ -n "${IDRIVE_E2_ACCESS_KEY:-}" ]; then
     || log "WARNUNG: e2-Backup fehlgeschlagen – Modell nur lokal, Backup spaeter nachholen."
 else
   log "Keine e2-Keys (backend/.env) – nutze GitHub-Backup-Weg (model-backup-e2.yml)."
-  if ./autopilot_backup_github.sh "$(date +%F)" >> "$LOG" 2>&1; then
+  BACKUP_HOOK="./autopilot_backup_github.sh"
+  [ -x "$HOME/Library/smyst-autopilots/autopilot_backup_github.sh" ] && BACKUP_HOOK="$HOME/Library/smyst-autopilots/autopilot_backup_github.sh"
+  if "$BACKUP_HOOK" "$(date +%F)" >> "$LOG" 2>&1; then
     log "Modell-Backup via GitHub nach e2 hochgeladen."
   else
     log "WARNUNG: GitHub-Backup fehlgeschlagen – Modell nur lokal, spaeter nachholen."
