@@ -161,3 +161,43 @@ jobs:
             --total-shards $TOTAL_SHARDS \
             --limit $BATCH_LIMIT \
             --enabled
+
+  # Selbst-Takt (25.08.): GitHub-Crons fielen in der Nacht mehrfach um Stunden
+  # aus — Watchdog-Ticks ebenfalls verzögert. Jede abgeschlossene Pipeline stößt
+  # daher den nächsten Lauf SELBST an (workflow_dispatch via GH_TOKEN). Die
+  # Cron-Schedules bleiben als redundante Zündung: Der Neuervergleich
+  # (.id > diese Run-ID) verhindert Doppel-Ketten, die Concurrency-Gruppe
+  # serialisiert Überlappungen. Cooldown: Nach einem Fehler jünger als 30 min
+  # wird nicht weitergekettet (kein Endlos-Schnellfeuer bei kaputter Workflow-
+  # Datei).
+  keep-takt:
+    name: Takt halten
+    needs: run-sharded-pipeline
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    steps:
+      - name: "Naechsten Lauf anstossen, wenn kein jüngerer existiert"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k.yml/runs?per_page=10")
+          NEWER=$(echo "$RUNS" | jq --argjson me "${RUN_ID}" \
+            '[.workflow_runs[] | select(.id > $me and (.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "action_required"))] | length')
+          LAST_CONCLUSION=$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.conclusion != null)][0].conclusion // "none"')
+          LAST_START_AGO=$(echo "$RUNS" | jq '[.workflow_runs[] | (now - (.created_at | fromdateiso8601))] | min')
+          echo "Neuere laufende Laeufe: ${NEWER}; letztes Ergebnis: ${LAST_CONCLUSION} vor ${LAST_START_AGO}s"
+          if [ "${NEWER}" -ne 0 ]; then
+            echo "Jüngerer Lauf existiert (Cron oder Kette) — nichts zu tun."
+            exit 0
+          fi
+          if [ "${LAST_CONCLUSION}" = "failure" ] && [ "${LAST_START_AGO}" -lt 1800 ]; then
+            echo "Letzter Lauf fehlerhaft und jünger als 30 min — Cooldown, keine Kette."
+            exit 0
+          fi
+          gh workflow run pipeline-scale-2k.yml --ref main --repo "${GITHUB_REPOSITORY}"
+          echo "### Selbst-Takt: naechsten Lauf gestartet" >> "$GITHUB_STEP_SUMMARY"
