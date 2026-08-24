@@ -78,3 +78,35 @@ jobs:
           else
             echo "Scale-2k in Ordnung — nichts zu tun."
           fi
+
+      - name: "Auto-Publish: QA-freigegebene Kandidaten regelmaessig live stellen."
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Reviewed-Kandidaten wurden bisher nur live, wenn jemand manuell
+          # mode=publish-reviewed startete — Scale-2k erzeugte sie, aber niemand
+          # publizierte (24.08. gefundene Luecke im '2000/Tag online'-Ziel).
+          # Freigabe-Basis: Pauschal-Freigabe Adam King 2026-07-04/17, im
+          # Workflow als approved_by-Default smyst247@gmail.com dokumentiert.
+          # Das QA-Gate bleibt vollstaendig intakt: publish_profiles publiziert
+          # ausschliesslich qa_passed reviewed-Kandidaten; Tagesdeckel 2500 bleibt.
+          # Der Modus steht nicht im Run-Namen, sondern im Job-Namen
+          # ("Worker-Kette (publish-reviewed)") — deshalb Jobs je Run pruefen.
+          RECENT_RUN_IDS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=15" \
+            --jq '.workflow_runs[] | select((now - (.created_at | fromdateiso8601)) < 7200) | .id')
+          PUBLISHED_RECENT=0
+          for RUN_ID in ${RECENT_RUN_IDS}; do
+            JOB_MODE=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=5" \
+              --jq '[.jobs[].name] | join(" ")' 2>/dev/null || echo "")
+            case "${JOB_MODE}" in
+              *publish-reviewed*) PUBLISHED_RECENT=1; break ;;
+            esac
+          done
+          echo "Publish-reviewed-Lauf in den letzten 120 min: ${PUBLISHED_RECENT}"
+          if [ "${PUBLISHED_RECENT}" -eq 0 ]; then
+            echo "Kein Publish im Fenster — publish-reviewed anstossen (approved_by-Default: smyst247@gmail.com)."
+            gh workflow run pipeline-run.yml --ref main --repo "${GITHUB_REPOSITORY}" -f mode=publish-reviewed -f approved_by=smyst247@gmail.com
+            echo "### Watchdog hat Auto-Publish (publish-reviewed) angestossen" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Publish-Takt in Ordnung — nichts zu tun."
+          fi
