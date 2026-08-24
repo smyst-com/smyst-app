@@ -63,7 +63,9 @@ jobs:
 
           Automatische Wiederherstellung findet nicht statt (AGENTS.md).
           Der Pilot kommentiert laufend, solange der Ausfall anhält;
-          Issue manuell schliessen, sobald alles wieder OK ist."
+          Issue manuell schliessen, sobald alles wieder OK ist.
+
+          @iMild — Ausfall-Alarm per GitHub-E-Mail."
           if [ "$OPEN" = "0" ]; then
             gh issue create --title "Uptime-Vorfall: Dienst(e) nicht erreichbar ($(date -u '+%Y-%m-%d %H:%M') UTC)" --label uptime-incident --body "$BODY"
             echo "new_incident=true" >> "$GITHUB_OUTPUT"
