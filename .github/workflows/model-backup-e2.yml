@@ -1,0 +1,75 @@
+# Sichert smyst-Modellartefakte (Adapter+Tokenizer+Configs) nach IDrive e2,
+# wenn der lokale Mac keine e2-Keys hat (backend/.env fehlt). Die Keys liegen
+# als GitHub-Secrets vor (wie beim Trainingsdaten-Export).
+#
+# Der 988-MB-Fused-Koerper ist absichtlich NICHT enthalten: er ist aus der
+# oeffentlichen Qwen-Basis + adapters.safetensors jederzeit via mlx_lm.fuse
+# rekonstruierbar (siehe MANIFEST.json im Artefakt-Ordner).
+#
+# Aufruf: Artefakte nach training/backup-artifacts/<version>/ committen
+# (Niemals nach main mergen — Nur Backup-Branch!), dann:
+#   gh workflow run model-backup-e2.yml --ref <branch> -f version=<version>
+name: Modell-Backup nach e2
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versionsname (= Ordner unter training/backup-artifacts/)"
+        required: true
+
+jobs:
+  backup:
+    name: Upload nach s3://smyst-memories
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+      IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install boto3
+        run: pip install -q boto3
+
+      - name: Upload
+        run: |
+          python3 - "${{ inputs.version }}" <<'PY'
+          import os, sys, json, pathlib, hashlib
+          import boto3
+          from botocore.config import Config
+
+          version = sys.argv[1]
+          bucket = "smyst-memories"
+          prefix = f"models/smyst-1.0/{version}"
+          src = pathlib.Path("training/backup-artifacts") / version
+          if not src.is_dir() or not any(src.iterdir()):
+              sys.exit(f"keine Artefakte in {src}")
+
+          client = boto3.client(
+              "s3", endpoint_url="https://s3.us-west-2.idrivee2.com",
+              region_name="us-west-2",
+              aws_access_key_id=os.environ["IDRIVE_E2_ACCESS_KEY"],
+              aws_secret_access_key=os.environ["IDRIVE_E2_SECRET_KEY"],
+              config=Config(connect_timeout=10, read_timeout=120,
+                            retries={"max_attempts": 5}),
+          )
+          for f in sorted(src.iterdir()):
+              client.put_object(Bucket=bucket, Key=f"{prefix}/{f.name}",
+                                Body=f.read_bytes())
+              print(f"hochgeladen: {f.name} ({f.stat().st_size} Bytes)")
+          # Bestaetigung: Objekte wieder lesen
+          resp = client.list_objects_v2(Bucket=bucket, Prefix=prefix + "/")
+          for o in resp.get("Contents", []):
+              print(f"bestaetigt: {o['Key']} ({o['Size']} Bytes)")
+          n = len(resp.get("Contents", []))
+          if n < 2:
+              sys.exit(f"nur {n} Objekte gefunden — Backup unvollstaendig")
+          print(f"OK: {n} Objekte unter s3://{bucket}/{prefix}/")
+          PY
