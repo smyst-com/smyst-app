@@ -32,7 +32,7 @@ jobs:
           WEEK_AGO=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
 
           # SLO 1: pro Tag erfolgreiche Scale-2k-Laeufe zaehlen
-          gh run list --workflow 'Pipeline Skalierung 2k Profile per Tag.yml' --branch main \
+          gh run list --workflow pipeline-scale-2k.yml --branch main \
             -L 200 --json conclusion,createdAt \
             --jq ".[] | select(.createdAt >= \"$WEEK_AGO\" and .conclusion==\"success\") | .createdAt[:10]" \
             | sort | uniq -c | awk '{print $2, $1}' > days.txt
@@ -43,7 +43,7 @@ jobs:
           PIPE_PCT=$(jq -n --argjson g "$GOOD_DAYS" --argjson t "$TOTAL_DAYS" '100 * $g / $t')
 
           # SLO 2: Uptime-Messpunkte
-          UP=$(gh run list --workflow 'Uptime-Pilot.yml' --branch main -L 700 \
+          UP=$(gh run list --workflow uptime-pilot.yml --branch main -L 700 \
             --json conclusion,createdAt \
             --jq "[.[] | select(.createdAt >= \"$WEEK_AGO\")] as \$r
                   | {ok: ([\$r[] | select(.conclusion==\"success\")] | length), all: (\$r | length)}")
