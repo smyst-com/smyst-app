@@ -1,0 +1,58 @@
+name: GitHub-Mirror
+
+# Autonomer Backup-Spiegel (25.08.): spiegelt main + Tags in das private
+# Repo smyst-com/smyst-app-mirror — per SSH-Deploy-Key (Secret
+# MIRROR_SSH_KEY), komplett ohne Inhaber-Zutun eingerichtet.
+# GitHub bleibt die Quelle; der Spiegel ist reine Ausfallsicherung,
+# neben dem bestehenden Codeberg-Mirror.
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 4 * * 2"
+  workflow_dispatch: {}
+
+concurrency:
+  group: github-mirror
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  mirror:
+    name: Push main und Tags zum Spiegel-Repo
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout mit voller Historie
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: SSH-Deploy-Key einrichten
+        env:
+          MIRROR_SSH_KEY: ${{ secrets.MIRROR_SSH_KEY }}
+        run: |
+          set -eu
+          if [ -z "${MIRROR_SSH_KEY:-}" ]; then
+            echo "::warning::Secret MIRROR_SSH_KEY fehlt — Spiegel uebersprungen."
+            exit 0
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$MIRROR_SSH_KEY" > ~/.ssh/mirror_key
+          chmod 600 ~/.ssh/mirror_key
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Zum Spiegel-Repo spiegeln
+        env:
+          MIRROR_SSH_KEY: ${{ secrets.MIRROR_SSH_KEY }}
+        run: |
+          if [ -z "${MIRROR_SSH_KEY:-}" ]; then exit 0; fi
+          git config user.name "mirror-pilot"
+          git config user.email "no-reply@smyst.com"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/mirror_key -o IdentitiesOnly=yes" \
+            git push --force git@github.com:smyst-com/smyst-app-mirror.git "HEAD:refs/heads/main"
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/mirror_key -o IdentitiesOnly=yes" \
+            git push --force --tags git@github.com:smyst-com/smyst-app-mirror.git
+          echo "Spiegel aktuell: github.com/smyst-com/smyst-app-mirror"

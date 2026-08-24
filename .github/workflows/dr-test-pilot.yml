@@ -61,7 +61,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: |
           gh label create "dr-test-failed" --color 5319e7 --description "DR-Test-Pilot: Backup/Recovery-Test fehlgeschlagen" 2>/dev/null || true
-          BODY="DR-Test-Pilot fehlgeschlagen am $(date -u '+%Y-%m-%d %H:%M UTC'). Details im Workflow-Log (Manifest-Validierung, Backup-Alter oder Restore-Smoke)."
+          BODY="DR-Test-Pilot fehlgeschlagen am $(date -u '+%Y-%m-%d %H:%M UTC'). Details im Workflow-Log (Manifest-Validierung, Backup-Alter oder Restore-Smoke).\n\n@iMild — Backup-Alarm per GitHub-E-Mail."
           OPEN=$(gh issue list --label dr-test-failed --state open --json number --jq 'length')
           if [ "$OPEN" = "0" ]; then
             gh issue create --title "Disaster-Recovery-Test fehlgeschlagen ($(date -u '+%Y-%m-%d'))" --label dr-test-failed --body "$BODY"

@@ -71,6 +71,8 @@ jobs:
             echo "2. Nur bei Bedarf: offene Vorfälle oben durcharbeiten."
             echo
             echo "_Automatisch erstellt um ${NOW}. Details: Actions- und Issues-Tabs._"
+            echo
+            echo "cc @iMild — Du bekommst dieses Briefing per GitHub-Benachrichtigungs-E-Mail._"
           } > briefing.md
           cat briefing.md
 
