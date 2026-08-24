@@ -30,17 +30,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          # Frische-Signal ist die letzte ERFOLGREICHE Backup-Ausführung,
+          # nicht das Branch-Alter: Wenn nichts Neues publiziert wurde
+          # (z. B. LLM-Guthaben leer), committet der Backup-Job zu Recht nichts.
+          LAST_OK=$(gh run list --workflow=pipeline-backup.yml --status success --limit 1 --json createdAt --jq '.[0].createdAt // empty')
+          if [ -z "$LAST_OK" ]; then
+            echo "Keine erfolgreiche pipeline-backup-Ausführung gefunden." >&2
+            echo "result=fail" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          AGE_H=$(( ( $(date +%s) - $(date -u -d "$LAST_OK" +%s) ) / 3600 ))
+          echo "Letzte erfolgreiche Backup-Ausführung: ${LAST_OK} (vor ${AGE_H}h)"
+          if [ "$AGE_H" -gt 26 ]; then
+            echo "Backup-Job laeuft nicht mehr taeglich." >&2
+            echo "result=fail" >> "$GITHUB_OUTPUT"; exit 0
+          fi
           LAST=$(gh api "repos/{owner}/{repo}/commits?sha=pipeline-backup&per_page=1" --jq '.[0].commit.committer.date // empty')
-          if [ -z "$LAST" ]; then
-            echo "Kein Commit auf Branch pipeline-backup gefunden." >&2
-            echo "result=fail" >> "$GITHUB_OUTPUT"; exit 0
-          fi
-          AGE_H=$(( ( $(date +%s) - $(date -u -d "$LAST" +%s) ) / 3600 ))
-          echo "Letzter Backup-Commit: ${LAST} (Alter: ${AGE_H}h)"
-          if [ "$AGE_H" -gt 48 ]; then
-            echo "Backup ist aelter als 48h." >&2
-            echo "result=fail" >> "$GITHUB_OUTPUT"; exit 0
-          fi
+          [ -n "$LAST" ] && echo "Letzter Backup-Commit (nur Info): ${LAST}" || echo "::warning::Branch pipeline-backup hat noch keinen Commit."
           curl -fsS --max-time 30 "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/pipeline-backup/index.json" -o index_backup.json
           COUNT=$(jq '.published | length? // 0' index_backup.json 2>/dev/null || echo 0)
           echo "Restore-Smoke: index.json gueltig, ${COUNT} Eintraege."
