@@ -120,7 +120,12 @@ jobs:
           # ist smyst_llm -> gemini -> deepseek -> groq -> openrouter -> ...
           # Default-Timeout von 20 s passt fuer Cloud-LLMs, aber NICHT fuer
           # lokales CPU-Inference (~30-60 s je QA-Antwort).
+          # SMYST_LLM_API_KEY ist PFLICHT: build_default_router ueberspringt
+          # Provider ohne Key, BEVOR der smyst_llm-Sonderfall greift (dessen
+          # 'or "smyst"'-Fallback ist dafuer toter Code) — Lauf 32730583164:
+          # llama-server lief, wurde aber nie gefragt.
           SMYST_LLM_BASE_URL: "http://127.0.0.1:8080/v1"
+          SMYST_LLM_API_KEY: "smyst"
           LLM_PROVIDER_TIMEOUT_SECONDS: "240"
           # Rueckfallebene nur fuer den Fall, dass das lokale Modell mal nicht
           # startet: groq resettet taeglich (TPD), der Rest ist Stand 24.08.
