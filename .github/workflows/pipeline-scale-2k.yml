@@ -71,7 +71,7 @@ jobs:
           # Runner-Nutzer darf keine Root-Verzeichnisse anlegen (Lauf 32729543210).
           MODEL_DIR="$HOME/models"
           mkdir -p "$MODEL_DIR"
-          MODEL="$MODEL_DIR/smyst-1.0-f16.gguf"
+          MODEL="$MODEL_DIR/smyst-1.0.gguf"
           export MODEL
           python3 - <<'PY'
           import boto3
@@ -85,12 +85,23 @@ jobs:
               aws_secret_access_key=os.environ["IDRIVE_E2_SECRET_KEY"],
               config=Config(read_timeout=900, retries={"max_attempts": 10}),
           )
-          c.download_file(
-              "smyst-memories",
-              "models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf",
-              os.environ["MODEL"],
-          )
-          print("Modell geladen.")
+          # Q4_K_M bevorzugt (~350 MB, auf CPU ~2-3x schneller als f16 —
+          # mehr QA-Kandidaten pro 90-min-Job); f16 als Fallback.
+          candidates = [
+              ("models/smyst-1.0/2026-08-20/smyst-1.0-Q4_K_M.gguf", "Q4_K_M"),
+              ("models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf", "f16"),
+          ]
+          for key, label in candidates:
+              try:
+                  c.head_object(Bucket="smyst-memories", Key=key)
+              except Exception:
+                  print(f"{label} nicht in e2 — naechster Kandidat.")
+                  continue
+              c.download_file("smyst-memories", key, os.environ["MODEL"])
+              print(f"Modell geladen: {label} ({key})")
+              break
+          else:
+              raise SystemExit("Weder Q4_K_M noch f16 in e2 gefunden.")
           PY
           # 4 Runner-vCPUs statt 1 Thread (Zeabur-Container) — das war der
           # Grund, warum smyst_llm im Backend stets ins 20-s-Timeout lief.

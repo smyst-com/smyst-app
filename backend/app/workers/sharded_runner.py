@@ -16,7 +16,7 @@ import hashlib
 import logging
 import sys
 
-from app.ai.historical_pipeline import DEFAULT_CONFIG, PipelineConfig
+from app.ai.historical_pipeline import DEFAULT_CONFIG, PipelineConfig, PipelineStatus
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 from app.workers.build_capsules import build_one
 from app.workers.qa_candidates import qa_one
@@ -64,6 +64,14 @@ def run_shard(
 
     consecutive_degraded = 0
 
+    # Published-Liste EINMAL pro Shard laden (S3-Scan ueber ~2400 Dokumente):
+    # qa_one's Duplikat-Check braucht sie; ohne Durchreichen lud JEDE Kandidat
+    # die Liste neu — 18 min/Kandidat, davon fast alles S3-Overhead
+    # (Lauf 32734104474; der Batch-Worker hat das seit 04.08. geloest).
+    published = store.candidate_documents_by_status(
+        PipelineStatus.PUBLISHED.value
+    )
+
     stages = [
         ("candidate", "Research", research_one),
         ("researched", "Build Capsule", build_one),
@@ -93,7 +101,8 @@ def run_shard(
             if dry_run:
                 continue
             try:
-                result = worker(doc, store=store, config=config, dry_run=False)
+                extra = {"published": published} if worker is qa_one else {}
+                result = worker(doc, store=store, config=config, dry_run=False, **extra)
                 # qa_one meldet Provider-Ausfall als "skipped (Chat-Provider
                 # degradiert: ...)" — Kandidat unbewertet, kein Status-Wechsel.
                 result_text = result[1] if isinstance(result, tuple) else ""
