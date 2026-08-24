@@ -4,6 +4,14 @@
 Eingabe (aus dem Artefakt des Workflows Trainingsdaten-Export):
     sft-<datum>.jsonl          User->Twin-Austausche (immer dabei)
     qa-judgments-<datum>.jsonl QA-Urteile der Pipeline (optional)
+    preference-<datum>.jsonl   bewertete Chat-Antworten (Daumen hoch/runter)
+
+Quellen aus preference (Schalter):
+    --from-preference  Nur Daumen-hoch-Paare als zusaetzliche SFT-Beispiele
+                       ("belohntes Verhalten lernen"). Daumen-runter-Records
+                       werden bewusst NICHT verwertet: schlechte Antworten
+                       eignen sich nicht als Zieltext — sie fliessen ueber die
+                       Eval-Worker als Regressionsfaelle ein, nicht ins SFT.
 
 Quellen aus qa-judgments (Schalter):
     --from-qa   Die Antwort-Texte der Urteile sind GPT-4o-generierte
@@ -97,6 +105,33 @@ def sft_examples(records: list[dict]) -> list[dict]:
     return examples
 
 
+def preference_examples(records: list[dict]) -> list[dict]:
+    """SFT aus Nutzerfeedback: nur rating=up, mit Vorverlauf wie beim Chat-SFT."""
+    examples: list[dict] = []
+    seen: set[tuple[str, str]] = set()
+    for record in records:
+        if record.get("rating") != "up":
+            continue
+        prompt = str(record.get("prompt") or "").strip()
+        response = str(record.get("response") or "").strip()
+        if not prompt or not response:
+            continue
+        key = (str(record.get("twinId") or ""), prompt)
+        if key in seen:
+            continue
+        seen.add(key)
+        messages: list[dict[str, str]] = [{"role": "system", "content": TWIN_SYSTEM_PROMPT}]
+        for turn in record.get("history") or []:
+            role = turn.get("role")
+            content = str(turn.get("content") or "").strip()
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": content})
+        messages.append({"role": "user", "content": prompt})
+        messages.append({"role": "assistant", "content": response})
+        examples.append({"messages": messages})
+    return examples
+
+
 def qa_answer_examples(records: list[dict]) -> list[dict]:
     """Persona-SFT aus QA-Antworten: nur verdict=pass, Persona im Prompt.
 
@@ -170,6 +205,7 @@ def main() -> int:
     parser.add_argument("--out", dest="outdir", required=True, help="Zielverzeichnis (train/valid)")
     parser.add_argument("--from-qa", action="store_true", help="QA-Antworten (nur pass) als Persona-SFT aufbereiten — der Fast-Track-Datensatz")
     parser.add_argument("--with-qa", action="store_true", help="QA-Urteile (pass/fail) zumischen (mit fail_ratio-Gate)")
+    parser.add_argument("--from-preference", action="store_true", help="Daumen-hoch-Chat-Antworten als zusaetzliche SFT-Beispiele aufbereiten")
     parser.add_argument("--valid-frac", type=float, default=0.02, help="Anteil Validierung (Default 0.02)")
     args = parser.parse_args()
 
@@ -183,6 +219,13 @@ def main() -> int:
         examples += qa_examples(_records(qa_files))
     if args.from_qa and qa_files:
         examples += qa_answer_examples(_records(qa_files))
+
+    pref_files = sorted(glob.glob(str(Path(args.indir) / "preference-*.jsonl")))
+    pref_count = 0
+    if args.from_preference and pref_files:
+        pref_examples = preference_examples(_records(pref_files))
+        pref_count = len(pref_examples)
+        examples += pref_examples
 
     if len(examples) < 50:
         sys.exit(f"nur {len(examples)} Beispiele — fuer ein SFT sind 50 das absolute Minimum, mehr Sammeln lohnt")
@@ -201,7 +244,8 @@ def main() -> int:
     print(
         f"train: {split}  valid: {valid_count}  "
         f"(SFT-Chats: {len(sft_files)} Quelldatei(en), QA-Persona: {'an' if args.from_qa else 'aus'}, "
-        f"QA-Urteile: {'an' if args.with_qa else 'aus'})"
+        f"QA-Urteile: {'an' if args.with_qa else 'aus'}, "
+        f"Daumen-hoch: {pref_count} Beispiel(e))"
     )
     return 0
 
