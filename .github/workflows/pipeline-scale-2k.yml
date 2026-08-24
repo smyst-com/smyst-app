@@ -55,10 +55,17 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           set -euo pipefail
-          # llama-server (gleicher Binary-Pfad wie im Backend-Dockerfile)
-          curl -fsSL https://github.com/ggml-org/llama.cpp/releases/latest/download/llama-server-linux-x86_64.tar.gz \
-            | tar -xz -C /usr/local/bin/
-          test -x /usr/local/bin/llama-server
+          # llama-server: Asset-Namen enthalten die Build-Nummer — deshalb auf
+          # einen bekannten Release gepinnt ('latest/download/llama-server-*.tar.gz'
+          # existiert nicht; Lauf 32728191721 scheiterte an tar). Das Archiv
+          # packt alles inkl. Shared Libs in ein Unterverzeichnis — deshalb
+          # /opt/llama statt einzelne Binary nach /usr/local/bin.
+          mkdir -p /opt/llama
+          curl -fsSL https://github.com/ggml-org/llama.cpp/releases/download/b10606/llama-b10606-bin-ubuntu-x64.tar.gz \
+            | tar -xz -C /opt/llama/
+          LLAMA_BIN=$(find /opt/llama -type f -name llama-server | head -1)
+          test -x "$LLAMA_BIN" || { echo "llama-server nicht im Archiv gefunden"; exit 1; }
+          export LD_LIBRARY_PATH="$(dirname "$LLAMA_BIN"):${LD_LIBRARY_PATH:-}"
           # f16-Modell (988 MB) aus dem Object Brain — identischer Key wie im
           # Backend-Container (start-llm.sh, PR #515).
           mkdir -p /models
@@ -84,11 +91,12 @@ jobs:
           # 4 Runner-vCPUs statt 1 Thread (Zeabur-Container) — das war der
           # Grund, warum smyst_llm im Backend stets ins 20-s-Timeout lief.
           THREADS=$(nproc)
-          nohup /usr/local/bin/llama-server \
+          nohup "$LLAMA_BIN" \
             --model /models/smyst-1.0-f16.gguf \
             --host 127.0.0.1 --port 8080 \
             --ctx-size 2048 --parallel 2 --threads "$THREADS" \
             > /tmp/llama-server.log 2>&1 &
+          echo "$LLAMA_BIN" > /tmp/llama_bin_path
           for i in $(seq 1 60); do
             if curl -sf http://127.0.0.1:8080/health > /dev/null; then
               echo "llama-server bereit (threads=$THREADS)."
