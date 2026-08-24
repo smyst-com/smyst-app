@@ -67,8 +67,12 @@ jobs:
           test -x "$LLAMA_BIN" || { echo "llama-server nicht im Archiv gefunden"; exit 1; }
           export LD_LIBRARY_PATH="$(dirname "$LLAMA_BIN"):${LD_LIBRARY_PATH:-}"
           # f16-Modell (988 MB) aus dem Object Brain — identischer Key wie im
-          # Backend-Container (start-llm.sh, PR #515).
-          mkdir -p /models
+          # Backend-Container (start-llm.sh, PR #515). $HOME statt /models:
+          # Runner-Nutzer darf keine Root-Verzeichnisse anlegen (Lauf 32729543210).
+          MODEL_DIR="$HOME/models"
+          mkdir -p "$MODEL_DIR"
+          MODEL="$MODEL_DIR/smyst-1.0-f16.gguf"
+          export MODEL
           python3 - <<'PY'
           import boto3
           from botocore.config import Config
@@ -84,7 +88,7 @@ jobs:
           c.download_file(
               "smyst-memories",
               "models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf",
-              "/models/smyst-1.0-f16.gguf",
+              os.environ["MODEL"],
           )
           print("Modell geladen.")
           PY
@@ -92,7 +96,7 @@ jobs:
           # Grund, warum smyst_llm im Backend stets ins 20-s-Timeout lief.
           THREADS=$(nproc)
           nohup "$LLAMA_BIN" \
-            --model /models/smyst-1.0-f16.gguf \
+            --model "$MODEL" \
             --host 127.0.0.1 --port 8080 \
             --ctx-size 2048 --parallel 2 --threads "$THREADS" \
             > /tmp/llama-server.log 2>&1 &
