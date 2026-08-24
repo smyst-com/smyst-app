@@ -35,12 +35,12 @@ DEFAULT_SYSTEM_PROMPT = (
 NO_RETRY_STATUSES = frozenset({400, 401, 403, 404, 422})
 RETRY_BACKOFF_SECONDS = 0.15
 # 429-Backoff: Minuten-Rate-Limits (OpenRouter/Groq) werden mit 1s Wartezeit
-# nie frei — Pipelines (8x/Tag, Scale-2k, Autopilot) saettigen den Provider
-# im Burst. Drei Versuche mit wachsendem Backoff (5s/20s) statt einem mit 1s
-# (Live-Befund 24.08.2026: 744 Gateway-503 in einem Pipeline-Lauf, waehrend
-# Einzelanfragen durchgingen).
-RATE_LIMIT_BACKOFF_SECONDS = 5.0
-RATE_LIMIT_BACKOFF_MAX_ATTEMPTS = 3
+# oft nicht frei — Pipelines (8x/Tag, Scale-2k, Autopilot) saettigen den
+# Provider im Burst (Live-Befund 24.08.2026: 744 Gateway-503 in einem Lauf).
+# Ein Retry mit 6s oeffnet kurze Fenster, ohne harte Total-Ausfaelle in
+# minutenlange Wartezeiten zu verwandeln (Eval-Timeout 20min, Router-Deadline
+# 45s pro Anfrage).
+RATE_LIMIT_BACKOFF_SECONDS = 6.0
 
 
 def _provider_error_detail(response: "httpx.Response") -> str:
@@ -237,9 +237,8 @@ class OpenAICompatibleProvider(LLMProvider):
           Fenster); ein einzelner 1s-Retry reicht bei Minuten-Limits nicht.
         - 5xx / Netzwerkfehler: ein Retry nach kurzem Backoff.
         """
-        max_attempts = 2
         attempt = 0
-        while attempt < max_attempts:
+        while attempt < 2:
             try:
                 response = await client.post(
                     url, headers=headers, json=payload, timeout=timeout
@@ -248,10 +247,7 @@ class OpenAICompatibleProvider(LLMProvider):
                 return response
             except httpx.HTTPStatusError as exc:
                 status = exc.response.status_code
-                rate_limited = status == 429
-                if rate_limited:
-                    max_attempts = max(max_attempts, RATE_LIMIT_BACKOFF_MAX_ATTEMPTS)
-                if status in NO_RETRY_STATUSES or attempt + 1 >= max_attempts:
+                if status in NO_RETRY_STATUSES or attempt >= 1:
                     logger.warning(
                         "llm provider '%s' rejected with HTTP %s: %s",
                         self.name,
@@ -272,7 +268,7 @@ class OpenAICompatibleProvider(LLMProvider):
                 )
                 await asyncio.sleep(backoff)
             except Exception as exc:
-                if attempt + 1 >= max_attempts:
+                if attempt >= 1:
                     raise
                 logger.warning(
                     "llm provider '%s' request error (%s), retrying",
