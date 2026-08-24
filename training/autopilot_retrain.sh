@@ -24,6 +24,11 @@ log() { echo "[$(date '+%F %T')] $*" >> "$LOG"; }
 
 mkdir -p "$EVAL_OUT" 2>/dev/null || true
 
+# gh im launchd-Kontext ohne Keychain: Token-Datei als Fallback (chmod 600)
+if [ -f "$HOME/.smyst-secrets/gh_token" ] && ! gh auth status >/dev/null 2>&1; then
+  export GH_TOKEN="$(cat "$HOME/.smyst-secrets/gh_token")"
+fi
+
 # 1) Neuesten Code holen (Autopilot aktualisiert sich selbst)
 git -C "$REPO_ROOT" pull --quiet >> "$LOG" 2>&1 || log "WARNUNG: git pull fehlgeschlagen (offline?) – fahre mit lokalem Stand fort."
 
@@ -146,6 +151,13 @@ if [ -f "$REPO_ROOT/backend/.env" ] || [ -n "${IDRIVE_E2_ACCESS_KEY:-}" ]; then
     && log "Modell-Backup nach IDrive e2 hochgeladen." \
     || log "WARNUNG: e2-Backup fehlgeschlagen – Modell nur lokal, Backup spaeter nachholen."
 else
-  log "HINWEIS: keine e2-Keys (backend/.env) – Modell lokal promotet, e2-Backup ausgesetzt."
+  log "Keine e2-Keys (backend/.env) – nutze GitHub-Backup-Weg (model-backup-e2.yml)."
+  BACKUP_HOOK="./autopilot_backup_github.sh"
+  [ -x "$HOME/Library/smyst-autopilots/autopilot_backup_github.sh" ] && BACKUP_HOOK="$HOME/Library/smyst-autopilots/autopilot_backup_github.sh"
+  if "$BACKUP_HOOK" "$(date +%F)" >> "$LOG" 2>&1; then
+    log "Modell-Backup via GitHub nach e2 hochgeladen."
+  else
+    log "WARNUNG: GitHub-Backup fehlgeschlagen – Modell nur lokal, spaeter nachholen."
+  fi
 fi
 log "=== Autopilot beendet ==="
