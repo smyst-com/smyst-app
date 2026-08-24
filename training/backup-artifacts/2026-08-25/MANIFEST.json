@@ -1,0 +1,29 @@
+{
+  "model": "smyst-1.0-sft",
+  "version": "2026-08-25",
+  "basis": "Qwen/Qwen2.5-0.5B-Instruct",
+  "erstellt": "2026-08-24T21:49:48.496794+00:00",
+  "hinweis": "fused/model.safetensors rekonstruierbar via mlx_lm.fuse (Basis + adapters).",
+  "dateien": {
+    "adapters.safetensors": {
+      "bytes": 11754630,
+      "sha256": "a3c224c54195a6230f9c885cffd1c5ea67428f5389be02a9d77470e0da775592"
+    },
+    "config.json": {
+      "bytes": 742,
+      "sha256": "6d657454ad318395a776b93f29bfb347c73b1b781be712a982a98f80f4952c4c"
+    },
+    "generation_config.json": {
+      "bytes": 242,
+      "sha256": "e558847a8b4402616f1273797b015104dc266fe4b520056fca88823ba8f8ebe6"
+    },
+    "tokenizer.json": {
+      "bytes": 11421892,
+      "sha256": "3fd169731d2cbde95e10bf356d66d5997fd885dd8dbb6fb4684da3f23b2585d8"
+    },
+    "tokenizer_config.json": {
+      "bytes": 729,
+      "sha256": "ee8f6d44bf2353e6d3686c3adaf70e1ccfe9e6ed6822d0ab2f28cafdd7754792"
+    }
+  }
+}
