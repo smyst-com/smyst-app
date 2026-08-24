@@ -19,21 +19,36 @@ else
   ALERT="Re-Trainings-Autopilot: Log fehlt. "
 fi
 
-# 2) GitHub-Workflows
-for WF in "Chat-Qualitaets-Eval" "Quality-Autopilot"; do
-  LAST=$(gh run list --workflow "$WF" --limit 1 --json conclusion,createdAt --jq '.[0] | select(.conclusion=="success") | .createdAt' 2>/dev/null | head -1)
+# 2) GitHub-Workflows. Die anonyme REST-API reicht (Repo ist public) und
+#    funktioniert im launchd-Kontext, wo gh keinen Keychain-Zugriff hat —
+#    die fruehere gh-Abfrage meldete dort falsch "kein erfolgreicher Lauf".
+for WF_FILE in "eval.yml:Chat-Qualitaets-Eval" "quality-autopilot.yml:Quality-Autopilot"; do
+  WF_PATH="${WF_FILE%%:*}"; WF_NAME="${WF_FILE##*:}"
+  LAST=$(curl -sf --max-time 20 "https://api.github.com/repos/smyst-com/smyst-app/actions/workflows/$WF_PATH/runs?per_page=10" \
+    | python3 -c 'import json,sys
+try:
+    runs = json.load(sys.stdin)["workflow_runs"]
+except Exception:
+    sys.exit(0)
+for r in runs:
+    if r["conclusion"] == "success":
+        print(r["created_at"]); break' 2>/dev/null)
   if [ -z "$LAST" ]; then
-    ALERT="${ALERT}Workflow '$WF': kein erfolgreicher Lauf gefunden. "
+    ALERT="${ALERT}Workflow '$WF_NAME': kein erfolgreicher Lauf gefunden. "
   else
     AGE=$(( $(date +%s) - $(date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST" +%s 2>/dev/null || echo 0) ))
-    [ "$AGE" -gt $((2*24*3600)) ] && ALERT="${ALERT}Workflow '$WF': letzter Erfolg $((AGE/86400)) Tage her. "
+    [ "$AGE" -gt $((2*24*3600)) ] && ALERT="${ALERT}Workflow '$WF_NAME': letzter Erfolg $((AGE/86400)) Tage her. "
   fi
 done
 
-# 3) Codeberg-Mirror synchron halten (Master-Prompt: nach jedem Merge)
-git -C "$REPO_ROOT" push codeberg --all --quiet >> "$LOG" 2>&1 \
+# 3) Codeberg-Mirror synchron halten (Master-Prompt: nach jedem Merge).
+#    Es wird origin/main gespiegelt, nicht die lokalen Branches: die koennen
+#    auf dem Autopilot-Mac aelter sein als der Mirror (Non-Fast-Forward-Fehler,
+#    siehe Watchdog-Vorfaelle ab 21.08.2026).
+git -C "$REPO_ROOT" fetch origin --quiet >> "$LOG" 2>&1 \
+  && git -C "$REPO_ROOT" push codeberg origin/main:main --quiet >> "$LOG" 2>&1 \
   && git -C "$REPO_ROOT" push codeberg --tags --quiet >> "$LOG" 2>&1 \
-  && log "Codeberg-Mirror synchron." || log "WARNUNG: Codeberg-Sync fehlgeschlagen."
+  && log "Codeberg-Mirror synchron (origin/main -> codeberg/main)." || log "WARNUNG: Codeberg-Sync fehlgeschlagen."
 
 if [ -n "$ALERT" ]; then
   log "ALARM: $ALERT"
