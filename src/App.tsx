@@ -6055,6 +6055,16 @@ function AdminStatusChip({ children, tone = 'green' }: { children: string; tone?
   )
 }
 
+// Sektionen ohne Live-API-Anschluss zeigen keine erfundenen Zahlen, sondern
+// diesen ehrlichen Hinweis (Befund Admin-Review 25.08.).
+function AdminDemoNote() {
+  return (
+    <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800 xl:col-span-2">
+      Konzept-Ansicht: Diese Sektion hat noch keinen Live-Anschluss an die Admin-API. Zahlen und Tabellen sind Platzhalter und beschreiben geplante Funktionen.
+    </div>
+  )
+}
+
 function AdminMetricCard({ metric }: { metric: AdminMetric }) {
   return (
     <div className="rounded-lg border border-[#d9e2ec] bg-white p-4 shadow-sm">
@@ -6131,6 +6141,7 @@ function AdminControlCenterView() {
 
 function AdminControlCenterInner() {
   const [activeSection, setActiveSection] = useState<AdminSection>('overview')
+  const [adminNavOpen, setAdminNavOpen] = useState(false)
   const [adminOverview, setAdminOverview] = useState<AdminOverviewApi | null>(null)
   const [adminBackendStatus, setAdminBackendStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [adminMfaStatus, setAdminMfaStatus] = useState<AdminMfaStatusApi | null>(null)
@@ -6142,12 +6153,18 @@ function AdminControlCenterInner() {
   const [adminVersions, setAdminVersions] = useState<AdminVersionsApi | null>(null)
   const [adminVersionsBusy, setAdminVersionsBusy] = useState<string | null>(null)
   const [adminVersionsMessage, setAdminVersionsMessage] = useState<string | null>(null)
+  const [adminVersionsRejectQid, setAdminVersionsRejectQid] = useState<string | null>(null)
+  const [adminVersionsRejectReason, setAdminVersionsRejectReason] = useState('')
   const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
+  const [adminApprovalsRejectQid, setAdminApprovalsRejectQid] = useState<string | null>(null)
+  const [adminApprovalsRejectReason, setAdminApprovalsRejectReason] = useState('')
   const [adminIdeas, setAdminIdeas] = useState<AdminIdeasApi | null>(null)
   const [adminIdeasBusy, setAdminIdeasBusy] = useState<string | null>(null)
   const [adminIdeasMessage, setAdminIdeasMessage] = useState<string | null>(null)
+  const [adminIdeasRejectId, setAdminIdeasRejectId] = useState<string | null>(null)
+  const [adminIdeasRejectReason, setAdminIdeasRejectReason] = useState('')
   const [adminLiveOps, setAdminLiveOps] = useState<{ visits?: { totalToday: number; totalAll: number }; ads?: { total: number }; chatFeedback?: { up: number; down: number; dislikeRate: number } }>({})
   const [adminQualityStatus, setAdminQualityStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [storageCapabilities, setStorageCapabilities] = useState<StorageCapabilitiesApi | null>(null)
@@ -6232,15 +6249,15 @@ function AdminControlCenterInner() {
     return refreshAdminApprovals()
   }, [activeSection, refreshAdminApprovals])
 
-  const decideApproval = async (qid: string, action: 'approve' | 'reject') => {
+  const decideApproval = async (qid: string, action: 'approve' | 'reject', reason?: string) => {
     let body: string | null = null
     if (action === 'reject') {
-      const reason = window.prompt('Warum wird dieser Kandidat abgelehnt? (Pflichtfeld)')?.trim()
-      if (!reason || reason.length < 3) {
+      const trimmed = (reason ?? '').trim()
+      if (trimmed.length < 3) {
         setAdminApprovalsMessage('Ablehnen braucht einen Grund (mindestens 3 Zeichen).')
         return
       }
-      body = JSON.stringify({ reason })
+      body = JSON.stringify({ reason: trimmed })
     }
     setAdminApprovalsBusy(qid)
     setAdminApprovalsMessage(null)
@@ -6253,6 +6270,8 @@ function AdminControlCenterInner() {
       })
       const payload = await response.json().catch(() => ({}))
       setAdminApprovalsMessage(typeof payload?.result === 'string' ? payload.result : 'Aktion abgeschlossen.')
+      setAdminApprovalsRejectQid(null)
+      setAdminApprovalsRejectReason('')
       refreshAdminApprovals()
     } catch {
       setAdminApprovalsMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
@@ -6283,15 +6302,15 @@ function AdminControlCenterInner() {
     return refreshAdminIdeas()
   }, [activeSection, refreshAdminIdeas])
 
-  const decideIdea = async (id: string, action: 'approve' | 'reject') => {
+  const decideIdea = async (id: string, action: 'approve' | 'reject', reason?: string) => {
     let body: string | null = null
     if (action === 'reject') {
-      const reason = window.prompt('Warum wird diese Idee abgelehnt? (Pflichtfeld)')?.trim()
-      if (!reason || reason.length < 3) {
+      const trimmed = (reason ?? '').trim()
+      if (trimmed.length < 3) {
         setAdminIdeasMessage('Ablehnen braucht einen Grund (mindestens 3 Zeichen).')
         return
       }
-      body = JSON.stringify({ reason })
+      body = JSON.stringify({ reason: trimmed })
     }
     setAdminIdeasBusy(id)
     setAdminIdeasMessage(null)
@@ -6304,6 +6323,8 @@ function AdminControlCenterInner() {
       })
       const payload = await response.json().catch(() => ({}))
       setAdminIdeasMessage(typeof payload?.result === 'string' ? payload.result : 'Aktion abgeschlossen.')
+      setAdminIdeasRejectId(null)
+      setAdminIdeasRejectReason('')
       refreshAdminIdeas()
     } catch {
       setAdminIdeasMessage('Aktion fehlgeschlagen – Backend nicht erreichbar.')
@@ -6346,14 +6367,10 @@ function AdminControlCenterInner() {
     refreshAdminVersions()
   }, [activeSection]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const actAdminVersion = async (action: 'approve' | 'approve-all' | 'reject', qid?: string) => {
-    let reason: string | undefined
-    if (action === 'reject') {
-      reason = window.prompt('Grund fürs Verwerfen (Pflichtfeld):') ?? undefined
-      if (!reason || reason.trim().length < 3) {
-        setAdminVersionsMessage('Verworfen – Grund fehlt oder ist zu kurz.')
-        return
-      }
+  const actAdminVersion = async (action: 'approve' | 'approve-all' | 'reject', qid?: string, reason?: string) => {
+    if (action === 'reject' && (reason ?? '').trim().length < 3) {
+      setAdminVersionsMessage('Verworfen – Grund fehlt oder ist zu kurz.')
+      return
     }
     const key = action === 'reject' ? `${qid}:${action}` : action
     setAdminVersionsBusy(key)
@@ -6366,7 +6383,7 @@ function AdminControlCenterInner() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
-        body: action === 'reject' ? JSON.stringify({ reason }) : undefined,
+        body: action === 'reject' ? JSON.stringify({ reason: (reason ?? '').trim() }) : undefined,
       })
       const payload = await response.json().catch(() => ({}))
       if (action === 'approve-all') {
@@ -6547,20 +6564,20 @@ function AdminControlCenterInner() {
   const overviewMetrics: AdminMetric[] = [
     {
       label: 'Live Nutzer',
-      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : (adminOverview ? '–' : '18.4M'),
-      detail: adminOverview ? `${adminOverview.metrics?.blockedUsers ?? 0} blockiert, KV-User sichtbar.` : 'Web, PWA, iPhone, Android und API zusammen.',
+      value: adminOverview?.metrics?.usersSeen !== undefined ? String(adminOverview.metrics.usersSeen) : '–',
+      detail: adminOverview ? `${adminOverview.metrics?.blockedUsers ?? 0} blockiert, KV-User sichtbar.` : 'Wartet auf Live-Daten der Admin-API.',
       tone: 'green',
     },
-    { label: 'Chat Start', value: '142 ms', detail: 'Ziel: Chat sofort offen, Streaming sofort sichtbar.', tone: 'cyan' },
+    { label: 'Chat Start', value: adminLiveOps.visits ? '142 ms' : '–', detail: 'Ziel: Chat sofort offen, Streaming sofort sichtbar.', tone: 'cyan' },
     {
       label: 'Ad Revenue',
-      value: adminOverview ? (adminOverview.metrics?.validRevenueCents !== undefined ? formatCents(adminOverview.metrics.validRevenueCents) : '–') : '$248K',
+      value: adminOverview ? (adminOverview.metrics?.validRevenueCents !== undefined ? formatCents(adminOverview.metrics.validRevenueCents) : '–') : '–',
       detail: 'Nur gültige Anzeigenumsätze nach Policy-Filter.',
       tone: 'amber',
     },
     {
       label: 'User Share',
-      value: adminOverview ? (adminOverview.metrics?.userShareCents !== undefined ? formatCents(adminOverview.metrics.userShareCents) : '–') : '$62K',
+      value: adminOverview ? (adminOverview.metrics?.userShareCents !== undefined ? formatCents(adminOverview.metrics.userShareCents) : '–') : '–',
       detail: `${adminOverview?.metrics?.userSharePercent ?? 25} % Pool für genutzte AI-Profile.`,
       tone: 'green',
     },
@@ -6609,6 +6626,32 @@ function AdminControlCenterInner() {
                 {idea.expected_benefit ? <p className="mt-1 text-xs font-semibold text-emerald-600">Nutzen: {idea.expected_benefit}</p> : null}
               </div>
             </div>
+            {adminIdeasRejectId === idea.id ? (
+              <div className="mt-3 grid gap-2 rounded-md border border-[#d9e2ec] bg-[#f7fafd] p-3 sm:grid-cols-[1fr_auto_auto]">
+                <input
+                  value={adminIdeasRejectReason}
+                  onChange={(event) => setAdminIdeasRejectReason(event.target.value)}
+                  placeholder="Grund der Ablehnung (mindestens 3 Zeichen)"
+                  autoFocus
+                  className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+                />
+                <button
+                  type="button"
+                  disabled={adminIdeasBusy === idea.id || adminIdeasRejectReason.trim().length < 3}
+                  onClick={() => void decideIdea(idea.id, 'reject', adminIdeasRejectReason)}
+                  className="min-h-11 rounded-md bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {adminIdeasBusy === idea.id ? '…' : 'Endgültig ablehnen'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAdminIdeasRejectId(null); setAdminIdeasRejectReason('') }}
+                  className="min-h-11 rounded-md border border-[#d9e2ec] px-4 text-sm font-bold text-[#172033] hover:bg-[#f7fafd]"
+                >
+                  Abbrechen
+                </button>
+              </div>
+            ) : (
             <div className="mt-3 flex flex-wrap gap-2">
               <button
                 type="button"
@@ -6621,12 +6664,13 @@ function AdminControlCenterInner() {
               <button
                 type="button"
                 disabled={adminIdeasBusy === idea.id}
-                onClick={() => decideIdea(idea.id, 'reject')}
+                onClick={() => { setAdminIdeasRejectId(idea.id); setAdminIdeasRejectReason('') }}
                 className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
               >
                 Ablehnen
               </button>
             </div>
+            )}
           </section>
         ))}
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
@@ -6664,6 +6708,32 @@ function AdminControlCenterInner() {
         </span>
       </div>
       {card.status_reason ? <p className="mt-2 text-sm font-semibold text-[#5d6776]">{card.status_reason}</p> : null}
+      {adminApprovalsRejectQid === card.qid ? (
+        <div className="mt-3 grid gap-2 rounded-md border border-[#d9e2ec] bg-[#f7fafd] p-3 sm:grid-cols-[1fr_auto_auto]">
+          <input
+            value={adminApprovalsRejectReason}
+            onChange={(event) => setAdminApprovalsRejectReason(event.target.value)}
+            placeholder="Grund der Ablehnung (mindestens 3 Zeichen)"
+            autoFocus
+            className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+          />
+          <button
+            type="button"
+            disabled={adminApprovalsBusy === card.qid || adminApprovalsRejectReason.trim().length < 3}
+            onClick={() => void decideApproval(card.qid, 'reject', adminApprovalsRejectReason)}
+            className="min-h-11 rounded-md bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+          >
+            {adminApprovalsBusy === card.qid ? '…' : 'Endgültig ablehnen'}
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAdminApprovalsRejectQid(null); setAdminApprovalsRejectReason('') }}
+            className="min-h-11 rounded-md border border-[#d9e2ec] px-4 text-sm font-bold text-[#172033] hover:bg-[#f7fafd]"
+          >
+            Abbrechen
+          </button>
+        </div>
+      ) : (
       <div className="mt-3 flex flex-wrap gap-2">
         {tone === 'ready' ? (
           <button
@@ -6678,12 +6748,13 @@ function AdminControlCenterInner() {
         <button
           type="button"
           disabled={adminApprovalsBusy === card.qid}
-          onClick={() => decideApproval(card.qid, 'reject')}
+          onClick={() => { setAdminApprovalsRejectQid(card.qid); setAdminApprovalsRejectReason('') }}
           className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
         >
           Ablehnen
         </button>
       </div>
+      )}
     </section>
   )
 
@@ -6816,7 +6887,7 @@ function AdminControlCenterInner() {
                         <div className="flex gap-2">
                           <button
                             type="button"
-                            disabled={adminVersionsBusy !== null}
+                            disabled={adminVersionsBusy !== null || adminVersionsRejectQid !== null}
                             onClick={() => actAdminVersion('approve', card.qid)}
                             className="rounded-md border border-emerald-600 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
                           >
@@ -6825,7 +6896,7 @@ function AdminControlCenterInner() {
                           <button
                             type="button"
                             disabled={adminVersionsBusy !== null}
-                            onClick={() => actAdminVersion('reject', card.qid)}
+                            onClick={() => { setAdminVersionsRejectQid(card.qid); setAdminVersionsRejectReason('') }}
                             className="rounded-md border border-[#d9e2ec] px-3 py-1.5 text-xs font-bold text-[#5d6776] hover:bg-[#f7fafd] disabled:opacity-50"
                           >
                             Verwerfen
@@ -6838,13 +6909,42 @@ function AdminControlCenterInner() {
               </table>
             </div>
           )}
+          {adminVersionsRejectQid && (
+            <div className="mt-4 grid gap-2 rounded-md border border-[#d9e2ec] bg-[#f7fafd] p-3 lg:grid-cols-[auto_1fr_auto_auto] lg:items-center">
+              <p className="text-sm font-bold text-[#172033]">
+                {adminVersions?.pending?.find((card) => card.qid === adminVersionsRejectQid)?.name ?? adminVersionsRejectQid} verwerfen:
+              </p>
+              <input
+                value={adminVersionsRejectReason}
+                onChange={(event) => setAdminVersionsRejectReason(event.target.value)}
+                placeholder="Grund (mindestens 3 Zeichen)"
+                autoFocus
+                className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+              />
+              <button
+                type="button"
+                disabled={adminVersionsBusy !== null || adminVersionsRejectReason.trim().length < 3}
+                onClick={() => void actAdminVersion('reject', adminVersionsRejectQid, adminVersionsRejectReason)}
+                className="min-h-11 rounded-md bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {adminVersionsBusy ? '…' : 'Endgültig verwerfen'}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setAdminVersionsRejectQid(null); setAdminVersionsRejectReason('') }}
+                className="min-h-11 rounded-md border border-[#d9e2ec] px-4 text-sm font-bold text-[#172033] hover:bg-[#f7fafd]"
+              >
+                Abbrechen
+              </button>
+            </div>
+          )}
         </section>
         {(adminAutopilot?.workflows ?? []).length > 0 && (
           <p className="text-xs font-black uppercase tracking-[0.14em] text-[#667085]">Automatiken – kritische zuerst</p>
         )}
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {workflows.map((workflow) => (
-            <section key={workflow.file} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+            <section key={workflow.file} className={`rounded-lg border bg-white p-4 ${workflow.light === 'red' ? 'border-red-500' : workflow.light === 'yellow' ? 'border-amber-400' : 'border-[#d9e2ec]'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="text-base font-black text-[#111722]">{workflow.name}</h3>
@@ -6852,6 +6952,7 @@ function AdminControlCenterInner() {
                 </div>
                 <span className={`mt-1 h-3 w-3 shrink-0 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-300'}`} title={lightLabel[workflow.light] ?? 'unbekannt'} />
               </div>
+              {workflow.light === 'red' ? <p className="mt-2 text-xs font-black uppercase tracking-wide text-red-600">Handlung nötig</p> : null}
               <p className="mt-3 text-sm font-semibold text-[#5d6776]">
                 {workflow.kind === 'local'
                   ? 'Läuft auf der Mac-Workstation (launchd).'
@@ -6977,6 +7078,7 @@ function AdminControlCenterInner() {
 
   const renderUsers = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <div className="flex flex-wrap gap-2">
         {['Alle', 'Neu', 'Creator', 'Verdächtig', 'Gesperrt', 'VIP', 'Auszahlung offen'].map((filter, index) => (
           <button key={filter} type="button" className={`min-h-10 rounded-md border px-4 text-sm font-bold ${index === 0 ? 'border-[#111722] bg-[#111722] text-white' : 'border-[#d9e2ec] bg-white text-[#172033]'}`}>
@@ -7000,6 +7102,7 @@ function AdminControlCenterInner() {
 
   const renderRegistrations = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <div className="grid gap-4 lg:grid-cols-4">
         {[
           { label: 'Neue Nutzer', value: '482K', detail: 'Heute, nach Bot-Filter.', tone: 'green' },
@@ -7041,6 +7144,7 @@ function AdminControlCenterInner() {
 
   const renderProfiles = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <AdminTable columns={['Profil', 'Chats', 'Qualität', 'Ad RPM', 'gültiger Umsatz', '25 % Anteil', 'Status']} rows={profileRevenue} />
       <div className="grid gap-5 xl:grid-cols-2">
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
@@ -7067,6 +7171,7 @@ function AdminControlCenterInner() {
 
   const renderAds = () => (
     <div className="grid gap-5 xl:grid-cols-[1fr_1.05fr]">
+      <AdminDemoNote />
       <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
         <h2 className="text-xl font-bold text-[#111722]">Web Layout mit Werbeplätzen</h2>
         <div className="mt-5 rounded-lg border border-[#d9e2ec] bg-[#f7fafd] p-5">
@@ -7104,6 +7209,7 @@ function AdminControlCenterInner() {
 
   const renderRevenue = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
         <p className="text-xl font-bold text-[#111722]">Formel</p>
         <p className="mt-3 text-2xl font-bold text-emerald-600 md:text-3xl">User-Anteil = gültiger AdSense-Umsatz eines Profils x 25 %</p>
@@ -7116,6 +7222,7 @@ function AdminControlCenterInner() {
 
   const renderModerationSecurity = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <div className="grid gap-4 lg:grid-cols-4">
         {[
           { label: 'Abuse Queue', value: '1,284', detail: 'Spam, Prompt Injection, gefährliche Inhalte.', tone: 'amber' },
@@ -7136,6 +7243,7 @@ function AdminControlCenterInner() {
 
   const renderStorage = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <div className="grid gap-4 lg:grid-cols-4">
         {[
           { label: 'IDrive E2', value: '14.8 PB', detail: '99 % Storage, Backups, Uploads, Medien.', tone: 'green' },
@@ -7177,6 +7285,7 @@ function AdminControlCenterInner() {
 
   const renderSupport = () => (
     <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
+      <AdminDemoNote />
       <AdminTable columns={['Queue', 'Count', 'Owner', 'SLA', 'Aktion']} rows={[
         { Queue: 'Offene Tickets', Count: '4,280', Owner: 'Support', SLA: '92 %', Aktion: 'Priorisieren' },
         { Queue: 'VIP Eskalationen', Count: '48', Owner: 'Support Lead', SLA: '99 %', Aktion: 'Sofort' },
@@ -7198,6 +7307,7 @@ function AdminControlCenterInner() {
 
   const renderFinance = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <div className="grid gap-4 lg:grid-cols-4">
         {[
           { label: 'Payable', value: '$62K', detail: '25 % User-Anteil nach Validierung.', tone: 'green' },
@@ -7449,6 +7559,7 @@ function AdminControlCenterInner() {
 
   const renderApps = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <div className="grid gap-4 lg:grid-cols-4">
         {[
           { label: 'Web', value: 'ready', detail: 'smyst.com und app.smyst.com als Hauptoberfläche.', tone: 'green' },
@@ -7469,6 +7580,7 @@ function AdminControlCenterInner() {
 
   const renderChecklist = () => (
     <div className="grid gap-5">
+      <AdminDemoNote />
       <div className="grid gap-4 lg:grid-cols-4">
         {[
           { label: 'Mockup', value: '24 pages', detail: 'Start bis Ende als PDF und Long Image.', tone: 'green' },
@@ -7530,7 +7642,15 @@ function AdminControlCenterInner() {
             <p className="font-smyst-logo text-3xl leading-none">smyst.com Admin</p>
             <p className="mt-2 text-sm font-semibold text-[#aeb6c4]">Global control</p>
           </div>
-          <nav className="grid gap-2" aria-label="Admin Navigation">
+          <button
+            type="button"
+            onClick={() => setAdminNavOpen((open) => !open)}
+            aria-expanded={adminNavOpen}
+            className="mb-2 min-h-11 w-full rounded-md border border-[#314158] px-3 text-left text-sm font-bold text-white lg:hidden"
+          >
+            {adminNavOpen ? 'Navigation schließen' : 'Navigation öffnen'}
+          </button>
+          <nav className={`${adminNavOpen ? 'grid' : 'hidden'} gap-2 lg:grid`} aria-label="Admin Navigation">
             {adminSectionOrder.map((group) => (
               <div key={group} className="grid gap-2">
                 <p className="mt-3 px-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#66758a] first:mt-0">{group}</p>
