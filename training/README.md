@@ -299,3 +299,20 @@ werden, **bevor** trainiert wird. Merkrichtung: mehr Zeichen je Token heisst
 weniger Token aus demselben Text.
 
 Zusaetzlich noetig: `pip install tokenizers`.
+
+## Modell-Backup ohne lokale e2-Keys (Stand 25.08.2026)
+
+Lokal fehlen `backend/.env` mit den IDrive-e2-Keys (Secret eines Existing
+Keys ist nach Erstellung nicht mehr einsehbar, die Console laesst sich nicht
+automatisieren). Der Ausweg nutzt die GitHub-Secrets `IDRIVE_E2_*`:
+
+1. Artefakte nach `training/backup-artifacts/<version>/` auf einen
+   Backup-Branch committen (adapters.safetensors, tokenizer.json, Configs,
+   MANIFEST.json). Der 988-MB-Fused-Koerper bleibt weg — er ist per
+   `mlx_lm.fuse` aus der oeffentlichen Qwen-Basis + Adapter rekonstruierbar.
+2. `gh workflow run model-backup-e2.yml --ref <backup-branch> -f version=<version>`
+
+Erster Lauf: 2026-08-25, 6 Objekte bestätigt unter
+`s3://smyst-memories/models/smyst-1.0/2026-08-25/`.
+Sobald e2-Keys in `backend/.env` liegen, macht der Re-Trainings-Autopilot
+das Backup wieder automatisch lokal (backup_model_to_e2.py).
