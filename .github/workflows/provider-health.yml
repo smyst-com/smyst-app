@@ -56,8 +56,12 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
         run: |
+          # bash -e (Runner-Default) wuerde bei Worker-Exit 2 abbrechen, BEVOR
+          # der Exit-Code als Output landet — deshalb set +e rund um den Aufruf.
+          set +e
           python -m app.workers.provider_health > /tmp/health.json
           EXIT=$?
+          set -e
           cat /tmp/health.json
           echo "exit=$EXIT" >> "$GITHUB_OUTPUT"
 
