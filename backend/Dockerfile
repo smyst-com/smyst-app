@@ -13,6 +13,7 @@ ENV PIPER_VOICES_DIR=/voices
 ENV ASR_LOCAL_MODEL=small
 ENV ASR_MODEL_DIR=/models
 ENV SMYST_LLM_BASE_URL=http://localhost:8080/v1
+ENV SMYST_LLM_API_KEY=smyst
 ENV SMYST_LLM_MODEL_PATH=/models/smyst-1.0-Q4_K_M.gguf
 
 # Piper-TTS (CPU) + kuratierte synthetische Stimmen — ersetzt den frueheren
