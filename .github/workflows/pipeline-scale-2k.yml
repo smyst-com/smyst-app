@@ -1,7 +1,8 @@
 name: Pipeline Skalierung 2k Profile per Tag
 
-# Fuehrt die smyst.com Autopilot-Pipeline auf 2.000 Profile/Tag skaliert aus.
-# Verwendet 10 parallele Matrix-Jobs (Shards 0..9) und IDrive e2 State-Management.
+# Fuehrt die smyst.com Autopilot-Pipeline auf 2.000+ Profile/Tag skaliert aus.
+# Verwendet 12 parallele Matrix-Jobs (Shards 0..11) und IDrive e2 State-Management.
+# Repo ist public -> GitHub-Actions-Minuten unbegrenzt kostenlos.
 #
 # LLM: smyst 1.0 (eigenes Modell) laeuft JEDEM Shard-Job lokal als llama-server
 # (Anweisung Inhaber 24.08.: 'unser Modell machen, kein Geld mehr zahlen').
@@ -9,7 +10,8 @@ name: Pipeline Skalierung 2k Profile per Tag
 
 on:
   schedule:
-    # Alle 2 Stunden (12 Läufe pro Tag * 10 Shards * 17 Profile = ~2.040 Profile/Tag)
+    # Alle 2 Stunden (12 Laeufe/Tag * 12 Shards * 17 Profile = ~2.448 Profile/Tag
+    # Kapazitaet — Puffer ueber dem 2000-Ziel fuer verlorene/junge Laeufe)
     - cron: "0 */2 * * *"
   workflow_dispatch:
     inputs:
@@ -24,7 +26,7 @@ concurrency:
 
 jobs:
   run-sharded-pipeline:
-    name: Shard ${{ matrix.shard_index }}/10
+    name: Shard ${{ matrix.shard_index }}/12
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -32,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        shard_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 
     defaults:
       run:
@@ -105,7 +107,11 @@ jobs:
           PY
           # 4 Runner-vCPUs statt 1 Thread (Zeabur-Container) — das war der
           # Grund, warum smyst_llm im Backend stets ins 20-s-Timeout lief.
-          THREADS=$(nproc)
+          # Ein Kern frei lassen: saettigt llama-server alle vCPUs, wird der Runner-
+# AgentCPU-verhungert und kann das 90-min-Timeout nicht mehr abarbeiten —
+# der Lauf wandert als Zombie ueber die Zeit und blockiert die Concurrency-
+# Gruppe (14:36-Uhr-Lauf 24.08.: 100+ min statt 90).
+THREADS=$(( $(nproc) > 1 ? $(nproc) - 1 : 1 ))
           nohup "$LLAMA_BIN" \
             --model "$MODEL" \
             --host 127.0.0.1 --port 8080 \
@@ -147,7 +153,7 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           SHARD_INDEX: ${{ matrix.shard_index }}
-          TOTAL_SHARDS: 10
+          TOTAL_SHARDS: 12
           BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '17' }}
         run: |
           python -m app.workers.sharded_runner \
