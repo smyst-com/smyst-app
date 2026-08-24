@@ -240,27 +240,85 @@
     color: #111722;
   }
 
+  /* Admin-Bereich: folgt dem App-Theme. Im Dark-Theme wird die complete
+     hell-hardcodierte Admin-Palette (#111722/#f7fafd/#d9e2ec/...) auf
+     dunkle Tokens abgebildet, damit Sidebar und Inhalt zusammenpassen. */
   .smyst-app-dark .smyst-admin-shell {
-    color: #111722;
+    color: #f4f7fb;
   }
 
   .smyst-app-dark .smyst-admin-shell .bg-white {
-    background-color: #ffffff !important;
+    background-color: #141a27 !important;
   }
 
-  .smyst-app-dark .smyst-admin-shell .bg-\[\#f7fafd\] {
-    background-color: #f7fafd !important;
+  .smyst-app-dark .smyst-admin-shell .bg-\[\#f7fafd\],
+  .smyst-app-dark .smyst-admin-shell .bg-\[\#e8eef5\] {
+    background-color: #0f141e !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .border-\[\#d9e2ec\],
+  .smyst-app-dark .smyst-admin-shell .border-\[\#edf2f7\],
+  .smyst-app-dark .smyst-admin-shell .border-\[\#eef2f7\] {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .divide-\[\#edf2f7\] > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgba(255, 255, 255, 0.07) !important;
   }
 
   .smyst-app-dark .smyst-admin-shell .text-\[\#111722\],
   .smyst-app-dark .smyst-admin-shell .text-\[\#172033\] {
-    color: #111722 !important;
+    color: #f4f7fb !important;
   }
 
   .smyst-app-dark .smyst-admin-shell .text-\[\#5d6776\],
   .smyst-app-dark .smyst-admin-shell .text-\[\#667085\],
-  .smyst-app-dark .smyst-admin-shell .text-\[\#7b8493\] {
-    color: #5d6776 !important;
+  .smyst-app-dark .smyst-admin-shell .text-\[\#7b8493\],
+  .smyst-app-dark .smyst-admin-shell .text-\[\#8996a8\],
+  .smyst-app-dark .smyst-admin-shell .text-\[\#8892a0\] {
+    color: #9aa6b7 !important;
+  }
+
+  /* Dunkle CTA-Pillen (#111722) wuerden auf dunkler Karte unsichtbar
+     verschwinden - im Dark-Theme leicht aufgehellt wie die Sidebar-Auswahl. */
+  .smyst-app-dark .smyst-admin-shell .bg-\[\#111722\] {
+    background-color: #223044 !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .bg-\[\#111722\].text-white {
+    color: #ffffff !important;
+  }
+
+  /* Warn-/Hinweisboxen (amber-50/emerald-50) werden dunkle Tint-Flaechen. */
+  .smyst-app-dark .smyst-admin-shell .bg-amber-50 {
+    background-color: rgba(247, 183, 51, 0.1) !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .border-amber-300 {
+    border-color: rgba(247, 183, 51, 0.42) !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .text-amber-700,
+  .smyst-app-dark .smyst-admin-shell .text-amber-800 {
+    color: #fbbf24 !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .bg-emerald-50 {
+    background-color: rgba(67, 209, 122, 0.1) !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .border-emerald-600 {
+    border-color: rgba(67, 209, 122, 0.55) !important;
+  }
+
+  .smyst-app-dark .smyst-admin-shell .text-emerald-700 {
+    color: #6ee7b7 !important;
+  }
+
+  /* Admin-Inputs behalten im Dark-Theme einen sichtbaren, dunklen Grund. */
+  .smyst-app-dark .smyst-admin-shell input.bg-white {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
   }
 
   .glass-button-primary {
