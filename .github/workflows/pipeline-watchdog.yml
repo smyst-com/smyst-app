@@ -15,7 +15,10 @@ name: Pipeline-Watchdog
 
 on:
   schedule:
-    - cron: "40 * * * *"
+    # Alle 15 Minuten: prueft (a) den klassischen Pipeline-Takt und (b) die
+    # Scale-2k-Pipeline. Dichter Takt, weil GitHub-Crons unter Last ausfallen
+    # und Scale-2k-Laeufe durch den 90-min-Timeout abgebrochen werden koennen.
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -48,4 +51,30 @@ jobs:
             echo "### Watchdog hat einen verpassten Cron-Slot nachgeholt" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Takt in Ordnung — nichts zu tun."
+          fi
+
+      - name: "Scale-2k: laeuft nichts und letzter Start aelter als ~2h? Dann neu anstossen."
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Ziel: ~2000 Profile/Tag (12 Laeufe x 10 Shards). Heilt zwei bekannte
+          # Ausfallbilder: (1) GitHub laesst einen Schedule-Slot ersatzlos ausfallen,
+          # (2) der vorherige Lauf endete cancelled (90-min-Timeout) und der naechste
+          # Cron-Slot ist noch fern. Neustart bringt nur etwas, wenn LLM-Provider
+          # antworten — der Runner bricht bei totalem Provider-Ausfall seit dem
+          # Circuit-Breaker schnell und klar sichtbar ab statt Minuten zu verbrennen.
+          RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k.yml/runs?per_page=5")
+          IN_PROGRESS=$(echo "$RUNS" | jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "queued")] | length')
+          LAST_START_AGO=$(echo "$RUNS" | jq '[.workflow_runs[] | (now - (.created_at | fromdateiso8601))] | min // 999999')
+          LAST_CONCLUSION=$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.conclusion != null)][0].conclusion // "none"')
+          echo "Scale-2k: aktiv=${IN_PROGRESS}, letzter Start vor ${LAST_START_AGO}s, letztes Ergebnis=${LAST_CONCLUSION}"
+          if [ "${IN_PROGRESS}" -eq 0 ] && [ "${LAST_START_AGO}" -gt 7800 ]; then
+            echo "Kein Scale-2k-Lauf aktiv und letzter Start aelter als 130 min — Neustart."
+            gh workflow run pipeline-scale-2k.yml --ref main --repo "${GITHUB_REPOSITORY}"
+            {
+              echo "### Watchdog hat Scale-2k neu gestartet"
+              echo "Vorheriger Lauf: ${LAST_CONCLUSION} — Slot ausgefallen oder Timeout-Cancel."
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Scale-2k in Ordnung — nichts zu tun."
           fi
