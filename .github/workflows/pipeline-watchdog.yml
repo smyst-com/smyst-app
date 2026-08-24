@@ -105,8 +105,14 @@ jobs:
           echo "Publish-reviewed-Lauf in den letzten 120 min: ${PUBLISHED_RECENT}"
           if [ "${PUBLISHED_RECENT}" -eq 0 ]; then
             echo "Kein Publish im Fenster — publish-reviewed anstossen (approved_by-Default: smyst247@gmail.com)."
-            gh workflow run pipeline-run.yml --ref main --repo "${GITHUB_REPOSITORY}" -f mode=publish-reviewed -f approved_by=smyst247@gmail.com
-            echo "### Watchdog hat Auto-Publish (publish-reviewed) angestossen" >> "$GITHUB_STEP_SUMMARY"
+            # publish_limit=2500: dokumentierter Betreiber-Deckel (pipeline-run.yml,
+            # Anweisung 02.08.2026 'Publish-Deckel 2500/Tag'). Ohne Override gilt
+            # der Code-Default daily_publish_limit=5 — der lehnte am 24.08. alle 33
+            # QA-bestandenen Kandidaten ab ('Tageslimit erreicht'). QA-Gate bleibt
+            # unberuehrt: Nur reviewed+qa_passed wird publiziert.
+            gh workflow run pipeline-run.yml --ref main --repo "${GITHUB_REPOSITORY}" \
+              -f mode=publish-reviewed -f approved_by=smyst247@gmail.com -f publish_limit=2500
+            echo "### Watchdog hat Auto-Publish (publish-reviewed, Deckel 2500/Tag) angestossen" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Publish-Takt in Ordnung — nichts zu tun."
           fi
