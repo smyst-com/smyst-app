@@ -34,7 +34,13 @@ DEFAULT_SYSTEM_PROMPT = (
 # zum naechsten Provider in der Kette wechseln statt erneut zu versuchen).
 NO_RETRY_STATUSES = frozenset({400, 401, 403, 404, 422})
 RETRY_BACKOFF_SECONDS = 0.15
-RATE_LIMIT_BACKOFF_SECONDS = 1.0
+# 429-Backoff: Minuten-Rate-Limits (OpenRouter/Groq) werden mit 1s Wartezeit
+# oft nicht frei — Pipelines (8x/Tag, Scale-2k, Autopilot) saettigen den
+# Provider im Burst (Live-Befund 24.08.2026: 744 Gateway-503 in einem Lauf).
+# Ein Retry mit 6s oeffnet kurze Fenster, ohne harte Total-Ausfaelle in
+# minutenlange Wartezeiten zu verwandeln (Eval-Timeout 20min, Router-Deadline
+# 45s pro Anfrage).
+RATE_LIMIT_BACKOFF_SECONDS = 6.0
 
 
 def _provider_error_detail(response: "httpx.Response") -> str:
@@ -227,10 +233,12 @@ class OpenAICompatibleProvider(LLMProvider):
 
         - 400/401/403/404/422: kein Retry (Key oder Anfrage kaputt) -> sofort raisen,
           Router wechselt zum naechsten Provider.
-        - 429: ein Retry nach laengerem Backoff (Rate Limit).
+        - 429: mehrere Retries mit wachsendem Backoff (Rate Limit, Minute-
+          Fenster); ein einzelner 1s-Retry reicht bei Minuten-Limits nicht.
         - 5xx / Netzwerkfehler: ein Retry nach kurzem Backoff.
         """
-        for attempt in range(2):
+        attempt = 0
+        while attempt < 2:
             try:
                 response = await client.post(
                     url, headers=headers, json=payload, timeout=timeout
@@ -239,7 +247,7 @@ class OpenAICompatibleProvider(LLMProvider):
                 return response
             except httpx.HTTPStatusError as exc:
                 status = exc.response.status_code
-                if status in NO_RETRY_STATUSES or attempt == 1:
+                if status in NO_RETRY_STATUSES or attempt >= 1:
                     logger.warning(
                         "llm provider '%s' rejected with HTTP %s: %s",
                         self.name,
@@ -247,24 +255,28 @@ class OpenAICompatibleProvider(LLMProvider):
                         _provider_error_detail(exc.response),
                     )
                     raise
+                backoff = (
+                    RATE_LIMIT_BACKOFF_SECONDS if status == 429
+                    else RETRY_BACKOFF_SECONDS
+                )
                 logger.warning(
-                    "llm provider '%s' got HTTP %s (%s), retrying once",
+                    "llm provider '%s' got HTTP %s (%s), retry in %.1fs",
                     self.name,
                     status,
                     _provider_error_detail(exc.response),
+                    backoff,
                 )
-                await asyncio.sleep(
-                    RATE_LIMIT_BACKOFF_SECONDS if status == 429 else RETRY_BACKOFF_SECONDS
-                )
+                await asyncio.sleep(backoff)
             except Exception as exc:
-                if attempt == 1:
+                if attempt >= 1:
                     raise
                 logger.warning(
-                    "llm provider '%s' request error (%s), retrying once",
+                    "llm provider '%s' request error (%s), retrying",
                     self.name,
                     type(exc).__name__,
                 )
                 await asyncio.sleep(RETRY_BACKOFF_SECONDS)
+            attempt += 1
         raise RuntimeError(f"LLM provider '{self.name}' returned no response")
 
     async def healthcheck(self, request: LLMRequest) -> dict[str, object]:
