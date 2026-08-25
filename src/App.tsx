@@ -5872,6 +5872,24 @@ type AdminApprovalsApi = {
   counts?: { ready: number; blocked: number }
 }
 
+type AdminUserRow = {
+  sub?: string | null
+  email?: string | null
+  name?: string | null
+  status?: string | null
+  emailVerified?: boolean
+  createdAt?: number | null
+  updatedAt?: number | null
+}
+
+type AdminUsersApi = {
+  ok: boolean
+  source?: string
+  limit?: number
+  counts?: { total: number; active: number; unverified: number; deleted: number; mvpDocs: number }
+  users?: AdminUserRow[]
+}
+
 type AdminIdeaCard = {
   id: string
   title: string
@@ -6156,6 +6174,7 @@ function AdminControlCenterInner() {
   const [adminVersionsRejectQid, setAdminVersionsRejectQid] = useState<string | null>(null)
   const [adminVersionsRejectReason, setAdminVersionsRejectReason] = useState('')
   const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
+  const [adminUsers, setAdminUsers] = useState<AdminUsersApi | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
   const [adminApprovalsRejectQid, setAdminApprovalsRejectQid] = useState<string | null>(null)
@@ -6248,6 +6267,25 @@ function AdminControlCenterInner() {
     if (activeSection !== 'approvals') return
     return refreshAdminApprovals()
   }, [activeSection, refreshAdminApprovals])
+
+  // Echte Nutzerliste aus dem Object Brain (nur lesen, nie schreiben)
+  useEffect(() => {
+    if (activeSection !== 'users') return
+    let alive = true
+    fetchService('/api/admin/users', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminUsers(response.ok && payload?.ok ? payload as AdminUsersApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminUsers(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
 
   const decideApproval = async (qid: string, action: 'approve' | 'reject', reason?: string) => {
     let body: string | null = null
@@ -6581,14 +6619,6 @@ function AdminControlCenterInner() {
       detail: `${adminOverview?.metrics?.userSharePercent ?? 25} % Pool für genutzte AI-Profile.`,
       tone: 'green',
     },
-  ]
-
-  const users: AdminRow[] = [
-    { User: 'amina@smyst', Status: 'aktiv', Risiko: 'niedrig', Registriert: 'Web / DE', 'AI-Profile': '12 Twins', Umsatz: '$842', Aktion: 'Details' },
-    { User: 'leo@smyst', Status: 'review', Risiko: 'mittel', Registriert: 'PWA / US', 'AI-Profile': '3 Twins', Umsatz: '$128', Aktion: 'Prüfen' },
-    { User: 'botnet-44', Status: 'hold', Risiko: 'hoch', Registriert: 'API / unknown', 'AI-Profile': '0 Twins', Umsatz: '$0', Aktion: 'Block' },
-    { User: 'sara@smyst', Status: 'aktiv', Risiko: 'niedrig', Registriert: 'iPhone / FR', 'AI-Profile': '1 Twin', Umsatz: '$2,405', Aktion: 'Pay' },
-    { User: 'max@smyst', Status: 'gesperrt', Risiko: 'hoch', Registriert: 'Android / DE', 'AI-Profile': '6 Twins', Umsatz: '$0', Aktion: 'Appeal' },
   ]
 
   const profileRevenue: AdminRow[] = [
@@ -7076,29 +7106,53 @@ function AdminControlCenterInner() {
     </div>
   )
 
-  const renderUsers = () => (
-    <div className="grid gap-5">
-      <AdminDemoNote />
-      <div className="flex flex-wrap gap-2">
-        {['Alle', 'Neu', 'Creator', 'Verdächtig', 'Gesperrt', 'VIP', 'Auszahlung offen'].map((filter, index) => (
-          <button key={filter} type="button" className={`min-h-10 rounded-md border px-4 text-sm font-bold ${index === 0 ? 'border-[#111722] bg-[#111722] text-white' : 'border-[#d9e2ec] bg-white text-[#172033]'}`}>
-            {filter}
-          </button>
-        ))}
-      </div>
-      <AdminTable columns={['User', 'Status', 'Risiko', 'Registriert', 'AI-Profile', 'Umsatz', 'Aktion']} rows={users} />
-      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-        <h2 className="text-xl font-bold text-[#111722]">User-Aktionen</h2>
-        <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {['Soft Warnung', 'Login sperren', 'Chat sperren', 'Upload sperren', 'Payout halten', 'Daten exportieren', 'DSGVO löschen', 'Appeal prüfen'].map((action) => (
-            <button key={action} type="button" className="min-h-11 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 text-sm font-bold text-[#172033]">
-              {action}
-            </button>
-          ))}
+  const renderUsers = () => {
+    const counts = adminUsers?.counts
+    const userRows: AdminRow[] = (adminUsers?.users ?? []).map((row) => ({
+      Nutzer: row.email ?? row.sub ?? '–',
+      Name: row.name ?? '–',
+      Status: row.status === 'active' ? 'aktiv' : row.status === 'deleted' ? 'gelöscht (DSGVO)' : row.status ?? '–',
+      Verifiziert: row.emailVerified ? 'ja' : 'nein',
+      Registriert: row.createdAt ? new Date(row.createdAt).toLocaleDateString('de-DE') : '–',
+      'Letzte Änderung': row.updatedAt ? new Date(row.updatedAt).toLocaleDateString('de-DE') : '–',
+    }))
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Echte Konten aus dem Object Brain</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminUsers === null
+              ? 'Nutzerdaten werden geladen oder Backend nicht erreichbar.'
+              : adminUsers.source === 'unavailable'
+                ? 'IDrive e2 ist gerade nicht erreichbar – keine Kontodaten geladen.'
+                : `${counts?.total ?? 0} E-Mail-Konten geladen (Limit ${adminUsers.limit ?? 200}), davon ${counts?.active ?? 0} aktiv, ${counts?.unverified ?? 0} ohne bestätigte E-Mail, ${counts?.deleted ?? 0} DSGVO-gelöscht. Zusätzlich ${counts?.mvpDocs ?? 0} Nutzer-MVP-Dokumente (inkl. Google-OAuth-Nutzer).`}
+          </p>
+        </section>
+        <div className="grid gap-4 lg:grid-cols-4">
+          {[
+            { label: 'Konten gesamt', value: String(counts?.total ?? 0), detail: 'E-Mail-Konten im Object Brain (auth/email-accounts).', tone: 'cyan' as const },
+            { label: 'Aktiv', value: String(counts?.active ?? 0), detail: 'Status active, login möglich.', tone: 'green' as const },
+            { label: 'Unbestätigt', value: String(counts?.unverified ?? 0), detail: 'Aktiv, aber E-Mail noch nicht verifiziert.', tone: (counts?.unverified ?? 0) > 0 ? 'amber' as const : 'green' as const },
+            { label: 'MVP-Dokumente', value: String(counts?.mvpDocs ?? 0), detail: 'user-mvp/-Dokumente, inkl. Google-OAuth-Nutzer.', tone: 'navy' as const },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
-      </section>
-    </div>
-  )
+        {userRows.length > 0 ? (
+          <AdminTable columns={['Nutzer', 'Name', 'Status', 'Verifiziert', 'Registriert', 'Letzte Änderung']} rows={userRows} />
+        ) : (
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
+            Keine Konten gefunden — entweder es gibt noch keine Registrierungen oder IDrive e2 ist nicht erreichbar.
+          </section>
+        )}
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+            Sperren, Rollen ändern und Export brauchen schreibende Endpoints (CSRF-pflichtig) und folgen in eigenen PRs.
+            DSGVO-Löschung läuft bereits über den bestehenden Account-Flow. Passwort-Hashes verlassen den Store nie.
+          </p>
+        </section>
+      </div>
+    )
+  }
 
   const renderRegistrations = () => (
     <div className="grid gap-5">

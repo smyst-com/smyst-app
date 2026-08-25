@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import threading
 import time
 import uuid
@@ -18,6 +19,8 @@ from typing import Any
 from app.core.config import settings
 
 ACCOUNT_PREFIX = "auth/email-accounts/v1/"
+
+_logger = logging.getLogger("smyst.integrations.email_account_store")
 
 
 class EmailAccountStoreError(RuntimeError):
@@ -178,6 +181,51 @@ class EmailAccountStore:
             return False
         self.hard_delete_account(email)
         return True
+
+    def list_account_summaries(self, limit: int = 200) -> list[dict[str, Any]]:
+        """Konto-Zusammenfassungen für die Admin-Sicht (neueste zuerst).
+
+        Listet die Hash-Schluessel unter ACCOUNT_PREFIX und laedt jedes Objekt:
+        die Keys sind SHA-256-Hashes, ein reines Key-Listing reicht also nicht.
+        Zurueckgegeben werden NUR sichere Felder — passwordHash verlaesst den
+        Store nie. Tombstones (status=deleted) enthalten keine PII mehr.
+        """
+        client = self._get_client()
+        self._ensure_bucket(client)
+        keys: list[str] = []
+        paginator = client.get_paginator("list_objects_v2")
+        for page in paginator.paginate(Bucket=settings.idrive_e2_bucket, Prefix=ACCOUNT_PREFIX):
+            for item in page.get("Contents", []):
+                key = str(item.get("Key", ""))
+                if key.endswith(".json"):
+                    keys.append(key)
+                if len(keys) >= limit:
+                    break
+            if len(keys) >= limit:
+                break
+        summaries: list[dict[str, Any]] = []
+        for key in keys:
+            try:
+                response = client.get_object(Bucket=settings.idrive_e2_bucket, Key=key)
+                payload = json.loads(response["Body"].read().decode("utf-8"))
+            except Exception as error:  # noqa: BLE001 — kaputtes Einzelobjekt darf die Liste nicht brechen
+                _logger.warning("account summary load failed for %s (%s)", key, type(error).__name__)
+                continue
+            if not isinstance(payload, dict):
+                continue
+            summaries.append(
+                {
+                    "sub": payload.get("sub"),
+                    "email": payload.get("email"),
+                    "name": payload.get("name"),
+                    "status": payload.get("status"),
+                    "emailVerified": bool(payload.get("emailVerified")),
+                    "createdAt": payload.get("createdAt"),
+                    "updatedAt": payload.get("updatedAt"),
+                }
+            )
+        summaries.sort(key=lambda row: row.get("createdAt") or 0, reverse=True)
+        return summaries
 
     def _put_record(self, record: dict[str, Any]) -> None:
         client = self._get_client()
