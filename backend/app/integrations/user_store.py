@@ -107,6 +107,32 @@ def delete_user_doc_from_cache(user_sub: str) -> None:
     """Entfernt das Dokument nur aus dem RAM-Cache (e2 bleibt unberuehrt)."""
     _MEMORY.pop(user_sub, None)
 
+
+def count_user_docs(limit: int = 10000) -> int:
+    """Zaehlt Nutzer-Dokumente im Object Brain (Admin-Sicht, read-only).
+
+    Ohne e2-Konfiguration zaehlt der RAM-Fallback. Wirft nie.
+    """
+    if not storage_configured():
+        return len(_MEMORY)
+    try:
+        paginator = _client().get_paginator("list_objects_v2")
+        total = 0
+        for page in paginator.paginate(
+            Bucket=settings.idrive_e2_bucket, Prefix=USER_DOC_PREFIX
+        ):
+            total += sum(
+                1
+                for item in page.get("Contents", [])
+                if str(item.get("Key", "")).endswith(".json")
+            )
+            if total >= limit:
+                break
+        return total
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("user doc count failed (%s)", type(exc).__name__)
+        return len(_MEMORY)
+
 VOICE_SAMPLE_PREFIX = "voice-samples/"
 
 
