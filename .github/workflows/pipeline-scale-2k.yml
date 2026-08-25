@@ -10,7 +10,8 @@ name: Pipeline Skalierung 2k Profile per Tag
 
 on:
   schedule:
-    # Alle 2 Stunden (12 Laeufe/Tag * 12 Shards * 17 Profile = ~2.448 Profile/Tag
+    # Alle 2 Stunden redundant; die Selbst-Takt-Kette startet nahtlos weiter —
+    # effektiv ~stündlich (~24 Laeufe/Tag * 12 Shards * 25 = ~7.200/Tag Kapazitaet
     # Kapazitaet — Puffer ueber dem 2000-Ziel fuer verlorene/junge Laeufe)
     - cron: "0 */2 * * *"
   workflow_dispatch:
@@ -18,7 +19,7 @@ on:
       batch_size_per_shard:
         description: "Anzahl Kandidaten pro Shard"
         required: true
-        default: "17"
+        default: "25"
 
 concurrency:
   group: pipeline-scale-2k
@@ -154,7 +155,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           SHARD_INDEX: ${{ matrix.shard_index }}
           TOTAL_SHARDS: 12
-          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '17' }}
+          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '25' }}
         run: |
           python -m app.workers.sharded_runner \
             --shard-index $SHARD_INDEX \
