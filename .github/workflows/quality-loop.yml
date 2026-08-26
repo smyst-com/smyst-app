@@ -68,7 +68,7 @@ jobs:
           LLM_PROVIDER_ORDER: "groq,smyst_llm,smyst_gateway"
           SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
           LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
-        run: python -m app.workers.eval_profiles --enabled --limit 80
+        run: python -m app.workers.eval_profiles --enabled --limit 40
 
       - name: "Freshness: Quellen-Check published-Profile"
         continue-on-error: true

@@ -1,0 +1,66 @@
+name: Morgenbericht (Tages-Digest)
+
+# Taegliche Gesamtuebersicht fuer den Inhaber (06:00 MESZ / 04:00 UTC):
+# Ampeln aller Autopiloten, Live-Zahlen (Profile, Chat), offene Alarme,
+# und was auf Freigabe wartet. Ein Issue als fortlaufendes Tagebuch —
+# der Inhaber startet mit EINEM Blick informiert in den Tag.
+
+on:
+  schedule:
+    - cron: "3 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: morning-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    name: Tages-Digest erstellen
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: "Bericht sammeln und ins Tagesbuch-Issue schreiben"
+        run: |
+          set -euo pipefail
+          TODAY=$(date -u +%F)
+          {
+            echo "## ☀️ Morgenbericht ${TODAY}"
+            echo
+            echo "### Live-Zahlen"
+            T_COUNT=$(curl -sf --max-time 15 https://smyst.com/sitemap.xml | grep -c "<loc>https://smyst.com/t/" || echo 0)
+            TTS_OK=$(curl -sf --max-time 15 https://api.smyst.com/api/tts/voices | grep -c '"ready": *true' || echo 0)
+            echo "- Live-Profile: **${T_COUNT}**"
+            echo "- Stimme (TTS): $([ "$TTS_OK" -ge 1 ] && echo "✅ bereit" || echo "❌ nicht ready")"
+            echo
+            echo "### Autopilot-Ampeln (je letzter Lauf)"
+            for WF in pipeline-run.yml pipeline-scale-2k.yml version-autopilot.yml quality-loop.yml quality-autopilot.yml provider-health.yml app-guardian.yml model-eval.yml voice-qa-daily.yml eval.yml; do
+              LINE=$(gh run list --workflow="$WF" --limit 1 --json conclusion,createdAt -q '.[0] | (.conclusion // "läuft") + " · " + .createdAt' 2>/dev/null)
+              [ -n "$LINE" ] && echo "- ${WF}: ${LINE}"
+            done
+            echo
+            echo "### Offene Alarme"
+            ALARMS=$(gh issue list -R "$REPO" --label provider-outage --state open --json number -q 'length')
+            APP_ALARMS=$(gh issue list -R "$REPO" --label app-outage --state open --json number -q 'length')
+            echo "- Provider-Alarme offen: **${ALARMS}**"
+            echo "- App-Alarme offen: **${APP_ALARMS}**"
+            echo
+            echo "### Wartet auf dich"
+            echo "- Admin → Autopilot: **Versions-Autopilot – Freigabe** (falls Zeilen da sind: „Alle freigeben")"
+            echo "- Admin → Freigaben: neue Profil-Kandidaten"
+          } > /tmp/report.md
+          TITLE="☀️ Morgenbericht (Tagesbuch)"
+          ISSUE=$(gh issue list -R "$REPO" --search "$TITLE in:title" --state open --json number --jq '.[0].number')
+          if [ -z "$ISSUE" ]; then
+            gh issue create -R "$REPO" -t "$TITLE" -b "$(cat /tmp/report.md)"
+          else
+            gh issue comment -R "$REPO" "$ISSUE" -b "$(cat /tmp/report.md)"
+          fi
+          cat /tmp/report.md
