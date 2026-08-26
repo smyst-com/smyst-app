@@ -38,7 +38,8 @@ jobs:
             T_COUNT=$(curl -sf --max-time 15 https://smyst.com/sitemap.xml | grep -c "<loc>https://smyst.com/t/" || echo 0)
             TTS_OK=$(curl -sf --max-time 15 https://api.smyst.com/api/tts/voices | grep -c '"ready": *true' || echo 0)
             echo "- Live-Profile: **${T_COUNT}**"
-            echo "- Stimme (TTS): $([ "$TTS_OK" -ge 1 ] && echo "✅ bereit" || echo "❌ nicht ready")"
+            if [ "${TTS_OK:-0}" -ge 1 ]; then TTS_STATUS="bereit"; else TTS_STATUS="NICHT ready"; fi
+            echo "- Stimme (TTS): ${TTS_STATUS}"
             echo
             echo "### Autopilot-Ampeln (je letzter Lauf)"
             for WF in pipeline-run.yml pipeline-scale-2k.yml version-autopilot.yml quality-loop.yml quality-autopilot.yml provider-health.yml app-guardian.yml model-eval.yml voice-qa-daily.yml eval.yml; do
@@ -53,7 +54,7 @@ jobs:
             echo "- App-Alarme offen: **${APP_ALARMS}**"
             echo
             echo "### Wartet auf dich"
-            echo "- Admin → Autopilot: **Versions-Autopilot – Freigabe** (falls Zeilen da sind: „Alle freigeben")"
+            echo "- Admin -> Autopilot: Versions-Autopilot-Freigabe (falls Zeilen da sind: Alle freigeben)"
             echo "- Admin → Freigaben: neue Profil-Kandidaten"
           } > /tmp/report.md
           TITLE="☀️ Morgenbericht (Tagesbuch)"
