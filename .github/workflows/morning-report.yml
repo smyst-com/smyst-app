@@ -43,13 +43,13 @@ jobs:
             echo
             echo "### Autopilot-Ampeln (je letzter Lauf)"
             for WF in pipeline-run.yml pipeline-scale-2k.yml version-autopilot.yml quality-loop.yml quality-autopilot.yml provider-health.yml app-guardian.yml model-eval.yml voice-qa-daily.yml eval.yml; do
-              LINE=$(gh run list --workflow="$WF" --limit 1 --json conclusion,createdAt -q '.[0] | (.conclusion // "läuft") + " · " + .createdAt' 2>/dev/null)
-              [ -n "$LINE" ] && echo "- ${WF}: ${LINE}"
+              LINE=$(gh run list --workflow="$WF" --limit 1 --json conclusion,createdAt -q '.[0] | (.conclusion // "läuft") + " · " + .createdAt' 2>/dev/null || true)
+              if [ -n "$LINE" ]; then echo "- ${WF}: ${LINE}"; fi
             done
             echo
             echo "### Offene Alarme"
-            ALARMS=$(gh issue list -R "$REPO" --label provider-outage --state open --json number -q 'length')
-            APP_ALARMS=$(gh issue list -R "$REPO" --label app-outage --state open --json number -q 'length')
+            ALARMS=$(gh issue list -R "$REPO" --label provider-outage --state open --json number -q 'length' 2>/dev/null || echo 0)
+            APP_ALARMS=$(gh issue list -R "$REPO" --label app-outage --state open --json number -q 'length' 2>/dev/null || echo 0)
             echo "- Provider-Alarme offen: **${ALARMS}**"
             echo "- App-Alarme offen: **${APP_ALARMS}**"
             echo
