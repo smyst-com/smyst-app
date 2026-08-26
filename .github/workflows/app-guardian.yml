@@ -1,0 +1,113 @@
+name: App-Guardian (Gesamt-App-Wächter, 5-Minuten-Takt)
+
+# Der Wächter der gesamten App (Inhaber-Auftrag 25.08.: "gesamte App von A
+# bis Z checken, Fehler sofort beheben"): prueft alle 5 Minuten Startseite,
+# Profil-API, Sitemap-Wachstum, Profilseiten, Live-Chat und Stimme (TTS).
+# Bekannte, behebbare Ausfaelle heilt er automatisch (verpasste Workflow-
+# Slots nachholen — Muster des Pipeline-Watchdogs); alles andere alarmiert
+# er sofort per Issue mit Label app-outage und gibt bei Gesundung
+# automatisch Entwarnung. Kein Checkout noetig — Laufzeit ~20 Sekunden.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: app-guardian
+  cancel-in-progress: false
+
+jobs:
+  guardian:
+    name: App von A bis Z pruefen
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: write
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: "Checks: Startseite, Profile, Chat, Stimme, Sitemap"
+        id: checks
+        continue-on-error: true
+        run: |
+          set +e
+          FAILS=""
+          fail() { FAILS="$FAILS
+          - $1"; }
+          # 1) Startseite: Shell 200 + Titel (Design-Freeze-Intaktheit der Start-Shell)
+          HOME_HTML=$(curl -sf --max-time 15 https://smyst.com/)
+          if [ -z "$HOME_HTML" ]; then fail "Startseite smyst.com nicht erreichbar"; else
+            echo "$HOME_HTML" | grep -q "smyst.com | KI-Zwillinge" || fail "Startseiten-Titel veraendert (Design-Freeze-Verdacht)"
+          fi
+          # 2) Statische Profil-API (liefert die Daten des Profil-Grids)
+          TWIN_API=$(curl -sf --max-time 15 "https://smyst.com/api/public/twins/")
+          if [ -z "$TWIN_API" ]; then fail "Profil-API /api/public/twins/ leer/fehlerhaft"; else
+            echo "$TWIN_API" | grep -q '"slug"' || fail "Profil-API enthaelt keine Zwillinge"
+          fi
+          # 3) Stimme (Pflicht-Smoke, Sprach-Freeze)
+          TTS=$(curl -sf --max-time 15 https://api.smyst.com/api/tts/voices)
+          if [ -z "$TTS" ]; then fail "TTS /api/tts/voices nicht erreichbar"; else
+            echo "$TTS" | grep -q '"ready": *true' || fail "TTS nicht ready"
+          fi
+          # 4) Sitemap-Wachstum (stillen Schwund erkennen)
+          T_COUNT=$(curl -sf --max-time 15 https://smyst.com/sitemap.xml | grep -c "<loc>https://smyst.com/t/")
+          [ "${T_COUNT:-0}" -gt 1000 ] || fail "Sitemap: nur ${T_COUNT:-0} Live-Profile (Soll > 1000 — stiller Schwund?)"
+          # 5) Profilseite des ersten Live-Zwillings
+          FIRST_SLUG=$(curl -sf --max-time 15 https://smyst.com/sitemap.xml | grep -oE "<loc>https://smyst.com/t/[^<]+" | head -1 | sed 's|.* /t/||; s|</loc>||; s|.*/t/||')
+          if [ -n "$FIRST_SLUG" ]; then
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "https://smyst.com/t/$FIRST_SLUG")
+            [ "$CODE" = "200" ] || fail "Profilseite /t/$FIRST_SLUG: HTTP $CODE"
+          else
+            fail "Keine Profil-URL in der Sitemap gefunden"
+          fi
+          # 6) Live-Chat (Backend-Antwort mit KI-Kennzeichnung)
+          CHAT=$(curl -sf --max-time 30 -X POST https://api.smyst.com/api/v1/chat/messages \
+            -H "Content-Type: application/json" \
+            -d "{\"chatId\":\"guardian-smoke\",\"message\":\"Hallo, wer bist du?\",\"twinSlug\":\"$FIRST_SLUG\"}")
+          if [ -z "$CHAT" ]; then fail "Live-Chat antwortet nicht"; else
+            echo "$CHAT" | grep -q '"aiGenerated": *true' || fail "Live-Chat-Antwort ohne KI-Kennzeichnung"
+          fi
+          # 7) Auto-Heilung: verpasste Slots der Kern-Autopiloten nachholen
+          LAST_VA=$(gh run list --workflow=version-autopilot.yml --limit 1 --json createdAt -q '.[0].createdAt' 2>/dev/null)
+          if [ -n "$LAST_VA" ]; then
+            AGE_H=$(( ( $(date +%s) - $(date -d "$LAST_VA" +%s) ) / 3600 ))
+            if [ "$AGE_H" -ge 8 ]; then
+              if gh workflow run version-autopilot.yml --ref main; then
+                echo "GEHEILT: Versions-Autopilot-Slot nachgeholt (zuletzt ${AGE_H}h her)."
+                FAILS="$FAILS
+          - GEHEILT: Versions-Autopilot war ${AGE_H}h still — Slot automatisch nachgeholt"
+              fi
+            fi
+          fi
+          if [ -n "$FAILS" ]; then
+            echo "GUARDIAN-ERGEBNIS: Fehler gefunden:$FAILS"
+            echo "status=down" >> "$GITHUB_OUTPUT"
+          else
+            echo "GUARDIAN-ERGEBNIS: alles grün (Startseite, ${T_COUNT} Profile, TTS, Chat, /t/$FIRST_SLUG)."
+            echo "status=up" >> "$GITHUB_OUTPUT"
+          fi
+          set -e
+      - name: "Alarm bei App-Ausfall (Label idempotent, Issues:write gesetzt)"
+        if: steps.checks.outputs.status == 'down'
+        run: |
+          gh label create app-outage --color b60205 --description "App-Guardian: Gesamtpruefung fehlgeschlagen" 2>/dev/null || true
+          TITLE="🚨 App-Guardian: App nicht einwandfrei"
+          BODY="$(date -u '+%F %H:%M') UTC — Pruefung fehlgeschlagen. Details im Lauf-Log."
+          ISSUE=$(gh issue list -R "$REPO" --search "$TITLE in:title" --state open --json number --jq '.[0].number')
+          if [ -z "$ISSUE" ]; then
+            gh issue create -R "$REPO" -t "$TITLE" -l app-outage -b "$BODY"
+          else
+            gh issue comment -R "$REPO" "$ISSUE" -b "$BODY"
+          fi
+      - name: "Entwarnung bei Gesundung"
+        if: steps.checks.outputs.status == 'up'
+        run: |
+          TITLE="🚨 App-Guardian: App nicht einwandfrei"
+          ISSUE=$(gh issue list -R "$REPO" --search "$TITLE in:title" --state open --json number --jq '.[0].number')
+          if [ -n "$ISSUE" ]; then
+            gh issue close -R "$REPO" "$ISSUE" -c "Entwarnung $(date -u '+%F %H:%M') UTC: Alle Checks grün."
+          fi
