@@ -289922,5 +289922,1129 @@
     "approved_by": "smyst247@gmail.com",
     "visible": true,
     "version": 1
+  },
+  {
+    "wikidata_qid": "Q1445513",
+    "twin_id": "87739554-850a-4ff7-9598-1d3956e28040",
+    "slug": "william-strachey",
+    "name": "William Strachey",
+    "category": "Geschichte",
+    "language_default": "de",
+    "birth_date": "1572-04-04",
+    "death_date": "1621-06-01",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Saffron Walden, Vereinigtes Königreich",
+    "death_place": "London, Vereinigtes Königreich",
+    "description": "English writer",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1445513/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1445513/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von William Strachey (Geschichte), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "william-strachey",
+      "title": "William Strachey KI-Profil | smyst.com",
+      "description": "William Strachey (English writer) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/william-strachey",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "William Strachey",
+        "description": "English writer",
+        "birthDate": "1572-04-04",
+        "deathDate": "1621-06-01",
+        "nationality": "Vereinigtes Königreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1445513"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1445513.json",
+        "snapshot_key": "pipeline/sources/Q1445513/wikidata-entitydata.json"
+      },
+      {
+        "title": "William Strachey",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/William_Strachey",
+        "snapshot_key": "pipeline/sources/Q1445513/wikipedia-en.json"
+      },
+      {
+        "title": "William Strachey",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/William_Strachey",
+        "snapshot_key": "pipeline/sources/Q1445513/wikipedia-it.json"
+      },
+      {
+        "title": "William Strachey",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/William_Strachey",
+        "snapshot_key": "pipeline/sources/Q1445513/wikipedia-fr.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T03:38:49.250376+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q268831",
+    "twin_id": "b92ad058-eebc-4472-89e1-d2b81fc8bc79",
+    "slug": "david-hendricks-bergey",
+    "name": "David Hendricks Bergey",
+    "category": "Medizin",
+    "language_default": "de",
+    "birth_date": "1860-12-27",
+    "death_date": "1937-09-05",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Skippack, Vereinigte Staaten",
+    "death_place": "Philadelphia, Vereinigte Staaten",
+    "description": "amerikanischer Arzt und Bakteriologe",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q268831/prompt.json",
+    "capsule_key": "pipeline/capsules/Q268831/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von David Hendricks Bergey (Medizin), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "david-hendricks-bergey",
+      "title": "David Hendricks Bergey KI-Profil | smyst.com",
+      "description": "David Hendricks Bergey (amerikanischer Arzt und Bakteriologe) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/david-hendricks-bergey",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "David Hendricks Bergey",
+        "description": "amerikanischer Arzt und Bakteriologe",
+        "birthDate": "1860-12-27",
+        "deathDate": "1937-09-05",
+        "nationality": "Vereinigte Staaten",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q268831"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q268831.json",
+        "snapshot_key": "pipeline/sources/Q268831/wikidata-entitydata.json"
+      },
+      {
+        "title": "David Hendricks Bergey",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/David_Hendricks_Bergey",
+        "snapshot_key": "pipeline/sources/Q268831/wikipedia-de.json"
+      },
+      {
+        "title": "David Hendricks Bergey",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/David_Hendricks_Bergey",
+        "snapshot_key": "pipeline/sources/Q268831/wikipedia-en.json"
+      },
+      {
+        "title": "David Hendricks Bergey",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/David_Hendricks_Bergey",
+        "snapshot_key": "pipeline/sources/Q268831/wikipedia-fr.json"
+      },
+      {
+        "title": "David Hendricks Bergey",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/David_Hendricks_Bergey",
+        "snapshot_key": "pipeline/sources/Q268831/wikipedia-es.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T03:38:50.854414+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q2718795",
+    "twin_id": "818a3b7a-8524-4a04-8577-82a1e64f777e",
+    "slug": "marc-antoine-jullien-de-paris",
+    "name": "Marc-Antoine Jullien de Paris",
+    "category": "Medizin",
+    "language_default": "de",
+    "birth_date": "1775-03-10",
+    "death_date": "1848-10-28",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Paris, Frankreich",
+    "death_place": "früheres 1. Arrondissement von Paris, Frankreich",
+    "description": "französischer Politiker und Pädagoge",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q2718795/prompt.json",
+    "capsule_key": "pipeline/capsules/Q2718795/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Marc-Antoine Jullien de Paris.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "marc-antoine-jullien-de-paris",
+      "title": "Marc-Antoine Jullien de Paris KI-Profil | smyst.com",
+      "description": "Marc-Antoine Jullien de Paris (französischer Politiker und Pädagoge) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/marc-antoine-jullien-de-paris",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Marc-Antoine Jullien de Paris",
+        "description": "französischer Politiker und Pädagoge",
+        "birthDate": "1775-03-10",
+        "deathDate": "1848-10-28",
+        "nationality": "Frankreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q2718795"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2718795.json",
+        "snapshot_key": "pipeline/sources/Q2718795/wikidata-entitydata.json"
+      },
+      {
+        "title": "Marc-Antoine Jullien de Paris",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Marc-Antoine_Jullien_de_Paris",
+        "snapshot_key": "pipeline/sources/Q2718795/wikipedia-fr.json"
+      },
+      {
+        "title": "Marc-Antoine Jullien de Paris",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Marc-Antoine_Jullien_de_Paris",
+        "snapshot_key": "pipeline/sources/Q2718795/wikipedia-en.json"
+      },
+      {
+        "title": "Marc-Antoine Jullien de Paris",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Marc-Antoine_Jullien_de_Paris",
+        "snapshot_key": "pipeline/sources/Q2718795/wikipedia-de.json"
+      },
+      {
+        "title": "Marc-Antoine Jullien de Paris",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Marc-Antoine_Jullien_de_Paris",
+        "snapshot_key": "pipeline/sources/Q2718795/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T03:38:51.972108+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q495259",
+    "twin_id": "29a80489-179c-409c-831a-8fbd5165f3bb",
+    "slug": "yi-ik",
+    "name": "Yi Ik",
+    "category": "Philosophie",
+    "language_default": "de",
+    "birth_date": "1681-10-18",
+    "death_date": "1763-12-17",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Ansan, Südkorea",
+    "death_place": "Seoul, Südkorea",
+    "description": "koreanischer Politiker und neokonfuzianischer Philosoph",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q495259/prompt.json",
+    "capsule_key": "pipeline/capsules/Q495259/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "소릉 이상의.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "yi-ik",
+      "title": "Yi Ik KI-Profil | smyst.com",
+      "description": "Yi Ik (koreanischer Politiker und neokonfuzianischer Philosoph) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/yi-ik",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Yi Ik",
+        "description": "koreanischer Politiker und neokonfuzianischer Philosoph",
+        "birthDate": "1681-10-18",
+        "deathDate": "1763-12-17",
+        "nationality": "Joseon-Dynastie",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q495259"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q495259.json",
+        "snapshot_key": "pipeline/sources/Q495259/wikidata-entitydata.json"
+      },
+      {
+        "title": "Yi Ik",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Yi_Ik",
+        "snapshot_key": "pipeline/sources/Q495259/wikipedia-de.json"
+      },
+      {
+        "title": "Yi Ik",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Yi_Ik",
+        "snapshot_key": "pipeline/sources/Q495259/wikipedia-fr.json"
+      },
+      {
+        "title": "Yi Ik",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Yi_Ik",
+        "snapshot_key": "pipeline/sources/Q495259/wikipedia-en.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T03:38:53.222168+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q767332",
+    "twin_id": "31ef8c67-5f3e-40e6-bc9a-171ed3c28b03",
+    "slug": "alexandre-vincent-pineux-duval",
+    "name": "Alexandre-Vincent Pineux Duval",
+    "category": "Schauspiel",
+    "language_default": "de",
+    "birth_date": "1767-04-06",
+    "death_date": "1842-01-09",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Rennes, Frankreich",
+    "death_place": "Paris, Frankreich",
+    "description": "französischer Architekt, Schriftsteller und Theaterdirektor",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q767332/prompt.json",
+    "capsule_key": "pipeline/capsules/Q767332/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Alexandre Duval, PPM413(2).jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "alexandre-vincent-pineux-duval",
+      "title": "Alexandre-Vincent Pineux Duval KI-Profil | smyst.com",
+      "description": "Alexandre-Vincent Pineux Duval (französischer Architekt, Schriftsteller und Theaterdirektor) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/alexandre-vincent-pineux-duval",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Alexandre-Vincent Pineux Duval",
+        "description": "französischer Architekt, Schriftsteller und Theaterdirektor",
+        "birthDate": "1767-04-06",
+        "deathDate": "1842-01-09",
+        "nationality": "Frankreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q767332"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q767332.json",
+        "snapshot_key": "pipeline/sources/Q767332/wikidata-entitydata.json"
+      },
+      {
+        "title": "Alexandre-Vincent Pineux Duval",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Alexandre-Vincent_Pineux_Duval",
+        "snapshot_key": "pipeline/sources/Q767332/wikipedia-en.json"
+      },
+      {
+        "title": "Alexandre-Vincent Pineux Duval",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Alexandre-Vincent_Pineux_Duval",
+        "snapshot_key": "pipeline/sources/Q767332/wikipedia-de.json"
+      },
+      {
+        "title": "Alexandre Duval",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Alexandre_Duval",
+        "snapshot_key": "pipeline/sources/Q767332/wikipedia-fr.json"
+      },
+      {
+        "title": "Alexandre Duval",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Alexandre_Duval",
+        "snapshot_key": "pipeline/sources/Q767332/wikipedia-it.json"
+      },
+      {
+        "title": "Alexandre-Vincent Pineux Duval",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Alexandre-Vincent_Pineux_Duval",
+        "snapshot_key": "pipeline/sources/Q767332/wikipedia-es.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T03:38:54.677025+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q768943",
+    "twin_id": "3fe8ccea-f77f-49ba-8d2e-4cd80ae3344e",
+    "slug": "jean-charles-houzeau",
+    "name": "Jean-Charles Houzeau",
+    "category": "Wissenschaft",
+    "language_default": "de",
+    "birth_date": "1820-10-07",
+    "death_date": "1888-07-12",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Belgien",
+    "death_place": "Schaerbeek/Schaarbeek, Belgien",
+    "description": "belgischer Astronom und Journalist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q768943/prompt.json",
+    "capsule_key": "pipeline/capsules/Q768943/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "PSM V38 D448 Jean Charles Houzeau.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "jean-charles-houzeau",
+      "title": "Jean-Charles Houzeau KI-Profil | smyst.com",
+      "description": "Jean-Charles Houzeau (belgischer Astronom und Journalist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/jean-charles-houzeau",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Jean-Charles Houzeau",
+        "description": "belgischer Astronom und Journalist",
+        "birthDate": "1820-10-07",
+        "deathDate": "1888-07-12",
+        "nationality": "Belgien",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q768943"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q768943.json",
+        "snapshot_key": "pipeline/sources/Q768943/wikidata-entitydata.json"
+      },
+      {
+        "title": "Jean-Charles Houzeau de Lehaie",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Jean-Charles_Houzeau_de_Lehaie",
+        "snapshot_key": "pipeline/sources/Q768943/wikipedia-fr.json"
+      },
+      {
+        "title": "Jean-Charles Houzeau",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Jean-Charles_Houzeau",
+        "snapshot_key": "pipeline/sources/Q768943/wikipedia-en.json"
+      },
+      {
+        "title": "Jean-Charles Houzeau",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Jean-Charles_Houzeau",
+        "snapshot_key": "pipeline/sources/Q768943/wikipedia-es.json"
+      },
+      {
+        "title": "Jean-Charles Houzeau",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Jean-Charles_Houzeau",
+        "snapshot_key": "pipeline/sources/Q768943/wikipedia-de.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T03:38:55.835686+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q75209",
+    "twin_id": "93e40fd1-ee16-4d28-92ed-e8c6712ca4e7",
+    "slug": "helene-lange",
+    "name": "Helene Lange",
+    "category": "Politik",
+    "language_default": "de",
+    "birth_date": "1848-04-09",
+    "death_date": "1930-05-13",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Oldenburg, Deutschland",
+    "death_place": "Berlin, Deutschland",
+    "description": "deutsche Politikerin (DDP), MdHB und Frauenrechtlerin, Pädagogin (1848-1930)",
+    "gender": "female",
+    "persona_prompt_key": "pipeline/capsules/Q75209/prompt.json",
+    "capsule_key": "pipeline/capsules/Q75209/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Helene Lange vor 1899.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "helene-lange",
+      "title": "Helene Lange KI-Profil | smyst.com",
+      "description": "Helene Lange (deutsche Politikerin (DDP), MdHB und Frauenrechtlerin, Pädagogin (1848-1930)) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/helene-lange",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Helene Lange",
+        "description": "deutsche Politikerin (DDP), MdHB und Frauenrechtlerin, Pädagogin (1848-1930)",
+        "birthDate": "1848-04-09",
+        "deathDate": "1930-05-13",
+        "nationality": "Weimarer Republik",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q75209"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q75209.json",
+        "snapshot_key": "pipeline/sources/Q75209/wikidata-entitydata.json"
+      },
+      {
+        "title": "Helene Lange",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Helene_Lange",
+        "snapshot_key": "pipeline/sources/Q75209/wikipedia-en.json"
+      },
+      {
+        "title": "Helene Lange",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Helene_Lange",
+        "snapshot_key": "pipeline/sources/Q75209/wikipedia-de.json"
+      },
+      {
+        "title": "Helene Lange",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Helene_Lange",
+        "snapshot_key": "pipeline/sources/Q75209/wikipedia-fr.json"
+      },
+      {
+        "title": "Helena Lange",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Helena_Lange",
+        "snapshot_key": "pipeline/sources/Q75209/wikipedia-es.json"
+      },
+      {
+        "title": "Helene Lange",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Helene_Lange",
+        "snapshot_key": "pipeline/sources/Q75209/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T08:13:59.396863+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q918479",
+    "twin_id": "882d94ab-762c-462f-a01a-4b3a7270ddd1",
+    "slug": "luigi-arditi",
+    "name": "Luigi Arditi",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1822-07-22",
+    "death_date": "1903-05-01",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Crescentino, Italien",
+    "death_place": "Hove, Vereinigtes Königreich",
+    "description": "italienischer Musiker, Violinist, Komponist, Theaterkapellmeister",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q918479/prompt.json",
+    "capsule_key": "pipeline/capsules/Q918479/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Luigi Arditi 1875.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "luigi-arditi",
+      "title": "Luigi Arditi KI-Profil | smyst.com",
+      "description": "Luigi Arditi (italienischer Musiker, Violinist, Komponist, Theaterkapellmeister) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/luigi-arditi",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Luigi Arditi",
+        "description": "italienischer Musiker, Violinist, Komponist, Theaterkapellmeister",
+        "birthDate": "1822-07-22",
+        "deathDate": "1903-05-01",
+        "nationality": "Königreich Italien",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q918479"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q918479.json",
+        "snapshot_key": "pipeline/sources/Q918479/wikidata-entitydata.json"
+      },
+      {
+        "title": "Luigi Arditi",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Luigi_Arditi",
+        "snapshot_key": "pipeline/sources/Q918479/wikipedia-de.json"
+      },
+      {
+        "title": "Luigi Arditi",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Luigi_Arditi",
+        "snapshot_key": "pipeline/sources/Q918479/wikipedia-fr.json"
+      },
+      {
+        "title": "Luigi Arditi",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Luigi_Arditi",
+        "snapshot_key": "pipeline/sources/Q918479/wikipedia-es.json"
+      },
+      {
+        "title": "Luigi Arditi",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Luigi_Arditi",
+        "snapshot_key": "pipeline/sources/Q918479/wikipedia-en.json"
+      },
+      {
+        "title": "Luigi Arditi",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Luigi_Arditi",
+        "snapshot_key": "pipeline/sources/Q918479/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T16:52:59.203688+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q2703410",
+    "twin_id": "e8d77586-d9e7-407f-bf01-32bd8e4b3f7c",
+    "slug": "helge-rode",
+    "name": "Helge Rode",
+    "category": "Journalismus",
+    "language_default": "de",
+    "birth_date": "1870-10-16",
+    "death_date": "1937-03-23",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Frederiksberg, Dänemark",
+    "death_place": "Frederiksberg, Dänemark",
+    "description": "dänischer Autor, Kritiker und Journalist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q2703410/prompt.json",
+    "capsule_key": "pipeline/capsules/Q2703410/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Helge Rode by Elfelt & Co.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "helge-rode",
+      "title": "Helge Rode KI-Profil | smyst.com",
+      "description": "Helge Rode (dänischer Autor, Kritiker und Journalist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/helge-rode",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Helge Rode",
+        "description": "dänischer Autor, Kritiker und Journalist",
+        "birthDate": "1870-10-16",
+        "deathDate": "1937-03-23",
+        "nationality": "Königreich Dänemark",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q2703410"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q2703410.json",
+        "snapshot_key": "pipeline/sources/Q2703410/wikidata-entitydata.json"
+      },
+      {
+        "title": "Helge Rode",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Helge_Rode",
+        "snapshot_key": "pipeline/sources/Q2703410/wikipedia-en.json"
+      },
+      {
+        "title": "Helge Rode",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Helge_Rode",
+        "snapshot_key": "pipeline/sources/Q2703410/wikipedia-it.json"
+      },
+      {
+        "title": "Helge Rode",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Helge_Rode",
+        "snapshot_key": "pipeline/sources/Q2703410/wikipedia-fr.json"
+      },
+      {
+        "title": "Helge Rode",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Helge_Rode",
+        "snapshot_key": "pipeline/sources/Q2703410/wikipedia-de.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-26T20:25:48.594602+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q47185",
+    "twin_id": "8072d018-2b04-441a-aa86-4590c203b674",
+    "slug": "anne-anderson",
+    "name": "Anne Anderson",
+    "category": "Kunst",
+    "language_default": "de",
+    "birth_date": "1874-01-01",
+    "death_date": "1952-05-26",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Schottland, Vereinigtes Königreich",
+    "death_place": "Berkshire, Vereinigtes Königreich",
+    "description": "britisch-schottische Illustratorin",
+    "gender": "female",
+    "persona_prompt_key": "pipeline/capsules/Q47185/prompt.json",
+    "capsule_key": "pipeline/capsules/Q47185/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Anne Anderson (Kunst), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "anne-anderson",
+      "title": "Anne Anderson KI-Profil | smyst.com",
+      "description": "Anne Anderson (britisch-schottische Illustratorin) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/anne-anderson",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Anne Anderson",
+        "description": "britisch-schottische Illustratorin",
+        "birthDate": "1874-01-01",
+        "deathDate": "1952-05-26",
+        "nationality": "Vereinigtes Königreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q47185"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q47185.json",
+        "snapshot_key": "pipeline/sources/Q47185/wikidata-entitydata.json"
+      },
+      {
+        "title": "Anne Anderson",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Anne_Anderson",
+        "snapshot_key": "pipeline/sources/Q47185/wikipedia-fr.json"
+      },
+      {
+        "title": "Anne Anderson",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Anne_Anderson",
+        "snapshot_key": "pipeline/sources/Q47185/wikipedia-es.json"
+      },
+      {
+        "title": "Anne Anderson (illustrator)",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Anne_Anderson_(illustrator)",
+        "snapshot_key": "pipeline/sources/Q47185/wikipedia-en.json"
+      },
+      {
+        "title": "Anne Anderson (illustratrice)",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Anne_Anderson_(illustratrice)",
+        "snapshot_key": "pipeline/sources/Q47185/wikipedia-it.json"
+      },
+      {
+        "title": "Anne Anderson (Illustratorin)",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Anne_Anderson_(Illustratorin)",
+        "snapshot_key": "pipeline/sources/Q47185/wikipedia-de.json"
+      }
+    ],
+    "risk_score": 0.54,
+    "risk_flags": {
+      "works": "restricted",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-27T03:54:09.821080+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q67375",
+    "twin_id": "312c2336-bbdb-4902-ad73-c399907c7305",
+    "slug": "heinrich-meibom-67375",
+    "name": "Heinrich Meibom",
+    "category": "Geschichte",
+    "language_default": "de",
+    "birth_date": "1638-06-29",
+    "death_date": "1700-03-26",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Lübeck, Deutschland",
+    "death_place": "Helmstedt, Deutschland",
+    "description": "deutscher Mediziner und Dichter",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q67375/prompt.json",
+    "capsule_key": "pipeline/capsules/Q67375/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "MeibomHC1273.JPG",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "heinrich-meibom",
+      "title": "Heinrich Meibom KI-Profil | smyst.com",
+      "description": "Heinrich Meibom (deutscher Mediziner und Dichter) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/heinrich-meibom",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Heinrich Meibom",
+        "description": "deutscher Mediziner und Dichter",
+        "birthDate": "1638-06-29",
+        "deathDate": "1700-03-26",
+        "nationality": "Deutschland",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q67375"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q67375.json",
+        "snapshot_key": "pipeline/sources/Q67375/wikidata-entitydata.json"
+      },
+      {
+        "title": "Heinrich Meibom (Mediziner)",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Heinrich_Meibom_(Mediziner)",
+        "snapshot_key": "pipeline/sources/Q67375/wikipedia-de.json"
+      },
+      {
+        "title": "Heinrich Meibom",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Heinrich_Meibom",
+        "snapshot_key": "pipeline/sources/Q67375/wikipedia-it.json"
+      },
+      {
+        "title": "Heinrich Meibom (doctor)",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Heinrich_Meibom_(doctor)",
+        "snapshot_key": "pipeline/sources/Q67375/wikipedia-en.json"
+      },
+      {
+        "title": "Heinrich Meibom",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Heinrich_Meibom",
+        "snapshot_key": "pipeline/sources/Q67375/wikipedia-fr.json"
+      },
+      {
+        "title": "Heinrich Meibom (médico)",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Heinrich_Meibom_(médico)",
+        "snapshot_key": "pipeline/sources/Q67375/wikipedia-es.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-27T05:06:15.813126+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q688544",
+    "twin_id": "756b895b-6eb9-4bc2-982a-c2a10fbf490d",
+    "slug": "cornelius-gurlitt-688544",
+    "name": "Cornelius Gurlitt",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1820-02-10",
+    "death_date": "1901-06-17",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Altona, Deutschland",
+    "death_place": "Altona, Deutschland",
+    "description": "deutscher Komponist (1820–1901)",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q688544/prompt.json",
+    "capsule_key": "pipeline/capsules/Q688544/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Cornelius Gurlitt (1820 – 1901).jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "cornelius-gurlitt",
+      "title": "Cornelius Gurlitt KI-Profil | smyst.com",
+      "description": "Cornelius Gurlitt (deutscher Komponist (1820–1901)) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/cornelius-gurlitt",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Cornelius Gurlitt",
+        "description": "deutscher Komponist (1820–1901)",
+        "birthDate": "1820-02-10",
+        "deathDate": "1901-06-17",
+        "nationality": "Königreich Preußen",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q688544"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q688544.json",
+        "snapshot_key": "pipeline/sources/Q688544/wikidata-entitydata.json"
+      },
+      {
+        "title": "Cornelius Gurlitt (Komponist)",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Cornelius_Gurlitt_(Komponist)",
+        "snapshot_key": "pipeline/sources/Q688544/wikipedia-de.json"
+      },
+      {
+        "title": "Cornelius Gurlitt (compositeur)",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Cornelius_Gurlitt_(compositeur)",
+        "snapshot_key": "pipeline/sources/Q688544/wikipedia-fr.json"
+      },
+      {
+        "title": "Cornelius Gurlitt (composer)",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Cornelius_Gurlitt_(composer)",
+        "snapshot_key": "pipeline/sources/Q688544/wikipedia-en.json"
+      },
+      {
+        "title": "Cornelius Gurlitt",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Cornelius_Gurlitt",
+        "snapshot_key": "pipeline/sources/Q688544/wikipedia-es.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-27T05:06:17.155914+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q850457",
+    "twin_id": "f010f06d-e175-42b9-bf1c-75d2e3c892b2",
+    "slug": "sandor-brody-850457",
+    "name": "Sándor Bródy",
+    "category": "Sport",
+    "language_default": "de",
+    "birth_date": "1884-05-16",
+    "death_date": "1944-04-19",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Sekule, Slowakei",
+    "death_place": null,
+    "description": "Hungarian association football player (1884–1944)",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q850457/prompt.json",
+    "capsule_key": "pipeline/capsules/Q850457/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Bródy Sándor labdarúgó (1910).jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "sandor-brody",
+      "title": "Sándor Bródy KI-Profil | smyst.com",
+      "description": "Sándor Bródy (Hungarian association football player (1884–1944)) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/sandor-brody",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Sándor Bródy",
+        "description": "Hungarian association football player (1884–1944)",
+        "birthDate": "1884-05-16",
+        "deathDate": "1944-04-19",
+        "nationality": "Ungarn",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q850457"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q850457.json",
+        "snapshot_key": "pipeline/sources/Q850457/wikidata-entitydata.json"
+      },
+      {
+        "title": "Sándor Bródy (footballer)",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Sándor_Bródy_(footballer)",
+        "snapshot_key": "pipeline/sources/Q850457/wikipedia-en.json"
+      },
+      {
+        "title": "Sándor Bródy (calciatore)",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Sándor_Bródy_(calciatore)",
+        "snapshot_key": "pipeline/sources/Q850457/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-27T05:06:18.253997+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
   }
 ]
