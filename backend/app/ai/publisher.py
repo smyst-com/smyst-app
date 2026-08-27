@@ -69,19 +69,21 @@ def build_publish_record(
     }
 
 
-def upsert_index(index: list[dict], record: dict) -> list[dict]:
-    """Publish-Index aktualisieren; Slug- und QID-Eindeutigkeit erzwingen."""
+def upsert_index(index: list[dict], record: dict) -> tuple[list[dict], str]:
+    """Publish-Index aktualisieren; bei Slug-Kollision disambiguieren (QID-Suffix).
+    Gibt (neuer_index, verwendeter_slug) zurueck."""
     qid = record["wikidata_qid"]
     slug = record["slug"]
+    used_slug = slug
     for existing in index:
         if existing.get("visible", True) and existing["wikidata_qid"] != qid:
             if existing["slug"] == slug or _n(existing.get("name", "")) == _n(record.get("name", "")):
-                raise ValueError(
-                    f"Index-Konflikt: '{record.get('name')}' kollidiert mit "
-                    f"{existing['wikidata_qid']} ({existing['slug']})"
-                )
+                # Slug-Kollision: QID-Ziffern anhaengen statt abzubrechen.
+                used_slug = f"{slug}-{qid.lstrip('Q')}"
+                break
+    updated_record = {**record, "slug": used_slug}
     remaining = [entry for entry in index if entry["wikidata_qid"] != qid]
-    return remaining + [record]
+    return remaining + [updated_record], used_slug
 
 
 def mark_unpublished(index: list[dict], qid: str, *, reason: str, now: datetime | None = None) -> list[dict]:

@@ -184,7 +184,7 @@ def publish_one(
                 )
             return f"abgelehnt: {reason}"
 
-    new_index = upsert_index(index, record)  # wirft bei Slug-/Namenskonflikt
+    new_index, _used_slug = upsert_index(index, record)  # disambiguiert bei Kollision
 
     candidate = replace(
         _candidate_from_document(document),
