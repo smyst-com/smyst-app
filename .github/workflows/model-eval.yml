@@ -19,7 +19,11 @@ name: Modell-Eval (smyst 1.0 Baseline & Checkpoints)
 on:
   schedule:
     # 02:30 UTC = 04:30 Berlin — vor dem ersten Pipeline-Lauf des Tages.
-    - cron: "30 2 * * *"
+    # Frueh nach Groq-TPD-Reset (00:00 UTC) und vor den Hauptverbrauchern
+    # (Quality-Loop 05:47 UTC, Scale-2k erst 02:00 mit eigenem Modell).
+    # Frueher 02:30-Uhr-Slot scheiterte taeglich: Kontingent war bereits
+    # vom Nachtbetrieb aufgebraucht, Twin antwortete aus dem Not-Fallback.
+    - cron: "40 0 * * *"
   workflow_dispatch:
     inputs:
       eval_set:
@@ -92,6 +96,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Eval-Lauf
+        id: eval_run
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -115,7 +120,16 @@ jobs:
           # Zusammenfassung. set -o pipefail, damit ein Eval-Fehler den Job
           # rot macht statt still durch tee zu verschwinden.
           set -o pipefail
-          python -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt
+          # Erster Versuch; bei Fehlschlag einmal 60 Minuten warten und
+          # wiederholen (transiente Erschoepfung des Groq-Tageslimits).
+          if python -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt; then
+            echo "attempt=1-ok" >> "$GITHUB_OUTPUT"
+          else
+            echo "Erster Versuch fehlgeschlagen — retry in 60 min." >&2
+            sleep 3600
+            python -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt
+            echo "attempt=2-ok" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Zusammenfassung
         if: always()
