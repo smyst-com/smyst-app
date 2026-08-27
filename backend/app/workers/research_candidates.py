@@ -102,11 +102,28 @@ def _get_json(
     raise RuntimeError("unerreichbar")  # pragma: no cover - Schleife kehrt vorher zurueck
 
 
+def _safe_date(value: str) -> date:
+    """date.fromisoformat mit Fallback auf letzten Tag des Vormonats.
+    Wikidata liefert gelegentlich ungueltige Daten wie '1800-02-30'."""
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        # Letzter Tag des Vormonats als sichere Fallback-Schätzung.
+        parts = value.split("-")
+        y, m = int(parts[0]), int(parts[1]) if len(parts) > 1 else 1
+        if m == 1:
+            y, m = y - 1, 12
+        else:
+            m -= 1
+        import calendar
+        return date(y, m, calendar.monthrange(y, m)[1])
+
+
 def _candidate_from_document(document: dict) -> HistoricalCandidate:
     return HistoricalCandidate(
         wikidata_qid=document["wikidata_qid"],
         name=document["name"],
-        death_date=date.fromisoformat(document["death_date"]),
+        death_date=_safe_date(document["death_date"]),
         category=document["category"],
         country=document.get("country"),
         sitelink_count=document.get("sitelink_count", 0),
