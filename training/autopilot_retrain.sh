@@ -161,3 +161,21 @@ else
   fi
 fi
 log "=== Autopilot beendet ==="
+
+# 5) DPO-Stufe: Praeferenztraining aus 👍/👎 (aktiviert sich selbst ab 100 Paaren)
+if ./.venv-mlx/bin/python ./build_dpo_dataset.py >> "$LOG" 2>&1; then
+  if [ -d "$HOME/smyst-train/dpo-data" ] && [ -s "$HOME/smyst-train/dpo-data/train.jsonl" ]; then
+    log "DPO: Praeferenzpaare vorhanden – DPO-Training auf letztem fused Modell."
+    BASE=$(ls -dt "$HOME"/smyst-train/fused/smyst-1.1-v* 2>/dev/null | head -1)
+    if [ -n "$BASE" ]; then
+      ./.venv-mlx/bin/python ./.venv-mlx/bin/mlx_lm.lora \
+        --model "$BASE" --train --data "$HOME/smyst-train/dpo-data" \
+        --fine-tune-type lora --num-layers 16 --batch-size 4 --iters 1000 \
+        --dpo-loss --adapter-path "$HOME/smyst-train/adapters/dpo-$(date +%F)" >> "$LOG" 2>&1 \
+        && log "DPO abgeschlossen – danach Promotions-Gate ausfuehren (training/README.md)." \
+        || log "DPO fehlgeschlagen – SFT-Stand bleibt unangetastet."
+    fi
+  else
+    log "DPO uebersprungen: zu wenige Praeferenzpaare (sammele Nutzer-Feedback)."
+  fi
+fi
