@@ -68,16 +68,18 @@ def test_publish_record_contains_disclosure_and_references() -> None:
 
 
 def test_upsert_index_replaces_same_qid_and_blocks_conflicts() -> None:
-    index = upsert_index([], record())
+    index, _ = upsert_index([], record())
     assert len(index) == 1
-    index = upsert_index(index, record(version=2))
+    index, _ = upsert_index(index, record(version=2))
     assert len(index) == 1 and index[0]["version"] == 2
-    with pytest.raises(ValueError, match="Index-Konflikt"):
-        upsert_index(index, record(wikidata_qid="Q999", name="CHARLES DARWIN"))
+    # Kollision wird jetzt disambiguiert (QID-Suffix), nicht mehr geworfen
+    index2, used_slug = upsert_index(index, record(wikidata_qid="Q999", name="CHARLES DARWIN"))
+    assert used_slug == "charles-darwin-999"
+    assert len(index2) == 2
 
 
 def test_unpublish_keeps_record_and_updates_sitemap() -> None:
-    index = upsert_index([], record())
+    index, _ = upsert_index([], record())
     index = mark_unpublished(index, "Q1035", reason="Meldung eingegangen")
     assert index[0]["visible"] is False
     assert index[0]["unpublish_reason"] == "Meldung eingegangen"

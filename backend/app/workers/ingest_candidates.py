@@ -40,7 +40,7 @@ RETRY_DELAYS_SECONDS = (10.0, 30.0)  # WDQS liefert unter Last transiente 5xx (R
 
 # Obergrenze der OFFSET-Seiten je Kategorie: schuetzt WDQS vor Dauerfeuer,
 # wenn der Store irgendwann fast alle bekannten Namen einer Kategorie enthaelt.
-MAX_PAGES_PER_CATEGORY = 8
+MAX_PAGES_PER_CATEGORY = 40
 
 # Feste Seitengroesse fuer LIMIT/OFFSET. Frueher war das die Tagesquote geteilt
 # durch die Kategorienzahl — damit verschob jede Aenderung an Quote oder
