@@ -23,7 +23,7 @@ on:
 
 concurrency:
   group: pipeline-scale-2k
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   run-sharded-pipeline:
