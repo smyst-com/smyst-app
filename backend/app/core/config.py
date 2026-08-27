@@ -128,7 +128,11 @@ class Settings(BaseSettings):
         default=45.0, validation_alias="LLM_TOTAL_DEADLINE_SECONDS"
     )
     llm_chat_total_deadline_seconds: float = Field(
-        default=20.0, validation_alias="LLM_CHAT_TOTAL_DEADLINE_SECONDS"
+        # 90 s statt 20 s: Das eigene Modell (llama.cpp im Backend-Container)
+        # braucht auf CPU 30-60 s pro Antwort. Mit 20 s fiel der Live-Chat auf
+        # den Not-Fallback zurueck, sobald Groq das Tageslimit erreichte —
+        # Nutzer bekamen nachts die Wartemeldung (Vorfall seit 22.08.).
+        default=90.0, validation_alias="LLM_CHAT_TOTAL_DEADLINE_SECONDS"
     )
 
     # Stripe Premium-Abo (Phase 2); ohne Keys ist Billing sauber deaktiviert (503)
