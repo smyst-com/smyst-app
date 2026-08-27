@@ -640,6 +640,9 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
         )
         timeout = active_settings.llm_provider_timeout_seconds
         if provider_name == "smyst_llm":
+            # Eigenes Modell auf CPU ist 3-10x langsamer als Cloud-LLMs:
+            # Cloud-Timeout (Default 20 s) wuerde es immer abwürgen.
+            timeout = max(timeout, 90.0)
             # Eigenes Modell (llama.cpp-Server): ohne URL laeuft die Kette
             # einfach ohne ihn weiter — genau wie beim Gateway.
             base_url = (active_settings.smyst_llm_base_url or "").strip().rstrip("/")
