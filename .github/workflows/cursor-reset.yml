@@ -30,7 +30,7 @@ jobs:
       - name: Reset Ingest-Cursor
         run: |
           cd backend
-          pip install -q boto3
+          pip install -q -r requirements.txt
           python -c "
           import json, sys
           sys.path.insert(0, '.')
