@@ -9,6 +9,14 @@ name: Trainingsdaten-Export (smyst 1.0)
 
 on:
   workflow_dispatch:
+  schedule:
+    # Export-Autopilot (23.08.): taeglich frische Trainingsdaten als Artefakt,
+    # damit der Sonntags-Trainer (und DPO ab 100 Praeferenzpaaren) automatisch
+    # aktuelle Daten vorfindet. 02:45 UTC: vor Quality-Autopilot und Sonntag.
+    - cron: "45 2 * * *"
+  push:
+    paths:
+      - ".github/workflows/training-export.yml"
     inputs:
       limit:
         description: "max. Chat-Archive / Kandidaten (leer = alle)"
