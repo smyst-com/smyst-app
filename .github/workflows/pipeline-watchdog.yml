@@ -67,7 +67,28 @@ jobs:
           IN_PROGRESS=$(echo "$RUNS" | jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "queued")] | length')
           LAST_START_AGO=$(echo "$RUNS" | jq '[.workflow_runs[] | (now - (.created_at | fromdateiso8601))] | min // 999999')
           LAST_CONCLUSION=$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.conclusion != null)][0].conclusion // "none"')
+          LAST_RUN_ID=$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.conclusion != null)][0].id // "none"')
           echo "Scale-2k: aktiv=${IN_PROGRESS}, letzter Start vor ${LAST_START_AGO}s, letztes Ergebnis=${LAST_CONCLUSION}"
+          # 27.08. Lektion: Scale-2k lief erfolgreich (alle Shards green), aber
+          # jeder Shard fand 0 Kandidaten in Stufe 'generated' (Ingest erschöpft).
+          # Watchdog sah nur 'conclusion=success' und meldete Ordnung.
+          CANDIDATES_OK=true
+          if [ "${LAST_RUN_ID}" != "none" ]; then
+            SHARD_JOB=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${LAST_RUN_ID}/jobs?per_page=20"               --jq '[.jobs[] | select(.conclusion == "success")][0].id // empty' | head -1)
+            if [ -n "${SHARD_JOB}" ]; then
+              GENERATED=$(gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${SHARD_JOB}/logs" 2>/dev/null                 | grep -ao 'Kandidaten in Stufe .generated. gefunden' | grep -o '[0-9]*' | paste -sd+ - | bc 2>/dev/null || echo 0)
+              echo "Letzter Lauf (#${LAST_RUN_ID}): ${GENERATED} Kandidaten in generated"
+              if [ "${GENERATED}" = "0" ]; then
+                CANDIDATES_OK=false
+                echo "WARNUNG: Keine Kandidaten in generated — Ingest-Check"
+                # Ingest-Check: letzter pipeline-run
+                LAST_INGEST_RUN=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=3"                   --jq '[.workflow_runs[] | select(.status == "completed")][0].id // empty')
+                if [ -n "${LAST_INGEST_RUN}" ]; then
+                  echo "Letzter Ingest: #${LAST_INGEST_RUN}"
+                fi
+              fi
+            fi
+          fi
           if [ "${IN_PROGRESS}" -eq 0 ] && [ "${LAST_START_AGO}" -gt 7800 ]; then
             echo "Kein Scale-2k-Lauf aktiv und letzter Start aelter als 130 min — Neustart."
             gh workflow run pipeline-scale-2k.yml --ref main --repo "${GITHUB_REPOSITORY}"
@@ -75,6 +96,8 @@ jobs:
               echo "### Watchdog hat Scale-2k neu gestartet"
               echo "Vorheriger Lauf: ${LAST_CONCLUSION} — Slot ausgefallen oder Timeout-Cancel."
             } >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${CANDIDATES_OK}" = "false" ]; then
+            echo "### WARNUNG: Scale-2k findet 0 Kandidaten — Ingest-Log pruefen" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Scale-2k in Ordnung — nichts zu tun."
           fi
@@ -96,14 +119,44 @@ jobs:
           # pipeline-run.yml (Gruppe 'main') und wurde von langlaufenden
           # run-small-Zombies verdraengt — reviewed-Profile lagen stundenlang
           # im Store, ohne live zu gehen.
+          # 27.08. Lektion: Publish-Laeufe liefen aber brachten 0 Profile
+          # (Ingest erschöpft, Slug-Kollisionen). Watchdog sah nur "Lauf existiert"
+          # und meldete "Takt in Ordnung" — 3 Tage lang null neue Profile.
+          # Fix: Ergebnis des letzten Publish prüfen.
+          LAST_PUBLISH_RUN=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-publish.yml/runs?per_page=5" \
+            --jq '[.workflow_runs[] | select(.status == "completed")] | .[0].id')
+          PUBLISH_OK=true
+          if [ -n "${LAST_PUBLISH_RUN}" ]; then
+            PUBLISH_LOG_URL="repos/${GITHUB_REPOSITORY}/actions/runs/${LAST_PUBLISH_RUN}/jobs"
+            PUBLISH_JOB_ID=$(gh api "${PUBLISH_LOG_URL}?per_page=5" --jq '.jobs[0].id')
+            if [ -n "${PUBLISH_JOB_ID}" ]; then
+              PUBLISHED_COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/actions/jobs/${PUBLISH_JOB_ID}/logs" 2>/dev/null \
+                | grep -ao 'published (slug' | wc -l | tr -d ' ')
+              echo "Letzter Publish (#${LAST_PUBLISH_RUN}): ${PUBLISHED_COUNT} Profile"
+              if [ "${PUBLISHED_COUNT}" = "0" ]; then
+                PUBLISH_OK=false
+                echo "WARNUNG: Letzter Publish brachte 0 Profile — moegliche Blocker (Ingest erschöpft, Kollisionen)"
+              fi
+            fi
+          fi
           RECENT_PUBLISH=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-publish.yml/runs?per_page=10" \
             --jq '[.workflow_runs[] | select((now - (.created_at | fromdateiso8601)) < 7200)] | length')
           echo "Auto-Publish-Laeufe in den letzten 120 min: ${RECENT_PUBLISH}"
           if [ "${RECENT_PUBLISH}" -eq 0 ]; then
-            echo "Kein Publish im Fenster — pipeline-publish anstossen (approved_by-Default: smyst247@gmail.com, Deckel 2500/Tag)."
+            echo "Kein Publish im Fenster — pipeline-publish anstossen."
             gh workflow run pipeline-publish.yml --ref main --repo "${GITHUB_REPOSITORY}" \
               -f approved_by=smyst247@gmail.com -f publish_limit=2500
-            echo "### Watchdog hat Auto-Publish (pipeline-publish, Deckel 2500/Tag) angestossen" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Watchdog hat Auto-Publish angestossen" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${PUBLISH_OK}" = "false" ]; then
+            echo "### WARNUNG: Publish liefert 0 Profile — Ingest-Log pruefen" >> "$GITHUB_STEP_SUMMARY"
+            # Ingest-Check: letzte pipeline-run-Laeufe
+            LAST_INGEST=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=5" \
+              --jq '[.workflow_runs[] | select(.status == "completed")][0].id')
+            if [ -n "${LAST_INGEST}" ]; then
+              echo "Letzter Ingest-Lauf: #${LAST_INGEST}"
+              gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${LAST_INGEST}/jobs?per_page=5" \
+                --jq '.jobs[].name' 2>/dev/null
+            fi
           else
             echo "Publish-Takt in Ordnung — nichts zu tun."
           fi
