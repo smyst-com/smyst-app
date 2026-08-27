@@ -52,7 +52,7 @@ jobs:
     # Schedule-Laefe haben leere inputs -> per || auf Tagesdefaults fallen.
     name: Eval-Lauf (${{ inputs.tag || 'daily' }})
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     permissions:
       contents: read
       # id-token:write laesst den Job ein OIDC-Token anfordern — damit weist
