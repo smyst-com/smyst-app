@@ -16,6 +16,7 @@ jobs:
   reset:
     runs-on: ubuntu-latest
     env:
+      PYTHONPATH: backend
       IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
       IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
     steps:
@@ -28,11 +29,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        working-directory: backend
-        run: pip install -r requirements.txt 2>&1 | tail -3
+        run: pip install -r backend/requirements.txt 2>&1 | tail -3
 
       - name: Reset Ingest-Cursor
-        working-directory: backend
         run: |
           from app.integrations.candidate_store import CandidateStore, build_s3_client, INGEST_CURSOR_KEY
           import json
@@ -58,7 +57,6 @@ jobs:
         shell: python
 
       - name: Verify
-        working-directory: backend
         run: |
           from app.integrations.candidate_store import CandidateStore, build_s3_client, INGEST_CURSOR_KEY
           import json
