@@ -1,0 +1,70 @@
+name: Cursor Reset
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Grund fuer den Reset'
+        required: false
+        default: 'Cursor nach Duplikat-Sättigung zurücksetzen'
+
+concurrency:
+  group: cursor-reset
+  cancel-in-progress: true
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    env:
+      IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+      IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt 2>&1 | tail -3
+
+      - name: Reset Ingest-Cursor
+        working-directory: backend
+        run: |
+          from app.integrations.candidate_store import CandidateStore, build_s3_client, INGEST_CURSOR_KEY
+          import json
+
+          s3 = build_s3_client()
+          # Alten Cursor lesen fuer das Log
+          try:
+              old = s3.get_object(Bucket="smyst-brain", Key=INGEST_CURSOR_KEY)
+              old_data = json.loads(old["Body"].read().decode())
+              print(f"ALTER CURSOR: {old_data}")
+          except Exception:
+              print("Kein alter Cursor gefunden.")
+
+          # Leerer Cursor = Neustart von Seite 0
+          new_cursor = {}
+          s3.put_object(
+              Bucket="smyst-brain",
+              Key=INGEST_CURSOR_KEY,
+              Body=json.dumps(new_cursor).encode(),
+              ContentType="application/json",
+          )
+          print("CURSOR ZURUECKGESETZT: {}")
+        shell: python
+
+      - name: Verify
+        working-directory: backend
+        run: |
+          from app.integrations.candidate_store import CandidateStore, build_s3_client, INGEST_CURSOR_KEY
+          import json
+          s3 = build_s3_client()
+          resp = s3.get_object(Bucket="smyst-brain", Key=INGEST_CURSOR_KEY)
+          data = json.loads(resp["Body"].read().decode())
+          assert data == {}, f"Cursor nicht leer: {data}"
+          print("VERIFIZIERT: Cursor ist {}")
+        shell: python
