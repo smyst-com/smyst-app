@@ -6,7 +6,7 @@ on:
       reason:
         description: 'Grund fuer den Reset'
         required: false
-        default: 'Cursor nach Duplikat-Sättigung zurücksetzen'
+        default: 'Cursor nach Duplikat-Saettigung zuruecksetzen'
 
 concurrency:
   group: cursor-reset
@@ -16,7 +16,6 @@ jobs:
   reset:
     runs-on: ubuntu-latest
     env:
-      PYTHONPATH: backend
       IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
       IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
     steps:
@@ -28,41 +27,34 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
-        run: pip install -r backend/requirements.txt 2>&1 | tail -3
-
       - name: Reset Ingest-Cursor
         run: |
-          from app.integrations.candidate_store import CandidateStore, build_s3_client, INGEST_CURSOR_KEY
-          import json
-
-          s3 = build_s3_client()
-          # Alten Cursor lesen fuer das Log
-          try:
-              old = s3.get_object(Bucket="smyst-brain", Key=INGEST_CURSOR_KEY)
-              old_data = json.loads(old["Body"].read().decode())
-              print(f"ALTER CURSOR: {old_data}")
-          except Exception:
-              print("Kein alter Cursor gefunden.")
-
-          # Leerer Cursor = Neustart von Seite 0
-          new_cursor = {}
-          s3.put_object(
-              Bucket="smyst-brain",
-              Key=INGEST_CURSOR_KEY,
-              Body=json.dumps(new_cursor).encode(),
-              ContentType="application/json",
+          cd backend
+          pip install -q boto3
+          python -c "
+          import json, sys
+          sys.path.insert(0, '.')
+          from app.core.config import settings
+          import boto3
+          s3 = boto3.client(
+              's3',
+              endpoint_url=settings.idrive_e2_endpoint,
+              region_name=settings.idrive_e2_region,
+              aws_access_key_id=settings.idrive_e2_access_key,
+              aws_secret_access_key=settings.idrive_e2_secret_key,
           )
-          print("CURSOR ZURUECKGESETZT: {}")
-        shell: python
-
-      - name: Verify
-        run: |
-          from app.integrations.candidate_store import CandidateStore, build_s3_client, INGEST_CURSOR_KEY
-          import json
-          s3 = build_s3_client()
-          resp = s3.get_object(Bucket="smyst-brain", Key=INGEST_CURSOR_KEY)
-          data = json.loads(resp["Body"].read().decode())
-          assert data == {}, f"Cursor nicht leer: {data}"
-          print("VERIFIZIERT: Cursor ist {}")
-        shell: python
+          KEY = 'pipeline/ingest/cursor.json'
+          BUCKET = settings.idrive_e2_bucket
+          try:
+              old = s3.get_object(Bucket=BUCKET, Key=KEY)
+              print(f'ALTER CURSOR: {old[\"Body\"].read().decode()}')
+          except Exception:
+              print('Kein alter Cursor gefunden.')
+          s3.put_object(Bucket=BUCKET, Key=KEY, Body=b'{}', ContentType='application/json')
+          print(f'Cursor zurueckgesetzt auf {{}} (Bucket={BUCKET})')
+          # Verify
+          resp = s3.get_object(Bucket=BUCKET, Key=KEY)
+          data = json.loads(resp['Body'].read().decode())
+          assert data == {}, f'Fehler: Cursor ist {data}'
+          print('VERIFIZIERT: Cursor ist {}')
+          "
