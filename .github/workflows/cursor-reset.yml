@@ -7,6 +7,11 @@ on:
         description: 'Grund fuer den Reset'
         required: false
         default: 'Cursor nach Duplikat-Saettigung zuruecksetzen'
+      start_page:
+        description: 'Startseite pro Kategorie (0 = leer, 40+ fuer neue Leute)'
+        required: false
+        type: number
+        default: 0
 
 concurrency:
   group: cursor-reset
@@ -49,10 +54,23 @@ jobs:
               print(f'ALTER CURSOR: {old[\"Body\"].read().decode()}')
           except Exception:
               print('Kein alter Cursor gefunden.')
-          s3.put_object(Bucket=BUCKET, Key=KEY, Body=b'{}', ContentType='application/json')
-          print(f'Cursor zurueckgesetzt auf {{}} (Bucket={BUCKET})')
+          start_page = int('${{ github.event.inputs.start_page || 0 }}')
+          CATEGORIES = [
+              'Kunst', 'Literatur', 'Musik', 'Wissenschaft', 'Philosophie',
+              'Politik', 'Mathematik', 'Medizin', 'Architektur', 'Erfinder',
+              'Entdecker', 'Technik', 'Schauspiel', 'Film', 'Gesang',
+              'Sport', 'Journalismus', 'Geschichte'
+          ]
+          cursor = {cat: start_page for cat in CATEGORIES} if start_page > 0 else {}
+          print(f'Schreibe Cursor: {cursor}')
+          s3.put_object(
+              Bucket=BUCKET, Key=KEY,
+              Body=json.dumps(cursor).encode(),
+              ContentType='application/json'
+          )
           resp = s3.get_object(Bucket=BUCKET, Key=KEY)
           data = json.loads(resp['Body'].read().decode())
-          assert data == {}, f'Fehler: Cursor ist {data}'
-          print('VERIFIZIERT: Cursor ist {}')
+          expected = cursor if start_page > 0 else {}
+          assert data == expected, f'Fehler: Cursor ist {data}'
+          print(f'VERIFIZIERT: Cursor ist {data}')
           "
