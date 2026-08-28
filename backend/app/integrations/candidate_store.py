@@ -83,23 +83,25 @@ class CandidateStore:
         self._bucket = bucket
 
     def existing_qids(self) -> set[str]:
-        """QIDs die noch nicht published sind (Dedup-Grundlage).
+        """Alle bereits gespeicherten QIDs (Dedup-Grundlage).
 
-        Published Profile sind bereits online und duerfen bei Ingest
-        nicht blockieren — andernfalls scannt die SPARQL-Query immer
-        dieselben Bekanntheits-Seiten und findet 0 neue Kandidaten.
+        published QIDs muessen hier DRIN bleiben (Revert 28.08.2026): Ohne sie
+        akzeptiert der Ingest bereits live geschaltete Personen erneut,
+        ueberschreibt deren Kandidaten-Dokument (Status-Rueckfall candidate)
+        und erzeugt Doppel-Kapseln. Nachschub kommt ueber den Cursor-Mechanismus
+        (Erschoepfung -> zurueck auf Seite 0; Dedup macht Wiederholung billig),
+        nicht ueber Re-Ingest von Published.
         """
-        published = set(self.qids_by_status("published"))
         qids: set[str] = set()
         paginator = self._client.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=self._bucket, Prefix=CANDIDATE_PREFIX):
             for obj in page.get("Contents", []):
                 key = obj["Key"]
                 if key.endswith(".json"):
-                    qid = key[len(CANDIDATE_PREFIX):-len(".json")]
-                    if qid not in published:
-                        qids.add(qid)
+                    qids.add(key[len(CANDIDATE_PREFIX):-len(".json")])
         return qids
+
+    def save_candidate(
         self, candidate: HistoricalCandidate, events: list[AuditEvent] | None = None
     ) -> str:
         key = f"{CANDIDATE_PREFIX}{candidate.wikidata_qid}.json"
