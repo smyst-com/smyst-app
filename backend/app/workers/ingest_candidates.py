@@ -40,7 +40,7 @@ RETRY_DELAYS_SECONDS = (10.0, 30.0)  # WDQS liefert unter Last transiente 5xx (R
 
 # Obergrenze der OFFSET-Seiten je Kategorie: schuetzt WDQS vor Dauerfeuer,
 # wenn der Store irgendwann fast alle bekannten Namen einer Kategorie enthaelt.
-MAX_PAGES_PER_CATEGORY = 40
+MAX_PAGES_PER_CATEGORY = 90  # 29.08.2026: 40 -> 90 — Pool >= 5 Sitelinks hat tiefere Kategorien (Betreiber-Anweisung 28.08.)
 
 # Feste Seitengroesse fuer LIMIT/OFFSET. Frueher war das die Tagesquote geteilt
 # durch die Kategorienzahl — damit verschob jede Aenderung an Quote oder
@@ -72,7 +72,7 @@ MIN_PAGE_SITELINKS = 5  # 29.08.2026: 12 -> 5, folgt min_sitelinks (Betreiber-An
 # Harte Obergrenze der Cursor-Tiefe als Rueckfallebene, falls die Sitelink-
 # Bremse einmal nicht greift (z.B. Kategorie mit vielen gut verlinkten, aber
 # bildlosen Personen). 40 Seiten a 125 = 5000 Eintraege je Kategorie.
-MAX_CURSOR_PAGE = 40
+MAX_CURSOR_PAGE = 90  # 29.08.2026: 40 -> 90 — Deckel folgt der neuen Pool-Tiefe (>= 5 Sitelinks)
 
 
 def fetch_bindings(
