@@ -34,6 +34,12 @@ class FakeS3:
             raise KeyError(Key)
         return {"Body": io.BytesIO(self.objects[Key])}
 
+    def list_objects_v2(self, *, Bucket, Prefix="", MaxKeys=None):
+        matching = [k for k in sorted(self.objects) if k.startswith(Prefix)]
+        if MaxKeys:
+            matching = matching[:MaxKeys]
+        return {"Contents": [{"Key": k} for k in matching] if matching else None}
+
     def get_paginator(self, name):
         return FakePaginator(list(self.objects))
 
