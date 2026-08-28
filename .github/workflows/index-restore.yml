@@ -1,0 +1,134 @@
+name: Publish-Index-Restore (Union alter + neuer Welt)
+
+# Vorfall 25./26.08.2026: Der Publish-Index wurde zwischen dem Backup vom
+# 25.08 (15.539 Eintraege) und 26.08 (3.305) KOMPLETT AUSGETAUSCHT — kein
+# einziger QID ueberlappt. Die Live-Site zeigte weiterhin die alte Welt
+# (17.279 Profile); jeder Deploy brach seitdem am Schwund-Schutz ab
+# (gebaute 3.436 vs. live 17.279).
+#
+# Dieser Lauf stellt die alte Welt WIEDER HER, ohne etwas zu loeschen:
+# Union aus (a) dem letzten vollstaendigen Backup (Branch pipeline-backup,
+# Stand 25.08) und (b) dem aktuellen Index in e2. Konfliktregel: bei
+# gleichem QID gewinnt der AKTUELLE Eintrag; bei gleichem Slug mit
+# verschiedenem QID bekommt der aktuelle Eintrag das QID-Suffix
+# (gleiches Muster wie publisher.upsert_index).
+#
+# Sicherheit: Vor dem Schreiben landet der aktuelle Index als Kopie unter
+# pipeline/published/index.pre-restore-<ts>.json in e2 (Rollback-Weg).
+# Der Lauf ist idempotent: mehrfach ausgefuehrt ergibt dasselbe Ergebnis.
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Grund (Audit-Trail)'
+        required: false
+        default: 'Restore der alten Index-Welt nach Austausch-Vorfall 25./26.08.'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: index-restore
+  cancel-in-progress: true
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+      IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Union restaurieren
+        working-directory: backend
+        run: |
+          pip install -q -e ".[dev]"
+          git fetch origin pipeline-backup
+          git show origin/pipeline-backup:backup/pipeline-published-index.json > /tmp/index-alt.json
+          python3 << 'PY'
+          import json
+          from datetime import datetime, timezone
+
+          from app.core.config import settings
+          import boto3
+
+          s3 = boto3.client(
+              's3',
+              endpoint_url=settings.idrive_e2_endpoint,
+              region_name=settings.idrive_e2_region,
+              aws_access_key_id=settings.idrive_e2_access_key,
+              aws_secret_access_key=settings.idrive_e2_secret_key,
+          )
+          BUCKET = settings.idrive_e2_bucket
+          KEY = 'pipeline/published/index.json'
+
+          alt = json.load(open('/tmp/index-alt.json'))
+          resp = s3.get_object(Bucket=BUCKET, Key=KEY)
+          aktuell = json.loads(resp['Body'].read().decode('utf-8'))
+          print(f'ALT (Backup 25.08): {len(alt)} | AKTUELL (e2): {len(aktuell)}')
+
+          # Sicherheitskopie des aktuellen Stands (Rollback-Weg)
+          ts = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+          s3.put_object(
+              Bucket=BUCKET,
+              Key=f'pipeline/published/index.pre-restore-{ts}.json',
+              Body=json.dumps(aktuell, ensure_ascii=False).encode('utf-8'),
+              ContentType='application/json',
+          )
+          print(f'Sicherheitskopie: pipeline/published/index.pre-restore-{ts}.json')
+
+          def _norm_qid(q):
+              return str(q).upper().strip().lstrip('Q') if q else None
+
+          # 1) Aktuelle Welt gewinnt bei QID-Konflikt
+          nach_qid = {}
+          for eintrag in aktuell:
+              nach_qid[_norm_qid(eintrag.get('wikidata_qid'))] = eintrag
+
+          # 2) Slug-Belegung der aktuellen Welt
+          slugs_aktiv = {e['slug'] for e in aktuell if e.get('slug')}
+
+          union = list(aktuell)
+          wieder_hergestellt = 0
+          slug_kollisionen = 0
+          for eintrag in alt:
+              qid = _norm_qid(eintrag.get('wikidata_qid'))
+              if qid in nach_qid:
+                  continue  # aktuelle Version ist massgeblich
+              slug = eintrag.get('slug')
+              if slug in slugs_aktiv:
+                  # Gleicher Slug, anderer QID: QID-Suffix wie im Publisher
+                  eintrag = {**eintrag, 'slug': f"{slug}-{qid}"}
+                  slug_kollisionen += 1
+                  if eintrag['slug'] in slugs_aktiv:
+                      continue  # extreme Seltenheit: Suffix auch belegt
+              slugs_aktiv.add(eintrag['slug'])
+              nach_qid[qid] = eintrag
+              union.append(eintrag)
+              wieder_hergestellt += 1
+
+          print(f'Wiederhergestellt: {wieder_hergestellt} | Slug-Kollisionen geloest: {slug_kollisionen}')
+          print(f'UNION gesamt: {len(union)}')
+
+          s3.put_object(
+              Bucket=BUCKET,
+              Key=KEY,
+              Body=json.dumps(union, ensure_ascii=False).encode('utf-8'),
+              ContentType='application/json',
+          )
+
+          # Verifikation: neu lesen und zaehlen
+          resp = s3.get_object(Bucket=BUCKET, Key=KEY)
+          pruefung = json.loads(resp['Body'].read().decode('utf-8'))
+          assert len(pruefung) == len(union), 'Index-Size-Check fehlgeschlagen'
+          qids = [_norm_qid(e.get('wikidata_qid')) for e in pruefung]
+          assert len(qids) == len(set(qids)), 'QID-Duplikate in Union!'
+          print(f'VERIFIZIERT: {len(pruefung)} Eintraege, keine QID-Duplikate.')
+          PY
