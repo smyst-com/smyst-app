@@ -576,6 +576,10 @@ const CATALOG_FIELDS = [
   // ohne id, das Eval fand dadurch keinen einzigen Twin mehr (Vorfall
   // 16.08.2026, verursacht durch die erste Fassung dieser Liste).
   'id', 'slug', 'name', 'description', 'imageUrl', 'style',
+  // Wikidata-Identitaet fuer den Dubletten-Waechter (PR #603): ohne dieses
+  // Feld im Katalog las der Gate alle QIDs als undefined und wertete
+  // Namensvetter (z. B. die beiden Cornelius Gurlitts) trotzdem als Dublette.
+  'wikidataQid',
   // Filter, Sortierung, Suche
   'categories', 'languages', 'mainCategory', 'searchIndex',
   'createdAt', 'updatedAt', 'knowledgeCount', 'mediaCount',
