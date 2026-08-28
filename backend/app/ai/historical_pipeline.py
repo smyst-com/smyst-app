@@ -86,7 +86,13 @@ class PipelineConfig:
     # neuen, unbekannteren Kandidaten messen, erst dann ueber 5 entscheiden.
     # Die Bekanntheit ist nur ein Vorfilter — die eigentliche Qualitaets-
     # sicherung ist das QA-Gate.
-    min_sitelinks: int = 10
+    # 29.08.2026: 10 -> 5 (schriftliche Betreiber-Anweisung 28.08.2026:
+    # "du kannst 55.872 Personen fertig gemacht online erstellen" + Nachhol-
+    # Auftrag fuer die verpassten Tage). Pool-Messung 13.08. mit exakt diesen
+    # Filtern: >= 5 Sitelinks = 133.626 Treffer. Die QA-Durchfallquote der
+    # unbekannteren Kandidaten wird im Quality-Report sichtbar; das QA-Gate
+    # selbst bleibt unveraendert und entscheidet.
+    min_sitelinks: int = 5
     qa_failure_rate_brake: float = 0.10
     review_backlog_days_brake: int = 3
 

@@ -67,7 +67,7 @@ CATEGORIES_PER_RUN = 4
 # Pipeline war im Niemandsland). Ein Zurueckdrehen der Stufen-Limits half
 # NICHT — Konfiguration rollt keinen gespeicherten Cursor zurueck. Deshalb
 # setzt die Bremse den Cursor selbst zurueck.
-MIN_PAGE_SITELINKS = 12
+MIN_PAGE_SITELINKS = 5  # 29.08.2026: 12 -> 5, folgt min_sitelinks (Betreiber-Anweisung 28.08.)
 
 # Harte Obergrenze der Cursor-Tiefe als Rueckfallebene, falls die Sitelink-
 # Bremse einmal nicht greift (z.B. Kategorie mit vielen gut verlinkten, aber
