@@ -100,6 +100,8 @@ class CandidateStore:
                     if qid not in published:
                         qids.add(qid)
         return qids
+
+    def save_candidate(
         self, candidate: HistoricalCandidate, events: list[AuditEvent] | None = None
     ) -> str:
         key = f"{CANDIDATE_PREFIX}{candidate.wikidata_qid}.json"
