@@ -364,6 +364,11 @@ function toPublicTwinProfile(record, imageUrl, attribution = new Map(), generate
     'Historisches, kuratiertes KI-Profil. Es simuliert nicht die echte Person, sondern nutzt öffentliches Wissen, Denkstil und Quellenhinweise.';
   return {
     id: `pipeline-${record.slug}`,
+    // Wikidata-Identitaet fuer den Dubletten-Waechter: Zwei Profile mit
+    // gleichem Namen sind nur dann eine Dublette, wenn auch die QID
+    // gleich ist (Namensvetter sind legitime Eigenprofile — z. B. die
+    // beiden Heinrich Meiboms). Der Publish-Index garantiert QID-Eindeutigkeit.
+    wikidataQid: record.wikidata_qid,
     name: record.name,
     slug: record.slug,
     description,
