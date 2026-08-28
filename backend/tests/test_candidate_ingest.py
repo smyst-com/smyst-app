@@ -576,7 +576,9 @@ def test_bekannte_seite_laeuft_normal_weiter(monkeypatch) -> None:
 
     report = worker.run_ingest(
         categories=["Musik"],
-        config=PipelineConfig(enabled=True, daily_candidate_limit=250, min_sitelinks=10),
+        # Screening-Schwelle folgt der Bremse: der Test prueft die Bremse,
+        # nicht das Screening — beide Personen muessen durchs Screening gehen.
+        config=PipelineConfig(enabled=True, daily_candidate_limit=250, min_sitelinks=MIN_PAGE_SITELINKS),
         store=store, dry_run=False, run_date=date(2026, 8, 15),
     )
 
