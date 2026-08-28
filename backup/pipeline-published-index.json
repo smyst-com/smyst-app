@@ -291046,5 +291046,1535 @@
     "approved_by": "smyst247@gmail.com",
     "visible": true,
     "version": 1
+  },
+  {
+    "wikidata_qid": "Q121900",
+    "twin_id": "4f08cfa0-92e2-4fc9-863e-db85ec542403",
+    "slug": "marcin-mielczewski",
+    "name": "Marcin Mielczewski",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1600-01-01",
+    "death_date": "1651-09-01",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": null,
+    "death_place": "Warschau, Polen",
+    "description": "polnischer Komponist des Frühbarock",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q121900/prompt.json",
+    "capsule_key": "pipeline/capsules/Q121900/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Marcin Mielczewski (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "marcin-mielczewski",
+      "title": "Marcin Mielczewski KI-Profil | smyst.com",
+      "description": "Marcin Mielczewski (polnischer Komponist des Frühbarock) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/marcin-mielczewski",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Marcin Mielczewski",
+        "description": "polnischer Komponist des Frühbarock",
+        "birthDate": "1600-01-01",
+        "deathDate": "1651-09-01",
+        "nationality": "Polen-Litauen",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q121900"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q121900.json",
+        "snapshot_key": "pipeline/sources/Q121900/wikidata-entitydata.json"
+      },
+      {
+        "title": "Marcin Mielczewski",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Marcin_Mielczewski",
+        "snapshot_key": "pipeline/sources/Q121900/wikipedia-de.json"
+      },
+      {
+        "title": "Marcin Mielczewski",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Marcin_Mielczewski",
+        "snapshot_key": "pipeline/sources/Q121900/wikipedia-en.json"
+      },
+      {
+        "title": "Marcin Mielczewski",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Marcin_Mielczewski",
+        "snapshot_key": "pipeline/sources/Q121900/wikipedia-es.json"
+      },
+      {
+        "title": "Marcin Mielczewski",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Marcin_Mielczewski",
+        "snapshot_key": "pipeline/sources/Q121900/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:01.090734+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1219531",
+    "twin_id": "bde1e8ef-618e-40c1-8357-dfa8b3299cdb",
+    "slug": "pierre-aubry",
+    "name": "Pierre Aubry",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1874-02-14",
+    "death_date": "1910-08-31",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Paris, Frankreich",
+    "death_place": "Dieppe, Frankreich",
+    "description": "French musicologist (1874-1910)",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1219531/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1219531/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "PierreAubry.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "pierre-aubry",
+      "title": "Pierre Aubry KI-Profil | smyst.com",
+      "description": "Pierre Aubry (French musicologist (1874-1910)) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/pierre-aubry",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Pierre Aubry",
+        "description": "French musicologist (1874-1910)",
+        "birthDate": "1874-02-14",
+        "deathDate": "1910-08-31",
+        "nationality": "Frankreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1219531"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1219531.json",
+        "snapshot_key": "pipeline/sources/Q1219531/wikidata-entitydata.json"
+      },
+      {
+        "title": "Pierre Aubry (musicologue)",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Pierre_Aubry_(musicologue)",
+        "snapshot_key": "pipeline/sources/Q1219531/wikipedia-fr.json"
+      },
+      {
+        "title": "Pierre Aubry (musicologist)",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Pierre_Aubry_(musicologist)",
+        "snapshot_key": "pipeline/sources/Q1219531/wikipedia-en.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:02.898697+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1292737",
+    "twin_id": "373d88d4-292c-40e5-bb91-3a311863ea48",
+    "slug": "peadar-kearney",
+    "name": "Peadar Kearney",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1883-12-12",
+    "death_date": "1942-11-24",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Dublin, Irland",
+    "death_place": "Dublin, Irland",
+    "description": "irischer Songschreiber",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1292737/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1292737/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Peadar Kearney, 1912 (retouched).jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "peadar-kearney",
+      "title": "Peadar Kearney KI-Profil | smyst.com",
+      "description": "Peadar Kearney (irischer Songschreiber) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/peadar-kearney",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Peadar Kearney",
+        "description": "irischer Songschreiber",
+        "birthDate": "1883-12-12",
+        "deathDate": "1942-11-24",
+        "nationality": "Irland",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1292737"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1292737.json",
+        "snapshot_key": "pipeline/sources/Q1292737/wikidata-entitydata.json"
+      },
+      {
+        "title": "Peadar Kearney",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Peadar_Kearney",
+        "snapshot_key": "pipeline/sources/Q1292737/wikipedia-en.json"
+      },
+      {
+        "title": "Peadar Kearney",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Peadar_Kearney",
+        "snapshot_key": "pipeline/sources/Q1292737/wikipedia-es.json"
+      },
+      {
+        "title": "Peadar Kearney",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Peadar_Kearney",
+        "snapshot_key": "pipeline/sources/Q1292737/wikipedia-de.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:04.184055+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1297823",
+    "twin_id": "1d1ade49-fe2a-4949-a44d-e9e903367f03",
+    "slug": "rafael-joseffy",
+    "name": "Rafael Joseffy",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1853-07-03",
+    "death_date": "1915-06-25",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Huncovce, Slowakei",
+    "death_place": "New York City, Vereinigte Staaten",
+    "description": "ungarischer Pianist und Musikpädagoge",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1297823/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1297823/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Joseffy.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "rafael-joseffy",
+      "title": "Rafael Joseffy KI-Profil | smyst.com",
+      "description": "Rafael Joseffy (ungarischer Pianist und Musikpädagoge) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/rafael-joseffy",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Rafael Joseffy",
+        "description": "ungarischer Pianist und Musikpädagoge",
+        "birthDate": "1853-07-03",
+        "deathDate": "1915-06-25",
+        "nationality": "Vereinigte Staaten",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1297823"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1297823.json",
+        "snapshot_key": "pipeline/sources/Q1297823/wikidata-entitydata.json"
+      },
+      {
+        "title": "Rafael Joseffy",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Rafael_Joseffy",
+        "snapshot_key": "pipeline/sources/Q1297823/wikipedia-de.json"
+      },
+      {
+        "title": "Rafael Joseffy",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Rafael_Joseffy",
+        "snapshot_key": "pipeline/sources/Q1297823/wikipedia-en.json"
+      },
+      {
+        "title": "Rafael Joseffy",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Rafael_Joseffy",
+        "snapshot_key": "pipeline/sources/Q1297823/wikipedia-fr.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:05.416873+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1302990",
+    "twin_id": "9b47bef1-649e-4b5e-a5e7-ab262d6f76b5",
+    "slug": "marie-victoire-jaquotot",
+    "name": "Marie-Victoire Jaquotot",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1772-01-15",
+    "death_date": "1855-04-27",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Paris, Frankreich",
+    "death_place": "Toulouse, Frankreich",
+    "description": "französische Malerin",
+    "gender": "female",
+    "persona_prompt_key": "pipeline/capsules/Q1302990/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1302990/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Marie Victoire Jaquotot Self-portrait.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "marie-victoire-jaquotot",
+      "title": "Marie-Victoire Jaquotot KI-Profil | smyst.com",
+      "description": "Marie-Victoire Jaquotot (französische Malerin) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/marie-victoire-jaquotot",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Marie-Victoire Jaquotot",
+        "description": "französische Malerin",
+        "birthDate": "1772-01-15",
+        "deathDate": "1855-04-27",
+        "nationality": "Frankreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1302990"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1302990.json",
+        "snapshot_key": "pipeline/sources/Q1302990/wikidata-entitydata.json"
+      },
+      {
+        "title": "Marie-Victoire Jaquotot",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Marie-Victoire_Jaquotot",
+        "snapshot_key": "pipeline/sources/Q1302990/wikipedia-de.json"
+      },
+      {
+        "title": "Marie-Victoire Jaquotot",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Marie-Victoire_Jaquotot",
+        "snapshot_key": "pipeline/sources/Q1302990/wikipedia-it.json"
+      },
+      {
+        "title": "Marie-Victoire Jaquotot",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Marie-Victoire_Jaquotot",
+        "snapshot_key": "pipeline/sources/Q1302990/wikipedia-fr.json"
+      },
+      {
+        "title": "Marie-Victoire Jaquotot",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Marie-Victoire_Jaquotot",
+        "snapshot_key": "pipeline/sources/Q1302990/wikipedia-en.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:06.731188+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1318168",
+    "twin_id": "2490c525-2d68-462e-a339-93988c5e19e9",
+    "slug": "franz-magnus-bohme",
+    "name": "Franz Magnus Böhme",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1827-03-11",
+    "death_date": "1898-10-18",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Willerstedt, Deutschland",
+    "death_place": "Dresden, Deutschland",
+    "description": "deutscher Hochschullehrer, Komponist, Volksliedforscher und -sammler (1827–1898)",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1318168/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1318168/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Franz Magnus Böhme 01.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "franz-magnus-bohme",
+      "title": "Franz Magnus Böhme KI-Profil | smyst.com",
+      "description": "Franz Magnus Böhme (deutscher Hochschullehrer, Komponist, Volksliedforscher und -sammler (1827–1898)) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/franz-magnus-bohme",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Franz Magnus Böhme",
+        "description": "deutscher Hochschullehrer, Komponist, Volksliedforscher und -sammler (1827–1898)",
+        "birthDate": "1827-03-11",
+        "deathDate": "1898-10-18",
+        "nationality": "Königreich Sachsen",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1318168"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1318168.json",
+        "snapshot_key": "pipeline/sources/Q1318168/wikidata-entitydata.json"
+      },
+      {
+        "title": "Franz Magnus Böhme",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Franz_Magnus_Böhme",
+        "snapshot_key": "pipeline/sources/Q1318168/wikipedia-de.json"
+      },
+      {
+        "title": "Franz Magnus Böhme",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Franz_Magnus_Böhme",
+        "snapshot_key": "pipeline/sources/Q1318168/wikipedia-en.json"
+      },
+      {
+        "title": "Franz Magnus Böhme",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Franz_Magnus_Böhme",
+        "snapshot_key": "pipeline/sources/Q1318168/wikipedia-it.json"
+      },
+      {
+        "title": "Franz Magnus Böhme",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Franz_Magnus_Böhme",
+        "snapshot_key": "pipeline/sources/Q1318168/wikipedia-fr.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:07.889448+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1319135",
+    "twin_id": "f437bf24-ad74-46a3-8f6b-7d9bf8317354",
+    "slug": "john-loeillet",
+    "name": "John Loeillet",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1680-11-18",
+    "death_date": "1730-07-19",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Gent, Belgien",
+    "death_place": "London, Vereinigtes Königreich",
+    "description": "belgischer Komponist (ca. 1680-1730)",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1319135/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1319135/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von John Loeillet (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "john-loeillet",
+      "title": "John Loeillet KI-Profil | smyst.com",
+      "description": "John Loeillet (belgischer Komponist (ca. 1680-1730)) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/john-loeillet",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "John Loeillet",
+        "description": "belgischer Komponist (ca. 1680-1730)",
+        "birthDate": "1680-11-18",
+        "deathDate": "1730-07-19",
+        "nationality": "Königreich Großbritannien",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1319135"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1319135.json",
+        "snapshot_key": "pipeline/sources/Q1319135/wikidata-entitydata.json"
+      },
+      {
+        "title": "John Loeillet",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/John_Loeillet",
+        "snapshot_key": "pipeline/sources/Q1319135/wikipedia-de.json"
+      },
+      {
+        "title": "Jean-Baptiste Loeillet of London",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Jean-Baptiste_Loeillet_of_London",
+        "snapshot_key": "pipeline/sources/Q1319135/wikipedia-en.json"
+      },
+      {
+        "title": "Jean Baptiste Loeillet de Londres",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Jean_Baptiste_Loeillet_de_Londres",
+        "snapshot_key": "pipeline/sources/Q1319135/wikipedia-es.json"
+      },
+      {
+        "title": "Jean-Baptiste Lœillet de Londres",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Jean-Baptiste_Lœillet_de_Londres",
+        "snapshot_key": "pipeline/sources/Q1319135/wikipedia-fr.json"
+      },
+      {
+        "title": "Jean-Baptiste Loeillet",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Jean-Baptiste_Loeillet",
+        "snapshot_key": "pipeline/sources/Q1319135/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:09.012367+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1330330",
+    "twin_id": "18eec041-b35d-4cbd-979b-5c5cb6c4b78e",
+    "slug": "pierre-du-mage",
+    "name": "Pierre du Mage",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1674-11-01",
+    "death_date": "1751-10-02",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Beauvais, Frankreich",
+    "death_place": "Laon, Frankreich",
+    "description": "französischer Organist und Komponist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1330330/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1330330/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Pierre du Mage (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "pierre-du-mage",
+      "title": "Pierre du Mage KI-Profil | smyst.com",
+      "description": "Pierre du Mage (französischer Organist und Komponist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/pierre-du-mage",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Pierre du Mage",
+        "description": "französischer Organist und Komponist",
+        "birthDate": "1674-11-01",
+        "deathDate": "1751-10-02",
+        "nationality": "Frankreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1330330"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1330330.json",
+        "snapshot_key": "pipeline/sources/Q1330330/wikidata-entitydata.json"
+      },
+      {
+        "title": "Pierre du Mage",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Pierre_du_Mage",
+        "snapshot_key": "pipeline/sources/Q1330330/wikipedia-de.json"
+      },
+      {
+        "title": "Pierre Du Mage",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Pierre_Du_Mage",
+        "snapshot_key": "pipeline/sources/Q1330330/wikipedia-fr.json"
+      },
+      {
+        "title": "Pierre Du Mage",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Pierre_Du_Mage",
+        "snapshot_key": "pipeline/sources/Q1330330/wikipedia-es.json"
+      },
+      {
+        "title": "Pierre Du Mage",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Pierre_Du_Mage",
+        "snapshot_key": "pipeline/sources/Q1330330/wikipedia-it.json"
+      },
+      {
+        "title": "Pierre Du Mage",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Pierre_Du_Mage",
+        "snapshot_key": "pipeline/sources/Q1330330/wikipedia-en.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:10.168024+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1344198",
+    "twin_id": "e9190775-daa7-4f25-adfc-c70a16d16f24",
+    "slug": "enriquez-de-valderrabano",
+    "name": "Enríquez de Valderrábano",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1500-01-01",
+    "death_date": "1557-01-01",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Peñaranda de Duero, Spanien",
+    "death_place": null,
+    "description": "spanischer Komponist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1344198/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1344198/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Enríquez de Valderrábano (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "enriquez-de-valderrabano",
+      "title": "Enríquez de Valderrábano KI-Profil | smyst.com",
+      "description": "Enríquez de Valderrábano (spanischer Komponist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/enriquez-de-valderrabano",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Enríquez de Valderrábano",
+        "description": "spanischer Komponist",
+        "birthDate": "1500-01-01",
+        "deathDate": "1557-01-01",
+        "nationality": "Spanien",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1344198"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1344198.json",
+        "snapshot_key": "pipeline/sources/Q1344198/wikidata-entitydata.json"
+      },
+      {
+        "title": "Enríquez de Valderrábano",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Enríquez_de_Valderrábano",
+        "snapshot_key": "pipeline/sources/Q1344198/wikipedia-fr.json"
+      },
+      {
+        "title": "Enríquez de Valderrábano",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Enríquez_de_Valderrábano",
+        "snapshot_key": "pipeline/sources/Q1344198/wikipedia-en.json"
+      },
+      {
+        "title": "Enríquez de Valderrábano",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Enríquez_de_Valderrábano",
+        "snapshot_key": "pipeline/sources/Q1344198/wikipedia-de.json"
+      },
+      {
+        "title": "Enríquez de Valderrábano",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Enríquez_de_Valderrábano",
+        "snapshot_key": "pipeline/sources/Q1344198/wikipedia-es.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:11.314162+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1350654",
+    "twin_id": "789cf47e-883d-4336-b14a-27163f38300b",
+    "slug": "joseph-labitzky",
+    "name": "Joseph Labitzky",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1802-07-04",
+    "death_date": "1881-08-19",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Krásno nad Teplou, Tschechien",
+    "death_place": "Karlsbad, Tschechien",
+    "description": "böhmischer Kapellmeister und Komponist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1350654/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1350654/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Joseph Labitzky.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "joseph-labitzky",
+      "title": "Joseph Labitzky KI-Profil | smyst.com",
+      "description": "Joseph Labitzky (böhmischer Kapellmeister und Komponist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/joseph-labitzky",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Joseph Labitzky",
+        "description": "böhmischer Kapellmeister und Komponist",
+        "birthDate": "1802-07-04",
+        "deathDate": "1881-08-19",
+        "nationality": "Kaisertum Österreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1350654"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1350654.json",
+        "snapshot_key": "pipeline/sources/Q1350654/wikidata-entitydata.json"
+      },
+      {
+        "title": "Joseph Labitzky",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Joseph_Labitzky",
+        "snapshot_key": "pipeline/sources/Q1350654/wikipedia-de.json"
+      },
+      {
+        "title": "Joseph Labitzky",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Joseph_Labitzky",
+        "snapshot_key": "pipeline/sources/Q1350654/wikipedia-en.json"
+      },
+      {
+        "title": "Josef Labitzki",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Josef_Labitzki",
+        "snapshot_key": "pipeline/sources/Q1350654/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:12.501553+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1351950",
+    "twin_id": "5ce0fdc0-271f-4d09-8e03-f304a2ccedc9",
+    "slug": "torgeir-augundsson",
+    "name": "Torgeir Augundsson",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1801-05-03",
+    "death_date": "1872-11-21",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Gemeinde, Norwegen",
+    "death_place": "Vinje, Norwegen",
+    "description": "norwegischer Komponist und Virtuose",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1351950/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1351950/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Myllarguten oval.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "torgeir-augundsson",
+      "title": "Torgeir Augundsson KI-Profil | smyst.com",
+      "description": "Torgeir Augundsson (norwegischer Komponist und Virtuose) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/torgeir-augundsson",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Torgeir Augundsson",
+        "description": "norwegischer Komponist und Virtuose",
+        "birthDate": "1801-05-03",
+        "deathDate": "1872-11-21",
+        "nationality": "Norwegen",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1351950"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1351950.json",
+        "snapshot_key": "pipeline/sources/Q1351950/wikidata-entitydata.json"
+      },
+      {
+        "title": "Torgeir Augundsson",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Torgeir_Augundsson",
+        "snapshot_key": "pipeline/sources/Q1351950/wikipedia-de.json"
+      },
+      {
+        "title": "Myllarguten",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Myllarguten",
+        "snapshot_key": "pipeline/sources/Q1351950/wikipedia-en.json"
+      },
+      {
+        "title": "Myllarguten",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Myllarguten",
+        "snapshot_key": "pipeline/sources/Q1351950/wikipedia-fr.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:13.648123+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1363375",
+    "twin_id": "06c9633e-ca57-41ef-b610-093c9321067f",
+    "slug": "jan-hrimaly",
+    "name": "Jan Hřímalý",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1844-04-13",
+    "death_date": "1915-01-11",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Pilsen, Tschechien",
+    "death_place": "Moskau, Russland",
+    "description": "tschechischer Geiger und Musikpädagoge",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1363375/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1363375/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Hrimaly jan.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "jan-hrimaly",
+      "title": "Jan Hřímalý KI-Profil | smyst.com",
+      "description": "Jan Hřímalý (tschechischer Geiger und Musikpädagoge) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/jan-hrimaly",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Jan Hřímalý",
+        "description": "tschechischer Geiger und Musikpädagoge",
+        "birthDate": "1844-04-13",
+        "deathDate": "1915-01-11",
+        "nationality": "Russisches Kaiserreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1363375"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1363375.json",
+        "snapshot_key": "pipeline/sources/Q1363375/wikidata-entitydata.json"
+      },
+      {
+        "title": "Jan Hřímalý",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Jan_Hřímalý",
+        "snapshot_key": "pipeline/sources/Q1363375/wikipedia-de.json"
+      },
+      {
+        "title": "Jan Hřímalý",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Jan_Hřímalý",
+        "snapshot_key": "pipeline/sources/Q1363375/wikipedia-en.json"
+      },
+      {
+        "title": "Jan Hřímalý",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Jan_Hřímalý",
+        "snapshot_key": "pipeline/sources/Q1363375/wikipedia-fr.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:14.920558+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1364373",
+    "twin_id": "ca60b9f0-062d-4b04-b66f-1d135ee11425",
+    "slug": "wilhelm-wurfel",
+    "name": "Wilhelm Würfel",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1790-05-06",
+    "death_date": "1832-03-23",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Plaňany, Tschechien",
+    "death_place": "Wien, Österreich",
+    "description": "tschechischer Komponist, Organist, Pianist und Musikpädagoge",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1364373/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1364373/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Wilhelm Würfel (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "wilhelm-wurfel",
+      "title": "Wilhelm Würfel KI-Profil | smyst.com",
+      "description": "Wilhelm Würfel (tschechischer Komponist, Organist, Pianist und Musikpädagoge) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/wilhelm-wurfel",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Wilhelm Würfel",
+        "description": "tschechischer Komponist, Organist, Pianist und Musikpädagoge",
+        "birthDate": "1790-05-06",
+        "deathDate": "1832-03-23",
+        "nationality": "Markgrafschaft Mähren",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1364373"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1364373.json",
+        "snapshot_key": "pipeline/sources/Q1364373/wikidata-entitydata.json"
+      },
+      {
+        "title": "Wilhelm Würfel",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Wilhelm_Würfel",
+        "snapshot_key": "pipeline/sources/Q1364373/wikipedia-de.json"
+      },
+      {
+        "title": "Wilhelm Würfel",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Wilhelm_Würfel",
+        "snapshot_key": "pipeline/sources/Q1364373/wikipedia-en.json"
+      },
+      {
+        "title": "Wilhelm Würfel",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Wilhelm_Würfel",
+        "snapshot_key": "pipeline/sources/Q1364373/wikipedia-es.json"
+      },
+      {
+        "title": "Václav Würfel",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Václav_Würfel",
+        "snapshot_key": "pipeline/sources/Q1364373/wikipedia-fr.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:16.189261+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1366752",
+    "twin_id": "f63f7d81-4fee-434e-951d-285b0eaf4cfd",
+    "slug": "pedro-de-escobar",
+    "name": "Pedro de Escobar",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1465-01-01",
+    "death_date": "1600-01-01",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Porto, Portugal",
+    "death_place": "Évora, Portugal",
+    "description": "portugiesischer Komponist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1366752/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1366752/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Pedro de Escobar (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "pedro-de-escobar",
+      "title": "Pedro de Escobar KI-Profil | smyst.com",
+      "description": "Pedro de Escobar (portugiesischer Komponist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/pedro-de-escobar",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Pedro de Escobar",
+        "description": "portugiesischer Komponist",
+        "birthDate": "1465-01-01",
+        "deathDate": "1600-01-01",
+        "nationality": "Königreich Portugal",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1366752"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1366752.json",
+        "snapshot_key": "pipeline/sources/Q1366752/wikidata-entitydata.json"
+      },
+      {
+        "title": "Pedro de Escobar",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Pedro_de_Escobar",
+        "snapshot_key": "pipeline/sources/Q1366752/wikipedia-de.json"
+      },
+      {
+        "title": "Pedro de Escobar",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Pedro_de_Escobar",
+        "snapshot_key": "pipeline/sources/Q1366752/wikipedia-es.json"
+      },
+      {
+        "title": "Pedro de Escobar",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Pedro_de_Escobar",
+        "snapshot_key": "pipeline/sources/Q1366752/wikipedia-en.json"
+      },
+      {
+        "title": "Pedro de Escobar (compositeur)",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Pedro_de_Escobar_(compositeur)",
+        "snapshot_key": "pipeline/sources/Q1366752/wikipedia-fr.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:17.482548+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1374725",
+    "twin_id": "fd413665-fb08-4e68-a6f9-62ec447ea6d0",
+    "slug": "pietro-andrea-ziani",
+    "name": "Pietro Andrea Ziani",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1616-12-21",
+    "death_date": "1684-02-12",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Venedig, Italien",
+    "death_place": "Neapel, Italien",
+    "description": "italienischer Komponist des Barock",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1374725/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1374725/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Pietro Andrea Ziani (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "pietro-andrea-ziani",
+      "title": "Pietro Andrea Ziani KI-Profil | smyst.com",
+      "description": "Pietro Andrea Ziani (italienischer Komponist des Barock) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/pietro-andrea-ziani",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Pietro Andrea Ziani",
+        "description": "italienischer Komponist des Barock",
+        "birthDate": "1616-12-21",
+        "deathDate": "1684-02-12",
+        "nationality": "Republik Venedig",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1374725"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1374725.json",
+        "snapshot_key": "pipeline/sources/Q1374725/wikidata-entitydata.json"
+      },
+      {
+        "title": "Pietro Andrea Ziani",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Pietro_Andrea_Ziani",
+        "snapshot_key": "pipeline/sources/Q1374725/wikipedia-de.json"
+      },
+      {
+        "title": "Pietro Andrea Ziani",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Pietro_Andrea_Ziani",
+        "snapshot_key": "pipeline/sources/Q1374725/wikipedia-fr.json"
+      },
+      {
+        "title": "Pietro Andrea Ziani",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Pietro_Andrea_Ziani",
+        "snapshot_key": "pipeline/sources/Q1374725/wikipedia-en.json"
+      },
+      {
+        "title": "Pietro Andrea Ziani",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Pietro_Andrea_Ziani",
+        "snapshot_key": "pipeline/sources/Q1374725/wikipedia-it.json"
+      },
+      {
+        "title": "Pietro Andrea Ziani",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Pietro_Andrea_Ziani",
+        "snapshot_key": "pipeline/sources/Q1374725/wikipedia-es.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:18.790127+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1386904",
+    "twin_id": "dfaccf83-e434-4cdf-87ca-8af57b566ae0",
+    "slug": "ramon-montoya",
+    "name": "Ramón Montoya",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1879-11-03",
+    "death_date": "1949-07-20",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Madrid, Spanien",
+    "death_place": "Madrid, Spanien",
+    "description": "spanischer Flamenco-Komponist und Flamenco-Gitarrist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1386904/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1386904/capsule.json",
+    "image": {
+      "mode": "generated",
+      "label": "KI-generierte Darstellung",
+      "prompt": "Respektvolles, historisch plausibles Portraet von Ramón Montoya (Musik), neutraler Hintergrund, kein Fotorealismus-Anspruch."
+    },
+    "seo": {
+      "slug": "ramon-montoya",
+      "title": "Ramón Montoya KI-Profil | smyst.com",
+      "description": "Ramón Montoya (spanischer Flamenco-Komponist und Flamenco-Gitarrist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/ramon-montoya",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Ramón Montoya",
+        "description": "spanischer Flamenco-Komponist und Flamenco-Gitarrist",
+        "birthDate": "1879-11-03",
+        "deathDate": "1949-07-20",
+        "nationality": "Spanien",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1386904"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1386904.json",
+        "snapshot_key": "pipeline/sources/Q1386904/wikidata-entitydata.json"
+      },
+      {
+        "title": "Ramón Montoya",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Ramón_Montoya",
+        "snapshot_key": "pipeline/sources/Q1386904/wikipedia-de.json"
+      },
+      {
+        "title": "Ramón Montoya",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Ramón_Montoya",
+        "snapshot_key": "pipeline/sources/Q1386904/wikipedia-fr.json"
+      },
+      {
+        "title": "Ramón Montoya Salazar",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Ramón_Montoya_Salazar",
+        "snapshot_key": "pipeline/sources/Q1386904/wikipedia-es.json"
+      },
+      {
+        "title": "Ramón Montoya",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Ramón_Montoya",
+        "snapshot_key": "pipeline/sources/Q1386904/wikipedia-en.json"
+      }
+    ],
+    "risk_score": 0.22,
+    "risk_flags": {
+      "works": "pass",
+      "image": "restricted",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:20.219013+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1388598",
+    "twin_id": "737d9cb1-e6bd-45bf-ae2d-ea2a9f64922d",
+    "slug": "alexandre-luigini",
+    "name": "Alexandre Luigini",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1850-03-09",
+    "death_date": "1906-07-29",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Lyon, Frankreich",
+    "death_place": "Paris, Frankreich",
+    "description": "französischer Violinist und Komponist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1388598/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1388598/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Luigini, Alexandre, Nadar, Gallica.jpg",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "alexandre-luigini",
+      "title": "Alexandre Luigini KI-Profil | smyst.com",
+      "description": "Alexandre Luigini (französischer Violinist und Komponist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/alexandre-luigini",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Alexandre Luigini",
+        "description": "französischer Violinist und Komponist",
+        "birthDate": "1850-03-09",
+        "deathDate": "1906-07-29",
+        "nationality": "Frankreich",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1388598"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1388598.json",
+        "snapshot_key": "pipeline/sources/Q1388598/wikidata-entitydata.json"
+      },
+      {
+        "title": "Alexandre Luigini",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Alexandre_Luigini",
+        "snapshot_key": "pipeline/sources/Q1388598/wikipedia-de.json"
+      },
+      {
+        "title": "Alexandre Luigini",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Alexandre_Luigini",
+        "snapshot_key": "pipeline/sources/Q1388598/wikipedia-fr.json"
+      },
+      {
+        "title": "Alexandre Luigini",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Alexandre_Luigini",
+        "snapshot_key": "pipeline/sources/Q1388598/wikipedia-en.json"
+      },
+      {
+        "title": "Alexandre Luigini",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Alexandre_Luigini",
+        "snapshot_key": "pipeline/sources/Q1388598/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:21.703443+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
+  },
+  {
+    "wikidata_qid": "Q1388720",
+    "twin_id": "3e8b8304-95bf-4ee5-bce3-0f60a73fdbf9",
+    "slug": "giovanni-picchi",
+    "name": "Giovanni Picchi",
+    "category": "Musik",
+    "language_default": "de",
+    "birth_date": "1571-01-01",
+    "death_date": "1643-05-17",
+    "birth_label": null,
+    "death_label": null,
+    "birth_place": "Venedig, Italien",
+    "death_place": "Venedig, Italien",
+    "description": "italienischer Lautenist, Organist und Komponist",
+    "gender": "male",
+    "persona_prompt_key": "pipeline/capsules/Q1388720/prompt.json",
+    "capsule_key": "pipeline/capsules/Q1388720/capsule.json",
+    "image": {
+      "mode": "commons",
+      "commons_file": "Picchi Nobiltà di Dame.png",
+      "attribution_required": true
+    },
+    "seo": {
+      "slug": "giovanni-picchi",
+      "title": "Giovanni Picchi KI-Profil | smyst.com",
+      "description": "Giovanni Picchi (italienischer Lautenist, Organist und Komponist) als kuratiertes KI-Profil auf smyst.com: oeffentliches Wissen, Denkweise und Quellen — klar als KI-Rekonstruktion gekennzeichnet.",
+      "canonical": "https://smyst.com/twin/giovanni-picchi",
+      "json_ld": {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Giovanni Picchi",
+        "description": "italienischer Lautenist, Organist und Komponist",
+        "birthDate": "1571-01-01",
+        "deathDate": "1643-05-17",
+        "nationality": "Republik Venedig",
+        "sameAs": [
+          "https://www.wikidata.org/wiki/Q1388720"
+        ]
+      }
+    },
+    "sources": [
+      {
+        "title": "Wikidata EntityData",
+        "publisher": "wikidata.org",
+        "url": "https://www.wikidata.org/wiki/Special:EntityData/Q1388720.json",
+        "snapshot_key": "pipeline/sources/Q1388720/wikidata-entitydata.json"
+      },
+      {
+        "title": "Giovanni Picchi",
+        "publisher": "de.wikipedia.org",
+        "url": "https://de.wikipedia.org/api/rest_v1/page/summary/Giovanni_Picchi",
+        "snapshot_key": "pipeline/sources/Q1388720/wikipedia-de.json"
+      },
+      {
+        "title": "Giovanni Picchi",
+        "publisher": "fr.wikipedia.org",
+        "url": "https://fr.wikipedia.org/api/rest_v1/page/summary/Giovanni_Picchi",
+        "snapshot_key": "pipeline/sources/Q1388720/wikipedia-fr.json"
+      },
+      {
+        "title": "Giovanni Picchi",
+        "publisher": "en.wikipedia.org",
+        "url": "https://en.wikipedia.org/api/rest_v1/page/summary/Giovanni_Picchi",
+        "snapshot_key": "pipeline/sources/Q1388720/wikipedia-en.json"
+      },
+      {
+        "title": "Giovanni Picchi",
+        "publisher": "es.wikipedia.org",
+        "url": "https://es.wikipedia.org/api/rest_v1/page/summary/Giovanni_Picchi",
+        "snapshot_key": "pipeline/sources/Q1388720/wikipedia-es.json"
+      },
+      {
+        "title": "Giovanni Picchi",
+        "publisher": "it.wikipedia.org",
+        "url": "https://it.wikipedia.org/api/rest_v1/page/summary/Giovanni_Picchi",
+        "snapshot_key": "pipeline/sources/Q1388720/wikipedia-it.json"
+      }
+    ],
+    "risk_score": 0.0,
+    "risk_flags": {
+      "works": "pass",
+      "image": "pass",
+      "publicity": "pass",
+      "ethics": "pass"
+    },
+    "qa_passed": true,
+    "ai_disclosure": "KI-Rekonstruktion auf Basis oeffentlicher Quellen; nicht die echte Person.",
+    "published_at": "2026-08-28T12:54:22.929624+00:00",
+    "approved_by": "smyst247@gmail.com",
+    "visible": true,
+    "version": 1
   }
 ]
