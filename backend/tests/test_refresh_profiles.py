@@ -65,9 +65,14 @@ def _store_with_published(docs: list[dict]) -> tuple[CandidateStore, FakeS3]:
     client = FakeS3()
     store = CandidateStore(client, "test-bucket")
     for doc in docs:
-        client.objects[f"{CANDIDATE_PREFIX}{doc['wikidata_qid']}.json"] = json.dumps(doc).encode(
+        qid = doc["wikidata_qid"]
+        status = doc.get("status", "candidate")
+        client.objects[f"{CANDIDATE_PREFIX}{qid}.json"] = json.dumps(doc).encode(
             "utf-8"
         )
+        # Status-Marker anlegen, damit candidate_documents_by_status
+        # den schnellen Weg nimmt und nicht auf existing_qids() faellt.
+        client.objects[f"pipeline/status/{status}/{qid}"] = b""
     return store, client
 
 
