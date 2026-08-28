@@ -56,22 +56,46 @@ for (const twin of twins) {
   if (!twin || !twin.slug) continue;
   const nameKey = normalize(twin.name || '');
   const slugKey = normalize(twin.slug);
+  const entry = { slug: twin.slug, qid: twin.wikidataQid || null };
   if (nameKey) {
     if (!byName.has(nameKey)) byName.set(nameKey, []);
-    byName.get(nameKey).push(twin.slug);
+    byName.get(nameKey).push(entry);
   }
   if (!bySlug.has(slugKey)) bySlug.set(slugKey, []);
-  bySlug.get(slugKey).push(twin.slug);
+  bySlug.get(slugKey).push(entry);
+}
+
+// Zwei Profile mit gleichem Namen sind erst eine Dublette, wenn die
+// Identitaet kollidiert: gleiche Wikidata-QID ODER ein Eintrag ohne QID
+// (kuratiert) ist mit allem namensgleichen kollidierbar (Originalbefund
+// 2026-07-29: kuratiertes 'Atatuerk' + Pipeline-'Atatuerk' = dieselbe Person).
+// Namensvetter mit verschiedenen QIDs sind legitime Eigenprofile
+// (z. B. die beiden Heinrich Meiboms, die beiden Cornelius Gurlitts).
+function nameCollision(entries) {
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const a = entries[i];
+      const b = entries[j];
+      if (!a.qid || !b.qid || a.qid === b.qid) return [a, b];
+    }
+  }
+  return null;
 }
 
 let failed = false;
-for (const [label, map] of [['Name', byName], ['Slug', bySlug]]) {
-  for (const [key, slugs] of map) {
-    const unique = [...new Set(slugs)];
-    if (label === 'Name' ? slugs.length > 1 : unique.length > 1) {
-      console.error(`check-twin-duplicates: Dublette (${label} '${key}'): ${slugs.join(', ')}`);
-      failed = true;
-    }
+for (const [key, entries] of byName) {
+  if (entries.length < 2) continue;
+  const collision = nameCollision(entries);
+  if (collision) {
+    console.error(`check-twin-duplicates: Dublette (Name '${key}'): ${collision.map((e) => e.slug).join(', ')}`);
+    failed = true;
+  }
+}
+for (const [key, entries] of bySlug) {
+  const unique = [...new Set(entries.map((e) => e.slug))];
+  if (unique.length > 1) {
+    console.error(`check-twin-duplicates: Dublette (Slug '${key}'): ${entries.map((e) => e.slug).join(', ')}`);
+    failed = true;
   }
 }
 
