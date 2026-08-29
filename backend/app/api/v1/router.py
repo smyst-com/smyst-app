@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.routes.admin_approvals import router as admin_approvals_router
+from app.api.v1.routes.admin_finance import router as admin_finance_router
 from app.api.v1.routes.admin_ideas import router as admin_ideas_router
 from app.api.v1.routes.admin_moderation import router as admin_moderation_router
 from app.api.v1.routes.admin_overview import router as admin_overview_router
@@ -52,6 +53,7 @@ api_router.include_router(admin_ideas_router)
 api_router.include_router(admin_users_router)
 api_router.include_router(admin_registrations_router)
 api_router.include_router(admin_moderation_router)
+api_router.include_router(admin_finance_router)
 api_router.include_router(ads_router)
 api_router.include_router(visits_router)
 api_router.include_router(billing_router)
