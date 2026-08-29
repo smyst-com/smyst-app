@@ -52,7 +52,16 @@ jobs:
       - name: Install backend dependencies
         run: pip install -e ".[dev]"
 
-      - name: "smyst 1.0: llama-server + Modell aus IDrive e2 laden"
+      - name: "Modell-Cache (spart e2-Egress: nur der erste Lauf laedt aus e2)"
+        uses: actions/cache@v4
+        with:
+          path: ~/models
+          key: smyst-models-v2-1.1q4
+          restore-keys: |
+            smyst-models-v2-1.1q4
+            smyst-models-v2-
+
+      - name: "smyst 1.0/1.1: llama-server + Modell aus IDrive e2 laden"
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -91,6 +100,10 @@ jobs:
           # Q4_K_M bevorzugt (~350 MB, auf CPU ~2-3x schneller als f16 —
           # mehr QA-Kandidaten pro 90-min-Job); f16 als Fallback.
           candidates = [
+              # smyst-1.1 (Score 575/600, promoted 24.08.) — seit 29.08. als
+              # Q4_K_M in e2, konvertiert aus ~/smyst-train/fused/smyst-1.1-v4
+              ("models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf", "smyst-1.1 Q4_K_M"),
+              # Rueckfallebene: smyst-1.0 vom 20.08
               ("models/smyst-1.0/2026-08-20/smyst-1.0-Q4_K_M.gguf", "Q4_K_M"),
               ("models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf", "f16"),
           ]
