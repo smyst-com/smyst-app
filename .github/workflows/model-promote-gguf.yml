@@ -1,0 +1,145 @@
+name: smyst 1.1 → GGUF (Pipeline-Format)
+
+# Wandelt das trainierte smyst-1.1 (HF-Checkpoint, Qwen2ForCausalLM,
+# nicht quantisiert — Backup 2026-08-25) in das llama.cpp-GGUF-Format um,
+# das die Profil-Pipeline (pipeline-scale-2k, llama-server) laedt.
+#
+# Quelle: models/smyst-1.0/2026-08-25/ (fused-*.json + fused-model.safetensors)
+# Ziel:   models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf (+ f16)
+#
+# Danach: pipeline-scale-2k.yml bevorzugt diese Datei (Fallback bleibt
+# smyst-1.0 vom 20.08). Modell-Registry: smyst-1.1, Score 575/600
+# (promoted 24.08., rebaseline-v3).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: model-promote-gguf
+  cancel-in-progress: true
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+      IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Quelle aus e2 laden (HF-Checkpoint zusammensetzen)
+        working-directory: backend
+        run: |
+          pip install -q boto3
+          python3 << 'PY'
+          import boto3
+          from botocore.config import Config
+          import os
+
+          c = boto3.client(
+              's3',
+              endpoint_url='https://s3.us-west-2.idrivee2.com',
+              region_name='us-west-2',
+              aws_access_key_id=os.environ['IDRIVE_E2_ACCESS_KEY'],
+              aws_secret_access_key=os.environ['IDRIVE_E2_SECRET_KEY'],
+              config=Config(read_timeout=900, retries={'max_attempts': 10}),
+          )
+          BUCKET = 'smyst-memories'
+          SRC = 'models/smyst-1.0/2026-08-25'
+          DST = '/tmp/model'
+          os.makedirs(DST, exist_ok=True)
+          files = {
+              'fused-config.json': 'config.json',
+              'fused-generation-config.json': 'generation_config.json',
+              'fused-tokenizer.json': 'tokenizer.json',
+              'fused-tokenizer-config.json': 'tokenizer_config.json',
+              'fused-model.safetensors': 'model.safetensors',
+          }
+          for src_name, dst_name in files.items():
+              key = f'{SRC}/{src_name}'
+              c.download_file(BUCKET, key, f'{DST}/{dst_name}')
+              print(f'geladen: {key} -> {dst_name}')
+          print('HF-Checkpoint bereit:', sorted(os.listdir(DST)))
+          PY
+
+      - name: llama.cpp-Tools holen (Release b10606, wie pipeline-scale-2k)
+        run: |
+          git clone --depth 1 --branch b10606 https://github.com/ggml-org/llama.cpp /tmp/llama.cpp
+          pip install -q -r /tmp/llama.cpp/requirements.txt
+
+      - name: HF → GGUF (f16) konvertieren
+        run: |
+          cd /tmp/llama.cpp
+          python3 convert_hf_to_gguf.py /tmp/model \
+            --outfile /tmp/smyst-1.1-f16.gguf --outtype f16
+          ls -la /tmp/smyst-1.1-f16.gguf
+
+      - name: Q4_K_M quantisieren (Pipeline-Standard, CPU-schnell)
+        run: |
+          cd /tmp/llama.cpp
+          cmake -B build -DGGML_NATIVE=ON -DLLAMA_BUILD_SERVER=OFF \
+            -DGGML_CUDA=OFF -DGGML_METAL=OFF -DLLAMA_CURL=OFF > /dev/null
+          cmake --build build --target llama-quantize -j2 > /dev/null
+          BIN=$(find build -name llama-quantize | head -1)
+          test -x "$BIN"
+          "$BIN" /tmp/smyst-1.1-f16.gguf /tmp/smyst-1.1-Q4_K_M.gguf Q4_K_M
+          ls -la /tmp/smyst-1.1-Q4_K_M.gguf
+
+      - name: Qualitaets-Tor — llama-server mit dem GGUF starten und 1 Prompt testen
+        run: |
+          BIN_DIR=$(dirname $(find /tmp/llama.cpp/build -name llama-server | head -1))
+          export LD_LIBRARY_PATH="$BIN_DIR"
+          nohup "$BIN_DIR/llama-server" \
+            --model /tmp/smyst-1.1-Q4_K_M.gguf \
+            --host 127.0.0.1 --port 8080 \
+            --ctx-size 2048 --threads 2 > /tmp/llama-server.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8080/health > /dev/null && break
+            sleep 5
+          done
+          curl -sf http://127.0.0.1:8080/health > /dev/null || {
+            echo 'llama-server kam nicht hoch:'; tail -20 /tmp/llama-server.log; exit 1; }
+          ANTWORT=$(curl -sf http://127.0.0.1:8080/v1/chat/completions \
+            -H 'Content-Type: application/json' \
+            -d '{"messages":[{"role":"user","content":"Sag kurz Hallo auf Deutsch."}],"max_tokens":30}')
+          echo "Test-Antwort: $ANTWORT"
+          echo "$ANTWORT" | grep -qi 'hallo\|gruss\|grüß' || {
+            echo 'Modell antwortet nicht sinnvoll'; exit 1; }
+
+      - name: Nach e2 hochladen
+        working-directory: backend
+        run: |
+          python3 << 'PY'
+          import boto3
+          from botocore.config import Config
+          import os
+
+          c = boto3.client(
+              's3',
+              endpoint_url='https://s3.us-west-2.idrivee2.com',
+              region_name='us-west-2',
+              aws_access_key_id=os.environ['IDRIVE_E2_ACCESS_KEY'],
+              aws_secret_access_key=os.environ['IDRIVE_E2_SECRET_KEY'],
+              config=Config(read_timeout=900, retries={'max_attempts': 10}),
+          )
+          BUCKET = 'smyst-memories'
+          DST = 'models/smyst-1.0/2026-08-25'
+          for lokal, key in [
+              ('/tmp/smyst-1.1-Q4_K_M.gguf', f'{DST}/smyst-1.1-Q4_K_M.gguf'),
+              ('/tmp/smyst-1.1-f16.gguf', f'{DST}/smyst-1.1-f16.gguf'),
+          ]:
+              groesse = os.path.getsize(lokal)
+              print(f'hochladen: {lokal} ({groesse/1e6:.0f} MB) -> {key}')
+              c.upload_file(lokal, BUCKET, key)
+              c.head_object(Bucket=BUCKET, Key=key)
+              print(f'  verifiziert: {key}')
+          print('FERTIG — Pipeline kann smyst-1.1 jetzt laden.')
+          PY
