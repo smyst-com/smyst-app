@@ -24,6 +24,10 @@ on:
         description: 'Grund (Audit-Trail)'
         required: false
         default: 'Restore der alten Index-Welt nach Austausch-Vorfall 25./26.08.'
+      backup_sha:
+        description: 'Backup-Commit mit dem vollstaendigen Index (Standard: 25.08-Stand, 15.539 Profile)'
+        required: false
+        default: '69fd67f830733567d2472e3f0488ba123b4259bb'
 
 permissions:
   contents: read
@@ -51,7 +55,8 @@ jobs:
         run: |
           pip install -q -e ".[dev]"
           git fetch origin pipeline-backup
-          git show origin/pipeline-backup:backup/pipeline-published-index.json > /tmp/index-alt.json
+          # Konkreter Backup-Commit (HEAD waere der heutige 3.3k-Stand!):
+          git show ${{ github.event.inputs.backup_sha }}:backup/pipeline-published-index.json > /tmp/index-alt.json
           python3 << 'PY'
           import json
           from datetime import datetime, timezone
