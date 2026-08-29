@@ -5890,6 +5890,25 @@ type AdminUsersApi = {
   users?: AdminUserRow[]
 }
 
+type AdminRegistrationsApi = {
+  ok: boolean
+  source?: string
+  counts?: {
+    total: number
+    active: number
+    unverified: number
+    deleted: number
+    newToday: number
+    new7d: number
+    verified: number
+    mvpTotal: number
+    mvpToday: number
+    mvp7d: number
+  }
+  days?: Array<{ date: string; newAccounts: number }>
+  generatedAt?: number
+}
+
 type AdminIdeaCard = {
   id: string
   title: string
@@ -6175,6 +6194,7 @@ function AdminControlCenterInner() {
   const [adminVersionsRejectReason, setAdminVersionsRejectReason] = useState('')
   const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
   const [adminUsers, setAdminUsers] = useState<AdminUsersApi | null>(null)
+  const [adminRegistrations, setAdminRegistrations] = useState<AdminRegistrationsApi | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
   const [adminApprovalsRejectQid, setAdminApprovalsRejectQid] = useState<string | null>(null)
@@ -6281,6 +6301,25 @@ function AdminControlCenterInner() {
       .catch(() => {
         if (!alive) return
         setAdminUsers(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
+  // Registrierungs-Kennzahlen (read-only, statistisch ohne Adressen)
+  useEffect(() => {
+    if (activeSection !== 'registrations') return
+    let alive = true
+    fetchService('/api/admin/registrations', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminRegistrations(response.ok && payload?.ok ? payload as AdminRegistrationsApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminRegistrations(null)
       })
     return () => {
       alive = false
@@ -7154,47 +7193,73 @@ function AdminControlCenterInner() {
     )
   }
 
-  const renderRegistrations = () => (
-    <div className="grid gap-5">
-      <AdminDemoNote />
-      <div className="grid gap-4 lg:grid-cols-4">
-        {[
-          { label: 'Neue Nutzer', value: '482K', detail: 'Heute, nach Bot-Filter.', tone: 'green' },
-          { label: 'Aktivierung', value: '71 %', detail: 'Erster Chat in 60 Sekunden.', tone: 'cyan' },
-          { label: 'Bot-Block', value: '38K', detail: 'Rate-limit, Device-Fingerprint, CAPTCHA.', tone: 'amber' },
-          { label: 'Kosten/User', value: '$0.013', detail: 'Compute, Storage und Index.', tone: 'green' },
-        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
-      </div>
-      <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+  const renderRegistrations = () => {
+    const counts = adminRegistrations?.counts
+    const days = adminRegistrations?.days ?? []
+    const maxDay = Math.max(1, ...days.map((day) => day.newAccounts))
+    const funnelTotal = counts?.total ?? 0
+    const funnel = [
+      { label: 'Konto erstellt', value: funnelTotal, tone: 'bg-[#59c7ff]' },
+      { label: 'E-Mail bestätigt', value: counts?.verified ?? 0, tone: 'bg-emerald-500' },
+      { label: 'MVP-Dokument angelegt', value: counts?.mvpTotal ?? 0, tone: 'bg-sky-400' },
+    ]
+    return (
+      <div className="grid gap-5">
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Funnel</h2>
-          {[
-            ['Landing', '100 %', 'w-full'],
-            ['Signup', '74 %', 'w-[74%]'],
-            ['Verify', '69 %', 'w-[69%]'],
-            ['First chat', '61 %', 'w-[61%]'],
-            ['Profile created', '34 %', 'w-[34%]'],
-          ].map(([label, value, width]) => (
-            <div key={label} className="mt-4">
-              <div className="mb-1 flex items-center justify-between text-sm font-bold text-[#172033]"><span>{label}</span><span>{value}</span></div>
-              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md bg-[#59c7ff] ${width}`} /></div>
-            </div>
-          ))}
+          <h2 className="text-xl font-bold text-[#111722]">Registrierungen – echte Zahlen</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminRegistrations === null
+              ? 'Kennzahlen werden geladen oder Backend nicht erreichbar.'
+              : adminRegistrations.source === 'unavailable'
+                ? 'IDrive e2 ist gerade nicht erreichbar – keine Kennzahlen geladen.'
+                : `${counts?.total ?? 0} Konten insgesamt, ${counts?.newToday ?? 0} heute, ${counts?.new7d ?? 0} in den letzten 7 Tagen.`}
+          </p>
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Onboarding muss idiotensicher sein</h2>
-          <div className="mt-4 grid gap-3">
-            {['1 Klick: Chat sofort starten', 'Später registrieren, wenn Nutzer Wert sieht', 'Profil-Erstellung in 3 Schritten', 'Upload/Memory mit klarer Datenschutz-Frage', 'Jede Fehlermeldung hat eine Lösungsschaltfläche'].map((item) => (
-              <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
-                <AdminStatusChip tone="cyan">Pflicht</AdminStatusChip>
-                <span className="text-sm font-bold text-[#172033]">{item}</span>
+        <div className="grid gap-4 lg:grid-cols-4">
+          {[
+            { label: 'Neu heute', value: String(counts?.newToday ?? 0), detail: 'Heute erstellte E-Mail-Konten (UTC).', tone: (counts?.newToday ?? 0) > 0 ? 'green' as const : 'navy' as const },
+            { label: 'Letzte 7 Tage', value: String(counts?.new7d ?? 0), detail: 'Neue Konten der letzten 7 Tage.', tone: 'cyan' as const },
+            { label: 'Unbestätigt', value: String(counts?.unverified ?? 0), detail: 'Aktive Konten ohne verifizierte E-Mail.', tone: (counts?.unverified ?? 0) > 0 ? 'amber' as const : 'green' as const },
+            { label: 'MVP-Dokumente', value: String(counts?.mvpTotal ?? 0), detail: `${counts?.mvp7d ?? 0} in den letzten 7 Tagen bearbeitet (inkl. OAuth).`, tone: 'navy' as const },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
+        </div>
+        <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">Funnel (gemessen)</h2>
+            <p className="mt-1 text-xs font-semibold text-[#667085]">Nur echte Zwischenschritte – Landing-Impressions werden nicht aufgezeichnet.</p>
+            {funnel.map((step) => (
+              <div key={step.label} className="mt-4">
+                <div className="mb-1 flex items-center justify-between text-sm font-bold text-[#172033]">
+                  <span>{step.label}</span>
+                  <span>{step.value}{funnelTotal > 0 ? ` · ${Math.round((step.value / funnelTotal) * 100)} %` : ''}</span>
+                </div>
+                <div className="h-3 rounded-md bg-[#e8eef5]">
+                  <div className={`h-3 rounded-md ${step.tone}`} style={{ width: `${funnelTotal > 0 ? Math.max(2, Math.round((step.value / funnelTotal) * 100)) : 0}%` }} />
+                </div>
               </div>
             ))}
-          </div>
-        </section>
+          </section>
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">Neue Konten – letzte 14 Tage</h2>
+            {days.length === 0 ? (
+              <p className="mt-3 text-sm font-semibold text-[#5d6776]">Keine Daten – Backend oder IDrive e2 nicht erreichbar.</p>
+            ) : (
+              <div className="mt-4">
+                <AdminTable
+                  columns={['Datum (UTC)', 'Neue Konten', 'Verlauf']}
+                  rows={days.map((day) => ({
+                    'Datum (UTC)': new Date(`${day.date}T00:00:00Z`).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' }),
+                    'Neue Konten': String(day.newAccounts),
+                    'Verlauf': '█'.repeat(Math.max(1, Math.round((day.newAccounts / maxDay) * 12))),
+                  }))}
+                />
+              </div>
+            )}
+          </section>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderProfiles = () => (
     <div className="grid gap-5">

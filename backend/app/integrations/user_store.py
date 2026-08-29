@@ -133,6 +133,36 @@ def count_user_docs(limit: int = 10000) -> int:
         logger.warning("user doc count failed (%s)", type(exc).__name__)
         return len(_MEMORY)
 
+def list_user_doc_dates(limit: int = 10000) -> list[int]:
+    """Letzte-Aenderung-Zeitstempel (ms) aller Nutzer-Dokumente, read-only.
+
+    Grundlage fuer Aktivitaets-Zaehler in der Admin-Sicht (Registrierungs-
+    Funnel). Ohne e2-Konfiguration: RAM-Fallback (Zeitstempel 0). Wirft nie.
+    """
+    if not storage_configured():
+        return [0] * len(_MEMORY)
+    dates: list[int] = []
+    try:
+        paginator = _client().get_paginator("list_objects_v2")
+        for page in paginator.paginate(
+            Bucket=settings.idrive_e2_bucket, Prefix=USER_DOC_PREFIX
+        ):
+            for item in page.get("Contents", []):
+                if not str(item.get("Key", "")).endswith(".json"):
+                    continue
+                last_modified = item.get("LastModified")
+                dates.append(
+                    int(last_modified.timestamp() * 1000) if last_modified else 0
+                )
+                if len(dates) >= limit:
+                    break
+            if len(dates) >= limit:
+                break
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("user doc date listing failed (%s)", type(exc).__name__)
+    return dates
+
+
 VOICE_SAMPLE_PREFIX = "voice-samples/"
 
 
