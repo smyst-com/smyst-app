@@ -5909,6 +5909,30 @@ type AdminRegistrationsApi = {
   generatedAt?: number
 }
 
+type AdminModerationReport = {
+  twinId?: string | null
+  messageId?: string | null
+  comment?: string | null
+  question?: string | null
+  createdAt?: number | null
+}
+
+type AdminModerationApi = {
+  ok: boolean
+  source?: string
+  counts?: {
+    feedbackTotal: number
+    up: number
+    down: number
+    report: number
+    report7d: number
+    down7d: number
+    deletedAccounts: number
+  }
+  reports?: AdminModerationReport[]
+  generatedAt?: number
+}
+
 type AdminIdeaCard = {
   id: string
   title: string
@@ -6195,6 +6219,7 @@ function AdminControlCenterInner() {
   const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
   const [adminUsers, setAdminUsers] = useState<AdminUsersApi | null>(null)
   const [adminRegistrations, setAdminRegistrations] = useState<AdminRegistrationsApi | null>(null)
+  const [adminModeration, setAdminModeration] = useState<AdminModerationApi | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
   const [adminApprovalsRejectQid, setAdminApprovalsRejectQid] = useState<string | null>(null)
@@ -6320,6 +6345,25 @@ function AdminControlCenterInner() {
       .catch(() => {
         if (!alive) return
         setAdminRegistrations(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
+  // Moderation: gemeldete Nachrichten (read-only)
+  useEffect(() => {
+    if (activeSection !== 'moderation' && activeSection !== 'security') return
+    let alive = true
+    fetchService('/api/admin/moderation', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminModeration(response.ok && payload?.ok ? payload as AdminModerationApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminModeration(null)
       })
     return () => {
       alive = false
@@ -7339,26 +7383,56 @@ function AdminControlCenterInner() {
     </div>
   )
 
-  const renderModerationSecurity = () => (
-    <div className="grid gap-5">
-      <AdminDemoNote />
-      <div className="grid gap-4 lg:grid-cols-4">
-        {[
-          { label: 'Abuse Queue', value: '1,284', detail: 'Spam, Prompt Injection, gefährliche Inhalte.', tone: 'amber' },
-          { label: 'Invalid Ads', value: '0.18 %', detail: 'Verdächtige Klicks und Trafficquellen.', tone: 'green' },
-          { label: 'Audit Events', value: '9.2M', detail: 'Jede Änderung revisionssicher.', tone: 'cyan' },
-          { label: 'Privacy Requests', value: '742', detail: 'Export, Löschung, Korrektur.', tone: 'green' },
-        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
+  const renderModerationSecurity = () => {
+    const counts = adminModeration?.counts
+    const reports = adminModeration?.reports ?? []
+    const dateLabel = (value?: number | null) =>
+      value ? new Date(value).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '–'
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Moderation – gemeldete Inhalte (echt)</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminModeration === null
+              ? 'Meldedaten werden geladen oder Backend nicht erreichbar.'
+              : adminModeration.source === 'unavailable'
+                ? 'IDrive e2 ist gerade nicht erreichbar – keine Meldedaten geladen.'
+                : `${counts?.report ?? 0} gemeldete Nachrichten (${counts?.report7d ?? 0} in den letzten 7 Tagen), ${counts?.down ?? 0} Daumen-runter, ${counts?.deletedAccounts ?? 0} DSGVO-gelöschte Konten.`}
+          </p>
+        </section>
+        <div className="grid gap-4 lg:grid-cols-4">
+          {[
+            { label: 'Gemeldet (report)', value: String(counts?.report ?? 0), detail: `${counts?.report7d ?? 0} in den letzten 7 Tagen.`, tone: (counts?.report ?? 0) > 0 ? 'red' as const : 'green' as const },
+            { label: 'Schlecht bewertet', value: String(counts?.down ?? 0), detail: `${counts?.down7d ?? 0} Daumen-runter in 7 Tagen — wird automatisch zum Eval-Testfall.`, tone: (counts?.down ?? 0) > 0 ? 'amber' as const : 'green' as const },
+            { label: 'Feedback gesamt', value: String(counts?.feedbackTotal ?? 0), detail: `👍 ${counts?.up ?? 0} · 👎 ${counts?.down ?? 0} · ⚠️ ${counts?.report ?? 0}`, tone: 'cyan' as const },
+            { label: 'DSGVO-Löschungen', value: String(counts?.deletedAccounts ?? 0), detail: 'Getombstonete Konten ohne PII.', tone: 'navy' as const },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
+        </div>
+        {reports.length > 0 ? (
+          <AdminTable
+            columns={['Profil', 'Meldung', 'Frage (Auszug)', 'Zeit']}
+            rows={reports.map((row) => ({
+              Profil: row.twinId ?? '–',
+              Meldung: row.comment ?? 'ohne Kommentar',
+              'Frage (Auszug)': row.question ?? '–',
+              Zeit: dateLabel(row.createdAt),
+            }))}
+          />
+        ) : (
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
+            Keine gemeldeten Nachrichten — die Abuse-Queue ist leer. Gemeldete Antworten werden zusätzlich automatisch zu Eval-Testfällen des Profils.
+          </section>
+        )}
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+            Eskalieren/Sperren einzelner Fälle und ein persistentes Audit-Log (revisionssichere Ereignis-Historie im Object Brain) folgen in eigenen PRs.
+            Invalid-Traffic-Erkennung für Anzeigen läuft über AdSense-Policy-Filter im Revenue-Pfad.
+          </p>
+        </section>
       </div>
-      <AdminTable columns={['Fall', 'Risiko', 'Quelle', 'Grund', 'Owner', 'Aktion']} rows={[
-        { Fall: 'A-30941', Risiko: 'hoch', Quelle: 'Chat', Grund: 'Policy / Selbstschaden', Owner: 'Trust', Aktion: 'Escalate' },
-        { Fall: 'AD-8821', Risiko: 'mittel', Quelle: 'Ad Click', Grund: 'Invalid pattern', Owner: 'Ads', Aktion: 'Hold' },
-        { Fall: 'U-1180', Risiko: 'hoch', Quelle: 'Signup', Grund: 'Bot cluster', Owner: 'Security', Aktion: 'Block' },
-        { Fall: 'P-7754', Risiko: 'mittel', Quelle: 'Twin', Grund: 'Copyright claim', Owner: 'Legal', Aktion: 'Review' },
-        { Fall: 'D-204', Risiko: 'niedrig', Quelle: 'DSGVO', Grund: 'Data export', Owner: 'Privacy', Aktion: 'Send' },
-      ]} />
-    </div>
-  )
+    )
+  }
 
   const renderStorage = () => (
     <div className="grid gap-5">
