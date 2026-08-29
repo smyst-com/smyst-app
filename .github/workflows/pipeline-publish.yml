@@ -30,6 +30,9 @@ on:
 
 permissions:
   contents: read
+  # Der Deploy-nach-Publish-Schritt dispatcht github-pages.yml — ohne
+  # actions: write wirft der Dispatch HTTP 403 (Run 33247971460).
+  actions: write
 
 concurrency:
   group: pipeline-publish
