@@ -5933,6 +5933,21 @@ type AdminModerationApi = {
   generatedAt?: number
 }
 
+type AdminFinanceApi = {
+  ok: boolean
+  source?: string
+  counts?: {
+    totalImpressions: number
+    recent7d: number
+    today: number
+    userSharePercent: number
+  }
+  days?: Array<{ date: string; impressions: number }>
+  topProfiles?: Array<{ slug: string; impressions: number }>
+  topCreators?: Array<{ creatorSub: string; impressions: number }>
+  generatedAt?: number
+}
+
 type AdminIdeaCard = {
   id: string
   title: string
@@ -6220,6 +6235,7 @@ function AdminControlCenterInner() {
   const [adminUsers, setAdminUsers] = useState<AdminUsersApi | null>(null)
   const [adminRegistrations, setAdminRegistrations] = useState<AdminRegistrationsApi | null>(null)
   const [adminModeration, setAdminModeration] = useState<AdminModerationApi | null>(null)
+  const [adminFinance, setAdminFinance] = useState<AdminFinanceApi | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
   const [adminApprovalsRejectQid, setAdminApprovalsRejectQid] = useState<string | null>(null)
@@ -6364,6 +6380,25 @@ function AdminControlCenterInner() {
       .catch(() => {
         if (!alive) return
         setAdminModeration(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
+
+  // Finance: gemessene Ad-Impressions als Abrechnungsbasis (read-only)
+  useEffect(() => {
+    if (activeSection !== 'finance' && activeSection !== 'revenue' && activeSection !== 'ads') return
+    let alive = true
+    fetchService('/api/admin/finance', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminFinance(response.ok && payload?.ok ? payload as AdminFinanceApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminFinance(null)
       })
     return () => {
       alive = false
@@ -7370,18 +7405,41 @@ function AdminControlCenterInner() {
     </div>
   )
 
-  const renderRevenue = () => (
-    <div className="grid gap-5">
-      <AdminDemoNote />
-      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-        <p className="text-xl font-bold text-[#111722]">Formel</p>
-        <p className="mt-3 text-2xl font-bold text-emerald-600 md:text-3xl">User-Anteil = gültiger AdSense-Umsatz eines Profils x 25 %</p>
-        <p className="mt-2 text-sm font-semibold text-[#5d6776]">Beispiel: $40,960 gültiger Profil-Umsatz x 0.25 = $10,240 Auszahlung an Profilinhaber.</p>
-      </section>
-      <AdminTable columns={['Profil', 'Chats', 'Qualität', 'Ad RPM', 'gültiger Umsatz', '25 % Anteil', 'Status']} rows={profileRevenue} />
-      <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-[#172033]">Auszahlung erst nach Finalisierung, Invalid-Traffic-Abzug, Mindestbetrag, KYC/Steuerprüfung und Admin-Freigabe.</div>
-    </div>
-  )
+  const renderRevenue = () => {
+    const counts = adminFinance?.counts
+    const share = counts?.userSharePercent ?? 25
+    const tops = adminFinance?.topProfiles ?? []
+    const totalRecent = Math.max(1, counts?.recent7d ?? 0)
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <p className="text-xl font-bold text-[#111722]">Formel</p>
+          <p className="mt-3 text-2xl font-bold text-emerald-600 md:text-3xl">User-Anteil = gültiger AdSense-Umsatz eines Profils × {share} %</p>
+          <p className="mt-2 text-sm font-semibold text-[#5d6776]">
+            Verteilung pro-rata nach Impressions-Anteil: {counts?.recent7d ?? 0} gemessene Impressions der letzten 7 Tage.
+            USD-Beträge werden erst nach Finalisierung im AdSense-Dashboard errechnet — hier die gemessene Basis.
+          </p>
+        </section>
+        {tops.length > 0 ? (
+          <AdminTable
+            columns={['Profil', 'Impressions (7 Tage)', `Verteilungs-Anteil (${share} %-Pool)`]}
+            rows={tops.map((row) => ({
+              Profil: row.slug,
+              'Impressions (7 Tage)': String(row.impressions),
+              [`Verteilungs-Anteil (${share} %-Pool)`]: `${Math.round((row.impressions / totalRecent) * 100)} %`,
+            }))}
+          />
+        ) : (
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
+            {adminFinance === null
+              ? 'Abrechnungsdaten werden geladen oder Backend nicht erreichbar.'
+              : 'Noch keine Impressions in den letzten 7 Tagen — ohne Traffic keine Verteilung.'}
+          </section>
+        )}
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-[#172033]">Auszahlung erst nach Finalisierung, Invalid-Traffic-Abzug, Mindestbetrag, KYC/Steuerprüfung und Admin-Freigabe.</div>
+      </div>
+    )
+  }
 
   const renderModerationSecurity = () => {
     const counts = adminModeration?.counts
@@ -7498,40 +7556,96 @@ function AdminControlCenterInner() {
     </div>
   )
 
-  const renderFinance = () => (
-    <div className="grid gap-5">
-      <AdminDemoNote />
-      <div className="grid gap-4 lg:grid-cols-4">
-        {[
-          { label: 'Payable', value: '$62K', detail: '25 % User-Anteil nach Validierung.', tone: 'green' },
-          { label: 'On Hold', value: '$8.4K', detail: 'Policy, KYC oder Invalid-Traffic offen.', tone: 'amber' },
-          { label: 'KYC Ready', value: '91 %', detail: 'Auszahlbare Creator mit vollständigem Profil.', tone: 'cyan' },
-          { label: 'Tax Queue', value: '318', detail: 'Steuerdaten, Rechnungen und Export.', tone: 'navy' },
-        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
-      </div>
-      <AdminTable columns={['User', 'Profil', 'gültiger Umsatz', '25 % Anteil', 'KYC', 'Tax', 'Aktion']} rows={[
-        { User: 'sara@smyst', Profil: 'Deutsch Tutor', 'gültiger Umsatz': '$24,960', '25 % Anteil': '$6,240', KYC: 'ready', Tax: 'ready', Aktion: 'Pay batch' },
-        { User: 'amina@smyst', Profil: 'Einstein', 'gültiger Umsatz': '$40,960', '25 % Anteil': '$10,240', KYC: 'ready', Tax: 'pending', Aktion: 'Tax check' },
-        { User: 'team@smyst', Profil: 'Fitness Coach', 'gültiger Umsatz': '$21,870', '25 % Anteil': '$5,467', KYC: 'review', Tax: 'ready', Aktion: 'Review' },
-        { User: 'hold@smyst', Profil: 'Crypto Guru', 'gültiger Umsatz': '$19,890', '25 % Anteil': 'hold', KYC: 'blocked', Tax: 'missing', Aktion: 'Policy hold' },
-      ]} />
-      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-        <h2 className="text-xl font-bold text-[#111722]">Auszahlungsregeln</h2>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
+  const renderFinance = () => {
+    const counts = adminFinance?.counts
+    const days = adminFinance?.days ?? []
+    const share = counts?.userSharePercent ?? 25
+    const totalRecent = Math.max(1, counts?.recent7d ?? 0)
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Abrechnungsbasis – gemessene Impressions</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminFinance === null
+              ? 'Finanzdaten werden geladen oder Backend nicht erreichbar.'
+              : adminFinance.source === 'unavailable'
+                ? 'IDrive e2 ist gerade nicht erreichbar – keine Abrechnungsdaten geladen.'
+                : `${counts?.totalImpressions ?? 0} archivierte Werbe-Impressionen gesamt, ${counts?.recent7d ?? 0} in den letzten 7 Tagen. USD-Einnahmen liegen im AdSense-Dashboard (keine API angebunden) – hier zählt nur die gemessene Basis.`}
+          </p>
+        </section>
+        <div className="grid gap-4 lg:grid-cols-4">
           {[
-            'Nur finaler, gültiger AdSense-Umsatz wird geteilt.',
-            'Profilinhaber erhalten 25 % pro genutztem AI-Profil.',
-            'Invalid Traffic, Policy Claims und Refunds gehen vor Auszahlung ab.',
-            'KYC, Steuerstatus, Mindestbetrag und Admin-Freigabe sind Pflicht.',
-            'Jede Auszahlung erzeugt Audit-Log, Export und IDrive-e2-Beleg.',
-            'User sieht transparent: Impressionen, Abzüge, Anteil und Status.',
-          ].map((item) => (
-            <div key={item} className="rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 text-sm font-bold text-[#172033]">{item}</div>
-          ))}
+            { label: 'Impressions gesamt', value: String(counts?.totalImpressions ?? 0), detail: 'Archiviert im Object Brain (Abrechnungsgrundlage).', tone: 'cyan' as const },
+            { label: 'Letzte 7 Tage', value: String(counts?.recent7d ?? 0), detail: 'Basis der aktuellen Verteilung.', tone: 'green' as const },
+            { label: 'Heute', value: String(counts?.today ?? 0), detail: 'Impressions des heutigen Tages (UTC).', tone: (counts?.today ?? 0) > 0 ? 'green' as const : 'navy' as const },
+            { label: 'User-Anteil', value: `${share} %`, detail: 'Verteilt pro-rata nach Impressions-Anteil.', tone: 'amber' as const },
+          ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
-      </section>
-    </div>
-  )
+        <div className="grid gap-5 xl:grid-cols-2">
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">Top-Profile (7 Tage)</h2>
+            <div className="mt-4">
+              {(adminFinance?.topProfiles ?? []).length > 0 ? (
+                <AdminTable
+                  columns={['Profil', 'Impressions', `Anteil (${share} %-Basis)`]}
+                  rows={(adminFinance?.topProfiles ?? []).map((row) => ({
+                    Profil: row.slug,
+                    Impressions: String(row.impressions),
+                    [`Anteil (${share} %-Basis)`]: `${Math.round((row.impressions / totalRecent) * 100)} %`,
+                  }))}
+                />
+              ) : (
+                <p className="text-sm font-semibold text-[#5d6776]">Noch keine Impressions in den letzten 7 Tagen.</p>
+              )}
+            </div>
+          </section>
+          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <h2 className="text-xl font-bold text-[#111722]">Top-Creator (7 Tage)</h2>
+            <div className="mt-4">
+              {(adminFinance?.topCreators ?? []).length > 0 ? (
+                <AdminTable
+                  columns={['Creator', 'Impressions', 'Anteil']}
+                  rows={(adminFinance?.topCreators ?? []).map((row) => ({
+                    Creator: row.creatorSub,
+                    Impressions: String(row.impressions),
+                    Anteil: `${Math.round((row.impressions / totalRecent) * 100)} %`,
+                  }))}
+                />
+              ) : (
+                <p className="text-sm font-semibold text-[#5d6776]">Noch keine Creator-Impressions in den letzten 7 Tagen.</p>
+              )}
+            </div>
+          </section>
+        </div>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Impressions – letzte 14 Tage</h2>
+          {days.length === 0 ? (
+            <p className="mt-3 text-sm font-semibold text-[#5d6776]">Keine Daten – Backend oder IDrive e2 nicht erreichbar.</p>
+          ) : (
+            <div className="mt-4">
+              <AdminTable
+                columns={['Datum (UTC)', 'Impressions']}
+                rows={days.map((day) => ({ 'Datum (UTC)': day.date, 'Impressions': String(day.impressions) }))}
+              />
+            </div>
+          )}
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Auszahlungsregeln & offene Punkte</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {[
+              'Nur finaler, gültiger AdSense-Umsatz wird geteilt (AdSense-Dashboard, manuell geprüft).',
+              `Profilinhaber erhalten ${share} % pro-rata nach Impressions-Anteil.`,
+              'Noch offen: KYC/Steuer-Workflow und Payout-Ausführung (eigene PRs, CSRF-pflichtig).',
+              'Noch offen: Invalid-Traffic-Abzug vor Verteilung (Policy-Filter).',
+            ].map((item) => (
+              <div key={item} className="rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 text-sm font-bold text-[#172033]">{item}</div>
+            ))}
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   const renderAiQuality = () => {
     const summary = adminQuality?.summary
