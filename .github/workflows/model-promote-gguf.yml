@@ -40,10 +40,12 @@ jobs:
             | tar -xz -C /opt/llama/
           find /opt/llama -name llama-server | head -1
 
-      - name: GGUF aus dem GitHub-Release laden
+      - name: GGUF aus dem GitHub-Release laden (8 Teile -> zusammensetzen)
         run: |
           gh release download v-smyst-1.1-gguf --repo "${GITHUB_REPOSITORY}" \
-            --dir /tmp --clobber
+            --dir /tmp --clobber --pattern 's11part_*'
+          cat /tmp/s11part_* > /tmp/smyst-1.1-Q4_K_M.gguf
+          echo '4d90051d53c7a47333622cabf1d6a1575c3a8b99bee369fb9cb2eaec2b56eac1  /tmp/smyst-1.1-Q4_K_M.gguf' | sha256sum -c -
           test -s /tmp/smyst-1.1-Q4_K_M.gguf
           ls -la /tmp/smyst-1.1-Q4_K_M.gguf
 
