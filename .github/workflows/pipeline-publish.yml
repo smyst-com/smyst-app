@@ -76,3 +76,14 @@ jobs:
             python -m app.workers.publish_profiles publish --all-reviewed \
               --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
           fi
+
+      # Neue Profile live stellen SOFORT nach dem Publish — nicht erst beim
+      # naechsten 3h-Cron (GitHub liess Cron-Slots wiederholt komplett aus;
+      # Vorfall 29.08.: 75 Profile lagen 3+ Stunden unveraendert im Store).
+      - name: "Deploy nach Publish"
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run github-pages.yml --ref main --repo "${GITHUB_REPOSITORY}"
+          echo "Deploy nach Publish angeusstossst." >> "$GITHUB_STEP_SUMMARY"
