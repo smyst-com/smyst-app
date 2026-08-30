@@ -6245,6 +6245,28 @@ function AdminControlCenterView() {
 function AdminControlCenterInner() {
   const [activeSection, setActiveSection] = useState<AdminSection>('overview')
   const [adminNavOpen, setAdminNavOpen] = useState(false)
+  const [adminSearchOpen, setAdminSearchOpen] = useState(false)
+  const [adminSearchQuery, setAdminSearchQuery] = useState('')
+
+  // Cmd/Ctrl+K oeffnet die Admin-Suche, Escape schliesst sie
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setAdminSearchOpen((open) => !open)
+        setAdminSearchQuery('')
+      }
+      if (event.key === 'Escape') setAdminSearchOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  const adminSearchResults = adminSearchQuery.trim().length > 0
+    ? adminSections.filter((section) =>
+        `${section.label} ${section.detail} ${section.group}`.toLowerCase().includes(adminSearchQuery.trim().toLowerCase()),
+      )
+    : adminSections
   const [adminOverview, setAdminOverview] = useState<AdminOverviewApi | null>(null)
   const [adminBackendStatus, setAdminBackendStatus] = useState<'loading' | 'live' | 'denied' | 'offline'>('loading')
   const [adminMfaStatus, setAdminMfaStatus] = useState<AdminMfaStatusApi | null>(null)
@@ -7732,47 +7754,52 @@ function AdminControlCenterInner() {
     )
   }
 
-  const renderStorage = () => (
-    <div className="grid gap-5">
-      <AdminDemoNote />
-      <div className="grid gap-4 lg:grid-cols-4">
-        {[
-          { label: 'IDrive E2', value: '14.8 PB', detail: '99 % Storage, Backups, Uploads, Medien.', tone: 'green' },
-          { label: 'Salad', value: '62K Jobs', detail: 'Compute, API, KI, Suche, Cronjobs.', tone: 'cyan' },
-          { label: 'GitHub', value: '42 repos', detail: 'Code und Versionierung only.', tone: 'navy' },
-          { label: 'Spaceship', value: 'healthy', detail: 'Domain und DNS.', tone: 'amber' },
-        ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
-      </div>
-      <div className="grid gap-5 xl:grid-cols-2">
+  const renderStorage = () => {
+    const storageReady = storageCapabilities?.configuration?.ready
+    const storageMissing = storageCapabilities?.configuration?.missing ?? []
+    const computeReady = computeCapabilities?.configuration?.ready
+    const computeMissing = computeCapabilities?.configuration?.missing ?? []
+    const queue = computeJobs?.summary
+    const runtime = computeRuntime?.runtime
+    return (
+      <div className="grid gap-5">
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Workloads + Jobs</h2>
-          {[
-            ['API inference', 'w-[72%]', 'bg-sky-400'],
-            ['Search indexing', 'w-[44%]', 'bg-emerald-500'],
-            ['Embedding builds', 'w-[61%]', 'bg-amber-400'],
-            ['Media processing', 'w-[37%]', 'bg-emerald-500'],
-            ['Backups', 'w-[29%]', 'bg-emerald-500'],
-          ].map(([label, width, color]) => (
-            <div key={label} className="mt-4">
-              <p className="mb-1 text-sm font-bold text-[#172033]">{label}</p>
-              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md ${color} ${width}`} /></div>
-            </div>
-          ))}
+          <h2 className="text-xl font-bold text-[#111722]">Storage & Compute – echter Status</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {storageReady === undefined && computeReady === undefined
+              ? 'Status wird geladen oder Backend nicht erreichbar.'
+              : `IDrive e2 ${storageReady ? 'bereit' : storageCapabilities ? 'blockiert' : 'unbekannt'} · Compute ${computeReady ? 'bereit' : computeCapabilities ? 'blockiert' : 'unbekannt'}.`}
+          </p>
         </section>
+        <div className="grid gap-4 lg:grid-cols-4">
+          <AdminMetricCard metric={{ label: 'IDrive e2', value: storageReady ? 'bereit' : storageCapabilities ? 'blockiert' : '–', detail: storageReady ? `${storageCapabilities?.provider ?? 'IDrive e2'} als Object Brain.` : (storageMissing.length ? `Fehlt: ${storageMissing.join(', ')}` : 'Status unbekannt.'), tone: storageReady ? 'green' : 'amber' }} />
+          <AdminMetricCard metric={{ label: 'Compute', value: computeReady ? 'bereit' : computeCapabilities ? 'blockiert' : '–', detail: computeReady ? 'Job-Pipeline über GitHub-Actions-Worker.' : (computeMissing.length ? `Fehlt: ${computeMissing.join(', ')}` : 'Status unbekannt.'), tone: computeReady ? 'green' : 'amber' }} />
+          <AdminMetricCard metric={{ label: 'Job-Queue', value: queue ? String(queue.queued + queue.running) : '–', detail: queue ? `${queue.running} running, ${queue.succeeded} succeeded, ${queue.failed} failed.` : 'Noch keine Job-Daten geladen.', tone: queue?.failed ? 'red' : 'cyan' }} />
+          <AdminMetricCard metric={{ label: 'Runtime', value: runtime ? (runtime.operational ? 'running' : String(runtime.container.status ?? '–')) : '–', detail: runtime?.container.dns ? `${runtime.container.dns}:${runtime.container.port}` : 'Runtime-Status der Compute-Worker.', tone: runtime?.operational ? 'green' : 'navy' }} />
+        </div>
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Release Safety</h2>
-          <div className="mt-4 grid gap-3">
-            {['Canary 1 %', 'Crash-free 99.98 %', 'Rollback-Paket auf IDrive E2', 'App/PWA Offline-Dateien', 'Audit + Fehlerberichte'].map((item) => (
-              <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
-                <AdminStatusChip>OK</AdminStatusChip>
-                <span className="text-sm font-bold text-[#172033]">{item}</span>
-              </div>
+          <h2 className="text-xl font-bold text-[#111722]">Architektur-Regeln</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            {[
+              'GitHub Pages liefert alles Statische (App, Profilseiten, sitemap, JSON-API).',
+              'IDrive e2 ist privater Objektspeicher und Persistenz — keine SQL-DB, kein Redis.',
+              'Zeabur (api.smyst.com) macht Rechenarbeit: API, Auth, Chat, TTS/ASR, Admin.',
+              'Salad.com ist seit Ende Juli 2026 abgeschaltet; Compute läuft über Actions-Worker.',
+            ].map((item) => (
+              <div key={item} className="rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 text-sm font-bold text-[#172033]">{item}</div>
             ))}
           </div>
         </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+            Speicherplatz-Verbrauch pro Bucket und Backup-Nachweise als Zahlenfolge in eigenen PRs
+            (Needs Listing über alle Präfixe mit Größensumme). Release-Safety-Canary-Metricke gibt es erst mit App-Releases.
+          </p>
+        </section>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderSupport = () => (
     <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
@@ -8249,12 +8276,57 @@ function AdminControlCenterInner() {
 
   return (
     <div className="smyst-admin-shell py-5 text-[#111722]">
+      {adminSearchOpen && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-start justify-center bg-black/60 pt-24"
+          onClick={() => setAdminSearchOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="mx-4 w-full max-w-lg rounded-lg border border-[#d9e2ec] bg-white p-4 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-label="Admin-Suche"
+          >
+            <input
+              value={adminSearchQuery}
+              onChange={(event) => setAdminSearchQuery(event.target.value)}
+              placeholder="Sektion suchen … (Esc schließt)"
+              autoFocus
+              className="min-h-11 w-full rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+            />
+            <div className="mt-3 grid max-h-80 gap-1 overflow-y-auto">
+              {adminSearchResults.map((section) => (
+                <button
+                  key={section.id}
+                  type="button"
+                  onClick={() => { setActiveSection(section.id); setAdminSearchOpen(false); setAdminSearchQuery('') }}
+                  className={`flex min-h-11 items-center justify-between gap-3 rounded-md border px-3 text-left text-sm font-bold ${section.id === activeSection ? 'border-[#314158] bg-[#223044] text-white' : 'border-transparent text-[#172033] hover:bg-[#f7fafd]'}`}
+                >
+                  <span>{section.label}</span>
+                  <span className="text-xs font-semibold text-[#667085]">{section.detail}</span>
+                </button>
+              ))}
+              {adminSearchResults.length === 0 && (
+                <p className="px-3 py-2 text-sm font-semibold text-[#5d6776]">Keine Sektion gefunden.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="grid gap-5 lg:grid-cols-[272px_1fr]">
         <aside className="rounded-lg bg-[#111722] p-5 text-white lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
           <div className="mb-6">
             <p className="font-smyst-logo text-3xl leading-none">smyst.com Admin</p>
             <p className="mt-2 text-sm font-semibold text-[#aeb6c4]">Global control</p>
           </div>
+          <button
+            type="button"
+            onClick={() => { setAdminSearchOpen(true); setAdminSearchQuery('') }}
+            className="mb-2 min-h-11 w-full rounded-md border border-[#314158] px-3 text-left text-sm font-bold text-white"
+          >
+            Sektion suchen … <span className="float-right text-xs font-semibold text-[#8996a8]">⌘K</span>
+          </button>
           <button
             type="button"
             onClick={() => setAdminNavOpen((open) => !open)}
