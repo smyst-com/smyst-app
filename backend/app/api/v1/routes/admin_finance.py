@@ -11,23 +11,30 @@ Object Brain (pipeline/ads/impressions/<yyyymmdd>/<id>.json):
 Nur fuer Sessions mit admin:read (Rollen admin/owner). Read-only.
 
 Bewusst ehrlich: USD-Einnahmen liegen ausschliesslich im AdSense-Dashboard
-(dafuer gibt es keine API-Anbindung — Free-only-Regel). Dieser Endpoint
-liefert die gemessene Abrechnungs-BASIS (Impressions), keine erfundenen
-Dollar-Betraege. Auszahlungs-Workflows (KYC, Payout) existieren noch nicht.
+(dafuer gibt es keine API-Anbindung — Free-only-Regel). Der Inhaber traegt
+finalisierte Monats-Einnahmen per POST /api/admin/finance/revenue ein
+(CSRF-pflichtig, auditiert); GET berechnet daraus die 25%-Payouts pro-rata
+nach Impressions-Anteil des Monats. Auszahlungs-Workflows (KYC, Transfer)
+existieren noch nicht — hier entsteht nur die rechnungsfaehige Basis.
 """
 
 from __future__ import annotations
 
 import asyncio
 import json
+import re
 import time
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from app.api.v1.routes.admin_quality import _require_admin
+from app.api.v1.routes.auth import _session_from_request
 from app.core.config import settings
+from app.integrations import audit_store
 from app.integrations.feedback_store import _client, storage_configured
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -150,6 +157,19 @@ async def admin_finance(request: Request) -> dict[str, Any]:
         day = (today - timedelta(days=offset)).strftime("%Y%m%d")
         days.append({"date": day, "impressions": per_day.get(day, 0)})
 
+    revenue_entries: list[dict[str, Any]] = []
+    payout_basis: dict[str, Any] | None = None
+    if source == "idrive-e2":
+        try:
+            revenue_entries = await asyncio.to_thread(list_revenue_entries, 12)
+            if revenue_entries:
+                latest = revenue_entries[0]
+                payout_basis = await asyncio.to_thread(
+                    _month_payouts, latest["month"], latest.get("adsenseCents", 0)
+                )
+        except Exception:  # noqa: BLE001 — Revenue-Teil ist optional
+            revenue_entries = []
+
     return {
         "ok": True,
         "source": source,
@@ -162,5 +182,142 @@ async def admin_finance(request: Request) -> dict[str, Any]:
         "days": days,
         "topProfiles": top_profiles,
         "topCreators": top_creators,
+        "revenue": revenue_entries,
+        "payoutBasis": payout_basis,
         "generatedAt": int(time.time() * 1000),
     }
+
+
+# --- Manuelle AdSense-Monatseinnahmen (Inhaber traegt finalisierte Werte ein) ---
+
+REVENUE_PREFIX = "finance/adsense-revenue/v1/"
+_MONTH_RE = re.compile(r"^\d{4}-(0[1-9]|1[0-2])$")
+
+
+def _revenue_key(month: str) -> str:
+    return f"{REVENUE_PREFIX}{month}.json"
+
+
+def save_revenue_entry(month: str, adsense_cents: int, note: str | None, actor_email: str | None) -> dict[str, Any]:
+    client = _client()
+    record = {
+        "month": month,
+        "adsenseCents": adsense_cents,
+        "note": note,
+        "recordedBy": actor_email,
+        "recordedAt": datetime.now(UTC).isoformat(),
+    }
+    client.put_object(
+        Bucket=settings.idrive_e2_bucket, Key=_revenue_key(month),
+        Body=json.dumps(record, ensure_ascii=False).encode("utf-8"),
+        ContentType="application/json",
+    )
+    return record
+
+
+def list_revenue_entries(limit: int = 12) -> list[dict[str, Any]]:
+    client = _client()
+    paginator = client.get_paginator("list_objects_v2")
+    entries: list[dict[str, Any]] = []
+    for page in paginator.paginate(Bucket=settings.idrive_e2_bucket, Prefix=REVENUE_PREFIX):
+        for entry in page.get("Contents", []) or []:
+            try:
+                response = client.get_object(Bucket=settings.idrive_e2_bucket, Key=entry["Key"])
+                data = json.loads(response["Body"].read().decode("utf-8"))
+                if isinstance(data, dict):
+                    entries.append(data)
+            except Exception:  # noqa: BLE001, S112
+                continue
+    entries.sort(key=lambda row: str(row.get("month") or ""), reverse=True)
+    return entries[:limit]
+
+
+def _month_payouts(month: str, adsense_cents: int) -> dict[str, Any]:
+    """25%-Payouts pro Profil fuer einen Monat, pro-rata nach Impressions.
+
+    Laedt die Impressions des Monats (Deckelung RECENT_LOAD_LIMIT) und
+    verteilt adsense_cents * USER_SHARE_PERCENT anteilig. capped=true zeigt
+    an, dass mehr Objekte existierten als geladen wurden.
+    """
+    client = _client()
+    compact = month.replace("-", "")
+    keys: list[str] = []
+    paginator = client.get_paginator("list_objects_v2")
+    for page in paginator.paginate(
+        Bucket=settings.idrive_e2_bucket, Prefix=f"pipeline/ads/impressions/{compact}/"
+    ):
+        for item in page.get("Contents", []) or []:
+            keys.append(str(item.get("Key", "")))
+    capped = len(keys) > RECENT_LOAD_LIMIT
+    by_slug, _by_creator, loaded = _recent_details(keys)
+    pool = adsense_cents * USER_SHARE_PERCENT // 100
+    payouts = sorted(
+        (
+            {
+                "slug": slug,
+                "impressions": count,
+                "sharePercent": round(count * 100 / loaded, 2) if loaded else 0,
+                "payoutCents": round(pool * count / loaded) if loaded else 0,
+            }
+            for slug, count in by_slug.items()
+        ),
+        key=lambda row: -row["payoutCents"],
+    )
+    return {
+        "month": month,
+        "adsenseCents": adsense_cents,
+        "poolCents": pool,
+        "impressionsLoaded": loaded,
+        "capped": capped,
+        "payouts": payouts[:20],
+    }
+
+
+class RevenueEntryRequest(BaseModel):
+    month: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
+    adsenseCents: int = Field(ge=0, le=100_000_000_00)
+    note: str | None = Field(default=None, max_length=240)
+
+
+def _require_csrf(request: Request) -> JSONResponse | None:
+    if request.headers.get("X-Smyst-CSRF") != "1":
+        return JSONResponse(
+            status_code=403,
+            content={"ok": False, "code": "csrf_required", "message": "Ungueltige Anfrage."},
+        )
+    return None
+
+
+@router.post("/finance/revenue")
+async def admin_finance_revenue(body: RevenueEntryRequest, request: Request) -> Any:
+    denied = _require_admin(request)
+    if denied is not None:
+        return denied
+    if (csrf := _require_csrf(request)) is not None:
+        return csrf
+    if not storage_configured():
+        return JSONResponse(
+            status_code=503,
+            content={"ok": False, "code": "store_unavailable", "message": "Object Brain nicht erreichbar."},
+        )
+
+    session = _session_from_request(request) or {}
+    try:
+        record = await asyncio.to_thread(
+            save_revenue_entry, body.month, body.adsenseCents, body.note, session.get("email")
+        )
+    except Exception:  # noqa: BLE001 — e2-Fehler -> 503, kein 500
+        return JSONResponse(
+            status_code=503,
+            content={"ok": False, "code": "store_unavailable", "message": "Object Brain nicht erreichbar."},
+        )
+    await asyncio.to_thread(
+        audit_store.record_action,
+        actor_sub=session.get("sub"),
+        actor_email=session.get("email"),
+        action="finance.revenue_entry",
+        target_type="adsense_month",
+        target_id=body.month,
+        detail=f"{body.adsenseCents} Cents erfasst (Korrektur ueberschreibt)",
+    )
+    return {"ok": True, "entry": record}

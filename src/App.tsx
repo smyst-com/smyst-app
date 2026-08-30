@@ -5963,6 +5963,15 @@ type AdminFinanceApi = {
   days?: Array<{ date: string; impressions: number }>
   topProfiles?: Array<{ slug: string; impressions: number }>
   topCreators?: Array<{ creatorSub: string; impressions: number }>
+  revenue?: Array<{ month: string; adsenseCents: number; note?: string | null; recordedBy?: string | null; recordedAt?: string | null }>
+  payoutBasis?: {
+    month: string
+    adsenseCents: number
+    poolCents: number
+    impressionsLoaded: number
+    capped: boolean
+    payouts: Array<{ slug: string; impressions: number; sharePercent: number; payoutCents: number }>
+  } | null
   generatedAt?: number
 }
 
@@ -6259,6 +6268,11 @@ function AdminControlCenterInner() {
   const [adminRegistrations, setAdminRegistrations] = useState<AdminRegistrationsApi | null>(null)
   const [adminModeration, setAdminModeration] = useState<AdminModerationApi | null>(null)
   const [adminFinance, setAdminFinance] = useState<AdminFinanceApi | null>(null)
+  const [adminRevenueMonth, setAdminRevenueMonth] = useState('')
+  const [adminRevenueCents, setAdminRevenueCents] = useState('')
+  const [adminRevenueNote, setAdminRevenueNote] = useState('')
+  const [adminRevenueBusy, setAdminRevenueBusy] = useState(false)
+  const [adminRevenueMessage, setAdminRevenueMessage] = useState<string | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
   const [adminApprovalsMessage, setAdminApprovalsMessage] = useState<string | null>(null)
   const [adminApprovalsRejectQid, setAdminApprovalsRejectQid] = useState<string | null>(null)
@@ -6479,6 +6493,51 @@ function AdminControlCenterInner() {
       alive = false
     }
   }, [activeSection])
+
+  // AdSense-Monatseinnahmen erfassen (CSRF + Audit); danach Basis neu laden
+  const refreshAdminFinance = () => {
+    fetchService('/api/admin/finance', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        setAdminFinance(response.ok && payload?.ok ? payload as AdminFinanceApi : null)
+      })
+      .catch(() => setAdminFinance(null))
+  }
+
+  const submitAdminRevenue = async () => {
+    const cents = Number(adminRevenueCents.replace(/[^\d]/g, ''))
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(adminRevenueMonth)) {
+      setAdminRevenueMessage('Bitte Monat im Format JJJJ-MM angeben.')
+      return
+    }
+    if (!Number.isFinite(cents) || cents < 0) {
+      setAdminRevenueMessage('Bitte Einnahmen in Cents (nicht negativ) angeben.')
+      return
+    }
+    setAdminRevenueBusy(true)
+    setAdminRevenueMessage(null)
+    try {
+      const response = await fetchService('/api/admin/finance/revenue', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ month: adminRevenueMonth, adsenseCents: cents, note: adminRevenueNote.trim() || null }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (response.ok && payload?.ok) {
+        setAdminRevenueMessage('Einnahmen erfasst (Audit-Record geschrieben) — Payout-Basis aktualisiert.')
+        setAdminRevenueCents('')
+        setAdminRevenueNote('')
+        refreshAdminFinance()
+      } else {
+        setAdminRevenueMessage(typeof payload?.message === 'string' ? payload.message : 'Erfassung fehlgeschlagen.')
+      }
+    } catch {
+      setAdminRevenueMessage('Backend nicht erreichbar.')
+    } finally {
+      setAdminRevenueBusy(false)
+    }
+  }
 
   const decideApproval = async (qid: string, action: 'approve' | 'reject', reason?: string) => {
     let body: string | null = null
@@ -7809,6 +7868,72 @@ function AdminControlCenterInner() {
                 rows={days.map((day) => ({ 'Datum (UTC)': day.date, 'Impressions': String(day.impressions) }))}
               />
             </div>
+          )}
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">AdSense-Einnahmen erfassen (Inhaber)</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            Finalisierte Monats-Einnahmen aus dem AdSense-Dashboard hier eintragen (in Cents) — jede Erfassung wird auditiert,
+            eine erneute Erfassung desselben Monats ist die Korrektur. Daraus wird die {share}%-Payout-Basis berechnet.
+          </p>
+          <div className="mt-4 grid gap-2 lg:grid-cols-[130px_1fr_1fr_auto]">
+            <input
+              value={adminRevenueMonth}
+              onChange={(event) => setAdminRevenueMonth(event.target.value.slice(0, 7))}
+              placeholder="2026-08"
+              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+            />
+            <input
+              value={adminRevenueCents}
+              onChange={(event) => setAdminRevenueCents(event.target.value.replace(/[^\d]/g, ''))}
+              placeholder="Einnahmen in Cents (z. B. 250000)"
+              inputMode="numeric"
+              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+            />
+            <input
+              value={adminRevenueNote}
+              onChange={(event) => setAdminRevenueNote(event.target.value.slice(0, 240))}
+              placeholder="Notiz (optional, z. B. AdSense final August)"
+              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+            />
+            <button
+              type="button"
+              disabled={adminRevenueBusy || !adminRevenueMonth || !adminRevenueCents}
+              onClick={() => void submitAdminRevenue()}
+              className="min-h-11 rounded-md bg-[#111722] px-4 text-sm font-bold text-white disabled:opacity-50"
+            >
+              {adminRevenueBusy ? 'Erfasse …' : 'Erfassen'}
+            </button>
+          </div>
+          {adminRevenueMessage ? (
+            <p className="mt-3 text-sm font-semibold text-[#5d6776]">{adminRevenueMessage}</p>
+          ) : null}
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Payout-Basis (letzter erfasster Monat)</h2>
+          {adminFinance?.payoutBasis ? (
+            <>
+              <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+                Monat {adminFinance.payoutBasis.month}: {(adminFinance.payoutBasis.adsenseCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} Einnahmen →
+                {' '}{(adminFinance.payoutBasis.poolCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} User-Pool ({share} %),
+                verteilt nach {adminFinance.payoutBasis.impressionsLoaded} geladenen Impressions{adminFinance.payoutBasis.capped ? ' (Basis gekappt, >2000 Objekte)' : ''}.
+              </p>
+              <div className="mt-4">
+                <AdminTable
+                  columns={['Profil', 'Impressions', 'Anteil', `Payout (${share} %-Pool)`]}
+                  rows={adminFinance.payoutBasis.payouts.map((row) => ({
+                    Profil: row.slug,
+                    Impressions: String(row.impressions),
+                    Anteil: `${row.sharePercent} %`,
+                    [`Payout (${share} %-Pool)`]: (row.payoutCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' }),
+                  }))}
+                />
+              </div>
+            </>
+          ) : (
+            <p className="mt-3 text-sm font-semibold text-[#5d6776]">
+              Noch keine Einnahmen erfasst — nach der ersten Erfassung erscheint hier die rechnungsfähige Verteilung.
+            </p>
           )}
         </section>
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
