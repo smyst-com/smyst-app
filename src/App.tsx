@@ -5968,13 +5968,17 @@ type AdminFinanceApi = {
   days?: Array<{ date: string; impressions: number }>
   topProfiles?: Array<{ slug: string; impressions: number }>
   topCreators?: Array<{ creatorSub: string; impressions: number }>
-  revenue?: Array<{ month: string; adsenseCents: number; note?: string | null; recordedBy?: string | null; recordedAt?: string | null }>
+  revenue?: Array<{ month: string; adsenseCents: number; invalidTrafficCents?: number; note?: string | null; recordedBy?: string | null; recordedAt?: string | null }>
+  payoutRecords?: Array<{ month: string; paidAt?: string | null; paidBy?: string | null; note?: string | null }>
   payoutBasis?: {
     month: string
     adsenseCents: number
+    invalidTrafficCents?: number
+    netCents?: number
     poolCents: number
     impressionsLoaded: number
     capped: boolean
+    paid?: { paidAt?: string | null; paidBy?: string | null; note?: string | null } | null
     payouts: Array<{ slug: string; impressions: number; sharePercent: number; payoutCents: number }>
   } | null
   generatedAt?: number
@@ -6301,6 +6305,8 @@ function AdminControlCenterInner() {
   const [adminRevenueMonth, setAdminRevenueMonth] = useState('')
   const [adminRevenueCents, setAdminRevenueCents] = useState('')
   const [adminRevenueNote, setAdminRevenueNote] = useState('')
+  const [adminRevenueInvalid, setAdminRevenueInvalid] = useState('')
+  const [adminPayoutBusy, setAdminPayoutBusy] = useState(false)
   const [adminRevenueBusy, setAdminRevenueBusy] = useState(false)
   const [adminRevenueMessage, setAdminRevenueMessage] = useState<string | null>(null)
   const [adminApprovalsBusy, setAdminApprovalsBusy] = useState<string | null>(null)
@@ -6577,12 +6583,18 @@ function AdminControlCenterInner() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
-        body: JSON.stringify({ month: adminRevenueMonth, adsenseCents: cents, note: adminRevenueNote.trim() || null }),
+        body: JSON.stringify({
+          month: adminRevenueMonth,
+          adsenseCents: cents,
+          invalidTrafficCents: Number(adminRevenueInvalid.replace(/[^\d]/g, '')) || 0,
+          note: adminRevenueNote.trim() || null,
+        }),
       })
       const payload = await response.json().catch(() => ({}))
       if (response.ok && payload?.ok) {
         setAdminRevenueMessage('Einnahmen erfasst (Audit-Record geschrieben) — Payout-Basis aktualisiert.')
         setAdminRevenueCents('')
+        setAdminRevenueInvalid('')
         setAdminRevenueNote('')
         refreshAdminFinance()
       } else {
@@ -6592,6 +6604,24 @@ function AdminControlCenterInner() {
       setAdminRevenueMessage('Backend nicht erreichbar.')
     } finally {
       setAdminRevenueBusy(false)
+    }
+  }
+
+  // Monats-Pool als ausgezahlt vermerken (kein Geld-Transfer, nur Vermerk + Audit)
+  const actAdminPayoutRecord = async (month: string) => {
+    setAdminPayoutBusy(true)
+    try {
+      await fetchService('/api/admin/finance/payout-record', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ month }),
+      })
+      refreshAdminFinance()
+    } catch {
+      /* naechster Klick uebernimmt */
+    } finally {
+      setAdminPayoutBusy(false)
     }
   }
 
@@ -7999,7 +8029,7 @@ function AdminControlCenterInner() {
             Finalisierte Monats-Einnahmen aus dem AdSense-Dashboard hier eintragen (in Cents) — jede Erfassung wird auditiert,
             eine erneute Erfassung desselben Monats ist die Korrektur. Daraus wird die {share}%-Payout-Basis berechnet.
           </p>
-          <div className="mt-4 grid gap-2 lg:grid-cols-[130px_1fr_1fr_auto]">
+          <div className="mt-4 grid gap-2 lg:grid-cols-[130px_1fr_1fr_1fr_auto]">
             <input
               value={adminRevenueMonth}
               onChange={(event) => setAdminRevenueMonth(event.target.value.slice(0, 7))}
@@ -8010,6 +8040,13 @@ function AdminControlCenterInner() {
               value={adminRevenueCents}
               onChange={(event) => setAdminRevenueCents(event.target.value.replace(/[^\d]/g, ''))}
               placeholder="Einnahmen in Cents (z. B. 250000)"
+              inputMode="numeric"
+              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+            />
+            <input
+              value={adminRevenueInvalid}
+              onChange={(event) => setAdminRevenueInvalid(event.target.value.replace(/[^\d]/g, ''))}
+              placeholder="Invalid Traffic in Cents (Abzug, optional)"
               inputMode="numeric"
               className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
             />
@@ -8037,10 +8074,26 @@ function AdminControlCenterInner() {
           {adminFinance?.payoutBasis ? (
             <>
               <p className="mt-1 text-sm font-semibold text-[#5d6776]">
-                Monat {adminFinance.payoutBasis.month}: {(adminFinance.payoutBasis.adsenseCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} Einnahmen →
+                Monat {adminFinance.payoutBasis.month}: {(adminFinance.payoutBasis.adsenseCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} Einnahmen
+                {adminFinance.payoutBasis.invalidTrafficCents ? <> − {(adminFinance.payoutBasis.invalidTrafficCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} Invalid-Traffic</> : null}
+                {' '}= {((adminFinance.payoutBasis.netCents ?? adminFinance.payoutBasis.adsenseCents) / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} netto →
                 {' '}{(adminFinance.payoutBasis.poolCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} User-Pool ({share} %),
                 verteilt nach {adminFinance.payoutBasis.impressionsLoaded} geladenen Impressions{adminFinance.payoutBasis.capped ? ' (Basis gekappt, >2000 Objekte)' : ''}.
               </p>
+              {adminFinance.payoutBasis.paid ? (
+                <p className="mt-2 text-sm font-bold text-emerald-700">
+                  ✓ Als ausgezahlt vermerkt{adminFinance.payoutBasis.paid.paidBy ? ` von ${adminFinance.payoutBasis.paid.paidBy}` : ''}{adminFinance.payoutBasis.paid.paidAt ? ` am ${new Date(adminFinance.payoutBasis.paid.paidAt).toLocaleDateString('de-DE')}` : ''}{adminFinance.payoutBasis.paid.note ? ` — ${adminFinance.payoutBasis.paid.note}` : ''}.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  disabled={adminPayoutBusy}
+                  onClick={() => void actAdminPayoutRecord(adminFinance.payoutBasis?.month ?? '')}
+                  className="mt-3 min-h-11 rounded-md border border-emerald-600 px-4 text-sm font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                >
+                  {adminPayoutBusy ? 'Vermerke …' : 'Pool als ausgezahlt vermerken'}
+                </button>
+              )}
               <div className="mt-4">
                 <AdminTable
                   columns={['Profil', 'Impressions', 'Anteil', `Payout (${share} %-Pool)`]}
