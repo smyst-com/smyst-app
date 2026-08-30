@@ -158,15 +158,30 @@ async def admin_finance(request: Request) -> dict[str, Any]:
         days.append({"date": day, "impressions": per_day.get(day, 0)})
 
     revenue_entries: list[dict[str, Any]] = []
+    payout_records_all: list[dict[str, Any]] = []
     payout_basis: dict[str, Any] | None = None
     if source == "idrive-e2":
         try:
             revenue_entries = await asyncio.to_thread(list_revenue_entries, 12)
+            payout_records_all = await asyncio.to_thread(list_payout_records, 12)
             if revenue_entries:
                 latest = revenue_entries[0]
                 payout_basis = await asyncio.to_thread(
-                    _month_payouts, latest["month"], latest.get("adsenseCents", 0)
+                    _month_payouts,
+                    latest["month"],
+                    latest.get("adsenseCents", 0),
+                    latest.get("invalidTrafficCents", 0),
                 )
+                payout_records = await asyncio.to_thread(list_payout_records, 12)
+                paid = next(
+                    (r for r in payout_records if r.get("month") == latest["month"]), None
+                )
+                if paid:
+                    payout_basis["paid"] = {
+                        "paidAt": paid.get("paidAt"),
+                        "paidBy": paid.get("paidBy"),
+                        "note": paid.get("note"),
+                    }
         except Exception:  # noqa: BLE001 — Revenue-Teil ist optional
             revenue_entries = []
 
@@ -183,6 +198,7 @@ async def admin_finance(request: Request) -> dict[str, Any]:
         "topProfiles": top_profiles,
         "topCreators": top_creators,
         "revenue": revenue_entries,
+        "payoutRecords": payout_records_all,
         "payoutBasis": payout_basis,
         "generatedAt": int(time.time() * 1000),
     }
@@ -198,11 +214,12 @@ def _revenue_key(month: str) -> str:
     return f"{REVENUE_PREFIX}{month}.json"
 
 
-def save_revenue_entry(month: str, adsense_cents: int, note: str | None, actor_email: str | None) -> dict[str, Any]:
+def save_revenue_entry(month: str, adsense_cents: int, note: str | None, actor_email: str | None, invalid_traffic_cents: int = 0) -> dict[str, Any]:
     client = _client()
     record = {
         "month": month,
         "adsenseCents": adsense_cents,
+        "invalidTrafficCents": max(0, invalid_traffic_cents),
         "note": note,
         "recordedBy": actor_email,
         "recordedAt": datetime.now(UTC).isoformat(),
@@ -232,11 +249,11 @@ def list_revenue_entries(limit: int = 12) -> list[dict[str, Any]]:
     return entries[:limit]
 
 
-def _month_payouts(month: str, adsense_cents: int) -> dict[str, Any]:
+def _month_payouts(month: str, adsense_cents: int, invalid_traffic_cents: int = 0) -> dict[str, Any]:
     """25%-Payouts pro Profil fuer einen Monat, pro-rata nach Impressions.
 
-    Laedt die Impressions des Monats (Deckelung RECENT_LOAD_LIMIT) und
-    verteilt adsense_cents * USER_SHARE_PERCENT anteilig. capped=true zeigt
+    Invalid-Traffic-Abzug zuerst: net = adsense - invalid (mindestens 0),
+    danach verteilt net * USER_SHARE_PERCENT anteilig. capped=true zeigt
     an, dass mehr Objekte existierten als geladen wurden.
     """
     client = _client()
@@ -250,7 +267,8 @@ def _month_payouts(month: str, adsense_cents: int) -> dict[str, Any]:
             keys.append(str(item.get("Key", "")))
     capped = len(keys) > RECENT_LOAD_LIMIT
     by_slug, _by_creator, loaded = _recent_details(keys)
-    pool = adsense_cents * USER_SHARE_PERCENT // 100
+    net_cents = max(0, adsense_cents - max(0, invalid_traffic_cents))
+    pool = net_cents * USER_SHARE_PERCENT // 100
     payouts = sorted(
         (
             {
@@ -266,6 +284,8 @@ def _month_payouts(month: str, adsense_cents: int) -> dict[str, Any]:
     return {
         "month": month,
         "adsenseCents": adsense_cents,
+        "invalidTrafficCents": max(0, invalid_traffic_cents),
+        "netCents": net_cents,
         "poolCents": pool,
         "impressionsLoaded": loaded,
         "capped": capped,
@@ -276,6 +296,7 @@ def _month_payouts(month: str, adsense_cents: int) -> dict[str, Any]:
 class RevenueEntryRequest(BaseModel):
     month: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
     adsenseCents: int = Field(ge=0, le=100_000_000_00)
+    invalidTrafficCents: int = Field(default=0, ge=0, le=100_000_000_00)
     note: str | None = Field(default=None, max_length=240)
 
 
@@ -304,7 +325,8 @@ async def admin_finance_revenue(body: RevenueEntryRequest, request: Request) -> 
     session = _session_from_request(request) or {}
     try:
         record = await asyncio.to_thread(
-            save_revenue_entry, body.month, body.adsenseCents, body.note, session.get("email")
+            save_revenue_entry, body.month, body.adsenseCents, body.note, session.get("email"),
+            body.invalidTrafficCents,
         )
     except Exception:  # noqa: BLE001 — e2-Fehler -> 503, kein 500
         return JSONResponse(
@@ -318,6 +340,93 @@ async def admin_finance_revenue(body: RevenueEntryRequest, request: Request) -> 
         action="finance.revenue_entry",
         target_type="adsense_month",
         target_id=body.month,
-        detail=f"{body.adsenseCents} Cents erfasst (Korrektur ueberschreibt)",
+        detail=f"{body.adsenseCents} Cents erfasst, {body.invalidTrafficCents} Invalid-Traffic abgezogen (Korrektur ueberschreibt)",
     )
     return {"ok": True, "entry": record}
+
+
+# --- Auszahlungs-Vermerk (Payout manuell ausgefuehrt, z. B. Ueberweisung) ---
+
+PAYOUT_PREFIX = "finance/payouts/v1/"
+
+
+def _payout_key(month: str) -> str:
+    return f"{PAYOUT_PREFIX}{month}.json"
+
+
+def save_payout_record(month: str, actor_email: str | None, note: str | None) -> dict[str, Any]:
+    client = _client()
+    record = {
+        "month": month,
+        "paidAt": datetime.now(UTC).isoformat(),
+        "paidBy": actor_email,
+        "note": note,
+    }
+    client.put_object(
+        Bucket=settings.idrive_e2_bucket, Key=_payout_key(month),
+        Body=json.dumps(record, ensure_ascii=False).encode("utf-8"),
+        ContentType="application/json",
+    )
+    return record
+
+
+def list_payout_records(limit: int = 12) -> list[dict[str, Any]]:
+    client = _client()
+    paginator = client.get_paginator("list_objects_v2")
+    records: list[dict[str, Any]] = []
+    for page in paginator.paginate(Bucket=settings.idrive_e2_bucket, Prefix=PAYOUT_PREFIX):
+        for entry in page.get("Contents", []) or []:
+            try:
+                response = client.get_object(Bucket=settings.idrive_e2_bucket, Key=entry["Key"])
+                data = json.loads(response["Body"].read().decode("utf-8"))
+                if isinstance(data, dict):
+                    records.append(data)
+            except Exception:  # noqa: BLE001, S112
+                continue
+    records.sort(key=lambda row: str(row.get("month") or ""), reverse=True)
+    return records[:limit]
+
+
+class PayoutRecordRequest(BaseModel):
+    month: str = Field(pattern=r"^\d{4}-(0[1-9]|1[0-2])$")
+    note: str | None = Field(default=None, max_length=240)
+
+
+@router.post("/finance/payout-record")
+async def admin_finance_payout_record(body: PayoutRecordRequest, request: Request) -> Any:
+    """Vermerkt, dass der 25%-Pool eines Monats ausgezahlt wurde (CSRF + Audit).
+
+    Kein Geld-Transfer: die eigentliche Zahlung laeuft ausserhalb (manuell),
+    dieser Record macht sie revisionssicher nachvollziehbar.
+    """
+    denied = _require_admin(request)
+    if denied is not None:
+        return denied
+    if (csrf := _require_csrf(request)) is not None:
+        return csrf
+    if not storage_configured():
+        return JSONResponse(
+            status_code=503,
+            content={"ok": False, "code": "store_unavailable", "message": "Object Brain nicht erreichbar."},
+        )
+
+    session = _session_from_request(request) or {}
+    try:
+        record = await asyncio.to_thread(
+            save_payout_record, body.month, session.get("email"), (body.note or "").strip()[:240] or None
+        )
+    except Exception:  # noqa: BLE001
+        return JSONResponse(
+            status_code=503,
+            content={"ok": False, "code": "store_unavailable", "message": "Object Brain nicht erreichbar."},
+        )
+    await asyncio.to_thread(
+        audit_store.record_action,
+        actor_sub=session.get("sub"),
+        actor_email=session.get("email"),
+        action="finance.payout_record",
+        target_type="payout_month",
+        target_id=body.month,
+        detail=f"Pool-Auszahlung vermerkt: {record['note']}" if record.get("note") else "Pool-Auszahlung vermerkt",
+    )
+    return {"ok": True, "record": record}
