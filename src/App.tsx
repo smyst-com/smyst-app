@@ -5882,6 +5882,24 @@ type AdminUserRow = {
   updatedAt?: number | null
 }
 
+type AdminAuditRecord = {
+  id?: string | null
+  actorSub?: string | null
+  actorEmail?: string | null
+  action?: string | null
+  targetType?: string | null
+  targetId?: string | null
+  detail?: string | null
+  createdAt?: string | null
+}
+
+type AdminAuditApi = {
+  ok: boolean
+  source?: string
+  records?: AdminAuditRecord[]
+  generatedAt?: number
+}
+
 type AdminUsersApi = {
   ok: boolean
   source?: string
@@ -6233,6 +6251,9 @@ function AdminControlCenterInner() {
   const [adminVersionsRejectReason, setAdminVersionsRejectReason] = useState('')
   const [adminApprovals, setAdminApprovals] = useState<AdminApprovalsApi | null>(null)
   const [adminUsers, setAdminUsers] = useState<AdminUsersApi | null>(null)
+  const [adminUsersBusy, setAdminUsersBusy] = useState<string | null>(null)
+  const [adminUsersMessage, setAdminUsersMessage] = useState<string | null>(null)
+  const [adminAudit, setAdminAudit] = useState<AdminAuditApi | null>(null)
   const [adminRegistrations, setAdminRegistrations] = useState<AdminRegistrationsApi | null>(null)
   const [adminModeration, setAdminModeration] = useState<AdminModerationApi | null>(null)
   const [adminFinance, setAdminFinance] = useState<AdminFinanceApi | null>(null)
@@ -6329,9 +6350,8 @@ function AdminControlCenterInner() {
     return refreshAdminApprovals()
   }, [activeSection, refreshAdminApprovals])
 
-  // Echte Nutzerliste aus dem Object Brain (nur lesen, nie schreiben)
-  useEffect(() => {
-    if (activeSection !== 'users') return
+  // Echte Nutzerliste aus dem Object Brain (lesen; Sperren schreibt + auditiert)
+  const refreshAdminUsers = useCallback(() => {
     let alive = true
     fetchService('/api/admin/users', { credentials: 'include' })
       .then(async (response) => {
@@ -6346,7 +6366,60 @@ function AdminControlCenterInner() {
     return () => {
       alive = false
     }
-  }, [activeSection])
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'users') return
+    return refreshAdminUsers()
+  }, [activeSection, refreshAdminUsers])
+
+  const actAdminUserStatus = async (key: string, sub: string, action: 'block' | 'unblock') => {
+    setAdminUsersBusy(key)
+    setAdminUsersMessage(null)
+    try {
+      const response = await fetchService('/api/admin/users/status', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ sub, action }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (response.ok && payload?.ok) {
+        setAdminUsersMessage(`${key}|${action === 'block' ? 'Gesperrt (Audit-Record geschrieben).' : 'Entsperrt (Audit-Record geschrieben).'}`)
+        refreshAdminUsers()
+        refreshAdminAudit()
+      } else {
+        setAdminUsersMessage(`${key}|${typeof payload?.error?.message === 'string' ? payload.error.message : 'Aktion fehlgeschlagen.'}`)
+      }
+    } catch {
+      setAdminUsersMessage(`${key}|Backend nicht erreichbar.`)
+    } finally {
+      setAdminUsersBusy(null)
+    }
+  }
+
+  // Audit-Log: revisionssichere Admin-Aktionen (read-only)
+  const refreshAdminAudit = useCallback(() => {
+    let alive = true
+    fetchService('/api/admin/audit', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminAudit(response.ok && payload?.ok ? payload as AdminAuditApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminAudit(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'security') return
+    return refreshAdminAudit()
+  }, [activeSection, refreshAdminAudit])
 
   // Registrierungs-Kennzahlen (read-only, statistisch ohne Adressen)
   useEffect(() => {
@@ -7226,14 +7299,6 @@ function AdminControlCenterInner() {
 
   const renderUsers = () => {
     const counts = adminUsers?.counts
-    const userRows: AdminRow[] = (adminUsers?.users ?? []).map((row) => ({
-      Nutzer: row.email ?? row.sub ?? '–',
-      Name: row.name ?? '–',
-      Status: row.status === 'active' ? 'aktiv' : row.status === 'deleted' ? 'gelöscht (DSGVO)' : row.status ?? '–',
-      Verifiziert: row.emailVerified ? 'ja' : 'nein',
-      Registriert: row.createdAt ? new Date(row.createdAt).toLocaleDateString('de-DE') : '–',
-      'Letzte Änderung': row.updatedAt ? new Date(row.updatedAt).toLocaleDateString('de-DE') : '–',
-    }))
     return (
       <div className="grid gap-5">
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
@@ -7254,18 +7319,68 @@ function AdminControlCenterInner() {
             { label: 'MVP-Dokumente', value: String(counts?.mvpDocs ?? 0), detail: 'user-mvp/-Dokumente, inkl. Google-OAuth-Nutzer.', tone: 'navy' as const },
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
-        {userRows.length > 0 ? (
-          <AdminTable columns={['Nutzer', 'Name', 'Status', 'Verifiziert', 'Registriert', 'Letzte Änderung']} rows={userRows} />
+        {(adminUsers?.users ?? []).length > 0 ? (
+          <div className="overflow-x-auto rounded-lg border border-[#d9e2ec] bg-white">
+            <table className="min-w-full table-fixed text-left text-sm">
+              <thead className="border-b border-[#d9e2ec] bg-[#f7fafd] text-xs font-bold uppercase tracking-[0.08em] text-[#5d6776]">
+                <tr>
+                  {['Nutzer', 'Name', 'Status', 'Verifiziert', 'Registriert', 'Aktion'].map((column) => (
+                    <th key={column} className="px-4 py-3">{column}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#edf2f7]">
+                {(adminUsers?.users ?? []).map((row) => {
+                  const blocking = row.status !== 'active' && row.status !== 'deleted'
+                  const confirmKey = `user:${row.sub ?? row.email}`
+                  const confirming = adminUsersBusy === confirmKey
+                  return (
+                    <tr key={row.sub ?? row.email} className="text-[#5d6776]">
+                      <td className="px-4 py-3 font-bold text-[#111722]">{row.email ?? row.sub ?? '–'}</td>
+                      <td className="px-4 py-3">{row.name ?? '–'}</td>
+                      <td className="px-4 py-3">
+                        {row.status === 'active' ? 'aktiv' : row.status === 'deleted' ? 'gelöscht (DSGVO)' : (row.status ?? '–')}
+                      </td>
+                      <td className="px-4 py-3">{row.emailVerified ? 'ja' : 'nein'}</td>
+                      <td className="px-4 py-3">{row.createdAt ? new Date(row.createdAt).toLocaleDateString('de-DE') : '–'}</td>
+                      <td className="px-4 py-3">
+                        {row.status === 'deleted' ? (
+                          <span className="text-xs font-semibold text-[#8892a0]">DSGVO-gelöscht</span>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              disabled={adminUsersBusy !== null}
+                              onClick={() => void actAdminUserStatus(confirmKey, row.sub ?? '', blocking ? 'unblock' : 'block')}
+                              className={`rounded-md border px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${blocking
+                                ? 'border-emerald-600 text-emerald-700 hover:bg-emerald-50'
+                                : 'border-red-500 text-red-600 hover:bg-red-50'}`}
+                            >
+                              {confirming ? '…' : blocking ? 'Entsperren' : 'Sperren'}
+                            </button>
+                            {adminUsersMessage?.startsWith(confirmKey) && (
+                              <span className="self-center text-xs font-semibold text-[#667085]">{adminUsersMessage.split('|')[1]}</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
             Keine Konten gefunden — entweder es gibt noch keine Registrierungen oder IDrive e2 ist nicht erreichbar.
           </section>
         )}
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
+          <h2 className="text-xl font-bold text-[#111722]">Hinweise</h2>
           <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
-            Sperren, Rollen ändern und Export brauchen schreibende Endpoints (CSRF-pflichtig) und folgen in eigenen PRs.
-            DSGVO-Löschung läuft bereits über den bestehenden Account-Flow. Passwort-Hashes verlassen den Store nie.
+            Sperren setzt den Kontostatus auf disabled — neue Logins sind sofort blockiert, jede Aktion landet revisionssicher im Audit-Log (Security-Sektion).
+            Rollen bleiben bewusst Env-gesteuert (SMYST_OWNER_EMAILS/SMYST_ADMIN_EMAILS, Sicherheitsdesign des Inhabers).
+            DSGVO-Löschung läuft über den bestehenden Account-Flow; Passwort-Hashes verlassen den Store nie.
           </p>
         </section>
       </div>
@@ -7482,9 +7597,33 @@ function AdminControlCenterInner() {
           </section>
         )}
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Audit-Log – letzte Admin-Aktionen</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminAudit === null
+              ? 'Audit-Log wird geladen oder Backend nicht erreichbar.'
+              : (adminAudit.records ?? []).length === 0
+                ? 'Noch keine Admin-Aktionen aufgezeichnet — jeder Sperren-/Freigabe-/Verwurf-Vorgang landet hier revisionssicher.'
+                : `${adminAudit.records?.length ?? 0} neueste Einträge (Quelle: ${adminAudit.source ?? '–'}).`}
+          </p>
+          {(adminAudit?.records ?? []).length > 0 && (
+            <div className="mt-4">
+              <AdminTable
+                columns={['Zeit', 'Aktion', 'Akteur', 'Ziel', 'Detail']}
+                rows={(adminAudit?.records ?? []).map((record) => ({
+                  Zeit: record.createdAt ? new Date(record.createdAt).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'medium' }) : '–',
+                  Aktion: record.action ?? '–',
+                  Akteur: record.actorEmail ?? record.actorSub ?? '–',
+                  Ziel: record.targetId ?? '–',
+                  Detail: record.detail ?? '–',
+                }))}
+              />
+            </div>
+          )}
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
           <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
-            Eskalieren/Sperren einzelner Fälle und ein persistentes Audit-Log (revisionssichere Ereignis-Historie im Object Brain) folgen in eigenen PRs.
+            Eskalieren einzelner Meldungen (Fall-Workflow) folgt in einem eigenen PR.
             Invalid-Traffic-Erkennung für Anzeigen läuft über AdSense-Policy-Filter im Revenue-Pfad.
           </p>
         </section>
