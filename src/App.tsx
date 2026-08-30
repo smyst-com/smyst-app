@@ -5900,6 +5900,13 @@ type AdminAuditApi = {
   generatedAt?: number
 }
 
+type AdminStorageStatsApi = {
+  ok: boolean
+  source?: string
+  rows?: Array<{ prefix: string; objects: number; bytes: number; capped: boolean }>
+  generatedAt?: number
+}
+
 type AdminUsersApi = {
   ok: boolean
   source?: string
@@ -6296,6 +6303,7 @@ function AdminControlCenterInner() {
   const [adminUsersBusy, setAdminUsersBusy] = useState<string | null>(null)
   const [adminUsersMessage, setAdminUsersMessage] = useState<string | null>(null)
   const [adminAudit, setAdminAudit] = useState<AdminAuditApi | null>(null)
+  const [adminStorageStats, setAdminStorageStats] = useState<AdminStorageStatsApi | null>(null)
   const [adminRegistrations, setAdminRegistrations] = useState<AdminRegistrationsApi | null>(null)
   const [adminModeration, setAdminModeration] = useState<AdminModerationApi | null>(null)
   const [adminCaseKey, setAdminCaseKey] = useState<string | null>(null)
@@ -6472,6 +6480,25 @@ function AdminControlCenterInner() {
     if (activeSection !== 'security') return
     return refreshAdminAudit()
   }, [activeSection, refreshAdminAudit])
+
+  // Object-Brain-Groessen je Praefix (read-only, nur Listing-Metadaten)
+  useEffect(() => {
+    if (activeSection !== 'storage' && activeSection !== 'idrive') return
+    let alive = true
+    fetchService('/api/admin/storage-stats', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (!alive) return
+        setAdminStorageStats(response.ok && payload?.ok ? payload as AdminStorageStatsApi : null)
+      })
+      .catch(() => {
+        if (!alive) return
+        setAdminStorageStats(null)
+      })
+    return () => {
+      alive = false
+    }
+  }, [activeSection])
 
   // Registrierungs-Kennzahlen (read-only, statistisch ohne Adressen)
   useEffect(() => {
@@ -7917,10 +7944,33 @@ function AdminControlCenterInner() {
           </div>
         </section>
         <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+          <h2 className="text-xl font-bold text-[#111722]">Object-Brain-Größen (echt)</h2>
+          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+            {adminStorageStats === null
+              ? 'Größen werden geladen oder Backend nicht erreichbar.'
+              : adminStorageStats.source === 'unavailable'
+                ? 'IDrive e2 ist gerade nicht erreichbar – keine Größen geladen.'
+                : `${(adminStorageStats.rows ?? []).reduce((sum, row) => sum + row.objects, 0).toLocaleString('de-DE')} Objekte in ${(adminStorageStats.rows ?? []).length} Bereichen, insgesamt ${formatBytes((adminStorageStats.rows ?? []).reduce((sum, row) => sum + row.bytes, 0))}.`}
+          </p>
+          {(adminStorageStats?.rows ?? []).length > 0 ? (
+            <div className="mt-4">
+              <AdminTable
+                columns={['Bereich', 'Objekte', 'Größe', 'Hinweis']}
+                rows={(adminStorageStats?.rows ?? []).map((row) => ({
+                  Bereich: row.prefix,
+                  Objekte: row.objects.toLocaleString('de-DE'),
+                  Größe: formatBytes(row.bytes),
+                  Hinweis: row.capped ? '≥ 10.000 Objekte (gekürzt)' : '–',
+                }))}
+              />
+            </div>
+          ) : null}
+        </section>
+        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
           <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
           <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
-            Speicherplatz-Verbrauch pro Bucket und Backup-Nachweise als Zahlenfolge in eigenen PRs
-            (Needs Listing über alle Präfixe mit Größensumme). Release-Safety-Canary-Metricke gibt es erst mit App-Releases.
+            Backup-Nachweise als Liste und Release-Safety-Canary-Metriken folgen in eigenen PRs
+            (Canary gibt es erst mit App-Releases).
           </p>
         </section>
       </div>
