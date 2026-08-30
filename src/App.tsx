@@ -5933,6 +5933,8 @@ type AdminModerationReport = {
   comment?: string | null
   question?: string | null
   createdAt?: number | null
+  caseStatus?: string | null
+  caseNote?: string | null
 }
 
 type AdminModerationApi = {
@@ -5946,6 +5948,9 @@ type AdminModerationApi = {
     report7d: number
     down7d: number
     deletedAccounts: number
+    openCases?: number
+    resolvedCases?: number
+    escalatedCases?: number
   }
   reports?: AdminModerationReport[]
   generatedAt?: number
@@ -6289,6 +6294,9 @@ function AdminControlCenterInner() {
   const [adminAudit, setAdminAudit] = useState<AdminAuditApi | null>(null)
   const [adminRegistrations, setAdminRegistrations] = useState<AdminRegistrationsApi | null>(null)
   const [adminModeration, setAdminModeration] = useState<AdminModerationApi | null>(null)
+  const [adminCaseKey, setAdminCaseKey] = useState<string | null>(null)
+  const [adminCaseNote, setAdminCaseNote] = useState('')
+  const [adminCaseBusy, setAdminCaseBusy] = useState<string | null>(null)
   const [adminFinance, setAdminFinance] = useState<AdminFinanceApi | null>(null)
   const [adminRevenueMonth, setAdminRevenueMonth] = useState('')
   const [adminRevenueCents, setAdminRevenueCents] = useState('')
@@ -6478,9 +6486,8 @@ function AdminControlCenterInner() {
     }
   }, [activeSection])
 
-  // Moderation: gemeldete Nachrichten (read-only)
-  useEffect(() => {
-    if (activeSection !== 'moderation' && activeSection !== 'security') return
+  // Moderation: gemeldete Nachrichten + Fallstatus (lesen; Fall-Aktionen schreiben + auditieren)
+  const refreshAdminModeration = useCallback(() => {
     let alive = true
     fetchService('/api/admin/moderation', { credentials: 'include' })
       .then(async (response) => {
@@ -6495,7 +6502,34 @@ function AdminControlCenterInner() {
     return () => {
       alive = false
     }
-  }, [activeSection])
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'moderation' && activeSection !== 'security') return
+    return refreshAdminModeration()
+  }, [activeSection, refreshAdminModeration])
+
+  const actAdminCase = async (
+    key: string, twinId: string | null, messageId: string, action: 'resolve' | 'escalate', note?: string,
+  ) => {
+    setAdminCaseBusy(key)
+    try {
+      await fetchService('/api/admin/moderation/case', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ twinId, messageId, action, note: note?.trim() || null }),
+      })
+      setAdminCaseKey(null)
+      setAdminCaseNote('')
+      refreshAdminModeration()
+      refreshAdminAudit()
+    } catch {
+      /* Queue bleibt einfach stehen; naechster Versuch uebernimmt */
+    } finally {
+      setAdminCaseBusy(null)
+    }
+  }
 
   // Finance: gemessene Ad-Impressions als Abrechnungsbasis (read-only)
   useEffect(() => {
@@ -7705,15 +7739,77 @@ function AdminControlCenterInner() {
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
         {reports.length > 0 ? (
-          <AdminTable
-            columns={['Profil', 'Meldung', 'Frage (Auszug)', 'Zeit']}
-            rows={reports.map((row) => ({
-              Profil: row.twinId ?? '–',
-              Meldung: row.comment ?? 'ohne Kommentar',
-              'Frage (Auszug)': row.question ?? '–',
-              Zeit: dateLabel(row.createdAt),
-            }))}
-          />
+          <div className="overflow-x-auto rounded-lg border border-[#d9e2ec] bg-white">
+            <table className="min-w-full table-fixed text-left text-sm">
+              <thead className="border-b border-[#d9e2ec] bg-[#f7fafd] text-xs font-bold uppercase tracking-[0.08em] text-[#5d6776]">
+                <tr>{['Profil', 'Meldung', 'Zeit', 'Fall', 'Aktion'].map((column) => <th key={column} className="px-4 py-3">{column}</th>)}</tr>
+              </thead>
+              <tbody className="divide-y divide-[#edf2f7]">
+                {reports.map((row) => {
+                  const caseKey = `${row.twinId ?? ''}/${row.messageId ?? ''}`
+                  const expanded = adminCaseKey === caseKey
+                  return (
+                    <tr key={caseKey} className="text-[#5d6776]">
+                      <td className="px-4 py-3 font-bold text-[#111722]">{row.twinId ?? '–'}</td>
+                      <td className="px-4 py-3">{row.comment ?? 'ohne Kommentar'}</td>
+                      <td className="px-4 py-3">{dateLabel(row.createdAt)}</td>
+                      <td className="px-4 py-3">
+                        {row.caseStatus === 'resolved' ? <span className="font-bold text-emerald-700">erledigt</span>
+                          : row.caseStatus === 'escalated' ? <span className="font-bold text-amber-600">eskaliert</span>
+                          : <span className="font-bold text-red-600">offen</span>}
+                        {row.caseNote ? <span className="block text-xs font-semibold text-[#667085]">{row.caseNote}</span> : null}
+                      </td>
+                      <td className="px-4 py-3">
+                        {expanded ? (
+                          <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+                            <input
+                              value={adminCaseNote}
+                              onChange={(event) => setAdminCaseNote(event.target.value.slice(0, 240))}
+                              placeholder="Notiz (optional)"
+                              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+                            />
+                            <button
+                              type="button"
+                              disabled={adminCaseBusy !== null}
+                              onClick={() => void actAdminCase(caseKey, row.twinId ?? null, row.messageId ?? '', 'resolve', adminCaseNote)}
+                              className="min-h-11 rounded-md border border-emerald-600 px-3 text-xs font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                            >
+                              {adminCaseBusy === caseKey ? '…' : 'Erledigt'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { setAdminCaseKey(null); setAdminCaseNote('') }}
+                              className="min-h-11 rounded-md border border-[#d9e2ec] px-3 text-xs font-bold text-[#172033] hover:bg-[#f7fafd]"
+                            >
+                              Abbrechen
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => { setAdminCaseKey(caseKey); setAdminCaseNote('') }}
+                              className="rounded-md border border-[#d9e2ec] px-3 py-1.5 text-xs font-bold text-[#5d6776] hover:bg-[#f7fafd]"
+                            >
+                              Bearbeiten
+                            </button>
+                            <button
+                              type="button"
+                              disabled={adminCaseBusy !== null}
+                              onClick={() => void actAdminCase(caseKey, row.twinId ?? null, row.messageId ?? '', 'escalate')}
+                              className="rounded-md border border-amber-500 px-3 py-1.5 text-xs font-bold text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+                            >
+                              Eskalieren
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
             Keine gemeldeten Nachrichten — die Abuse-Queue ist leer. Gemeldete Antworten werden zusätzlich automatisch zu Eval-Testfällen des Profils.
