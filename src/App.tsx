@@ -6244,6 +6244,8 @@ function AdminControlCenterInner() {
   const [adminMfaSubmitting, setAdminMfaSubmitting] = useState(false)
   const [adminQuality, setAdminQuality] = useState<AdminQualityApi | null>(null)
   const [adminAutopilot, setAdminAutopilot] = useState<AdminAutopilotApi | null>(null)
+  const [adminAutopilotBusy, setAdminAutopilotBusy] = useState<string | null>(null)
+  const [adminAutopilotMessage, setAdminAutopilotMessage] = useState<string | null>(null)
   const [adminVersions, setAdminVersions] = useState<AdminVersionsApi | null>(null)
   const [adminVersionsBusy, setAdminVersionsBusy] = useState<string | null>(null)
   const [adminVersionsMessage, setAdminVersionsMessage] = useState<string | null>(null)
@@ -6580,6 +6582,29 @@ function AdminControlCenterInner() {
       alive = false
     }
   }, [activeSection])
+
+  // Autopilot-Workflow per GitHub-Dispatch erneut starten (CSRF + Audit)
+  const actAdminAutopilotRerun = async (file: string) => {
+    setAdminAutopilotBusy(file)
+    setAdminAutopilotMessage(null)
+    try {
+      const response = await fetchService('/api/admin/autopilot/rerun', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ file }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      const message = response.ok && payload?.ok
+        ? 'Dispatch akzeptiert — Lauf startet.'
+        : typeof payload?.message === 'string' ? payload.message : 'Dispatch fehlgeschlagen.'
+      setAdminAutopilotMessage(`${file}|${message}`)
+    } catch {
+      setAdminAutopilotMessage(`${file}|Backend nicht erreichbar.`)
+    } finally {
+      setAdminAutopilotBusy(null)
+    }
+  }
 
   // Versions-Autopilot: gestagte, gepruefte Profil-Versionen zur Freigabe
   const refreshAdminVersions = () => {
@@ -7185,6 +7210,23 @@ function AdminControlCenterInner() {
                 <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-bold text-sky-500 hover:underline">
                   Lauf in GitHub ansehen
                 </a>
+              )}
+              {workflow.kind === 'github' && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={adminAutopilotBusy !== null}
+                    onClick={() => void actAdminAutopilotRerun(workflow.file)}
+                    className={`rounded-md border px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${workflow.light === 'red' || workflow.light === 'yellow'
+                      ? 'border-emerald-600 text-emerald-700 hover:bg-emerald-50'
+                      : 'border-[#d9e2ec] text-[#5d6776] hover:bg-[#f7fafd]'}`}
+                  >
+                    {adminAutopilotBusy === workflow.file ? 'Startet …' : 'Erneut starten'}
+                  </button>
+                  {adminAutopilotMessage?.startsWith(workflow.file) && (
+                    <span className="text-xs font-semibold text-[#667085]">{adminAutopilotMessage.split('|')[1]}</span>
+                  )}
+                </div>
               )}
             </section>
           ))}

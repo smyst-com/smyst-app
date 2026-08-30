@@ -1,12 +1,14 @@
 """Admin-Endpoints fuer das Autopilot-Cockpit (Stufe 1).
 
-GET /api/admin/overview   – Infrastruktur-Status (Storage/Compute-Plan) plus
-                             ehrliche Kernzahlen (Feedback-Volumen).
-GET /api/admin/autopilot  – Ampel-Status aller geplanten Autopilot-Workflows
-                             (GitHub Actions) und der lokalen launchd-Jobs.
+GET  /api/admin/overview       – Infrastruktur-Status plus Kernzahlen.
+GET  /api/admin/autopilot      – Ampel-Status aller Autopilot-Workflows.
+POST /api/admin/autopilot/rerun – GitHub-Workflow erneut starten (Dispatch,
+                                  CSRF-pflichtig, schreibt Audit-Record).
 
-Beide Endpunkte sind read-only und nur fuer Sessions mit admin:read
-(Rollen admin/owner) erreichbar – gleiche Regel wie /api/admin/quality.
+Nur fuer Sessions mit admin:read (Rollen admin/owner) erreichbar – gleiche
+Regel wie /api/admin/quality. Rerun braucht SMYST_GITHUB_TOKEN mit
+actions:write – ohne Token antwortet der Endpoint ehrlich 503 statt einen
+Stillen Fehlschlag zu simulieren.
 """
 
 from __future__ import annotations
@@ -19,9 +21,11 @@ from typing import Any
 import httpx
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from app.api.v1.routes.admin_quality import _require_admin
-from app.integrations import feedback_store
+from app.api.v1.routes.auth import _session_from_request
+from app.integrations import audit_store, feedback_store
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -231,3 +235,76 @@ async def admin_autopilot(request: Request) -> Any:
 
     payload = await _autopilot_payload()
     return JSONResponse(content=payload)
+
+
+def _require_csrf(request: Request) -> JSONResponse | None:
+    if request.headers.get("X-Smyst-CSRF") != "1":
+        return JSONResponse(
+            status_code=403,
+            content={"ok": False, "code": "csrf_required", "message": "Ungueltige Anfrage."},
+        )
+    return None
+
+
+class AutopilotRerunRequest(BaseModel):
+    file: str = Field(min_length=3, max_length=120)
+
+
+@router.post("/autopilot/rerun")
+async def admin_autopilot_rerun(body: AutopilotRerunRequest, request: Request) -> Any:
+    denied = _require_admin(request)
+    if denied is not None:
+        return denied
+    if (csrf := _require_csrf(request)) is not None:
+        return csrf
+
+    entry = next((w for w in AUTOPILOT_WORKFLOWS if w["file"] == body.file), None)
+    if entry is None:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "ok": False,
+                "code": "unknown_workflow",
+                "message": "Unbekannter oder lokaler Workflow — nur GitHub-Workflows sind neu startbar.",
+            },
+        )
+
+    token = os.getenv("SMYST_GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN")
+    if not token:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "ok": False,
+                "code": "token_missing",
+                "message": "SMYST_GITHUB_TOKEN fehlt — der Inhaber muss das Secret mit actions:write-Recht setzen.",
+            },
+        )
+
+    headers = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {token}"}
+    async with httpx.AsyncClient(timeout=10) as client:
+        response = await client.post(
+            f"{GITHUB_API}/repos/{GITHUB_REPO}/actions/workflows/{body.file}/dispatches",
+            headers=headers,
+            json={"ref": "main"},
+        )
+    if response.status_code not in (200, 204):
+        return JSONResponse(
+            status_code=502,
+            content={
+                "ok": False,
+                "code": "dispatch_failed",
+                "message": f"GitHub lehnte den Dispatch ab (HTTP {response.status_code}).",
+            },
+        )
+
+    session = _session_from_request(request) or {}
+    await asyncio.to_thread(
+        audit_store.record_action,
+        actor_sub=session.get("sub"),
+        actor_email=session.get("email"),
+        action="autopilot.rerun",
+        target_type="workflow",
+        target_id=body.file,
+        detail=f"Dispatch fuer {entry['name']} auf main",
+    )
+    return {"ok": True, "workflow": body.file, "message": "Workflow-Dispatch akzeptiert — Lauf startet in GitHub."}
