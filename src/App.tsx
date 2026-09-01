@@ -53,6 +53,7 @@ const GitHubSignInButton = lazy(() => import('@/components/GitHubSignInButton'))
 const EmailAuthForm = lazy(() => import('@/components/EmailAuthForm'))
 const MobileNav = lazy(() => import('@/components/MobileNav'))
 import AccountPrivacyActions from '@/components/AccountPrivacyActions'
+import ApiKeysView from '@/components/ApiKeysView'
 import AdSlot from '@/components/AdSlot'
 import PasswordResetGate from '@/components/PasswordResetGate'
 import UserVoiceCard from '@/components/UserVoiceCard'
@@ -273,6 +274,7 @@ type AppView =
   | 'landing'
   | 'onboarding'
   | 'account-profile'
+  | 'api-keys'
   | 'my-twins'
   | 'twin-builder'
   | 'memory-upload'
@@ -576,6 +578,7 @@ const viewPaths: Record<Exclude<AppView, 'twin-profile' | 'not-found'>, string> 
   landing: '/',
   onboarding: '/onboarding',
   'account-profile': '/profile',
+  'api-keys': '/api-keys',
   'my-twins': '/twins',
   'twin-builder': '/twin-builder',
   'memory-upload': '/memory-upload',
@@ -629,6 +632,7 @@ function initialRoute(): { view: AppView; profileSlug: string | null; privateTwi
   }
   if (path === '/twin-chat' || path === '/chat' || path === '/chats') return { view: 'twin-chat', profileSlug: null, privateTwinId: null }
   if (path === '/settings') return { view: 'settings', profileSlug: null, privateTwinId: null }
+  if (path === '/api-keys') return { view: 'api-keys', profileSlug: null, privateTwinId: null }
   if (path === '/trust') return { view: 'trust', profileSlug: null, privateTwinId: null }
   if (path === '/privacy') return { view: 'privacy', profileSlug: null, privateTwinId: null }
   if (path === '/terms') return { view: 'terms', profileSlug: null, privateTwinId: null }
@@ -982,6 +986,7 @@ export default function App() {
             onNameSortModeChange={setNameSortMode}
           />
         )}
+        {currentView === 'api-keys' && <ApiKeysView onNavigate={navigateTo} />}
         {currentView === 'trust' && <TrustView onNavigate={navigateTo} />}
 		  {currentView === 'trust' && <AccountPrivacyActions />}
         {currentView === 'privacy' && <LegalView kind="privacy" />}
@@ -5468,6 +5473,16 @@ function SettingsView({
               <GitHubSignInButton variant="official" returnTo="/settings" />
             </Suspense>
           )}
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="mb-4 text-xl font-bold">API-Keys</h2>
+          <div className="space-y-4">
+            <p className="text-sm text-[#555b64]">
+              Nutze smyst 1.0 und smyst 1.1 in deinen eigenen Apps — mit privaten Keys im OpenAI-Format.
+            </p>
+            <Button onClick={() => onNavigate('api-keys')}>API-Keys verwalten</Button>
+          </div>
         </Card>
 
         <Card className="p-6">
