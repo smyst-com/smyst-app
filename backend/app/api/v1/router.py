@@ -13,6 +13,7 @@ from app.api.v1.routes.admin_users import router as admin_users_router
 from app.api.v1.routes.admin_versions import router as admin_versions_router
 from app.api.v1.routes.ads import router as ads_router
 from app.api.v1.routes.ai import router as ai_router
+from app.api.v1.routes.api_keys import router as api_keys_router
 from app.api.v1.routes.asr import router as asr_router
 from app.api.v1.routes.auth import router as auth_router
 from app.api.v1.routes.auth_account import router as auth_account_router
@@ -38,6 +39,7 @@ api_router.include_router(auth_email_router)
 api_router.include_router(health_router)
 api_router.include_router(public_twins_router)
 api_router.include_router(ai_router)
+api_router.include_router(api_keys_router)
 api_router.include_router(asr_router)
 api_router.include_router(chat_router)
 api_router.include_router(security_router)

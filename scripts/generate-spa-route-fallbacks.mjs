@@ -17,6 +17,7 @@ const templatePath = resolve(DIST, 'index.html');
 
 const appShellRoutes = [
   'admin',
+  'api-keys',
   'builder',
   'chat',
   'chats',
