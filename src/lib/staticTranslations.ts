@@ -180,6 +180,51 @@ export interface StaticTranslations {
     contact: string
     appData: string
   }
+  landing: {
+    badge: string
+    h1: string
+    sub: string
+    ctaStart: string
+    ctaHow: string
+    metric1: string
+    metric2: string
+    metric3: string
+    trustNote: string
+    previewLabel: string
+    panelProfile: string
+    panelHealth: string
+    panelMemory: string
+    panelChat: string
+    memory1: string
+    memory2: string
+    memory3: string
+    chatUser: string
+    chatAi: string
+    visionEyebrow: string
+    visionH2: string
+    visionText: string
+    idTitle: string
+    idText: string
+    memTitle: string
+    memText: string
+    legacyTitle: string
+    legacyText: string
+    productEyebrow: string
+    productH2: string
+    builderTitle: string
+    builderText: string
+    uploadTitle: string
+    uploadText: string
+    chatTitle: string
+    chatText: string
+    ctaH2: string
+    ctaText: string
+    ctaButton: string
+    ctaTop: string
+    colProfiles: string
+    colChat: string
+    colUpload: string
+  }
 }
 
 export const DEFAULT_TRANSLATIONS: StaticTranslations = {
@@ -365,6 +410,51 @@ export const DEFAULT_TRANSLATIONS: StaticTranslations = {
     contact: 'Kontakt',
     appData: 'App-Daten',
   },
+  landing: {
+    badge: 'Human Memory, Reimagined',
+    h1: 'Dein Leben. Deine Stimme. Für immer.',
+    sub: 'smyst.com bewahrt Erinnerungen, Werte und Wissen als deinen persönlichen KI-Zwilling — direkt im Browser, als PWA installierbar, auf Web, iPhone und Android.',
+    ctaStart: 'Starte deinen Twin',
+    ctaHow: 'So funktioniert’s',
+    metric1: 'Web & PWA — sofort im Browser starten',
+    metric2: 'iPhone & Android — als PWA installierbar',
+    metric3: 'Über 19.000 echte KI-Profile zum Chatten',
+    trustNote: 'Datenschutz-first • DSGVO-konform • KI klar gekennzeichnet',
+    previewLabel: 'Beispiel-Vorschau',
+    panelProfile: 'Twin-Profil',
+    panelHealth: 'Wissens-Qualität',
+    panelMemory: 'Memory-Ebenen',
+    panelChat: 'Twin-Chat',
+    memory1: 'Kindheit und prägende Erfahrungen',
+    memory2: 'Werte, Überzeugungen, Lebensprinzipien',
+    memory3: 'Beruf, Beziehungen, Wendepunkte',
+    chatUser: 'Was ist wichtig, wenn man eine große Entscheidung trifft?',
+    chatAi: 'Prüfe erst, ob die Entscheidung zu deinen Werten passt. Tempo ist selten wichtiger als innere Klarheit.',
+    visionEyebrow: 'Warum smyst.com',
+    visionH2: 'Mehr als ein Archiv. Eine digitale Kontinuität.',
+    visionText: 'smyst.com bewahrt nicht nur Informationen, sondern Denkweise, Persönlichkeit und Erfahrung in deiner kontrollierten Umgebung.',
+    idTitle: 'Der Twin lernt, wer du bist.',
+    idText: 'Profile, Antworten, Biografie und persönlicher Stil werden in einer klaren Identitätsstruktur zusammengeführt.',
+    memTitle: 'Erinnerungen werden semantisch organisiert.',
+    memText: 'Texte, PDFs, Audio, Tagebücher und Interviews werden automatisch sortiert und später im richtigen Kontext wiedergefunden.',
+    legacyTitle: 'Du entscheidest, wer wann Zugriff erhält.',
+    legacyText: 'Privat, Familie, Kinder oder Team. smyst.com macht Nachlass und digitale Weitergabe von Wissen kontrollierbar.',
+    productEyebrow: 'Produktbereiche',
+    productH2: 'Eine Plattform für Profil, Gedächtnis und persönlichen Dialog.',
+    builderTitle: 'Fragen, Geschichten und Werte formen den Kern.',
+    builderText: 'Ein geführter Builder sammelt Identität, Entscheidungen, Prägungen und Perspektiven und übersetzt sie in ein klares Persona-Modell. In 15 Minuten zum ersten Twin.',
+    uploadTitle: 'Dokumente, Audio und Momente werden lebendiges Wissen.',
+    uploadText: 'Uploads werden strukturiert, kategorisiert und mit semantischer Suche für spätere Antworten verknüpft.',
+    chatTitle: 'Gespräche mit Kontext, Haltung und Erinnerung.',
+    chatText: 'Jede Frage wird gegen relevante Lebensbereiche, Aussagen und Muster gespiegelt, bevor eine Antwort entsteht.',
+    ctaH2: 'Bewahre, was zählt.',
+    ctaText: 'Starte jetzt direkt im Browser — auf Web, PWA, iPhone und Android. Dein Twin wächst mit jeder Erinnerung.',
+    ctaButton: 'Jetzt starten',
+    ctaTop: 'Zurück nach oben',
+    colProfiles: 'Profile entdecken',
+    colChat: 'Twin-Chat',
+    colUpload: 'Dateien & Erinnerungen',
+  },
 }
 
 const cache = new Map<SupportedLang, StaticTranslations>([[DEFAULT_LANG, DEFAULT_TRANSLATIONS]])
@@ -400,6 +490,7 @@ function mergeTranslations(value: Partial<StaticTranslations>): StaticTranslatio
     trust: { ...DEFAULT_TRANSLATIONS.trust, ...value.trust },
     myTwins: { ...DEFAULT_TRANSLATIONS.myTwins, ...value.myTwins },
     footer: { ...DEFAULT_TRANSLATIONS.footer, ...value.footer },
+    landing: { ...DEFAULT_TRANSLATIONS.landing, ...value.landing },
   }
 }
 
