@@ -1061,3 +1061,47 @@ html[data-smyst-theme='light'] {
 .smyst-app-light .smyst-mobile-drawer .bg-white\/\[0\.05\] {
     background-color: rgba(17, 23, 33, 0.05) !important;
 }
+
+/* Landing (Prototyp 20.08.2026): liegt als Overlay innerhalb des smyst-app-dark
+   Wrappers, nutzt aber sein eigenes helles Glas-Design. Die globalen
+   Dark-Theme-Umfaerbungen (dunkle Textklassen auf hell, Radien auf 8px)
+   gelten auf der Landing nicht. */
+.smyst-app-dark .smyst-landing {
+    color: #16181b !important;
+}
+
+.smyst-app-dark .smyst-landing .text-\[\#16181b\] {
+    color: #16181b !important;
+}
+
+.smyst-app-dark .smyst-landing .text-\[\#555b64\] {
+    color: #555b64 !important;
+}
+
+.smyst-app-dark .smyst-landing .text-\[\#667085\] {
+    color: #667085 !important;
+}
+
+.smyst-app-dark .smyst-landing .text-\[\#767d87\] {
+    color: #767d87 !important;
+}
+
+.smyst-app-dark .smyst-landing .rounded-full {
+    border-radius: 999px !important;
+}
+
+.smyst-app-dark .smyst-landing .rounded-3xl {
+    border-radius: 24px !important;
+}
+
+.smyst-app-dark .smyst-landing .rounded-2xl {
+    border-radius: 16px !important;
+}
+
+.smyst-app-dark .smyst-landing .rounded-\[22px\] {
+    border-radius: 22px !important;
+}
+
+.smyst-app-dark .smyst-landing .rounded-\[30px\] {
+    border-radius: 30px !important;
+}

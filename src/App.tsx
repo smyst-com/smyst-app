@@ -55,6 +55,7 @@ const MobileNav = lazy(() => import('@/components/MobileNav'))
 import AccountPrivacyActions from '@/components/AccountPrivacyActions'
 import ApiKeysView from '@/components/ApiKeysView'
 import AdSlot from '@/components/AdSlot'
+import { SmystLanding } from '@/components/SmystLanding'
 import PasswordResetGate from '@/components/PasswordResetGate'
 import UserVoiceCard from '@/components/UserVoiceCard'
 import SocialLinksCard from '@/components/SocialLinksCard'
@@ -1662,6 +1663,26 @@ function SmystStartPage({
   const [composerMenuOpen, setComposerMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
+  // Landing nach Prototyp 20.08. liegt bei frischem Besuch auf "/" über der Start-Shell.
+  // Deep-Link „Mit X chatten" (sessionStorage, siehe CHAT_OPEN_KEY) überspringt das Landing,
+  // damit der Chat sofort öffnet. Nur ansehen, nicht entfernen — der Konsum bleibt unten.
+  const [landingOpen, setLandingOpen] = useState(() => {
+    try {
+      return !window.sessionStorage.getItem(CHAT_OPEN_KEY)
+    } catch {
+      return true
+    }
+  })
+  const closeLanding = () => setLandingOpen(false)
+  const openLandingTargetTwin = () => {
+    setLandingOpen(false)
+    setMenuOpen(true)
+  }
+  const openLandingTargetLogin = () => {
+    setLandingOpen(false)
+    setMenuOpen(true)
+    setShowEmailForm(true)
+  }
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -2793,7 +2814,22 @@ function SmystStartPage({
   ]
 
   return (
-    <main id="main" className={`smyst-start-shell${shellThemeClass}${glassPreviewClass} fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden text-[#f4f7fb]`}>
+    <>
+      {landingOpen && (
+        <SmystLanding
+          lang={lang}
+          t={t}
+          onEnter={closeLanding}
+          onStartTwin={openLandingTargetTwin}
+          onLogin={openLandingTargetLogin}
+        />
+      )}
+      <main
+        id="main"
+        aria-hidden={landingOpen || undefined}
+        style={landingOpen ? { visibility: 'hidden' } : undefined}
+        className={`smyst-start-shell${shellThemeClass}${glassPreviewClass} fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden text-[#f4f7fb]`}
+      >
       <div
         aria-hidden={!menuOpen}
         onClick={() => setMenuOpen(false)}
@@ -3524,9 +3560,10 @@ function SmystStartPage({
               <ArrowUp className="h-7 w-7" />
             </button>
           </div>
-        </div>
-      </footer>
+          </div>
+        </footer>
     </main>
+    </>
   )
 }
 
