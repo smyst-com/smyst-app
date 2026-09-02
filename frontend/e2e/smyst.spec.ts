@@ -94,6 +94,14 @@ test.describe("Smyst current app", () => {
 
     await page.goto("/");
 
+    // Startseiten-Landing (Prototyp 20.08.): liegt bei frischem Besuch über der
+    // Start-Shell und wird zuerst geschlossen („Profile entdecken"), damit die
+    // Shell-Assertions (Logo, Profilsuche, Chat) greifen.
+    const discoverButton = page.locator(".smyst-landing header").getByRole("button", { name: "Profile entdecken" });
+    if (await discoverButton.count()) {
+      await discoverButton.click();
+    }
+
     const logo = page.getByLabel("smyst.com Create Your AI Twin");
     await expect(logo).toBeVisible();
     await expect(logo.getByText("Create Your AI Twin")).toBeVisible();
