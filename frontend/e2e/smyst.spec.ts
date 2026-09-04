@@ -2,6 +2,11 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Smyst current app", () => {
   test("start page lets signed-out users chat with public historical profiles", async ({ page }) => {
+    // Service-Worker im UI-Test blockieren: Seine Registrierung loest
+    // controllerchange + location.reload() aus und zerstoert mitten im Test
+    // den Execution Context ("most likely because of a navigation").
+    // Der SW selbst wird im API-Test unten separat per request geprüft.
+    await page.route("**/sw.js", (route) => route.abort());
     await page.route("**/auth/me", async (route) => {
       await route.fulfill({ json: { authenticated: false } });
     });
