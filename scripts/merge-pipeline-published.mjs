@@ -586,6 +586,11 @@ const CATALOG_FIELDS = [
   // Lebensdaten (Anzeige und hasLifeDates)
   'birthDate', 'deathDate', 'birthYear', 'deathYear',
   'birthLabel', 'deathLabel', 'birthPlace', 'deathPlace',
+  // Stimmen-Geschlecht (Wikidata P21) fuer die Sprachwelle. Ohne dieses Feld
+  // fiel der Katalog-Eintrag auf undefined und die App sprach JEDES
+  // Pipeline-Profil mit einer Maennerstimme (Befund 05.09.2026, z. B.
+  // Marieluise Claudius mit de-thorsten statt einer Frauenstimme).
+  'voiceGender',
   // Von isCompletePublicProfile geprueft
   'status', 'visibility', 'quality',
 ];
