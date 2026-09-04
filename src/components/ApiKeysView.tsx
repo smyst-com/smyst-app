@@ -120,14 +120,20 @@ export default function ApiKeysView({ onNavigate }: { onNavigate?: (view: string
   const loadKeys = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const { ok, data } = await apiKeysFetch<ApiKeysResponse>('/api/api-keys')
-    if (ok && data) {
-      setKeys(data.keys ?? [])
-      setServer(data.server ?? null)
-    } else {
-      setError('API-Keys konnten nicht geladen werden. Bitte Seite neu laden.')
+    try {
+      const { ok, data } = await apiKeysFetch<ApiKeysResponse>('/api/api-keys')
+      if (ok && data) {
+        setKeys(data.keys ?? [])
+        setServer(data.server ?? null)
+      } else {
+        setError('API-Keys konnten nicht geladen werden. Bitte erneut versuchen.')
+      }
+    } catch {
+      // Netzwerkfehler darf niemals einen endlosen Spinner hinterlassen.
+      setError('Verbindung fehlgeschlagen. Bitte prüfe deine Internetverbindung und versuche es erneut.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   useEffect(() => {
@@ -147,34 +153,44 @@ export default function ApiKeysView({ onNavigate }: { onNavigate?: (view: string
   const createKey = async () => {
     setCreating(true)
     setError(null)
-    const { ok, data } = await apiKeysFetch<{ key?: ApiKeyEntry; secret?: string; warning?: string }>(
-      '/api/api-keys',
-      { method: 'POST', body: JSON.stringify({ name: newName.trim() || 'Mein Key', model: newModel }) },
-    )
-    setCreating(false)
-    if (ok && data?.secret && data.key) {
-      setKeys((prev) => [...prev, data.key!])
-      setCreatedSecret(data.secret)
-      setNewName('')
-      setNewModel('auto')
-      setCopied(false)
-    } else {
-      setError(data?.error?.message ?? 'Key konnte nicht erstellt werden. Bitte erneut versuchen.')
+    try {
+      const { ok, data } = await apiKeysFetch<{ key?: ApiKeyEntry; secret?: string; warning?: string }>(
+        '/api/api-keys',
+        { method: 'POST', body: JSON.stringify({ name: newName.trim() || 'Mein Key', model: newModel }) },
+      )
+      if (ok && data?.secret && data.key) {
+        setKeys((prev) => [...prev, data.key!])
+        setCreatedSecret(data.secret)
+        setNewName('')
+        setNewModel('auto')
+        setCopied(false)
+      } else {
+        setError(data?.error?.message ?? 'Key konnte nicht erstellt werden. Bitte erneut versuchen.')
+      }
+    } catch {
+      setError('Verbindung fehlgeschlagen. Der Key wurde nicht erstellt — bitte erneut versuchen.')
+    } finally {
+      setCreating(false)
     }
   }
 
   const confirmDelete = async () => {
     if (!deleteId) return
     setDeleting(true)
-    const { ok, data } = await apiKeysFetch<{ ok: boolean }>(`/api/api-keys/${encodeURIComponent(deleteId)}`, {
-      method: 'DELETE',
-    })
-    setDeleting(false)
-    if (ok) {
-      setKeys((prev) => prev.filter((key) => key.id !== deleteId))
-      setDeleteId(null)
-    } else {
-      setError(data?.error?.message ?? 'Key konnte nicht gelöscht werden. Bitte erneut versuchen.')
+    try {
+      const { ok, data } = await apiKeysFetch<{ ok: boolean }>(`/api/api-keys/${encodeURIComponent(deleteId)}`, {
+        method: 'DELETE',
+      })
+      if (ok) {
+        setKeys((prev) => prev.filter((key) => key.id !== deleteId))
+        setDeleteId(null)
+      } else {
+        setError(data?.error?.message ?? 'Key konnte nicht gelöscht werden. Bitte erneut versuchen.')
+      }
+    } catch {
+      setError('Verbindung fehlgeschlagen. Der Key wurde NICHT gelöscht — bitte erneut versuchen.')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -230,7 +246,14 @@ export default function ApiKeysView({ onNavigate }: { onNavigate?: (view: string
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-[#f0c7c0] bg-[#fdf1ef] px-4 py-3 text-sm text-[#8a2d1e]">{error}</div>
+        <div className="mb-4 flex flex-col gap-2 rounded-lg border border-[#f0c7c0] bg-[#fdf1ef] px-4 py-3 text-sm text-[#8a2d1e] sm:flex-row sm:items-center sm:justify-between">
+          <span>{error}</span>
+          {!loading && !createOpen && (
+            <Button size="sm" variant="secondary" onClick={() => void loadKeys()}>
+              Erneut versuchen
+            </Button>
+          )}
+        </div>
       )}
 
       <Card className="p-0">
@@ -281,10 +304,10 @@ export default function ApiKeysView({ onNavigate }: { onNavigate?: (view: string
                         <div className="font-semibold text-[#17191d]">{key.name}</div>
                         <div className="mt-0.5 font-mono text-xs text-[#667085]">{key.preview}</div>
                       </td>
-                      <td className="px-3 py-4 text-[#39414d]">{modelLabel(key.model)}</td>
-                      <td className="px-3 py-4 text-[#39414d]">{formatDate(key.createdAt)}</td>
-                      <td className="px-3 py-4 text-[#39414d]">{formatLastUsed(key.lastUsedAt)}</td>
-                      <td className="px-3 py-4 text-[#39414d]">{key.usageCount}</td>
+                      <td className="px-3 py-4 text-[#555b64]">{modelLabel(key.model)}</td>
+                      <td className="px-3 py-4 text-[#555b64]">{formatDate(key.createdAt)}</td>
+                      <td className="px-3 py-4 text-[#555b64]">{formatLastUsed(key.lastUsedAt)}</td>
+                      <td className="px-3 py-4 text-[#555b64]">{key.usageCount}</td>
                       <td className="px-5 py-4 text-right">
                         {deleteId === key.id ? (
                           <div className="flex items-center justify-end gap-2">
@@ -317,19 +340,19 @@ export default function ApiKeysView({ onNavigate }: { onNavigate?: (view: string
                       <div className="truncate font-semibold text-[#17191d]">{key.name}</div>
                       <div className="mt-0.5 font-mono text-xs text-[#667085]">{key.preview}</div>
                     </div>
-                    <span className="shrink-0 rounded-full bg-white/60 px-2 py-0.5 text-xs text-[#39414d]">{modelLabel(key.model)}</span>
+                    <span className="shrink-0 rounded-full bg-white/60 px-2 py-0.5 text-xs text-[#555b64]">{modelLabel(key.model)}</span>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-[#667085]">
                     <div>
-                      <div className="font-medium text-[#39414d]">Erstellt</div>
+                      <div className="font-medium text-[#555b64]">Erstellt</div>
                       {formatDate(key.createdAt)}
                     </div>
                     <div>
-                      <div className="font-medium text-[#39414d]">Zuletzt</div>
+                      <div className="font-medium text-[#555b64]">Zuletzt</div>
                       {formatLastUsed(key.lastUsedAt)}
                     </div>
                     <div>
-                      <div className="font-medium text-[#39414d]">Anfragen</div>
+                      <div className="font-medium text-[#555b64]">Anfragen</div>
                       {key.usageCount}
                     </div>
                   </div>
@@ -416,7 +439,7 @@ export default function ApiKeysView({ onNavigate }: { onNavigate?: (view: string
               ) : (
                 <>
                   <div className="mb-4 flex items-center gap-2">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">✓</span>
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 text-white">✓</span>
                     <h2 className="text-xl font-bold">Key erstellt!</h2>
                   </div>
 
@@ -424,9 +447,20 @@ export default function ApiKeysView({ onNavigate }: { onNavigate?: (view: string
                     Kopiere deinen Key jetzt. Aus Sicherheitsgründen zeigen wir ihn <strong>nur dieses eine Mal</strong> — später ist er nicht mehr sichtbar.
                   </div>
 
-                  <div className="mb-3 break-all rounded-lg border border-[#d7dce5] bg-[#f6f7fa] px-4 py-3 font-mono text-sm text-[#17191d]">
-                    {createdSecret}
-                  </div>
+                  {/* Readonly-Input statt div: die Theme-Regeln in index.css
+                     (.smyst-app-dark/.smyst-app-light input) garantieren in
+                     BEIDEN Designs hellen Hintergrund + dunklen bzw. dunklen
+                     Hintergrund + weissen Text. Fokus markiert alles, damit
+                     der Key ohne Umwege manuell kopiert werden kann. */}
+                  <input
+                    type="text"
+                    readOnly
+                    value={createdSecret}
+                    onFocus={(event) => event.target.select()}
+                    onMouseUp={(event) => event.preventDefault()}
+                    aria-label="Dein API-Key (nur jetzt sichtbar)"
+                    className="mb-3 w-full rounded-lg border border-[#d7dce5] px-4 py-3 font-mono text-sm"
+                  />
 
                   <div className="mb-5 flex flex-col gap-2 sm:flex-row">
                     <Button onClick={handleCopy} className="flex-1">
