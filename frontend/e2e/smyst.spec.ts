@@ -112,13 +112,12 @@ test.describe("Smyst current app", () => {
 
     await page.goto("/");
 
-    // Startseiten-Landing (Prototyp 20.08.): liegt bei frischem Besuch über der
-    // Start-Shell und wird zuerst geschlossen („Profile entdecken"), damit die
-    // Shell-Assertions (Logo, Profilsuche, Chat) greifen.
+    // Landing-Anmeldeseite (nur fuer nicht angemeldete Besucher, PR #641):
+    // deterministisch auf ihren Erscheins-Moment warten (haengt vom /auth/me-
+    // Mock ab) und schliessen — danach greifen die Shell-Assertions.
     const discoverButton = page.locator(".smyst-landing header").getByRole("button", { name: "Profile entdecken" });
-    if (await discoverButton.count()) {
-      await discoverButton.click();
-    }
+    await expect(discoverButton).toBeVisible({ timeout: 8_000 });
+    await discoverButton.click();
 
     const logo = page.getByLabel("smyst.com Create Your AI Twin");
     await expect(logo).toBeVisible();
@@ -136,6 +135,41 @@ test.describe("Smyst current app", () => {
     await expect(page.getByText("Was empfiehlst du jungen Leuten?")).toBeVisible();
     await expect(page.getByText("Melde dich an, um den Chat mit diesem echten KI-Profil zu starten")).toHaveCount(0);
     await expect(page.getByText(/Pruefe zuerst, was du wirklich weisst/i)).toBeVisible({ timeout: 10_000 });
+  });
+
+  test("signed-in users land directly on the start shell without the landing gate", async ({ page }) => {
+    // Inhaber-Vorgabe 04.09.: Die Landing-Anmeldeseite gilt NUR fuer nicht
+    // angemeldete Besucher. Angemeldete sehen immer die Start-Shell.
+    await page.route("**/auth/me", async (route) => {
+      await route.fulfill({
+        json: {
+          authenticated: true,
+          user: { sub: "github:test-owner", email: "owner@example.com", name: "Smyst Owner", roles: ["owner"] },
+        },
+      });
+    });
+
+    await page.goto("/");
+    await expect(page.locator(".smyst-landing")).toHaveCount(0, { timeout: 8_000 });
+    await expect(page.getByLabel("smyst.com Create Your AI Twin")).toBeVisible();
+    await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
+  });
+
+  test("guests dismiss the landing once and keep the shell for the session", async ({ page }) => {
+    await page.route("**/auth/me", async (route) => {
+      await route.fulfill({ json: { authenticated: false } });
+    });
+
+    await page.goto("/");
+    const discoverButton = page.locator(".smyst-landing header").getByRole("button", { name: "Profile entdecken" });
+    await expect(discoverButton).toBeVisible({ timeout: 8_000 });
+    await discoverButton.click();
+    await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
+
+    // Reload in derselben Sitzung: Shell bleibt, Landing kommt nicht zurueck.
+    await page.reload();
+    await expect(page.locator(".smyst-landing")).toHaveCount(0, { timeout: 8_000 });
+    await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
   });
 
   test("settings expose profile sorting controls without infrastructure marketing", async ({ page }) => {
