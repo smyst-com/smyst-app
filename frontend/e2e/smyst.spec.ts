@@ -2,11 +2,20 @@ import { expect, test } from "@playwright/test";
 
 test.describe("Smyst current app", () => {
   test("start page lets signed-out users chat with public historical profiles", async ({ page }) => {
-    // Service-Worker im UI-Test blockieren: Seine Registrierung loest
-    // controllerchange + location.reload() aus und zerstoert mitten im Test
-    // den Execution Context ("most likely because of a navigation").
-    // Der SW selbst wird im API-Test unten separat per request geprüft.
-    await page.route("**/sw.js", (route) => route.abort());
+    // Service-Worker im UI-Test neutralisieren: sw.js ruft skipWaiting() +
+    // clients.claim(), was bei der Erstregistrierung controllerchange +
+    // location.reload() ausloest und mitten im Test den Execution Context
+    // zerstoert ("most likely because of a navigation"). page.route greift bei
+    // SW-Script-Fetches nicht zuverlaessig — deshalb Register-Stub per
+    // addInitScript (laeuft vor jedem App-Script). Der SW selbst wird im
+    // API-Test unten separat per request geprueft.
+    await page.addInitScript(() => {
+      if ("serviceWorker" in navigator) {
+        Object.defineProperty(navigator.serviceWorker, "register", {
+          value: () => new Promise(() => {}),
+        });
+      }
+    });
     await page.route("**/auth/me", async (route) => {
       await route.fulfill({ json: { authenticated: false } });
     });
