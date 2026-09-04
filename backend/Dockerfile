@@ -20,7 +20,7 @@ ENV SMYST_LLM_MODEL_PATH=/models/smyst-1.0-Q4_K_M.gguf
 # Salad-Voice-Worker fuer Standard-TTS. Kein Code-Change: tts.py nutzt den
 # lokalen Piper-Pfad, sobald PIPER_BIN und /voices existieren.
 RUN apt-get update \
- && apt-get install -y --no-install-recommends curl ca-certificates \
+ && apt-get install -y --no-install-recommends curl ca-certificates libgomp1 \
  && rm -rf /var/lib/apt/lists/* \
  && curl -fsSL https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_linux_x86_64.tar.gz | tar -xz -C /opt \
  && test -x /opt/piper/piper
