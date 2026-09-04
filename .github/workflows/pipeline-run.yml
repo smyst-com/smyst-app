@@ -205,7 +205,7 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.ingest_candidates --enabled --limit "${{ inputs.ingest_limit || '250' }}"
+            python -m app.workers.ingest_candidates --enabled --limit "${{ inputs.ingest_limit || '1000' }}"
           else
             python -m app.workers.ingest_candidates --dry-run --category Wissenschaft
           fi
@@ -327,8 +327,9 @@ jobs:
       # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
       # reviewed+qa_passed, Duplikat-Schutz gegen kuratierte Live-Profile,
       # Audit-Trail mit approved_by. Kein Loeschen.
-      # Deckel 2500/Tag (schriftliche Anweisung Betreiber 05.08.2026: 2000
-      # Profile/Tag; Luft nach oben). Publish-Zahl landet in der Run-Summary, damit der
+      # Deckel 5000/Tag (schriftliche Anweisung Betreiber 05.09.2026:
+      # 'jeden tag 2000 und 5000 Profilen online'; Vorgaenger 2500 vom 05.08.).
+      # Publish-Zahl landet in der Run-Summary, damit der
       # Tagesdurchsatz ohne Log-Graben sichtbar ist.
       # watchdog=true: Nachhol-Lauf des Pipeline-Watchdogs zaehlt wie ein Cron.
       - name: "Auto-Publish (nur Cron; Pauschal-Freigabe Adam King 2026-07-04/17)"
@@ -339,7 +340,7 @@ jobs:
         run: |
           set -o pipefail
           python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "smyst247@gmail.com" --enabled --daily-limit 2500 \
+            --approved-by "smyst247@gmail.com" --enabled --daily-limit 5000 \
             | tee /tmp/publish-out.log
           COUNT=$( (grep -o 'published (slug' /tmp/publish-out.log || true) | wc -l | tr -d ' ')
           {

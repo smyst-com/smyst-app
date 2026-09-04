@@ -145,7 +145,7 @@ jobs:
           if [ "${RECENT_PUBLISH}" -eq 0 ]; then
             echo "Kein Publish im Fenster — pipeline-publish anstossen."
             gh workflow run pipeline-publish.yml --ref main --repo "${GITHUB_REPOSITORY}" \
-              -f approved_by=smyst247@gmail.com -f publish_limit=2500
+              -f approved_by=smyst247@gmail.com -f publish_limit=5000
             echo "### Watchdog hat Auto-Publish angestossen" >> "$GITHUB_STEP_SUMMARY"
           elif [ "${PUBLISH_OK}" = "false" ]; then
             echo "### WARNUNG: Publish liefert 0 Profile — Ingest-Log pruefen" >> "$GITHUB_STEP_SUMMARY"
