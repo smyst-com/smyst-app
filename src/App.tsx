@@ -1085,6 +1085,9 @@ type StartTwin = {
   birthPlace?: string
   deathPlace?: string
   searchIndex?: string
+  // Stimmen-Geschlecht (Wikidata P21) aus dem Katalog: ohne dieses Feld
+  // sprachen alle Pipeline-Profile mit Maennerstimme (Befund 05.09.2026).
+  voiceGender?: 'female' | 'male'
 } & DiscoveryProfile
 
 type ProfileUsage = {
@@ -1452,6 +1455,7 @@ function publicProfileToStartTwin(profile: PublicTwinProfile, index: number, usa
     birthPlace: profile.birthPlace,
     deathPlace: profile.deathPlace,
     searchIndex: profile.searchIndex,
+    voiceGender: profile.voiceGender,
   }
 }
 
