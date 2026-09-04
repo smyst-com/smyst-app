@@ -10,20 +10,68 @@ Das gilt für Code, UI, Doku, APIs, Metadaten, SEO und Marketingtexte.
 
 ## Design-Freeze Startseite (Pflicht, 100 % geschützt)
 
-Das Design der Startseite (Start-Shell: Header, Logo, Suchfeld, Kategorie-Chips,
-Profil-Grid, Chat-Composer/Footer und Seitenmenü) ist eingefroren.
+Inhaber-Vorgabe 04.09.2026 (wörtlich): „Startseite soll gleich bleiben, wie Du
+in Screenshots siehst […] diese Startseite […] ist unsere Chatbereich und muss
+genau gleich bleiben, nicht ändern." Die START-SHELL ist und bleibt DIE
+Startseite (Chatbereich): Header, Logo, Suchfeld, Kategorie-Chips, Profil-Grid,
+Chat-Composer/Footer und Seitenmenü — bei Logo-Klick, Profil-Klick und jeder
+Navigation immer sichtbar.
 
-1. KEINE sichtbare Design-Änderung an der Startseite ohne ausdrückliche
-   schriftliche Bestätigung des Inhabers (Adam King) im konkreten Auftrag. Keine Ausnahme.
+Die Landing-Anmeldeseite (Prototyp 20.08., PRs #632/#634, Freigabe 30.08.) ist
+kein Ersatz, sondern NUR der Anmelde-Begrüßungsbildschirm für NICHT
+angemeldete Besucher (Vorgabe 04.09., PR #641): sie erscheint nur bei
+auth.status==='anonymous', einmal geschlossen bleibt sie für die ganze Sitzung
+weg (sessionStorage smyst-landing-dismissed), angemeldete Nutzer sehen sie nie,
+„Mit X chatten"-Deep-Links überspringen sie.
+
+1. KEINE sichtbare Design-Änderung an der Startseite (Shell UND Landing) ohne
+   ausdrückliche schriftliche Bestätigung des Inhabers (Adam King) im konkreten
+   Auftrag. Keine Ausnahme.
 2. Ohne Freigabe verboten: Elemente hinzufügen oder entfernen (z. B. Icon-Legenden,
    Erklärtexte, Banner), Layout, Farben, Abstände oder Typografie ändern.
+   Geschützte Landing-Teile: src/components/SmystLanding.tsx, die landing-Gruppe
+   in src/lib/staticTranslations.ts + public/locales/*.json, die Space-Grotesk-
+   @font-face-Blöcke und die .smyst-landing-Overrides am Ende von src/index.css.
+   Geschützt ebenfalls: die Login-Gate-Logik in SmystStartPage (landingVisible =
+   landingOpen && auth.status === 'anonymous', LANDING_DISMISSED_KEY) und die
+   beiden E2E-Tests in frontend/e2e/smyst.spec.ts.
 3. Gilt auch für Restores und Reverts: Vor jedem Restore prüfen, dass keine
-   eingefrorenen Design-Elemente zurückkommen. Vorfall: Die Icon-Legende im Footer
-   wurde am 30.06.2026 (82b12da) auf Anweisung entfernt, kam durch Restore 187c6d8
-   zurück und wurde am 03.07.2026 (PR #25) erneut entfernt.
-   Die Icon-Legende darf NIE wieder eingebaut werden.
+   eingefrorenen Design-Elemente zurückkommen oder wegfallen. Vorfall: Die
+   Icon-Legende im Footer wurde am 30.06.2026 (82b12da) auf Anweisung entfernt,
+   kam durch Restore 187c6d8 zurück und wurde am 03.07.2026 (PR #25) erneut
+   entfernt. Die Icon-Legende darf NIE wieder eingebaut werden.
 4. Ohne Freigabe erlaubt: reine Bug- und Sicherheits-Fixes ohne sichtbare
    Design-Auswirkung auf die Startseite.
+5. Deep-Link-Verhalten ist Teil des Designs: „Mit X chatten" (sessionStorage
+   smyst-chat-open) überspringt die Landing (Chat öffnet sofort) — nicht entfernen.
+6. Der Service-Worker-Stub im E2E-Test (frontend/e2e/smyst.spec.ts, beforeEach)
+   verhindert den controllerchange-Reload-Race — nicht entfernen.
+7. EINZIG freigegebene sichtbare Shell-Änderung (Inhaber 04.09., PR #641): Die
+   Kompaktierung des oberen Bereichs (Logo-Zeile 74/86 px, Suchzeile 54/64 px
+   mit text-2xl-Eingabe, engere Chips/Rails/Kopf-Abstände) — exakt dieser
+   Zustand ist geschützt. Weitere Verdichtungen oder Vergrößerungen brauchen
+   erneut schriftliche Freigabe.
+
+## Funktions-Freeze Eigenes Modell im Live-Chat (Pflicht, 100 % geschützt, ab 04.09.2026)
+
+Der Live-Chat läuft seit dem 04.09.2026 (PRs #638/#639) primär auf dem eigenen
+Modell smyst-1.1 (llama-server im Backend-Container). Diese Konfiguration ist
+live bewiesen (Runtime-Log: 127.0.0.1:8080 200 OK) und eingefroren:
+
+1. Geschützt: backend/start-llm.sh (Modell-Kandidatenliste smyst-1.1 vor 1.0,
+   --ctx-size 8192, --parallel 2, --alias smyst-1.0, nproc-Threads) und die
+   apt-Zeile mit libgomp1 in backend/Dockerfile.
+2. Zeabur baut mit einem GESPEICHERTEN Dockerfile-Override (Dashboard), NICHT
+   automatisch aus backend/Dockerfile. Nach jeder Dockerfile/start-llm.sh-
+   Änderung MUSS der Override per GraphQL updateDockerfile synchronisiert und
+   redeployt werden — Prozedur siehe Memory_Bank.md 04.09.
+3. Ohne schriftliche Freigabe des Inhabers verboten: ctx-size senken, Parallel-
+   Slots ändern, libgomp1/llama-Blöcke entfernen, Alias entfernen, Router-
+   Reihenfolge ändern (smyst_llm zuerst), den smyst_llm-Zweig aus llm_router.py
+   entfernen.
+4. Pflicht-Smoke nach jedem Backend-Deploy: /api/ai/providers?ping=true muss
+   smyst_llm ok:true liefern UND ein Gast-Chat auf smyst.com muss eine echte
+   Antwort liefern (nicht die Degraded-Meldung).
 
 ## Funktions-Freeze Sprachsystem (Pflicht, 100 % geschuetzt)
 
@@ -101,6 +149,12 @@ Schutzprinzipien wie die Pipeline:
 - Keine Nutzerdaten, Medien, Chats oder Profile löschen
 - Bestehende Funktionen nicht beschädigen; die 100 kuratierten Profile sind geschützt
 - Startseiten-Design nicht ohne schriftliche Freigabe ändern (siehe Design-Freeze)
+- PAUSCHALSCHUTZ (Inhaber-Anweisung 04.09.2026): Nichts darf kaputtgehen,
+  gelöscht oder ohne schriftliche Freigabe des Inhabers geändert werden —
+  bestehende Funktionen, Daten, Design, Einstellungen und Zugänge bleiben
+  unverändert. Jede Änderung braucht einen konkreten schriftlichen Auftrag
+  des Inhabers im Chat; Bug-/Sicherheits-Fixes ohne sichtbare Auswirkung
+  bleiben erlaubt.
 - Keine neuen Paid-Services einführen. Erlaubt sind nur: GitHub Free/Pages,
   Spaceship DNS, IDrive e2, Zeabur (Backend), OpenRouter und Groq (LLM),
   Resend (E-Mail). Alles andere braucht schriftliche Freigabe des Inhabers
