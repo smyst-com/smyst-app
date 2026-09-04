@@ -1591,6 +1591,8 @@ function takeChatReturnSnapshot(): ChatReturnSnapshot | null {
 // Startseiten-Chat, damit es nur eine Chat-Oberflaeche gibt. Uebergeben wird nur der Slug -
 // die Startseite waehlt den passenden Twin, sobald die Profile geladen sind.
 const CHAT_OPEN_KEY = 'smyst-chat-open'
+// Landing-Anmeldeseite: einmal geschlossen -> fuer die ganze Sitzung zu (Inhaber-Vorgabe 04.09.)
+const LANDING_DISMISSED_KEY = 'smyst-landing-dismissed'
 
 function storeChatOpenRequest(slug: string) {
   try {
@@ -1663,23 +1665,35 @@ function SmystStartPage({
   const [composerMenuOpen, setComposerMenuOpen] = useState(false)
   const [attachments, setAttachments] = useState<ChatAttachment[]>([])
   const [composerNotice, setComposerNotice] = useState('')
-  // Landing nach Prototyp 20.08. liegt bei frischem Besuch auf "/" über der Start-Shell.
-  // Deep-Link „Mit X chatten" (sessionStorage, siehe CHAT_OPEN_KEY) überspringt das Landing,
-  // damit der Chat sofort öffnet. Nur ansehen, nicht entfernen — der Konsum bleibt unten.
+  // Landing (Anmeldeseite nach Prototyp 20.08.) gilt NUR fuer nicht angemeldete
+  // Besucher (Vorgabe Inhaber 04.09.): einmal geschlossen -> fuer die gesamte
+  // Sitzung weg (auch bei Logo-/Profil-Navigation, die Shell ist DIE Startseite).
+  // Angemeldete Nutzer sehen das Landing nie. Deep-Link „Mit X chatten"
+  // (CHAT_OPEN_KEY) ueberspringt es ebenfalls — nur ansehen, nicht entfernen.
   const [landingOpen, setLandingOpen] = useState(() => {
     try {
+      if (window.sessionStorage.getItem(LANDING_DISMISSED_KEY) === '1') return false
       return !window.sessionStorage.getItem(CHAT_OPEN_KEY)
     } catch {
       return true
     }
   })
-  const closeLanding = () => setLandingOpen(false)
-  const openLandingTargetTwin = () => {
+  const dismissLanding = () => {
     setLandingOpen(false)
+    try {
+      window.sessionStorage.setItem(LANDING_DISMISSED_KEY, '1')
+    } catch {
+      /* sessionStorage blockiert: Flag nur im State fuehren */
+    }
+  }
+  const landingVisible = landingOpen && auth.status === 'anonymous'
+  const closeLanding = dismissLanding
+  const openLandingTargetTwin = () => {
+    dismissLanding()
     setMenuOpen(true)
   }
   const openLandingTargetLogin = () => {
-    setLandingOpen(false)
+    dismissLanding()
     setMenuOpen(true)
     setShowEmailForm(true)
   }
@@ -2097,8 +2111,8 @@ function SmystStartPage({
   const renderDiscoveryRail = (title: string, twins: StartTwin[]) => {
     if (!twins.length) return null
     return (
-      <div className="border-b border-white/[0.08] px-3 py-3 sm:px-4">
-        <div className="mb-2 flex items-center justify-between gap-3">
+      <div className="border-b border-white/[0.08] px-3 py-2 sm:px-4">
+        <div className="mb-1.5 flex items-center justify-between gap-3">
           <h2 className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{title}</h2>
           <span className="text-[11px] font-semibold text-[#6f7a8c]">{twins.length}</span>
         </div>
@@ -2815,7 +2829,7 @@ function SmystStartPage({
 
   return (
     <>
-      {landingOpen && (
+      {landingVisible && (
         <SmystLanding
           lang={lang}
           t={t}
@@ -2826,8 +2840,8 @@ function SmystStartPage({
       )}
       <main
         id="main"
-        aria-hidden={landingOpen || undefined}
-        style={landingOpen ? { visibility: 'hidden' } : undefined}
+        aria-hidden={landingVisible || undefined}
+        style={landingVisible ? { visibility: 'hidden' } : undefined}
         className={`smyst-start-shell${shellThemeClass}${glassPreviewClass} fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden text-[#f4f7fb]`}
       >
       <div
@@ -3191,7 +3205,7 @@ function SmystStartPage({
         </header>
       ) : (
         <header className="smyst-glass-panel z-20 shrink-0 border-b border-white/10 pt-[max(env(safe-area-inset-top),18px)]">
-          <div className="relative flex min-h-[96px] flex-col items-center justify-center px-4 pb-3 sm:min-h-[112px]">
+          <div className="relative flex min-h-[74px] flex-col items-center justify-center px-4 pb-2 sm:min-h-[86px]">
             <button
               type="button"
               onClick={() => setMenuOpen(true)}
@@ -3207,10 +3221,10 @@ function SmystStartPage({
             </h1>
           </div>
 
-          <div className="smyst-glass-panel flex min-h-[70px] items-stretch border-y border-white/[0.08] sm:min-h-[82px]">
+          <div className="smyst-glass-panel flex min-h-[54px] items-stretch border-y border-white/[0.08] sm:min-h-[64px]">
             <label className="relative flex min-w-0 flex-1 items-stretch">
               <Search
-                className={`pointer-events-none absolute right-4 top-1/2 h-6 w-6 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-7 sm:h-8 sm:w-8 ${
+                className={`pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8e97a8] transition-opacity sm:right-5 sm:h-6 sm:w-6 ${
                   query ? 'opacity-0' : 'opacity-100'
                 }`}
                 aria-hidden="true"
@@ -3233,22 +3247,22 @@ function SmystStartPage({
                   selectTwin(twin)
                 }}
                 placeholder={lang === DEFAULT_LANG ? 'Profil suchen' : t.start.searchPlaceholder}
-                className="smyst-glass-control min-w-0 flex-1 rounded-none border-0 px-5 pr-12 text-[20px] font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-7 sm:pr-16 sm:text-4xl"
+                className="smyst-glass-control min-w-0 flex-1 rounded-none border-0 px-4 pr-11 text-[16px] font-bold text-white outline-none placeholder:text-[#8e97a8] focus:bg-[#141a25] sm:px-5 sm:pr-14 sm:text-2xl"
               />
             </label>
             <button
               type="button"
               onClick={() => setNamePickerOpen((open) => !open)}
-              className="smyst-glass-control inline-flex w-[150px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] px-2 text-[15px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[180px] sm:gap-3 sm:text-lg"
+              className="smyst-glass-control inline-flex w-[132px] shrink-0 items-center justify-center gap-2 border-l border-white/[0.08] px-2 text-[13px] font-bold text-white transition hover:bg-white/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/45 sm:w-[152px] sm:gap-2 sm:text-[15px]"
               aria-label={t.start.chooseTwin}
               aria-expanded={namePickerOpen}
             >
-              <User className="h-7 w-7 shrink-0 text-white sm:h-9 sm:w-9" />
+              <User className="h-5 w-5 shrink-0 text-white sm:h-6 sm:w-6" />
               <span className="whitespace-nowrap">{lang === DEFAULT_LANG ? 'Profil wählen' : t.start.chooseTwin}</span>
             </button>
           </div>
           {visibleCategories.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto border-b border-white/[0.08] px-3 py-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-4">
+            <div className="flex gap-2 overflow-x-auto border-b border-white/[0.08] px-3 py-1.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-4">
               <button
                 type="button"
                 onClick={() => {
@@ -3295,9 +3309,9 @@ function SmystStartPage({
           {!selectedTwin && !showNamePicker && !profilesLoaded && renderProfileLoadingState()}
           {!selectedTwin && !showNamePicker && realStartTwins.length > 0 && (
             <div className="smyst-glass-panel min-h-[260px] border-b border-white/[0.08] sm:min-h-[320px]">
-              <div className="border-b border-white/[0.08] px-4 py-3">
+              <div className="border-b border-white/[0.08] px-4 py-2">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8e97a8]">{lang === DEFAULT_LANG ? 'Profilentdeckung' : t.start.discoveryLabel}</p>
-                <p className="mt-1 text-sm font-semibold text-[#d5dbe5]">
+                <p className="mt-0.5 text-sm font-semibold text-[#d5dbe5]">
                   {lang === DEFAULT_LANG ? `${realStartTwins.length} echte KI-Profile bereit. Wähle ein Profil und schreibe direkt los.` : t.start.discoveryText.replace('{{count}}', String(realStartTwins.length))}
                 </p>
               </div>
@@ -3305,7 +3319,7 @@ function SmystStartPage({
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Beliebt' : t.start.popularLabel, popularTwins)}
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Neu' : t.start.newLabel, freshTwins)}
               {renderDiscoveryRail(lang === DEFAULT_LANG ? 'Kürzlich genutzt' : t.start.recentLabel, recentTwins)}
-              <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.08] px-4 py-3 text-xs text-[#8e97a8]">
+              <footer className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-white/[0.08] px-4 py-2 text-xs text-[#8e97a8]">
                 <span>© 2026 smyst.com</span>
                 <a href="/imprint/" className="font-semibold text-[#aeb6c4] underline-offset-2 hover:text-white hover:underline">
                   {lang === DEFAULT_LANG ? 'Impressum' : 'Imprint'}
