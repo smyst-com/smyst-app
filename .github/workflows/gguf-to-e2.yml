@@ -1,0 +1,49 @@
+name: smyst 1.1 GGUF -> Object Brain
+
+# Transfer-Autopilot: laedt das smyst-1.1-v4-GGUF aus dem GitHub-Release
+# in den IDrive-e2-Object-Brain (models/smyst-1.1/). Danach kann der
+# LLM-Deploy-Flow es presignen (wie smyst 1.0). Das Release-Asset wird
+# im Anschluss geloescht (keine grossen Dateien dauerhaft auf GitHub).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: GGUF aus Release laden
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download smyst-1.1-v4-gguf -R "$GITHUB_REPOSITORY" \
+            -p "*.gguf" -D /tmp/model
+          ls -lh /tmp/model
+
+      - name: In Object Brain hochladen
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          FILE=$(ls /tmp/model/*.gguf | head -1)
+          KEY="models/smyst-1.1/2026-08-23/smyst-1.1-v4-q8_0.gguf"
+          aws s3 cp "$FILE" "s3://smyst-memories/$KEY" \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
+          aws s3 ls "s3://smyst-memories/models/smyst-1.1/2026-08-23/" \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
+          echo "GGUF im Object Brain: $KEY"
+
+      - name: Release-Asset aufraeumen (keine Grossdateien auf GitHub)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete-asset smyst-1.1-v4-gguf smyst-1.1-v4-Q8_0.gguf -R "$GITHUB_REPOSITORY" -y \
+            || gh release view smyst-1.1-v4-gguf -R "$GITHUB_REPOSITORY" --json assets \
+               -q '.assets[].name' | while read a; do
+                 gh release delete-asset smyst-1.1-v4-gguf "$a" -R "$GITHUB_REPOSITORY" -y
+               done
+          echo "Release-Asset geloescht."
