@@ -66,3 +66,9 @@ Abschaltbestand und duerfen nicht als Zielarchitektur erweitert werden.
 
 Arbeitsregeln fuer Code-Aenderungen stehen in `AGENTS.md` (Design-Freeze
 Startseite, Funktions-Freeze Sprachsystem, Branch- und PR-Pflicht).
+
+## Modell-Versionen
+
+- **smyst-1.1** (aktiv): Profil-Pipeline (pipeline-scale-2k) und Live-Chat-Container laden `models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf` aus IDrive e2 (Score 575/600, promoted 24.08.2026). Aktiviert am 02.09.2026 via Release-Teile-Transport + Promotion-Workflow `model-promote-gguf.yml` (Qualitaets-Tor inklusive).
+- **smyst-1.0** (Rueckfallebene): `models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf` — greift automatisch, falls 1.1 fehlt.
+- Naechste Version (1.2): naechtliches Training auf dem Mac (Autopilot mit Eval-Gate); Aktivierung wie 1.1 ueber den Promotion-Workflow.
