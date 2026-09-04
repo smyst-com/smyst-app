@@ -1,14 +1,15 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("Smyst current app", () => {
-  test("start page lets signed-out users chat with public historical profiles", async ({ page }) => {
-    // Service-Worker im UI-Test neutralisieren: sw.js ruft skipWaiting() +
-    // clients.claim(), was bei der Erstregistrierung controllerchange +
-    // location.reload() ausloest und mitten im Test den Execution Context
-    // zerstoert ("most likely because of a navigation"). page.route greift bei
-    // SW-Script-Fetches nicht zuverlaessig — deshalb Register-Stub per
-    // addInitScript (laeuft vor jedem App-Script). Der SW selbst wird im
-    // API-Test unten separat per request geprueft.
+  // Service-Worker in ALLEN UI-Tests neutralisieren: sw.js ruft skipWaiting()
+  // + clients.claim(), was bei der Erstregistrierung controllerchange +
+  // location.reload() ausloest und mitten im Test den Execution Context
+  // zerstoert ("most likely because of a navigation" — Flakes in jedem Test
+  // mit langer Poll/Count-Phase). page.route greift bei SW-Script-Fetches
+  // nicht zuverlaessig — deshalb Register-Stub per addInitScript (laeuft vor
+  // jedem App-Script auf jeder Seite). Der SW selbst wird im API-Test unten
+  // separat per request-Fixture geprueft.
+  test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       if ("serviceWorker" in navigator) {
         Object.defineProperty(navigator.serviceWorker, "register", {
@@ -16,6 +17,9 @@ test.describe("Smyst current app", () => {
         });
       }
     });
+  });
+
+  test("start page lets signed-out users chat with public historical profiles", async ({ page }) => {
     await page.route("**/auth/me", async (route) => {
       await route.fulfill({ json: { authenticated: false } });
     });

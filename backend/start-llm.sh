@@ -49,8 +49,9 @@ if [ -f "$MODEL" ] && [ -n "$LLAMA_BIN" ] && [ -x "$LLAMA_BIN" ]; then
   # lief jede Anfrage ins Timeout, bevor das Modell antworten konnte).
   "$LLAMA_BIN" \
     --model "$MODEL" \
+    --alias smyst-1.0 \
     --host 127.0.0.1 --port 8080 \
-    --ctx-size 2048 --parallel 2 \
+    --ctx-size 8192 --parallel 2 \
     --threads "$(nproc)" &
   export SMYST_LLM_BASE_URL=http://127.0.0.1:8080/v1
   echo "smyst: LLM-Server aktiv auf $SMYST_LLM_BASE_URL"
