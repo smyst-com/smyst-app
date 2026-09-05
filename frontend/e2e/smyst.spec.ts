@@ -178,6 +178,13 @@ test.describe("Smyst current app", () => {
     });
 
     await page.goto("/");
+    // Cookie-Consent (z-[55] oben) kann den Einloggen-Knopf ueberlagern —
+    // zuerst wegklicken, dann weiter.
+    await page
+      .getByRole("button", { name: /Nur Notwendige|Alle akzeptieren/ })
+      .first()
+      .click({ timeout: 10_000 })
+      .catch(() => {});
     const loginButton = page.locator(".smyst-landing header").getByRole("button", { name: "Einloggen" });
     await expect(loginButton).toBeVisible({ timeout: 8_000 });
     await loginButton.click();
