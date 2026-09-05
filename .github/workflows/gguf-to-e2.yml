@@ -1,9 +1,9 @@
-name: smyst 1.1 GGUF -> Object Brain
+name: smyst 1.1 v4 GGUF -> Object Brain (Split-Parts)
 
-# Transfer-Autopilot: laedt das smyst-1.1-v4-GGUF aus dem GitHub-Release
-# in den IDrive-e2-Object-Brain (models/smyst-1.1/). Danach kann der
-# LLM-Deploy-Flow es presignen (wie smyst 1.0). Das Release-Asset wird
-# im Anschluss geloescht (keine grossen Dateien dauerhaft auf GitHub).
+# Bewährtes Muster der Parallel-Session (s11p00-s11p31): Mac kann grosse
+# Dateien nicht stabil hochladen -> wird in 30-MB-Teilen hochgeladen
+# (ggf. mehrere Durchläufe, Teile bleiben liegen) und hier im Runner
+# zusammengesetzt -> Object Brain. Danach Teile-Release gelöscht.
 
 on:
   workflow_dispatch:
@@ -16,34 +16,35 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: GGUF aus Release laden
+      - name: Teile aus Release laden
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download smyst-1.1-v4-gguf -R "$GITHUB_REPOSITORY" \
-            -p "*.gguf" -D /tmp/model
-          ls -lh /tmp/model
+          mkdir -p /tmp/parts && cd /tmp/parts
+          gh release download v4-parts -R "$GITHUB_REPOSITORY" -p "v4p*" -D .
+          echo "Teile: $(ls v4p* | wc -l)"
+          cat v4p* > smyst-1.1-v4-Q8_0.gguf
+          ls -lh smyst-1.1-v4-Q8_0.gguf
+
+      - name: Integrität (SHA256 gegen Mac-Referenz)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v4-parts -R "$GITHUB_REPOSITORY" -p "SHA256SUMS" -D /tmp/parts
+          cd /tmp/parts && sha256sum -c SHA256SUMS
 
       - name: In Object Brain hochladen
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          FILE=$(ls /tmp/model/*.gguf | head -1)
-          KEY="models/smyst-1.1/2026-08-23/smyst-1.1-v4-q8_0.gguf"
-          aws s3 cp "$FILE" "s3://smyst-memories/$KEY" \
+          aws s3 cp /tmp/parts/smyst-1.1-v4-Q8_0.gguf \
+            s3://smyst-memories/models/smyst-1.1/2026-08-23/smyst-1.1-v4-Q8_0.gguf \
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
-          aws s3 ls "s3://smyst-memories/models/smyst-1.1/2026-08-23/" \
+          aws s3 ls s3://smyst-memories/models/smyst-1.1/2026-08-23/ \
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
-          echo "GGUF im Object Brain: $KEY"
 
-      - name: Release-Asset aufraeumen (keine Grossdateien auf GitHub)
+      - name: Teile-Release aufräumen
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release delete-asset smyst-1.1-v4-gguf smyst-1.1-v4-Q8_0.gguf -R "$GITHUB_REPOSITORY" -y \
-            || gh release view smyst-1.1-v4-gguf -R "$GITHUB_REPOSITORY" --json assets \
-               -q '.assets[].name' | while read a; do
-                 gh release delete-asset smyst-1.1-v4-gguf "$a" -R "$GITHUB_REPOSITORY" -y
-               done
-          echo "Release-Asset geloescht."
+        run: gh release delete v4-parts -R "$GITHUB_REPOSITORY" --yes --cleanup-tag
