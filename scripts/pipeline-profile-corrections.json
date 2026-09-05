@@ -1,5 +1,5 @@
 {
-  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King). Zusatz 03.08.2026: birthPlace/deathPlace als kuratierte Orts-Overrides fuer Faelle, in denen Wikidata falsch liegt oder keinen heutigen Staat kennt (der Backfill haengt nur ein Land an und schreibt einen Ort nie um).",
+  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King). Zusatz 03.08.2026: birthPlace/deathPlace als kuratierte Orts-Overrides fuer Faelle, in denen Wikidata falsch liegt oder keinen heutigen Staat kennt (der Backfill haengt nur ein Land an und schreibt einen Ort nie um). Zusatz 05.09.2026: gender als Stimmen-Geschlecht-Override (Wikidata P21) fuer Pipeline-Profile, deren Publish-Record kein P21 liefert — sonst sprachen sie mit dem geschlechtslosen Maenner-Fallback (Freigabe Adam King: Korrekturliste nachpflegen).",
   "profiles": {
     "carl-von-linne": {
       "roles": "Naturforscher, Botaniker",
@@ -2461,6 +2461,249 @@
     },
     "lili-elbe": {
       "gender": "female"
+    },
+    "charlie-parker": {
+      "gender": "male"
+    },
+    "christiaan-eijkman": {
+      "gender": "male"
+    },
+    "jean-philippe-rameau": {
+      "gender": "male"
+    },
+    "carlo-maderno": {
+      "gender": "male"
+    },
+    "sergei-wassiljewitsch-rachmaninow": {
+      "gender": "male"
+    },
+    "pietro-mascagni": {
+      "gender": "male"
+    },
+    "william-morris": {
+      "gender": "male"
+    },
+    "niels-ryberg-finsen": {
+      "gender": "male"
+    },
+    "charles-gates-dawes": {
+      "gender": "male"
+    },
+    "alexander-nikolajewitsch-skrjabin": {
+      "gender": "male"
+    },
+    "erik-satie": {
+      "gender": "male"
+    },
+    "james-naismith": {
+      "gender": "male"
+    },
+    "dylan-thomas": {
+      "gender": "male"
+    },
+    "georges-eugene-haussmann": {
+      "gender": "male"
+    },
+    "sebastien-le-prestre-de-vauban": {
+      "gender": "male"
+    },
+    "gustavo-adolfo-becquer": {
+      "gender": "male"
+    },
+    "wiktor-michailowitsch-wasnezow": {
+      "gender": "male"
+    },
+    "isambard-kingdom-brunel": {
+      "gender": "male"
+    },
+    "rouget-de-lisle": {
+      "gender": "male"
+    },
+    "charles-rennie-mackintosh": {
+      "gender": "male"
+    },
+    "johann-i-bernoulli": {
+      "gender": "male"
+    },
+    "frederick-gowland-hopkins": {
+      "gender": "male"
+    },
+    "simon-stevin": {
+      "gender": "male"
+    },
+    "louis-sullivan": {
+      "gender": "male"
+    },
+    "eugene-viollet-le-duc": {
+      "gender": "male"
+    },
+    "andre-le-notre": {
+      "gender": "male"
+    },
+    "michail-alexandrowitsch-bakunin": {
+      "gender": "male"
+    },
+    "inigo-jones": {
+      "gender": "male"
+    },
+    "vincenzo-scamozzi": {
+      "gender": "male"
+    },
+    "wladimir-jewgrafowitsch-tatlin": {
+      "gender": "male"
+    },
+    "eliel-saarinen": {
+      "gender": "male"
+    },
+    "stanis-aw-wyspianski": {
+      "gender": "male"
+    },
+    "robert-adam": {
+      "gender": "male"
+    },
+    "samuel-butler": {
+      "gender": "male"
+    },
+    "francois-mansart": {
+      "gender": "male"
+    },
+    "giovanni-battista-piranesi": {
+      "gender": "male"
+    },
+    "oliver-wendell-holmes-sr": {
+      "gender": "male"
+    },
+    "nicolai-abildgaard": {
+      "gender": "male"
+    },
+    "domenichino": {
+      "gender": "male"
+    },
+    "guarino-guarini": {
+      "gender": "male"
+    },
+    "pietro-da-cortona": {
+      "gender": "male"
+    },
+    "james-a-garfield": {
+      "gender": "male"
+    },
+    "giordano-bruno": {
+      "gender": "male"
+    },
+    "edwin-lutyens": {
+      "gender": "male"
+    },
+    "thomas-telford": {
+      "gender": "male"
+    },
+    "jacques-offenbach": {
+      "gender": "male"
+    },
+    "egon-schiele": {
+      "gender": "male"
+    },
+    "adolf-loos": {
+      "gender": "male"
+    },
+    "felix-mendelssohn-bartholdy": {
+      "gender": "male"
+    },
+    "karl-pawlowitsch-brjullow": {
+      "gender": "male"
+    },
+    "bedrich-smetana": {
+      "gender": "male"
+    },
+    "sergei-sergejewitsch-prokofjew": {
+      "gender": "male"
+    },
+    "victor-horta": {
+      "gender": "male"
+    },
+    "antonio-salieri": {
+      "gender": "male"
+    },
+    "hugo-von-hofmannsthal": {
+      "gender": "male"
+    },
+    "claudio-monteverdi": {
+      "gender": "male"
+    },
+    "antonio-canova": {
+      "gender": "male"
+    },
+    "walter-burley-griffin": {
+      "gender": "male"
+    },
+    "georges-bizet": {
+      "gender": "male"
+    },
+    "fritz-todt": {
+      "gender": "male"
+    },
+    "balthasar-neumann": {
+      "gender": "male"
+    },
+    "niccolo-paganini": {
+      "gender": "male"
+    },
+    "pierre-augustin-caron-de-beaumarchais": {
+      "gender": "male"
+    },
+    "alois-alzheimer": {
+      "gender": "male"
+    },
+    "antonin-dvorak": {
+      "gender": "male"
+    },
+    "gustav-mahler": {
+      "gender": "male"
+    },
+    "giacomo-puccini": {
+      "gender": "male"
+    },
+    "robert-schumann": {
+      "gender": "male"
+    },
+    "heinrich-wilhelm-olbers": {
+      "gender": "male"
+    },
+    "georg-philipp-telemann": {
+      "gender": "male"
+    },
+    "carl-philipp-emanuel-bach": {
+      "gender": "male"
+    },
+    "peter-behrens": {
+      "gender": "male"
+    },
+    "erich-mendelsohn": {
+      "gender": "male"
+    },
+    "rudolf-steiner": {
+      "gender": "male"
+    },
+    "edvard-grieg": {
+      "gender": "male"
+    },
+    "anton-bruckner": {
+      "gender": "male"
+    },
+    "johann-strauss": {
+      "gender": "male"
+    },
+    "bela-bartok": {
+      "gender": "male"
+    },
+    "otto-wagner": {
+      "gender": "male"
+    },
+    "peter-i": {
+      "gender": "male"
+    },
+    "gioachino-rossini": {
+      "gender": "male"
     }
   }
 }
