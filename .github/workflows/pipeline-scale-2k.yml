@@ -33,7 +33,7 @@ jobs:
   run-sharded-pipeline:
     name: Shard ${{ matrix.shard_index }}/12
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 300  # 05.09.: 90 -> 300 — volle Shards (Risiko+Bild-Lizenzen+QA) ueberschreiten 90 min und wurden als 'cancelled' abgewuergt (gemischt success/cancelled im Lauf 33989427594)
     permissions:
       contents: read
     strategy:
