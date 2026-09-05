@@ -59,7 +59,7 @@ jobs:
           # 5) Profilseite des ersten Live-Zwillings
           FIRST_SLUG=$(curl -sf --max-time 15 https://smyst.com/sitemap.xml | grep -oE "<loc>https://smyst.com/t/[^<]+" | head -1 | sed 's|.* /t/||; s|</loc>||; s|.*/t/||')
           if [ -n "$FIRST_SLUG" ]; then
-            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "https://smyst.com/t/$FIRST_SLUG")
+            CODE=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 15 "https://smyst.com/t/$FIRST_SLUG")
             [ "$CODE" = "200" ] || fail "Profilseite /t/$FIRST_SLUG: HTTP $CODE"
           else
             fail "Keine Profil-URL in der Sitemap gefunden"
