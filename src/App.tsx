@@ -56,6 +56,7 @@ import AccountPrivacyActions from '@/components/AccountPrivacyActions'
 import ApiKeysView from '@/components/ApiKeysView'
 import AdSlot from '@/components/AdSlot'
 import { SmystLanding } from '@/components/SmystLanding'
+import { SmystLoginGate } from '@/components/SmystLoginGate'
 import PasswordResetGate from '@/components/PasswordResetGate'
 import UserVoiceCard from '@/components/UserVoiceCard'
 import SocialLinksCard from '@/components/SocialLinksCard'
@@ -1696,10 +1697,12 @@ function SmystStartPage({
     dismissLanding()
     setMenuOpen(true)
   }
+  // Login-Bereich 1:1 nach Inhaber-Foto (05.09.): heller Vollbild-Screen nur
+  // fuer nicht angemeldete Nutzer; nach Login landet man auf der Start-Shell.
+  const [loginGateOpen, setLoginGateOpen] = useState(false)
   const openLandingTargetLogin = () => {
     dismissLanding()
-    setMenuOpen(true)
-    setShowEmailForm(true)
+    setLoginGateOpen(true)
   }
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -2833,6 +2836,14 @@ function SmystStartPage({
 
   return (
     <>
+      {loginGateOpen && auth.status === 'anonymous' && (
+        <SmystLoginGate
+          lang={lang}
+          t={t}
+          onClose={() => setLoginGateOpen(false)}
+          onGoogle={() => auth.signInWithGoogle('/')}
+        />
+      )}
       {landingVisible && (
         <SmystLanding
           lang={lang}

@@ -172,6 +172,32 @@ test.describe("Smyst current app", () => {
     await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
   });
 
+  test("guests get the light login screen from the landing Einloggen button (Inhaber-Foto 05.09.)", async ({ page }) => {
+    await page.route("**/auth/me", async (route) => {
+      await route.fulfill({ json: { authenticated: false } });
+    });
+
+    await page.goto("/");
+    const loginButton = page.locator(".smyst-landing header").getByRole("button", { name: "Einloggen" });
+    await expect(loginButton).toBeVisible({ timeout: 8_000 });
+    await loginButton.click();
+
+    await expect(page.locator(".smyst-login-gate")).toBeVisible();
+    await expect(page.getByText("Anmelden oder registrieren")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mit Google fortfahren" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mit Fingerabdruck fortfahren" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Mit GitHub fortfahren" })).toBeVisible();
+
+    // E-Mail ausklappen: eingebettetes Formular erscheint
+    await page.getByRole("button", { name: "Mit E-Mail fortfahren" }).click();
+    await expect(page.locator(".smyst-login-gate input[type=\"email\"]")).toBeVisible();
+
+    // Zurueck-Pfeil schliesst den Screen, Shell bleibt bedienbar
+    await page.getByRole("button", { name: "Zurück" }).click();
+    await expect(page.locator(".smyst-login-gate")).toHaveCount(0);
+    await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
+  });
+
   test("settings expose profile sorting controls without infrastructure marketing", async ({ page }) => {
     await page.goto("/settings");
 
