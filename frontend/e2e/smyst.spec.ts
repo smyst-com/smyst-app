@@ -190,7 +190,7 @@ test.describe("Smyst current app", () => {
     await loginButton.click();
 
     await expect(page.locator(".smyst-login-gate")).toBeVisible();
-    await expect(page.getByText("Anmelden oder registrieren")).toBeVisible();
+    await expect(page.locator(".smyst-login-gate h1", { hasText: "Anmelden oder registrieren" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Mit Google fortfahren" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Mit Fingerabdruck fortfahren" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Mit GitHub fortfahren" })).toBeVisible();
