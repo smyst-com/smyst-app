@@ -1,0 +1,95 @@
+name: Promotion-Pilot (Alias/Router)
+
+# Baut die Bruecke zwischen Trainings-Gate und Live-Router:
+# 1) Prueft nach jedem Modell-Eval, ob ein NEUER GGUF im Object Brain liegt,
+#    der noch NICHT in backend/start-llm.sh steht.
+# 2) Wenn ja: oeffnet automatisch einen Promotion-PR, der start-llm.sh
+#    um den neuen Kandidaten an Position 1 ergaenzt (Alias bleibt smyst-1.0
+#    — der Router/Health-Ping aendert sich nicht).
+# 3) Der Merge des PRs ist die schriftliche Freigabe des Inhabers
+#    (AGENTS.md-Freeze). Nach dem Merge: Redeploy-Zyklus siehe
+#    Memory_Bank.md 04.09 (GraphQL updateDockerfile + redeployService).
+
+on:
+  workflow_run:
+    workflows: ["Modell-Eval (smyst 1.0 Baseline & Checkpoints)"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Neuesten GGUF im Object Brain finden
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          aws s3 ls s3://smyst-memories/models/ --recursive \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 \
+            | grep -E '\.gguf$' | sort -k1,2 > /tmp/all_ggufs.txt
+          LATEST=$(grep -vE 'smyst-1\.0/2026-08-20/smyst-1\.0-f16' /tmp/all_ggufs.txt | tail -1)
+          echo "Letzter GGUF: $LATEST"
+          KEY=$(echo "$LATEST" | awk '{print $4}')
+          DATE=$(echo "$KEY" | cut -d/ -f3)
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+        id: latest
+
+      - name: Bereits in start-llm.sh verankert?
+        id: check
+        run: |
+          BASENAME=$(basename "${{ steps.latest.outputs.key }}")
+          if grep -q "$BASENAME" backend/start-llm.sh; then
+            echo "promote=false" >> "$GITHUB_OUTPUT"
+            echo "GGUF $BASENAME ist bereits verankert — nichts zu tun."
+          else
+            echo "promote=true" >> "$GITHUB_OUTPUT"
+            echo "NEUER Kandidat gefunden: $BASENAME"
+          fi
+
+      - name: Promotion-PR erstellen
+        if: steps.check.outputs.promote == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEY: ${{ steps.latest.outputs.key }}
+          DATE: ${{ steps.latest.outputs.date }}
+        run: |
+          BASENAME=$(basename "$KEY")
+          BRANCH="autopilot/promotion-$DATE"
+          git config user.name "Smyst Promotion-Pilot"
+          git config user.email "smystcom@gmail.com"
+          git checkout -b "$BRANCH"
+          # Neuen Kandidaten an Position 1 der Kandidatenliste setzen
+          python3 - "$KEY" <<'PYEOF'
+          import re, sys
+          key = sys.argv[1]
+          p = "backend/start-llm.sh"
+          s = open(p).read()
+          line = f"    ('{key}', '{key.split(chr(47))[-1]}'),\n"
+          anchor = re.search(r"    \('.*?gguf'.*?,.*?\),\n", s)
+          s = s[:anchor.start()] + line + s[anchor.start():]
+          open(p, "w").write(s)
+          print("start-llm.sh aktualisiert:", key)
+          PYEOF
+          git add backend/start-llm.sh
+          git commit -m "promotion(autopilot): $BASENAME an Position 1 (Gate bestanden)"
+          git push -q -u origin "$BRANCH"
+          gh pr create -t "🤖 Promotion: $BASENAME (Alias/Router-Autopilot)" \
+            -b "Automatischer Promotion-PR: Neuer GGUF im Object Brain, der noch nicht in start-llm.sh verankert ist.
+
+          **Der Merge dieses PRs = schriftliche Freigabe des Inhabers** (AGENTS.md-Freeze).
+          Nach dem Merge: Redeploy-Zyklus laut Memory_Bank.md 04.09
+          (GraphQL updateDockerfile + redeployService, ~10-15 min)." \
+            --head "$BRANCH"
+
+      - name: Zusammenfassung
+        run: |
+          echo "Promotion-Pilot fertig. promote=${{ steps.check.outputs.promote }}"
