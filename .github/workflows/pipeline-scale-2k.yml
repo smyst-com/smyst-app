@@ -23,7 +23,11 @@ on:
 
 concurrency:
   group: pipeline-scale-2k
-  cancel-in-progress: true
+  # 05.09.2026 — Produktionsdefekt behoben: 6/6 Laeufe 'cancelled' (Cron
+  # killte den laufenden Shard vor QA-Abschluss -> 0 Publishes seit
+  # 13:45). Jetzt WARTEN statt toeten: neue Dispatches queuen hinter dem
+  # laufenden Lauf; kein Shard verliert mehr seine 90-min-QA-Runde.
+  cancel-in-progress: false
 
 jobs:
   run-sharded-pipeline:
