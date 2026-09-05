@@ -18,6 +18,7 @@ import sys
 
 from app.ai.historical_pipeline import DEFAULT_CONFIG, PipelineConfig, PipelineStatus
 from app.integrations.candidate_store import CandidateStore, build_s3_client
+from app.workers.assess_risk import assess_one
 from app.workers.build_capsules import build_one
 from app.workers.qa_candidates import qa_one
 from app.workers.research_candidates import research_one
@@ -72,9 +73,17 @@ def run_shard(
         PipelineStatus.PUBLISHED.value
     )
 
+    # 05.09.2026 — Produktionsdefekt behoben: Die Risiko-Stufe FEHLTE seit
+    # jeher (pipeline-run hat sie als Worker 3, der Shard-Runner nie).
+    # Folgen: 'researched'-Kandidaten ohne risk_score scheiterten PERMANENT
+    # am Build ('Capsule-Bau erfordert abgeschlossenen Risiko-Check' — 25
+    # Fehler im Lauf 33954454588), QA-Ausbeute ~0 trotz '7.200/Tag'-Kapazität.
+    # Korrekter kanonischer Flow: candidate -> researched -> RISIKO ->
+    # verified -> generated -> qa_passed (identisch zur pipeline-run-Kette).
     stages = [
         ("candidate", "Research", research_one),
-        ("researched", "Build Capsule", build_one),
+        ("researched", "Risiko-Check", assess_one),
+        ("verified", "Build Capsule", build_one),
         ("generated", "QA", qa_one),
     ]
     for status, label, worker in stages:
