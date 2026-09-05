@@ -23,7 +23,10 @@ def _ms_days_ago(days: float) -> int:
 class FakeAccountStore:
     def list_account_summaries(self, limit: int = 2000) -> list[dict[str, Any]]:
         return [
-            {"email": "a@example.com", "status": "active", "emailVerified": True, "createdAt": _ms_days_ago(0.1)},
+            # exakt JETZT statt 0.1 Tage: 0.1 Tage rutscht bei Laeufen kurz
+            # nach Mitternacht UTC auf "gestern" (CI 00:09: newToday 0 statt 1)
+            # und machte den Test uhrzeit-abhaengig — Pipeline blockierend.
+            {"email": "a@example.com", "status": "active", "emailVerified": True, "createdAt": _ms_days_ago(0)},
             {"email": "b@example.com", "status": "active", "emailVerified": False, "createdAt": _ms_days_ago(3)},
             {"email": "c@example.com", "status": "active", "emailVerified": True, "createdAt": _ms_days_ago(20)},
             {"email": "d@example.com", "status": "deleted", "emailVerified": False, "createdAt": _ms_days_ago(30)},
