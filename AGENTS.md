@@ -34,7 +34,15 @@ weg (sessionStorage smyst-landing-dismissed), angemeldete Nutzer sehen sie nie,
    @font-face-Blöcke und die .smyst-landing-Overrides am Ende von src/index.css.
    Geschützt ebenfalls: die Login-Gate-Logik in SmystStartPage (landingVisible =
    landingOpen && auth.status === 'anonymous', LANDING_DISMISSED_KEY) und die
-   beiden E2E-Tests in frontend/e2e/smyst.spec.ts.
+   E2E-Tests in frontend/e2e/smyst.spec.ts.
+8. LOGIN-BEREICH (Inhaber-Foto 05.09., „genau eins zu eins"): Der helle
+   Vollbild-Login src/components/SmystLoginGate.tsx (Anmelden oder
+   registrieren; Google/Fingerabdruck/GitHub-Zeilen; E-Mail-Zeile mit
+   schwarzem Pfeil-Knopf; Hinweistext; Nutzungsbedingungen/Datenschutz/
+   Impressum) ist der freigegebene Login-Screen für Gäste (Aufruf: Einloggen
+   auf der Landing). Nicht ohne schriftliche Freigabe ändern. GitHub-Zeile
+   ist bewusst ein Alias auf den Google-Login (kein GitHub-OAuth-Backend —
+   Übergangslösung wie GitHubSignInButton).
 3. Gilt auch für Restores und Reverts: Vor jedem Restore prüfen, dass keine
    eingefrorenen Design-Elemente zurückkommen oder wegfallen. Vorfall: Die
    Icon-Legende im Footer wurde am 30.06.2026 (82b12da) auf Anweisung entfernt,
