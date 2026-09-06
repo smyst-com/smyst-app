@@ -67,7 +67,7 @@ jobs:
           # 6) Live-Chat (Backend-Antwort mit KI-Kennzeichnung)
           CHAT=$(curl -sf --max-time 30 -X POST https://api.smyst.com/api/v1/chat/messages \
             -H "Content-Type: application/json" \
-            -d "{\"chatId\":\"guardian-smoke\",\"message\":\"Hallo, wer bist du?\",\"twinSlug\":\"$FIRST_SLUG\"}")
+            -d "{\"chatId\":\"guardian-smoke\",\"message\":\"Hallo, wer bist du?\",\"twinId\":\"$FIRST_SLUG\"}")
           if [ -z "$CHAT" ]; then fail "Live-Chat antwortet nicht"; else
             echo "$CHAT" | grep -q '"aiGenerated": *true' || fail "Live-Chat-Antwort ohne KI-Kennzeichnung"
           fi
