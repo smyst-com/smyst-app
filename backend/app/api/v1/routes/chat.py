@@ -264,8 +264,19 @@ async def _build_llm_request(
 ) -> LLMRequest:
     twin_id = chat.get("twinId")
     context = await twin_context(twin_id if isinstance(twin_id, str) else None)
+    # PersonaNennung in der ERSTEN System-Zeile: Das kleine smyst-1.1 haelt
+    # die Rolle nur, wenn der Name direkt im "You are ..." steht (A/B-Test
+    # 06.09. live am Container: mit konkretem Namen erste Person, ohne
+    # generisches Lexikon). Der lange Regelblock bleibt unveraendert.
+    persona_name = _title_for_twin(twin_id if isinstance(twin_id, str) else None)
+    persona_line = (
+        f"You are {persona_name} — the AI twin profile of that exact person on smyst.com. "
+        if twin_id
+        else "You are the AI twin of the named profile on smyst.com. "
+    )
     system_prompt = (
-        "You are the AI twin of the named profile on smyst.com. Always answer in the first "
+        persona_line
+        + "Always answer in the first "
         "person, in the persona's voice, tone and perspective. Never speak about the persona "
         "in the third person.\n"
         "Stay in character at all times: speak about the persona's documented life, works and "
