@@ -111,3 +111,24 @@ jobs:
           if [ -n "$ISSUE" ]; then
             gh issue close -R "$REPO" "$ISSUE" -c "Entwarnung $(date -u '+%F %H:%M') UTC: Alle Checks grün."
           fi
+      - name: "Selbst-Takt halten (GitHub drosselt Crons — Muster pipeline-run PR #573)"
+        if: always()
+        run: |
+          set -e
+          # Kettenregel: Nur nachziehen, wenn der aktuellste Lauf dieser hier ist
+          # und mind. 4 Minuten alt ist. Ein juengerer Lauf heisst: Kette/Cron
+          # laeuft bereits. Cooldown verhindert Schnellfeuer-Loops.
+          LAST_ID=$(gh run list --workflow=app-guardian.yml --limit 1 --json databaseId -q '.[0].databaseId' 2>/dev/null || echo "")
+          LAST_TS=$(gh run list --workflow=app-guardian.yml --limit 1 --json createdAt -q '.[0].createdAt' 2>/dev/null || echo "")
+          if [ "$LAST_ID" = "${{ github.run_id }}" ] && [ -n "$LAST_TS" ]; then
+            AGE_S=$(( $(date +%s) - $(date -d "$LAST_TS" +%s) ))
+            if [ "$AGE_S" -ge 240 ]; then
+              if gh workflow run app-guardian.yml --ref main; then
+                echo "SELBSTTAKT: naechsten Lauf angestoßen (letzter ist ${AGE_S}s alt)."
+              fi
+            else
+              echo "SELBSTTAKT: letzter Lauf erst ${AGE_S}s alt — Cron/naechster Lauf uebernimmt."
+            fi
+          else
+            echo "SELBSTTAKT: juengerer Lauf (${LAST_ID:-unbekannt}) existiert — Kette aktiv."
+          fi
