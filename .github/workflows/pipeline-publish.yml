@@ -83,10 +83,20 @@ jobs:
       # Neue Profile live stellen SOFORT nach dem Publish — nicht erst beim
       # naechsten 3h-Cron (GitHub liess Cron-Slots wiederholt komplett aus;
       # Vorfall 29.08.: 75 Profile lagen 3+ Stunden unveraendert im Store).
-      - name: "Deploy nach Publish"
+      - name: "Deploy nach Publish (nur wenn keiner laeuft/wartet)"
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh workflow run github-pages.yml --ref main --repo "${GITHUB_REPOSITORY}"
-          echo "Deploy nach Publish angeusstossst." >> "$GITHUB_STEP_SUMMARY"
+          # Deploy-Pingpong-Falle (06.09.): Jeder neue Dispatch cancellt den
+          # vorherigen PENDING-Deploy — bei Triggern schneller als der
+          # Buildzeit (1-3h) wurde NIE einer fertig und die live-Zahl
+          # verhungerte. Guard: nur dispatchen, wenn kein Deploy aktiv.
+          AKTIV=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/github-pages.yml/runs?per_page=10" \
+            --jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "pending" or .status == "queued" or .status == "waiting")] | length')
+          if [ "${AKTIV}" -gt 0 ]; then
+            echo "Deploy bereits aktiv/queued (${AKTIV}) — Dispatch uebersprungen."
+          else
+            gh workflow run github-pages.yml --ref main --repo "${GITHUB_REPOSITORY}"
+            echo "Deploy nach Publish angeusstossst." >> "$GITHUB_STEP_SUMMARY"
+          fi

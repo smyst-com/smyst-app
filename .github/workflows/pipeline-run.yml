@@ -470,7 +470,14 @@ jobs:
         if: github.event_name == 'schedule' || inputs.watchdog == 'true' || (env.MODE == 'backfill-places' && inputs.backfill_dry_run == 'false')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+        run: |
+          # Guard gegen Deploy-Pingpong (siehe pipeline-publish.yml, 06.09.)
+          AKTIV=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/github-pages.yml/runs?per_page=10"             --jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "pending" or .status == "queued" or .status == "waiting")] | length')
+          if [ "${AKTIV}" -gt 0 ]; then
+            echo "Deploy bereits aktiv/queued (${AKTIV}) — Dispatch uebersprungen."
+          else
+            gh workflow run github-pages.yml --ref main --repo "$GITHUB_REPOSITORY"
+          fi
 
       - name: Hinweis Publish
         if: env.MODE == 'dry-run' || (env.MODE == 'run-small' && github.event_name != 'schedule' && inputs.watchdog != 'true') || env.MODE == 'run-batch'
