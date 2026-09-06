@@ -122,7 +122,15 @@ class Settings(BaseSettings):
     llm_provider_order_raw: str = Field(default="", validation_alias="LLM_PROVIDER_ORDER")
     llm_default_models_raw: str = Field(default="", validation_alias="LLM_DEFAULT_MODELS")
     llm_provider_timeout_seconds: float = Field(
-        default=20.0, validation_alias="LLM_PROVIDER_TIMEOUT_SECONDS"
+        # 75 s statt 20 s: Das eigene Modell braucht auf den 2 CPU-Kernen des
+        # Zeabur-Containers 17-30 s bis zum ersten Token (live gemessen 06.09.,
+        # Log model_first_token). Mit 20 s kippte JEDE Chat-Antwort in den
+        # Not-Fallback ("I can't reach my knowledge"), obwohl smyst_llm es war,
+        # das die Antwort lieferte — das Provider-Timeout schoss frueher als
+        # der erste Token. Schnelle Cloud-Provider reagieren in < 5 s; der
+        # Timeout ist nur die Obergrenze und kostet sie nichts. Env bleibt
+        # maechtiger (LLM_PROVIDER_TIMEOUT_SECONDS).
+        default=75.0, validation_alias="LLM_PROVIDER_TIMEOUT_SECONDS"
     )
     llm_total_deadline_seconds: float = Field(
         default=45.0, validation_alias="LLM_TOTAL_DEADLINE_SECONDS"
