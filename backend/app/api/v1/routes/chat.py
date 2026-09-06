@@ -351,12 +351,22 @@ async def _build_llm_request(
         if _language_name(language)
         else "Answer in the same language as the user.\n"
     )
+    # Recency-Anker: Kleine Modelle verlieren die Rolle unter dem langen
+    # Regelblock (live 06.09.: Kontext da, Antwort trotzdem Lexikon). Der
+    # Name + Ich-Form stehen deshalb auch am PROMPT-Ende, direkt vor der
+    # Antwortanforderung.
+    persona_recency = (
+        f"Answer as {persona_name} yourself, in the first person.\n"
+        if twin_id
+        else ""
+    )
     prompt = (
         f"Twin/profile: {_title_for_twin(twin_id if isinstance(twin_id, str) else None)}\n"
         + context_block
         + memory_block_text
         + f"User message: {message}\n"
         + language_line
+        + persona_recency
         + "Keep it concise."
     )
     # language MUSS in die Metadata: der Not-Fallback (ai/degraded_messages)
