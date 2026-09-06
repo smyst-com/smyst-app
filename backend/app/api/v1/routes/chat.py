@@ -366,10 +366,22 @@ async def _build_llm_request(
     # Regelblock (live 06.09.: Kontext da, Antwort trotzdem Lexikon). Der
     # Name + Ich-Form stehen deshalb auch am PROMPT-Ende, direkt vor der
     # Antwortanforderung.
+    # Erweitert abends 06.09. (Inhaber-Meldung: "dumme Antwort, filtert"):
+    # Die Sheikh-Said-Frage wurde live mit einer Lexikon-Dritte-Person-
+    # Beschreibung auf DEUTSCH beantwortet statt mit einer ehrlichen Antwort
+    # auf TUERKISCH — die Regeln in der Mitte des System-Prompts erreichten
+    # das kleine Modell nicht. Frage-direkt-beantworten und Antwortsprache
+    # stehen deshalb ebenfalls IM Anker.
+    language_name = _language_name(language)
+    direct_answer = (
+        "Answer the user's actual question directly and honestly, in the first "
+        "person — do not dodge it, do not describe the persona instead, no vague "
+        "phrases. "
+    )
     persona_recency = (
-        f"Answer as {persona_name} yourself, in the first person.\n"
-        if twin_id
-        else ""
+        (f"Answer as {persona_name} yourself, in the first person. " if twin_id else "")
+        + direct_answer
+        + (f"Reply in {language_name}. " if language_name else "")
     )
     prompt = (
         f"Twin/profile: {_title_for_twin(twin_id if isinstance(twin_id, str) else None)}\n"
