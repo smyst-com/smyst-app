@@ -72,7 +72,7 @@ jobs:
             echo "$CHAT" | grep -q '"aiGenerated": *true' || fail "Live-Chat-Antwort ohne KI-Kennzeichnung"
           fi
           # 7) Auto-Heilung: verpasste Slots der Kern-Autopiloten nachholen
-          LAST_VA=$(gh run list --workflow=version-autopilot.yml --limit 1 --json createdAt -q '.[0].createdAt' 2>/dev/null)
+          LAST_VA=$(gh run list -R "$REPO" --workflow=version-autopilot.yml --limit 1 --json createdAt -q '.[0].createdAt' 2>/dev/null)
           if [ -n "$LAST_VA" ]; then
             AGE_H=$(( ( $(date +%s) - $(date -d "$LAST_VA" +%s) ) / 3600 ))
             if [ "$AGE_H" -ge 8 ]; then
@@ -122,13 +122,13 @@ jobs:
           # naechsten. Ergebnis: verlaesslicher ~4,5-Minuten-Takt. Ein in der
           # Zwischenzeit per Cron gestarteter, juengerer Lauf stoppt die
           # eigene Kette (keine Doppel-Ketten).
-          LAST_ID=$(gh run list --workflow=app-guardian.yml --limit 1 --json databaseId -q '.[0].databaseId' 2>/dev/null || echo "")
+          LAST_ID=$(gh run list -R "$REPO" --workflow=app-guardian.yml --limit 1 --json databaseId -q '.[0].databaseId' 2>/dev/null || echo "")
           if [ -n "$LAST_ID" ] && [ "$LAST_ID" != "${{ github.run_id }}" ]; then
             echo "SELBSTTAKT: juengerer Lauf $LAST_ID existiert — Kette uebernimmt."
             exit 0
           fi
           while true; do
-            AGE_S=$(( $(date +%s) - $(date -d "$(gh run view "${{ github.run_id }}" --json createdAt -q .createdAt)" +%s) ))
+            AGE_S=$(( $(date +%s) - $(date -d "$(gh run view -R "$REPO" "${{ github.run_id }}" --json createdAt -q .createdAt)" +%s) ))
             [ "$AGE_S" -ge 200 ] && break
             sleep 30
           done
