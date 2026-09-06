@@ -20,6 +20,7 @@ c = boto3.client('s3', endpoint_url='https://s3.us-west-2.idrivee2.com',
     aws_secret_access_key='$IDRIVE_E2_SECRET_KEY',
     config=Config(read_timeout=900, retries={'max_attempts': 10}))
 candidates = [
+    ('models/smyst-1.1/2026-08-23/smyst-1.1-v4-Q8_0.gguf', 'smyst-1.1-v4-Q8_0.gguf'),
     ('models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf', 'smyst-1.1 Q4_K_M'),
     ('models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf', 'smyst-1.0 f16'),
 ]
