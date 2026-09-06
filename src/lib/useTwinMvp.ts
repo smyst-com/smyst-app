@@ -692,7 +692,9 @@ export function useTwinMvp() {
         } catch {
           const body = await apiJson<ChatReply>('/api/chat/messages', {
             method: 'POST',
-            body: JSON.stringify({ chatId, message }),
+            // language mitnehmen: Ohne ihn antwortete der Fallback-Pfad nach
+            // einem Stream-Abbruch in der UI-Sprache statt der Wunschsprache.
+            body: JSON.stringify({ chatId, message, language }),
           })
           return { ...body, streamed: false }
         }

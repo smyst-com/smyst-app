@@ -5,7 +5,9 @@ import pytest
 
 from app.ai.degraded_messages import DEGRADED_FALLBACK_MESSAGES
 from app.ai.llm_router import (
+    AntiLoopProvider,
     build_default_router,
+    DegenerateOutputError,
     LLMProvider,
     LLMRouter,
     LocalDeterministicProvider,
@@ -472,3 +474,108 @@ async def test_rejection_logs_the_providers_own_reason(monkeypatch, caplog) -> N
             await provider.complete(LLMRequest(prompt="hi", system_prompt="s"))
 
     assert any("Key limit exceeded" in record.getMessage() for record in caplog.records)
+
+
+class LoopingProvider(LLMProvider):
+    """Attrappe: liefert eine Wiederholungs-Schleife (Live-Vorfall 06.09.)."""
+
+    name = "looping"
+    model = "looping-model"
+
+    def __init__(self, text: str = "sadece bu soruyu sorduğunuz zaman " * 20) -> None:
+        self.text = text
+
+    async def complete(self, request: LLMRequest) -> LLMResponse:
+        return LLMResponse(
+            text=self.text,
+            provider=self.name,
+            model=self.model,
+            input_tokens=3,
+            output_tokens=len(self.text.split()),
+            latency_ms=1,
+            degraded=False,
+        )
+
+
+@pytest.mark.asyncio
+async def test_anti_loop_provider_rejects_repetition_and_router_fails_over() -> None:
+    """Eine Schleifen-Antwort ist unbrauchbar — der Router muss weitergehen."""
+    router = LLMRouter([AntiLoopProvider(LoopingProvider()), StaticProvider()])
+
+    response = await router.complete(make_request())
+
+    assert response.provider == "static"
+    assert response.text == "A real answer from the next provider."
+
+
+@pytest.mark.asyncio
+async def test_anti_loop_provider_passes_normal_answers_through() -> None:
+    normal = (
+        "Sie fragen nach meinen Gruenden: Der Aufstand bedrohte 1925 die junge "
+        "Republik, und die Gerichte haben ihn nach damaligem Recht verhandelt. "
+        "Ich trage die Verantwortung — der Preis war hoch, das Land bestand."
+    )
+    provider = AntiLoopProvider(LoopingProvider(text=normal))
+
+    response = await provider.complete(make_request())
+
+    assert response.text == normal
+    assert response.provider == "looping"
+
+
+@pytest.mark.asyncio
+async def test_anti_loop_provider_aborts_degenerate_stream_early() -> None:
+    """Im Stream wird die Schleife erkannt, sobald sie steht — nicht erst am Ende."""
+
+    class StreamingLoopProvider(LLMProvider):
+        name = "streamloop"
+        model = "streamloop-model"
+
+        async def complete(self, request: LLMRequest) -> LLMResponse:
+            raise NotImplementedError
+
+        async def stream(self, request: LLMRequest):
+            chunk = "sadece bu soruyu sorduğunuz zaman "
+            for _ in range(30):
+                yield chunk
+
+    provider = AntiLoopProvider(StreamingLoopProvider())
+
+    with pytest.raises(DegenerateOutputError):
+        collected = []
+        async for delta in provider.stream(make_request()):
+            collected.append(delta)
+
+    assert collected  # Deltas kamen durch, bevor der Abbruch griff
+
+
+@pytest.mark.asyncio
+async def test_smyst_llm_sends_anti_loop_sampling(monkeypatch) -> None:
+    """Der eigene llama-server bekommst repeat_penalty & Co. in JEDEM Request."""
+    fake = use_fake_client(monkeypatch)
+    fake.posts = []
+    fake.responses = [
+        FakeResponse(
+            {
+                "model": "smyst-1.0",
+                "choices": [{"message": {"content": "Eine ehrliche, kurze Antwort."}}],
+                "usage": {"prompt_tokens": 5, "completion_tokens": 5},
+            }
+        )
+    ]
+    settings = Settings(
+        SMYST_LLM_BASE_URL="http://127.0.0.1:8080/v1",
+        SMYST_LLM_API_KEY="test",
+        LLM_PROVIDER_ORDER="smyst_llm",
+    )
+
+    router = build_default_router(settings)
+    await router.complete(make_request())
+
+    payload = fake.posts[0]["json"]
+    assert payload["repeat_penalty"] == 1.18
+    assert payload["repeat_last_n"] == 384
+    assert payload["frequency_penalty"] == 0.25
+    assert payload["presence_penalty"] == 0.2
+    # Der Router meldet den Provider unter seinem Namen (AntiLoop-Wrapper).
+    assert [p.name for p in router.providers][0] == "smyst_llm"
