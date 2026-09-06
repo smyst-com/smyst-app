@@ -210,7 +210,31 @@ export function useAuth(options: { enabled?: boolean } = {}) {
         } catch (err) {
           // Fallback: klassischer Server-Redirect-Flow (funktioniert, sobald
           // GOOGLE_OAUTH_CLIENT_SECRET serverseitig konfiguriert ist).
-          console.warn('[auth] GIS-Popup-Login fehlgeschlagen, Fallback auf Redirect', err);
+          // Vorab pruefen, ob der Redirect-Weg ueberhaupt verfuegbar ist:
+          // Ohne Secret antwortet er 503 — der Nutzer wuerde auf einer kahlen
+          // Backend-Fehlerseite landen (Vorfall 06.09.: Google-Klick fuehrte
+          // auf 503). Dann lieber zurueck ins Login mit klarem Hinweis.
+          console.warn('[auth] GIS-Popup-Login fehlgeschlagen, pruefe Redirect-Fallback', err);
+          let redirectVerfuegbar = true;
+          try {
+            const probe = await fetch(`${GOOGLE_START_ENDPOINT}?return_to=${encodeURIComponent(target)}`, {
+              method: 'GET',
+              credentials: 'omit',
+              redirect: 'manual',
+            });
+            // opaqueredirect (3xx) = OAuth-Redirect lebt; ok/bad?? nur 2xx/3xx sind gut.
+            redirectVerfuegbar =
+              probe.type === 'opaqueredirect' ||
+              probe.ok ||
+              (probe.status >= 300 && probe.status < 400);
+          } catch {
+            /* Netzwerkfehler beim Proben: Redirect wie bisher versuchen */
+          }
+          if (!redirectVerfuegbar) {
+            const joiner = target.includes('?') ? '&' : '?';
+            window.location.href = `${target}${joiner}loginError=google`;
+            return;
+          }
           window.location.href = `${GOOGLE_START_ENDPOINT}?return_to=${encodeURIComponent(target)}`;
         }
       })();

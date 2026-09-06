@@ -1699,9 +1699,33 @@ function SmystStartPage({
   }
   // Login-Bereich 1:1 nach Inhaber-Foto (05.09.): heller Vollbild-Screen nur
   // fuer nicht angemeldete Nutzer; nach Login landet man auf der Start-Shell.
-  const [loginGateOpen, setLoginGateOpen] = useState(false)
+  // ?loginError=google (Rueckweg des Google-Fallbacks, useAuth.ts) oeffnet
+  // das Gate direkt mit klarem Hinweis statt kaler 503-Seite.
+  const [loginGateNotice, setLoginGateNotice] = useState<string | null>(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('loginError') === 'google'
+        ? (lang === 'en'
+            ? 'Google sign-in is currently unavailable or was blocked by the browser. Please continue with e-mail — or allow pop-ups for smyst.com and try again.'
+            : 'Die Google-Anmeldung ist gerade nicht verfügbar oder wurde vom Browser blockiert. Bitte nutze „Mit E-Mail fortfahren“ — oder erlaube Pop-ups für smyst.com und versuche es erneut.')
+        : null
+    } catch {
+      return null
+    }
+  })
+  const [loginGateOpen, setLoginGateOpen] = useState(() => loginGateNotice !== null)
+  useEffect(() => {
+    if (loginGateNotice === null) return
+    try {
+      const url = new URL(window.location.href)
+      url.searchParams.delete('loginError')
+      window.history.replaceState({}, '', url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : '') + url.hash)
+    } catch {
+      /* URL unverändert lassen */
+    }
+  }, [loginGateNotice])
   const openLandingTargetLogin = () => {
     dismissLanding()
+    setLoginGateNotice(null)
     setLoginGateOpen(true)
   }
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -2836,10 +2860,11 @@ function SmystStartPage({
 
   return (
     <>
-      {loginGateOpen && auth.status === 'anonymous' && (
+      {loginGateOpen && (auth.status === 'anonymous' || (loginGateNotice !== null && auth.status !== 'authenticated')) && (
         <SmystLoginGate
           lang={lang}
           t={t}
+          notice={loginGateNotice}
           onClose={() => setLoginGateOpen(false)}
           onGoogle={() => auth.signInWithGoogle('/')}
         />

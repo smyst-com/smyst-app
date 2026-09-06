@@ -16,13 +16,15 @@ export function SmystLoginGate({
   t,
   onClose,
   onGoogle,
+  notice,
 }: {
   lang: string
   t: StaticTranslations
   onClose: () => void
   onGoogle: () => void
+  notice?: string | null
 }) {
-  const [emailOpen, setEmailOpen] = useState(false)
+  const [emailOpen, setEmailOpen] = useState(Boolean(notice))
   const [fingerHint, setFingerHint] = useState(false)
 
   useEffect(() => {
@@ -90,6 +92,15 @@ export function SmystLoginGate({
             <path d="M19 12H5m7-7-7 7 7 7" />
           </svg>
         </button>
+
+        {notice ? (
+          <div role="alert" className="mt-5 flex items-start gap-2.5 rounded-[12px] border border-[#FBD7D0] bg-[#FEF3F1] px-4 py-3 text-[13px] leading-relaxed text-[#B3261E]">
+            <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" /><path d="M12 8v4m0 4h.01" />
+            </svg>
+            <span>{notice}</span>
+          </div>
+        ) : null}
 
         <h1 className="mt-5 text-[22px] font-bold leading-tight tracking-[-0.01em]">{s.title}</h1>
         <p className="mt-2 text-[14px] leading-relaxed text-[#6B7280]">{s.sub}</p>
