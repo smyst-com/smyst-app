@@ -47,7 +47,11 @@ if [ -f "$MODEL" ] && [ -n "$LLAMA_BIN" ] && [ -x "$LLAMA_BIN" ]; then
   export LD_LIBRARY_PATH="$LLAMA_DIR:${LD_LIBRARY_PATH:-}"
   # Threads: alle verfuegbaren Kerne (frueher 1 Thread — bei 20 s LLM-Timeout
   # lief jede Anfrage ins Timeout, bevor das Modell antworten konnte).
-  "$LLAMA_BIN" \
+  # nice 10: Die 2-Kern-VM teilte sich beide Kerne mit dem k3s-Control-Plane —
+  # unter Chat-Last verhungerte k3s/kubelet zweimal (05.09.: K3s offline).
+  # Mit lowerer Prioritaet behaelt die Control-Plane Vorrang, llama nutzt
+  # beide Kerne weiter, wenn sie frei sind. Freeze-Parameter unveraendert.
+  nice -n 10 "$LLAMA_BIN" \
     --model "$MODEL" \
     --alias smyst-1.0 \
     --host 127.0.0.1 --port 8080 \
