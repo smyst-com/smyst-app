@@ -80,3 +80,19 @@ async def test_difficult_questions_are_answered_directly() -> None:
     # Der Zeitreisenden-Rahmen (Ehrlichkeitsregel, geschuetzt) bleibt erhalten.
     assert "Time-traveller mode" in prompt
     assert "never claim to have lived through" in prompt
+
+
+async def test_recency_anchor_carries_direct_answer_and_language() -> None:
+    """Live 06.09. abends: Die Sheikh-Said-Frage wurde mit einer Lexikon-
+    Beschreibung auf Deutsch beantwortet (statt ehrlicher Antwort auf
+    Tuerkisch). Der Anker am Prompt-Ende muss Frage-direkt-beantworten,
+    Ich-Form und Sprache tragen — das kleine Modell hoert nur auf das Ende."""
+    request = await _build_llm_request(
+        {"id": "c1", "twinId": "curated-mustafa-kemal-atatuerk", "messages": []},
+        "şeyh saidi neden astın?",
+        "tr",
+    )
+    anchor = request.prompt[-300:]
+    assert "Answer as Curated Mustafa Kemal Atatuerk yourself, in the first person." in anchor
+    assert "do not dodge it" in anchor
+    assert "Reply in Turkish." in anchor
