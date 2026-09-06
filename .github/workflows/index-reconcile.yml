@@ -1,0 +1,124 @@
+name: Publish-Index-Reconcile (Store-Dokumente → Index)
+
+# Gleicht den Publish-Index mit dem Kandidaten-Store ab:
+# Jedes Dokument mit Status 'published' OHNE Index-Eintrag bekommt seinen
+# Eintrag aus candidate_doc + capsule (build_publish_record — identisch zum
+# Publisher). Gründ: Austausch-Vorfall 25./26.08. — ~1.700 Store-Dokumente
+# blieben ohne Index-Eintrag (Live 23.301 vs Store 24.927, 06.09.).
+#
+# Sicherheit: Sicherheitskopie des aktuellen Index nach e2 (Rollback-Weg),
+# additiv (nichts gelöscht), Slug-Kollisionen bekommen QID-Suffix,
+# idempotent. Danach: github-pages deployen (separat).
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Grund (Audit-Trail)'
+        required: false
+        default: 'Store-Index-Abgleich nach Austausch-Vorfall 25./26.08.'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: index-reconcile
+  cancel-in-progress: true
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+      IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Abgleich Store → Index
+        working-directory: backend
+        run: |
+          pip install -q -e ".[dev]"
+          python3 << 'PY'
+          import json
+          from app.ai.historical_pipeline import PipelineConfig
+          from app.ai.publisher import build_publish_record
+          from app.core.config import settings
+          from app.integrations.candidate_store import (
+              CandidateStore, build_s3_client,
+          )
+          import boto3
+
+          s3 = build_s3_client()
+          store = CandidateStore(client=s3, bucket=settings.idrive_e2_bucket)
+          BUCKET = settings.idrive_e2_bucket
+          KEY = 'pipeline/published/index.json'
+
+          resp = s3.get_object(Bucket=BUCKET, Key=KEY)
+          index = json.loads(resp['Body'].read().decode('utf-8'))
+          print(f'Aktueller Index: {len(index)} Eintraege.')
+
+          ts = __import__('datetime').datetime.now(__import__('datetime').timezone.utc)
+          backup_key = f'pipeline/published/index.pre-reconcile-{ts.strftime("%Y%m%dT%H%M%SZ")}.json'
+          s3.put_object(
+              Bucket=BUCKET, Key=backup_key,
+              Body=json.dumps(index, ensure_ascii=False).encode('utf-8'),
+              ContentType='application/json',
+          )
+          print(f'Sicherheitskopie: {backup_key}')
+
+          nach_qid = {e.get('wikidata_qid'): e for e in index if e.get('wikidata_qid')}
+          slugs_aktiv = {e.get('slug') for e in index if e.get('slug')}
+
+          docs = store.candidate_documents_by_status('published', limit=100000)
+          print(f'Store-Dokumente status=published: {len(docs)}')
+
+          fehlend = [d for d in docs if d.get('wikidata_qid') not in nach_qid]
+          print(f'Fehlende Index-Eintraege: {len(fehlend)}')
+
+          wieder = 0
+          kapsel_fehlt = 0
+          for doc in fehlend:
+              qid = doc.get('wikidata_qid')
+              try:
+                  resp2 = s3.get_object(
+                      Bucket=BUCKET,
+                      Key=f'pipeline/capsules/{qid}/capsule.json',
+                  )
+                  capsule = json.loads(resp2['Body'].read().decode('utf-8'))
+              except Exception:
+                  kapsel_fehlt += 1
+                  continue
+              record = build_publish_record(
+                  doc, capsule, approved_by='smyst247@gmail.com (Restore-Reconcile)',
+              )
+              slug = record.get('slug')
+              if slug in slugs_aktiv:
+                  record['slug'] = f"{slug}-{qid.lstrip('Q')}"
+                  if record['slug'] in slugs_aktiv:
+                      kapsel_fehlt += 1
+                      continue
+              slugs_aktiv.add(record['slug'])
+              index.append(record)
+              nach_qid[qid] = record
+              wieder += 1
+
+          print(f'Wiederhergestellt: {wieder} | Kapsel fehl/Slug-Kollision: {kapsel_fehlt}')
+          print(f'NEUER INDEX: {len(index)} Eintraege')
+
+          s3.put_object(
+              Bucket=BUCKET, Key=KEY,
+              Body=json.dumps(index, ensure_ascii=False).encode('utf-8'),
+              ContentType='application/json',
+          )
+          resp3 = s3.get_object(Bucket=BUCKET, Key=KEY)
+          pruefung = json.loads(resp3['Body'].read().decode('utf-8'))
+          assert len(pruefung) == len(index), 'Groessen-Mismatch!'
+          qids = [e.get('wikidata_qid') for e in pruefung]
+          assert len(qids) == len(set(qids)), 'QID-Duplikate!'
+          print(f'VERIFIZIERT: {len(pruefung)} Eintraege, keine QID-Duplikate.')
+          PY
