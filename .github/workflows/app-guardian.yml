@@ -132,6 +132,6 @@ jobs:
             [ "$AGE_S" -ge 200 ] && break
             sleep 30
           done
-          if gh workflow run app-guardian.yml --ref main; then
+          if gh workflow run -R "$REPO" app-guardian.yml --ref main; then
             echo "SELBSTTAKT: naechsten Lauf angestoßen (Lauf ist ${AGE_S}s alt)."
           fi
