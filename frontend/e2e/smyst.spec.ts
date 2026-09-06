@@ -205,6 +205,19 @@ test.describe("Smyst current app", () => {
     await expect(page.getByPlaceholder("Profil suchen")).toBeVisible();
   });
 
+  test("google fallback returns to the login screen with a clear notice instead of a 503 page (06.09.)", async ({ page }) => {
+    await page.route("**/auth/me", async (route) => {
+      await route.fulfill({ json: { authenticated: false } });
+    });
+
+    await page.goto("/?loginError=google");
+    await expect(page.locator(".smyst-login-gate")).toBeVisible({ timeout: 8_000 });
+    await expect(page.locator(".smyst-login-gate [role=alert]")).toContainText("Google-Anmeldung ist gerade nicht verfügbar");
+    await expect(page.locator(".smyst-login-gate input[type=\"email\"]")).toBeVisible();
+    // URL bereinigt
+    await expect(page).not.toHaveURL(/loginError/);
+  });
+
   test("settings expose profile sorting controls without infrastructure marketing", async ({ page }) => {
     await page.goto("/settings");
 
