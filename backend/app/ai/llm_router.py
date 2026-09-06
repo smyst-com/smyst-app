@@ -11,6 +11,7 @@ from urllib.parse import urljoin
 
 import httpx
 
+from app.ai.degeneration import is_degenerate_answer
 from app.ai.degraded_messages import degraded_fallback_message
 from app.ai.github_oidc import ActionsIdTokenSource
 from app.ai.models import LLMRequest, LLMResponse
@@ -115,6 +116,62 @@ class LocalDeterministicProvider(LLMProvider):
         )
 
 
+class DegenerateOutputError(RuntimeError):
+    """Antwort ist eine Wiederholungs-Schleife — unbrauchbar, naechster Provider."""
+
+
+class AntiLoopProvider(LLMProvider):
+    """Lehnt degenerierte Wiederholungs-Antworten ab (siehe app/ai/degeneration).
+
+    Wrapt smyst_llm: Das kleine CPU-Modell rutscht gelegentlich in eine
+    Token-Schleife (live 06.09.2026: dieselbe fuenf-Wort-Phrase rund 20x als
+    komplette Chat-Antwort). complete() wirft dann DegenerateOutputError und
+    der Router nimmt den naechsten Provider; stream() bricht ab, sobald der
+    Schleifen-Verdacht steht — der Client faellt auf /chat/messages zurueck
+    und bekommt dort eine saubere Antwort aus der Provider-Kette.
+    """
+
+    #: Im Stream erst nach so vielen neuen Woertern erneut pruefen (CPU sparen).
+    _STREAM_CHECK_EVERY_WORDS = 24
+
+    def __init__(self, inner: LLMProvider) -> None:
+        self.inner = inner
+        self.name = inner.name
+        self.model = inner.model
+
+    async def complete(self, request: LLMRequest) -> LLMResponse:
+        response = await self.inner.complete(request)
+        if is_degenerate_answer(response.text):
+            logger.warning(
+                "llm provider '%s' returned a repetition loop; trying next provider",
+                self.name,
+            )
+            raise DegenerateOutputError(f"degenerate repetition loop from '{self.name}'")
+        return response
+
+    async def stream(self, request: LLMRequest) -> AsyncIterator[str]:
+        buffer = ""
+        checked_words = 0
+        async for delta in self.inner.stream(request):
+            buffer += delta
+            words = len(buffer.split())
+            if words - checked_words >= self._STREAM_CHECK_EVERY_WORDS:
+                checked_words = words
+                if is_degenerate_answer(buffer):
+                    logger.warning(
+                        "llm provider '%s' streamed a repetition loop; aborting stream",
+                        self.name,
+                    )
+                    raise DegenerateOutputError(f"degenerate repetition loop from '{self.name}'")
+            yield delta
+        if is_degenerate_answer(buffer):
+            logger.warning(
+                "llm provider '%s' stream ended in a repetition loop; trying next provider",
+                self.name,
+            )
+            raise DegenerateOutputError(f"degenerate repetition loop from '{self.name}'")
+
+
 class OpenAICompatibleProvider(LLMProvider):
     def __init__(
         self,
@@ -126,6 +183,7 @@ class OpenAICompatibleProvider(LLMProvider):
         max_tokens: int = 1024,
         temperature: float = 0.7,
         extra_headers: dict[str, str] | None = None,
+        extra_payload: dict[str, Any] | None = None,
     ) -> None:
         self.name = name
         self.base_url = base_url.rstrip("/") + "/"
@@ -135,6 +193,10 @@ class OpenAICompatibleProvider(LLMProvider):
         self.max_tokens = max_tokens
         self.temperature = temperature
         self.extra_headers = extra_headers or {}
+        #: Zusatz-Sampling je Request (z. B. repeat_penalty fuer llama-server).
+        #: Nur fuer Server gedacht, die die Parameter verstehen — andere
+        #: Anbieter wuerden unbekannte Felder mit 400 ablehnen.
+        self.extra_payload = dict(extra_payload) if extra_payload else {}
 
     @property
     def chat_completions_url(self) -> str:
@@ -168,7 +230,7 @@ class OpenAICompatibleProvider(LLMProvider):
         )
 
     def _build_payload(self, request: LLMRequest) -> dict[str, Any]:
-        return {
+        payload = {
             "model": self.model,
             "messages": [
                 {"role": "system", "content": request.system_prompt or DEFAULT_SYSTEM_PROMPT},
@@ -179,6 +241,8 @@ class OpenAICompatibleProvider(LLMProvider):
                 request.temperature if request.temperature is not None else self.temperature
             ),
         }
+        payload.update(self.extra_payload)
+        return payload
 
     async def stream(self, request: LLMRequest) -> AsyncIterator[str]:
         """Streamt Antwort-Deltas ueber die OpenAI-kompatible SSE-Schnittstelle.
@@ -649,12 +713,28 @@ def build_default_router(settings: Settings | None = None) -> LLMRouter:
             if not base_url:
                 continue
             providers.append(
-                OpenAICompatibleProvider(
-                    provider_name,
-                    base_url,
-                    api_key or "smyst",
-                    model,
-                    timeout=timeout,
+                AntiLoopProvider(
+                    OpenAICompatibleProvider(
+                        provider_name,
+                        base_url,
+                        api_key or "smyst",
+                        model,
+                        timeout=timeout,
+                        # Anti-Loop-Sampling (live 06.09.: Wiederholungs-Schleife
+                        # als komplette Chat-Antwort). llama-server (b10606)
+                        # versteht diese Felder je Request; Freeze-Parameter
+                        # in start-llm.sh bleiben unberuehrt. Sollte das Modell
+                        # trotzdem schleifen, wirft AntiLoopProvider und die
+                        # Kette antwortet mit dem naechsten Provider.
+                        extra_payload={
+                            "repeat_penalty": 1.18,
+                            "repeat_last_n": 384,
+                            "frequency_penalty": 0.25,
+                            "presence_penalty": 0.2,
+                            "top_p": 0.95,
+                            "min_p": 0.05,
+                        },
+                    )
                 )
             )
         elif provider_name == "smyst_gateway":

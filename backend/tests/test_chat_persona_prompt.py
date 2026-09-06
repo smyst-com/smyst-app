@@ -68,3 +68,15 @@ async def test_core_persona_rules_survive() -> None:
 async def test_language_line_reaches_the_prompt() -> None:
     request = await _build_llm_request({"id": "c1", "twinId": None, "messages": []}, "Hallo", "tr")
     assert "Turkish" in request.prompt or "tuerkisch" in request.prompt.lower()
+
+
+async def test_difficult_questions_are_answered_directly() -> None:
+    """Inhaber-Auftrag 06.09. ('soll nicht filtern ... direkt ehrlich antworten'):
+    Twins weichen schwierigen Fragen nicht aus — dokumentierte Fakten und
+    Motive in der Ich-Form, kein Ausweichen, kein Moralisieren."""
+    prompt = await _system_prompt()
+    assert "directly and honestly" in prompt
+    assert "Do not dodge the question" in prompt
+    # Der Zeitreisenden-Rahmen (Ehrlichkeitsregel, geschuetzt) bleibt erhalten.
+    assert "Time-traveller mode" in prompt
+    assert "never claim to have lived through" in prompt
