@@ -1,5 +1,5 @@
 {
-  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King). Zusatz 03.08.2026: birthPlace/deathPlace als kuratierte Orts-Overrides fuer Faelle, in denen Wikidata falsch liegt oder keinen heutigen Staat kennt (der Backfill haengt nur ein Land an und schreibt einen Ort nie um). Zusatz 05.09.2026: gender als Stimmen-Geschlecht-Override (Wikidata P21) fuer Pipeline-Profile, deren Publish-Record kein P21 liefert — sonst sprachen sie mit dem geschlechtslosen Maenner-Fallback (Freigabe Adam King: Korrekturliste nachpflegen).",
+  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King). Zusatz 03.08.2026: birthPlace/deathPlace als kuratierte Orts-Overrides fuer Faelle, in denen Wikidata falsch liegt oder keinen heutigen Staat kennt (der Backfill haengt nur ein Land an und schreibt einen Ort nie um). Zusatz 05.09.2026: gender als Stimmen-Geschlecht-Override (Wikidata P21) fuer Pipeline-Profile, deren Publish-Record kein P21 liefert — sonst sprachen sie mit dem geschlechtslosen Maenner-Fallback (Freigabe Adam King: Korrekturliste nachpflegen). Ergaenzung 06.09.2026 (Inhaber-Auftrag alles zuende zu bringen): die 3 bislang offenen Identitaets-Sonderfaelle. Quelle je Wikidata P21: d-Eon = trans Frau -> female; Catalina de Erauso = trans Mann -> male; Claude Cahun = nichtbinaer -> Naeherung female (deutsche Wikipedia durchgehend weibliche Formen; Plattform hat keine neutrale Stimme; Inhaber kann jederzeit aendern).",
   "profiles": {
     "carl-von-linne": {
       "roles": "Naturforscher, Botaniker",
@@ -2704,6 +2704,15 @@
     },
     "gioachino-rossini": {
       "gender": "male"
+    },
+    "charles-genevieve-louis-auguste-andre-timothee-d-eon-de-beaumont": {
+      "gender": "female"
+    },
+    "catalina-de-erauso": {
+      "gender": "male"
+    },
+    "claude-cahun": {
+      "gender": "female"
     }
   }
 }
