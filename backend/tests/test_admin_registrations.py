@@ -64,7 +64,7 @@ def test_admin_registrations_counts_and_buckets(monkeypatch) -> None:
     monkeypatch.setattr(
         admin_registrations_route.user_store,
         "list_user_doc_dates",
-        lambda limit=10000: [_ms_days_ago(0.2), _ms_days_ago(6), _ms_days_ago(40)],
+        lambda limit=10000: [_ms_days_ago(0), _ms_days_ago(6), _ms_days_ago(40)],
     )
     client = TestClient(app, base_url="https://testserver")
     response = client.get(
@@ -87,7 +87,9 @@ def test_admin_registrations_counts_and_buckets(monkeypatch) -> None:
     days = payload["days"]
     assert len(days) == 14
     # Reihenfolge: aeltester Tag zuerst, heute zuletzt; im 14-Tage-Fenster
-    # liegen nur die Konten von vor 0.1 und 3 Tagen (20/30 Tage sind aelter).
+    # liegen nur die Konten von jetzt und vor 3 Tagen (20/30 Tage sind aelter).
+    # 0.2 Tage rutschte kurz nach Mitternacht UTC auf 'gestern' (CI 12.09.
+    # 00:21: mvpToday 0 statt 1) — gleicher Fix wie FakeAccountStore.
     assert days[-1]["date"] == NOW.strftime("%Y-%m-%d")
     assert sum(day["newAccounts"] for day in days) == 2
     # Keine einzelnen Adressen in der Antwort
