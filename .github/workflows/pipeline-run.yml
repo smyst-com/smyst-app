@@ -118,7 +118,7 @@ jobs:
       # ein 250er-Lauf ~250 min, die Laeufe wuerden sich gegenseitig verdraengen.
       BATCH_LIMIT: ${{ inputs.batch_limit || '250' }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v6
         with:
