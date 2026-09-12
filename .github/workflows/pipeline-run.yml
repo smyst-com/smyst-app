@@ -19,7 +19,7 @@ on:
     # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
   # 8 Laeufe/Tag (Anweisung Betreiber 02.08.2026: 1000 Profile/Tag real).
   # Concurrency-Gruppe serialisiert die Laeufe — sie stauen sich hoechstens,
-  # kollidieren aber nie. Stufen-Limit 250; Publish-Deckel 2500/Tag.
+  # kollidieren aber nie. Stufen-Limit 250; Publish-Deckel 5000/Tag (05.09.).
   #
   # ACHTUNG, 14.08.2026 teuer gelernt: 250 ist KEINE Stellschraube fuer mehr
   # Profile. Der Versuch, ueber den QA-Ausschuss hinweg auf 2000 zu kommen
@@ -252,57 +252,17 @@ jobs:
             python -m app.workers.build_capsules --dry-run --limit 3
           fi
 
-      # Schritt-Timeout + continue-on-error (04.08.2026): Vor dem QA-Perf-Fix
-      # (PR #324) lief die QA 5+ Stunden, riss den Job in den 350-min-Timeout
-      # und verhinderte damit auch den Auto-Publish bereits gepruefter Profile
-      # (5 von 7 Cron-Laeufen am 04.08. ohne einen einzigen Publish). Haengt
-      # die QA kuenftig, wird nur sie abgebrochen — Publish + Deploy laufen
-      # mit dem bis dahin geprueften Bestand weiter. Normalfall: ~31 min.
-      - name: "Worker 5: QA (inkl. Chat-Smoke-Test)"
-        if: env.MODE == 'dry-run' || env.MODE == 'run-small' || env.MODE == 'run-batch'
-        timeout-minutes: 90
-        continue-on-error: true
-        env:
-          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
-          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-          COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
-          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
-          ZHIPU_API_KEY: ${{ secrets.ZHIPU_API_KEY }}
-          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-          # 07.08.2026: Gemini/DeepSeek/Anthropic/xAI ergaenzt — die Keys lagen
-          # ungenutzt in den Repo-Secrets, waehrend Groq-429 + OpenRouter-402 +
-          # OpenAI-429 die QA in den Not-Fallback zwangen (alle Kandidaten
-          # fielen durch, 1-5 publiziert/Lauf statt ~200).
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
-          # Runde 41: OpenRouter/OpenAI ergaenzt — Live-Ping bestaetigt beide
-          # funktionsfaehig; sie fehlten dem QA-Lauf bisher, wodurch Groq-429
-          # direkt in den degradierten Not-Fallback fuehrte.
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # BEWUSST fest verdrahtet: exakt die Provider, deren Keys oben
-          # uebergeben werden. Seit 20.08. Groq zuerst (Free-Tier, offizieller
-          # 70B-Nachfolger openai/gpt-oss-120b), smyst_gateway (OpenRouter)
-          # nur noch Rueckfallebene — Pipeline-Kosten Richtung 0 $ (Beschluss
-          # Adam 20.08.). Anthropic (kein Guthaben) und xAI (Key ungueltig)
-          # bewusst ganz hinten, bis die Keys erneuert sind.
-          LLM_PROVIDER_ORDER: "groq,smyst_llm,smyst_gateway"
-          SMYST_GATEWAY_BASE_URL: "https://api.smyst.com/api/ci/llm"
-          SMYST_LLM_BASE_URL: ${{ vars.SMYST_LLM_BASE_URL || '' }}
-          LLM_DEFAULT_MODELS: ${{ secrets.LLM_DEFAULT_MODELS }}
-        run: |
-          if [ "$MODE" = "run-batch" ]; then
-            python -m app.workers.qa_candidates --enabled --limit "$BATCH_LIMIT"
-          elif [ "$MODE" = "run-small" ]; then
-            python -m app.workers.qa_candidates --enabled --limit 250
-          else
-            python -m app.workers.qa_candidates --dry-run --limit 3
-          fi
+      # QA-SCHRITT ENTFERNT (12.09.2026, Publish-Stillstand seit 07.09.):
+      # Dieser Runner hat KEIN lokales smyst-Modell (SMYST_LLM_BASE_URL leer),
+      # die Cloud-Provider waren unzuverlaessig bis tot (Groq-TPD 200k/Tag
+      # brannte die QA selbst frueh am UTC-Tag leer -> 429; smyst-Gateway/
+      # OpenRouter Timeouts) — jede Antwort fiel auf den degradierten
+      # Not-Fallback, die QA bewertete nichts mehr, verbrannte dafuer 90 min
+      # Runner-Zeit und das Groq-Tageskontingent (das danach Evals/Versionen
+      # fehlte). Die QA laeuft exklusiv ueber pipeline-scale-2k.yml: dort
+      # antwortet JEDEM Shard der eigene llama-server (smyst-1.1, kostenfrei,
+      # Anweisung Inhaber 24.08. 'unser Modell, kein Geld mehr zahlen').
+      # Rollback: git revert dieses Merges stellt den Schritt wieder her.
 
       # Unpublish entzieht nur die Sichtbarkeit (kein Loeschen, Master Prompt).
       - name: "Unpublish (nur mit dokumentierter Freigabe)"
@@ -345,7 +305,7 @@ jobs:
           COUNT=$( (grep -o 'published (slug' /tmp/publish-out.log || true) | wc -l | tr -d ' ')
           {
             echo "### Auto-Publish"
-            echo "- Publiziert in diesem Lauf: **${COUNT}** Profile (Deckel 2500/Tag)"
+            echo "- Publiziert in diesem Lauf: **${COUNT}** Profile (Deckel 5000/Tag)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       # Die 500er-Seed-Kandidaten wurden ohne birth_place/death_place ingestiert
