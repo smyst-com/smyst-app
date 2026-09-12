@@ -34,14 +34,16 @@ def main() -> int:
 
     store = CandidateStore(build_s3_client(), _pipeline_bucket())
 
+    # Trichter-Zahlen ueber die Status-Marker (EIN LIST-Aufruf je Status,
+    # kein GET je Dokument) — der GET-Weg brauchte bei ~25k published >20 min
+    # und lief 12.09. in den Workflow-Timeout.
     funnel: dict[str, int] = {}
     for status in PipelineStatus:
         try:
-            docs = store.candidate_documents_by_status(status.value, limit=5000)
+            funnel[status.value] = len(store.qids_by_status(status.value))
         except Exception as error:  # noqa: BLE001 - Diagnose soll weiterlaufen
             print(f"funnel[{status.value}]: FEHLER {type(error).__name__}: {error}")
             continue
-        funnel[status.value] = len(docs)
 
     print("=== TRICHTER ===")
     print(json.dumps(funnel, ensure_ascii=False, indent=2))
