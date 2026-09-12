@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300  # 29.08.: 60 -> 300 — der Union-Restore (18.875 Profile) spiegelt tausende Bilder im Merge-Schritt
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
