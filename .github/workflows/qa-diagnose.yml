@@ -1,0 +1,35 @@
+name: QA-Diagnose (read-only)
+
+# Einmal-Diagnose 12.09.2026: seit 07.09. kommen ~0 Kandidaten durch die QA.
+# Dieses Skript liest Status-Verteilung + QA-Report-Issues aus IDrive e2 und
+# schreibt nichts. Nur manuell per workflow_dispatch startbar.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: QA-Issues aggregieren
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Backend installieren
+        run: pip install -e "."
+
+      - name: QA-Issue-Summary (read-only)
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: python ../scripts/qa_issue_summary.py --scan 500 --examples 3
