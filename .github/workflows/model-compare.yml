@@ -95,7 +95,7 @@ jobs:
       # Artefakt und nicht ins Repo.
       - name: Bericht als Artefakt
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: model-compare
           path: model-compare/
