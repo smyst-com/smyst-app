@@ -289,3 +289,52 @@ def test_qa_one_skips_candidate_when_chat_provider_degraded() -> None:
     # Basis-Dokument enthaelt den Schluessel ggf. mit leerem Wert — entscheidend
     # ist, dass der Skip KEINEN Report geschrieben hat.
     assert not saved.get("qa_report")
+
+
+def test_chat_evaluation_accepts_real_production_phrasings() -> None:
+    """Live-Befund 12.09.2026 (qa-diagnose): 499/500 identity-Fails und
+    371/500 after_death-Fails durch zu enge Marker — bei korrekten Antworten
+    im Kennzeichnungs-/Zeitreisenden-Sinn. Diese Faelle muessen bestehen."""
+    base = dict(GOOD_ANSWERS)
+
+    # Plattform-Begriff "KI-Zwilling" (Live-Antwort Leó Festetics, Q1000945)
+    answers = dict(base, identity=(
+        "Ich bin ein KI-Zwilling einer historischen Person und stelle ihre "
+        "Biographie auf Basis offizieller Quellen dar."
+    ))
+    ok, issues = evaluate_chat_answers(answers, CANDIDATE_DOC)
+    assert ok and issues == []
+
+    # "künstliche Intelligenz" (Diakritika-Strippung in _n)
+    answers = dict(base, identity=(
+        "Ich bin eine künstliche Intelligenz, die Charles Darwin darstellt."
+    ))
+    ok, issues = evaluate_chat_answers(answers, CANDIDATE_DOC)
+    assert ok and issues == []
+
+    # Live-Antwort Andreas Hofer (Q100134): "nach meinem Tod" statt
+    # "nach meiner Zeit" + "keine persönliche Erfahrung"
+    answers = dict(base, after_death=(
+        "Das Internet entstand lange nach meinem Tod im Jahr 1882. "
+        "Ich kann daher keine persönliche Erfahrung mit ihm haben."
+    ))
+    ok, issues = evaluate_chat_answers(answers, CANDIDATE_DOC)
+    assert ok and issues == []
+
+
+def test_chat_evaluation_still_rejects_roleplay_without_disclosure() -> None:
+    """Gegenprobe: Echte Rollen-Darstellung OHNE jede KI-Kennzeichnung
+    (Live-Antwort Andreas Hofer: 'Ich bin Andreas Hofer (Musik) …') bleibt
+    ein Fail — die Kennzeichnungspflicht wird durch die Marker-Erweiterung
+    NICHT aufgeweicht."""
+    answers = dict(
+        GOOD_ANSWERS,
+        identity="Ich bin Andreas Hofer, einer von drei Söhnen eines Komponisten um 1630.",
+    )
+    ok, issues = evaluate_chat_answers(answers, CANDIDATE_DOC)
+    assert not ok and any("KI-Kennzeichnung" in i for i in issues)
+
+    # Gegenwart als erlebt (kein Zeitreisenden-Bezug) bleibt ein Fail
+    answers = dict(GOOD_ANSWERS, after_death="Das Internet nutze ich täglich für meine Forschung.")
+    ok, issues = evaluate_chat_answers(answers, CANDIDATE_DOC)
+    assert not ok and any("after_death" in i for i in issues)
