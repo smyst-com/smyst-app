@@ -43,6 +43,15 @@ RESEARCH_PREFIX = "pipeline/research/"
 #: Index-Objekt haette Lese-Aenderungs-Schreib-Kollisionen.
 STATUS_PREFIX = "pipeline/status/"
 
+#: Kompakter Publish-Summary-Index ({wikidata_qid, name} je live Profil).
+#: Grund (Befund 14.09.2026): Die QA lud fuer den Duplikat-Check die VOLLSTAENDIGEN
+#: published-Dokumente (26.000+ GETs = 25-40 min JEDES Shard-Jobs vor der ersten
+#: echten Arbeit). Der Duplikat-Check braucht aber nur QID + Name — beides steht
+#: im Publish-Index (pipeline/published/index.json), aus dem der Publisher diese
+#: schlanke Zusammenfassung je Lauf mitpflegt. Fehlt sie, faellt die QA auf den
+#: alten Voll-Scan zurueck (niemals falsch, nur langsam).
+PUBLISHED_SUMMARY_KEY = "pipeline/index/published-summary.json"
+
 
 class S3Like(Protocol):
     """Minimale boto3-Schnittstelle; erlaubt Fakes in Tests."""
@@ -160,15 +169,74 @@ class CandidateStore:
 
     def qids_by_status(self, status: str) -> list[str]:
         """QIDs laut Status-Marker — EIN LIST-Aufruf statt zehntausender GETs."""
+        return [qid for qid, _ in self.status_entries(status)]
+
+    def status_entries(self, status: str) -> list[tuple[str, Any]]:
+        """(QID, LastModified) laut Status-Marker — ebenfalls nur LIST-Aufrufe.
+
+        LastModified macht Tagesstatistiken billig: wie viele Profile wurden
+        HEUTE published/reviewed/rejected? Vorher waere das ein Voll-Scan mit
+        26.000+ GETs gewesen (Absicht hinter pipeline_stats, 14.09.2026).
+        """
         prefix = f"{STATUS_PREFIX}{status}/"
-        qids: list[str] = []
+        entries: list[tuple[str, Any]] = []
         paginator = self._client.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=self._bucket, Prefix=prefix):
             for obj in page.get("Contents", []) or []:
-                qid = obj["Key"][len(prefix):]
+                key = obj["Key"]
+                qid = key[len(prefix):]
                 if qid:
-                    qids.append(qid)
-        return sorted(qids)
+                    entries.append((qid, obj.get("LastModified")))
+        return sorted(entries)
+
+    def count_by_status_since(self, status: str, since: datetime) -> int:
+        """Anzahl Marker mit LastModified >= since (Zeitzonen-bewusst, UTC).
+
+        Zaehlt StatusWECHSEL seit dem Zeitpunkt — fuer Tagesberichte der
+        Autopilot-Statistik (erstellt/geprueft/veroeffentlicht/abgelehnt).
+        Wirft bei fehlender LastModified-Unterstuetzung (Fakes) nichts:
+        Ohne Zeitstempel zaehlt er alle Marker des Status.
+        """
+        count = 0
+        for _qid, last_modified in self.status_entries(status):
+            if last_modified is None:
+                count += 1
+                continue
+            stamp = last_modified
+            if stamp.tzinfo is None:
+                from datetime import timezone as _timezone
+
+                stamp = stamp.replace(tzinfo=_timezone.utc)
+            if stamp >= since:
+                count += 1
+        return count
+
+    def load_published_summary(self) -> list[dict] | None:
+        """Kompakte {wikidata_qid, name}-Liste der Live-Profile (QA-Duplikat-Check).
+
+        None = Summary fehlt oder ist unlesbar — Aufrufer faellt auf den
+        langsamen Voll-Scan zurueck (korrekt, nur teuer).
+        """
+        try:
+            response = self._client.get_object(
+                Bucket=self._bucket, Key=PUBLISHED_SUMMARY_KEY
+            )
+            entries = json.loads(response["Body"].read().decode("utf-8"))
+        except Exception:
+            return None
+        if not isinstance(entries, list):
+            return None
+        return entries
+
+    def save_published_summary(self, entries: list[dict]) -> str:
+        body = json.dumps(entries, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        self._client.put_object(
+            Bucket=self._bucket,
+            Key=PUBLISHED_SUMMARY_KEY,
+            Body=body,
+            ContentType="application/json",
+        )
+        return PUBLISHED_SUMMARY_KEY
 
     def write_status_marker(self, qid: str, status: str, *, previous_status: str | None = None) -> None:
         """Setzt den Marker auf den neuen Status und raeumt den alten weg.

@@ -20,9 +20,13 @@ on:
         required: true
         default: "smyst247@gmail.com"
       publish_limit:
-        description: "Tageslimit (dokumentierter Deckel 2500)"
+        description: "Tageslimit (dokumentierter Deckel 5000/Tag, Anweisung Betreiber 05.09.2026)"
         required: false
-        default: "2500"
+        # 2500 -> 5000 (14.09.2026): Der Watchdog-Dispatch lief noch mit dem
+        # alten 2500er Deckel — beim Tagesziel 5000 haette er die Haelfte
+        # unbegricht gelassen, obwohl der Cron-Pfad in pipeline-run.yml
+        # bereits mit 5000 laeuft. QA-Gate unangetastet.
+        default: "5000"
       qids:
         description: "Optional: kommagetrennte QIDs — nur diese publizieren"
         required: false
@@ -79,6 +83,32 @@ jobs:
             python -m app.workers.publish_profiles publish --all-reviewed \
               --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
           fi
+
+      # Tagesstatistik (14.09.2026): Nach JEDEM Publish in der Run-Summary
+      # sichtbar machen, wie viele Profile HEUTE (UTC) live gegangen sind und
+      # wie weit das 5000er-Tagesziel bedient ist. Read-only LIST-Aggregation,
+      # keine Voll-Scans. Fehler blockieren den Deploy-Pfad nicht.
+      - name: "Tages-Statistik in Run-Summary"
+        if: always()
+        continue-on-error: true
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          python -m app.workers.pipeline_stats --save > /tmp/stats.json
+          python - <<'PY'
+          import json, os
+          stats = json.load(open('/tmp/stats.json'))
+          q = stats.get('quota', {})
+          t = stats.get('today', {})
+          line1 = f"### Tages-Statistik (UTC {stats.get('day')})"
+          line2 = f"- Heute veroeffentlicht: **{q.get('published_today')}** / Ziel {q.get('target')} ({q.get('reached_percent')}%)"
+          line3 = f"- Heute neu: reviewed {t.get('reviewed', 0)}, generated {t.get('generated', 0)}, rejected {t.get('rejected', 0)}"
+          line4 = f"- Bestand: published {stats.get('totals', {}).get('published')}, reviewed {stats.get('totals', {}).get('reviewed')}, generated {stats.get('totals', {}).get('generated')}"
+          print("\n".join([line1, line2, line3, line4]))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as f:
+              f.write("\n".join([line1, line2, line3, line4]) + "\n")
+          PY
 
       # Neue Profile live stellen SOFORT nach dem Publish — nicht erst beim
       # naechsten 3h-Cron (GitHub liess Cron-Slots wiederholt komplett aus;

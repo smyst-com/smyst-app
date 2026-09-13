@@ -24,7 +24,7 @@ on:
         # 25 -> 30 (13.09.2026): 24-Shard-Lauf 34753151341 lief 1-3 h je Shard,
         # +20 % Arbeit bleibt sicher unterm 300-min-Timeout (gemessen max
         # 3h07 bei 25). Richtung 5000/Tag der naechste dokumentierte Hebel.
-        default: "30"
+        default: "50"
 
 concurrency:
   group: pipeline-scale-2k-b
@@ -183,7 +183,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           SHARD_INDEX: ${{ matrix.shard_index }}
           TOTAL_SHARDS: 24
-          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '30' }}
+          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '50' }}
         run: |
           python -m app.workers.sharded_runner \
             --shard-index $SHARD_INDEX \

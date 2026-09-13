@@ -44,6 +44,70 @@ def qid_belongs_to_shard(qid: str, shard_index: int, total_shards: int) -> bool:
     return (int(digest[:8], 16) % total_shards) == shard_index
 
 
+#: Wievielfache der Shard-Stroeme vorab geladen werden, damit die Fairness-
+#: Sortierung (ungetestete zuerst) ueberhaupt etwas sortieren kann.
+FAIRNESS_OVERSAMPLE = 4
+
+
+def select_shard_documents(
+    store: CandidateStore,
+    status: str,
+    *,
+    shard_index: int,
+    total_shards: int,
+    limit: int,
+    fairness: bool = False,
+) -> list[dict]:
+    """Dokumente EINER Stufe fuer diesen Shard — ohne den alten Voll-Scan.
+
+    Befund 14.09.2026 (Lauf 34764593243): Der Runner lud pro Stufe bis 1000
+    Dokumente ueber ALLE Shards und filterte erst danach auf den eigenen
+    Shard — ~24 min Scan pro Stufe, viermal je Job, daneben ~15 min echte
+    Arbeit. Jetzt: QIDs aus den Status-Markern (LIST), SOFORT auf den Shard
+    filtern und nur die eigenen Treffer laden.
+
+    fairness=True (QA): ungetestete Kandidaten zuerst, dann nach Anzahl
+    QA-Versuchen aufsteigend (Befund Runde 38/13.09.: dauerhaft durchfallende
+    Kandidaten belegten die vorderen Plaetze und blockierten die restliche
+    Queue dauerhaft). Ohne Status-Marker (nie backfillt) greift der alte
+    Weg — langsam, aber funktionsfaehig.
+    """
+    if not store._status_index_present():  # noqa: SLF001 - bewusster Fallback-Pfad
+        documents = store.candidate_documents_by_status(status, limit=1000)
+        shard_docs = [
+            doc
+            for doc in documents
+            if qid_belongs_to_shard(str(doc.get("wikidata_qid") or ""), shard_index, total_shards)
+        ]
+        if fairness:
+            shard_docs.sort(key=lambda doc: bool(doc.get("qa_report")))
+        return shard_docs[:limit]
+
+    qids = [
+        qid
+        for qid in store.qids_by_status(status)
+        if qid_belongs_to_shard(qid, shard_index, total_shards)
+    ]
+    if fairness:
+        qids = qids[: max(limit, 1) * FAIRNESS_OVERSAMPLE]
+    else:
+        qids = qids[:limit]
+    documents: list[dict] = []
+    for qid in qids:
+        try:
+            doc = store.load_candidate_document(qid)
+        except Exception:
+            continue  # verwaister Marker
+        if doc.get("status") != status:
+            continue  # veralteter Marker — Dokument entscheidet
+        documents.append(doc)
+    if fairness:
+        # Stabil: ungetestete zuerst, dann wenige Versuche; innerhalb einer
+        # Gruppe bleibt die QID-Reihenfolge erhalten.
+        documents.sort(key=lambda doc: (bool(doc.get("qa_report")), doc.get("qa_attempts") or 0))
+    return documents[:limit]
+
+
 def run_shard(
     shard_index: int,
     total_shards: int,
@@ -65,13 +129,19 @@ def run_shard(
 
     consecutive_degraded = 0
 
-    # Published-Liste EINMAL pro Shard laden (S3-Scan ueber ~2400 Dokumente):
-    # qa_one's Duplikat-Check braucht sie; ohne Durchreichen lud JEDE Kandidat
-    # die Liste neu — 18 min/Kandidat, davon fast alles S3-Overhead
-    # (Lauf 32734104474; der Batch-Worker hat das seit 04.08. geloest).
-    published = store.candidate_documents_by_status(
-        PipelineStatus.PUBLISHED.value
-    )
+    # Published-Liste EINMAL pro Shard laden. 14.09.2026 — Durchsatzdefekt
+    # behoben: Der Voll-Scan (26.000+ GETs) kostete JEDEM Shard-Job 25-40 min
+    # VOR der ersten echten Arbeit (Lauf 34764593243: 70-190 min pro Shard,
+    # davon 60-185 min reine Store-Scans und nur ~15 min QA). Der Duplikat-
+    # Check braucht nur QID + Name: jetzt kommt die kompakte Publish-Summary
+    # zum Einsatz (1 GET), der Voll-Scan bleibt Rueckfallebene.
+    published = store.load_published_summary()
+    if published is None:
+        logger.warning(
+            "Shard %d: keine published-summary — langsamer Voll-Scan als Fallback.",
+            shard_index,
+        )
+        published = store.candidate_documents_by_status(PipelineStatus.PUBLISHED.value)
 
     # 05.09.2026 — Produktionsdefekt behoben: Die Risiko-Stufe FEHLTE seit
     # jeher (pipeline-run hat sie als Worker 3, der Shard-Runner nie).
@@ -87,12 +157,17 @@ def run_shard(
         ("generated", "QA", qa_one),
     ]
     for status, label, worker in stages:
-        documents = store.candidate_documents_by_status(status, limit=1000)
-        shard_docs = [
-            doc for doc in documents
-            if qid_belongs_to_shard(str(doc.get("wikidata_qid") or ""), shard_index, total_shards)
-        ][:limit]
-        logger.info("Shard %d: %d Kandidaten in Stufe '%s' gefunden.", shard_index, len(shard_docs), status)
+        shard_docs = select_shard_documents(
+            store,
+            status,
+            shard_index=shard_index,
+            total_shards=total_shards,
+            limit=limit,
+            fairness=worker is qa_one,
+        )
+        logger.info(
+            "Shard %d: %d Kandidaten in Stufe '%s' gefunden.", shard_index, len(shard_docs), status
+        )
         for doc in shard_docs:
             if consecutive_degraded >= MAX_CONSECUTIVE_DEGRADED:
                 logger.error(

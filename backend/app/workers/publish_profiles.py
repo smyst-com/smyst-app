@@ -298,6 +298,7 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         except Exception as error:
             results[qid] = f"FEHLER {type(error).__name__}: {error}"
     if not args.dry_run:
+        refresh_published_summary(store)
         store.save_changelog(date.today(), {"worker": "publish_profiles", "results": results})
     print(json.dumps(results, ensure_ascii=False))
     return 0
@@ -307,6 +308,24 @@ def _pipeline_bucket() -> str:  # pragma: no cover
     from app.core.config import settings
 
     return settings.idrive_e2_bucket
+
+
+def refresh_published_summary(store: CandidateStore) -> str:
+    """Kompakten Publish-Summary-Index je Lauf EINMAL auffrischen.
+
+    Die QA laedt fuer den Duplikat-Check nur noch diese {wikidata_qid, name}-
+    Liste (1 GET) statt zehntausender Voll-Dokumente (25-40 min je Shard-Job,
+    Befund 14.09.2026). Einmal je Publish-Lauf statt je Profil — der Index ist
+    ohnehin gerade im Speicher. Falls die Summary mal fehlt, faellt die QA
+    auf den langsamen Voll-Scan zurueck (korrekt, nur langsam).
+    """
+    index = _load_index(store)
+    entries = [
+        {"wikidata_qid": entry.get("wikidata_qid"), "name": entry.get("name")}
+        for entry in index
+        if entry.get("visible", True) and entry.get("wikidata_qid")
+    ]
+    return store.save_published_summary(entries)
 
 
 if __name__ == "__main__":  # pragma: no cover

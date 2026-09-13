@@ -36,7 +36,12 @@ from app.ai.wikidata_candidates import (
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 
 
-RETRY_DELAYS_SECONDS = (10.0, 30.0)  # WDQS liefert unter Last transiente 5xx (Run #7: 502)
+RETRY_DELAYS_SECONDS = (10.0, 30.0, 60.0)  # 14.09.2026: 2 -> 3 Versuche — ReadTimeouts kosteten je Kategorie den ganzen Lauf (Lauf 34770171289: Kunst komplett verloren)
+
+# Timeout je WDQS-Anfrage. 14.09.2026: 60 -> 90 s — grosse Kategorien (Kunst)
+# liefen beim tiefen OFFSET in ReadTimeouts, bevor die ersten 3 Versuche
+# wirksam wurden; die Kategorie fiel fuer den Lauf komplett aus.
+SPARQL_TIMEOUT_SECONDS = 90.0
 
 # Obergrenze der OFFSET-Seiten je Kategorie: schuetzt WDQS vor Dauerfeuer,
 # wenn der Store irgendwann fast alle bekannten Namen einer Kategorie enthaelt.
@@ -52,7 +57,7 @@ PAGE_SIZE = 125
 # Kategorien je Lauf. Zwei reichten nicht: ist eine davon abgegrast, blieb ihr
 # Anteil am Budget ungenutzt liegen (Messung 13.08.2026: accepted 20/125/125/0
 # bei ~1000 Dubletten je Lauf, waehrend die QA 250 verarbeiten koennte).
-CATEGORIES_PER_RUN = 4
+CATEGORIES_PER_RUN = 6  # 14.09.2026: 4 -> 6 — mehr Kategorien je Lauf, damit das gemeinsame Budget auch dann voll wird, wenn einzelne abgegrast sind oder Timeout liefen
 
 # Mindest-Bekanntheit der besten Person einer Seite. Die SPARQL-Liste ist nach
 # Sitelinks absteigend sortiert; sinkt schon der Spitzenwert einer Seite unter
@@ -76,7 +81,7 @@ MAX_CURSOR_PAGE = 90  # 29.08.2026: 40 -> 90 — Deckel folgt der neuen Pool-Tie
 
 
 def fetch_bindings(
-    query: str, *, timeout_seconds: float = 60.0, sleep=None
+    query: str, *, timeout_seconds: float = SPARQL_TIMEOUT_SECONDS, sleep=None
 ) -> dict:
     """SPARQL-Anfrage gegen Wikidata (GET, JSON) mit Retry bei 5xx/Timeout."""
     import time

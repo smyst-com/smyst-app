@@ -51,6 +51,29 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Sport": ("Q2066131", "Q937857"),                 # athlete, association football player
     "Journalismus": ("Q1930187",),                    # journalist
     "Geschichte": ("Q201788",),                       # historian
+    # Nachschub-Erweiterung 14.09.2026 (Tagesziel 5000 Profile/Tag): Die
+    # Kategorien von 06.08. waren bei >= 5 Sitelinks weitgehend abgegrast
+    # (Befund Lauf 34770171289: 143 akzeptiert bei 10.022 Dubletten und
+    # Bekanntheits-Bremse). Alle QIDs am 14.09.2026 einzeln gegen wbgetentities
+    # verifiziert (Label + Beschreibung gelesen, NIE geraten — zwei Suchtreffer
+    # (Q13382412, Q16222737) waren Insekt/Schiff und wurden verworfen).
+    "Militaer": ("Q47064",),                          # military personnel
+    "Hochschullehre": ("Q1622272",),                  # university teacher
+    "Recht": ("Q185351", "Q40348"),                   # jurist, lawyer
+    "Fotografie": ("Q33231",),                        # photographer
+    "Diplomatie": ("Q193391",),                       # diplomat
+    "Wirtschaft": ("Q188094",),                       # economist
+    "Religion": ("Q1234713", "Q733786"),              # theologian, monk
+    "Dirigieren": ("Q158852",),                       # conductor
+    "Operngesang": ("Q2865819",),                     # opera singer
+    "Luftfahrt": ("Q2095549",),                       # aircraft pilot
+    "Geologie": ("Q520549",),                         # geologist
+    "Botanik": ("Q2374149",),                         # botanist
+    "Psychologie": ("Q212980",),                      # psychologist
+    "Drehbuch": ("Q28389",),                          # screenwriter
+    "Buehne": ("Q214917", "Q5716684"),                # playwright, dancer
+    "Archaeologie": ("Q3621491",),                    # archaeologist
+    "Uebersetzen": ("Q333634",),                      # translator
 }
 
 
