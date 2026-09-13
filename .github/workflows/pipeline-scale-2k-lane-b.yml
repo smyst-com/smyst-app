@@ -1,8 +1,9 @@
-name: Pipeline Skalierung 2k Profile per Tag
+name: Pipeline Skalierung 2k Lane B (Shards 12-23)
 
-# Fuehrt die smyst.com Autopilot-Pipeline auf 2.000+ Profile/Tag skaliert aus.
-# Verwendet 12 parallele Matrix-Jobs (Shards 0..11, Lane A) + Lane-B-
-# Workflow (12..23) GLEICHZEITIG — IDrive e2 State-Management.
+# LANE B (13.09.2026, Richtung 5000/Tag): identisch zu pipeline-scale-2k,
+# aber Shards 12-23 und EIGENE Concurrency-Gruppe — laeuft GLEICHZEITIG zu
+# Lane A. QID-Partition via total_shards=24 bleibt disjunkt.
+# Verwendet 24 parallele Matrix-Jobs (Shards 0..23) und IDrive e2 State-Management.
 # Repo ist public -> GitHub-Actions-Minuten unbegrenzt kostenlos.
 #
 # LLM: smyst 1.0 (eigenes Modell) laeuft JEDEM Shard-Job lokal als llama-server
@@ -14,7 +15,7 @@ on:
     # Alle 2 Stunden redundant; die Selbst-Takt-Kette startet nahtlos weiter —
     # effektiv ~stündlich (~24 Laeufe/Tag * 12 Shards * 25 = ~7.200/Tag Kapazitaet
     # Kapazitaet — Puffer ueber dem 2000-Ziel fuer verlorene/junge Laeufe)
-    - cron: "0 */2 * * *"
+    - cron: "30 1,7,13,19 * * *"
   workflow_dispatch:
     inputs:
       batch_size_per_shard:
@@ -26,7 +27,7 @@ on:
         default: "30"
 
 concurrency:
-  group: pipeline-scale-2k
+  group: pipeline-scale-2k-b
   # 05.09.2026 — Produktionsdefekt behoben: 6/6 Laeufe 'cancelled' (Cron
   # killte den laufenden Shard vor QA-Abschluss -> 0 Publishes seit
   # 13:45). Jetzt WARTEN statt toeten: neue Dispatches queuen hinter dem
@@ -35,7 +36,7 @@ concurrency:
 
 jobs:
   run-sharded-pipeline:
-    name: A Shard ${{ matrix.shard_index }}/24
+    name: B Shard ${{ matrix.shard_index }}/24
     runs-on: ubuntu-latest
     timeout-minutes: 300  # 05.09.: 90 -> 300 — volle Shards (Risiko+Bild-Lizenzen+QA) ueberschreiten 90 min und wurden als 'cancelled' abgewuergt (gemischt success/cancelled im Lauf 33989427594)
     permissions:
@@ -48,11 +49,8 @@ jobs:
         # der neue Flaschenhals — 12 Shards x 25 x ~7 Laeufe/Tag ~ 500
         # published/Tag. 24 Shards verdoppeln die QA je Lauf (~600/Lauf,
         # Laufzeit je Shard unveraendert ~1,5-3 h, 300-min-Timeout passt).
-        # Lane A (13.09., Richtung 5000/Tag): Shards 0-11 — Lane B (own
-        # Workflow, group pipeline-scale-2k-b) faehrt 12-23 GLEICHZEITIG.
-        # total_shards bleibt 24 -> QID-Partition disjunkt, parallele
-        # Laeufe auf verschiedenen QIDs sind store-sicher.
-        shard_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        # Lane B: die andere Haelfte der 24er-Partition (Komplement zu Lane A).
+        shard_index: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
 
     defaults:
       run:
@@ -216,7 +214,7 @@ jobs:
           RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
-          RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k.yml/runs?per_page=10")
+          RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k-lane-b.yml/runs?per_page=10")
           NEWER=$(echo "$RUNS" | jq --argjson me "${RUN_ID}" \
             '[.workflow_runs[] | select(.id > $me and (.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "action_required"))] | length')
           LAST_CONCLUSION=$(echo "$RUNS" | jq -r '[.workflow_runs[] | select(.conclusion != null)][0].conclusion // "none"')
@@ -230,5 +228,5 @@ jobs:
             echo "Letzter Lauf fehlerhaft und jünger als 30 min — Cooldown, keine Kette."
             exit 0
           fi
-          gh workflow run pipeline-scale-2k.yml --ref main --repo "${GITHUB_REPOSITORY}"
+          gh workflow run pipeline-scale-2k-lane-b.yml --ref main --repo "${GITHUB_REPOSITORY}"
           echo "### Selbst-Takt: naechsten Lauf gestartet" >> "$GITHUB_STEP_SUMMARY"
