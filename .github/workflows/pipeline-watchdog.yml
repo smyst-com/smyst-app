@@ -35,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v6
+
       - name: "Fehlt ein Pipeline-Lauf im 3h-Fenster? Dann nachholen."
         env:
           GH_TOKEN: ${{ github.token }}
@@ -159,4 +161,64 @@ jobs:
             fi
           else
             echo "Publish-Takt in Ordnung — nichts zu tun."
+          fi
+
+      # Tagesziel-Verdrahtung (14.09.2026, Auftrag Inhaber: taeglich 5.000 neue
+      # Profile, vollautomatisch): Der Watchdog liest die Tagesquoten (publizierte
+      # Profile HEUTE, Nachschub-Vorraete) direkt aus den Status-Markern im
+      # Object Brain — LIST-Aggregation, kein Voll-Scan, keine Backend-Installation.
+      # Ist das Tagesziel noch nicht erreicht und keine Scale-2k-Lane aktiv,
+      # werden BEIDE Lannen nachgeschoben. Damit haelt der Autopilot selbst-
+      # staendig durch, bis das Tagesziel steht — auch nachts, ohne dass jemand
+      # einen Befehl gibt.
+      - name: "Tagesziel 5000/Tag: eskalieren, solange es fehlt"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          AUTOPILOT_DAILY_TARGET: "5000"
+        run: |
+          pip install --quiet boto3
+          python scripts/pipeline_quota_check.py > /tmp/quota-raw.txt
+          QUOTA=$(sed -n '/^QUOTA-BEGINN$/,/^QUOTA-ENDE$/p' /tmp/quota-raw.txt | grep -v '^QUOTA-')
+          echo "${QUOTA}" | python3 -m json.tool
+          PUBLISHED_TODAY=$(echo "${QUOTA}" | python3 -c "import json,sys;print(json.load(sys.stdin)['published_today'])")
+          REMAINING=$(echo "${QUOTA}" | python3 -c "import json,sys;print(json.load(sys.stdin)['remaining'])")
+          SUPPLY=$(echo "${QUOTA}" | python3 -c "import json,sys;d=json.load(sys.stdin);print(sum(d['today'].get(s,0) for s in ('candidate','generated','reviewed')))")
+          {
+            echo "### Tagesziel (UTC)"
+            echo "- Heute veroeffentlicht: **${PUBLISHED_TODAY}** / 5000 (offen: ${REMAINING})"
+            echo "- Nachschub heute neu: ${SUPPLY} (candidate+generated+reviewed)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${REMAINING}" -eq 0 ]; then
+            echo "Tagesziel erreicht — keine Eskalation."
+            exit 0
+          fi
+          if [ "${SUPPLY}" -eq 0 ] && [ "${PUBLISHED_TODAY}" -eq 0 ]; then
+            echo "### ALARM: Weder Publikationen noch Nachschub heute — Ingest/QA pruefen (Health-Workflow lost den Issue aus)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          # Keine Lane aktiv UND letzter Start laenger als 45 min her? Dann beide
+          # Lannen nachschieben. Eigen-Taetigkeit der Selbst-Takt-Kette bleibt
+          # unberuehrt (diese Eskalation greift nur bei Stillstand).
+          for WF in pipeline-scale-2k.yml pipeline-scale-2k-lane-b.yml; do
+            START_AGO=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${WF}/runs?per_page=5" \
+              --jq '[.workflow_runs[] | (now - (.created_at | fromdateiso8601))] | min // 999999')
+            ACTIVE=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/${WF}/runs?per_page=5" \
+              --jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "pending")] | length')
+            echo "${WF}: aktiv=${ACTIVE}, letzter Start vor ${START_AGO}s"
+            if [ "${ACTIVE}" -eq 0 ] && [ "${START_AGO}" -gt 2700 ]; then
+              gh workflow run "${WF}" --ref main --repo "${GITHUB_REPOSITORY}"
+              echo "### Quota-Eskalation: ${WF} nachgeschoben (Tagesziel offen: ${REMAINING})" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+          # Nachschub-Eskalation: solange das Tagesziel offen ist, darf auch der
+          # Ingest (pipeline-run) eng getaktet werden — Quarz bleibt redundant.
+          RUN_AGO=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=5" \
+            --jq '[.workflow_runs[] | (now - (.created_at | fromdateiso8601))] | min // 999999')
+          RUN_ACTIVE=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=5" \
+            --jq '[.workflow_runs[] | select(.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "pending")] | length')
+          if [ "${RUN_ACTIVE}" -eq 0 ] && [ "${RUN_AGO}" -gt 5400 ]; then
+            gh workflow run pipeline-run.yml --ref main --repo "${GITHUB_REPOSITORY}" \
+              -f mode=run-small -f watchdog=true
+            echo "### Quota-Eskalation: pipeline-run (run-small) nachgeschoben" >> "$GITHUB_STEP_SUMMARY"
           fi

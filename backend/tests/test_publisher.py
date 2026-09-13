@@ -318,3 +318,39 @@ def test_publish_record_keeps_approximate_labels() -> None:
                                now=datetime(2026, 7, 17, tzinfo=timezone.utc))
     assert rec["birth_label"] == "um 1466"
     assert rec["death_date"] == "1536-07-12"
+
+
+def test_refresh_published_summary_writes_compact_index() -> None:
+    """Nach JEDEM Publish-Lauf wird die kompakte {qid, name}-Summary erneuert.
+
+    Die QA laedt den Duplikat-Check daraus (1 GET statt 26.000 Voll-Dokumente,
+    Befund 14.09.2026). Unsichtbare (unpublished) Eintraege duerfen NICHT
+    hinein — sonst wuerde die QA nicht veroeffentlichte Profile als Dubletten
+    behandeln.
+    """
+    from app.workers.publish_profiles import refresh_published_summary
+
+    store = _prepared_store()
+    index = [
+        {"wikidata_qid": "Q1", "name": "Sichtbar Eins", "slug": "sichtbar-eins", "visible": True},
+        {"wikidata_qid": "Q2", "name": "Unsichtbar Zwei", "slug": "unsichtbar-zwei", "visible": False},
+        {"wikidata_qid": "Q1035", "name": "Charles Darwin", "slug": "charles-darwin", "visible": True},
+    ]
+    store._client.put_object(  # noqa: SLF001
+        Bucket="smyst-memories", Key=PUBLISH_INDEX_KEY,
+        Body=json.dumps(index).encode(), ContentType="application/json",
+    )
+
+    key = refresh_published_summary(store)
+    summary = json.loads(store._client.objects[key])  # noqa: SLF001
+    assert {"wikidata_qid": "Q1", "name": "Sichtbar Eins"} in summary
+    assert {"wikidata_qid": "Q1035", "name": "Charles Darwin"} in summary
+    assert all(entry["wikidata_qid"] != "Q2" for entry in summary)
+
+
+def test_refresh_published_summary_tolerates_missing_index() -> None:
+    from app.workers.publish_profiles import refresh_published_summary
+
+    store = _prepared_store()  # kein Publish-Index vorhanden
+    key = refresh_published_summary(store)  # darf nicht raisen
+    assert json.loads(store._client.objects[key]) == []  # noqa: SLF001

@@ -497,17 +497,44 @@ def test_volles_budget_stoppt_weitere_kategorien(monkeypatch) -> None:
     assert reserve not in report["categories"]
 
 
-def test_vier_kategorien_je_lauf_gleichmaessig_verteilt() -> None:
+def test_kategorien_je_lauf_gleichmaessig_verteilt() -> None:
     from app.ai.wikidata_candidates import CATEGORY_OCCUPATIONS
     from app.workers.ingest_candidates import CATEGORIES_PER_RUN, categories_for_run
 
     picks = categories_for_run(date(2026, 8, 13), slot=2)
 
-    assert len(picks) == CATEGORIES_PER_RUN == 4
-    assert len(set(picks)) == 4  # keine Kategorie doppelt
+    # 14.09.2026: 4 -> 6 Kategorien je Lauf (Tagesziel 5000/Tag, siehe
+    # ingest_candidates.KATEGORIES-Kommentar) — der Test folgt der Konstante.
+    assert len(picks) == CATEGORIES_PER_RUN
+    assert len(set(picks)) == len(picks)  # keine Kategorie doppelt
     assert set(picks) <= set(CATEGORY_OCCUPATIONS)
     # deterministisch: gleicher Tag + Slot -> gleiche Auswahl (replaybar)
     assert categories_for_run(date(2026, 8, 13), slot=2) == picks
+
+
+def test_neue_kategorien_verifizierte_qids() -> None:
+    """Die 17 Nachschub-Kategorien von 14.09.2026 sind rotierbar eingebunden.
+
+    Die QIDs selbst wurden gegen wbgetentities verifiziert (Label + Beschreibung,
+    siehe Kommentar in wikidata_candidates.CATEGORY_OCCUPATIONS); dieser Test
+    sichert nur, dass die Rotation jede neue Kategorie tatsaechlich erreicht.
+    """
+    from app.workers.ingest_candidates import categories_for_run, CATEGORIES_PER_RUN
+    from app.ai.wikidata_candidates import CATEGORY_OCCUPATIONS
+
+    neue = {"Militaer", "Hochschullehre", "Recht", "Fotografie", "Diplomatie", "Wirtschaft",
+            "Religion", "Dirigieren", "Operngesang", "Luftfahrt", "Geologie", "Botanik",
+            "Psychologie", "Drehbuch", "Buehne", "Archaeologie", "Uebersetzen"}
+    assert neue <= set(CATEGORY_OCCUPATIONS)
+    # Rotation erreicht jede neue Kategorie innerhalb eines Tagesrasters:
+    # 35 Kategorien, 6 je Lauf x 12 Laeufe/Tag — Slot 0..11 muessen zusammen
+    # mindestens je 2 Treffer der neuen Menge liefern (Sicherheit gegen
+    # Vertipper im Rotationsindex).
+    gesammelt: set[str] = set()
+    for slot in range(12):
+        gesammelt.update(categories_for_run(date(2026, 9, 14), slot=slot))
+    assert neue <= gesammelt
+    assert CATEGORIES_PER_RUN == 6
 
 
 def test_seitengroesse_ist_unabhaengig_von_der_tagesquote(monkeypatch) -> None:

@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from dataclasses import replace
 from datetime import date, datetime, timezone
@@ -36,6 +37,20 @@ from app.ai.qa_checks import ChatProviderDegradedError, run_qa
 from app.integrations.candidate_store import CandidateStore, build_s3_client
 from app.workers.build_capsules import CAPSULE_PREFIX
 from app.workers.research_candidates import _candidate_from_document
+
+#: Obergrenze echter QA-Versuche pro Kandidat (Env QA_MAX_ATTEMPTS).
+#: 5 = grosszuegig gegenueber LLM-Judge-Rauschen, aber schnell genug, um
+#: Dauer-Verlierer aus der Queue zu nehmen (Tagesziel 5.000 Profile/Tag).
+QA_MAX_ATTEMPTS_DEFAULT = 5
+
+
+def qa_max_attempts() -> int:
+    raw = os.environ.get("QA_MAX_ATTEMPTS", "").strip()
+    try:
+        value = int(raw) if raw else QA_MAX_ATTEMPTS_DEFAULT
+    except ValueError:
+        return QA_MAX_ATTEMPTS_DEFAULT
+    return max(1, value)
 
 
 def load_capsule_document(store: CandidateStore, qid: str) -> dict:
@@ -118,6 +133,9 @@ def qa_one(
     )
     qid = candidate.wikidata_qid
     capsule_doc = load_capsule_document(store, qid)
+    # Versuchszaehler fuer die Retry-Obergrenze: Provider-Ausfaelle (skipped,
+    # frueher Rueckkehr unten) inkrementieren NICHT — nur echte Bewertungen.
+    prior_attempts = int(document.get("qa_attempts") or 0)
     # published wird vom Batch EINMAL geladen und durchgereicht: der Scan liest
     # jedes Store-Dokument einzeln (S3-GET je QID). Pro Kandidat neu geladen
     # waechst die QA-Laufzeit linear mit dem Live-Bestand — bei ~2400 published
@@ -158,8 +176,38 @@ def qa_one(
         audit_entry = event
         qa_passed = True
     else:
-        new_status, result = candidate.status, f"generated (QA nicht bestanden: {len(report.issues)} Issues)"
-        status_reason = document.get("status_reason")
+        # 14.09.2026 — Retry-Obergrenze: Echte QA-Fehler (Issues im Report,
+        # z. B. fehlende KI-Kennzeichnung) sind strukturell und wiederholen
+        # sich bei unveraenderter Capsule. Ohne Obergrenze blieb der Kandidat
+        # fuer immer 'generated' und belegte in JEDEM Lauf QA-Slots, die der
+        # Tagesdurchsatz brauchte (Befund Lauf 34764593243). Nach N Versuchen
+        # terminal ablehnen (generated -> rejected ist ein erlaubter Uebergang
+        # mit Pflichtgrund; kein Loeschen, Reaktivierung als neuer Kandidat
+        # moeglich). Provider-Ausfaelle zahlen NICHT: der skipped-Pfad oben
+        # verlaesst die Funktion ohne Versuchs-Zuweisung.
+        attempts = prior_attempts + 1
+        if attempts >= qa_max_attempts():
+            rejected, event = transition(
+                candidate,
+                PipelineStatus.REJECTED,
+                reason=(
+                    f"QA nach {attempts} Versuchen nicht bestanden: "
+                    + "; ".join(report.issues[:3])
+                ),
+                config=config,
+            )
+            new_status, result = rejected.status, (
+                f"rejected: QA nach {attempts} Versuchen nicht bestanden"
+            )
+            status_reason = rejected.status_reason
+            audit_entry = event
+        else:
+            new_status = candidate.status
+            result = (
+                f"generated (QA nicht bestanden: {len(report.issues)} Issues, "
+                f"Versuch {attempts}/{qa_max_attempts()})"
+            )
+            status_reason = document.get("status_reason")
         qa_passed = False
 
     if not dry_run:
@@ -170,6 +218,8 @@ def qa_one(
             "qa_passed": qa_passed,
             "qa_report": report.as_document(),
         }
+        if not qa_passed and new_status is candidate.status:
+            new_document["qa_attempts"] = attempts
         if audit_entry is not None:
             new_document["audit_trail"] = document.get("audit_trail", []) + [
                 {

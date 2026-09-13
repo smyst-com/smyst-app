@@ -338,3 +338,87 @@ def test_chat_evaluation_still_rejects_roleplay_without_disclosure() -> None:
     answers = dict(GOOD_ANSWERS, after_death="Das Internet nutze ich täglich für meine Forschung.")
     ok, issues = evaluate_chat_answers(answers, CANDIDATE_DOC)
     assert not ok and any("after_death" in i for i in issues)
+
+
+def test_qa_one_increments_attempts_but_stays_generated() -> None:
+    """QA-Fail zaehlt den Versuch, bleibt aber unter der Obergrenze 'generated'."""
+    from app.workers.qa_candidates import qa_one, qa_max_attempts
+
+    store = _prepared_store()
+    doc = store.load_candidate_document("Q1035")
+    doc["qa_attempts"] = 1
+    store.save_candidate_document("Q1035", doc, previous_status="generated")
+
+    qid, result = qa_one(
+        store.load_candidate_document("Q1035"), store=store, config=CONFIG,
+        dry_run=False, chat_fn_factory=lambda capsule: None,
+    )
+    assert "Versuch 2/" in result
+    saved = store.load_candidate_document("Q1035")
+    assert saved["status"] == "generated"
+    assert saved["qa_attempts"] == 2
+    assert saved["qa_passed"] is False
+
+
+def test_qa_one_rejects_terminal_after_max_attempts() -> None:
+    """Nach qa_max_attempts echten Faellen: generated -> rejected (Pflichtgrund).
+
+    Ohne Obergrenze belegten Dauer-Verlierer in JEDEM Lauf QA-Slots (Befund
+    14.09.2026) und brachten den 5000/Tag-Durchsatz zum Stehen. Kein Loeschen:
+    rejected ist terminal, aber das Dokument bleibt erhalten.
+    """
+    from app.workers.qa_candidates import qa_one, qa_max_attempts
+
+    store = _prepared_store()
+    doc = store.load_candidate_document("Q1035")
+    doc["qa_attempts"] = qa_max_attempts() - 1
+    store.save_candidate_document("Q1035", doc, previous_status="generated")
+
+    qid, result = qa_one(
+        store.load_candidate_document("Q1035"), store=store, config=CONFIG,
+        dry_run=False, chat_fn_factory=lambda capsule: None,
+    )
+    assert result.startswith("rejected: QA nach")
+    saved = store.load_candidate_document("Q1035")
+    assert saved["status"] == "rejected"
+    assert "nicht bestanden" in (saved.get("status_reason") or "")
+    assert saved["audit_trail"][-1]["to_status"] == "rejected"
+    assert saved["audit_trail"][-1]["from_status"] == "generated"
+    # Objekt bleibt im Store (rote Linie: nichts loeschen)
+    assert store.load_candidate_document("Q1035")["name"] == "Charles Darwin"
+
+
+def test_qa_one_degraded_skip_counts_no_attempt() -> None:
+    """Provider-Ausfall ist KEIN QA-Versuch: qa_attempts bleibt unveraendert."""
+    from app.ai.qa_checks import ChatProviderDegradedError
+    from app.workers.qa_candidates import qa_one
+
+    store = _prepared_store()
+    doc = store.load_candidate_document("Q1035")
+    doc["qa_attempts"] = 4
+    store.save_candidate_document("Q1035", doc, previous_status="generated")
+
+    def degraded_chat(question: str) -> str:
+        raise ChatProviderDegradedError("provider=local")
+
+    qid, result = qa_one(
+        store.load_candidate_document("Q1035"), store=store, config=CONFIG,
+        dry_run=False, chat_fn_factory=lambda capsule: degraded_chat,
+    )
+    assert result.startswith("skipped")
+    saved = store.load_candidate_document("Q1035")
+    assert saved["status"] == "generated"
+    assert saved.get("qa_attempts", 0) == 4
+
+
+def test_qa_max_attempts_env_override(monkeypatch) -> None:
+    from app.workers.qa_candidates import qa_max_attempts
+
+    monkeypatch.delenv("QA_MAX_ATTEMPTS", raising=False)
+    assert qa_max_attempts() == 5
+    monkeypatch.setenv("QA_MAX_ATTEMPTS", "3")
+    assert qa_max_attempts() == 3
+    monkeypatch.setenv("QA_MAX_ATTEMPTS", "unsinn")
+    assert qa_max_attempts() == 5
+    monkeypatch.setenv("QA_MAX_ATTEMPTS", "0")
+    assert qa_max_attempts() == 1
