@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'smyst-v16';
+const CACHE_VERSION = 'smyst-v17';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
@@ -93,6 +93,16 @@ self.addEventListener('fetch', (event) => {
   if (isPrivatePath(url.pathname)) return;
 
   if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // slim.json (~350 KB, Startseiten-Grid/„Neu"-Reihe) IMMER zuerst aus dem
+  // Netz: Der Inhaber (13.09.) sah taeglich keine neuen Profile, weil
+  // stale-while-revalidate den Katalog genau einen Besuch hinter dem Stand
+  // ausliefert. slim ist klein genug fuer network-first (Cache bleibt
+  // Offline-Fallback). Der 23-MB-Vollkatalog bleibt stale-while-revalidate.
+  if (url.pathname === '/api/public/twins/slim.json') {
     event.respondWith(networkFirst(request));
     return;
   }
