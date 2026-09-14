@@ -7670,24 +7670,37 @@ function AdminControlCenterInner() {
                 </span>
               </div>
               <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3 text-sm">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                <span className={`h-2 w-2 shrink-0 rounded-full ${typeof adminLiveOps.visits?.totalToday === 'number' ? 'bg-emerald-500' : 'bg-slate-500'}`} />
                 <span className="font-bold text-[#f4f7fb]">Besucher heute</span>
                 <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
-                  {adminLiveOps.visits ? `${adminLiveOps.visits.totalToday.toLocaleString('de-DE')} · ${adminLiveOps.visits.totalAll.toLocaleString('de-DE')} gesamt` : '–'}
+                  {typeof adminLiveOps.visits?.totalToday === 'number' && typeof adminLiveOps.visits?.totalAll === 'number'
+                    ? `${adminLiveOps.visits.totalToday.toLocaleString('de-DE')} · ${adminLiveOps.visits.totalAll.toLocaleString('de-DE')} gesamt`
+                    : '–'}
                 </span>
               </div>
               <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3 text-sm">
-                <span className={`h-2 w-2 shrink-0 rounded-full ${(adminLiveOps.chatFeedback?.dislikeRate ?? 0) < 0.1 ? 'bg-emerald-500' : 'bg-amber-400'}`} />
-                <span className="font-bold text-[#f4f7fb]">Chat-Feedback</span>
-                <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
-                  {adminLiveOps.chatFeedback ? `${adminLiveOps.chatFeedback.up} 👍 · ${adminLiveOps.chatFeedback.down} 👎` : '–'}
-                </span>
+                {(() => {
+                  // Der Endpunkt liefert in Produktion derzeit 404 — dann ehrlich
+                  // "–" zeigen statt "undefined" (Live-Befund 15.09.2026).
+                  const fb = adminLiveOps.chatFeedback
+                  const fbOk = Boolean(fb) && typeof fb.up === 'number' && typeof fb.down === 'number'
+                  const dot = !fbOk ? 'bg-slate-500' : (fb.dislikeRate ?? 0) < 0.1 ? 'bg-emerald-500' : 'bg-amber-400'
+                  return (
+                    <>
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                      <span className="font-bold text-[#f4f7fb]">Chat-Feedback</span>
+                      <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
+                        {fbOk ? `${fb.up} 👍 · ${fb.down} 👎` : '–'}
+                      </span>
+                    </>
+                  )
+                })()}
               </div>
               <div className="flex items-center gap-3 px-5 py-3 text-sm">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                <span className={`h-2 w-2 shrink-0 rounded-full ${typeof adminLiveOps.ads?.total === 'number' ? 'bg-emerald-500' : 'bg-slate-500'}`} />
                 <span className="font-bold text-[#f4f7fb]">Ads aktiv</span>
                 <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
-                  {adminLiveOps.ads ? `${adminLiveOps.ads.total} Slots` : '–'}
+                  {typeof adminLiveOps.ads?.total === 'number' ? `${adminLiveOps.ads.total} Slots` : '–'}
                 </span>
               </div>
             </div>
