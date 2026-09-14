@@ -185,10 +185,37 @@ echt gescheiterte Kandidaten terminal ab (dokumentiert, umkehrbar).
 
 ---
 
-## 6. Live-Nachweis nach Deploy
+## 6. Live-Nachweis nach Deploy (Stand 14.09. ~02:00 UTC)
 
-(Ergebnisse werden nach dem Merge hier und in Memory_Bank.md nachgetragen:
-erste Läufe mit neuer Auswahl, Shard-Laufzeiten, Publish-Zahlen, Tagesquote.)
+**Merged & live:** #782 (Hauptreparatur), #783 (Summary-Prefix-Hotfix),
+#785 (e2-Probe im Health-Check), #786 (Issue-Label-Fix).
+
+**Validiert (grün):**
+- 621 Backend-Tests (12+ neue), `npm run build`, alle 3 Pflicht-Guards
+- Workflow-YAML validiert; Quota-/Probe-Skripte gegen Fake-S3 getestet
+- PR-CI (10 Checks) je PR grün; Merge-Commits: baba77bd, a60807ca, 1ab67299
+- Selbst-Takt-Kette: abgebrochener Lauf zündet automatisch neu (beobachtet
+  00:12 UTC nach Cancel des Alt-Code-Laufs) — Restart-Verhalten bewiesen
+- Watchdog-Quota-Eskalation dispatcht Lannen/Ingest nach (Läufe 00:50+
+  sichtbar), Läufe failen sauber in <1 min solange e2 sperrt (Fail-Fast
+  statt Minuten-Brennen)
+- pipeline-health: Tagesquote + Trichter + e2-Probe in Run-Summary;
+  Alarm-Issue #787 (autopilot-stalled) automatisch geöffnet, Entwarnung
+  automatisch nach Wiederherstellung
+- Live-Katalog weiter voll erreichbar (25.971 Profile, Reads unberührt)
+
+**Blockiert durch e2-Konto (NICHT durch diese Reparatur):** Seit 13.09.
+23:28→23:49 UTC lehnt das Bucket ALLE Schreib-/HEAD-Zugriffe ab
+(PUT/DELETE AccessDenied, HEAD 403, LIST/GET OK — Write-Probe 00:51 und
+01:33 UTC). Der End-to-End-Durchsatznachweis (Shard-Laufzeiten, 5.000/Tag)
+ist erst nach Wiederherstellung möglich. Der Tagesquoten-Zähler steht
+deshalb bei 0; nach Freigabe läuft die Kette automatisch an (Watchdog +
+Selbst-Takt dispatchen kontinuierlich), idempotent, ohne Doppelpublikation.
+
+**Inhaber-Massnahme (nur dort behebbar):** IDrive-e2-Konsole →
+smyst-memories: Kontingent/Plan pruefen (Schreibblockade bei Limit-
+ueberschreitung ist e2-Verhalten) bzw. Access-Key-Berechtigung
+(Read/Write) pruefen. Danach nichts weiter noetig.
 
 ---
 
