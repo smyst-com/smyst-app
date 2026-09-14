@@ -8,7 +8,8 @@
  *   1. dist/api/public/twins/index.html   (twins-Array, statische JSON-API)
  *   2. dist/api/public/twins/<slug>/      (Einzelprofil-JSON)
  *   3. dist/t/<slug>/index.html           (prerenderte Profilseite, SEO)
- *   4. dist/sitemap.xml                   (zusaetzliche /t/<slug>-URLs)
+ *   4. dist/sitemap-pipeline-<n>.xml + dist/robots.txt (Chunk-Sitemaps mit
+ *      den /t/<slug>-URLs, je max. 10.000 — 50k-Limit pro Datei bleibt fern)
  *
  * DEFENSIV: Fehlt die Datei oder ist der Index leer, passiert nichts (exit 0).
  * Kuratierte Profile haben Vorrang: Slug-Kollisionen werden uebersprungen.
@@ -20,6 +21,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deriveRolesAndCategories, feminizeRoles } from './derive-profile-roles.mjs';
+import { writeSitemapChunks } from './lib/sitemap-chunks.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -622,16 +624,18 @@ writeFileSync(
 );
 console.log(`merge-pipeline-published: slim.json mit ${kuratiert.length + neuestePipeline.length} Eintraegen.`);
 
+// Sitemap-Chunking (14.09.2026, scripts/lib/sitemap-chunks.mjs): 5.000 neue
+// Profile/Tag laufen gegen das 50.000-URL-Limit pro Sitemap-Datei (erstmals
+// erreicht ca. 19.09.2026). Pipeline-URLs landen jetzt in
+// sitemap-pipeline-<n>.xml (je max. 10.000 URLs); die gebaute robots.txt in
+// dist/ kriegt je Chunk eine `Sitemap:`-Zeile. sitemap.xml bleibt unveraendert.
 const sitemapPath = resolve(DIST, 'sitemap.xml');
 if (merged > 0 && existsSync(sitemapPath)) {
   const today = new Date().toISOString().split('T')[0];
-  const blocks = newUrls
-    .map(
-      (loc) => `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`,
-    )
-    .join('');
-  const sitemap = readFileSync(sitemapPath, 'utf8').replace('</urlset>', `${blocks}</urlset>`);
-  writeFileSync(sitemapPath, sitemap, 'utf8');
+  const chunkNames = writeSitemapChunks({ distDir: DIST, urls: newUrls, host: HOST, today });
+  console.log(
+    `merge-pipeline-published: ${newUrls.length} Pipeline-URL(s) in ${chunkNames.length} Sitemap-Chunk(s) geschrieben.`,
+  );
 }
 
 // Bildnachweis-Seite: Pipeline-Credits in dist/bildnachweise/index.html einsetzen.
