@@ -7,6 +7,7 @@
 
 import { useCallback, useState } from 'react'
 import { fetchService } from './serviceEndpoints'
+import { warmSearchIndex } from './profileDiscovery'
 
 export type TwinStyle = 'warm' | 'direct' | 'humorous' | 'wise' | 'neutral'
 export type TwinVisibility = 'private' | 'public'
@@ -337,7 +338,11 @@ function loadPublicTwins(): Promise<PublicTwinProfile[]> {
       const body =
         (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
         (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
-      return body?.twins ?? []
+      const twins = body?.twins ?? []
+      // Such-Index im Leerlauf vorwaermen (Performance 14.09.2026): sonst zahlt
+      // die erste Such-Eingabe die einmalige Tokenisierung von 27k Profilen.
+      warmSearchIndex(twins)
+      return twins
     })().catch((err) => {
       // Fehlschlaege duerfen nicht dauerhaft haengen bleiben: Cache leeren,
       // damit ein spaeterer Aufruf es erneut versucht.
