@@ -1,0 +1,58 @@
+name: Modell-Release -> Object Brain (parametrisiert)
+
+# Allgemeiner Nachfolger des 1.1-v4-Transfers: nimmt einen GitHub-Release
+# mit 30-MB-Teilen (Präfix-Input) und legt das zusammengeführte GGUF im
+# Object Brain (IDrive e2) ab. Integritaet via SHA256SUMS geprueft.
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release-Tag mit den Teilen (z. B. v-smyst-1.2-gguf)"
+        required: true
+      parts_prefix:
+        description: "Datei-Praefix der Teile (z. B. s12q4p)"
+        required: true
+      out_name:
+        description: "Ziel-Dateiname (z. B. smyst-1.2-Q4_K_M.gguf)"
+        required: true
+      e2_prefix:
+        description: "e2-Zielpfad ohne Dateinamen (z. B. models/smyst-1.2/2026-09-14)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Teile aus Release laden
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+          PREFIX: ${{ inputs.parts_prefix }}
+        run: |
+          mkdir -p /tmp/parts && cd /tmp/parts
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "${PREFIX}*" -p "SHA256SUMS" -D .
+          echo "Teile: $(ls ${PREFIX}* | wc -l)"
+          cat ${PREFIX}* > "${{ inputs.out_name }}"
+          ls -lh "${{ inputs.out_name }}"
+
+      - name: Integritaet (SHA256 gegen Referenz)
+        run: |
+          cd /tmp/parts
+          grep "${{ inputs.out_name }}" SHA256SUMS | sed 's|.*/||' > ref.txt
+          sha256sum -c ref.txt
+
+      - name: In Object Brain hochladen
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          aws s3 cp "/tmp/parts/${{ inputs.out_name }}" \
+            "s3://smyst-memories/${{ inputs.e2_prefix }}/${{ inputs.out_name }}" \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
+          aws s3 ls "s3://smyst-memories/${{ inputs.e2_prefix }}/" \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
