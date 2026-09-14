@@ -6237,31 +6237,34 @@ type ComputeJobsApi = {
   }>
 }
 
-const adminSections: Array<{ id: AdminSection; label: string; detail: string; group: string }> = [
-  { id: 'overview', label: 'Overview', detail: 'Live Status', group: 'Status' },
-  { id: 'autopilot', label: 'Autopilot', detail: 'Ampeln aller Automatiken', group: 'Status' },
-  { id: 'approvals', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen', group: 'Status' },
-  { id: 'ideas', label: 'Ideen & Modell', detail: 'Autopilot-Vorschläge + smyst 1.0', group: 'Status' },
-  { id: 'users', label: 'Users', detail: 'Sperren, Rollen, Export', group: 'Nutzer & Inhalte' },
-  { id: 'registrations', label: 'Registrations', detail: 'Funnel und Bots', group: 'Nutzer & Inhalte' },
-  { id: 'profiles', label: 'Profiles', detail: 'AI Twins und Qualität', group: 'Nutzer & Inhalte' },
-  { id: 'aiQuality', label: 'AI Quality', detail: 'Modelle, RAG, Tests', group: 'Nutzer & Inhalte' },
-  { id: 'moderation', label: 'Moderation', detail: 'Abuse Queue', group: 'Nutzer & Inhalte' },
-  { id: 'ads', label: 'Ads', detail: 'AdSense Slots', group: 'Umsatz' },
-  { id: 'revenue', label: 'Revenue', detail: '25 % User-Anteil', group: 'Umsatz' },
-  { id: 'finance', label: 'Finance', detail: 'Payouts, KYC, Tax', group: 'Umsatz' },
-  { id: 'security', label: 'Security', detail: 'Audit und Privacy', group: 'Sicherheit & Recht' },
-  { id: 'support', label: 'Support', detail: 'Tickets und Rollen', group: 'Sicherheit & Recht' },
-  { id: 'storage', label: 'Storage', detail: 'IDrive E2, Salad', group: 'Technik' },
-  { id: 'idrive', label: 'IDrive e2', detail: 'Object Map, Signed URLs', group: 'Technik' },
-  { id: 'salad', label: 'Salad', detail: 'Compute, Job-Pipeline, Jobs', group: 'Technik' },
-  { id: 'releases', label: 'Releases', detail: 'Apps, PWA, Rollback', group: 'Technik' },
-  { id: 'apps', label: 'Apps', detail: 'PWA, iPhone, Android', group: 'Technik' },
-  { id: 'look', label: 'Look', detail: 'Design System', group: 'Referenz' },
-  { id: 'checklist', label: 'A-Z', detail: 'Launch Kontrolle', group: 'Referenz' },
+// Admin-Neuaufbau 14.09.2026 (Mockup-Freigabe Inhaber): Nummerierte Gruppen
+// wie die Operations Console von smejj.com/admin (Vorbild, Inhaber 14.09.).
+// Alle 21 Bereiche bleiben erreichbar — nichts wird entfernt, nur einsortiert.
+const adminSections: Array<{ id: AdminSection; nr: string; label: string; detail: string; group: string }> = [
+  { id: 'overview', nr: '1.1', label: 'Cockpit', detail: 'Alles Wichtige auf einen Blick', group: 'Überblick' },
+  { id: 'autopilot', nr: '1.2', label: 'Autopilot', detail: 'Ampeln aller Automatiken', group: 'Überblick' },
+  { id: 'approvals', nr: '1.3', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen', group: 'Überblick' },
+  { id: 'users', nr: '2.1', label: 'Users', detail: 'Sperren, Rollen, Export', group: 'Menschen' },
+  { id: 'registrations', nr: '2.2', label: 'Registrations', detail: 'Funnel und Bots', group: 'Menschen' },
+  { id: 'profiles', nr: '2.3', label: 'Profiles', detail: 'AI Twins und Qualität', group: 'Menschen' },
+  { id: 'aiQuality', nr: '2.4', label: 'AI Quality', detail: 'Modelle, RAG, Tests', group: 'Menschen' },
+  { id: 'moderation', nr: '2.5', label: 'Moderation', detail: 'Abuse Queue', group: 'Menschen' },
+  { id: 'security', nr: '3.1', label: 'Security', detail: 'Audit und Privacy', group: 'Sicherheit' },
+  { id: 'support', nr: '3.2', label: 'Support', detail: 'Tickets und Rollen', group: 'Sicherheit' },
+  { id: 'ads', nr: '4.1', label: 'Ads', detail: 'AdSense Slots', group: 'Geld' },
+  { id: 'revenue', nr: '4.2', label: 'Revenue', detail: '25 % User-Anteil', group: 'Geld' },
+  { id: 'finance', nr: '4.3', label: 'Finance', detail: 'Payouts, KYC, Tax', group: 'Geld' },
+  { id: 'ideas', nr: '5.1', label: 'Modell & Ideen', detail: 'smyst 1.1, Autopilot-Vorschläge', group: 'Betrieb' },
+  { id: 'storage', nr: '5.2', label: 'Storage', detail: 'IDrive E2, Salad', group: 'Betrieb' },
+  { id: 'idrive', nr: '5.3', label: 'IDrive e2', detail: 'Object Map, Signed URLs', group: 'Betrieb' },
+  { id: 'salad', nr: '5.4', label: 'Salad', detail: 'Compute, Job-Pipeline, Jobs', group: 'Betrieb' },
+  { id: 'releases', nr: '5.5', label: 'Releases', detail: 'Apps, PWA, Rollback', group: 'Betrieb' },
+  { id: 'apps', nr: '5.6', label: 'Apps', detail: 'PWA, iPhone, Android', group: 'Betrieb' },
+  { id: 'look', nr: '6.1', label: 'Look', detail: 'Design System', group: 'Referenz' },
+  { id: 'checklist', nr: '6.2', label: 'A-Z', detail: 'Launch Kontrolle', group: 'Referenz' },
 ]
 
-const adminSectionOrder: string[] = ['Status', 'Nutzer & Inhalte', 'Umsatz', 'Sicherheit & Recht', 'Technik', 'Referenz']
+const adminSectionOrder: string[] = ['Überblick', 'Menschen', 'Sicherheit', 'Geld', 'Betrieb', 'Referenz']
 
 const adminMetricTone: Record<AdminMetric['tone'], string> = {
   green: 'bg-emerald-500',
@@ -6273,7 +6276,7 @@ const adminMetricTone: Record<AdminMetric['tone'], string> = {
 
 function AdminStatusChip({ children, tone = 'green' }: { children: string; tone?: AdminMetric['tone'] }) {
   return (
-    <span className="inline-flex min-h-0 items-center gap-2 rounded-md border border-[#d9e2ec] bg-white px-2.5 py-1 text-xs font-bold text-[#172033]">
+    <span className="inline-flex min-h-0 items-center gap-2 rounded-md border border-white/12 bg-white/[0.05] px-2.5 py-1 text-xs font-bold text-[#e6ecf4]">
       <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${adminMetricTone[tone]}`} />
       {children}
     </span>
@@ -6284,7 +6287,7 @@ function AdminStatusChip({ children, tone = 'green' }: { children: string; tone?
 // diesen ehrlichen Hinweis (Befund Admin-Review 25.08.).
 function AdminDemoNote() {
   return (
-    <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800 xl:col-span-2">
+    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-300 xl:col-span-2">
       Konzept-Ansicht: Diese Sektion hat noch keinen Live-Anschluss an die Admin-API. Zahlen und Tabellen sind Platzhalter und beschreiben geplante Funktionen.
     </div>
   )
@@ -6292,13 +6295,13 @@ function AdminDemoNote() {
 
 function AdminMetricCard({ metric }: { metric: AdminMetric }) {
   return (
-    <div className="rounded-lg border border-[#d9e2ec] bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
       <div className="flex items-start gap-3">
         <span className={`mt-1 h-4 w-4 shrink-0 rounded-sm ${adminMetricTone[metric.tone]}`} />
         <div className="min-w-0">
-          <p className="text-sm font-bold text-[#5d6776]">{metric.label}</p>
-          <p className="mt-2 text-3xl font-bold leading-none text-[#111722]">{metric.value}</p>
-          <p className="mt-3 text-sm leading-snug text-[#5d6776]">{metric.detail}</p>
+          <p className="text-sm font-bold text-[#9aa6b7]">{metric.label}</p>
+          <p className="mt-2 text-3xl font-bold leading-none text-[#f4f7fb]">{metric.value}</p>
+          <p className="mt-3 text-sm leading-snug text-[#9aa6b7]">{metric.detail}</p>
         </div>
       </div>
     </div>
@@ -6307,9 +6310,9 @@ function AdminMetricCard({ metric }: { metric: AdminMetric }) {
 
 function AdminTable({ columns, rows }: { columns: string[]; rows: AdminRow[] }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#d9e2ec] bg-white">
+    <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/[0.03]">
       <table className="min-w-full table-fixed text-left text-sm">
-        <thead className="border-b border-[#d9e2ec] bg-[#f7fafd] text-xs font-bold uppercase tracking-[0.08em] text-[#5d6776]">
+        <thead className="border-b border-white/10 bg-white/[0.05] text-xs font-bold uppercase tracking-[0.08em] text-[#9aa6b7]">
           <tr>
             {columns.map((column) => (
               <th key={column} className="px-4 py-3">
@@ -6318,11 +6321,11 @@ function AdminTable({ columns, rows }: { columns: string[]; rows: AdminRow[] }) 
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#edf2f7]">
+        <tbody className="divide-y divide-white/[0.06]">
           {rows.map((row, index) => (
-            <tr key={`${row[columns[0]]}-${index}`} className="text-[#5d6776]">
+            <tr key={`${row[columns[0]]}-${index}`} className="text-[#9aa6b7]">
               {columns.map((column, columnIndex) => (
-                <td key={column} className={`px-4 py-3 ${columnIndex === 0 ? 'font-bold text-[#111722]' : ''}`}>
+                <td key={column} className={`px-4 py-3 ${columnIndex === 0 ? 'font-bold text-[#f4f7fb]' : ''}`}>
                   {row[column]}
                 </td>
               ))}
@@ -6512,7 +6515,8 @@ function AdminControlCenterInner() {
   }, [])
 
   useEffect(() => {
-    if (activeSection !== 'approvals') return
+    // Cockpit laedt Freigaben mit, damit "Braucht deine Entscheidung" live ist.
+    if (activeSection !== 'approvals' && activeSection !== 'overview') return
     return refreshAdminApprovals()
   }, [activeSection, refreshAdminApprovals])
 
@@ -6842,9 +6846,9 @@ function AdminControlCenterInner() {
     }
   }
 
-  // Autopilot-Ampeln: Status aller geplanten Workflows
+  // Autopilot-Ampeln: Status aller geplanten Workflows (Cockpit braucht sie mit)
   useEffect(() => {
-    if (activeSection !== 'autopilot') return
+    if (activeSection !== 'autopilot' && activeSection !== 'overview') return
     let alive = true
     fetchService('/api/admin/autopilot', { credentials: 'include' })
       .then(async (response) => {
@@ -6933,7 +6937,8 @@ function AdminControlCenterInner() {
     }
   }
   useEffect(() => {
-    if (activeSection !== 'aiQuality') return
+    // Cockpit (overview) und AI Quality brauchen dieselben Live-Kennzahlen.
+    if (activeSection !== 'aiQuality' && activeSection !== 'overview') return
     let alive = true
     Promise.all([
       fetchService('/api/v1/visits/stats').then((r) => r.json()).catch(() => null),
@@ -7123,41 +7128,43 @@ function AdminControlCenterInner() {
     { Profil: 'Recipe Helper', Chats: '2.2M', Qualität: '85', 'Ad RPM': '$2.10', 'gültiger Umsatz': '$4,620', '25 % Anteil': '$1,155', Status: 'payable' },
   ]
 
-  const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Overview'
+  const sectionTitle = adminSections.find((section) => section.id === activeSection)?.label ?? 'Cockpit'
+  const sectionDetail = adminSections.find((section) => section.id === activeSection)?.detail ?? 'Alles Wichtige auf einen Blick'
+  const sectionGroup = adminSections.find((section) => section.id === activeSection)?.group ?? 'Überblick'
 
   const renderIdeas = () => {
     const counts = adminIdeas?.counts
     const modelle = adminIdeas?.modelReports ?? []
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Ideen-Autopilot &amp; Modell-Loop</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Ideen-Autopilot &amp; Modell-Loop</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminIdeas === null
               ? 'Ideen werden geladen oder Object Brain nicht erreichbar.'
               : `${counts?.proposed ?? 0} Vorschläge warten auf deine Entscheidung, ${counts?.approved ?? 0} freigegeben, ${counts?.rejected ?? 0} abgelehnt.`}
           </p>
           {adminIdeasMessage ? (
-            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminIdeasMessage}</p>
+            <p className="mt-3 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-semibold text-[#e6ecf4]">{adminIdeasMessage}</p>
           ) : null}
         </section>
         {(adminIdeas?.ideas ?? []).filter((idea) => idea.status === 'proposed').map((idea) => (
-          <section key={idea.id} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+          <section key={idea.id} className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-base font-black text-[#111722]">{idea.title}</h3>
-                <p className="mt-1 text-sm font-semibold text-[#5d6776]">{idea.description}</p>
-                {idea.expected_benefit ? <p className="mt-1 text-xs font-semibold text-emerald-600">Nutzen: {idea.expected_benefit}</p> : null}
+                <h3 className="text-base font-black text-[#f4f7fb]">{idea.title}</h3>
+                <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">{idea.description}</p>
+                {idea.expected_benefit ? <p className="mt-1 text-xs font-semibold text-emerald-400">Nutzen: {idea.expected_benefit}</p> : null}
               </div>
             </div>
             {adminIdeasRejectId === idea.id ? (
-              <div className="mt-3 grid gap-2 rounded-md border border-[#d9e2ec] bg-[#f7fafd] p-3 sm:grid-cols-[1fr_auto_auto]">
+              <div className="mt-3 grid gap-2 rounded-md border border-white/10 bg-white/[0.03] p-3 sm:grid-cols-[1fr_auto_auto]">
                 <input
                   value={adminIdeasRejectReason}
                   onChange={(event) => setAdminIdeasRejectReason(event.target.value)}
                   placeholder="Grund der Ablehnung (mindestens 3 Zeichen)"
                   autoFocus
-                  className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+                  className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
                 />
                 <button
                   type="button"
@@ -7170,7 +7177,7 @@ function AdminControlCenterInner() {
                 <button
                   type="button"
                   onClick={() => { setAdminIdeasRejectId(null); setAdminIdeasRejectReason('') }}
-                  className="min-h-11 rounded-md border border-[#d9e2ec] px-4 text-sm font-bold text-[#172033] hover:bg-[#f7fafd]"
+                  className="min-h-11 rounded-md border border-white/10 px-4 text-sm font-bold text-[#e6ecf4] hover:bg-white/[0.03]"
                 >
                   Abbrechen
                 </button>
@@ -7189,7 +7196,7 @@ function AdminControlCenterInner() {
                 type="button"
                 disabled={adminIdeasBusy === idea.id}
                 onClick={() => { setAdminIdeasRejectId(idea.id); setAdminIdeasRejectReason('') }}
-                className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
+                className="rounded-md border border-white/10 px-4 py-2 text-sm font-bold text-[#e6ecf4] hover:bg-white/[0.03] disabled:opacity-50"
               >
                 Ablehnen
               </button>
@@ -7197,16 +7204,16 @@ function AdminControlCenterInner() {
             )}
           </section>
         ))}
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-lg font-bold text-[#111722]">smyst 1.0 – Modell-Evals</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">Neueste Läufe des Modell-Eval-Autopilots (Score = Anteil bestandener Fragen).</p>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-lg font-bold text-[#f4f7fb]">smyst 1.0 – Modell-Evals</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">Neueste Läufe des Modell-Eval-Autopilots (Score = Anteil bestandener Fragen).</p>
           <div className="mt-3 grid gap-2">
             {modelle.length === 0 ? (
-              <p className="text-sm font-semibold text-[#5d6776]">Noch keine Modell-Eval-Reports im Object Brain.</p>
+              <p className="text-sm font-semibold text-[#9aa6b7]">Noch keine Modell-Eval-Reports im Object Brain.</p>
             ) : modelle.map((report) => (
-              <div key={report.key} className="flex items-center justify-between rounded-md border border-[#edf2f7] bg-[#f7fafd] px-3 py-2">
-                <span className="text-sm font-bold text-[#172033]">{report.key}</span>
-                <span className={`text-sm font-black ${typeof report.score === 'number' && report.score >= 0.9 ? 'text-emerald-600' : 'text-amber-600'}`}>
+              <div key={report.key} className="flex items-center justify-between rounded-md border border-white/[0.07] bg-white/[0.02] px-3 py-2">
+                <span className="text-sm font-bold text-[#e6ecf4]">{report.key}</span>
+                <span className={`text-sm font-black ${typeof report.score === 'number' && report.score >= 0.9 ? 'text-emerald-400' : 'text-amber-600'}`}>
                   {typeof report.score === 'number' ? `${Math.round(report.score * 100)} %` : '–'}{report.answered !== null && report.answered !== undefined ? ` (${report.answered}/${report.total ?? '?'})` : ''}
                 </span>
               </div>
@@ -7218,28 +7225,28 @@ function AdminControlCenterInner() {
   }
 
   const renderApprovalCard = (card: AdminApprovalCard, tone: 'ready' | 'blocked') => (
-    <section key={card.qid} className="rounded-lg border border-[#d9e2ec] bg-white p-4">
+    <section key={card.qid} className="rounded-lg border border-white/10 bg-white/[0.04] p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-base font-black text-[#111722]">{card.name}</h3>
-          <p className="mt-0.5 text-xs font-semibold text-[#667085]">
+          <h3 className="text-base font-black text-[#f4f7fb]">{card.name}</h3>
+          <p className="mt-0.5 text-xs font-semibold text-[#93a0b4]">
             {card.qid}{card.risk_score !== null && card.risk_score !== undefined ? ` · Risiko ${card.risk_score}` : ''}
             {card.image_status ? ` · Bild: ${card.image_status}` : ''}
           </p>
         </div>
-        <span className={`inline-flex items-center gap-2 rounded-md border border-[#d9e2ec] px-2 py-1 text-xs font-bold ${card.qa_passed ? 'text-emerald-600' : 'text-amber-600'}`}>
+        <span className={`inline-flex items-center gap-2 rounded-md border border-white/10 px-2 py-1 text-xs font-bold ${card.qa_passed ? 'text-emerald-400' : 'text-amber-600'}`}>
           {card.qa_passed ? 'QA bestanden' : 'QA offen'}
         </span>
       </div>
-      {card.status_reason ? <p className="mt-2 text-sm font-semibold text-[#5d6776]">{card.status_reason}</p> : null}
+      {card.status_reason ? <p className="mt-2 text-sm font-semibold text-[#9aa6b7]">{card.status_reason}</p> : null}
       {adminApprovalsRejectQid === card.qid ? (
-        <div className="mt-3 grid gap-2 rounded-md border border-[#d9e2ec] bg-[#f7fafd] p-3 sm:grid-cols-[1fr_auto_auto]">
+        <div className="mt-3 grid gap-2 rounded-md border border-white/10 bg-white/[0.03] p-3 sm:grid-cols-[1fr_auto_auto]">
           <input
             value={adminApprovalsRejectReason}
             onChange={(event) => setAdminApprovalsRejectReason(event.target.value)}
             placeholder="Grund der Ablehnung (mindestens 3 Zeichen)"
             autoFocus
-            className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+            className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
           />
           <button
             type="button"
@@ -7252,7 +7259,7 @@ function AdminControlCenterInner() {
           <button
             type="button"
             onClick={() => { setAdminApprovalsRejectQid(null); setAdminApprovalsRejectReason('') }}
-            className="min-h-11 rounded-md border border-[#d9e2ec] px-4 text-sm font-bold text-[#172033] hover:bg-[#f7fafd]"
+            className="min-h-11 rounded-md border border-white/10 px-4 text-sm font-bold text-[#e6ecf4] hover:bg-white/[0.03]"
           >
             Abbrechen
           </button>
@@ -7273,7 +7280,7 @@ function AdminControlCenterInner() {
           type="button"
           disabled={adminApprovalsBusy === card.qid}
           onClick={() => { setAdminApprovalsRejectQid(card.qid); setAdminApprovalsRejectReason('') }}
-          className="rounded-md border border-[#d9e2ec] px-4 py-2 text-sm font-bold text-[#172033] hover:bg-[#f7fafd] disabled:opacity-50"
+          className="rounded-md border border-white/10 px-4 py-2 text-sm font-bold text-[#e6ecf4] hover:bg-white/[0.03] disabled:opacity-50"
         >
           Ablehnen
         </button>
@@ -7286,9 +7293,9 @@ function AdminControlCenterInner() {
     const counts = adminApprovals?.counts
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Freigabe-Postfach</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Freigabe-Postfach</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminApprovals === null
               ? 'Freigaben werden geladen oder Object Brain nicht erreichbar.'
               : (counts?.ready ?? 0) === 0 && (counts?.blocked ?? 0) === 0
@@ -7296,7 +7303,7 @@ function AdminControlCenterInner() {
                 : `${counts?.ready ?? 0} bereit zur Freigabe, ${counts?.blocked ?? 0} mit offener QA.`}
           </p>
           {adminApprovalsMessage ? (
-            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminApprovalsMessage}</p>
+            <p className="mt-3 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-semibold text-[#e6ecf4]">{adminApprovalsMessage}</p>
           ) : null}
         </section>
         {(adminApprovals?.ready ?? []).map((card) => renderApprovalCard(card, 'ready'))}
@@ -7328,11 +7335,11 @@ function AdminControlCenterInner() {
     )
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold text-[#111722]">Autopilot-Cockpit</h2>
-              <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+              <h2 className="text-xl font-bold text-[#f4f7fb]">Autopilot-Cockpit</h2>
+              <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
                 {adminAutopilot === null
                   ? 'Status wird geladen oder Backend nicht erreichbar.'
                   : summary?.allGreen
@@ -7341,7 +7348,7 @@ function AdminControlCenterInner() {
               </p>
             </div>
             {summary && (
-              <span className={`inline-flex items-center gap-2 rounded-md border border-[#d9e2ec] px-3 py-1.5 text-sm font-bold text-[#172033]`}>
+              <span className={`inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-1.5 text-sm font-bold text-[#e6ecf4]`}>
                 <span className={`h-2.5 w-2.5 rounded-full ${summary.allGreen ? 'bg-emerald-500' : (summary.red > 0 ? 'bg-red-500' : 'bg-amber-400')}`} />
                 {summary.allGreen ? 'Alles okay' : summary.red > 0 ? 'Handlung nötig' : 'Beobachten'}
               </span>
@@ -7358,11 +7365,11 @@ function AdminControlCenterInner() {
             </div>
           )}
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-bold text-[#111722]">Versions-Autopilot – Freigabe</h2>
-              <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+              <h2 className="text-xl font-bold text-[#f4f7fb]">Versions-Autopilot – Freigabe</h2>
+              <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
                 {adminVersions === null
                   ? 'Freigabe-Daten werden geladen oder Object Brain nicht erreichbar.'
                   : (adminVersions.counts?.pending ?? 0) === 0
@@ -7382,13 +7389,13 @@ function AdminControlCenterInner() {
             )}
           </div>
           {adminVersionsMessage ? (
-            <p className="mt-3 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 py-2 text-sm font-semibold text-[#172033]">{adminVersionsMessage}</p>
+            <p className="mt-3 rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-semibold text-[#e6ecf4]">{adminVersionsMessage}</p>
           ) : null}
           {(adminVersions?.pending ?? []).length > 0 && (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[#d9e2ec] text-left text-xs font-bold uppercase tracking-wide text-[#667085]">
+                  <tr className="border-b border-white/10 text-left text-xs font-bold uppercase tracking-wide text-[#93a0b4]">
                     <th className="py-2 pr-3">Profil</th>
                     <th className="py-2 pr-3">Version</th>
                     <th className="py-2 pr-3">Eval alt → neu</th>
@@ -7398,13 +7405,13 @@ function AdminControlCenterInner() {
                 </thead>
                 <tbody>
                   {(adminVersions?.pending ?? []).map((card) => (
-                    <tr key={card.qid} className="border-b border-[#eef2f7] align-middle">
-                      <td className="py-2 pr-3 font-semibold text-[#111722]">{card.name ?? card.qid}</td>
-                      <td className="py-2 pr-3 font-semibold text-[#5d6776]">v{card.old_version ?? '?'} → v{card.new_version ?? '?'}</td>
-                      <td className="py-2 pr-3 font-semibold text-[#5d6776]">
-                        {card.old_score != null ? card.old_score.toFixed(2) : '–'} → <span className="text-emerald-700">{card.new_score != null ? card.new_score.toFixed(2) : '–'}</span>
+                    <tr key={card.qid} className="border-b border-white/[0.07] align-middle">
+                      <td className="py-2 pr-3 font-semibold text-[#f4f7fb]">{card.name ?? card.qid}</td>
+                      <td className="py-2 pr-3 font-semibold text-[#9aa6b7]">v{card.old_version ?? '?'} → v{card.new_version ?? '?'}</td>
+                      <td className="py-2 pr-3 font-semibold text-[#9aa6b7]">
+                        {card.old_score != null ? card.old_score.toFixed(2) : '–'} → <span className="text-emerald-300">{card.new_score != null ? card.new_score.toFixed(2) : '–'}</span>
                       </td>
-                      <td className="py-2 pr-3 text-[#667085]">
+                      <td className="py-2 pr-3 text-[#93a0b4]">
                         {card.staged_at ? new Date(card.staged_at).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
                       </td>
                       <td className="py-2 pr-3">
@@ -7413,7 +7420,7 @@ function AdminControlCenterInner() {
                             type="button"
                             disabled={adminVersionsBusy !== null || adminVersionsRejectQid !== null}
                             onClick={() => actAdminVersion('approve', card.qid)}
-                            className="rounded-md border border-emerald-600 px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                            className="rounded-md border border-emerald-500/50 px-3 py-1.5 text-xs font-bold text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
                           >
                             {adminVersionsBusy === `${card.qid}:approve` ? '…' : 'Freigeben'}
                           </button>
@@ -7421,7 +7428,7 @@ function AdminControlCenterInner() {
                             type="button"
                             disabled={adminVersionsBusy !== null}
                             onClick={() => { setAdminVersionsRejectQid(card.qid); setAdminVersionsRejectReason('') }}
-                            className="rounded-md border border-[#d9e2ec] px-3 py-1.5 text-xs font-bold text-[#5d6776] hover:bg-[#f7fafd] disabled:opacity-50"
+                            className="rounded-md border border-white/10 px-3 py-1.5 text-xs font-bold text-[#9aa6b7] hover:bg-white/[0.03] disabled:opacity-50"
                           >
                             Verwerfen
                           </button>
@@ -7434,8 +7441,8 @@ function AdminControlCenterInner() {
             </div>
           )}
           {adminVersionsRejectQid && (
-            <div className="mt-4 grid gap-2 rounded-md border border-[#d9e2ec] bg-[#f7fafd] p-3 lg:grid-cols-[auto_1fr_auto_auto] lg:items-center">
-              <p className="text-sm font-bold text-[#172033]">
+            <div className="mt-4 grid gap-2 rounded-md border border-white/10 bg-white/[0.03] p-3 lg:grid-cols-[auto_1fr_auto_auto] lg:items-center">
+              <p className="text-sm font-bold text-[#e6ecf4]">
                 {adminVersions?.pending?.find((card) => card.qid === adminVersionsRejectQid)?.name ?? adminVersionsRejectQid} verwerfen:
               </p>
               <input
@@ -7443,7 +7450,7 @@ function AdminControlCenterInner() {
                 onChange={(event) => setAdminVersionsRejectReason(event.target.value)}
                 placeholder="Grund (mindestens 3 Zeichen)"
                 autoFocus
-                className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+                className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
               />
               <button
                 type="button"
@@ -7456,7 +7463,7 @@ function AdminControlCenterInner() {
               <button
                 type="button"
                 onClick={() => { setAdminVersionsRejectQid(null); setAdminVersionsRejectReason('') }}
-                className="min-h-11 rounded-md border border-[#d9e2ec] px-4 text-sm font-bold text-[#172033] hover:bg-[#f7fafd]"
+                className="min-h-11 rounded-md border border-white/10 px-4 text-sm font-bold text-[#e6ecf4] hover:bg-white/[0.03]"
               >
                 Abbrechen
               </button>
@@ -7464,20 +7471,20 @@ function AdminControlCenterInner() {
           )}
         </section>
         {(adminAutopilot?.workflows ?? []).length > 0 && (
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#667085]">Automatiken – kritische zuerst</p>
+          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#93a0b4]">Automatiken – kritische zuerst</p>
         )}
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {workflows.map((workflow) => (
-            <section key={workflow.file} className={`rounded-lg border bg-white p-4 ${workflow.light === 'red' ? 'border-red-500' : workflow.light === 'yellow' ? 'border-amber-400' : 'border-[#d9e2ec]'}`}>
+            <section key={workflow.file} className={`rounded-lg border bg-white/[0.04] p-4 ${workflow.light === 'red' ? 'border-red-500' : workflow.light === 'yellow' ? 'border-amber-400' : 'border-white/10'}`}>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-black text-[#111722]">{workflow.name}</h3>
-                  <p className="mt-0.5 text-xs font-semibold text-[#667085]">{workflow.cadence}</p>
+                  <h3 className="text-base font-black text-[#f4f7fb]">{workflow.name}</h3>
+                  <p className="mt-0.5 text-xs font-semibold text-[#93a0b4]">{workflow.cadence}</p>
                 </div>
-                <span className={`mt-1 h-3 w-3 shrink-0 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-300'}`} title={lightLabel[workflow.light] ?? 'unbekannt'} />
+                <span className={`mt-1 h-3 w-3 shrink-0 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-500'}`} title={lightLabel[workflow.light] ?? 'unbekannt'} />
               </div>
-              {workflow.light === 'red' ? <p className="mt-2 text-xs font-black uppercase tracking-wide text-red-600">Handlung nötig</p> : null}
-              <p className="mt-3 text-sm font-semibold text-[#5d6776]">
+              {workflow.light === 'red' ? <p className="mt-2 text-xs font-black uppercase tracking-wide text-red-400">Handlung nötig</p> : null}
+              <p className="mt-3 text-sm font-semibold text-[#9aa6b7]">
                 {workflow.kind === 'local'
                   ? 'Läuft auf der Mac-Workstation (launchd).'
                   : workflow.lastRun?.createdAt
@@ -7485,7 +7492,7 @@ function AdminControlCenterInner() {
                     : 'Kein Lauf gefunden.'}
               </p>
               {workflow.lastRun?.htmlUrl && (
-                <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-bold text-sky-500 hover:underline">
+                <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-bold text-sky-400 hover:underline">
                   Lauf in GitHub ansehen
                 </a>
               )}
@@ -7496,20 +7503,20 @@ function AdminControlCenterInner() {
                     disabled={adminAutopilotBusy !== null}
                     onClick={() => void actAdminAutopilotRerun(workflow.file)}
                     className={`rounded-md border px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${workflow.light === 'red' || workflow.light === 'yellow'
-                      ? 'border-emerald-600 text-emerald-700 hover:bg-emerald-50'
-                      : 'border-[#d9e2ec] text-[#5d6776] hover:bg-[#f7fafd]'}`}
+                      ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10'
+                      : 'border-white/10 text-[#9aa6b7] hover:bg-white/[0.03]'}`}
                   >
                     {adminAutopilotBusy === workflow.file ? 'Startet …' : 'Erneut starten'}
                   </button>
                   {adminAutopilotMessage?.startsWith(workflow.file) && (
-                    <span className="text-xs font-semibold text-[#667085]">{adminAutopilotMessage.split('|')[1]}</span>
+                    <span className="text-xs font-semibold text-[#93a0b4]">{adminAutopilotMessage.split('|')[1]}</span>
                   )}
                 </div>
               )}
             </section>
           ))}
           {adminAutopilot === null && (
-            <p className="text-sm font-semibold text-[#5d6776]">Keine Autopilot-Daten – Backend /api/admin/autopilot prüfen.</p>
+            <p className="text-sm font-semibold text-[#9aa6b7]">Keine Autopilot-Daten – Backend /api/admin/autopilot prüfen.</p>
           )}
         </div>
       </div>
@@ -7537,22 +7544,22 @@ function AdminControlCenterInner() {
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
         </div>
         <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Design Tokens</h2>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">Design Tokens</h2>
             <div className="mt-5 grid gap-3">
               {colors.map(([name, color, detail]) => (
-                <div key={name} className="grid gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[88px_1fr]">
-                  <span className="h-12 rounded-md border border-[#d9e2ec]" style={{ backgroundColor: color }} />
+                <div key={name} className="grid gap-3 rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 sm:grid-cols-[88px_1fr]">
+                  <span className="h-12 rounded-md border border-white/10" style={{ backgroundColor: color }} />
                   <div>
-                    <p className="text-sm font-black text-[#111722]">{name} <span className="font-mono text-xs text-[#667085]">{color}</span></p>
-                    <p className="mt-1 text-sm font-semibold text-[#5d6776]">{detail}</p>
+                    <p className="text-sm font-black text-[#f4f7fb]">{name} <span className="font-mono text-xs text-[#93a0b4]">{color}</span></p>
+                    <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">{detail}</p>
                   </div>
                 </div>
               ))}
             </div>
           </section>
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">UI Regeln</h2>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">UI Regeln</h2>
             <div className="mt-5 grid gap-3">
               {[
                 ['Chat Composer', 'Nicht verändern: gleiche Position, gleiche Icons, gleiche Bedienlogik.'],
@@ -7562,9 +7569,9 @@ function AdminControlCenterInner() {
                 ['Mobile', 'Keine überlappenden Texte, keine Layoutsprünge, Touch-Ziele mindestens 44px.'],
                 ['Future Platforms', 'Tokens und Komponenten müssen auf neue Oberflächen übertragbar bleiben.'],
               ].map(([label, detail]) => (
-                <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
+                <div key={label} className="grid gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 sm:grid-cols-[160px_1fr]">
                   <AdminStatusChip tone="cyan">{label}</AdminStatusChip>
-                  <p className="text-sm font-bold text-[#172033]">{detail}</p>
+                  <p className="text-sm font-bold text-[#e6ecf4]">{detail}</p>
                 </div>
               ))}
             </div>
@@ -7574,56 +7581,145 @@ function AdminControlCenterInner() {
     )
   }
 
-  const renderOverview = () => (
-    <div className="grid gap-5">
-      <div className="grid gap-4 lg:grid-cols-4">
-        {overviewMetrics.map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
-      </div>
-      <div className="grid gap-5 xl:grid-cols-2">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-2xl font-bold text-[#111722]">Heute wichtig</h2>
-          <div className="mt-5 grid gap-3">
+  const renderOverview = () => {
+    const ampelSummary = adminAutopilot?.summary
+    const approvalCounts = adminApprovals?.counts
+    const readyCards = (adminApprovals?.ready ?? []).slice(0, 2)
+    const ampelDot: Record<string, string> = {
+      green: 'bg-emerald-500',
+      yellow: 'bg-amber-400',
+      red: 'bg-red-500',
+      unknown: 'bg-slate-500',
+    }
+    return (
+      <div className="grid gap-5">
+        <div className="grid gap-4 lg:grid-cols-4">
+          {overviewMetrics.map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
+        </div>
+        <div className="grid gap-5 xl:grid-cols-[1.35fr_1fr]">
+          <section className="rounded-lg border border-white/10 bg-white/[0.04]">
+            <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-5 py-4">
+              <h2 className="text-base font-bold text-[#f4f7fb]">Braucht deine Entscheidung</h2>
+              <span className="text-xs font-semibold text-[#9aa6b7]">
+                {adminApprovals === null
+                  ? 'Freigaben werden geladen …'
+                  : `${approvalCounts?.ready ?? 0} bereit · ${approvalCounts?.blocked ?? 0} mit offener QA`}
+              </span>
+              <button
+                type="button"
+                onClick={() => setActiveSection('approvals')}
+                className="ml-auto rounded-md border border-white/15 px-3 py-1.5 text-xs font-bold text-[#c7d2e0] transition hover:bg-white/[0.06]"
+              >
+                Alle ansehen →
+              </button>
+            </div>
+            <div className="grid">
+              {readyCards.length === 0 ? (
+                <p className="px-5 py-4 text-sm font-semibold text-[#9aa6b7]">
+                  {adminApprovals === null
+                    ? 'Freigaben werden geladen oder Object Brain nicht erreichbar.'
+                    : 'Alles erledigt – keine Kandidaten warten auf deine Entscheidung.'}
+                </p>
+              ) : (
+                readyCards.map((card) => (
+                  <div key={card.qid} className="flex flex-wrap items-center gap-3 border-b border-white/[0.06] px-5 py-3.5 last:border-b-0">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-amber-500/40 bg-amber-500/10 text-sm">✓</span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-bold text-[#f4f7fb]">{card.name || card.qid}</span>
+                      <span className="block truncate text-xs font-semibold text-[#9aa6b7]">
+                        QA bestanden · Risiko {card.risk_score ?? '–'} · {card.status ?? 'ready'}
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveSection('approvals')}
+                      className="ml-auto shrink-0 rounded-md bg-emerald-500 px-3.5 py-2 text-xs font-bold text-[#052e12] transition hover:bg-emerald-400"
+                    >
+                      Entscheiden
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04]">
+            <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-5 py-4">
+              <h2 className="text-base font-bold text-[#f4f7fb]">Ampeln</h2>
+              <span className="text-xs font-semibold text-[#9aa6b7]">Alle Automatiken</span>
+              <button
+                type="button"
+                onClick={() => setActiveSection('autopilot')}
+                className="ml-auto rounded-md border border-white/15 px-3 py-1.5 text-xs font-bold text-[#c7d2e0] transition hover:bg-white/[0.06]"
+              >
+                Details →
+              </button>
+            </div>
+            <div className="grid">
+              <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3 text-sm">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${adminBackendStatus === 'live' ? 'bg-emerald-500' : adminBackendStatus === 'loading' ? 'bg-sky-400' : 'bg-red-500'}`} />
+                <span className="font-bold text-[#f4f7fb]">Backend-API</span>
+                <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
+                  {adminBackendStatus === 'live' ? 'verbunden' : adminBackendStatus === 'loading' ? 'Prüfung läuft' : adminBackendStatus === 'denied' ? 'Rechte prüfen' : 'offline'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3 text-sm">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${ampelSummary ? (ampelSummary.allGreen ? 'bg-emerald-500' : ampelSummary.red > 0 ? 'bg-red-500' : 'bg-amber-400') : 'bg-slate-500'}`} />
+                <span className="font-bold text-[#f4f7fb]">Profil-Autopilot</span>
+                <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
+                  {ampelSummary ? `${ampelSummary.green} grün · ${ampelSummary.yellow} gelb · ${ampelSummary.red} rot` : 'Wird geladen …'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3 text-sm">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                <span className="font-bold text-[#f4f7fb]">Besucher heute</span>
+                <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
+                  {adminLiveOps.visits ? `${adminLiveOps.visits.totalToday.toLocaleString('de-DE')} · ${adminLiveOps.visits.totalAll.toLocaleString('de-DE')} gesamt` : '–'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-3 text-sm">
+                <span className={`h-2 w-2 shrink-0 rounded-full ${(adminLiveOps.chatFeedback?.dislikeRate ?? 0) < 0.1 ? 'bg-emerald-500' : 'bg-amber-400'}`} />
+                <span className="font-bold text-[#f4f7fb]">Chat-Feedback</span>
+                <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
+                  {adminLiveOps.chatFeedback ? `${adminLiveOps.chatFeedback.up} 👍 · ${adminLiveOps.chatFeedback.down} 👎` : '–'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 px-5 py-3 text-sm">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                <span className="font-bold text-[#f4f7fb]">Ads aktiv</span>
+                <span className="ml-auto text-xs font-semibold text-[#9aa6b7]">
+                  {adminLiveOps.ads ? `${adminLiveOps.ads.total} Slots` : '–'}
+                </span>
+              </div>
+            </div>
+          </section>
+        </div>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-base font-bold text-[#f4f7fb]">Heute wichtig</h2>
+          <div className="mt-4 grid gap-3">
             {[
               ['AdSense Policy', 'Mobile-Abstand prüfen', 'amber'],
               ['Invalid Traffic', '0.18 % verdächtig, Auto-Hold aktiv', 'green'],
               ['Registrierungen', '+42 % durch Creator-Profile', 'cyan'],
               ['Salad Queue', 'Suche und Embeddings normal', 'green'],
             ].map(([label, detail, tone]) => (
-              <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[190px_1fr]">
+              <div key={label} className="grid gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 sm:grid-cols-[190px_1fr]">
                 <AdminStatusChip tone={tone as AdminMetric['tone']}>{label}</AdminStatusChip>
-                <p className="text-sm font-semibold text-[#5d6776]">{detail}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-2xl font-bold text-[#111722]">A-Z Abdeckung</h2>
-          <div className="mt-5 grid gap-3">
-            {[
-              'Users sperren, prüfen, Rollen ändern',
-              'Profile/Twins messen und monetarisieren',
-              'AdSense Slots, Consent, Invalid-Traffic',
-              'Auszahlungen, KYC, Steuerstatus',
-              'IDrive E2, Salad, DNS, Releases, Logs',
-            ].map((item) => (
-              <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
-                <AdminStatusChip>integriert</AdminStatusChip>
-                <p className="text-sm font-bold text-[#172033]">{item}</p>
+                <p className="text-sm font-semibold text-[#9aa6b7]">{detail}</p>
               </div>
             ))}
           </div>
         </section>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderUsers = () => {
     const counts = adminUsers?.counts
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Echte Konten aus dem Object Brain</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Echte Konten aus dem Object Brain</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminUsers === null
               ? 'Nutzerdaten werden geladen oder Backend nicht erreichbar.'
               : adminUsers.source === 'unavailable'
@@ -7640,23 +7736,23 @@ function AdminControlCenterInner() {
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
         {(adminUsers?.users ?? []).length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border border-[#d9e2ec] bg-white">
+          <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/[0.04]">
             <table className="min-w-full table-fixed text-left text-sm">
-              <thead className="border-b border-[#d9e2ec] bg-[#f7fafd] text-xs font-bold uppercase tracking-[0.08em] text-[#5d6776]">
+              <thead className="border-b border-white/10 bg-white/[0.03] text-xs font-bold uppercase tracking-[0.08em] text-[#9aa6b7]">
                 <tr>
                   {['Nutzer', 'Name', 'Status', 'Verifiziert', 'Registriert', 'Aktion'].map((column) => (
                     <th key={column} className="px-4 py-3">{column}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#edf2f7]">
+              <tbody className="divide-y divide-white/[0.06]">
                 {(adminUsers?.users ?? []).map((row) => {
                   const blocking = row.status !== 'active' && row.status !== 'deleted'
                   const confirmKey = `user:${row.sub ?? row.email}`
                   const confirming = adminUsersBusy === confirmKey
                   return (
-                    <tr key={row.sub ?? row.email} className="text-[#5d6776]">
-                      <td className="px-4 py-3 font-bold text-[#111722]">{row.email ?? row.sub ?? '–'}</td>
+                    <tr key={row.sub ?? row.email} className="text-[#9aa6b7]">
+                      <td className="px-4 py-3 font-bold text-[#f4f7fb]">{row.email ?? row.sub ?? '–'}</td>
                       <td className="px-4 py-3">{row.name ?? '–'}</td>
                       <td className="px-4 py-3">
                         {row.status === 'active' ? 'aktiv' : row.status === 'deleted' ? 'gelöscht (DSGVO)' : (row.status ?? '–')}
@@ -7665,7 +7761,7 @@ function AdminControlCenterInner() {
                       <td className="px-4 py-3">{row.createdAt ? new Date(row.createdAt).toLocaleDateString('de-DE') : '–'}</td>
                       <td className="px-4 py-3">
                         {row.status === 'deleted' ? (
-                          <span className="text-xs font-semibold text-[#8892a0]">DSGVO-gelöscht</span>
+                          <span className="text-xs font-semibold text-[#7c8aa0]">DSGVO-gelöscht</span>
                         ) : (
                           <div className="flex gap-2">
                             <button
@@ -7673,13 +7769,13 @@ function AdminControlCenterInner() {
                               disabled={adminUsersBusy !== null}
                               onClick={() => void actAdminUserStatus(confirmKey, row.sub ?? '', blocking ? 'unblock' : 'block')}
                               className={`rounded-md border px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${blocking
-                                ? 'border-emerald-600 text-emerald-700 hover:bg-emerald-50'
-                                : 'border-red-500 text-red-600 hover:bg-red-50'}`}
+                                ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10'
+                                : 'border-red-500 text-red-400 hover:bg-red-500/10'}`}
                             >
                               {confirming ? '…' : blocking ? 'Entsperren' : 'Sperren'}
                             </button>
                             {adminUsersMessage?.startsWith(confirmKey) && (
-                              <span className="self-center text-xs font-semibold text-[#667085]">{adminUsersMessage.split('|')[1]}</span>
+                              <span className="self-center text-xs font-semibold text-[#93a0b4]">{adminUsersMessage.split('|')[1]}</span>
                             )}
                           </div>
                         )}
@@ -7691,13 +7787,13 @@ function AdminControlCenterInner() {
             </table>
           </div>
         ) : (
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5 text-sm font-semibold text-[#9aa6b7]">
             Keine Konten gefunden — entweder es gibt noch keine Registrierungen oder IDrive e2 ist nicht erreichbar.
           </section>
         )}
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Hinweise</h2>
-          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Hinweise</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#9aa6b7]">
             Sperren setzt den Kontostatus auf disabled — neue Logins sind sofort blockiert, jede Aktion landet revisionssicher im Audit-Log (Security-Sektion).
             Rollen bleiben bewusst Env-gesteuert (SMYST_OWNER_EMAILS/SMYST_ADMIN_EMAILS, Sicherheitsdesign des Inhabers).
             DSGVO-Löschung läuft über den bestehenden Account-Flow; Passwort-Hashes verlassen den Store nie.
@@ -7719,9 +7815,9 @@ function AdminControlCenterInner() {
     ]
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Registrierungen – echte Zahlen</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Registrierungen – echte Zahlen</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminRegistrations === null
               ? 'Kennzahlen werden geladen oder Backend nicht erreichbar.'
               : adminRegistrations.source === 'unavailable'
@@ -7738,25 +7834,25 @@ function AdminControlCenterInner() {
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
         <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Funnel (gemessen)</h2>
-            <p className="mt-1 text-xs font-semibold text-[#667085]">Nur echte Zwischenschritte – Landing-Impressions werden nicht aufgezeichnet.</p>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">Funnel (gemessen)</h2>
+            <p className="mt-1 text-xs font-semibold text-[#93a0b4]">Nur echte Zwischenschritte – Landing-Impressions werden nicht aufgezeichnet.</p>
             {funnel.map((step) => (
               <div key={step.label} className="mt-4">
-                <div className="mb-1 flex items-center justify-between text-sm font-bold text-[#172033]">
+                <div className="mb-1 flex items-center justify-between text-sm font-bold text-[#e6ecf4]">
                   <span>{step.label}</span>
                   <span>{step.value}{funnelTotal > 0 ? ` · ${Math.round((step.value / funnelTotal) * 100)} %` : ''}</span>
                 </div>
-                <div className="h-3 rounded-md bg-[#e8eef5]">
+                <div className="h-3 rounded-md bg-white/10">
                   <div className={`h-3 rounded-md ${step.tone}`} style={{ width: `${funnelTotal > 0 ? Math.max(2, Math.round((step.value / funnelTotal) * 100)) : 0}%` }} />
                 </div>
               </div>
             ))}
           </section>
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Neue Konten – letzte 14 Tage</h2>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">Neue Konten – letzte 14 Tage</h2>
             {days.length === 0 ? (
-              <p className="mt-3 text-sm font-semibold text-[#5d6776]">Keine Daten – Backend oder IDrive e2 nicht erreichbar.</p>
+              <p className="mt-3 text-sm font-semibold text-[#9aa6b7]">Keine Daten – Backend oder IDrive e2 nicht erreichbar.</p>
             ) : (
               <div className="mt-4">
                 <AdminTable
@@ -7780,12 +7876,12 @@ function AdminControlCenterInner() {
       <AdminDemoNote />
       <AdminTable columns={['Profil', 'Chats', 'Qualität', 'Ad RPM', 'gültiger Umsatz', '25 % Anteil', 'Status']} rows={profileRevenue} />
       <div className="grid gap-5 xl:grid-cols-2">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Ranking-Logik</h2>
-          <p className="mt-3 text-sm leading-relaxed text-[#5d6776]">Nutzung zählt nur, wenn Session echt ist, Ad-Impression gültig ist, Profil nicht gegen Policy verstößt und der Nutzer dem Revenue-Share zugestimmt hat.</p>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Ranking-Logik</h2>
+          <p className="mt-3 text-sm leading-relaxed text-[#9aa6b7]">Nutzung zählt nur, wenn Session echt ist, Ad-Impression gültig ist, Profil nicht gegen Policy verstößt und der Nutzer dem Revenue-Share zugestimmt hat.</p>
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Profil-Qualität</h2>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Profil-Qualität</h2>
           {[
             ['Antwortqualität', 'w-[92%]', 'bg-emerald-500'],
             ['Sicherheitsrisiko', 'w-[28%]', 'bg-amber-400'],
@@ -7793,8 +7889,8 @@ function AdminControlCenterInner() {
             ['Nutzerzufriedenheit', 'w-[91%]', 'bg-emerald-500'],
           ].map(([label, width, color]) => (
             <div key={label} className="mt-4">
-              <p className="mb-1 text-sm font-bold text-[#172033]">{label}</p>
-              <div className="h-3 rounded-md bg-[#e8eef5]"><div className={`h-3 rounded-md ${color} ${width}`} /></div>
+              <p className="mb-1 text-sm font-bold text-[#e6ecf4]">{label}</p>
+              <div className="h-3 rounded-md bg-white/10"><div className={`h-3 rounded-md ${color} ${width}`} /></div>
             </div>
           ))}
         </section>
@@ -7805,22 +7901,22 @@ function AdminControlCenterInner() {
   const renderAds = () => (
     <div className="grid gap-5 xl:grid-cols-[1fr_1.05fr]">
       <AdminDemoNote />
-      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-        <h2 className="text-xl font-bold text-[#111722]">Web Layout mit Werbeplätzen</h2>
-        <div className="mt-5 rounded-lg border border-[#d9e2ec] bg-[#f7fafd] p-5">
-          <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-700">Anzeige oben / native</div>
+      <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+        <h2 className="text-xl font-bold text-[#f4f7fb]">Web Layout mit Werbeplätzen</h2>
+        <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.03] p-5">
+          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-center text-sm font-bold text-amber-300">Anzeige oben / native</div>
           <div className="mt-5 grid gap-4 sm:grid-cols-[1fr_160px]">
-            <div className="rounded-md border border-[#d9e2ec] bg-white p-5">
-              <p className="text-lg font-bold text-[#111722]">Chat Antwort</p>
-              <p className="mt-2 text-sm font-semibold text-[#5d6776]">Keine Anzeige im Schreibbereich</p>
+            <div className="rounded-md border border-white/10 bg-white/[0.04] p-5">
+              <p className="text-lg font-bold text-[#f4f7fb]">Chat Antwort</p>
+              <p className="mt-2 text-sm font-semibold text-[#9aa6b7]">Keine Anzeige im Schreibbereich</p>
             </div>
-            <div className="grid min-h-[128px] place-items-center rounded-md border border-amber-300 bg-amber-50 text-2xl font-bold text-amber-600">Ad</div>
+            <div className="grid min-h-[128px] place-items-center rounded-md border border-amber-500/40 bg-amber-500/10 text-2xl font-bold text-amber-600">Ad</div>
           </div>
-          <div className="mt-5 rounded-md border border-[#d9e2ec] bg-white px-4 py-3 text-sm font-semibold text-[#7b8493]">Nachricht schreiben</div>
+          <div className="mt-5 rounded-md border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-[#7c8aa0]">Nachricht schreiben</div>
         </div>
       </section>
-      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-        <h2 className="text-xl font-bold text-[#111722]">AdSense Schutzregeln</h2>
+      <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+        <h2 className="text-xl font-bold text-[#f4f7fb]">AdSense Schutzregeln</h2>
         <div className="mt-5 grid gap-3">
           {[
             ['Label', 'Anzeige klar kennzeichnen', 'green'],
@@ -7830,9 +7926,9 @@ function AdminControlCenterInner() {
             ['Performance', 'Lazy-load, keine Layoutsprünge', 'green'],
             ['Hold', 'Verdächtige Einnahmen nicht auszahlen', 'green'],
           ].map(([label, detail, tone]) => (
-            <div key={label} className="grid gap-2 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 sm:grid-cols-[160px_1fr]">
+            <div key={label} className="grid gap-2 rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 sm:grid-cols-[160px_1fr]">
               <AdminStatusChip tone={tone as AdminMetric['tone']}>{label}</AdminStatusChip>
-              <p className="text-sm font-bold text-[#172033]">{detail}</p>
+              <p className="text-sm font-bold text-[#e6ecf4]">{detail}</p>
             </div>
           ))}
         </div>
@@ -7847,10 +7943,10 @@ function AdminControlCenterInner() {
     const totalRecent = Math.max(1, counts?.recent7d ?? 0)
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <p className="text-xl font-bold text-[#111722]">Formel</p>
-          <p className="mt-3 text-2xl font-bold text-emerald-600 md:text-3xl">User-Anteil = gültiger AdSense-Umsatz eines Profils × {share} %</p>
-          <p className="mt-2 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-xl font-bold text-[#f4f7fb]">Formel</p>
+          <p className="mt-3 text-2xl font-bold text-emerald-400 md:text-3xl">User-Anteil = gültiger AdSense-Umsatz eines Profils × {share} %</p>
+          <p className="mt-2 text-sm font-semibold text-[#9aa6b7]">
             Verteilung pro-rata nach Impressions-Anteil: {counts?.recent7d ?? 0} gemessene Impressions der letzten 7 Tage.
             USD-Beträge werden erst nach Finalisierung im AdSense-Dashboard errechnet — hier die gemessene Basis.
           </p>
@@ -7865,13 +7961,13 @@ function AdminControlCenterInner() {
             }))}
           />
         ) : (
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5 text-sm font-semibold text-[#9aa6b7]">
             {adminFinance === null
               ? 'Abrechnungsdaten werden geladen oder Backend nicht erreichbar.'
               : 'Noch keine Impressions in den letzten 7 Tagen — ohne Traffic keine Verteilung.'}
           </section>
         )}
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-[#172033]">Auszahlung erst nach Finalisierung, Invalid-Traffic-Abzug, Mindestbetrag, KYC/Steuerprüfung und Admin-Freigabe.</div>
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-[#e6ecf4]">Auszahlung erst nach Finalisierung, Invalid-Traffic-Abzug, Mindestbetrag, KYC/Steuerprüfung und Admin-Freigabe.</div>
       </div>
     )
   }
@@ -7883,9 +7979,9 @@ function AdminControlCenterInner() {
       value ? new Date(value).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' }) : '–'
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Moderation – gemeldete Inhalte (echt)</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Moderation – gemeldete Inhalte (echt)</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminModeration === null
               ? 'Meldedaten werden geladen oder Backend nicht erreichbar.'
               : adminModeration.source === 'unavailable'
@@ -7902,25 +7998,25 @@ function AdminControlCenterInner() {
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
         {reports.length > 0 ? (
-          <div className="overflow-x-auto rounded-lg border border-[#d9e2ec] bg-white">
+          <div className="overflow-x-auto rounded-lg border border-white/10 bg-white/[0.04]">
             <table className="min-w-full table-fixed text-left text-sm">
-              <thead className="border-b border-[#d9e2ec] bg-[#f7fafd] text-xs font-bold uppercase tracking-[0.08em] text-[#5d6776]">
+              <thead className="border-b border-white/10 bg-white/[0.03] text-xs font-bold uppercase tracking-[0.08em] text-[#9aa6b7]">
                 <tr>{['Profil', 'Meldung', 'Zeit', 'Fall', 'Aktion'].map((column) => <th key={column} className="px-4 py-3">{column}</th>)}</tr>
               </thead>
-              <tbody className="divide-y divide-[#edf2f7]">
+              <tbody className="divide-y divide-white/[0.06]">
                 {reports.map((row) => {
                   const caseKey = `${row.twinId ?? ''}/${row.messageId ?? ''}`
                   const expanded = adminCaseKey === caseKey
                   return (
-                    <tr key={caseKey} className="text-[#5d6776]">
-                      <td className="px-4 py-3 font-bold text-[#111722]">{row.twinId ?? '–'}</td>
+                    <tr key={caseKey} className="text-[#9aa6b7]">
+                      <td className="px-4 py-3 font-bold text-[#f4f7fb]">{row.twinId ?? '–'}</td>
                       <td className="px-4 py-3">{row.comment ?? 'ohne Kommentar'}</td>
                       <td className="px-4 py-3">{dateLabel(row.createdAt)}</td>
                       <td className="px-4 py-3">
-                        {row.caseStatus === 'resolved' ? <span className="font-bold text-emerald-700">erledigt</span>
+                        {row.caseStatus === 'resolved' ? <span className="font-bold text-emerald-300">erledigt</span>
                           : row.caseStatus === 'escalated' ? <span className="font-bold text-amber-600">eskaliert</span>
-                          : <span className="font-bold text-red-600">offen</span>}
-                        {row.caseNote ? <span className="block text-xs font-semibold text-[#667085]">{row.caseNote}</span> : null}
+                          : <span className="font-bold text-red-400">offen</span>}
+                        {row.caseNote ? <span className="block text-xs font-semibold text-[#93a0b4]">{row.caseNote}</span> : null}
                       </td>
                       <td className="px-4 py-3">
                         {expanded ? (
@@ -7929,20 +8025,20 @@ function AdminControlCenterInner() {
                               value={adminCaseNote}
                               onChange={(event) => setAdminCaseNote(event.target.value.slice(0, 240))}
                               placeholder="Notiz (optional)"
-                              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+                              className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
                             />
                             <button
                               type="button"
                               disabled={adminCaseBusy !== null}
                               onClick={() => void actAdminCase(caseKey, row.twinId ?? null, row.messageId ?? '', 'resolve', adminCaseNote)}
-                              className="min-h-11 rounded-md border border-emerald-600 px-3 text-xs font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                              className="min-h-11 rounded-md border border-emerald-500/50 px-3 text-xs font-bold text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
                             >
                               {adminCaseBusy === caseKey ? '…' : 'Erledigt'}
                             </button>
                             <button
                               type="button"
                               onClick={() => { setAdminCaseKey(null); setAdminCaseNote('') }}
-                              className="min-h-11 rounded-md border border-[#d9e2ec] px-3 text-xs font-bold text-[#172033] hover:bg-[#f7fafd]"
+                              className="min-h-11 rounded-md border border-white/10 px-3 text-xs font-bold text-[#e6ecf4] hover:bg-white/[0.03]"
                             >
                               Abbrechen
                             </button>
@@ -7952,7 +8048,7 @@ function AdminControlCenterInner() {
                             <button
                               type="button"
                               onClick={() => { setAdminCaseKey(caseKey); setAdminCaseNote('') }}
-                              className="rounded-md border border-[#d9e2ec] px-3 py-1.5 text-xs font-bold text-[#5d6776] hover:bg-[#f7fafd]"
+                              className="rounded-md border border-white/10 px-3 py-1.5 text-xs font-bold text-[#9aa6b7] hover:bg-white/[0.03]"
                             >
                               Bearbeiten
                             </button>
@@ -7960,7 +8056,7 @@ function AdminControlCenterInner() {
                               type="button"
                               disabled={adminCaseBusy !== null}
                               onClick={() => void actAdminCase(caseKey, row.twinId ?? null, row.messageId ?? '', 'escalate')}
-                              className="rounded-md border border-amber-500 px-3 py-1.5 text-xs font-bold text-amber-600 hover:bg-amber-50 disabled:opacity-50"
+                              className="rounded-md border border-amber-500 px-3 py-1.5 text-xs font-bold text-amber-600 hover:bg-amber-500/10 disabled:opacity-50"
                             >
                               Eskalieren
                             </button>
@@ -7974,13 +8070,13 @@ function AdminControlCenterInner() {
             </table>
           </div>
         ) : (
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5 text-sm font-semibold text-[#5d6776]">
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5 text-sm font-semibold text-[#9aa6b7]">
             Keine gemeldeten Nachrichten — die Abuse-Queue ist leer. Gemeldete Antworten werden zusätzlich automatisch zu Eval-Testfällen des Profils.
           </section>
         )}
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Audit-Log – letzte Admin-Aktionen</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Audit-Log – letzte Admin-Aktionen</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminAudit === null
               ? 'Audit-Log wird geladen oder Backend nicht erreichbar.'
               : (adminAudit.records ?? []).length === 0
@@ -8002,9 +8098,9 @@ function AdminControlCenterInner() {
             </div>
           )}
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
-          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Noch nicht implementiert</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#9aa6b7]">
             Eskalieren einzelner Meldungen (Fall-Workflow) folgt in einem eigenen PR.
             Invalid-Traffic-Erkennung für Anzeigen läuft über AdSense-Policy-Filter im Revenue-Pfad.
           </p>
@@ -8022,9 +8118,9 @@ function AdminControlCenterInner() {
     const runtime = computeRuntime?.runtime
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Storage & Compute – echter Status</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Storage & Compute – echter Status</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {storageReady === undefined && computeReady === undefined
               ? 'Status wird geladen oder Backend nicht erreichbar.'
               : `IDrive e2 ${storageReady ? 'bereit' : storageCapabilities ? 'blockiert' : 'unbekannt'} · Compute ${computeReady ? 'bereit' : computeCapabilities ? 'blockiert' : 'unbekannt'}.`}
@@ -8036,8 +8132,8 @@ function AdminControlCenterInner() {
           <AdminMetricCard metric={{ label: 'Job-Queue', value: queue ? String(queue.queued + queue.running) : '–', detail: queue ? `${queue.running} running, ${queue.succeeded} succeeded, ${queue.failed} failed.` : 'Noch keine Job-Daten geladen.', tone: queue?.failed ? 'red' : 'cyan' }} />
           <AdminMetricCard metric={{ label: 'Runtime', value: runtime ? (runtime.operational ? 'running' : String(runtime.container.status ?? '–')) : '–', detail: runtime?.container.dns ? `${runtime.container.dns}:${runtime.container.port}` : 'Runtime-Status der Compute-Worker.', tone: runtime?.operational ? 'green' : 'navy' }} />
         </div>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Architektur-Regeln</h2>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Architektur-Regeln</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {[
               'GitHub Pages liefert alles Statische (App, Profilseiten, sitemap, JSON-API).',
@@ -8045,13 +8141,13 @@ function AdminControlCenterInner() {
               'Zeabur (api.smyst.com) macht Rechenarbeit: API, Auth, Chat, TTS/ASR, Admin.',
               'Salad.com ist seit Ende Juli 2026 abgeschaltet; Compute läuft über Actions-Worker.',
             ].map((item) => (
-              <div key={item} className="rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 text-sm font-bold text-[#172033]">{item}</div>
+              <div key={item} className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 text-sm font-bold text-[#e6ecf4]">{item}</div>
             ))}
           </div>
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Object-Brain-Größen (echt)</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Object-Brain-Größen (echt)</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminStorageStats === null
               ? 'Größen werden geladen oder Backend nicht erreichbar.'
               : adminStorageStats.source === 'unavailable'
@@ -8072,9 +8168,9 @@ function AdminControlCenterInner() {
             </div>
           ) : null}
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Noch nicht implementiert</h2>
-          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Noch nicht implementiert</h2>
+          <p className="mt-2 text-sm font-semibold leading-relaxed text-[#9aa6b7]">
             Backup-Nachweise als Liste und Release-Safety-Canary-Metriken folgen in eigenen PRs
             (Canary gibt es erst mit App-Releases).
           </p>
@@ -8092,11 +8188,11 @@ function AdminControlCenterInner() {
         { Queue: 'Payout Fragen', Count: '382', Owner: 'Finance', SLA: '88 %', Aktion: 'Prüfen' },
         { Queue: 'Bug Reports', Count: '1,204', Owner: 'QA', SLA: '91 %', Aktion: 'Triagieren' },
       ]} />
-      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-        <h2 className="text-xl font-bold text-[#111722]">Admin Rollen</h2>
+      <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+        <h2 className="text-xl font-bold text-[#f4f7fb]">Admin Rollen</h2>
         <div className="mt-4 grid gap-2">
           {['Super Admin', 'Trust & Safety', 'Finance', 'Support', 'Release Manager', 'Read-only Auditor'].map((role) => (
-            <button key={role} type="button" className="min-h-11 rounded-md border border-[#d9e2ec] bg-[#f7fafd] px-3 text-left text-sm font-bold text-[#172033]">
+            <button key={role} type="button" className="min-h-11 rounded-md border border-white/10 bg-white/[0.03] px-3 text-left text-sm font-bold text-[#e6ecf4]">
               {role}
             </button>
           ))}
@@ -8112,9 +8208,9 @@ function AdminControlCenterInner() {
     const totalRecent = Math.max(1, counts?.recent7d ?? 0)
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Abrechnungsbasis – gemessene Impressions</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Abrechnungsbasis – gemessene Impressions</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             {adminFinance === null
               ? 'Finanzdaten werden geladen oder Backend nicht erreichbar.'
               : adminFinance.source === 'unavailable'
@@ -8131,8 +8227,8 @@ function AdminControlCenterInner() {
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric} />)}
         </div>
         <div className="grid gap-5 xl:grid-cols-2">
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Top-Profile (7 Tage)</h2>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">Top-Profile (7 Tage)</h2>
             <div className="mt-4">
               {(adminFinance?.topProfiles ?? []).length > 0 ? (
                 <AdminTable
@@ -8144,12 +8240,12 @@ function AdminControlCenterInner() {
                   }))}
                 />
               ) : (
-                <p className="text-sm font-semibold text-[#5d6776]">Noch keine Impressions in den letzten 7 Tagen.</p>
+                <p className="text-sm font-semibold text-[#9aa6b7]">Noch keine Impressions in den letzten 7 Tagen.</p>
               )}
             </div>
           </section>
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Top-Creator (7 Tage)</h2>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">Top-Creator (7 Tage)</h2>
             <div className="mt-4">
               {(adminFinance?.topCreators ?? []).length > 0 ? (
                 <AdminTable
@@ -8161,15 +8257,15 @@ function AdminControlCenterInner() {
                   }))}
                 />
               ) : (
-                <p className="text-sm font-semibold text-[#5d6776]">Noch keine Creator-Impressions in den letzten 7 Tagen.</p>
+                <p className="text-sm font-semibold text-[#9aa6b7]">Noch keine Creator-Impressions in den letzten 7 Tagen.</p>
               )}
             </div>
           </section>
         </div>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Impressions – letzte 14 Tage</h2>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Impressions – letzte 14 Tage</h2>
           {days.length === 0 ? (
-            <p className="mt-3 text-sm font-semibold text-[#5d6776]">Keine Daten – Backend oder IDrive e2 nicht erreichbar.</p>
+            <p className="mt-3 text-sm font-semibold text-[#9aa6b7]">Keine Daten – Backend oder IDrive e2 nicht erreichbar.</p>
           ) : (
             <div className="mt-4">
               <AdminTable
@@ -8179,9 +8275,9 @@ function AdminControlCenterInner() {
             </div>
           )}
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">AdSense-Einnahmen erfassen (Inhaber)</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">AdSense-Einnahmen erfassen (Inhaber)</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
             Finalisierte Monats-Einnahmen aus dem AdSense-Dashboard hier eintragen (in Cents) — jede Erfassung wird auditiert,
             eine erneute Erfassung desselben Monats ist die Korrektur. Daraus wird die {share}%-Payout-Basis berechnet.
           </p>
@@ -8190,46 +8286,46 @@ function AdminControlCenterInner() {
               value={adminRevenueMonth}
               onChange={(event) => setAdminRevenueMonth(event.target.value.slice(0, 7))}
               placeholder="2026-08"
-              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+              className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
             />
             <input
               value={adminRevenueCents}
               onChange={(event) => setAdminRevenueCents(event.target.value.replace(/[^\d]/g, ''))}
               placeholder="Einnahmen in Cents (z. B. 250000)"
               inputMode="numeric"
-              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+              className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
             />
             <input
               value={adminRevenueInvalid}
               onChange={(event) => setAdminRevenueInvalid(event.target.value.replace(/[^\d]/g, ''))}
               placeholder="Invalid Traffic in Cents (Abzug, optional)"
               inputMode="numeric"
-              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+              className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
             />
             <input
               value={adminRevenueNote}
               onChange={(event) => setAdminRevenueNote(event.target.value.slice(0, 240))}
               placeholder="Notiz (optional, z. B. AdSense final August)"
-              className="min-h-11 rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+              className="min-h-11 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
             />
             <button
               type="button"
               disabled={adminRevenueBusy || !adminRevenueMonth || !adminRevenueCents}
               onClick={() => void submitAdminRevenue()}
-              className="min-h-11 rounded-md bg-[#111722] px-4 text-sm font-bold text-white disabled:opacity-50"
+              className="min-h-11 rounded-md bg-white/[0.06] px-4 text-sm font-bold text-white disabled:opacity-50"
             >
               {adminRevenueBusy ? 'Erfasse …' : 'Erfassen'}
             </button>
           </div>
           {adminRevenueMessage ? (
-            <p className="mt-3 text-sm font-semibold text-[#5d6776]">{adminRevenueMessage}</p>
+            <p className="mt-3 text-sm font-semibold text-[#9aa6b7]">{adminRevenueMessage}</p>
           ) : null}
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Payout-Basis (letzter erfasster Monat)</h2>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Payout-Basis (letzter erfasster Monat)</h2>
           {adminFinance?.payoutBasis ? (
             <>
-              <p className="mt-1 text-sm font-semibold text-[#5d6776]">
+              <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
                 Monat {adminFinance.payoutBasis.month}: {(adminFinance.payoutBasis.adsenseCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} Einnahmen
                 {adminFinance.payoutBasis.invalidTrafficCents ? <> − {(adminFinance.payoutBasis.invalidTrafficCents / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} Invalid-Traffic</> : null}
                 {' '}= {((adminFinance.payoutBasis.netCents ?? adminFinance.payoutBasis.adsenseCents) / 100).toLocaleString('de-DE', { style: 'currency', currency: 'USD' })} netto →
@@ -8237,7 +8333,7 @@ function AdminControlCenterInner() {
                 verteilt nach {adminFinance.payoutBasis.impressionsLoaded} geladenen Impressions{adminFinance.payoutBasis.capped ? ' (Basis gekappt, >2000 Objekte)' : ''}.
               </p>
               {adminFinance.payoutBasis.paid ? (
-                <p className="mt-2 text-sm font-bold text-emerald-700">
+                <p className="mt-2 text-sm font-bold text-emerald-300">
                   ✓ Als ausgezahlt vermerkt{adminFinance.payoutBasis.paid.paidBy ? ` von ${adminFinance.payoutBasis.paid.paidBy}` : ''}{adminFinance.payoutBasis.paid.paidAt ? ` am ${new Date(adminFinance.payoutBasis.paid.paidAt).toLocaleDateString('de-DE')}` : ''}{adminFinance.payoutBasis.paid.note ? ` — ${adminFinance.payoutBasis.paid.note}` : ''}.
                 </p>
               ) : (
@@ -8245,7 +8341,7 @@ function AdminControlCenterInner() {
                   type="button"
                   disabled={adminPayoutBusy}
                   onClick={() => void actAdminPayoutRecord(adminFinance.payoutBasis?.month ?? '')}
-                  className="mt-3 min-h-11 rounded-md border border-emerald-600 px-4 text-sm font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+                  className="mt-3 min-h-11 rounded-md border border-emerald-500/50 px-4 text-sm font-bold text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50"
                 >
                   {adminPayoutBusy ? 'Vermerke …' : 'Pool als ausgezahlt vermerken'}
                 </button>
@@ -8263,13 +8359,13 @@ function AdminControlCenterInner() {
               </div>
             </>
           ) : (
-            <p className="mt-3 text-sm font-semibold text-[#5d6776]">
+            <p className="mt-3 text-sm font-semibold text-[#9aa6b7]">
               Noch keine Einnahmen erfasst — nach der ersten Erfassung erscheint hier die rechnungsfähige Verteilung.
             </p>
           )}
         </section>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Auszahlungsregeln & offene Punkte</h2>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Auszahlungsregeln & offene Punkte</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {[
               'Nur finaler, gültiger AdSense-Umsatz wird geteilt (AdSense-Dashboard, manuell geprüft).',
@@ -8277,7 +8373,7 @@ function AdminControlCenterInner() {
               'Noch offen: KYC/Steuer-Workflow und Payout-Ausführung (eigene PRs, CSRF-pflichtig).',
               'Noch offen: Invalid-Traffic-Abzug vor Verteilung (Policy-Filter).',
             ].map((item) => (
-              <div key={item} className="rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3 text-sm font-bold text-[#172033]">{item}</div>
+              <div key={item} className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 text-sm font-bold text-[#e6ecf4]">{item}</div>
             ))}
           </div>
         </section>
@@ -8300,30 +8396,30 @@ function AdminControlCenterInner() {
 
     return (
       <div className="grid gap-5">
-        <div className="grid gap-3 rounded-lg border border-[#d9e2ec] bg-white p-4 sm:grid-cols-3">
+        <div className="grid gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-4 sm:grid-cols-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Besucher (Autopilot)</p>
-            <p className="mt-1 text-2xl font-bold text-[#101828]">{adminLiveOps.visits?.totalAll ?? 0}</p>
-            <p className="text-xs text-[#667085]">Heute: {adminLiveOps.visits?.totalToday ?? 0} Profilaufrufe</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#8b98ab]">Besucher (Autopilot)</p>
+            <p className="mt-1 text-2xl font-bold text-[#e6ecf4]">{adminLiveOps.visits?.totalAll ?? 0}</p>
+            <p className="text-xs text-[#93a0b4]">Heute: {adminLiveOps.visits?.totalToday ?? 0} Profilaufrufe</p>
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Werbe-Impressions (25%-Basis)</p>
-            <p className="mt-1 text-2xl font-bold text-[#101828]">{adminLiveOps.ads?.total ?? 0}</p>
-            <p className="text-xs text-[#667085]">Auszahlung: 25 % der Erlöse, pro-rata nach Impressions</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#8b98ab]">Werbe-Impressions (25%-Basis)</p>
+            <p className="mt-1 text-2xl font-bold text-[#e6ecf4]">{adminLiveOps.ads?.total ?? 0}</p>
+            <p className="text-xs text-[#93a0b4]">Auszahlung: 25 % der Erlöse, pro-rata nach Impressions</p>
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-[#98a2b3]">Chat-Feedback</p>
-            <p className="mt-1 text-2xl font-bold text-[#101828]">👍 {adminLiveOps.chatFeedback?.up ?? 0} · 👎 {adminLiveOps.chatFeedback?.down ?? 0}</p>
-            <p className="text-xs text-[#667085]">Dislike-Rate: {Math.round((adminLiveOps.chatFeedback?.dislikeRate ?? 0) * 100)} %</p>
+            <p className="text-xs font-bold uppercase tracking-wide text-[#8b98ab]">Chat-Feedback</p>
+            <p className="mt-1 text-2xl font-bold text-[#e6ecf4]">👍 {adminLiveOps.chatFeedback?.up ?? 0} · 👎 {adminLiveOps.chatFeedback?.down ?? 0}</p>
+            <p className="text-xs text-[#93a0b4]">Dislike-Rate: {Math.round((adminLiveOps.chatFeedback?.dislikeRate ?? 0) * 100)} %</p>
           </div>
         </div>
         {adminQualityStatus === 'denied' && (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
+          <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm font-semibold text-amber-200">
             Qualitätsdaten nur für Admin-Rollen sichtbar. Bitte mit einem Admin-Konto anmelden.
           </div>
         )}
         {adminQualityStatus === 'offline' && (
-          <div className="rounded-lg border border-[#d9e2ec] bg-white p-4 text-sm font-semibold text-[#5d6776]">
+          <div className="rounded-lg border border-white/10 bg-white/[0.04] p-4 text-sm font-semibold text-[#9aa6b7]">
             Qualitätsdaten gerade nicht erreichbar. Der Quality-Report-Worker läuft 3× täglich im Pipeline-Cron.
           </div>
         )}
@@ -8335,12 +8431,12 @@ function AdminControlCenterInner() {
             { label: 'Feedback 👎', value: String(feedback?.down_or_report ?? 0), detail: `${feedback?.total_listed ?? 0} Feedback-Einträge gesamt; 👎/Meldungen werden Eval-Testfälle.`, tone: (feedback?.down_or_report ?? 0) > 0 ? 'amber' : 'green' },
           ].map((metric) => <AdminMetricCard key={metric.label} metric={metric as AdminMetric} />)}
         </div>
-        <p className="text-xs font-semibold text-[#5d6776]">
+        <p className="text-xs font-semibold text-[#9aa6b7]">
           Stand: {dateLabel(summary?.generated_at)} · Quelle: Quality-Report-Worker (3× täglich) · Evals rotieren durch den Bestand, Freshness prüft jedes Profil alle 30 Tage.
         </p>
-        <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-          <h2 className="text-xl font-bold text-[#111722]">Schlechteste Eval-Scores</h2>
-          <p className="mt-1 text-sm font-semibold text-[#5d6776]">Kandidaten für den Reparatur-Lauf (Pipeline-Modus rebuild-one).</p>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h2 className="text-xl font-bold text-[#f4f7fb]">Schlechteste Eval-Scores</h2>
+          <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">Kandidaten für den Reparatur-Lauf (Pipeline-Modus rebuild-one).</p>
           <div className="mt-4">
             {summary?.worst_evals?.length ? (
               <AdminTable
@@ -8354,14 +8450,14 @@ function AdminControlCenterInner() {
                 }))}
               />
             ) : (
-              <p className="text-sm font-semibold text-[#5d6776]">Noch keine Eval-Ergebnisse — der erste Cron-Lauf füllt diese Liste.</p>
+              <p className="text-sm font-semibold text-[#9aa6b7]">Noch keine Eval-Ergebnisse — der erste Cron-Lauf füllt diese Liste.</p>
             )}
           </div>
         </section>
         <div className="grid gap-5 xl:grid-cols-2">
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Offene Freshness-Reviews</h2>
-            <p className="mt-1 text-sm font-semibold text-[#5d6776]">Quellen (Wikidata/Wikipedia) haben sich geändert — bitte sichten.</p>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">Offene Freshness-Reviews</h2>
+            <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">Quellen (Wikidata/Wikipedia) haben sich geändert — bitte sichten.</p>
             <div className="mt-4">
               {summary?.needs_review?.length ? (
                 <AdminTable
@@ -8373,13 +8469,13 @@ function AdminControlCenterInner() {
                   }))}
                 />
               ) : (
-                <p className="text-sm font-semibold text-[#5d6776]">Keine offenen Reviews — alle geprüften Quellen sind unverändert.</p>
+                <p className="text-sm font-semibold text-[#9aa6b7]">Keine offenen Reviews — alle geprüften Quellen sind unverändert.</p>
               )}
             </div>
           </section>
-          <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">Neuestes Nutzerfeedback</h2>
-            <p className="mt-1 text-sm font-semibold text-[#5d6776]">👎 und Meldungen werden automatisch Eval-Testfälle des Profils.</p>
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">Neuestes Nutzerfeedback</h2>
+            <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">👎 und Meldungen werden automatisch Eval-Testfälle des Profils.</p>
             <div className="mt-4">
               {feedback?.recent?.length ? (
                 <AdminTable
@@ -8392,7 +8488,7 @@ function AdminControlCenterInner() {
                   }))}
                 />
               ) : (
-                <p className="text-sm font-semibold text-[#5d6776]">Noch kein Feedback eingegangen.</p>
+                <p className="text-sm font-semibold text-[#9aa6b7]">Noch kein Feedback eingegangen.</p>
               )}
             </div>
           </section>
@@ -8418,9 +8514,9 @@ function AdminControlCenterInner() {
         { 'Bucket/Pfad': 'ai/rag/', Inhalt: 'RAG docs, embeddings, prompt files', Zugriff: 'private', Retention: 'versioniert', Owner: 'AI' },
         { 'Bucket/Pfad': 'audit/backups/', Inhalt: 'Logs, Exporte, Fehlerberichte, Rollbacks', Zugriff: 'private encrypted', Retention: 'compliance', Owner: 'Security' },
       ]} />
-      <section className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-        <h2 className="text-xl font-bold text-[#111722]">Nicht in IDrive e2</h2>
-        <p className="mt-3 text-sm font-semibold leading-relaxed text-[#5d6776]">
+      <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+        <h2 className="text-xl font-bold text-[#f4f7fb]">Nicht in IDrive e2</h2>
+        <p className="mt-3 text-sm font-semibold leading-relaxed text-[#9aa6b7]">
           Login, Live-Datenbank, Sessions, Zahlungen, Rechteprüfung, Echtzeit-Chat, KI-Antworten und serverseitige Logik laufen nicht direkt in IDrive e2. Diese Aufgaben gehen über API/Compute, während Ergebnisse wieder nach IDrive e2 gespeichert werden.
         </p>
       </section>
@@ -8478,9 +8574,9 @@ function AdminControlCenterInner() {
             ['Compute', ready ? 'Salad ist für stateless Rechenarbeit vorbereitet.' : 'Salad bleibt blockiert, bis API, Organisation, Projekt, Container Group und Secret gesetzt sind.'],
             ['Persist', 'Ergebnisse, Logs und Artefakte gehen nach IDrive e2 zurück.'],
           ].map(([title, detail]) => (
-            <section key={title} className="rounded-lg border border-[#d9e2ec] bg-white p-5">
+            <section key={title} className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
               <AdminStatusChip tone={title === 'Compute' && !ready ? 'amber' : title === 'Compute' ? 'cyan' : 'green'}>{title}</AdminStatusChip>
-              <p className="mt-4 text-sm font-semibold leading-relaxed text-[#5d6776]">{detail}</p>
+              <p className="mt-4 text-sm font-semibold leading-relaxed text-[#9aa6b7]">{detail}</p>
               {title === 'Compute' && (
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Button size="sm" onClick={() => void wakeComputeRuntime()} disabled={computeWakeBusy || !ready}>
@@ -8489,7 +8585,7 @@ function AdminControlCenterInner() {
                   <Button size="sm" variant="secondary" onClick={() => refreshComputeRuntime()}>
                     Aktualisieren
                   </Button>
-                  <span className="min-w-0 self-center text-xs font-bold text-[#5d6776]">
+                  <span className="min-w-0 self-center text-xs font-bold text-[#9aa6b7]">
                     {runtime?.container.dns ? `${runtime.container.dns}:${runtime.container.port}` : 'DNS wird von Salad gemeldet.'}
                   </span>
                 </div>
@@ -8541,13 +8637,13 @@ function AdminControlCenterInner() {
           ['Infrastruktur', ['Spaceship DNS', 'GitHub Code only', 'IDrive 99 % Storage', 'Salad Compute', 'Secrets getrennt']],
           ['Qualität', ['Mobile QA', 'Performance Budget', 'Security Audit', 'Rollback', 'Monitoring']],
         ].map(([group, items]) => (
-          <section key={group as string} className="rounded-lg border border-[#d9e2ec] bg-white p-5">
-            <h2 className="text-xl font-bold text-[#111722]">{group}</h2>
+          <section key={group as string} className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <h2 className="text-xl font-bold text-[#f4f7fb]">{group}</h2>
             <div className="mt-4 grid gap-3">
               {(items as string[]).map((item, index) => (
-                <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-[#edf2f7] bg-[#f7fafd] p-3">
+                <div key={item} className="flex flex-wrap items-center gap-3 rounded-lg border border-white/[0.07] bg-white/[0.02] p-3">
                   <AdminStatusChip tone={index < 2 ? 'green' : 'amber'}>{index < 2 ? 'done' : 'verify'}</AdminStatusChip>
-                  <span className="text-sm font-bold text-[#172033]">{item}</span>
+                  <span className="text-sm font-bold text-[#e6ecf4]">{item}</span>
                 </div>
               ))}
             </div>
@@ -8580,15 +8676,15 @@ function AdminControlCenterInner() {
   }
 
   return (
-    <div className="smyst-admin-shell py-5 text-[#111722]">
+    <div className="smyst-admin-shell py-5 text-[#f4f7fb]">
       {adminSearchOpen && (
         <div
-          className="fixed inset-0 z-50 grid place-items-start justify-center bg-black/60 pt-24"
+          className="fixed inset-0 z-50 grid place-items-start justify-center bg-black/70 pt-24"
           onClick={() => setAdminSearchOpen(false)}
           role="presentation"
         >
           <div
-            className="mx-4 w-full max-w-lg rounded-lg border border-[#d9e2ec] bg-white p-4 shadow-2xl"
+            className="mx-4 w-full max-w-lg rounded-lg border border-white/12 bg-[#141a24] p-4 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
             aria-label="Admin-Suche"
@@ -8598,7 +8694,7 @@ function AdminControlCenterInner() {
               onChange={(event) => setAdminSearchQuery(event.target.value)}
               placeholder="Sektion suchen … (Esc schließt)"
               autoFocus
-              className="min-h-11 w-full rounded-md border border-[#d9e2ec] bg-white px-3 text-sm text-[#111722] outline-none focus:border-[#111722]"
+              className="min-h-11 w-full rounded-md border border-white/12 bg-white/[0.04] px-3 text-sm text-[#f4f7fb] outline-none placeholder:text-[#66758a] focus:border-[#59c7ff]/60"
             />
             <div className="mt-3 grid max-h-80 gap-1 overflow-y-auto">
               {adminSearchResults.map((section) => (
@@ -8606,52 +8702,53 @@ function AdminControlCenterInner() {
                   key={section.id}
                   type="button"
                   onClick={() => { setActiveSection(section.id); setAdminSearchOpen(false); setAdminSearchQuery('') }}
-                  className={`flex min-h-11 items-center justify-between gap-3 rounded-md border px-3 text-left text-sm font-bold ${section.id === activeSection ? 'border-[#314158] bg-[#223044] text-white' : 'border-transparent text-[#172033] hover:bg-[#f7fafd]'}`}
+                  className={`flex min-h-11 items-center justify-between gap-3 rounded-md border px-3 text-left text-sm font-bold ${section.id === activeSection ? 'border-[#59c7ff]/40 bg-[#59c7ff]/[0.14] text-[#dff2ff]' : 'border-transparent text-[#c7d2e0] hover:bg-white/[0.06]'}`}
                 >
-                  <span>{section.label}</span>
-                  <span className="text-xs font-semibold text-[#667085]">{section.detail}</span>
+                  <span className="min-w-0 truncate"><span className="mr-2 font-black tabular-nums text-[#59c7ff]">{section.nr}</span>{section.label}</span>
+                  <span className="text-xs font-semibold text-[#8b98ab]">{section.detail}</span>
                 </button>
               ))}
               {adminSearchResults.length === 0 && (
-                <p className="px-3 py-2 text-sm font-semibold text-[#5d6776]">Keine Sektion gefunden.</p>
+                <p className="px-3 py-2 text-sm font-semibold text-[#9aa6b7]">Keine Sektion gefunden.</p>
               )}
             </div>
           </div>
         </div>
       )}
-      <div className="grid gap-5 lg:grid-cols-[272px_1fr]">
-        <aside className="rounded-lg bg-[#111722] p-5 text-white lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
-          <div className="mb-6">
-            <p className="font-smyst-logo text-3xl leading-none">smyst.com Admin</p>
-            <p className="mt-2 text-sm font-semibold text-[#aeb6c4]">Global control</p>
+      <div className="grid gap-5 lg:grid-cols-[264px_1fr]">
+        <aside className="rounded-xl border border-white/10 bg-white/[0.025] p-4 text-white lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
+          <div className="mb-5">
+            <p className="font-smyst-logo text-2xl leading-none">smyst.com</p>
+            <p className="mt-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-[#59c7ff]">Admin</p>
           </div>
           <button
             type="button"
             onClick={() => { setAdminSearchOpen(true); setAdminSearchQuery('') }}
-            className="mb-2 min-h-11 w-full rounded-md border border-[#314158] px-3 text-left text-sm font-bold text-white"
+            className="mb-2 flex min-h-10 w-full items-center gap-2 rounded-lg border border-white/12 bg-white/[0.04] px-3 text-left text-sm font-semibold text-[#9aa6b7] transition hover:bg-white/[0.07]"
           >
-            Sektion suchen … <span className="float-right text-xs font-semibold text-[#8996a8]">⌘K</span>
+            🔍 Alles durchsuchen … <span className="ml-auto text-[10.5px] font-bold text-[#66758a]">⌘K</span>
           </button>
           <button
             type="button"
             onClick={() => setAdminNavOpen((open) => !open)}
             aria-expanded={adminNavOpen}
-            className="mb-2 min-h-11 w-full rounded-md border border-[#314158] px-3 text-left text-sm font-bold text-white lg:hidden"
+            className="mb-2 min-h-10 w-full rounded-lg border border-white/12 px-3 text-left text-sm font-bold text-white lg:hidden"
           >
             {adminNavOpen ? 'Navigation schließen' : 'Navigation öffnen'}
           </button>
-          <nav className={`${adminNavOpen ? 'grid' : 'hidden'} gap-2 lg:grid`} aria-label="Admin Navigation">
-            {adminSectionOrder.map((group) => (
-              <div key={group} className="grid gap-2">
-                <p className="mt-3 px-3 text-[11px] font-black uppercase tracking-[0.14em] text-[#66758a] first:mt-0">{group}</p>
+          <nav className={`${adminNavOpen ? 'grid' : 'hidden'} gap-1 lg:grid`} aria-label="Admin Navigation">
+            {adminSectionOrder.map((group, groupIndex) => (
+              <div key={group} className="grid gap-1">
+                <p className="mt-4 px-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#66758a] first:mt-1">
+                  <span className="text-[#59c7ff]">{groupIndex + 1}</span> {group}
+                </p>
                 {adminSections.filter((section) => section.group === group).map((section) => {
                   const selected = section.id === activeSection
                   return (
-                    <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[52px] items-center gap-3 rounded-md border px-3 text-left transition ${selected ? 'border-[#314158] bg-[#223044] text-white' : 'border-transparent bg-transparent text-[#c7cfda] hover:bg-white/[0.06]'}`}>
-                      <span className={`h-3 w-3 shrink-0 rounded-sm ${selected ? 'bg-[#59c7ff]' : 'bg-[#66758a]'}`} />
+                    <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[42px] items-center gap-3 rounded-lg border px-2.5 text-left transition ${selected ? 'border-[#59c7ff]/40 bg-[#59c7ff]/[0.14] text-[#dff2ff]' : 'border-transparent bg-transparent text-[#9aa6b7] hover:bg-white/[0.06] hover:text-[#e6ecf4]'}`}>
+                      <span className={`grid h-6 w-8 shrink-0 place-items-center rounded-md border text-[10px] font-black tabular-nums ${selected ? 'border-[#59c7ff]/50 bg-[#59c7ff]/20 text-[#dff2ff]' : 'border-white/10 bg-white/[0.05] text-[#8b98ab]'}`}>{section.nr}</span>
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-bold">{section.label}</span>
-                        <span className="block truncate text-xs font-semibold text-[#8996a8]">{section.detail}</span>
                       </span>
                     </button>
                   )
@@ -8660,30 +8757,25 @@ function AdminControlCenterInner() {
             ))}
           </nav>
         </aside>
-        <section className="rounded-lg border border-[#d9e2ec] bg-[#f7fafd] p-4 shadow-sm sm:p-6">
-          <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.18em] text-[#5d6776]">Admin Command Center</p>
-              <h1 className="mt-2 text-3xl font-bold tracking-normal text-[#111722] sm:text-4xl">{sectionTitle}</h1>
-              <p className="mt-3 max-w-4xl text-base leading-relaxed text-[#5d6776]">
-                Ein Kontrollzentrum für Milliarden-Nutzer-Betrieb: Look, User, AI-Profile, AdSense, 25 % Revenue Share, Finance, Sicherheit, IDrive e2, Salad, Apps, Support und Releases an einem Ort.
-              </p>
+        <section className="min-w-0">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-[#59c7ff]">Adminkonsole · {sectionGroup}</p>
+              <h1 className="mt-1 text-2xl font-bold tracking-normal text-[#f4f7fb] sm:text-[26px]">{sectionTitle}</h1>
             </div>
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="flex shrink-0 gap-2">
               <AdminStatusChip tone={adminBackendStatus === 'live' ? 'green' : adminBackendStatus === 'denied' ? 'amber' : adminBackendStatus === 'loading' ? 'cyan' : 'red'}>
                 {adminBackendStatus === 'live' ? 'Backend live' : adminBackendStatus === 'denied' ? 'Login/Rechte' : adminBackendStatus === 'loading' ? 'Backend check' : 'Backend offline'}
               </AdminStatusChip>
-              <AdminStatusChip tone="amber">Policy watch</AdminStatusChip>
-              <AdminStatusChip tone="cyan">Live data</AdminStatusChip>
             </div>
           </div>
           {adminMfaStatus?.required && !adminMfaStatus.verified && (
-            <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+            <section className="mb-5 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
               <div className="grid gap-4 lg:grid-cols-[1fr_320px] lg:items-end">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-700">Admin 2FA</p>
-                  <h2 className="mt-1 text-xl font-bold text-[#111722]">Zweiter Faktor erforderlich</h2>
-                  <p className="mt-2 text-sm font-semibold leading-relaxed text-[#5d6776]">
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-amber-300">Admin 2FA</p>
+                  <h2 className="mt-1 text-lg font-bold text-[#f4f7fb]">Zweiter Faktor erforderlich</h2>
+                  <p className="mt-2 text-sm font-semibold leading-relaxed text-[#9aa6b7]">
                     Admin-Daten bleiben gesperrt, bis ein frischer Authenticator-Code verifiziert wurde.
                     {!adminMfaStatus.configured && ' Für diesen Admin ist noch kein TOTP-Secret konfiguriert.'}
                     {adminMfaStatus.note ? ` ${adminMfaStatus.note}` : ''}
@@ -8697,27 +8789,27 @@ function AdminControlCenterInner() {
                     autoComplete="one-time-code"
                     placeholder="123456"
                     disabled={!adminMfaStatus.canVerify || adminMfaSubmitting}
-                    className="min-h-11 rounded-md border border-amber-300 bg-white px-3 text-center text-lg font-black tracking-[0.18em] text-[#111722] outline-none focus:border-[#111722]"
+                    className="min-h-11 rounded-md border border-amber-500/40 bg-white/[0.05] px-3 text-center text-lg font-black tracking-[0.18em] text-[#f4f7fb] outline-none focus:border-[#59c7ff]/60"
                   />
                   <button
                     type="button"
                     onClick={() => void verifyAdminMfa()}
                     disabled={!adminMfaStatus.canVerify || adminMfaSubmitting}
-                    className="min-h-11 rounded-md bg-[#111722] px-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:bg-[#8892a0]"
+                    className="min-h-11 rounded-md bg-[#59c7ff] px-4 text-sm font-bold text-[#0b1c44] transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-[#9aa6b7]"
                   >
                     {adminMfaSubmitting ? 'Prüfen' : 'Verifizieren'}
                   </button>
                   {adminMfaMessage && (
-                    <p className="text-sm font-bold text-amber-800 sm:col-span-2">{adminMfaMessage}</p>
+                    <p className="text-sm font-bold text-amber-300 sm:col-span-2">{adminMfaMessage}</p>
                   )}
                 </div>
               </div>
             </section>
           )}
-          <section className="mb-6 grid gap-3 rounded-lg border border-[#d9e2ec] bg-white p-4 lg:grid-cols-4">
+          <section className="mb-5 grid gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-4 lg:grid-cols-4">
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Admin API</p>
-              <p className="mt-1 text-sm font-bold text-[#111722]">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#93a0b4]">Admin API</p>
+              <p className="mt-1 text-sm font-bold text-[#f4f7fb]">
                 {adminBackendStatus === 'live'
                   ? adminOverview?.mode ?? 'salad-admin-control'
                   : adminBackendStatus === 'denied'
@@ -8728,16 +8820,16 @@ function AdminControlCenterInner() {
               </p>
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">KV Ledger</p>
-              <p className="mt-1 text-sm font-bold text-[#111722]">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#93a0b4]">KV Ledger</p>
+              <p className="mt-1 text-sm font-bold text-[#f4f7fb]">
                 {adminOverview
                   ? `${adminOverview.metrics?.revenueProfiles ?? 0} Profile, ${adminOverview.metrics?.heldProfiles ?? 0} Holds`
                   : 'Wartet auf Live-Daten'}
               </p>
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Speicherplan</p>
-              <p className="mt-1 text-sm font-bold text-[#111722]">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#93a0b4]">Speicherplan</p>
+              <p className="mt-1 text-sm font-bold text-[#f4f7fb]">
                 {storageCapabilities?.configuration
                   ? storageCapabilities.configuration.ready
                     ? `${storageCapabilities.provider ?? 'IDrive e2'} bereit`
@@ -8748,8 +8840,8 @@ function AdminControlCenterInner() {
               </p>
             </div>
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#667085]">Compute</p>
-              <p className="mt-1 text-sm font-bold text-[#111722]">
+              <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[#93a0b4]">Compute</p>
+              <p className="mt-1 text-sm font-bold text-[#f4f7fb]">
                 {computeCapabilities?.configuration
                   ? computeCapabilities.configuration.ready
                     ? `${computeCapabilities.provider ?? 'Salad'} bereit`
@@ -8761,7 +8853,7 @@ function AdminControlCenterInner() {
             </div>
           </section>
           {storageCapabilities?.configuration && !storageCapabilities.configuration.ready && (
-            <section className="mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm font-bold text-red-900">
+            <section className="mb-5 rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm font-bold text-red-300">
               IDrive e2 ist noch nicht produktiv nutzbar. Fehlende Storage-Konfiguration:
               {' '}
               {(storageCapabilities.configuration.missing ?? []).join(', ')}.
@@ -8770,7 +8862,7 @@ function AdminControlCenterInner() {
             </section>
           )}
           {computeCapabilities?.configuration && !computeCapabilities.configuration.ready && (
-            <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-900">
+            <section className="mb-5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-300">
               Salad Compute ist noch nicht produktiv aktiv. Fehlend:
               {' '}
               {(computeCapabilities.configuration.missing ?? []).join(', ')}.
