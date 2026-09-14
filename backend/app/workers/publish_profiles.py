@@ -310,7 +310,7 @@ def _pipeline_bucket() -> str:  # pragma: no cover
     return settings.idrive_e2_bucket
 
 
-def refresh_published_summary(store: CandidateStore) -> str:
+def refresh_published_summary(store: CandidateStore) -> str | None:
     """Kompakten Publish-Summary-Index je Lauf EINMAL auffrischen.
 
     Die QA laedt fuer den Duplikat-Check nur noch diese {wikidata_qid, name}-
@@ -318,6 +318,11 @@ def refresh_published_summary(store: CandidateStore) -> str:
     Befund 14.09.2026). Einmal je Publish-Lauf statt je Profil — der Index ist
     ohnehin gerade im Speicher. Falls die Summary mal fehlt, faellt die QA
     auf den langsamen Voll-Scan zurueck (korrekt, nur langsam).
+
+    Wirft bewusst NICHT: Die Publikationen sind zu diesem Zeitpunkt bereits
+    durch — ein fehlgeschlagenes Summary-Schreiben (z. B. Prefix-Rechte) darf
+    den Publish-Lauf nicht roet enden lassen (Live-Befund 14.09.,
+    Lauf 34789969666). Stattdessen None + Warnung.
     """
     index = _load_index(store)
     entries = [
@@ -325,7 +330,14 @@ def refresh_published_summary(store: CandidateStore) -> str:
         for entry in index
         if entry.get("visible", True) and entry.get("wikidata_qid")
     ]
-    return store.save_published_summary(entries)
+    try:
+        return store.save_published_summary(entries)
+    except Exception as error:  # noqa: BLE001 - Publish darf nicht an der Summary scheitern
+        print(
+            f"WARNUNG: published-summary konnte nicht geschrieben werden "
+            f"({type(error).__name__}: {error}) — QA faellt auf den Voll-Scan zurueck."
+        )
+        return None
 
 
 if __name__ == "__main__":  # pragma: no cover

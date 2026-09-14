@@ -50,7 +50,12 @@ STATUS_PREFIX = "pipeline/status/"
 #: im Publish-Index (pipeline/published/index.json), aus dem der Publisher diese
 #: schlanke Zusammenfassung je Lauf mitpflegt. Fehlt sie, faellt die QA auf den
 #: alten Voll-Scan zurueck (niemals falsch, nur langsam).
-PUBLISHED_SUMMARY_KEY = "pipeline/index/published-summary.json"
+#:
+#: Pflicht unter pipeline/published/: Die Pipeline-Credentials duerfen NUR die
+#: bewährten Prefixe schreiben (Live-Befund 14.09., Lauf 34789969666: der
+#: neue Prefix pipeline/index/ antwortete PutObject AccessDenied und liess den
+#: Publish-Lauf roet enden — die Publikationen selbst waren schon durch).
+PUBLISHED_SUMMARY_KEY = "pipeline/published/summary.json"
 
 
 class S3Like(Protocol):

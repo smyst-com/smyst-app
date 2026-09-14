@@ -10,7 +10,7 @@ ausgebremst hat:
 - Ingest-Cursor-Staende je Kategorie (1 GET)
 
     python -m app.workers.pipeline_stats                 # nur Ausgabe (JSON)
-    python -m app.workers.pipeline_stats --save          # + pipeline/stats/<tag>.json
+    python -m app.workers.pipeline_stats --save          # + changelogs/stats-<tag>.json
     python -m app.workers.pipeline_stats --watchdog      # + Exit 1 bei Trockenheit
 """
 
@@ -24,9 +24,16 @@ from datetime import date, datetime, time, timezone
 from typing import Any
 
 from app.ai.historical_pipeline import PipelineStatus
-from app.integrations.candidate_store import CandidateStore, build_s3_client
+from app.integrations.candidate_store import (
+    CHANGELOG_PREFIX,
+    CandidateStore,
+    build_s3_client,
+)
 
-STATS_PREFIX = "pipeline/stats/"
+#: Tagesstatistik liegt im Changelog-Prefix: Dort schreibt der Pipeline-Key
+#: nachweislich (Ingest-Laeufe). Eigene Prefixe (z. B. pipeline/stats/) sind
+#: fuer die Pipeline-Credentials gesperrt (AccessDenied, Lauf 34789969666).
+STATS_FILE_PREFIX = "stats-"
 
 #: Status, deren HEUTE-Zahlen die Quoten-Entscheidungen tragen.
 WATCHED_STATUSES = tuple(status.value for status in PipelineStatus)
@@ -93,12 +100,17 @@ def build_report(store: CandidateStore, *, now: datetime | None = None) -> dict:
     return report
 
 
-def save_report(store: CandidateStore, report: dict) -> str:
+def save_report(store: CandidateStore, report: dict) -> str | None:
+    """Bericht nach pipeline/changelogs/stats-<tag>.json — niemals tödlich."""
     body = json.dumps(report, ensure_ascii=False, default=str).encode("utf-8")
-    key = f"{STATS_PREFIX}daily-{report.get('day', date.today().isoformat())}.json"
-    store._client.put_object(  # noqa: SLF001 - bewusster interner Zugriff (Muster: _put_json)
-        Bucket=store._bucket, Key=key, Body=body, ContentType="application/json"
-    )
+    key = f"{CHANGELOG_PREFIX}{STATS_FILE_PREFIX}{report.get('day', date.today().isoformat())}.json"
+    try:
+        store._client.put_object(  # noqa: SLF001 - bewusster interner Zugriff (Muster: _put_json)
+            Bucket=store._bucket, Key=key, Body=body, ContentType="application/json"
+        )
+    except Exception as error:  # noqa: BLE001 - Statistik darf den Lauf nicht roet machen
+        report.setdefault("errors", {})["save_report"] = f"{type(error).__name__}: {error}"
+        return None
     return key
 
 
@@ -106,7 +118,7 @@ def main(argv: list[str] | None = None) -> int:
     from app.core.config import settings
 
     parser = argparse.ArgumentParser(description="smyst.com Autopilot-Statistik (read-only)")
-    parser.add_argument("--save", action="store_true", help="Bericht nach pipeline/stats/ schreiben")
+    parser.add_argument("--save", action="store_true", help="Bericht nach pipeline/changelogs/ schreiben")
     parser.add_argument(
         "--watchdog", action="store_true",
         help="Exit 1, wenn HEUTE weder publiziert wurde noch Nachschub (candidate/generated/reviewed) existiert",

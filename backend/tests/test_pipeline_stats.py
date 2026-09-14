@@ -109,7 +109,7 @@ def test_save_report_writes_daily_doc() -> None:
     store = CandidateStore(FakeS3(), "smyst-memories")
     report = pipeline_stats.build_report(store)
     key = pipeline_stats.save_report(store, report)
-    assert key.startswith("pipeline/stats/daily-")
+    assert key.startswith("pipeline/changelogs/stats-")
     body = json.loads(store._client.objects[key])  # noqa: SLF001
     assert body["worker"] == "pipeline_stats"
     assert body["daily_target"] == 5000
@@ -122,3 +122,34 @@ def test_published_summary_roundtrip() -> None:
     summary = store.load_published_summary()
     assert summary == [{"wikidata_qid": "Q1", "name": "Ada Lovelace"}]
     assert PUBLISHED_SUMMARY_KEY in store._client.objects  # noqa: SLF001
+
+
+def test_save_report_tolerates_denied_prefix() -> None:
+    """Live-Befund 14.09. (Lauf 34789969666): gesperrte Prefixe duerfen den
+    Statistik-/Publish-Lauf NICHT roet enden lassen — Report faellt auf
+    None + Fehlervermerk zurueck."""
+    class DenyingS3(FakeS3):
+        def put_object(self, *, Bucket, Key, Body, ContentType):
+            if Key.startswith("pipeline/changelogs/"):
+                raise PermissionError("AccessDenied")
+            return super().put_object(Bucket=Bucket, Key=Key, Body=Body, ContentType=ContentType)
+
+    store = CandidateStore(DenyingS3(), "smyst-memories")
+    report = pipeline_stats.build_report(store)
+    assert pipeline_stats.save_report(store, report) is None
+    assert "save_report" in report.get("errors", {})
+
+
+def test_refresh_published_summary_tolerates_denied_write() -> None:
+    """Gleicher Fall im Publisher: Summary-Schreibfehler darfa den Publish-
+    Lauf nicht abbrechen (die Publikationen sind dann schon durch)."""
+    from app.workers.publish_profiles import refresh_published_summary
+
+    class DenyingS3(FakeS3):
+        def put_object(self, *, Bucket, Key, Body, ContentType):
+            if Key.endswith("summary.json"):
+                raise PermissionError("AccessDenied")
+            return super().put_object(Bucket=Bucket, Key=Key, Body=Body, ContentType=ContentType)
+
+    store = CandidateStore(DenyingS3(), "smyst-memories")
+    assert refresh_published_summary(store) is None  # wirft NICHT
