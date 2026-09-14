@@ -76,7 +76,7 @@ jobs:
             smyst-models-v2-1.1q4
             smyst-models-v2-
 
-      - name: "smyst 1.0/1.1: llama-server + Modell aus IDrive e2 laden"
+      - name: "smyst 1.0/1.1: llama-server + Modell (GitHub-Release, e2 nur Rueckfallebene)"
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
@@ -93,14 +93,40 @@ jobs:
           LLAMA_BIN=$(find /opt/llama -type f -name llama-server | head -1)
           test -x "$LLAMA_BIN" || { echo "llama-server nicht im Archiv gefunden"; exit 1; }
           export LD_LIBRARY_PATH="$(dirname "$LLAMA_BIN"):${LD_LIBRARY_PATH:-}"
-          # f16-Modell (988 MB) aus dem Object Brain — identischer Key wie im
-          # Backend-Container (start-llm.sh, PR #515). $HOME statt /models:
+          # Modell-Bezug: GitHub-Release primaer (kostenfrei), Object Brain
+          # (e2) nur Rueckfallebene. $HOME statt /models:
           # Runner-Nutzer darf keine Root-Verzeichnisse anlegen (Lauf 32729543210).
           MODEL_DIR="$HOME/models"
           mkdir -p "$MODEL_DIR"
           MODEL="$MODEL_DIR/smyst-1.0.gguf"
           export MODEL
-          python3 - <<'PY'
+          # 14.09.2026 (Inhaber-Anweisung "keine anderen Kosten mehr"):
+          # Modell VORRANGIG aus dem eigenen GitHub-Release zusammensetzen
+          # (32 Teile a 30 MB, Tag v-smyst-1.1-gguf) — GitHub-Release-Downloads
+          # sind kostenfrei und verursachen KEINEN IDrive-e2-Egress. Die
+          # monatlichen Egress-Gebuehren (14,19 USD im Sept) kamen genau
+          # daher. e2 ist nur noch Rueckfallebene, wenn das Release nicht
+          # erreichbar ist.
+          RELEASE_OK=true
+          curl -fsSL --retry 2 "https://github.com/smyst-com/smyst-app/releases/download/v-smyst-1.1-gguf/s11p00" -o "$MODEL.part" || RELEASE_OK=false
+          if [ "$RELEASE_OK" = "true" ]; then
+            mv "$MODEL.part" "$MODEL"
+            for i in $(seq -w 1 31); do
+              curl -fsSL --retry 3 --retry-delay 5 \
+                "https://github.com/smyst-com/smyst-app/releases/download/v-smyst-1.1-gguf/s11p$i" \
+                >> "$MODEL" || { RELEASE_OK=false; break; }
+            done
+            # Grobe Vollstaendigkeitspruefung: 32 Teile x 30 MB = ~960 MB
+            if [ "$RELEASE_OK" = "true" ] && [ "$(stat -c%s "$MODEL" 2>/dev/null || echo 0)" -gt 900000000 ]; then
+              echo "Modell aus GitHub-Release zusammengesetzt (kein e2-Egress)."
+            else
+              RELEASE_OK=false
+            fi
+          fi
+          if [ "$RELEASE_OK" != "true" ]; then
+            echo "GitHub-Release nicht vollstaendig — Rueckfallebene: e2-Download."
+            rm -f "$MODEL" "$MODEL.part"
+            python3 - <<'PY'
           import boto3
           from botocore.config import Config
           import os
@@ -134,6 +160,7 @@ jobs:
           else:
               raise SystemExit("Weder Q4_K_M noch f16 in e2 gefunden.")
           PY
+          fi
           # Mehr Kerne statt 1 Thread (Zeabur-Container) — das war der Grund,
           # warum smyst_llm im Backend stets ins 20-s-Timeout lief. ABER: ein
           # Kern bleibt frei — saettigt llama-server alle vCPUs, verhungert der
