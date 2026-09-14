@@ -189,3 +189,34 @@ echt gescheiterte Kandidaten terminal ab (dokumentiert, umkehrbar).
 
 (Ergebnisse werden nach dem Merge hier und in Memory_Bank.md nachgetragen:
 erste Läufe mit neuer Auswahl, Shard-Laufzeiten, Publish-Zahlen, Tagesquote.)
+
+---
+
+## 7. Vorfall 13./14.09.2026 — Object-Brain-Schreibzugriff blockiert (e2)
+
+Ablauf: Letzter erfolgreicher Schreiblauf 23:28:08 UTC (Scale-2k success).
+Ab 23:49 UTC scheitern ALLE PutObject-Aufrufe bucket-weit mit AccessDenied,
+HEAD antwortet 403 Forbidden — auch in seit Wochen beschriebenen Prefixen
+(candidates, changelogs, published). LIST/GET funktionieren weiter
+(Write-Probe 00:51 UTC, Workflow e2-write-probe.yml).
+
+Deutung: Zustand des e2-Kontos/Buckets (Kontingent erreicht oder
+Schluessel-Berechtigung geaendert) — NICHT ein Code-Defekt, NICHT durch die
+Autopilot-Reparatur verursacht (der 23:28er-Lauf lief mit gleichem Key
+erfolgreich; der Probe-Lauf nutzt dieselben GitHub-Secrets und liest OK).
+
+Massnahme (nur Inhaber, IDrive-e2-Konsole):
+1. Bucket smyst-memories: belegten Speicher gegen das Plan-Kontingent pruefen.
+   Bei Kontingent: Plan erhoehen ODER alte Probe-/Dokumentdaten abwaehlen
+   (KEINE Pipeline-Daten loeschen — Kandidaten/Capsules/Changelogs bleiben
+   SoT).
+2. Access-Key pruefen: Berechtigung muss Read/Write sein (Read-only erkennbar
+   daran, dass PUT abgelehnt wird).
+3. Danach NICHTS weiter noetig: Watchdog + Quota-Eskalation dispatchen
+   weiter (Laeufe failen solange in <1 min), der erste Lauf nach Freigabe
+   setzt die Kette automatisch fort — idempotent, ohne Doppelpublikation.
+
+Wahrend der Blockade: publishes/QA-Stufen schreiben nichts (keine
+Daten verloren — abgelehnte Schreibvorgaenge aendern den Store nicht);
+der Tagesquoten-Zähler bleibt bei 0 (14.09.). Health-Workflow oeffnet beim
+naechsten Lauf ein Alarm-Issue und vermerkt die Blockade in der Summary.

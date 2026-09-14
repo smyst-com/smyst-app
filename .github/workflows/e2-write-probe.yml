@@ -1,9 +1,11 @@
 name: e2 Write-Probe (Diagnose)
 
-# Diagnose 14.09.2026: PutObject schlaegt seit ~23:00 UTC mit AccessDenied
-# fehl (auch in seit Wochen beschriebenen Prefixen). Dieser Workflow prueft
-# READ + WRITE + HEAD je Prefix und liefert die Signatur fuer den Inhaber.
-# Schreibt nur winzige Probe-Objekte mit Probe-Praefix.
+# Diagnose: Testet LIST / HEAD / PUT / DELETE gegen das Object Brain und
+# zeigt blockierte Schreibzugriffe sofort (Vorfall 13.09.2026 ~23:30 UTC:
+# bucket-weit PUT AccessDenied + HEAD 403, LIST/GET OK — Ursache im
+# e2-Konto: Kontingent oder Schluessel-Rechte, Konsole des Inhabers).
+# Schreibt nur winzige Probe-Objekte und loescht sie wieder (wenn erlaubt).
+# Nur manuell per workflow_dispatch startbar.
 
 on:
   workflow_dispatch:
@@ -16,37 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - uses: actions/checkout@v6
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - name: "Schreib-Probe je Prefix"
+
+      - name: "Zugriffsprobe"
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           pip install --quiet boto3
-          python - <<'PY'
-          import boto3, os, datetime
-          c = boto3.client("s3", endpoint_url="https://s3.us-west-2.idrivee2.com",
-                           region_name="us-west-2",
-                           aws_access_key_id=os.environ["IDRIVE_E2_ACCESS_KEY"],
-                           aws_secret_access_key=os.environ["IDRIVE_E2_SECRET_KEY"])
-          bucket = "smyst-memories"
-          ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S")
-          def probe(label, fn):
-              try:
-                  fn()
-                  print(f"{label}: OK")
-              except Exception as e:
-                  print(f"{label}: FEHLER {type(e).__name__}: {str(e)[:160]}")
-          probe("LIST pipeline/status/published/", lambda: next(iter(c.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix="pipeline/status/published/", PaginationConfig={"MaxItems": 1})), None))
-          probe("GET pipeline/published/index.json", lambda: c.head_object(Bucket=bucket, Key="pipeline/published/index.json"))
-          probe("HEAD Modell smyst-1.1 Q4_K_M", lambda: c.head_object(Bucket=bucket, Key="models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf"))
-          probe("PUT pipeline/changelogs/probe-%s.json" % ts, lambda: c.put_object(Bucket=bucket, Key="pipeline/changelogs/probe-%s.json" % ts, Body=b"probe"))
-          probe("PUT pipeline/candidates/probe-%s.json" % ts, lambda: c.put_object(Bucket=bucket, Key="pipeline/candidates/probe-%s.json" % ts, Body=b"{}"))
-          probe("PUT pipeline/published/probe-%s.json" % ts, lambda: c.put_object(Bucket=bucket, Key="pipeline/published/probe-%s.json" % ts, Body=b"{}"))
-          probe("PUT probe-root/probe-%s.txt" % ts, lambda: c.put_object(Bucket=bucket, Key="probe-root/probe-%s.txt" % ts, Body=b"x"))
-          # Account-Kontingent heuristisch: Bucket-Groesse nicht abrufbar, aber Anzahl Objekte im Status-Prefix:
-          n = sum(1 for _ in c.get_paginator("list_objects_v2").paginate(Bucket=bucket, Prefix="pipeline/candidates/").search("Contents"))
-          print("Objekte unter pipeline/candidates/:", n)
-          PY
+          python scripts/e2_access_probe.py

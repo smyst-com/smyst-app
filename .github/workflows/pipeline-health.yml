@@ -80,9 +80,35 @@ jobs:
             done
           } | tee /tmp/runs.txt >> "$GITHUB_STEP_SUMMARY"
 
+      - name: "Object-Brain-Schreibzugriff testen (e2-Probe)"
+        id: access
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          pip install --quiet boto3
+          python scripts/e2_access_probe.py --json > /tmp/access.json
+          cat /tmp/access.json
+          python - <<'PY'
+          import json, os
+          report = json.load(open('/tmp/access.json'))
+          blocked = report.get('write_blocked', False)
+          with open('/tmp/access.env', 'w') as f:
+              f.write(f"E2_WRITE_BLOCKED={'1' if blocked else '0'}\n")
+          head = open(os.environ['GITHUB_STEP_SUMMARY'], 'a')
+          if blocked:
+              head.write("### ALARM: Object-Brain-Schreibzugriff blockiert (e2)\n")
+              head.write("Der Autopilot kann NICHTS speichern (PUT abgelehnt). Nur im IDrive-e2-Konto des Inhabers behebbar: Bucket-Kontingent pruefen oder Schluessel-Berechtigung (Read/Write) wiederherstellen. Alle Leseoperationen funktionieren; keine Datenverloren — nach Freigabe läuft die Kette automatisch weiter.\n")
+          else:
+              head.write("- Object-Brain-Schreibzugriff: OK\n")
+          head.close()
+          PY
+          cat /tmp/access.env >> "$GITHUB_OUTPUT"
+
       - name: "Stillstand: Alarm-Issue oeffnen/aktualisieren"
         env:
           GH_TOKEN: ${{ github.token }}
+          E2_WRITE_BLOCKED: ${{ steps.access.outputs.E2_WRITE_BLOCKED }}
         run: |
           set -euo pipefail
           source /tmp/quota.env 2>/dev/null || true
@@ -92,9 +118,11 @@ jobs:
           AGE_SCALE_B=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k-lane-b.yml/runs?per_page=1" --jq '(now - (.workflow_runs[0].created_at | fromdateiso8601)) | floor')
           AGE_RUN=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=1" --jq '(now - (.workflow_runs[0].created_at | fromdateiso8601)) | floor')
           STALLED=1
+          if [ "${E2_WRITE_BLOCKED:-0}" = "1" ]; then STALLED=1; fi
           if [ "${REMAINING}" -le 0 ]; then STALLED=0; fi
           YOUNGEST=$(( AGE_SCALE_A < AGE_SCALE_B ? AGE_SCALE_A : AGE_SCALE_B ))
-          if [ "${YOUNGEST}" -lt 5400 ] || [ "${AGE_RUN}" -lt 7200 ]; then STALLED=0; fi
+          if [ "${YOUNGEST}" -lt 5400 ] && [ "${E2_WRITE_BLOCKED:-0}" != "1" ]; then STALLED=0; fi
+          if [ "${AGE_RUN}" -lt 7200 ] && [ "${E2_WRITE_BLOCKED:-0}" != "1" ]; then STALLED=0; fi
           TITLE="Autopilot steht still — Tagesziel 5000/Tag gefaehrdet"
           ISSUE=$(gh issue list -R "$GITHUB_REPOSITORY" --search "autopilot-stalled in:title" --state open --json number --jq '.[0].number')
           if [ "${STALLED}" -eq 1 ]; then
