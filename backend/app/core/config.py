@@ -132,6 +132,18 @@ class Settings(BaseSettings):
         # maechtiger (LLM_PROVIDER_TIMEOUT_SECONDS).
         default=75.0, validation_alias="LLM_PROVIDER_TIMEOUT_SECONDS"
     )
+    llm_ping_timeout_seconds: float = Field(
+        # 30 s statt 8 s (Freigabe Inhaber 14.09.2026, "mach komplett fertig"):
+        # Der Health-Ping /api/ai/providers?ping=true kippte bei warmem
+        # CPU-Modell staendig in TimeoutError — die Generierung mit 8 Tokens
+        # braucht auf den 2 Zeabur-Kernen real 8-10+ s (live gemessen 14.09.,
+        # 6 Pings in Serie alle bei ~8,0 s abgebrochen), das 8s-Fenster schoss
+        # also frueher als die Antwort. Folge: Pflicht-Smoke "smyst_llm
+        # ok:true" rot trotz funktionierendem Chat. Der Ping-Timeout ist nur
+        # die Obergrenze — ein schnelles Modell wartet nicht laenger als noetig.
+        # Env bleibt maechtiger (LLM_PING_TIMEOUT_SECONDS).
+        default=30.0, validation_alias="LLM_PING_TIMEOUT_SECONDS"
+    )
     llm_total_deadline_seconds: float = Field(
         default=45.0, validation_alias="LLM_TOTAL_DEADLINE_SECONDS"
     )

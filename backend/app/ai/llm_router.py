@@ -945,14 +945,24 @@ def _provider_error_diagnostics(exc: Exception) -> dict[str, object]:
 
 
 async def ping_providers(
-    settings: Settings | None = None, timeout_seconds: float = 8.0
+    settings: Settings | None = None, timeout_seconds: float | None = None
 ) -> dict[str, dict[str, object]]:
     """Testet jeden konfigurierten Provider mit einem Mini-Prompt (parallel).
 
     Liefert je Provider {"ok": bool, "latency_ms": int, "error": str | None}.
     Nur auf Anfrage aufrufen (kostet je einen minimalen API-Call).
+
+    Timeout: 30 s Default (settings.llm_ping_timeout_seconds, Env
+    LLM_PING_TIMEOUT_SECONDS) statt frueher hart 8 s — das CPU-Modell braucht
+    fuer den 8-Token-Ping real laenger, der Pflicht-Smoke kippte sonst in
+    TimeoutError trotz funktionierendem Chat (live gemessen 14.09.2026).
     """
     active_settings = settings or get_settings()
+    effective_timeout = (
+        timeout_seconds
+        if timeout_seconds is not None
+        else active_settings.llm_ping_timeout_seconds
+    )
     router = build_default_router(active_settings)
     request = LLMRequest(prompt=PING_PROMPT, system_prompt="", max_tokens=8, temperature=0.0)
     remote_providers = [
@@ -964,7 +974,7 @@ async def ping_providers(
     async def _ping(provider: LLMProvider) -> tuple[str, dict[str, object]]:
         started = perf_counter()
         try:
-            details = await asyncio.wait_for(provider.healthcheck(request), timeout=timeout_seconds)
+            details = await asyncio.wait_for(provider.healthcheck(request), timeout=effective_timeout)
             return provider.name, {
                 "ok": True,
                 "latency_ms": int((perf_counter() - started) * 1000),
