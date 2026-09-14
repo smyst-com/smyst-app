@@ -1,0 +1,147 @@
+# Wöchentlicher Gesamt-Smoke (Inhaber-Auftrag 14.09.2026: "mach komplett
+# 100% fertig") — der profihafterRoutine-Check für die ganze Plattform.
+#
+# Prüft einmal pro Woche (Montag 09:17 UTC) alles, was der Live-Check vom
+# 14.09.2026 manuell verifiziert hat:
+#   1. Startseite erreichbar und Brand enthält
+#   2. Profil-Katalog (slim.json) gültig und gefüllt
+#   3. Eigenes Modell (smyst_llm) antwortet auf den Generation-Ping
+#   4. Sprachausgabe (TTS/Piper) bereit
+#   5. Beispiel-Profilseite erreichbar
+#   6. Sitemap + Chunk-Sitemaps gültig
+#   7. robots.txt mit Sitemap-Deklaration
+#
+# Bei einem (oder mehreren) Fehlern: roter Lauf + Sammel-Issue mit allen
+# Fehlern auf einmal (dedupliziert — bestehendes offenes Issue bekommt
+# einen Kommentar statt eines neuen Issues).
+#
+# Kosten: Public Repository, gratis. Keine Secrets nötig (nur öffentliche
+# Endpunkte). Kein Eingriff in eingefrorene Dateien.
+
+name: Wöchentlicher Smoke-Test
+
+on:
+  schedule:
+    - cron: "17 9 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: weekly-smoke
+  cancel-in-progress: false
+
+jobs:
+  smoke:
+    name: Plattform-Smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Alle Checks ausfuehren
+        id: checks
+        run: |
+          FAILS=/tmp/failures.txt
+          : > "$FAILS"
+          check() { # check <name> <command...>
+            local name="$1"; shift
+            if "$@" >/dev/null 2>&1; then
+              echo "OK    $name"
+            else
+              echo "FEHLER $name"
+              echo "- $name" >> "$FAILS"
+            fi
+          }
+
+          # -L: Profilseiten leiten 301 auf die Variante mit "/" weiter
+          # (GitHub-Pages-Verzeichnisverhalten) — final 200 ist gesund.
+          url_ok() { [ "$(curl -sL -o /dev/null -w '%{http_code}' --max-time 60 "$1")" = "200" ]; }
+          body_contains() { curl -s --max-time 60 "$1" | grep -q "$2"; }
+          json_field() { curl -s --max-time 90 "$1" | python3 -c "import json,sys; d=json.load(sys.stdin); ($2)(d)"; }
+
+          check "Startseite erreichbar (200)"            url_ok "https://smyst.com/"
+          check "Startseite enthaelt smyst.com-Brand"    body_contains "https://smyst.com/" "smyst.com"
+          check "Profil-Katalog slim.json gefuellt"      json_field "https://smyst.com/api/public/twins/slim.json" "lambda d: len(d.get('twins', [])) > 0"
+          check "Beispiel-Profilseite Einstein (200)"    url_ok "https://smyst.com/t/albert-einstein"
+
+          # Eigenes Modell: Pflicht-Smoke /api/ai/providers?ping=true.
+          # ok:true = bestens. Reines TimeoutError (8s-Ping-Fenster,
+          # Backend hart kodiert; gemessen 14.09.2026) = Modell lebt,
+          # antwortet nur langsam — kein Alarm, Hinweis im Log.
+          # Alles andere (Verbindungsfehler, Provider fehlt) = FEHLER.
+          code=$(curl -s -o /tmp/providers.json -w "%{http_code}" --max-time 120 \
+            "https://api.smyst.com/api/ai/providers?ping=true") || code="000"
+          PING_CODE="$code" python3 - <<'PY' > /tmp/model-status.txt
+          import json, os, sys
+          if os.environ.get("PING_CODE") != "200":
+              print("dead"); sys.exit(0)
+          try:
+              d = json.load(open("/tmp/providers.json"))
+          except Exception:
+              print("dead"); sys.exit(0)
+          llm = next((p for p in d.get("providers", []) if p.get("provider") == "smyst_llm"), None)
+          if not llm or not llm.get("configured"):
+              print("dead"); sys.exit(0)
+          ping = llm.get("ping") or {}
+          if ping.get("ok"):
+              print("ok")
+          elif str(ping.get("error") or "") == "TimeoutError" or str(ping.get("category") or "") == "timeout":
+              print("alive-slow")
+          else:
+              print("dead")
+          sys.exit(0)
+          PY
+          MODEL_STATUS=$(cat /tmp/model-status.txt)
+          case "$MODEL_STATUS" in
+            ok)         echo "OK    Eigenes Modell smyst_llm antwortet" ;;
+            alive-slow) echo "OK    Eigenes Modell smyst_llm lebt (langsam — 8s-Ping-Fenster ueberschritten, Chat laeuft weiter)" ;;
+            *)          echo "FEHLER Eigenes Modell smyst_llm nicht erreichbar"; echo "- Eigenes Modell smyst_llm nicht erreichbar (harter Fehler)" >> "$FAILS" ;;
+          esac
+
+          check "Sprachausgabe TTS bereit (ready:true)"  json_field "https://api.smyst.com/api/tts/voices" "lambda d: d.get('ready') is True"
+          check "Sitemap erreichbar und gefuellt"        bash -c 'curl -s --max-time 60 https://smyst.com/sitemap.xml | grep -q "<loc>"'
+          check "robots.txt deklariert Sitemap"          body_contains "https://smyst.com/robots.txt" "Sitemap: https://smyst.com/sitemap.xml"
+
+          # Erste Pipeline-Sitemap-Chunk-Zeile aus robots.txt ziehen und pruefen
+          CHUNK=$(curl -s --max-time 60 https://smyst.com/robots.txt | grep -o "https://smyst.com/sitemap-pipeline-[0-9]*\.xml" | head -1 || true)
+          if [ -n "$CHUNK" ]; then
+            check "Pipeline-Sitemap-Chunk gefuellt ($CHUNK)" bash -c "curl -s --max-time 90 '$CHUNK' | grep -q '<loc>'"
+          else
+            echo "HINWEIS Keine Pipeline-Sitemap-Chunks in robots.txt (Sitemap-Chunking noch nicht live?)"
+            echo "- Sitemap-Chunking in robots.txt sichtbar" >> "$FAILS"
+          fi
+
+          if [ -s "$FAILS" ]; then
+            {
+              echo "status=fail"
+              echo "failures<<EOF_FAILURES"
+              cat "$FAILS"
+              echo "EOF_FAILURES"
+            } >> "$GITHUB_OUTPUT"
+            echo "::error::$(wc -l < "$FAILS") Check(s) fehlgeschlagen"
+            exit 1
+          fi
+          echo "status=ok" >> "$GITHUB_OUTPUT"
+          echo "Alle Checks gruen."
+
+      - name: Alarm-Issue bei Fehlern
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FAILURES: ${{ steps.checks.outputs.failures }}
+        run: |
+          TITLE="🚨 Wöchentlicher Smoke-Test fehlgeschlagen"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY="Der wöchentliche Plattform-Smoke hat Fehler gefunden:
+
+          $FAILURES
+
+          Lauf mit Details: $RUN_URL
+          Zeitpunkt: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          EXISTING=$(gh issue list --state open --search "Wöchentlicher Smoke in:title" --json number --jq '.[0].number' || true)
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi

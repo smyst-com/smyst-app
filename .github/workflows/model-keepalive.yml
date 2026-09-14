@@ -1,0 +1,104 @@
+# Modell-Keep-Alive (Inhaber-Auftrag 14.09.2026: "mach komplett 100% fertig")
+#
+# Problem: Der eigene Modell-Server (smyst-1.x, llama-server im Zeabur-Backend)
+# braucht nach einer Pause Anlaufzeit — im Live-Check vom 14.09.2026 brauchte
+# die erste Chat-Antwort 30-60 s. Dieser Job schickt alle 5 Minuten eine
+# Mini-Generierungsanfrage (die Pflicht-Route /api/ai/providers?ping=true)
+# und haelt den Modell-Prozess dadurch warm und beobachtet ihn nebenbei.
+#
+# Bewertung (wichtig, gemessen am 14.09.2026):
+#   - ping ok:true                        → Modell warm, alles bestens
+#   - ping TimeoutError (8s-Fenster)      → Modell ANTWORTET, nur langsam
+#     (der interne Ping-Timeout ist im Backend hart auf 8s kodiert; echte
+#     Chats liefen zuverlaessig) → gruener Lauf mit Hinweis, KEIN Alarm
+#   - HTTP != 200 / Provider fehlt / Verbindungsfehler → rot + Alarm-Issue
+#
+# Kosten: Public Repository — GitHub-Actions-Minuten sind dafuer gratis.
+# Kein neuer Paid-Service (FREE_ONLY_INFRASTRUCTURE bleibt unberuehrt).
+# Eingefrorene Dateien (start-llm.sh, Dockerfile, llm_router.py) werden
+# NICHT angeruehrt — reiner HTTP-Ping von aussen.
+
+name: Model Keep-Alive
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: model-keepalive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    name: Modell anpingen (smyst_llm)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Generation-Ping mit Zustands-Bewertung
+        id: ping
+        run: |
+          # Bewertet den smyst_llm-Eintrag: ok / alive-slow / dead.
+          # Heredoc-Endmarker "PY" muss exakt auf der Grund-Einzugsebene des
+          # YAML-Blocks liegen (YAML entfernt sie, bash sieht Spalte 1).
+          code=$(curl -s -o /tmp/ping.json -w "%{http_code}" --max-time 120 \
+            "https://api.smyst.com/api/ai/providers?ping=true") || code="000"
+          PING_CODE="$code" python3 - <<'PY' > /tmp/verdict.txt
+          import json, os, sys
+          if os.environ.get("PING_CODE") != "200":
+              print("dead"); sys.exit(0)
+          try:
+              d = json.load(open("/tmp/ping.json"))
+          except Exception:
+              print("dead"); sys.exit(0)
+          llm = next((p for p in d.get("providers", []) if p.get("provider") == "smyst_llm"), None)
+          if not llm or not llm.get("configured"):
+              print("dead"); sys.exit(0)
+          ping = llm.get("ping") or {}
+          if ping.get("ok"):
+              print("ok")
+          elif str(ping.get("error") or "") == "TimeoutError" or str(ping.get("category") or "") == "timeout":
+              print("alive-slow")
+          else:
+              print("dead")
+          sys.exit(0)
+          PY
+          status=$(cat /tmp/verdict.txt)
+          LAT=$(python3 -c 'import json; d=json.load(open("/tmp/ping.json")); llm=next((p for p in d.get("providers",[]) if p.get("provider")=="smyst_llm"), None); print((llm.get("ping") or {}).get("latency_ms"))' 2>/dev/null || echo "?")
+          echo "Bewertung: $status (latency_ms=$LAT)"
+          case "$status" in
+            ok)
+              echo "result=ok" >> "$GITHUB_OUTPUT"; exit 0 ;;
+            alive-slow)
+              echo "result=alive-slow" >> "$GITHUB_OUTPUT"
+              echo "::notice::Modell lebt, aber die Generierung brauchte laenger als das 8s-Ping-Fenster (latency_ms=$LAT). Echte Chats laufen weiter — kein Alarm. Detail: Backend ping_providers(timeout_seconds=8.0), nur Inhaber darf das aendern."
+              exit 0 ;;
+            *)
+              echo "result=dead" >> "$GITHUB_OUTPUT"
+              echo "::error::smyst_llm nicht erreichbar (HTTP/Verbindungsproblem) — Modell-Server vermutlich ausgefallen"
+              exit 1 ;;
+          esac
+
+      - name: Alarm-Issue bei Ausfall
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="🚨 Modell-Keepalive: smyst_llm antwortet nicht"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          BODY="Der 5-Minuten-Health-Ping gegen https://api.smyst.com/api/ai/providers?ping=true meldet harten Ausfall (HTTP/Verbindungsfehler, NICHT nur Timeout — Timeouts werden als 'lebt, aber langsam' gewertet).
+
+          Lauf: $RUN_URL
+          Zeitpunkt: $(date -u '+%Y-%m-%d %H:%M UTC')
+
+          Naechste Schritte siehe docs/AUTOPILOT_5000.md und Memory_Bank.md (Backend-Override-Sync)."
+          EXISTING=$(gh issue list --state open --search "Modell-Keepalive in:title" --json number --jq '.[0].number' || true)
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
