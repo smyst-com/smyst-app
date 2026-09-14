@@ -128,7 +128,7 @@ jobs:
           if [ "${STALLED}" -eq 1 ]; then
             BODY="$(date -u +%F' %T') — Quota offen: ${REMAINING} (heute publiziert: ${PUBLISHED_TODAY}). Letzte Starts (s): scale-2k=${AGE_SCALE_A}, lane-b=${AGE_SCALE_B}, run=${AGE_RUN}. Watchdog eskaliert automatisch; hier keine Aktion noetig, solange die Eskalationen greifen."
             if [ -z "${ISSUE}" ]; then
-              gh issue create -R "$GITHUB_REPOSITORY" -t "autopilot-stalled: ${TITLE}" -l pipeline -b "${BODY}"
+              gh issue create -R "$GITHUB_REPOSITORY" -t "autopilot-stalled: ${TITLE}" -b "${BODY}"
             else
               gh issue comment -R "$GITHUB_REPOSITORY" "${ISSUE}" -b "${BODY}"
             fi
