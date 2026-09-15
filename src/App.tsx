@@ -6369,7 +6369,6 @@ function AdminControlCenterView() {
 
 function AdminControlCenterInner() {
   const [activeSection, setActiveSection] = useState<AdminSection>('overview')
-  const [adminNavOpen, setAdminNavOpen] = useState(false)
   const [adminSearchOpen, setAdminSearchOpen] = useState(false)
   const [adminSearchQuery, setAdminSearchQuery] = useState('')
 
@@ -7472,55 +7471,87 @@ function AdminControlCenterInner() {
             </div>
           )}
         </section>
-        {(adminAutopilot?.workflows ?? []).length > 0 && (
-          <p className="text-xs font-black uppercase tracking-[0.14em] text-[#93a0b4]">Automatiken – kritische zuerst</p>
-        )}
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {workflows.map((workflow) => (
-            <section key={workflow.file} className={`rounded-lg border bg-white/[0.04] p-4 ${workflow.light === 'red' ? 'border-red-500' : workflow.light === 'yellow' ? 'border-amber-400' : 'border-white/10'}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-black text-[#f4f7fb]">{workflow.name}</h3>
-                  <p className="mt-0.5 text-xs font-semibold text-[#93a0b4]">{workflow.cadence}</p>
-                </div>
-                <span className={`mt-1 h-3 w-3 shrink-0 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-500'}`} title={lightLabel[workflow.light] ?? 'unbekannt'} />
-              </div>
-              {workflow.light === 'red' ? <p className="mt-2 text-xs font-black uppercase tracking-wide text-red-400">Handlung nötig</p> : null}
-              <p className="mt-3 text-sm font-semibold text-[#9aa6b7]">
-                {workflow.kind === 'local'
-                  ? 'Läuft auf der Mac-Workstation (launchd).'
-                  : workflow.lastRun?.createdAt
-                    ? `Letzter Lauf: ${new Date(workflow.lastRun.createdAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })} – ${lightLabel[workflow.light] ?? workflow.lastRun.conclusion ?? workflow.lastRun.status ?? 'unbekannt'}`
-                    : 'Kein Lauf gefunden.'}
-              </p>
-              {workflow.lastRun?.htmlUrl && (
-                <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-bold text-sky-400 hover:underline">
-                  Lauf in GitHub ansehen
-                </a>
-              )}
-              {workflow.kind === 'github' && (
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={adminAutopilotBusy !== null}
-                    onClick={() => void actAdminAutopilotRerun(workflow.file)}
-                    className={`rounded-md border px-3 py-1.5 text-xs font-bold disabled:opacity-50 ${workflow.light === 'red' || workflow.light === 'yellow'
-                      ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10'
-                      : 'border-white/10 text-[#9aa6b7] hover:bg-white/[0.03]'}`}
-                  >
-                    {adminAutopilotBusy === workflow.file ? 'Startet …' : 'Erneut starten'}
-                  </button>
-                  {adminAutopilotMessage?.startsWith(workflow.file) && (
-                    <span className="text-xs font-semibold text-[#93a0b4]">{adminAutopilotMessage.split('|')[1]}</span>
-                  )}
-                </div>
-              )}
-            </section>
-          ))}
-          {adminAutopilot === null && (
-            <p className="text-sm font-semibold text-[#9aa6b7]">Keine Autopilot-Daten – Backend /api/admin/autopilot prüfen.</p>
+        <section className="rounded-lg border border-white/10 bg-white/[0.04]">
+          <div className="flex flex-wrap items-center gap-3 border-b border-white/10 px-5 py-4">
+            <h2 className="text-base font-bold text-[#f4f7fb]">Alle Automatiken</h2>
+            <span className="text-xs font-semibold text-[#9aa6b7]">
+              {adminAutopilot === null
+                ? 'Wird geladen …'
+                : `${workflows.length} Automatiken · kritische zuerst`}
+              {checkedAt ? ` · gemessen gerade eben · ${checkedAt} Uhr` : ''}
+            </span>
+            <span className="ml-auto" />
+            {adminAutopilotMessage ? (
+              <span className="text-xs font-semibold text-[#93a0b4]">{adminAutopilotMessage.split('|')[1] ?? ''}</span>
+            ) : null}
+          </div>
+          {workflows.length === 0 ? (
+            <p className="px-5 py-4 text-sm font-semibold text-[#9aa6b7]">
+              {adminAutopilot === null
+                ? 'Keine Autopilot-Daten – Backend /api/admin/autopilot prüfen.'
+                : 'Keine Automatiken gemeldet.'}
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 text-left text-[10.5px] font-black uppercase tracking-[0.12em] text-[#93a0b4]">
+                    <th className="px-5 py-3">Automatik</th>
+                    <th className="px-3 py-3">Takt</th>
+                    <th className="px-3 py-3">Ampel</th>
+                    <th className="px-3 py-3">Letzter Lauf</th>
+                    <th className="px-5 py-3 text-right">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.06]">
+                  {workflows.map((workflow) => (
+                    <tr key={workflow.file} className="align-middle">
+                      <td className="px-5 py-3">
+                        <span className="block font-bold text-[#f4f7fb]">{workflow.name}</span>
+                        <span className="text-xs font-semibold text-[#8b98ab]">
+                          {workflow.kind === 'local' ? 'Mac-Workstation (launchd)' : 'GitHub'}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-xs font-semibold text-[#9aa6b7]">{workflow.cadence}</td>
+                      <td className="px-3 py-3">
+                        <span className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs font-bold ${workflow.light === 'red' ? 'border-red-500/40 bg-red-500/10 text-red-300' : workflow.light === 'yellow' ? 'border-amber-500/40 bg-amber-500/10 text-amber-300' : workflow.light === 'green' ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/[0.04] text-[#9aa6b7]'}`}>
+                          <span className={`h-2 w-2 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-500'}`} />
+                          {lightLabel[workflow.light] ?? 'unbekannt'}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-xs font-semibold text-[#9aa6b7]">
+                        {workflow.lastRun?.createdAt
+                          ? new Date(workflow.lastRun.createdAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+                          : '–'}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          {workflow.lastRun?.htmlUrl && (
+                            <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-sky-400 hover:underline">
+                              GitHub
+                            </a>
+                          )}
+                          {workflow.kind === 'github' && (
+                            <button
+                              type="button"
+                              disabled={adminAutopilotBusy !== null}
+                              onClick={() => void actAdminAutopilotRerun(workflow.file)}
+                              className={`rounded-md border px-2.5 py-1.5 text-xs font-bold disabled:opacity-50 ${workflow.light === 'red' || workflow.light === 'yellow'
+                                ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10'
+                                : 'border-white/10 text-[#9aa6b7] hover:bg-white/[0.03]'}`}
+                            >
+                              {adminAutopilotBusy === workflow.file ? 'Startet …' : 'Neu starten'}
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-        </div>
+        </section>
       </div>
     )
   }
@@ -8730,39 +8761,50 @@ function AdminControlCenterInner() {
           </div>
         </div>
       )}
-      <div className="grid gap-5 lg:grid-cols-[264px_1fr]">
-        <aside className="rounded-xl border border-white/10 bg-white/[0.025] p-4 text-white lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
-          <div className="mb-5">
+      <div className="grid gap-5 grid-cols-[64px_1fr] sm:grid-cols-[76px_1fr] lg:grid-cols-[264px_1fr]">
+        <aside className="rounded-xl border border-white/10 bg-white/[0.025] p-2 text-white sm:p-3 lg:p-4 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-130px)] lg:overflow-y-auto">
+          <div className="mb-4 hidden lg:block">
             <p className="font-smyst-logo text-2xl leading-none">smyst.com</p>
             <p className="mt-1.5 text-[11px] font-black uppercase tracking-[0.16em] text-[#59c7ff]">Admin</p>
+          </div>
+          <div className="mb-2 grid place-items-center lg:mb-3 lg:hidden">
+            <span className="font-smyst-logo text-[11px] font-black leading-none text-[#59c7ff]">sm</span>
           </div>
           <button
             type="button"
             onClick={() => { setAdminSearchOpen(true); setAdminSearchQuery('') }}
-            className="mb-2 flex min-h-10 w-full items-center gap-2 rounded-lg border border-white/12 bg-white/[0.04] px-3 text-left text-sm font-semibold text-[#9aa6b7] transition hover:bg-white/[0.07]"
+            title="Alles durchsuchen (⌘K)"
+            className="mb-2 hidden min-h-10 w-full items-center gap-2 rounded-lg border border-white/12 bg-white/[0.04] px-3 text-left text-sm font-semibold text-[#9aa6b7] transition hover:bg-white/[0.07] lg:flex"
           >
             🔍 Alles durchsuchen … <span className="ml-auto text-[10.5px] font-bold text-[#66758a]">⌘K</span>
           </button>
           <button
             type="button"
-            onClick={() => setAdminNavOpen((open) => !open)}
-            aria-expanded={adminNavOpen}
-            className="mb-2 min-h-10 w-full rounded-lg border border-white/12 px-3 text-left text-sm font-bold text-white lg:hidden"
+            onClick={() => setAdminSearchOpen(true)}
+            title="Alles durchsuchen (⌘K)"
+            className="mb-2 grid h-9 w-full place-items-center rounded-lg border border-white/12 bg-white/[0.04] text-sm text-[#9aa6b7] transition hover:bg-white/[0.07] lg:hidden"
           >
-            {adminNavOpen ? 'Navigation schließen' : 'Navigation öffnen'}
+            🔍
           </button>
-          <nav className={`${adminNavOpen ? 'grid' : 'hidden'} gap-1 lg:grid`} aria-label="Admin Navigation">
+          <nav className="grid gap-1" aria-label="Admin Navigation">
             {adminSectionOrder.map((group, groupIndex) => (
               <div key={group} className="grid gap-1">
-                <p className="mt-4 px-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#66758a] first:mt-1">
+                <p className="mt-4 px-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#66758a] first:mt-1 hidden lg:block">
                   <span className="text-[#59c7ff]">{groupIndex + 1}</span> {group}
                 </p>
+                <div className="mx-auto my-2 h-px w-6 bg-white/10 lg:hidden" aria-hidden="true" />
                 {adminSections.filter((section) => section.group === group).map((section) => {
                   const selected = section.id === activeSection
                   return (
-                    <button key={section.id} type="button" onClick={() => setActiveSection(section.id)} className={`flex min-h-[42px] items-center gap-3 rounded-lg border px-2.5 text-left transition ${selected ? 'border-[#59c7ff]/40 bg-[#59c7ff]/[0.14] text-[#dff2ff]' : 'border-transparent bg-transparent text-[#9aa6b7] hover:bg-white/[0.06] hover:text-[#e6ecf4]'}`}>
-                      <span className={`grid h-6 w-8 shrink-0 place-items-center rounded-md border text-[10px] font-black tabular-nums ${selected ? 'border-[#59c7ff]/50 bg-[#59c7ff]/20 text-[#dff2ff]' : 'border-white/10 bg-white/[0.05] text-[#8b98ab]'}`}>{section.nr}</span>
-                      <span className="min-w-0">
+                    <button
+                      key={section.id}
+                      type="button"
+                      onClick={() => setActiveSection(section.id)}
+                      title={`${section.nr} ${section.label}`}
+                      className={`flex min-h-[42px] items-center gap-3 rounded-lg border px-2.5 text-left transition lg:px-3 ${selected ? 'border-[#59c7ff]/40 bg-[#59c7ff]/[0.14] text-[#dff2ff]' : 'border-transparent bg-transparent text-[#9aa6b7] hover:bg-white/[0.06] hover:text-[#e6ecf4]'}`}
+                    >
+                      <span className={`mx-auto grid h-7 w-9 shrink-0 place-items-center rounded-md border text-[10px] font-black tabular-nums lg:mx-0 ${selected ? 'border-[#59c7ff]/50 bg-[#59c7ff]/20 text-[#dff2ff]' : 'border-white/10 bg-white/[0.05] text-[#8b98ab]'}`}>{section.nr}</span>
+                      <span className="hidden min-w-0 lg:block">
                         <span className="block truncate text-sm font-bold">{section.label}</span>
                       </span>
                     </button>
