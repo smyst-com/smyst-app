@@ -286,6 +286,26 @@ def test_model_extraction_is_capped_per_profile() -> None:
     assert stored["model_attempts_skipped"] == ["Q15130138"]
 
 
+def test_model_extraction_rejects_years_as_place() -> None:
+    """Livebefund 15.09.2026: kleines Modell nannte das Sterbejahr "1410" als Ort."""
+    store, s3 = prepared_store(index=[
+        base_record("Q1070476", "jiang-xing", "Jiang Xing",
+                    birth_date="1382-01-01", death_date="1410-01-01"),
+    ])
+    s3.objects[snapshot_key("Q1070476")] = entity_payload("Q1070476", label="Jiang Xing")
+    s3.objects["pipeline/sources/Q1070476/wikipedia-en.json"] = json.dumps(
+        {"extract": "He was born in 1382 and died in 1410 during the voyage."}
+    ).encode("utf-8")
+
+    def llm_post(prompt: str) -> str:
+        return '{"birth_place": null, "death_place": "1410"}'
+
+    report = run(store, llm_post=llm_post)
+
+    assert "Q1070476" not in report["model_extractions"]
+    assert report["changed"] == {}
+
+
 # --- Widersprueche, Dubletten, Rotation -------------------------------------
 
 def test_contradictions_are_reported_without_change() -> None:

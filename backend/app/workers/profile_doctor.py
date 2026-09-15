@@ -243,6 +243,10 @@ def extract_places_via_model(
             continue
         city, _sep, country = value.partition(",")
         city = city.strip()
+        # Ein "Ort" ohne Buchstaben ist keiner — kleine Modelle geben gern das
+        # Sterbejahr als Ort aus (Livebefund 15.09.2026: "death_place": "1410").
+        if not any(char.isalpha() for char in city):
+            continue
         if not city or not _word_present(joined, city):
             continue  # Anti-Halluzinations-Gate
         country = country.strip()
