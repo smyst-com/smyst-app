@@ -328,6 +328,48 @@ def test_extraction_budget_also_applies_in_only_incomplete_mode() -> None:
     assert len(report["checked"]) == 3                       # Audit läuft komplett
 
 
+def test_contradiction_repaired_from_snapshot() -> None:
+    """Auftrag „Widersprüche korrigieren": Snapshot belegt das richtige Datum."""
+    store, s3 = prepared_store(index=[
+        base_record("Q550611", "falsch-datiert", "Falsch Datiert",
+                    birth_date="1500-01-01", death_date="1446-01-01",
+                    birth_label="1500-01-01", death_label="1446-01-01"),
+    ])
+    s3.objects[snapshot_key("Q550611")] = entity_payload(
+        "Q550611", label="Falsch Datiert",
+        claims={
+            **time_claim("P569", "+1400-00-00T00:00:00Z", 9),
+            **time_claim("P570", "+1446-06-05T00:00:00Z", 11),
+        },
+    )
+
+    report = run(store)
+
+    changed = report["changed"]["Q550611"]
+    assert changed["birth_date"] == "1400-01-01"          # repariert aus Snapshot
+    assert changed["birth_label"] == "1400"               # ehrliches Label dazu
+    assert changed["death_date"] == "1446-06-05"          # volles Snapshot-Datum
+    assert changed["death_label"] == "06.1446"            # Monatspräzision als Label
+    assert report["contradictions"]["Q550611"]            # Befund bleibt dokumentiert
+    assert report["contradiction_repairs"]["Q550611"]["birth_date"] == "1400-01-01"
+
+
+def test_contradiction_without_snapshot_stays_report_only() -> None:
+    """Snapshot ohne Daten: nichts erfinden — nur Bericht."""
+    store, s3 = prepared_store(index=[
+        base_record("Q5617", "sehr-alt", "Sehr Alt",
+                    birth_date="1800-01-01", death_date="1999-01-01",
+                    birth_label="1800", death_label="1999"),
+    ])
+    s3.objects[snapshot_key("Q5617")] = entity_payload("Q5617", label="Sehr Alt")
+
+    report = run(store)
+
+    assert report["contradictions"]["Q5617"]
+    assert report["changed"] == {}
+    assert report["contradiction_repairs"] == {}
+
+
 # --- Widersprueche, Dubletten, Rotation -------------------------------------
 
 def test_contradictions_are_reported_without_change() -> None:
@@ -431,7 +473,8 @@ def test_honest_label_by_precision() -> None:
     assert _honest_label({"time": "+1850-00-00T00:00:00Z", "precision": 8}) == "ca. 1850"
     assert _honest_label({"time": "+1859-03-00T00:00:00Z", "precision": 11}) == "03.1859"
     assert _honest_label({"time": "+1859-03-14T00:00:00Z", "precision": 11}) == "03.1859"
-    assert _honest_label({"time": "+1859-03-14T00:00:00Z", "precision": 10}) is None
+    assert _honest_label({"time": "+1859-03-14T00:00:00Z", "precision": 10}) == "14.03.1859"
+    assert _honest_label({"time": "+1859-00-00T00:00:00Z", "precision": 10}) is None
 
 
 def test_iso_from_time_rejects_bc_and_out_of_range() -> None:
