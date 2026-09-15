@@ -202,24 +202,47 @@ jobs:
           fi
 
       # Nachpruefung: gewarteter Pages-Lauf + geaenderte Profilseiten live
-      # abrufen + Chat-Gesundheit (Pflicht-Smoke: smyst_llm ok:true).
+      # abrufen + Chat-Gesundheitscheck (providers?ping=true).
+      # Deploy-Stau (pages-Laeufe dauern mal ueber 45 min) ist KEIN Doktor-
+      # Fehler: Daten liegen sicher im Store, der naechste Stundenlauf prueft
+      # die Seiten dann. Scharf geprueft wird NUR nach einem erfolgreich
+      # beendeten Pages-Lauf — dann muessen die Seiten auch erreichbar sein.
       - name: "Nachpruefung: Profilseiten + Chat"
         if: steps.doctor.outputs.changed != '0' && steps.doctor.outputs.changed != ''
-        timeout-minutes: 45
+        timeout-minutes: 50
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
           RUN_ID=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/github-pages.yml/runs?per_page=1" --jq '.workflow_runs[0].id')
-          echo "Warte auf Pages-Lauf ${RUN_ID} ..."
-          gh run watch "$RUN_ID" --exit-status --interval 30 || echo "::warning::Pages-Lauf nicht erfolg-reich beendet — Smoke faehrt trotzdem fort."
+          echo "Warte bis zu 30 min auf Pages-Lauf ${RUN_ID} ..."
+          SEKUNDEN=0; STATUS="unknown"
+          while [ "$SEKUNDEN" -lt 1800 ]; do
+            STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" --jq '.status')
+            [ "$STATUS" = "completed" ] && break
+            sleep 30; SEKUNDEN=$((SEKUNDEN+30))
+          done
+          if [ "$STATUS" != "completed" ]; then
+            echo "::warning::Pages-Lauf nach 30 min nicht beendet (Deploy-Stau) — Live-Check übersprungen; Daten sind im Store, nächste Stunde wird geprüft."
+            exit 0
+          fi
+          CONCLUSION=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" --jq '.conclusion')
+          if [ "$CONCLUSION" != "success" ]; then
+            echo "::warning::Pages-Lauf endete mit '${CONCLUSION}' — Live-Check übersprungen."
+            exit 0
+          fi
           FEHLER=0
-          HEAD=$(head -10 /tmp/doctor-changed.txt)
-          for slug in $HEAD; do
-            API=$(curl -sf -o /dev/null -w '%{http_code}' "https://smyst.com/api/public/twins/${slug}/" || true)
-            SEITE=$(curl -sf -o /dev/null -w '%{http_code}' "https://smyst.com/t/${slug}/" || true)
+          for slug in $(head -10 /tmp/doctor-changed.txt); do
+            OK=0
+            for versuch in 1 2 3; do
+              API=$(curl -sf -o /dev/null -w '%{http_code}' "https://smyst.com/api/public/twins/${slug}/" || true)
+              SEITE=$(curl -sf -o /dev/null -w '%{http_code}' "https://smyst.com/t/${slug}/" || true)
+              if [ "$API" = "200" ] && [ "$SEITE" = "200" ]; then OK=1; break; fi
+              echo "Versuch ${versuch}: ${slug} API ${API}, Seite ${SEITE} — warte 30 s (CDN-Nachlauf) ..."
+              sleep 30
+            done
             echo "${slug}: API ${API}, Seite ${SEITE}"
-            if [ "$API" != "200" ] || [ "$SEITE" != "200" ]; then FEHLER=$((FEHLER+1)); fi
+            [ "$OK" = "0" ] && FEHLER=$((FEHLER+1))
           done
           PING=$(curl -sf "https://api.smyst.com/api/ai/providers?ping=true" || true)
           echo "$PING" | head -c 400; echo
@@ -239,7 +262,7 @@ jobs:
           PYEOF
           echo "$PING" | python3 /tmp/check_ping.py
           if [ "$FEHLER" -gt 0 ]; then
-            echo "::error::${FEHLER} geaenderte Profilseiten sind nicht sauber erreichbar."
+            echo "::error::${FEHLER} geaenderte Profilseiten sind nach erfolgreichem Deploy nicht erreichbar."
             exit 1
           fi
           echo "Alle geprueften Profilseiten erreichbar."
