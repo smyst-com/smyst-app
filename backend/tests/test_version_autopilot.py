@@ -53,14 +53,29 @@ class FakePaginator:
 class FakeS3:
     def __init__(self):
         self.objects: dict[str, bytes] = {}
+        self.fail_delete = False
+        self.deleted: list[str] = []
 
     def put_object(self, *, Bucket, Key, Body, ContentType):
         self.objects[Key] = Body
 
     def get_object(self, *, Bucket, Key):
         if Key not in self.objects:
-            raise KeyError(Key)
+            error = KeyError(Key)
+            error.response = {"Error": {"Code": "NoSuchKey"}, "ResponseMetadata": {"HTTPStatusCode": 404}}
+            raise error
         return {"Body": io.BytesIO(self.objects[Key])}
+
+    def delete_object(self, *, Bucket, Key):
+        if self.fail_delete:
+            raise RuntimeError("delete gesperrt")
+        self.deleted.append(Key)
+        self.objects.pop(Key, None)
+
+    def list_objects_v2(self, **kwargs):
+        prefix = kwargs.get("Prefix", "")
+        contents = [{"Key": k} for k in sorted(self.objects) if k.startswith(prefix)]
+        return {"Contents": contents, "IsTruncated": False}
 
     def get_paginator(self, name):
         return FakePaginator(list(self.objects))
@@ -207,3 +222,167 @@ def test_reject_pending_keeps_live_and_archives_decision(monkeypatch) -> None:
     capsule = json.loads(client.objects[f"{CAPSULE_PREFIX}Q1035/capsule.json"])
     assert capsule["persona_prompt"] == "ALTE CAPSULE"
     assert any(k.startswith("pipeline/autopilot/rejected/") for k in client.objects)
+
+
+def _stage_q1035(monkeypatch) -> tuple[CandidateStore, FakeS3]:
+    _patch_eval(monkeypatch, 0.9)
+    store, client = _store()
+    run_version_autopilot(
+        store=store, config=CONFIG, dry_run=False, run_date=RUN_DATE,
+        fetch_json=fetch_json, chat_fn_factory=good_chat_factory, now=NOW,
+    )
+    return store, client
+
+
+def test_apply_pending_removes_staging_marker(monkeypatch) -> None:
+    """Nach der Freigabe darf der Eintrag aus der Freigabe-Liste verschwinden.
+
+    Vorfall 16.09.2026: pending/{qid}.json blieb stehen, die Liste zeigte
+    dieselben Eintraege fuer immer wieder an — 'Alle freigeben' schien
+    wirkungslos.
+    """
+    from app.api.v1.routes import admin_versions as av
+
+    store, client = _stage_q1035(monkeypatch)
+    assert av._apply_pending(store, "Q1035", "owner@smyst.com").startswith("live:")
+    assert not any(k.startswith(PENDING_PREFIX) for k in client.objects)
+    # Entscheidungskopie bleibt vollstaendig erhalten.
+    assert any(k.startswith("pipeline/autopilot/applied/Q1035-") for k in client.objects)
+    assert av._load_pending(store) == []
+
+
+def test_apply_pending_is_idempotent_on_repeated_clicks(monkeypatch) -> None:
+    from app.api.v1.routes import admin_versions as av
+
+    store, client = _stage_q1035(monkeypatch)
+    assert av._apply_pending(store, "Q1035", "owner@smyst.com").startswith("live:")
+    # Cleanup schlug fehl, Marker steht noch, Inhaber klickt erneut:
+    client.fail_delete = True
+    client.objects[f"{PENDING_PREFIX}Q1035.json"] = json.dumps(
+        {"old_version": 1, "new_version": 2, "twin_id": PUBLISHED_DOC["twin_id"]}
+    ).encode("utf-8")
+    result = av._apply_pending(store, "Q1035", "owner@smyst.com")
+    assert "bereits live" in result
+    document = store.load_candidate_document("Q1035")
+    assert len(document["twin_versions"]) == 1  # keine doppelte Historie
+    backup = json.loads(client.objects["pipeline/backups/Q1035/v1/capsule.json"])
+    assert backup["persona_prompt"] == "ALTE CAPSULE"  # Backup nicht ueberschrieben
+
+
+def test_apply_pending_parks_broken_staging_without_capsule(monkeypatch) -> None:
+    from app.api.v1.routes import admin_versions as av
+
+    store, client = _stage_q1035(monkeypatch)
+    del client.objects[f"{PENDING_PREFIX}Q1035/capsule.json"]
+    result = av._apply_pending(store, "Q1035", "owner@smyst.com")
+    assert "uebersprungen" in result and "incomplete" in result
+    assert not any(k.startswith(PENDING_PREFIX) for k in client.objects)
+    # Der Datensatz ist nicht weg, sondern gesichert.
+    assert any(k.startswith("pipeline/autopilot/incomplete/Q1035-") for k in client.objects)
+
+
+def test_apply_pending_keeps_staging_on_transient_read_error(monkeypatch) -> None:
+    from app.api.v1.routes import admin_versions as av
+
+    store, client = _stage_q1035(monkeypatch)
+    original_get = client.get_object
+
+    def flaky(**kwargs):
+        if str(kwargs.get("Key", "")).endswith("/capsule.json"):
+            raise RuntimeError("netz weg")
+        return original_get(**kwargs)
+
+    monkeypatch.setattr(client, "get_object", flaky)
+    result = av._apply_pending(store, "Q1035", "owner@smyst.com")
+    assert result.startswith("abgebrochen") and "Live unveraendert" in result
+    # Voruebergehender Fehler: Marker bleibt, nichts wird entsorgt.
+    assert f"{PENDING_PREFIX}Q1035.json" in client.objects
+    assert not any(k.startswith("pipeline/autopilot/incomplete/") for k in client.objects)
+
+
+def test_reject_pending_removes_staging_marker(monkeypatch) -> None:
+    from app.api.v1.routes import admin_versions as av
+
+    store, client = _stage_q1035(monkeypatch)
+    assert av._reject_pending(store, "Q1035", "Nein", "owner@smyst.com").startswith("verworfen")
+    assert not any(k.startswith(PENDING_PREFIX) for k in client.objects)
+    assert any(k.startswith("pipeline/autopilot/rejected/Q1035-") for k in client.objects)
+
+
+def _owner_cookie() -> dict[str, str]:
+    import time
+
+    from app.api.v1.routes.auth import _make_token
+
+    token = _make_token(
+        {
+            "sub": "user-1",
+            "email": "owner@example.com",
+            "roles": ["owner"],
+            "permissions": ["admin:read"],
+            "expiresAt": int(time.time() * 1000) + 3_600_000,
+        }
+    )
+    return {"smyst_session": token}
+
+
+def test_approve_all_endpoint_clears_list_and_reports_counts(monkeypatch) -> None:
+    """End-to-End: Ein Klick auf 'Alle freigeben' leert die Liste wirklich."""
+    from fastapi.testclient import TestClient
+
+    from app.api.v1.routes import admin_versions as av
+    from app.main import app
+
+    store, client = _stage_q1035(monkeypatch)
+    # Zweites Profil, wie der Worker es staget.
+    client.objects[f"{CANDIDATE_PREFIX}Q2222.json"] = json.dumps(
+        {
+            **PUBLISHED_DOC,
+            "wikidata_qid": "Q2222",
+            "name": "Zweitprofil",
+            "twin_id": "22222222-2222-4222-8222-222222222222",
+            "version": 3,
+        }
+    ).encode("utf-8")
+    for filename, body in (
+        ("capsule.json", {"persona_prompt": "ZWEITE CAPSULE", "slug": "zweitprofil", "version": 4}),
+        ("prompt.json", {}),
+        ("seo.json", {}),
+    ):
+        client.objects[f"{PENDING_PREFIX}Q2222/{filename}"] = json.dumps(body).encode("utf-8")
+    client.objects[f"{PENDING_PREFIX}Q2222.json"] = json.dumps(
+        {
+            "old_version": 3,
+            "new_version": 4,
+            "twin_id": "22222222-2222-4222-8222-222222222222",
+            "staged_at": "2026-08-28T02:00:00+00:00",
+        }
+    ).encode("utf-8")
+
+    monkeypatch.setattr(av, "_store", lambda: store)
+    http = TestClient(app, base_url="https://testserver")
+    cookies = _owner_cookie()
+
+    response = http.post(
+        "/api/admin/versions/approve-all", cookies=cookies, headers={"X-Smyst-CSRF": "1"}
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ok"] is True
+    assert payload["total"] == 2
+    assert payload["applied"] == 2
+
+    listing = http.get("/api/admin/versions/pending", cookies=cookies)
+    assert listing.status_code == 200
+    assert listing.json()["counts"]["pending"] == 0
+
+
+def test_approve_all_requires_csrf() -> None:
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
+    http = TestClient(app, base_url="https://testserver")
+    response = http.post("/api/admin/versions/approve-all", cookies=_owner_cookie())
+    assert response.status_code == 403
+    assert response.json()["code"] == "csrf_required"
