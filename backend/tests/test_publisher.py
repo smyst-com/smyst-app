@@ -13,7 +13,11 @@ from app.ai.publisher import (
     upsert_index,
     visible_count_today,
 )
-from app.integrations.candidate_store import CandidateStore
+from app.integrations.candidate_store import (
+    CANDIDATE_PREFIX,
+    STATUS_PREFIX,
+    CandidateStore,
+)
 
 CONFIG = PipelineConfig(enabled=True, daily_publish_limit=5)
 
@@ -354,3 +358,36 @@ def test_refresh_published_summary_tolerates_missing_index() -> None:
     store = _prepared_store()  # kein Publish-Index vorhanden
     key = refresh_published_summary(store)  # darf nicht raisen
     assert json.loads(store._client.objects[key]) == []  # noqa: SLF001
+
+
+def test_select_reviewed_qids_skips_published_via_summary() -> None:
+    """Schnellauswahl unter der DELETE-Sperre (15.09.): reviewed-Marker minus
+    published-summary-QIDs — nur der echte Rest wird geladen und geprueft.
+    Bereits veroeffentlichte oder abgelehnte Kandidaten kommen nicht durch."""
+    from app.workers.publish_profiles import select_reviewed_qids
+
+    store = CandidateStore(FakeS3(), "smyst-memories")
+    store.save_published_summary([
+        {"wikidata_qid": "Q1", "name": "schon live"},
+        {"wikidata_qid": "Q2", "name": "auch live"},
+    ])
+    # Marker: Q1 (stale, published), Q2 (stale, published), Q3/Q4 (echt reviewed), Q5 (stale, rejected)
+    reviewed = [
+        ("Q1", "published", False),   # veralteter Marker
+        ("Q2", "published", False),
+        ("Q3", "reviewed", True),
+        ("Q4", "reviewed", True),
+        ("Q5", "rejected", False),
+    ]
+    for qid, status, passed in reviewed:
+        store._client.put_object(  # noqa: SLF001
+            Bucket="smyst-memories",
+            Key=f"{STATUS_PREFIX}reviewed/{qid}",
+            Body=b"", ContentType="text/plain",
+        )
+        store._client.objects[f"{CANDIDATE_PREFIX}{qid}.json"] = json.dumps(
+            {"wikidata_qid": qid, "name": qid, "status": status, "qa_passed": passed}
+        ).encode()
+
+    qids = select_reviewed_qids(store)
+    assert sorted(qids) == ["Q3", "Q4"]

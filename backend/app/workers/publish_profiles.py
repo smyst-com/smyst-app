@@ -54,12 +54,42 @@ def actor_uuid(email: str) -> uuid.UUID:
 
 
 def select_reviewed_qids(store: CandidateStore) -> list[str]:
-    """QIDs aller Kandidaten mit Status reviewed UND bestandener QA."""
-    return [
-        doc["wikidata_qid"]
-        for doc in store.candidate_documents_by_status(PipelineStatus.REVIEWED.value)
-        if doc.get("qa_passed")
-    ]
+    """QIDs aller Kandidaten mit Status reviewed UND bestandener QA.
+
+    15.09.2026 — Schneller Weg unter der e2-DELETE-Sperre: Alte Marker
+    bleiben liegen (delete_object AccessDenied), der Voll-Scan ueber
+    reviewed-Marker lud deshalb zehntausende Dokumente (Publish-Laeufe
+    50+ min). Da der Publish-Index JEDES veroeffentlichte QID kennt,
+    genuegt: reviewed-Marker (LIST, keine GETs) minus bereits
+    veroeffentlichte QIDs (published-summary, 1 GET) — uebrig bleibt der
+    echte reviewed-Rest, nur der wird geladen und (wie bisher) auf
+    qa_passed geprueft. Fehlt die Summary, greift der alte Voll-Scan.
+    """
+    markers = store.qids_by_status(PipelineStatus.REVIEWED.value)
+    if not markers:
+        return []
+    summary = store.load_published_summary()
+    if summary is None:
+        return [
+            doc["wikidata_qid"]
+            for doc in store.candidate_documents_by_status(PipelineStatus.REVIEWED.value)
+            if doc.get("qa_passed")
+        ]
+    published_qids = {
+        entry.get("wikidata_qid")
+        for entry in summary
+        if entry.get("wikidata_qid")
+    }
+    candidates = [qid for qid in markers if qid not in published_qids]
+    selected: list[str] = []
+    for qid in candidates:
+        try:
+            doc = store.load_candidate_document(qid)
+        except Exception:
+            continue  # verwaister Marker
+        if doc.get("status") == PipelineStatus.REVIEWED.value and doc.get("qa_passed"):
+            selected.append(qid)
+    return selected
 
 
 LIVE_TWINS_API = "https://smyst.com/api/public/twins/"
