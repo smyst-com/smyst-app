@@ -6922,7 +6922,9 @@ function AdminControlCenterInner() {
         body: action === 'reject' ? JSON.stringify({ reason: (reason ?? '').trim() }) : undefined,
       })
       const payload = await response.json().catch(() => ({}))
-      if (action === 'approve-all') {
+      if (!response.ok) {
+        setAdminVersionsMessage(`Aktion fehlgeschlagen (Fehler ${response.status}).`)
+      } else if (action === 'approve-all') {
         setAdminVersionsMessage(
           payload?.ok ? `${payload.applied} von ${payload.total} Versionen live geschaltet.` : 'Freigeben fehlgeschlagen.',
         )

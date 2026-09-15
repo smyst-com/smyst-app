@@ -13,8 +13,14 @@ POST /api/admin/versions/approve-all     - Alle gestagten Versionen freigeben
 POST /api/admin/versions/{qid}/reject    - Staging verwerfen (Live unberuehrt,
         Datensatz wandert nach pipeline/autopilot/rejected/ — nichts wird geloescht)
 
-Schutzregeln: kein Loeschen, kein Unpublish, kein Statuswechsel; QA- und
-Eval-Ergebnisse stammen ausschliesslich aus dem Worker-Staging. POST
+Nach dem Sichern der Entscheidung (applied/ bzw. rejected/) wird der
+Staging-Marker pending/{qid}.json entfernt — sonst zeigt die Freigabe-Liste
+denselben Eintrag fuer immer wieder an (Vorfall 16.09.2026: „Alle freigeben"
+schien wirkungslos, weil die Liste nicht schrumpfte). Kaputtes Staging ohne
+Capsule wandert nach pipeline/autopilot/incomplete/ — nichts geht verloren.
+
+Schutzregeln: kein Loeschen von Profildaten, kein Unpublish, kein Statuswechsel;
+QA- und Eval-Ergebnisse stammen ausschliesslich aus dem Worker-Staging. POST
 verlangt CSRF-Header + Admin-Session (admin/owner), wie approvals.
 """
 
@@ -22,6 +28,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Any
 
@@ -43,6 +50,12 @@ PENDING_LIMIT = 200
 BACKUP_PREFIX = "pipeline/backups/"
 APPLIED_PREFIX = "pipeline/autopilot/applied/"
 REJECTED_PREFIX = "pipeline/autopilot/rejected/"
+INCOMPLETE_PREFIX = "pipeline/autopilot/incomplete/"
+
+#: Parallelitaet beim Einspielen von approve-all. _load_pending liest bereits
+#: mit 20 Threads ueber denselben Client; mit 12 Threads bleiben 95 Profile
+#: deutlich unter der Proxy-Timeout-Grenze (seriell dauerte es Minuten).
+APPLY_WORKERS = 12
 
 #: Historie je Profil begrenzen — das Kandidaten-Dokument ist kein Archiv,
 #: jede Version liegt vollstaendig in pipeline/backups/.
@@ -83,6 +96,49 @@ def _load_json(store: CandidateStore, key: str) -> dict | None:
         return json.loads(_get_object(store, key)["Body"].read().decode("utf-8"))
     except Exception:
         return None
+
+
+def _is_missing_object(error: Exception) -> bool:
+    """True, wenn ein S3-Lesefehler 'Objekt existiert nicht' bedeutet.
+
+    Nur dann darf ein Staging-Eintrag als kaputt gelten — ein voruebergehender
+    Netz-/Timeout-Fehler darf den Freigabe-Datensatz nicht entsorgen.
+    """
+    if isinstance(error, KeyError):
+        return True
+    response = getattr(error, "response", None) or {}
+    code = str((response.get("Error") or {}).get("Code") or "")
+    status = str((response.get("ResponseMetadata") or {}).get("HTTPStatusCode") or "")
+    return code in {"NoSuchKey", "404", "NotFound"} or status == "404"
+
+
+def _cleanup_pending(store: CandidateStore, qid: str) -> None:
+    """Staging-Marker aus der Freigabe-Liste nehmen.
+
+    Ruf das NUR auf, nachdem die Entscheidungskopie in applied/ bzw. rejected/
+    steht — geloescht wird nur der Staging-Zeiger, nie ein Profildatensatz.
+    """
+    for key in (
+        f"{PENDING_PREFIX}{qid}.json",
+        f"{PENDING_PREFIX}{qid}/capsule.json",
+        f"{PENDING_PREFIX}{qid}/prompt.json",
+        f"{PENDING_PREFIX}{qid}/seo.json",
+    ):
+        try:
+            store._client.delete_object(Bucket=store._bucket, Key=key)
+        except Exception:
+            return  # best effort — der naechste Lauf raeumt erneut auf
+
+
+def _park_incomplete(store: CandidateStore, qid: str, record: dict, reason: str) -> None:
+    """Kaputtes Staging (ohne Capsule nie einspielbar) sichern und aufräumen."""
+    now = datetime.now(timezone.utc)
+    _put_object(
+        store, f"{INCOMPLETE_PREFIX}{qid}-{int(now.timestamp())}.json",
+        json.dumps({**record, "reason": reason, "parked_at": now.isoformat()},
+                   ensure_ascii=False, indent=2).encode("utf-8"),
+    )
+    _cleanup_pending(store, qid)
 
 
 def _list_pending_qids(store: CandidateStore) -> list[str]:
@@ -134,13 +190,39 @@ def _apply_pending(store: CandidateStore, qid: str, approved_by: str) -> str:
     if not isinstance(record, dict):
         return f"uebersprungen: keine gestagte Version fuer {qid}"
 
-    document = store.load_candidate_document(qid)
-    staged_capsule = _load_json(store, f"{PENDING_PREFIX}{qid}/capsule.json")
-    if not isinstance(staged_capsule, dict):
-        return f"uebersprungen: gestagte Capsule fehlt fuer {qid}"
+    try:
+        document = store.load_candidate_document(qid)
+    except Exception as error:
+        if _is_missing_object(error):
+            _park_incomplete(store, qid, record, "Kandidaten-Dokument fehlt")
+            return f"uebersprungen: Kandidaten-Dokument fehlt fuer {qid} (Eintrag nach incomplete/ verschoben)"
+        return f"abgebrochen (Kandidaten-Dokument fuer {qid} momentan nicht lesbar) — Live unveraendert"
 
     old_version = int(record.get("old_version") or 1)
     new_version = int(record.get("new_version") or old_version + 1)
+    try:
+        live_version = int(document.get("version") or 1)
+    except (TypeError, ValueError):
+        live_version = 1
+    if live_version >= new_version:
+        # Bereits eingespielt (z. B. wiederholter Klick auf "Alle freigeben"):
+        # nur den Staging-Marker raeumen — kein zweites Backup v1, keine
+        # doppelten twin_versions-Eintraege.
+        _cleanup_pending(store, qid)
+        return f"uebersprungen: v{new_version} ist bereits live fuer {qid}"
+
+    try:
+        staged_capsule = json.loads(
+            _get_object(store, f"{PENDING_PREFIX}{qid}/capsule.json")["Body"].read().decode("utf-8")
+        )
+    except Exception as error:
+        if _is_missing_object(error):
+            _park_incomplete(store, qid, record, "gestagte Capsule fehlt")
+            return f"uebersprungen: gestagte Capsule fehlt fuer {qid} (Eintrag nach incomplete/ verschoben)"
+        return f"abgebrochen (Staging fuer {qid} momentan nicht lesbar) — Live unveraendert"
+    if not isinstance(staged_capsule, dict):
+        _park_incomplete(store, qid, record, "gestagte Capsule unlesbar")
+        return f"uebersprungen: gestagte Capsule unlesbar fuer {qid} (Eintrag nach incomplete/ verschoben)"
 
     _archive_live_version(store, qid, old_version)
     for filename in ("capsule.json", "prompt.json", "seo.json"):
@@ -190,12 +272,14 @@ def _apply_pending(store: CandidateStore, qid: str, approved_by: str) -> str:
     }
     store.save_candidate_document(qid, new_document)
 
-    # Freigabe-Datensatz wandert nach applied/ (nichts wird geloescht).
+    # Freigabe-Datensatz wandert nach applied/ (nichts wird geloescht) und
+    # erst danach verlaesst der Eintrag die Freigabe-Liste.
     _put_object(
         store, f"{APPLIED_PREFIX}{qid}-{int(now.timestamp())}.json",
         json.dumps({**record, "approved_by": approved_by, "applied_at": now.isoformat()},
                    ensure_ascii=False, indent=2).encode("utf-8"),
     )
+    _cleanup_pending(store, qid)
     return (
         f"live: v{old_version} -> v{new_version} "
         f"(Eval {record.get('old_score')} -> {record.get('new_score')}, Backup v{old_version} archiviert)"
@@ -212,6 +296,7 @@ def _reject_pending(store: CandidateStore, qid: str, reason: str, rejected_by: s
         json.dumps({**record, "reason": reason, "rejected_by": rejected_by, "rejected_at": now.isoformat()},
                    ensure_ascii=False, indent=2).encode("utf-8"),
     )
+    _cleanup_pending(store, qid)
     return f"verworfen ({reason}) — Live unveraendert"
 
 
@@ -265,9 +350,20 @@ async def approve_all(request: Request) -> Any:
     store = _store()
     try:
         cards = await asyncio.to_thread(_load_pending, store)
-        results = await asyncio.to_thread(
-            lambda: {qid: _apply_pending(store, qid, approved_by) for qid in (c["qid"] for c in cards)}
-        )
+        qids = [c["qid"] for c in cards]
+
+        def _apply_one(qid: str) -> str:
+            # Ein kaputtes Einzelprofil darf den ganzen Stapel nicht abbrechen.
+            try:
+                return _apply_pending(store, qid, approved_by)
+            except Exception as error:
+                return f"abgebrochen (Fehler: {error}) — Live unveraendert"
+
+        def _apply_all() -> dict[str, str]:
+            with ThreadPoolExecutor(max_workers=APPLY_WORKERS) as pool:
+                return dict(zip(qids, pool.map(_apply_one, qids)))
+
+        results = await asyncio.to_thread(_apply_all)
     except Exception:
         return JSONResponse(
             status_code=502,
