@@ -577,6 +577,7 @@ def run_doctor(
     resolver = PlaceResolver(lambda q: _load_entity(store, q, dry_run=dry_run))
     checked_at = now.isoformat()
     index_updates: dict[str, dict[str, str]] = {}
+    extraction_used = 0
 
     for record in ordered:
         qid = record.get("wikidata_qid")
@@ -594,7 +595,8 @@ def run_doctor(
             unresolved_after_wikidata = missing_places and not any(
                 field in updates for field, _ in PLACE_FIELDS
             )
-            if unresolved_after_wikidata and llm_post is not None:
+            if unresolved_after_wikidata and llm_post is not None \
+                    and extraction_used < extraction_budget:
                 entry = ledger.get(qid)
                 attempts = (entry.get("attempts") or 0) if isinstance(entry, dict) else 0
                 if attempts >= MAX_MODEL_ATTEMPTS:
@@ -609,6 +611,7 @@ def run_doctor(
                         death_year=str(record.get("death_date") or "")[:4] or None,
                         texts=texts,
                     )
+                    extraction_used += 1  # Budget gilt je Lauf, auch im Nachhol-Modus
                     if extracted:
                         for field, value in extracted.items():
                             updates.setdefault(field, value)
@@ -646,6 +649,12 @@ def run_doctor(
                 "checked_at": checked_at,
                 "attempts": int(prior_attempts) + (1 if (missing_places and llm_post is not None) else 0),
             }
+            # Checkpoint alle 25 Profile: stürzt der Lauf später ab (Timeout),
+            # bleiben Versuche/Prüfungen erhalten und werden nicht doppelt
+            # verbrannt. Der Schlüssel gehört dem Doktor allein (Concurrency-
+            # Gruppe), also ist der In-Memory-Stand die Wahrheit.
+            if not dry_run and len(report["checked"]) % 25 == 0:
+                _put_json_object(store, ROTATION_KEY, ledger)
         except Exception as error:  # noqa: BLE001 - einzelne Profile brechen nicht ab
             report["errors"][qid] = f"{type(error).__name__}: {error}"
 
@@ -688,10 +697,9 @@ def run_doctor(
                     applied[qid] = used
             _put_json_object(store, PUBLISH_INDEX_KEY, fresh)
             report["changed"] = applied
-        ledger_subset = {qid: ledger[qid] for qid in {r.get("wikidata_qid") for r in ordered} if qid in ledger}
-        merged_ledger = _load_rotation(store)
-        merged_ledger.update(ledger_subset)
-        _put_json_object(store, ROTATION_KEY, merged_ledger)
+        ledger_final = _load_rotation(store)
+        ledger_final.update(ledger)
+        _put_json_object(store, ROTATION_KEY, ledger_final)
         report["finished_at"] = datetime.now(timezone.utc).isoformat()
         _put_json_object(store, REPORT_KEY, report)
         store.save_changelog(run_date, report, suffix="-profile-doctor")
