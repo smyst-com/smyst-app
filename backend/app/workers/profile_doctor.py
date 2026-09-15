@@ -495,6 +495,11 @@ def select_records(
 ) -> list[dict]:
     """Rotationsauswahl: nie gepruefte zuerst, dann aelteste Pruefung.
 
+    Innerhalb der nie geprueften gewinnen die NEUESTEN (published_at absteigend):
+    frisch veroeffentlichte Profile werden noch am selben Tag gesaeubert, statt
+    bis zu einen vollen Rotationsumlauf auf ihren ersten Check zu warten. Danach
+    rotiert der Bestand wie gehabt (aelteste Pruefung zuerst).
+
     only_incomplete=True priorisiert Eintraege mit fehlenden Orts-/Datums-
     feldern (Nachhol-Modus fuer den sichtbaren Fehlbestand).
     """
@@ -505,13 +510,18 @@ def select_records(
     if only_incomplete:
         pool = [r for r in pool if incomplete(r)]
 
-    def sort_key(record: dict):
+    nie_geprueft: list[dict] = []
+    geprueft: list[dict] = []
+    for record in pool:
         entry = ledger.get(record.get("wikidata_qid"))
-        checked = _checked_at(entry)
-        return (bool(checked), checked, str(record.get("wikidata_qid")))
-
-    pool.sort(key=sort_key)
-    return pool[: max(limit, 0)]
+        if _checked_at(entry):
+            geprueft.append(record)
+        else:
+            nie_geprueft.append(record)
+    # Neue zuerst: published_at ISO-Strings sortieren lexikografisch richtig.
+    nie_geprueft.sort(key=lambda r: (str(r.get("published_at") or ""), str(r.get("wikidata_qid"))), reverse=True)
+    geprueft.sort(key=lambda r: (_checked_at(ledger.get(r.get("wikidata_qid"))), str(r.get("wikidata_qid"))))
+    return (nie_geprueft + geprueft)[: max(limit, 0)]
 
 
 # --- Ausfuehrung ------------------------------------------------------------

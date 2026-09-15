@@ -413,6 +413,22 @@ def test_rotation_checks_unchecked_first_then_oldest() -> None:
     assert [r["wikidata_qid"] for r in selected] == ["Q1", "Q3"]  # nie -> aeltester
 
 
+def test_rotation_prefers_newest_unchecked_profiles() -> None:
+    """Frisch veroeffentlichte Profile (nie geprueft) kommen zuerst — die
+    alten nie-geprueften folgen danach, gepruefte zuletzt (aelteste zuerst)."""
+    index = [
+        base_record("Qalt", "alt", "Alt", published_at="2026-08-01T00:00:00+00:00"),
+        base_record("Qneu", "neu", "Neu", published_at="2026-09-15T06:00:00+00:00"),
+        base_record("Qmitte", "mitte", "Mitte", published_at="2026-09-01T00:00:00+00:00"),
+        base_record("Qalt2", "alt2", "Alt2", published_at="2026-07-01T00:00:00+00:00"),
+        base_record("Qgepr", "gepr", "Gepr", published_at="2026-06-01T00:00:00+00:00"),
+    ]
+    ledger = {"Qgepr": {"checked_at": "2026-09-14T00:00:00+00:00", "attempts": 0},
+              "Qalt2": {"checked_at": "2026-09-13T00:00:00+00:00", "attempts": 0}}
+    selected = select_records(index, ledger, limit=5)
+    assert [r["wikidata_qid"] for r in selected] == ["Qneu", "Qmitte", "Qalt", "Qalt2", "Qgepr"]
+
+
 def test_only_incomplete_mode_skips_complete_profiles() -> None:
     index = [
         base_record("Q1", "a", "A"),
