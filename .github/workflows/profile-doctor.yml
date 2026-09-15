@@ -177,6 +177,11 @@ jobs:
           CHANGED=$( (wc -l < /tmp/doctor-changed.txt 2>/dev/null) | tr -d ' ' )
           if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then CHANGED=0; fi
           echo "changed=${CHANGED:-0}" >> "$GITHUB_OUTPUT"
+          # Schreibzeitpunkt: Die Nachpruefung darf nur auf Deploys pruefen,
+          # die NACH diesem Moment gestartet sind (ein vorher gestarteter
+          # Pages-Lauf enthaelt die neuen/geaenderten Slugs noch nicht —
+          # Befund 17:48-Lauf 15.09.: 'charles-frederic-kreube' 404).
+          echo "write_epoch=$(date -u +%s)" >> "$GITHUB_OUTPUT"
         id: doctor
 
       - name: Lauf-Zusammenfassung
@@ -203,10 +208,11 @@ jobs:
 
       # Nachpruefung: gewarteter Pages-Lauf + geaenderte Profilseiten live
       # abrufen + Chat-Gesundheitscheck (providers?ping=true).
-      # Deploy-Stau (pages-Laeufe dauern mal ueber 45 min) ist KEIN Doktor-
-      # Fehler: Daten liegen sicher im Store, der naechste Stundenlauf prueft
-      # die Seiten dann. Scharf geprueft wird NUR nach einem erfolgreich
-      # beendeten Pages-Lauf — dann muessen die Seiten auch erreichbar sein.
+      # Scharf geprueft wird NUR gegen einen Pages-Lauf, der NACH dem
+      # Schreibzeitpunkt gestartet UND erfolgreich beendet ist. Deploy-Stau
+      # ist KEIN Doktor-Fehler: Daten liegen sicher im Store; solange kein
+      # frischer Deploy existiert/beendet ist, wird gewarnt und der nächste
+      # Stundenlauf prueft wieder.
       - name: "Nachpruefung: Profilseiten + Chat"
         if: steps.doctor.outputs.changed != '0' && steps.doctor.outputs.changed != ''
         timeout-minutes: 50
@@ -214,8 +220,22 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -uo pipefail
-          RUN_ID=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/github-pages.yml/runs?per_page=1" --jq '.workflow_runs[0].id')
-          echo "Warte bis zu 30 min auf Pages-Lauf ${RUN_ID} ..."
+          WRITE_EPOCH=${{ steps.doctor.outputs.write_epoch }}
+          RUN_ID=""; SEKUNDEN=0; STATUS="unknown"; START_EPOCH=0
+          # Bis zu 30 min auf einen Deploy warten, der NACH dem Schreiben startet.
+          while [ "$SEKUNDEN" -lt 1800 ]; do
+            READOUT=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/github-pages.yml/runs?per_page=5" \
+              --jq '[.workflow_runs[] | select(.run_started_at)] | sort_by(.run_started_at) | reverse | .[0] | "\(.id) \(.run_started_at)"')
+            RUN_ID=$(echo "$READOUT" | cut -d' ' -f1)
+            START_EPOCH=$(date -d "$(echo "$READOUT" | cut -d' ' -f2)" +%s 2>/dev/null || echo 0)
+            if [ "$START_EPOCH" -gt "$WRITE_EPOCH" ]; then break; fi
+            RUN_ID=""; sleep 30; SEKUNDEN=$((SEKUNDEN+30))
+          done
+          if [ -z "$RUN_ID" ]; then
+            echo "::warning::Kein nach dem Schreiben gestarteter Pages-Lauf (Deploy-Stau) — Live-Check übersprungen; Daten sind im Store, nächste Stunde wird geprüft."
+            exit 0
+          fi
+          echo "Frischer Pages-Lauf ${RUN_ID} — warte bis zu 30 min auf Abschluss ..."
           SEKUNDEN=0; STATUS="unknown"
           while [ "$SEKUNDEN" -lt 1800 ]; do
             STATUS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" --jq '.status')
