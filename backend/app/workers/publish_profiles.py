@@ -162,14 +162,29 @@ def _append_audit(document: dict, event) -> list[dict]:
 def publish_one(
     qid: str, *, store: CandidateStore, config: PipelineConfig, approved_by: str,
     dry_run: bool, live_slugs: set[str] | None = None,
+    index: list[dict] | None = None,
 ) -> str:
+    """Publiziert einen reviewed-Kandidaten.
+
+    index (15.09.2026): Bereits geladener Publish-Index — der Aufrufer
+    reicht IHM aus dem Laufanfang durch und bekommt Veraenderungen
+    in-place zurueck (publish_one ersetzt den Inhalt der Liste). Ohne
+    diesen Parameter laedt publish_one den Index selbst (alter Weg, je
+    Aufruf ein ~30-MB-GET — bei 1.000er Chargen also 30 GB Egress und
+    Stunden Laufzeit, Befund Publish-Lauf 34981595957).
+    """
     document = store.load_candidate_document(qid)
     if document.get("status") != PipelineStatus.REVIEWED.value:
         return f"abgelehnt: Status ist '{document.get('status')}', nicht 'reviewed'"
     if not document.get("qa_passed"):
         return "abgelehnt: qa_passed ist nicht gesetzt"
 
-    index = _load_index(store)
+    own_index = index is not None
+    if not own_index:
+        index = _load_index(store)
+    elif not index:
+        # Erster Aufruf mit durchgereichtem (noch leerem) Behaelter: jetzt laden.
+        index[:] = _load_index(store)
     today = datetime.now(timezone.utc).date().isoformat()
     if not is_publish_allowed_today(visible_count_today(index, today_iso=today), config):
         return "abgelehnt: Tageslimit erreicht oder pipeline.enabled=false"
@@ -215,6 +230,10 @@ def publish_one(
             return f"abgelehnt: {reason}"
 
     new_index, _used_slug = upsert_index(index, record)  # disambiguiert bei Kollision
+    if own_index:
+        # Durchgereichter Index: Aufrufer-Liste in-place aktualisieren, damit
+        # der naechste publish_one denselben Stand sieht (ein GET je Lauf).
+        index[:] = new_index
 
     candidate = replace(
         _candidate_from_document(document),
@@ -312,6 +331,11 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     if args.command == "publish" and args.all_reviewed:
         qids += [qid for qid in select_reviewed_qids(store) if qid not in qids]
     live_slugs = fetch_live_slugs() if args.command == "publish" else set()
+    # 15.09.2026: Index EINMAL je Lauf laden und durchreichen — publish_one
+    # aktualisiert die Liste in-place (sonst je Profil ein ~30-MB-GET auf den
+    # Index; bei 1.000er Chargen = 30 GB Egress + Stunden Laufzeit,
+    # Befund Publish-Lauf 34981595957).
+    index_holder: list[dict] = []
     results = {}
     for qid in qids:
         try:
@@ -319,6 +343,7 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
                 results[qid] = publish_one(
                     qid, store=store, config=config, approved_by=args.approved_by,
                     dry_run=args.dry_run, live_slugs=live_slugs,
+                    index=index_holder,
                 )
             else:
                 results[qid] = unpublish_one(

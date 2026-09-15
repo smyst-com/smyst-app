@@ -391,3 +391,57 @@ def test_select_reviewed_qids_skips_published_via_summary() -> None:
 
     qids = select_reviewed_qids(store)
     assert sorted(qids) == ["Q3", "Q4"]
+
+
+def test_publish_batch_loads_index_once(monkeypatch) -> None:
+    """15.09.2026: publish_one lud den ~30-MB-Publish-Index JE Profil neu
+    (1.000er Charge = 1.000 GETs, Stunden + Egress). Mit durchgereichtem
+    Index-Behaelter: genau EIN Index-GET je Lauf, Updates laufen in-place."""
+    from app.workers import publish_profiles as pp
+
+    store = _prepared_store()
+    # Zweiten reviewed-Kandidaten anlegen
+    candidate = HistoricalCandidate(
+        wikidata_qid="Q2044", name="Ada Lovelace", death_date=date(1852, 11, 27),
+        category="Wissenschaft", sitelink_count=250, source_count=3,
+    )
+    store.save_candidate(candidate)
+    doc2 = store.load_candidate_document("Q2044")
+    doc2.update(
+        {**CANDIDATE_DOC, "wikidata_qid": "Q2044", "name": "Ada Lovelace",
+         "twin_id": "22222222-2222-4222-8222-222222222222"},
+        status="reviewed",
+    )
+    doc2["name"] = "Ada Lovelace"
+    store.save_candidate_document("Q2044", doc2)
+    store._client.put_object(  # noqa: SLF001
+        Bucket="smyst-memories", Key="pipeline/capsules/Q2044/capsule.json",
+        Body=json.dumps({**CAPSULE_DOC, "slug": "ada-lovelace"}).encode(),
+        ContentType="application/json",
+    )
+
+    index_gets: list[str] = []
+
+    class CountingS3(FakeS3):
+        def get_object(self, *, Bucket, Key):
+            if Key == PUBLISH_INDEX_KEY:
+                index_gets.append(Key)
+            return super().get_object(Bucket=Bucket, Key=Key)
+
+    counting = CountingS3()
+    counting.objects.update(store._client.objects)  # noqa: SLF001
+    fast_store = CandidateStore(counting, "smyst-memories")
+
+    holder: list[dict] = []
+    r1 = pp.publish_one("Q1035", store=fast_store, config=CONFIG,
+                        approved_by="adam@smyst.com", dry_run=False, index=holder)
+    r2 = pp.publish_one("Q2044", store=fast_store, config=CONFIG,
+                        approved_by="adam@smyst.com", dry_run=False, index=holder)
+    assert r1.startswith("published") and r2.startswith("published")
+    assert len(index_gets) == 1, f"Index wurde {len(index_gets)}x geladen"
+    # In-place: der Behaelter enthaelt beide Eintraege
+    qids_in_holder = {e["wikidata_qid"] for e in holder}
+    assert {"Q1035", "Q2044"} <= qids_in_holder
+    # und der Store-Index ist aktuell
+    stored = json.loads(counting.objects[PUBLISH_INDEX_KEY])  # noqa: SLF001
+    assert {e["wikidata_qid"] for e in stored} >= {"Q1035", "Q2044"}
