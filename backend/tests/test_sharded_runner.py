@@ -202,3 +202,20 @@ def test_published_summary_missing_falls_back_to_full_scan(monkeypatch):
 
     sharded_runner.run_shard(0, 1, 5)
     assert store.published_full_scans >= 1
+
+
+def test_selection_skips_stale_marker_front(monkeypatch):
+    """Stale-Marker-Fenster (15.09.): DELETE blockiert -> alte Markern haufen
+    sich am Slice-Kopf an. Die Auswahl muss tiefer graben statt '0 gefunden'."""
+    stale = [_doc(f"QS{i}", status="rejected") for i in range(300)]  # Marker luegt
+    fresh = [_doc(f"QZ{i}") for i in range(5)]
+    store = _FakeStore({"generated": stale + fresh}, published_summary=[])
+    monkeypatch.setattr(sharded_runner, "build_s3_client", lambda: object())
+    monkeypatch.setattr(sharded_runner, "CandidateStore", lambda client, bucket: store)
+
+    selected = sharded_runner.select_shard_documents(
+        store, "generated", shard_index=0, total_shards=1, limit=3, fairness=True
+    )
+    assert [doc["wikidata_qid"] for doc in selected] == ["QZ0", "QZ1", "QZ2"]
+    # Deckel wirksam: nicht der ganze Rest wurde geladen (300 stale + 5 fresh)
+    assert len(store.gets) < 320
