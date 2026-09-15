@@ -17,6 +17,13 @@
 # Kein neuer Paid-Service (FREE_ONLY_INFRASTRUCTURE bleibt unberuehrt).
 # Eingefrorene Dateien (start-llm.sh, Dockerfile, llm_router.py) werden
 # NICHT angeruehrt — reiner HTTP-Ping von aussen.
+#
+# WICHTIG — Cron-Drosselung (live gemessen 15.09.): GitHub feuert den
+# */5-Plan real nur alle 3-5 STUNDEN ab (gleiches Verhalten wie beim
+# Guardian 06.09., dort per Selbst-Tick-Kette geloest, PRs #658-#664).
+# Der letzte Schritt unten haelt jeden Lauf bis ~200 s Eigenalter offen
+# und stoesst dann den naechsten an — echte ~4-Minuten-Kette. Der Cron
+# bleibt als Sicherheitsnetz stehen.
 
 name: Model Keep-Alive
 
@@ -28,6 +35,7 @@ on:
 permissions:
   contents: read
   issues: write
+  actions: write
 
 concurrency:
   group: model-keepalive
@@ -37,7 +45,7 @@ jobs:
   ping:
     name: Modell anpingen (smyst_llm)
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 8
     steps:
       - name: Generation-Ping mit Zustands-Bewertung
         id: ping
@@ -102,3 +110,32 @@ jobs:
           else
             gh issue create --title "$TITLE" --body "$BODY"
           fi
+
+      - name: Selbst-Tick (haelt den ~5-Minuten-Takt gegen Cron-Drosselung)
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          # Muster aus pipeline-scale-2k.yml / Guardian-Kette (PRs #658-#664):
+          # GitHub drosselt Cron-Plaene auf Stunden, also haelt sich jeder
+          # Lauf bis ~200 s Eigenalter offen und loest dann den naechsten
+          # aus, WENN kein juengerer Lauf existiert (Cron/Hand-Ausloesung
+          # gewinnt, keine Ketten-Stapelung).
+          START=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" --jq '.created_at | fromdateiso8601')
+          ALTER=$(( $(date +%s) - START ))
+          if [ "$ALTER" -lt 200 ]; then
+            echo "Halte Lauf offen: $ALTER s alt, schlafe $((200 - ALTER)) s ..."
+            sleep $((200 - ALTER))
+          fi
+          RUNS=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/model-keepalive.yml/runs?per_page=10")
+          NEWER=$(echo "$RUNS" | jq --argjson me "${RUN_ID}" \
+            '[.workflow_runs[] | select(.id > $me and (.status == "in_progress" or .status == "queued" or .status == "waiting" or .status == "action_required"))] | length')
+          echo "Juengere laufende Laeufe: ${NEWER}"
+          if [ "${NEWER}" -ne 0 ]; then
+            echo "Juengerer Lauf existiert (Cron oder Hand) — keine Kette noetig."
+            exit 0
+          fi
+          gh workflow run model-keepalive.yml --ref main --repo "${GITHUB_REPOSITORY}"
+          echo "### Selbst-Tick: naechsten Keepalive-Lauf gestartet" >> "$GITHUB_STEP_SUMMARY"
