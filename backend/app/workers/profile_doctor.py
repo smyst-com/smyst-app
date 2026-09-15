@@ -158,21 +158,25 @@ def _iso_from_time(value: dict) -> str | None:
 
 
 def _honest_label(value: dict) -> str | None:
-    """Anzeige-Label gemaess Praezision: '1859', 'ca. 1859' oder '03.1859'."""
+    """Anzeige-Label gemaess Praezision: '1859', 'ca. 1859', '03.1859', '14.03.1859'."""
     precision = value.get("precision")
     raw = str(value.get("time", ""))
-    match = re.match(r"^([+-])(\d{4})-(\d{2})", raw)
+    match = re.match(r"^([+-])(\d{4})-(\d{2})-(\d{2})", raw)
     if not match:
         return None
     year = int(match.group(2))
+    month = int(match.group(3))
+    day = int(match.group(4))
     if year < 1 or year > 2200:
         return None
     if precision == PRECISION_YEAR:
         return str(year)
     if precision == PRECISION_DECADE:
         return f"ca. {year}"
-    if precision == PRECISION_MONTH:
-        return f"{int(match.group(3)):02d}.{year}"
+    if precision == PRECISION_MONTH and 1 <= month <= 12:
+        return f"{month:02d}.{year}"
+    if precision == PRECISION_DAY and 1 <= month <= 12 and 1 <= day <= 31:
+        return f"{day:02d}.{month:02d}.{year}"
     return None
 
 
@@ -393,16 +397,63 @@ def label_fixes_from_entity(entity: dict | None, record: dict) -> dict[str, str]
         value = _time_value(entity, prop)
         if value is None:
             continue
+        # Der Snapshot ist die Wahrheit: Fake-ISO-Labels ("1446-01-01",
+        # "1859-03-01") werden durch das ehrliche Label der Snapshot-
+        # Praezision ersetzt ("1859", "06.1446", "05.06.1446"). Liefert die
+        # Praezision kein ehrliches Label (z. B. Jahrhundert), bleibt alles
+        # unverändert — nichts wird schwächer belegt als bisher gezeigt.
         honest = _honest_label(value)
         if not honest:
             continue
-        # Nur ersetzen, wenn die Praezision das aktuelle Label auch erklaert:
-        # Monat 03 + Label "01.03.1859" -> "03.1859"; Jahr + "01.01.1859" -> "1859".
-        if month and value.get("precision") != PRECISION_MONTH:
-            continue
-        if full and value.get("precision") not in (PRECISION_YEAR, PRECISION_DECADE):
-            continue
         updates[field] = honest
+    return updates
+
+
+def contradiction_date_repairs(
+    entity: dict | None, record: dict, findings: dict
+) -> dict[str, str]:
+    """Repariert datumsbasierte Widersprüche NUR aus dem gesicherten Snapshot.
+
+    Auftrag „Widersprüche korrigieren" (Inhaber 15.09.): Liegt ein Widerspruch
+    vor (Tod vor Geburt, Alter > 122) und liefert der Wikidata-Snapshot ein
+    plausibles Datumspaar, werden die abweichenden Felder auf den Snapshot-
+    Stand gesetzt (+ ehrliche Labels bei Jahrespräzision). Liefert der
+    Snapshot keine brauchbaren Daten, bleibt es beim Bericht — nichts wird
+    erfunden. Snapshot ist Wikidata-Quelle der Recherche (beweisbar, prüffähig).
+    """
+    updates: dict[str, str] = {}
+    if entity is None or not findings["contradictions"]:
+        return updates
+    snap: dict[str, dict] = {}
+    for field, prop in DATE_FIELDS:
+        value = _time_value(entity, prop)
+        if value is not None:
+            iso = _iso_from_time(value)
+            if iso:
+                snap[field] = {"iso": iso, "value": value}
+    if "birth_date" not in snap and "death_date" not in snap:
+        return updates
+    birth = snap.get("birth_date", {}).get("iso") or record.get("birth_date")
+    death = snap.get("death_date", {}).get("iso") or record.get("death_date")
+    if not birth or not death:
+        return updates
+    try:
+        birth_year, death_year = int(str(birth)[:4]), int(str(death)[:4])
+    except ValueError:
+        return updates
+    # Reparatur nur bei plausibler Ziel-Paarung — sonst bleibt der Befund stehen.
+    if death_year <= birth_year or death_year - birth_year > 122:
+        return updates
+    for field, prop in DATE_FIELDS:
+        snap_entry = snap.get(field)
+        if snap_entry and snap_entry["iso"] != record.get(field):
+            updates[field] = snap_entry["iso"]
+            honest = _honest_label(snap_entry["value"])
+            if honest and precision_hides_day(snap_entry["value"].get("precision")):
+                label_field = f"{field.rsplit('_date', 1)[0]}_label"
+                current_label = record.get(label_field)
+                if not current_label or _ISO_FAKE_FULL.match(str(current_label)):
+                    updates[label_field] = honest
     return updates
 
 
@@ -536,6 +587,7 @@ def run_doctor(
         "model_extractions": {},
         "model_attempts_skipped": [],
         "contradictions": {},
+        "contradiction_repairs": {},
         "duplicates": [],
         "needs_rebuild": [],
         "restored": [],
@@ -590,6 +642,10 @@ def run_doctor(
             updates.update(place_fills_from_entity(entity, record, resolver))
             updates.update(date_fills_from_entity(entity, record))
             updates.update(label_fixes_from_entity(entity, record))
+            repairs = contradiction_date_repairs(entity, record, findings)
+            updates.update(repairs)
+            if repairs:
+                report.setdefault("contradiction_repairs", {})[qid] = repairs
 
             missing_places = not record.get("birth_place") or not record.get("death_place")
             unresolved_after_wikidata = missing_places and not any(
@@ -721,6 +777,7 @@ def render_summary(report: dict) -> str:
         f"- Korrigiert/ergänzt: **{len(report.get('changed', {}))}** Profile",
         f"- Eigene-Modell-Extraktionen: **{len(report.get('model_extractions', {}))}**",
         f"- Widersprüche (nur Bericht): **{len(report.get('contradictions', {}))}**",
+        f"- Widerspruchs-Reparaturen (aus Snapshot belegt): **{len(report.get('contradiction_repairs', {}))}**",
         f"- Dubletten-Verdachte (nur Bericht): **{len(report.get('duplicates', []))}**",
         f"- Rebuild-Empfehlungen: **{len(report.get('needs_rebuild', []))}**",
         f"- Fehler: **{len(report.get('errors', {}))}**",
