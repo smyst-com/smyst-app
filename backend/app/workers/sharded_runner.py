@@ -88,19 +88,34 @@ def select_shard_documents(
         for qid in store.qids_by_status(status)
         if qid_belongs_to_shard(qid, shard_index, total_shards)
     ]
-    if fairness:
-        qids = qids[: max(limit, 1) * FAIRNESS_OVERSAMPLE]
-    else:
-        qids = qids[:limit]
+    # 15.09.2026 — Stale-Marker-Fenster: Seit der e2-Zahlungssperre bleibt
+    # delete_object AccessDenied, d. h. JEDER Statuswechsel hinterlaesst den
+    # alten Marker (write_status_marker raeumt stillschweigend nicht auf).
+    # Die Sortier-Koepfe je Shard-Slice sind dadurch mit veralteten Markern
+    # gepflastert — ein starres Erstes-Fenster lieferte "0 Kandidaten
+    # gefunden" trotz zehntausender frischer Dokumente (Laeufe 15.09.,
+    # ~06:28-06:45 UTC). Jetzt: progressive Fensterverbreiterung — geladen
+    # wird in Stufen, bis limit echte Treffer beisammen sind oder der
+    # GET-Deckel (Max-Shard-Slice bzw. 2.500) erreicht ist. Bleibt der
+    # Deckel der Korrektheit im Weg, sind wir immer noch >10x guenstiger
+    # als der alte Voll-Scan ueber alle Shards.
     documents: list[dict] = []
-    for qid in qids:
-        try:
-            doc = store.load_candidate_document(qid)
-        except Exception:
-            continue  # verwaister Marker
-        if doc.get("status") != status:
-            continue  # veralteter Marker — Dokument entscheidet
-        documents.append(doc)
+    window = max(limit, 1) * (FAIRNESS_OVERSAMPLE if fairness else 1)
+    max_gets = min(len(qids), max(window, 2500))
+    cursor = 0
+    while len(documents) < limit and cursor < len(qids) and max_gets > 0:
+        batch = qids[cursor : cursor + window]
+        cursor += len(batch)
+        max_gets -= len(batch)
+        for qid in batch:
+            try:
+                doc = store.load_candidate_document(qid)
+            except Exception:
+                continue  # verwaister Marker
+            if doc.get("status") != status:
+                continue  # veralteter Marker — Dokument entscheidet
+            documents.append(doc)
+        window *= 4  # nichts gefunden? naechste Stufe vierfach tiefer
     if fairness:
         # Stabil: ungetestete zuerst, dann wenige Versuche; innerhalb einer
         # Gruppe bleibt die QID-Reihenfolge erhalten.
