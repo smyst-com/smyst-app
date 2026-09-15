@@ -34,7 +34,7 @@ on:
       extraction_budget:
         description: "max. Eigene-Modell-Extraktionen je Lauf"
         required: false
-        default: "40"
+        default: "120"
       dry_run:
         description: "true = Vorschau: prueft und berichtet, schreibt NICHTS (kein Deploy, kein Smoke)"
         required: false
@@ -164,7 +164,7 @@ jobs:
         run: |
           set -o pipefail
           ARGS=(--enabled --limit "${{ inputs.limit || '250' }}" \
-                --extraction-budget "${{ inputs.extraction_budget || '40' }}" \
+                --extraction-budget "${{ inputs.extraction_budget || '120' }}" \
                 --summary-file /tmp/doctor-summary.md \
                 --changed-file /tmp/doctor-changed.txt)
           if [ "${{ inputs.only_incomplete || 'false' }}" = "true" ]; then
