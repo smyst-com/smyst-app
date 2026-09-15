@@ -306,6 +306,28 @@ def test_model_extraction_rejects_years_as_place() -> None:
     assert report["changed"] == {}
 
 
+def test_extraction_budget_also_applies_in_only_incomplete_mode() -> None:
+    """Nachhol-Modus: Budget begrenzt Modellaufrufe, Audit läuft weiter."""
+    index = [base_record(f"Q{i}", f"s{i}", f"N{i}") for i in range(1, 4)]
+    store, s3 = prepared_store(index=index)
+    for i in range(1, 4):
+        s3.objects[snapshot_key(f"Q{i}")] = entity_payload(f"Q{i}", label=f"N{i}")
+        s3.objects[f"pipeline/sources/Q{i}/wikipedia-en.json"] = json.dumps(
+            {"extract": f"N{i} was born in Stadt{i} in the old country."}
+        ).encode("utf-8")
+    calls: list[str] = []
+
+    def llm_post(prompt: str) -> str:
+        calls.append(prompt)
+        return '{"birth_place": null, "death_place": null}'
+
+    report = run(store, llm_post=llm_post, only_incomplete=True,
+                 limit=3, extraction_budget=1)
+
+    assert len(calls) == 1                                   # Budget greift
+    assert len(report["checked"]) == 3                       # Audit läuft komplett
+
+
 # --- Widersprueche, Dubletten, Rotation -------------------------------------
 
 def test_contradictions_are_reported_without_change() -> None:
