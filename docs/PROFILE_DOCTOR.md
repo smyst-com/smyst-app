@@ -29,38 +29,52 @@ Reihenfolge der Quellen — strikt gesichert, nie erfunden:
    Orte, Daten, Labels, Kategorie, zu kurze Beschreibung.
 2. **Fills aus Wikidata-Snapshots** (gleiche Regeln wie `backfill_places`):
    P19/P20 → „Stadt, Land", P569/P570 → ISO-Daten. NUR leere Felder.
-3. **Ehrliche Labels:** Jahres-/Dekaden-/Monats-Präzision wird als
-   „1859" / „ca. 1859" / „03.1859" angezeigt statt „01.01.1859". Nur das
-   Anzeige-Label, `birth_date`/`death_date` (ISO) bleiben unverändert.
+3. **Ehrliche Labels:** Jede Snapshot-Präzision ersetzt Fake-ISO-Labels
+   („01.01.1859"): Jahr → „1859", Dekade → „ca. 1859", Monat → „03.1859",
+   Tag → „14.03.1859". Nur das Anzeige-Label, `birth_date`/`death_date`
+   (ISO) bleiben unberührt (außer bei Reparaturen, Punkt 6).
 4. **Eigenes Modell (smyst-1.1):** Hat Wikidata keinen Ort, extrahiert das
    Modell Geburts-/Sterbeort aus den gespeicherten Wikipedia-Texten.
    Anti-Halluzinations-Gate: Der Ortsname muss wortgrenzgenau im Quelltext
-   stehen; ein Land, das nicht im Text steht, wird abgeschnitten. Max.
-   2 Versuche je Profil (Kostenbremse).
-5. **Widersprüche** (Tod vor Geburt, Alter > 122 Jahre) und **Dubletten**
-   (gleicher Name + Geburtsjahr, verschiedene QIDs): NUR Bericht — nie
-   Statusänderung, nie Löschen, nie Unpublish.
-6. **Anreicherungs-Flag:** zu kurze Beschreibung → `needs_rebuild`-Liste im
+   stehen, muss Buchstaben enthalten (kein Jahr!) und ein Land, das nicht
+   im Text steht, wird abgeschnitten. Max. 2 Versuche je Profil;
+   120 Extraktionen je Lauf (Budget, seit 15.09. nachmittags).
+5. **Widersprüche:** Tod vor Geburt oder Alter > 122 Jahre werden erkannt
+   UND repariert, wenn der gesicherte Wikidata-Snapshot ein plausibles
+   Datumspaar belegt (Beweis im `contradiction_repairs`-Block des Laufs);
+   ohne belastbaren Snapshot bleibt es beim Bericht — nichts wird erfunden.
+6. **Dubletten** (gleicher Name + Geburtsjahr, verschiedene QIDs): nur
+   Bericht — automatisches Zusammenführen bleibt dem Menschen vorbehalten.
+7. **Anreicherungs-Flag:** zu kurze Beschreibung → `needs_rebuild`-Liste im
    Bericht (Futter für den QA-gegateen `rebuild-one`, keine Automatik).
-7. **Selbsttest nach jedem Schreiben:** profile.json neu lesen, slug/name/
+8. **Selbsttest nach jedem Schreiben:** profile.json neu lesen, slug/name/
    Felder gegenprüfen; bei Abweichung Fehler + Überspringen des Index-Write.
-8. **Chat-Rauchprobe** je Lauf gegen den eigenen llama-server.
+9. **Chat-Rauchprobe** je Lauf gegen den eigenen llama-server.
 
 ## 3. Rotation und 24/7-Betrieb
 
 - Ledger: `pipeline/stats/doctor-rotation.json` (qid → checked_at/attempts).
-  Nie geprüfte Profile zuerst, dann älteste Prüfung. Fehlgeschlagene Profile
-  werden nicht markiert und beim nächsten Lauf erneut versucht.
+- Reihenfolge: nie geprüfte Profile zuerst — darunter die NEUESTEN zuerst
+  (published_at absteigend), damit frisch veröffentlichte Profile noch am
+  selben Tag gesäubert werden; danach geprüfte Profile mit ältester letzter
+  Prüfung. Fehlgeschlagene Profile werden nicht markiert und beim nächsten
+  Lauf erneut versucht; das Ledger wird alle 25 Profile als Checkpoint
+  persistiert (Timeout-sicher).
 - Workflow `.github/workflows/profile-doctor.yml`: **stündlich** (37 * * * *),
-  je Lauf 250 Profile → voller Umlauf über den Bestand (~27.000) in ~4,5
-  Tagen. Extraktions-Budget 40/Lauf: der sichtbare Fehlbestand (950) schrumpft
-  in ~1 Tag, danach bleibt nur die normale Rotation.
+  je Lauf 250 Profile → voller Umlauf über den Bestand in ~4–5 Tagen (bei
+  täglich ~1.400 neuen Profilen sorgt die Neu-zuerst-Ordnung dafür, dass
+  der Zuwachs am selben Tag sauber ist).
 - `keep-takt` verkettet Läufe, falls GitHub-Crons ausfallen (bewährtes
-  Muster aus pipeline-scale-2k, mit 30-min-Fehler-Cooldown).
-- Nach Änderungen: Pages-Deploy (Ping-Pong-Guard), dann Nachprüfung —
-  `gh run watch` des Pages-Laufs, geänderte `/t/<slug>/`-Seiten und
-  `/api/public/twins/<slug>/` live abrufen, `providers?ping=true` muss
-  smyst_llm ok:true liefern (Pflicht-Smoke).
+  Muster aus pipeline-scale-2k, mit 30-min-Fehler-Cooldown). Läufe warten
+  höflich, wenn die 24-Shard-Pipeline die GitHub-Läufer belegt, und holen
+  danach auf.
+- Nach Änderungen: Pages-Deploy (Ping-Pong-Guard), dann Nachprüfung — sie
+  wartet NUR auf einen Pages-Lauf, der NACH dem Schreiben gestartet ist
+  (max. 30 min je Phase). Kein frischer Deploy innerhalb des Fensters
+  (Deploy-Stau) → Warnung + Überspringen; Daten liegen sicher im Store und
+  ein späterer Lauf prüft erneut. Ist der frische Deploy erfolgreich, müssen
+  alle geänderten Seiten erreichbar sein (sonst Fehler), plus Pflicht-Smoke
+  `providers?ping=true` (smyst_llm ok:true).
 
 ## 4. Protokollierung
 
