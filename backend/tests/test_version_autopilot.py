@@ -251,6 +251,25 @@ def test_apply_pending_removes_staging_marker(monkeypatch) -> None:
     assert av._load_pending(store) == []
 
 
+def test_apply_pending_drains_list_even_when_delete_is_blocked(monkeypatch) -> None:
+    """IDrive-e2-Realitaet (Memory_Bank 14.09.): DELETE gesperrt, PUT erlaubt.
+
+    Genau dafuer gibt es den Tombstone: Der Marker wird ueberschrieben und
+    beim Listen uebersprungen, auch wenn nichts geloescht werden kann.
+    """
+    from app.api.v1.routes import admin_versions as av
+
+    store, client = _stage_q1035(monkeypatch)
+    client.fail_delete = True
+    assert av._apply_pending(store, "Q1035", "owner@smyst.com").startswith("live:")
+    # Marker liegt noch als Tombstone im Bucket ...
+    assert f"{PENDING_PREFIX}Q1035.json" in client.objects
+    tombstone = json.loads(client.objects[f"{PENDING_PREFIX}Q1035.json"])
+    assert tombstone["decision"] == "applied"
+    # ... aber die Freigabe-Liste ist trotzdem leer.
+    assert av._load_pending(store) == []
+
+
 def test_apply_pending_is_idempotent_on_repeated_clicks(monkeypatch) -> None:
     from app.api.v1.routes import admin_versions as av
 
