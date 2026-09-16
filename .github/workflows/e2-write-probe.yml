@@ -31,3 +31,11 @@ jobs:
         run: |
           pip install --quiet boto3
           python scripts/e2_access_probe.py
+
+      - name: "Autopilot-Freigabe-Diagnose (nur lesend)"
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          pip install --quiet boto3
+          python scripts/e2_autopilot_diagnose.py
