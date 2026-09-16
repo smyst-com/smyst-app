@@ -14,10 +14,13 @@ POST /api/admin/versions/{qid}/reject    - Staging verwerfen (Live unberuehrt,
         Datensatz wandert nach pipeline/autopilot/rejected/ — nichts wird geloescht)
 
 Nach dem Sichern der Entscheidung (applied/ bzw. rejected/) wird der
-Staging-Marker pending/{qid}.json entfernt — sonst zeigt die Freigabe-Liste
-denselben Eintrag fuer immer wieder an (Vorfall 16.09.2026: „Alle freigeben"
-schien wirkungslos, weil die Liste nicht schrumpfte). Kaputtes Staging ohne
-Capsule wandert nach pipeline/autopilot/incomplete/ — nichts geht verloren.
+Staging-Marker pending/{qid}.json geschlossen, damit die Freigabe-Liste den
+Eintrag nicht fuer immer wieder anzeigt (Vorfall 16.09.2026: „Alle freigeben"
+schien wirkungslos, weil die Liste nicht schrumpfte). Da DELETE auf IDrive e2
+lange gesperrt war (Memory_Bank 14.09.), wird der Marker zu einem Tombstone
+ueberschrieben (PUT genuegt); ist DELETE freigegeben, raeumt der Lauf die
+Reste ganz weg. Kaputtes Staging ohne Capsule wandert nach
+pipeline/autopilot/incomplete/ — nichts geht verloren.
 
 Schutzregeln: kein Loeschen von Profildaten, kein Unpublish, kein Statuswechsel;
 QA- und Eval-Ergebnisse stammen ausschliesslich aus dem Worker-Staging. POST
@@ -113,11 +116,7 @@ def _is_missing_object(error: Exception) -> bool:
 
 
 def _cleanup_pending(store: CandidateStore, qid: str) -> None:
-    """Staging-Marker aus der Freigabe-Liste nehmen.
-
-    Ruf das NUR auf, nachdem die Entscheidungskopie in applied/ bzw. rejected/
-    steht — geloescht wird nur der Staging-Zeiger, nie ein Profildatensatz.
-    """
+    """Staging-Dateien endgueltig loeschen (nur wenn DELETE erlaubt ist)."""
     for key in (
         f"{PENDING_PREFIX}{qid}.json",
         f"{PENDING_PREFIX}{qid}/capsule.json",
@@ -130,6 +129,30 @@ def _cleanup_pending(store: CandidateStore, qid: str) -> None:
             return  # best effort — der naechste Lauf raeumt erneut auf
 
 
+def _close_pending(store: CandidateStore, qid: str, decision: str, extra: dict | None = None) -> None:
+    """Staging-Eintrag aus der Freigabe-Liste nehmen — OHNE ihn zu loeschen.
+
+    Ruf das NUR auf, nachdem die Entscheidungskopie in applied/ bzw. rejected/
+    steht. Der Marker pending/{qid}.json wird zu einem Tombstone ueberschrieben:
+    DELETE war auf IDrive e2 lange gesperrt (Memory_Bank 14.09.), PUT immer
+    erlaubt — der Tombstone sorgt dafuer, dass die Freigabe-Liste den Eintrag
+    trotzdem nicht mehr zeigt. Ist DELETE freigegeben, raeumt _cleanup_pending
+    die Reste ganz weg.
+    """
+    now = datetime.now(timezone.utc)
+    body: dict[str, Any] = {"decision": decision, "closed_at": now.isoformat()}
+    if extra:
+        body.update(extra)
+    try:
+        _put_object(
+            store, f"{PENDING_PREFIX}{qid}.json",
+            json.dumps(body, ensure_ascii=False, indent=2).encode("utf-8"),
+        )
+    except Exception:
+        return  # Tombstone schlug fehl — Eintrag bleibt sichtbar, naechster Lauf erneut
+    _cleanup_pending(store, qid)
+
+
 def _park_incomplete(store: CandidateStore, qid: str, record: dict, reason: str) -> None:
     """Kaputtes Staging (ohne Capsule nie einspielbar) sichern und aufräumen."""
     now = datetime.now(timezone.utc)
@@ -138,7 +161,7 @@ def _park_incomplete(store: CandidateStore, qid: str, record: dict, reason: str)
         json.dumps({**record, "reason": reason, "parked_at": now.isoformat()},
                    ensure_ascii=False, indent=2).encode("utf-8"),
     )
-    _cleanup_pending(store, qid)
+    _close_pending(store, qid, "incomplete", {"reason": reason})
 
 
 def _list_pending_qids(store: CandidateStore) -> list[str]:
@@ -165,7 +188,10 @@ def _load_pending(store: CandidateStore) -> list[dict[str, Any]]:
 
     def _load(qid: str) -> dict[str, Any] | None:
         record = _load_json(store, f"{PENDING_PREFIX}{qid}.json")
-        return {"qid": qid, **record} if isinstance(record, dict) else None
+        if not isinstance(record, dict) or record.get("decision"):
+            # Fehlend oder bereits geschlossen (Tombstone): nicht mehr anzeigen.
+            return None
+        return {"qid": qid, **record}
 
     with ThreadPoolExecutor(max_workers=20) as pool:
         cards = [c for c in pool.map(_load, _list_pending_qids(store)) if c]
@@ -206,9 +232,9 @@ def _apply_pending(store: CandidateStore, qid: str, approved_by: str) -> str:
         live_version = 1
     if live_version >= new_version:
         # Bereits eingespielt (z. B. wiederholter Klick auf "Alle freigeben"):
-        # nur den Staging-Marker raeumen — kein zweites Backup v1, keine
+        # nur den Staging-Eintrag schliessen — kein zweites Backup v1, keine
         # doppelten twin_versions-Eintraege.
-        _cleanup_pending(store, qid)
+        _close_pending(store, qid, "applied", {"note": "bereits live"})
         return f"uebersprungen: v{new_version} ist bereits live fuer {qid}"
 
     try:
@@ -279,7 +305,7 @@ def _apply_pending(store: CandidateStore, qid: str, approved_by: str) -> str:
         json.dumps({**record, "approved_by": approved_by, "applied_at": now.isoformat()},
                    ensure_ascii=False, indent=2).encode("utf-8"),
     )
-    _cleanup_pending(store, qid)
+    _close_pending(store, qid, "applied", {"applied_at": now.isoformat()})
     return (
         f"live: v{old_version} -> v{new_version} "
         f"(Eval {record.get('old_score')} -> {record.get('new_score')}, Backup v{old_version} archiviert)"
@@ -296,7 +322,7 @@ def _reject_pending(store: CandidateStore, qid: str, reason: str, rejected_by: s
         json.dumps({**record, "reason": reason, "rejected_by": rejected_by, "rejected_at": now.isoformat()},
                    ensure_ascii=False, indent=2).encode("utf-8"),
     )
-    _cleanup_pending(store, qid)
+    _close_pending(store, qid, "rejected", {"reason": reason})
     return f"verworfen ({reason}) — Live unveraendert"
 
 
