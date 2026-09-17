@@ -141,10 +141,23 @@ jobs:
               fi
             fi
           fi
+          # 17.09.2026 — Status-Gate statt reiner Zeitfenster-Pruefung: Unter
+          # Runner-Knappheit wartete ein eingereihter Publish stundenlang auf
+          # freie Maschinen, waehrend der naechste Watchdog-Tick (2h-Fenster
+          # ablaeuft) einen NEUEN Dispatch ausloeste — der neue Lauf CANCELT
+          # den wartenden (GitHub: nur ein wartender Lauf je Gruppe), der
+          # Wartende verhungert, der Zyklus wiederholt sich (17.09.:
+          # 01:49/06:50/12:12 je 'cancelled'). Jetzt: Laeuft oder wartet schon
+          # ein Publish, wird NICHTS neu dispatcht — der wartende kommt
+          # garantiert dran, sobald eine Lannen-Welle eine Maschine freigibt.
+          PENDING_PUBLISH=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-publish.yml/runs?per_page=10" \
+            --jq '[.workflow_runs[] | select(.status == "queued" or .status == "in_progress" or .status == "waiting" or .status == "pending")] | length')
           RECENT_PUBLISH=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-publish.yml/runs?per_page=10" \
             --jq '[.workflow_runs[] | select((now - (.created_at | fromdateiso8601)) < 7200)] | length')
-          echo "Auto-Publish-Laeufe in den letzten 120 min: ${RECENT_PUBLISH}"
-          if [ "${RECENT_PUBLISH}" -eq 0 ]; then
+          echo "Publish aktiv/wartend: ${PENDING_PUBLISH} | in den letzten 120 min erstellt: ${RECENT_PUBLISH}"
+          if [ "${PENDING_PUBLISH}" -gt 0 ]; then
+            echo "Publish laeuft bereits oder wartet auf eine Maschine — nichts dispatchen (Schutz vor Verdraengung)."
+          elif [ "${RECENT_PUBLISH}" -eq 0 ]; then
             echo "Kein Publish im Fenster — pipeline-publish anstossen."
             gh workflow run pipeline-publish.yml --ref main --repo "${GITHUB_REPOSITORY}" \
               -f approved_by=smyst247@gmail.com -f publish_limit=5000
