@@ -1,0 +1,47 @@
+name: Versions-Autopilot Freigabe (Alle freigeben)
+
+# Fuehrt die Inhaber-Freigabe 'Alle freigeben' aus, wenn der Klick im
+# Admin-Cockpit nicht moeglich ist (Inhaber-Delegation im Chat, 17.09.2026).
+# Exakt dieselbe getestete Logik wie der Button: alte Version archivieren,
+# neue live schalten, Entscheidung nach applied/ sichern, Marker als
+# Tombstone schliessen — nichts wird geloescht.
+# Nur manuell, mit Bestaetigung 'Alle freigeben'.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Bestaetigung. Exakt "Alle freigeben" eintragen.'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: "Bestaetigung pruefen"
+        if: ${{ github.event.inputs.confirm != 'Alle freigeben' }}
+        run: |
+          echo "Bestaetigung fehlt oder ist falsch — Abbruch."
+          exit 1
+
+      - name: "Alle offenen Versionen freigeben"
+        if: ${{ github.event.inputs.confirm == 'Alle freigeben' }}
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          IDRIVE_E2_BUCKET: smyst-memories
+        run: |
+          python -m pip install --upgrade pip
+          pip install --quiet ./backend
+          python scripts/autopilot_approve_all.py
