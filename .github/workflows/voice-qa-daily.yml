@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Voice-QA ausfuehren
         run: python3 qa/voice_qa_daily.py --out voice_qa_bericht.md
       - name: Bericht als Artefakt sichern
