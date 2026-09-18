@@ -96,13 +96,16 @@ def fetch_bindings(
             response = httpx.get(
                 url, headers={"User-Agent": USER_AGENT}, timeout=timeout_seconds
             )
-            if response.status_code >= 500:  # transient: retry lohnt
+            if response.status_code >= 500 or response.status_code == 429:
+                # 429 = WDQS-Rate-Limit (transient, Befund 18.09.: ganze
+                # Kategorien fielen auf 429 aus und kosteten den Nachschub)
+                # — Retry mit Backoff wie bei 5xx.
                 last_error = httpx.HTTPStatusError(
                     f"Server error '{response.status_code}'",
                     request=response.request, response=response,
                 )
                 continue
-            response.raise_for_status()  # 4xx: kein Retry (Query-Fehler)
+            response.raise_for_status()  # uebrige 4xx: kein Retry (Query-Fehler)
             return response.json()
         except (httpx.TimeoutException, httpx.TransportError) as error:
             last_error = error

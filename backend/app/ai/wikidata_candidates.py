@@ -74,6 +74,20 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Buehne": ("Q214917", "Q5716684"),                # playwright, dancer
     "Archaeologie": ("Q3621491",),                    # archaeologist
     "Uebersetzen": ("Q333634",),                      # translator
+    # Nachschub Batch 2 (18.09.2026, Inhaber-Auftrag 'Tagesziel jeden Tag'):
+    # die 14.09er-Pools waren nach 3 Tagen Vollbetrieb weitgehend abgearbeitet
+    # (18.09.: Ingest accepted 0 bei 5.351 Dubletten + WDQS 429/504). Wieder
+    # alle QIDs einzeln gegen wbgetentities verifiziert (Label + Beschreibung;
+    # der Suchtreffer fuer 'nobleman' war ein Gemaelde und wurde verworfen).
+    "Monarchen": ("Q116",),                           # monarch
+    "Nonnen": ("Q191808",),                           # nun
+    "Rabbiner": ("Q133485",),                         # rabbi
+    "Missionare": ("Q219477",),                       # missionary
+    "Notare": ("Q189010",),                           # notary
+    "Kartografie": ("Q1734662",),                     # cartographer
+    "Ornithologie": ("Q1225716",),                    # ornithologist
+    "Entomologie": ("Q3055126",),                     # entomologist
+    "Satire": ("Q9334029",),                          # satirist
 }
 
 
