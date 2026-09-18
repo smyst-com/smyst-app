@@ -12,6 +12,7 @@ welche Entscheidungen (applied/rejected/incomplete) wurden wann geschrieben?
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import os
 
@@ -81,7 +82,23 @@ def diagnose(client, bucket: str) -> dict:
     decided: dict[str, dict] = {}
     for label, prefix in DECIDED_PREFIXES.items():
         keys = _list_keys(client, bucket, prefix)
-        decided[label] = {"count": len(keys), "newest": sorted(keys)[-SAMPLE_LIMIT:]}
+
+        def _epoch(key: str) -> int:
+            stem = key.rsplit("/", 1)[-1][: -len(".json")]
+            try:
+                return int(stem.rsplit("-", 1)[-1])
+            except ValueError:
+                return 0
+
+        newest = sorted(keys, key=_epoch)[-SAMPLE_LIMIT:]
+        decided[label] = {
+            "count": len(keys),
+            "newest": newest,
+            "newest_utc": [
+                dt.datetime.fromtimestamp(_epoch(key), tz=dt.timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+                for key in newest
+            ],
+        }
     tombstone_decisions: dict[str, int] = {}
     for key in tombstones:
         try:
@@ -117,8 +134,8 @@ def main() -> None:
         print(f"  davon geschlossen (Tombstone): {report['pending_tombstones']} {report['tombstone_decisions']}")
         for label, info in report["entscheidungen"].items():
             print(f"{label}/: {info['count']} Eintraege")
-            for key in info["newest"]:
-                print(f"  neu: {key}")
+            for key, utc in zip(info["newest"], info["newest_utc"]):
+                print(f"  neu: {key}  ({utc} UTC)")
         if report["staging_beispiele"]:
             print("Offene Staging-Beispiele:")
             for sample in report["staging_beispiele"]:
