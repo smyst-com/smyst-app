@@ -88,6 +88,27 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Ornithologie": ("Q1225716",),                    # ornithologist
     "Entomologie": ("Q3055126",),                     # entomologist
     "Satire": ("Q9334029",),                          # satirist
+    # Nachschub Batch 3 (19.09.2026, gleiche Methode): alle QIDs einzeln
+    # gegen wbgetentities verifiziert (Label + Beschreibung gelesen;
+    # 'landowner'-Suchtreffer war ein Druck im National Gallery of Art und
+    # wurde verworfen). 17 grosse Pools historischer Notabilitaeten.
+    "Filmproduktion": ("Q3282637",),                  # film producer
+    "Choreografie": ("Q2490358",),                    # choreographer
+    "Verlegewesen": ("Q2516866",),                    # publisher
+    "Sozialreform": ("Q16611574",),                   # social reformer
+    "Abolitionismus": ("Q12526417",),                 # abolitionist
+    "Frauenrecht": ("Q27532437",),                    # suffragist
+    "Revolutionaere": ("Q3242115",),                  # revolutionary
+    "Gewerkschaft": ("Q15627169",),                   # trade unionist
+    "Fotojournalismus": ("Q957729",),                 # photojournalist
+    "Graveure": ("Q329439",),                         # engraver
+    "Kaufleute": ("Q215536",),                        # merchant
+    "Bankiers": ("Q806798",),                         # banker
+    "Seeleute": ("Q45199",),                          # sailor
+    "Philanthropie": ("Q12362622",),                  # philanthropist
+    "Kunstgeschichte": ("Q1792450",),                 # art historian
+    "Musikwissenschaft": ("Q14915627",),              # musicologist
+    "Orientalistik": ("Q1731155",),                   # orientalist
 }
 
 
