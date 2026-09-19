@@ -93,8 +93,15 @@ for (const [key, entries] of byName) {
 }
 for (const [key, entries] of bySlug) {
   const unique = [...new Set(entries.map((e) => e.slug))];
-  if (unique.length > 1) {
-    console.error(`check-twin-duplicates: Dublette (Slug '${key}'): ${entries.map((e) => e.slug).join(', ')}`);
+  if (unique.length < 2) continue;
+  // Gleiche Regel wie bei Namen (Befund 19.09.2026): 'sam-wood' und
+  // 's-a-m-wood' falten beide zu 'samwood', sind aber Namensvetter mit
+  // verschiedenen QIDs (Publish-Index garantiert QID-Eindeutigkeit) —
+  // legitime Eigenprofile. Eine Dublette liegt erst vor, wenn die
+  // Identitaet kollidiert (gleiche QID oder QID fehlt).
+  const collision = nameCollision(entries);
+  if (collision) {
+    console.error(`check-twin-duplicates: Dublette (Slug '${key}'): ${collision.map((e) => e.slug).join(', ')}`);
     failed = true;
   }
 }
