@@ -7314,18 +7314,6 @@ function AdminControlCenterInner() {
   }
 
   const renderAutopilot = () => {
-    const lightDot: Record<string, string> = {
-      green: 'bg-emerald-500',
-      yellow: 'bg-amber-400',
-      red: 'bg-red-500',
-      unknown: 'bg-slate-300',
-    }
-    const lightLabel: Record<string, string> = {
-      green: 'läuft',
-      yellow: 'überfällig',
-      red: 'fehlgeschlagen',
-      unknown: 'unbekannt',
-    }
     const summary = adminAutopilot?.summary
     const checkedAt = adminAutopilot?.checkedAt
       ? new Date(adminAutopilot.checkedAt).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
@@ -7334,6 +7322,60 @@ function AdminControlCenterInner() {
     const workflows = [...(adminAutopilot?.workflows ?? [])].sort(
       (a, b) => (lightRank[a.light] ?? 2) - (lightRank[b.light] ?? 2),
     )
+    // Klartext-Beschreibung je Automatik (Vorbild smejj.com/admin/autopiloten)
+    const workflowBeschreibung = (file: string, name: string): string => {
+      const n = `${file} ${name}`.toLowerCase()
+      if (n.includes('publish')) return 'Veröffentlicht geprüfte Profile öffentlich auf smyst.com — Tagesdeckel 5000, nichts geht ohne QA live.'
+      if (n.includes('watchdog')) return 'Bewacht die Pipeline: schlägt Alarm und eskaliert, wenn ein Lauf hängt oder wiederholt rot bleibt.'
+      if (n.includes('health')) return 'Prüft die Tagesquote der Pipeline und legt bei Problemen automatisch einen Alarm-Issue an.'
+      if (n.includes('lane') || n.includes('shard')) return 'Zweite Spur der Profil-Skalierung: übernimmt Shards 12–23 parallel zur Hauptspur.'
+      if (n.includes('scale') || n.includes('2k') || n.includes('5000')) return 'Treibt die Profil-Erstellung Richtung Tagesziel: 5.000 neue, QA-geprüfte Profile pro Tag.'
+      if (n.includes('keepalive') || n.includes('tick')) return 'Selbst-Tick-Kette, die GitHub-Cron-Drosselung umgeht und alle Automatiken am Laufen hält.'
+      if (n.includes('doctor') || n.includes('doktor')) return 'Profil-Doktor: prüft frisch veröffentlichte Profile auf datumsbasierte Widersprüche und repariert sie.'
+      if (n.includes('version') || n.includes('freigab')) return 'Versions-Freigaben: bessere Profil-Versionen gehen nur mit deiner Freigabe live.'
+      if (n.includes('run') || n.includes('pipeline')) return 'Hauptlauf der Profil-Pipeline: Kandidaten erzeugen, Qualität prüfen, Ergebnisse sicher speichern.'
+      return 'Automatische Aufgabe der smyst-Pipeline — Status und Läufe werden fortlaufend gemessen.'
+    }
+    const taktKlartext = (c: string): string => {
+      const t = (c || '').trim()
+      if (!t || t === 'manual' || t === 'manuell') return 'manuell'
+      if (t === '*/30 * * * *') return 'alle 30 Minuten'
+      const alleX = t.match(/^\*\/(\d+) \* \* \* \*$/)
+      if (alleX) return `alle ${alleX[1]} Minuten`
+      if (t === '0 * * * *' || t === '@hourly') return 'stündlich'
+      if (t === '0 6 * * *') return 'täglich 6:00'
+      if (t === '0 7 * * *') return 'täglich 7:00'
+      return t
+    }
+    const vorZeit = (iso: string): string => {
+      const min = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+      if (min < 1) return 'gerade eben'
+      if (min < 60) return `vor ${min} min`
+      if (min < 1440) return `vor ${Math.floor(min / 60)} h`
+      const d = new Date(iso)
+      const gestern = new Date()
+      gestern.setDate(gestern.getDate() - 1)
+      if (d.toDateString() === gestern.toDateString()) return `gestern ${d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}`
+      return d.toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+    }
+    const statusWort: Record<string, string> = {
+      green: 'Läuft',
+      yellow: 'Überfällig',
+      red: 'Fehlgeschlagen',
+      unknown: 'Unbekannt',
+    }
+    const statusFarbe: Record<string, string> = {
+      green: 'text-emerald-300',
+      yellow: 'text-amber-300',
+      red: 'text-red-300',
+      unknown: 'text-[#9aa6b7]',
+    }
+    const quadratFarbe: Record<string, string> = {
+      green: 'bg-emerald-500',
+      yellow: 'bg-amber-400',
+      red: 'bg-red-500',
+      unknown: 'bg-slate-500',
+    }
     return (
       <div className="grid gap-5">
         <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
@@ -7484,6 +7526,13 @@ function AdminControlCenterInner() {
             {adminAutopilotMessage ? (
               <span className="text-xs font-semibold text-[#93a0b4]">{adminAutopilotMessage.split('|')[1] ?? ''}</span>
             ) : null}
+            <button
+              type="button"
+              onClick={() => setAutopilotReload((n) => n + 1)}
+              className="rounded-md border border-white/15 px-3 py-1.5 text-xs font-bold text-[#c7d2e0] transition hover:bg-white/[0.06]"
+            >
+              Neu laden
+            </button>
           </div>
           {workflows.length === 0 ? (
             <p className="px-5 py-4 text-sm font-semibold text-[#9aa6b7]">
@@ -7492,63 +7541,57 @@ function AdminControlCenterInner() {
                 : 'Keine Automatiken gemeldet.'}
             </p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-white/10 text-left text-[10.5px] font-black uppercase tracking-[0.12em] text-[#93a0b4]">
-                    <th className="px-5 py-3">Automatik</th>
-                    <th className="px-3 py-3">Takt</th>
-                    <th className="px-3 py-3">Ampel</th>
-                    <th className="px-3 py-3">Letzter Lauf</th>
-                    <th className="px-5 py-3 text-right">Aktion</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.06]">
-                  {workflows.map((workflow) => (
-                    <tr key={workflow.file} className="align-middle">
-                      <td className="px-5 py-3">
-                        <span className="block font-bold text-[#f4f7fb]">{workflow.name}</span>
-                        <span className="text-xs font-semibold text-[#8b98ab]">
-                          {workflow.kind === 'local' ? 'Mac-Workstation (launchd)' : 'GitHub'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 text-xs font-semibold text-[#9aa6b7]">{workflow.cadence}</td>
-                      <td className="px-3 py-3">
-                        <span className={`inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-xs font-bold ${workflow.light === 'red' ? 'border-red-500/40 bg-red-500/10 text-red-300' : workflow.light === 'yellow' ? 'border-amber-500/40 bg-amber-500/10 text-amber-300' : workflow.light === 'green' ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : 'border-white/10 bg-white/[0.04] text-[#9aa6b7]'}`}>
-                          <span className={`h-2 w-2 rounded-full ${lightDot[workflow.light] ?? 'bg-slate-500'}`} />
-                          {lightLabel[workflow.light] ?? 'unbekannt'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 text-xs font-semibold text-[#9aa6b7]">
-                        {workflow.lastRun?.createdAt
-                          ? new Date(workflow.lastRun.createdAt).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
-                          : '–'}
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <div className="inline-flex items-center gap-2">
-                          {workflow.lastRun?.htmlUrl && (
-                            <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="text-xs font-bold text-sky-400 hover:underline">
-                              GitHub
-                            </a>
-                          )}
-                          {workflow.kind === 'github' && (
-                            <button
-                              type="button"
-                              disabled={adminAutopilotBusy !== null}
-                              onClick={() => void actAdminAutopilotRerun(workflow.file)}
-                              className={`rounded-md border px-2.5 py-1.5 text-xs font-bold disabled:opacity-50 ${workflow.light === 'red' || workflow.light === 'yellow'
-                                ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10'
-                                : 'border-white/10 text-[#9aa6b7] hover:bg-white/[0.03]'}`}
-                            >
-                              {adminAutopilotBusy === workflow.file ? 'Startet …' : 'Neu starten'}
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              {workflows.map((workflow, index) => {
+                const laufWort = workflow.lastRun?.conclusion === 'success'
+                  ? 'erfolgreich'
+                  : workflow.lastRun?.conclusion === 'failure'
+                    ? 'fehlgeschlagen'
+                    : (workflow.lastRun?.conclusion ?? workflow.lastRun?.status ?? '')
+                return (
+                  <div key={workflow.file} className="grid gap-3 border-b border-white/[0.06] px-5 py-5 last:border-b-0 sm:grid-cols-[64px_minmax(0,1.6fr)_140px_110px_minmax(170px,0.9fr)] sm:gap-4">
+                    <div className="flex items-center gap-3 sm:flex-col sm:items-start sm:gap-2.5">
+                      <span className="text-lg font-black tabular-nums text-[#e6ecf4]">{String(index + 1).padStart(2, '0')}</span>
+                      <span className={`h-3.5 w-3.5 rounded-[3px] ${quadratFarbe[workflow.light] ?? 'bg-slate-500'}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-bold leading-snug text-[#f4f7fb]">{workflow.name}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-[#9aa6b7]">{workflowBeschreibung(workflow.file, workflow.name)}</p>
+                    </div>
+                    <div className="text-sm font-semibold leading-snug text-[#c7d2e0] sm:pt-1">{taktKlartext(workflow.cadence)}</div>
+                    <div className={`text-sm font-bold sm:pt-1 ${statusFarbe[workflow.light] ?? 'text-[#9aa6b7]'}`}>
+                      {statusWort[workflow.light] ?? 'Unbekannt'}
+                    </div>
+                    <div className="text-sm text-[#9aa6b7] sm:pt-1">
+                      {workflow.lastRun?.createdAt ? (
+                        <>
+                          <span className="font-bold text-[#c7d2e0]">{vorZeit(workflow.lastRun.createdAt)}</span>
+                          {laufWort ? ` · ${laufWort}` : ''}
+                        </>
+                      ) : (
+                        '–'
+                      )}
+                      <div className="mt-1.5 flex items-center gap-3 text-xs">
+                        {workflow.lastRun?.htmlUrl && (
+                          <a href={workflow.lastRun.htmlUrl} target="_blank" rel="noreferrer" className="font-bold text-sky-400 hover:underline">
+                            GitHub
+                          </a>
+                        )}
+                        {workflow.kind === 'github' && (
+                          <button
+                            type="button"
+                            disabled={adminAutopilotBusy !== null}
+                            onClick={() => void actAdminAutopilotRerun(workflow.file)}
+                            className="font-bold text-[#9aa6b7] transition hover:text-[#e6ecf4] disabled:opacity-50"
+                          >
+                            {adminAutopilotBusy === workflow.file ? 'Startet …' : '↻ Neu starten'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </section>
