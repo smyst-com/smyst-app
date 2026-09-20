@@ -208,40 +208,63 @@ if ! "$CVENV" "$GG/convert_hf_to_gguf.py" "/tmp/$VERSION-hf" --outfile "$F16" --
   exit 0
 fi
 
-# 10) Qualitaets-Tor: llama-server Smoke ("Hallo!" + Persona mit Produktions-
-#     Anti-Loop-Sampling, kein Loop, Ich-Form)
+# 10) Qualitaets-Tor: llama-server Smoke auf Q4_K_M UND Q8_0 ("Hallo!" ist
+#     implizit, Haupttest = Persona mit Produktions-Anti-Loop-Sampling).
+#     Bestanden ist erst: Antwort da, kein Loop, KEINE CJK-Zeichen (Sprach-
+#     Drift-Falle 20.09.), Ich-Form, >= 20 Woerter, deutschlastig (Ratio >= 0.6).
 PORT=8081
-"$LM/build/bin/llama-server" -m "$Q4" --port $PORT --ctx-size 8192 --alias "$VERSION" > "/tmp/llama-server-$VERSION.log" 2>&1 &
-SRV=$!
-SMOKE_OK=0
-for _ in $(seq 1 90); do
-  sleep 5
-  R=$(curl -s --max-time 120 "http://127.0.0.1:$PORT/v1/chat/completions" -H "Content-Type: application/json" \
-    -d '{"messages":[{"role":"system","content":"You are Albert Einstein — the AI twin profile. Answer as Albert Einstein yourself, in the first person. Keep it concise."},{"role":"user","content":"Wer sind Sie und was haben Sie entdeckt?"}],"max_tokens":250,"temperature":0.2,"top_p":0.95,"min_p":0.05,"repeat_penalty":1.18,"repeat_last_n":384,"frequency_penalty":0.25,"presence_penalty":0.2}' 2>/dev/null)
-  echo "$R" | grep -q '"content"' && { SMOKE_OK=1; break; }
+SMOKE_FRAGE='{"messages":[{"role":"system","content":"You are Albert Einstein — the AI twin profile. Answer as Albert Einstein yourself, in the first person. Keep it concise."},{"role":"user","content":"Wer sind Sie und was haben Sie entdeckt?"}],"max_tokens":250,"temperature":0.2,"top_p":0.95,"min_p":0.05,"repeat_penalty":1.18,"repeat_last_n":384,"frequency_penalty":0.25,"presence_penalty":0.2}'
+pruefe_antwort() {
+  python3 - "$1" <<'PY'
+import json, re, sys
+try:
+    d = json.loads(sys.argv[1], strict=False)
+    a = d["choices"][0]["message"]["content"]
+except Exception:
+    print("FAIL leer"); sys.exit(0)
+w = a.split()
+loop = any(len(w) >= 2*n and " ".join(w[-n:]).lower() == " ".join(w[-2*n:-n]).lower() for n in (8, 5, 4))
+cjk = bool(re.search(r"[\u3040-\u30ff\u3400-\u9fff\uf900-\ufaff]", a))
+deutsch = len(re.findall(r"\b(ich|bin|und|der|die|das|nicht|ist|war|mein|meine|mit|auch|eine|sehr|aber|fuer|über|jahr|leben|werk|zeit)\b", a, re.I))
+ratio = deutsch / max(len(w), 1)
+if loop: print("FAIL loop")
+elif cjk: print("FAIL cjk-drift")
+elif not re.search(r"\b(ich|mein|mir|mich)\b", a, re.I): print("FAIL keine-ich-form")
+elif len(w) < 20: print("FAIL zu-kurz")
+elif ratio < 0.6: print(f"FAIL deutsch-ratio {ratio:.2f}")
+else: print(f"OK {len(w)}w ratio {ratio:.2f}")
+PY
+}
+SMOKE_GESAMT=1
+for QUANT in Q4_K_M Q8_0; do
+  DATEI=$( [ "$QUANT" = "Q4_K_M" ] && echo "$Q4" || echo "$Q8" )
+  "$LM/build/bin/llama-server" -m "$DATEI" --port 8081 --ctx-size 8192 --alias "$VERSION-$QUANT" > "/tmp/llama-server-$VERSION-$QUANT.log" 2>&1 &
+  SRV=$!
+  R=""
+  for _ in $(seq 1 90); do
+    sleep 5
+    R=$(curl -s --max-time 120 "http://127.0.0.1:$PORT/v1/chat/completions" -H "Content-Type: application/json" -d "$SMOKE_FRAGE" 2>/dev/null)
+    echo "$R" | grep -q '"content"' && break
+  done
+  kill $SRV 2>/dev/null; wait $SRV 2>/dev/null
+  URTEIL=$(pruefe_antwort "$R")
+  log "Smoke $QUANT: $URTEIL"
+  case "$URTEIL" in OK*) ;; *) SMOKE_GESAMT=0 ;; esac
 done
-kill $SRV 2>/dev/null; wait $SRV 2>/dev/null
-ANS=$(echo "$R" | python3 -c "import json,sys
-try: print(json.load(sys.stdin)['choices'][0]['message']['content'])
-except Exception: print('')" 2>/dev/null)
-if [ "$SMOKE_OK" != "1" ] || [ -z "$ANS" ]; then
-  log "Qualitaets-Tor FEHLGESCHLAGEN (keine Antwort) — kein Release."
+if [ "$SMOKE_GESAMT" != "1" ]; then
+  python3 - "$STATE" "$VERSION" "$NEW_SCORE" "$THIS_RUN" <<'PY'
+import json, sys
+p, v, s, run = sys.argv[1], sys.argv[2], float(sys.argv[3]), sys.argv[4]
+st = json.load(open(p))
+st.setdefault("verworfen", []).append({"version": v, "score": s, "grund": "Smoke-Qualitaets-Tor (Quant-Schädigung/Sprach-Drift)"})
+st["letzte_version"] = v
+st["last_data_run"] = run
+json.dump(st, open(p, "w"), indent=2, ensure_ascii=False)
+PY
+  log "Qualitaets-Tor FEHLGESCHLAGEN — KEIN Release, Version verworfen. Live-Modell unangetastet."
   exit 0
 fi
-WOERTER=$(echo "$ANS" | wc -w)
-LOOP=$(python3 -c "
-import sys
-w = '''$ANS'''.split()
-loop = 0
-for n in (8, 5, 4):
-    if len(w) >= 2*n and ' '.join(w[-n:]).lower() == ' '.join(w[-2*n:-n]).lower():
-        loop = 1; break
-print(loop)")
-if [ "$LOOP" != "0" ]; then
-  log "Qualitaets-Tor FEHLGESCHLAGEN (Wiederholungs-Loop in Smoke-Antwort) — kein Release."
-  exit 0
-fi
-log "Qualitaets-Tor bestanden ($WOERTER Woerter, kein Loop): $ANS"
+log "Qualitaets-Tor bestanden (Q4_K_M + Q8_0)."
 
 # 11) Release: 30-MB-Teile + SHA256SUMS, Upload-Loop im Hintergrund
 NN=$(echo "$VERSION" | sed 's/smyst-1\.//')
