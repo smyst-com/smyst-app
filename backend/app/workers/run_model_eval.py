@@ -150,9 +150,11 @@ def ask_twin(
 
     Langsame smyst-1.1-Antworten bedeuten Minuten lange SSE-Verbindungen;
     auf denen sah der Runner-Versuch vom 21.09. wiederholt transienten
-    SSL-Abbruch (ReadError: DECRYPTION_FAILED_OR_BAD_RECORD_MAC). Solche
-    Transportfehler sind kein Qualitaetsurteil ueber den Twin — zwei
-    kurze Wiederholungen, erst danach zaehlt der Fehlschlag.
+    SSL-Abbruch (ReadError: DECRYPTION_FAILED_OR_BAD_RECORD_MAC). Auch
+    502/503/504 vom Gateway traten im gleichen Zeitfenster auf (Deploy-
+    Neustarts des Backends). Solche Fehler sind kein Qualitaetsurteil
+    ueber den Twin — zwei kurze Wiederholungen, erst danach zaehlt der
+    Fehlschlag.
     """
     from time import sleep
 
@@ -168,6 +170,11 @@ def ask_twin(
             )
         except httpx.TransportError as error:  # inkl. ReadError, Timeouts
             last_error = error
+        except httpx.HTTPStatusError as error:
+            if error.response.status_code in (502, 503, 504):
+                last_error = error
+                continue
+            raise  # 4xx und unerwartete 5xx sind kein transienter Fall
     raise last_error  # type: ignore[misc]
 
 
