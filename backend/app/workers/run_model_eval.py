@@ -232,16 +232,34 @@ def parse_judge_verdict(raw: str) -> int | None:
 
 
 def build_judge_fn(chat_fn: Callable[[str], str]) -> Callable[[dict, str], int | None]:
-    """Judge auf Basis der Provider-Kette (in Actions: CI-Gateway)."""
+    """Judge auf Basis der Provider-Kette (in Actions: CI-Gateway).
+
+    Fehlgeschlagene Urteile werden mit gekuerzter Ursache auf stderr
+    sichtbar gemacht: 'Judge-Antwort unlesbar' ohne Angabe WARUM liess den
+    Vorfall vom 21.09. (0/3 bewertet) nicht diagnostizieren — die Ausnahme
+    oder das Rohformat ist die halbe Loesung. Enthaelt nie Schluessel.
+    """
 
     def judge(question: dict, answer: str) -> int | None:
         prompt = JUDGE_PROMPT.format(
             question=question["question"], expect=question["expect"], answer=answer
         )
         try:
-            return parse_judge_verdict(chat_fn(prompt))
-        except Exception:
+            raw = chat_fn(prompt)
+        except Exception as error:
+            print(
+                f"judge-Fehler {type(error).__name__} bei {question.get('id')}: "
+                f"{str(error)[:160]}",
+                file=sys.stderr,
+            )
             return None
+        verdict = parse_judge_verdict(raw)
+        if verdict is None:
+            print(
+                f"judge-Rohantwort unlesbar bei {question.get('id')}: {str(raw)[:160]!r}",
+                file=sys.stderr,
+            )
+        return verdict
 
     return judge
 
