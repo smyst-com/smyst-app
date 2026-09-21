@@ -28,14 +28,20 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 FRONTEND = "https://smyst.com"
-# api.smyst.com statt der alten Zeabur-Domain smyst-api.zeabur.app: Deren Edge
-# beantwortet POSTs aus US-Rechenzentren (GitHub-Runner) seit Ende August 2026
-# mit 403 — vier Montagsmessungen in Folge schlugen daran still fehl, während
-# die Custom Domain vom selben Runner problemlos antwortet (App-Guardian, 5-min-Takt).
+# api.smyst.com statt der alten Zeabur-Domain smyst-api.zeabur.app: Die
+# Custom Domain ist der kanonische Produktionszugang (App-Guardian nutzt sie
+# im 5-min-Takt fuer denselben Chat-Pfad).
 API = "https://api.smyst.com"
 REFERENCE = "https://example.com/"
 TIMEOUT = 60
 UA = "smyst-perf-check/1.0 (+https://smyst.com)"
+
+# Der Chat gehoert seinem Starter: /api/chat/start stellt ein Owner-Cookie
+# aus, und /api/chat/messages* lehnt ohne dieses Cookie mit 403 ab ("Chat
+# gehoert einem anderen Nutzer."). Ohne CookieJar fiel daher JEDE Chat-Runde
+# seit Einfuehrung der Bindung still auf 403 (Vorfall ab 24.08.2026) — der
+# Browser als Vorbild fuehrt das Cookie mit, das Messskript tat es nicht.
+_OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
 
 
 @dataclass
@@ -80,7 +86,7 @@ def _request(url: str, *, data: bytes | None = None, headers: dict[str, str] | N
 def time_request(url: str, *, data: bytes | None = None, headers: dict[str, str] | None = None) -> tuple[float, int, bytes]:
     """Gibt (Millisekunden bis die Antwort vollstaendig gelesen ist, Status, Body)."""
     started = time.perf_counter()
-    with urllib.request.urlopen(_request(url, data=data, headers=headers), timeout=TIMEOUT) as res:
+    with _OPENER.open(_request(url, data=data, headers=headers), timeout=TIMEOUT) as res:
         body = res.read()
         return (time.perf_counter() - started) * 1000, res.status, body
 
@@ -122,7 +128,7 @@ def measure_chat(rounds: int) -> dict[str, Samples]:
 
             started = time.perf_counter()
             seen_first_byte = seen_first_delta = False
-            with urllib.request.urlopen(
+            with _OPENER.open(
                 _request(f"{API}/api/chat/messages/stream", data=payload, headers=headers),
                 timeout=TIMEOUT,
             ) as res:
