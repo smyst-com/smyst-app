@@ -55,6 +55,12 @@
     <link rel="dns-prefetch" href="https://smyst-api.zeabur.app" />
     <link rel="preload" href="/locales/de.json" as="fetch" type="application/json" crossorigin="anonymous" />
     <link rel="prefetch" href="/locales/en.json" as="fetch" type="application/json" crossorigin="anonymous" />
+    <!-- Slim-Katalog parallel zum JS-Bundle vorladen (Performance 21.09.2026):
+         das Start-Grid wartet auf slim.json; ohne Preload begann der Abruf
+         erst nach Auswertung des Bundles (~1,2 s nach Navigation). Der Abruf
+         landet im HTTP-Cache, der spaetere App-Fetch (Service-Worker,
+         network-first) wird daraus bedient — keine Doppel-Ubertragung. -->
+    <link rel="preload" href="/api/public/twins/slim.json" as="fetch" type="application/json" crossorigin="anonymous" />
 
     <!-- iOS App Preview -->
     <meta name="apple-mobile-web-app-capable" content="yes" />

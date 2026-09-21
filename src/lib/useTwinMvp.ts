@@ -307,11 +307,10 @@ function lifeMatchKey(value: string): string {
     .replace(/[^a-z0-9]+/g, '')
 }
 
-let publicTwinsPromise: Promise<PublicTwinProfile[]> | null = null
 let slimTwinsPromise: Promise<PublicTwinProfile[] | null> | null = null
 
 /**
- * Slim-Katalog (kuratierte + neueste Profile, ~350 KB statt ~11 MB).
+ * Slim-Katalog (kuratierte + neueste Profile, ~350 KB statt ~41 MB).
  *
  * Die Startseite wartete vorher auf den VOLLSTAENDIGEN Katalog, bevor das
  * Grid renderte — bei 12k+ Profilen ein spuerbarer erster Eindruck. slim.json
@@ -331,26 +330,192 @@ function loadSlimPublicTwins(): Promise<PublicTwinProfile[] | null> {
   return slimTwinsPromise
 }
 
-/** Holt den oeffentlichen Twin-Katalog; mehrfache Aufrufe teilen eine Anfrage. */
-function loadPublicTwins(): Promise<PublicTwinProfile[]> {
-  if (!publicTwinsPromise) {
-    publicTwinsPromise = (async () => {
-      const body =
-        (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
-        (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
-      const twins = body?.twins ?? []
-      // Such-Index im Leerlauf vorwaermen (Performance 14.09.2026): sonst zahlt
-      // die erste Such-Eingabe die einmalige Tokenisierung von 27k Profilen.
-      warmSearchIndex(twins)
-      return twins
-    })().catch((err) => {
-      // Fehlschlaege duerfen nicht dauerhaft haengen bleiben: Cache leeren,
-      // damit ein spaeterer Aufruf es erneut versucht.
-      publicTwinsPromise = null
-      throw err
+// ─── Progressiver Katalog-Lader (Performance 21.09.2026) ───
+//
+// Der Vollkatalog war auf 41,5 MB gewachsen (47k Profile, +5.000/Tag) und
+// wurde bisher von JEDEM Besucher als EINE Datei geladen — zwar im
+// Hintergrund, aber komplett: minutenlang gesaettigte mobile Leitung und ein
+// mehrsekündiger JSON.parse-Freeze beim Upgrade. Ab sofort: slim.json rendert
+// sofort; catalog.json (Manifest) verweist auf Chunks c000.json, c001.json, …
+// mit je ~1.000 Profilen (~0,9 MB), die EINZELN in Leerlaufphasen nachladen.
+// Such-Index und Grid wachsen mit jedem Chunk mit.
+//
+// Das Voll-Monolith /api/public/twins/ bleibt als Fallback fuer Deployments
+// ohne Manifest bestehen — und ist Datenquelle der Backend-Verbraucher
+// (publish_profiles.py, run_model_eval.py), die es am Live-Stand lesen.
+
+interface CatalogManifest {
+  version: number
+  count: number
+  chunkSize: number
+  chunks: string[]
+}
+
+const catalogById = new Map<string, PublicTwinProfile>()
+const catalogListeners = new Set<() => void>()
+let catalogComplete = false
+let catalogStartPromise: Promise<void> | null = null
+let catalogCompletePromise: Promise<PublicTwinProfile[]> | null = null
+let slimMerged = false
+let slimMergePromise: Promise<void> | null = null
+
+function notifyCatalogListeners() {
+  for (const listener of catalogListeners) listener()
+}
+
+function snapshotPublicTwins(): PublicTwinProfile[] {
+  return Array.from(catalogById.values())
+}
+
+function mergeCatalogEntries(entries: readonly PublicTwinProfile[], warmSearch: boolean) {
+  const added: PublicTwinProfile[] = []
+  for (const profile of entries) {
+    if (!profile?.id || catalogById.has(profile.id)) continue
+    catalogById.set(profile.id, profile)
+    added.push(profile)
+  }
+  // Such-Index nur fuer die NEUEN Eintraege vorwaermen — inkrementell statt
+  // einmalig fuer 47k Profile (warmSearchIndex tokenisiert selbst in
+  // Leerlauf-Haeppchen; hier wird nur der Anfangsbestand klein gehalten).
+  if (warmSearch && added.length) warmSearchIndex(added)
+  return added.length
+}
+
+function nextIdle(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(() => resolve(), { timeout: 2000 })
+    } else {
+      setTimeout(resolve, 16)
+    }
+  })
+}
+
+function whenWindowLoaded(): Promise<void> {
+  if (typeof document !== 'undefined' && document.readyState === 'complete') return Promise.resolve()
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined') return resolve()
+    window.addEventListener('load', () => resolve(), { once: true })
+  })
+}
+
+/** Datenspar-Modus / sehr langsame Netze: Chunks nur auf expliciten Bedarf. */
+function chunkAutoLoadAllowed(): boolean {
+  if (typeof navigator === 'undefined') return true
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+  if (connection?.saveData) return false
+  if (connection?.effectiveType && /(^|\b)(slow-2g|2g)(\b|$)/.test(connection.effectiveType)) return false
+  return true
+}
+
+/**
+ * Slim-Stand in den Katalog uebernehmen (einmalig) — kuratierte + neueste
+ * Profile stehen damit sofort bereit; die Chunks ergaenzen den Rest.
+ */
+function ensureSlimMerged(): Promise<void> {
+  if (!slimMergePromise) {
+    slimMergePromise = (async () => {
+      if (slimMerged) return
+      const slim = await loadSlimPublicTwins()
+      if (slim?.length) mergeCatalogEntries(slim, true)
+      slimMerged = true
+    })().catch(() => {
+      slimMergePromise = null
     })
   }
-  return publicTwinsPromise
+  return slimMergePromise
+}
+
+/** Legacy-Weg ohne Manifest: Voll-Monolith bzw. API-Fallback (wie vorher). */
+async function loadLegacyFullCatalog(): Promise<void> {
+  const body =
+    (await staticPublicJson<{ twins: PublicTwinProfile[] }>('/api/public/twins/')) ??
+    (await publicApiJson<{ twins: PublicTwinProfile[] }>('/api/public/twins'))
+  const twins = body?.twins ?? []
+  if (twins.length) {
+    // Vollbestand auf einen Schlag: Such-Index vorwaermen wie frueher.
+    mergeCatalogEntries(twins, false)
+    warmSearchIndex(twins)
+  }
+}
+
+async function loadCatalogChunks(manifest: CatalogManifest): Promise<void> {
+  await whenWindowLoaded()
+  if (!chunkAutoLoadAllowed()) return
+  for (const chunk of manifest.chunks) {
+    await nextIdle()
+    const body = await staticPublicJson<{ twins: PublicTwinProfile[] }>(`/api/public/twins/${chunk}`)
+    if (body?.twins?.length && mergeCatalogEntries(body.twins, true) > 0) notifyCatalogListeners()
+  }
+}
+
+/**
+ * Startet den Katalogaufbau (idempotent): Slim sofort, Chunks progressiv in
+ * Leerlaufphasen. Ohne Manifest (aelterer Deploy) Legacy-Vollabruf.
+ */
+function ensureCatalogStarted(): Promise<void> {
+  if (!catalogStartPromise) {
+    catalogStartPromise = (async () => {
+      await ensureSlimMerged()
+      const manifest = await staticPublicJson<CatalogManifest>('/api/public/twins/catalog.json')
+      if (manifest?.chunks?.length) {
+        await loadCatalogChunks(manifest)
+      } else {
+        await loadLegacyFullCatalog()
+        notifyCatalogListeners()
+      }
+      catalogComplete = true
+      notifyCatalogListeners()
+    })().catch(() => {
+      catalogStartPromise = null
+    })
+  }
+  return catalogStartPromise
+}
+
+/**
+ * Katalog-Schnellstand: wartet nur auf slim.json (bzw. den Legacy-Vollweg,
+ * wenn kein slim existiert) und liefert alles bisher Geladene zurueck. Der
+ * Vollbestand laeuft im Hintergrund weiter — Aenderungen via
+ * onPublicTwinsChanged() bzw. whenPublicTwinsComplete().
+ */
+function loadPublicTwins(): Promise<PublicTwinProfile[]> {
+  void ensureCatalogStarted().catch(() => {
+    // Nur Vorwaermen — Fehler behandelt der spaetere echte Aufruf.
+  })
+  return (async () => {
+    await ensureSlimMerged()
+    const snapshot = snapshotPublicTwins()
+    if (snapshot.length) return snapshot
+    // Kein slim verfuegbar (Legacy-Deploy): dann doch auf den Vollweg warten.
+    await ensureCatalogStarted()
+    return snapshotPublicTwins()
+  })()
+}
+
+/** Resolves, sobald der Katalog vollstaendig geladen ist (alle Chunks). */
+function whenPublicTwinsComplete(): Promise<PublicTwinProfile[]> {
+  if (!catalogCompletePromise) {
+    catalogCompletePromise = (async () => {
+      await ensureCatalogStarted()
+      return snapshotPublicTwins()
+    })().catch(() => {
+      catalogCompletePromise = null
+      return snapshotPublicTwins()
+    })
+  }
+  return catalogCompletePromise
+}
+
+/** Abonniert Katalog-Aenderungen (Chunk angekommen / komplett). Rueckgabe: Stop. */
+export function onPublicTwinsChanged(listener: () => void): () => void {
+  catalogListeners.add(listener)
+  return () => catalogListeners.delete(listener)
+}
+
+/** Katalog-Schnappschuss ohne eigene Anfrage — fuer Listener nach Chunk-Ankunft. */
+export function getLoadedPublicTwins(): PublicTwinProfile[] {
+  return snapshotPublicTwins()
 }
 
 /**
@@ -368,23 +533,30 @@ export function prefetchPublicTwins(): void {
 }
 
 let lifeIndexPromise: Promise<Map<string, PublicTwinProfile>> | null = null
+let lifeIndexBuiltCount = -1
 
 async function loadPublicLifeIndex(): Promise<Map<string, PublicTwinProfile>> {
-  if (!lifeIndexPromise) {
-    lifeIndexPromise = (async () => {
-      const index = new Map<string, PublicTwinProfile>()
-      try {
-        // Teilt den Abruf mit listPublicTwins statt denselben Katalog erneut zu holen.
-        for (const profile of await loadPublicTwins()) {
-          if (profile?.name) index.set(lifeMatchKey(profile.name), profile)
-        }
-      } catch {
-        // Ohne Katalog bleiben die Twins unveraendert - kein harter Fehler.
-      }
+  await ensureSlimMerged()
+  // Katalog gewachsen (Chunk-Upgrade)? Index neu bauen, damit eine zweite
+  // Anreicherung die vollstaendigeren Lebensdaten sieht.
+  if (lifeIndexPromise && lifeIndexBuiltCount === catalogById.size) return lifeIndexPromise
+  lifeIndexBuiltCount = catalogById.size
+  lifeIndexPromise = Promise.resolve(
+    Array.from(catalogById.values()).reduce((index, profile) => {
+      if (profile?.name) index.set(lifeMatchKey(profile.name), profile)
       return index
-    })()
-  }
+    }, new Map<string, PublicTwinProfile>()),
+  )
   return lifeIndexPromise
+}
+
+/**
+ * Ergaenzt eigene Twins um oeffentliche Lebensdaten (4-Zeilen-Format).
+ * Exportiert, damit die Startseite nach dem Chunk-Upgrade erneut anreichern
+ * kann, ohne /api/twins ein zweites Mal zu rufen.
+ */
+export async function enrichTwinsWithPublicLifeData(twins: TwinRecord[]): Promise<TwinRecord[]> {
+  return withPublicLifeData(twins)
 }
 
 async function withPublicLifeData(twins: TwinRecord[]): Promise<TwinRecord[]> {
@@ -436,32 +608,36 @@ export function useTwinMvp() {
   }, [])
 
   /**
-   * Katalog zweistufig: erst slim (schnelles erstes Grid), dann Upgrade auf
-   * den Vollbestand, sobald der im Hintergrund angekommen ist. onUpgrade
-   * feuert NUR wenn der Vollbestand mehr enthaelt als der Slim-Stand.
+   * Katalog zweistufig: erst slim (schnelles erstes Grid), dann Upgrade in
+   * Chunk-Schritten, sobald weitere Teile des Vollbestands im Hintergrund
+   * angekommen sind. onUpgrade feuert NUR wenn der Stand mehr enthaelt als
+   * der zuvor gelieferte.
    */
   const listPublicTwinsProgressive = useCallback(
     (onUpgrade?: (alle: PublicTwinProfile[]) => void) =>
       run(async () => {
-        const slim = await loadSlimPublicTwins()
-        const voll = loadPublicTwins()
-        if (slim) {
-          void voll.then((alle) => {
-            if (alle.length > slim.length) {
-              // Macrotask, nicht Microtask: Ist der Vollbestand per prefetch
-              // schon VOR slim.json bereit (gemessen live 21.08.2026: voll
-              // 360 ms, slim 580 ms), lief das Upgrade im alten Microtask-
-              // Timing VOR dem Slim-Render und wurde vom Aufrufer sofort mit
-              // dem Slim-Stand (400 Profile) ueberschrieben — die Startseite
-              // blieb dauerhaft bei 400 statt 13.915 Profilen. Der Upgrade-
-              // Callback muss NACH dem Slim-Render des Aufrufers landen.
-              window.setTimeout(() => onUpgrade?.(alle), 0)
-            }
-          })
-          return slim
+        const slim = await loadPublicTwins()
+        if (!onUpgrade) return slim
+        // Ohne slim (Legacy-Deploy ohne slim.json): wie frueher auf den
+        // Vollbestand warten und ihn direkt liefern.
+        if (!slim.length) return await whenPublicTwinsComplete()
+        let lastNotified = slim.length
+        const deliver = () => {
+          const alle = snapshotPublicTwins()
+          if (alle.length <= lastNotified) return
+          lastNotified = alle.length
+          // Macrotask, nicht Microtask: Ist der Vollbestand per prefetch
+          // schon VOR slim.json bereit (gemessen live 21.08.2026: voll
+          // 360 ms, slim 580 ms), lief das Upgrade im alten Microtask-
+          // Timing VOR dem Slim-Render und wurde vom Aufrufer sofort mit
+          // dem Slim-Stand (400 Profile) ueberschrieben — die Startseite
+          // blieb dauerhaft bei 400 statt 13.915 Profilen. Der Upgrade-
+          // Callback muss NACH dem Slim-Render des Aufrufers landen.
+          window.setTimeout(() => onUpgrade?.(alle), 0)
         }
-        const body = await voll.then((alle) => ({ twins: alle }))
-        return body.twins
+        onPublicTwinsChanged(deliver)
+        deliver()
+        return slim
       }),
     [run],
   )

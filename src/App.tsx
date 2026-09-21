@@ -31,7 +31,7 @@ import { markServerAsrUnavailable, recordAndTranscribeOnce, serverAsrReady, serv
 import { isRemoteSpeechActive, playRemoteSpeech, prefetchSpeech, startSentenceSpeech, stopRemoteSpeech, unlockAudioPlayback } from '@/lib/ttsClient'
 import { useMemoryUpload, type MemoryCategory, type UploadResult } from '@/lib/useMemoryUpload'
 import { fetchService } from '@/lib/serviceEndpoints'
-import { prefetchPublicTwins, useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
+import { enrichTwinsWithPublicLifeData, getLoadedPublicTwins, onPublicTwinsChanged, prefetchPublicTwins, useTwinMvp, type ChatSearchResult, type MemoryRecord, type PublicKnowledgeSuggestion, type PublicTwinProfile, type SupportReportType, type TwinChatRecord, type TwinRecord, type TwinStyle, type UserProfileRecord, type WebResearchMeta } from '@/lib/useTwinMvp'
 import {
   CURATED_PUBLIC_TWIN_BASE_TIME,
   CURATED_PUBLIC_TWIN_LANGUAGES,
@@ -1941,6 +1941,13 @@ function SmystStartPage({
           return
         }
 
+        // Zweistufig wie beim Gast (Performance 21.09.2026): Frueher wartete
+        // der angemeldete Start genau wie frueher der Gast-Seitenzweig auf den
+        // VOLLSTAENDIGEN Katalog (41,5 MB, 47k Profile) — das Grid erschien
+        // erst nach vielen Sekunden komplett. Jetzt rendern eigene Twins +
+        // Chats + Slim-Katalog sofort; der Katalog-Listener baut die Liste mit
+        // wachsendem Chunk-Bestand neu auf (inkl. nachgezogener Lebensdaten-
+        // Anreicherung eigener Twins, ohne /api/twins erneut zu rufen).
         const [twins, publicProfiles, chats] = await Promise.all([
           twinMvp.listTwins(),
           twinMvp.listPublicTwins(),
@@ -1948,32 +1955,51 @@ function SmystStartPage({
         ])
         if (!alive) return
         const usage = usageByTwinId(chats)
-        const ownProfiles = dedupeByName(
-          (twins ?? [])
-            .filter(isCompleteTwinRecord)
-            .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug))),
-        )
-        // Dublettenschutz gegen die oeffentliche Liste: bisher nur ueber den Slug.
-        // Ein zweiter eigener Twin gleichen Namens bekommt aber einen neuen Slug
-        // ("alessandro-volta-2") und rutschte dadurch als Doppelkarte durch.
-        const ownPublicSlugs = new Set(ownProfiles.map((profile) => profile.profileSlug).filter(Boolean))
-        const ownNames = new Set(ownProfiles.map((profile) => normalizedProfileName(profile.name)))
-        const publicStartProfiles = (publicProfiles?.length ? publicProfiles : curatedPublicProfiles())
-          .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug)
-            && !ownNames.has(normalizedProfileName(profile.name)))
-          .map((profile, index) => publicProfileToStartTwin(profile, ownProfiles.length + index, usage.get(profile.slug)))
-        const next = [...ownProfiles, ...publicStartProfiles]
-        setRealStartTwins(next)
+        const buildOwnProfiles = (records: TwinRecord[]) =>
+          dedupeByName(
+            records
+              .filter(isCompleteTwinRecord)
+              .map((twin, index) => realTwinToStartTwin(twin, index, usage.get(twin.id) ?? usage.get(twin.slug))),
+          )
+        const mergeStartList = (pool: PublicTwinProfile[], own: ReturnType<typeof buildOwnProfiles>) => {
+          // Dublettenschutz gegen die oeffentliche Liste: bisher nur ueber den Slug.
+          // Ein zweiter eigener Twin gleichen Namens bekommt aber einen neuen Slug
+          // ("alessandro-volta-2") und rutschte dadurch als Doppelkarte durch.
+          const ownPublicSlugs = new Set(own.map((profile) => profile.profileSlug).filter(Boolean))
+          const ownNames = new Set(own.map((profile) => normalizedProfileName(profile.name)))
+          const publicStartProfiles = (pool.length ? pool : curatedPublicProfiles())
+            .filter((profile) => isCompletePublicProfile(profile) && !ownPublicSlugs.has(profile.slug)
+              && !ownNames.has(normalizedProfileName(profile.name)))
+            .map((profile, index) => publicProfileToStartTwin(profile, own.length + index, usage.get(profile.slug)))
+          return [...own, ...publicStartProfiles]
+        }
+        const ownProfiles = buildOwnProfiles(twins ?? [])
+        const initialNext = mergeStartList(publicProfiles ?? [], ownProfiles)
+        setRealStartTwins(initialNext)
         const keepRestoredTwin = chatRestoredRef.current
         chatRestoredRef.current = false
-        const requestedTwin = takePendingChatTwin(next)
+        const requestedTwin = takePendingChatTwin(initialNext)
         if (requestedTwin) setNamePickerOpen(false)
         setSelectedTwin((current) => {
           if (requestedTwin) return requestedTwin
           if (keepRestoredTwin && current) return current
-          return current && next.some((twin) => twin.id === current.id) ? current : next[0] ?? null
+          return current && initialNext.some((twin) => twin.id === current.id) ? current : initialNext[0] ?? null
         })
         setProfilesLoaded(true)
+        // Chunk-Upgrades: Grid mit groesserem Pool neu bauen (Funktions-
+        // Update mit Laengen-Waechter wie im Gast-Zweig — ein gelandetes
+        // Upgrade darf nie zurueckgesetzt werden); eigene Twins jedes Mal
+        // mit dem vollstaendigeren Lebensdaten-Index anreichern.
+        stopCatalogWatch = onPublicTwinsChanged(() => {
+          if (!alive) return
+          void enrichTwinsWithPublicLifeData(twins ?? [])
+            .then((enriched) => {
+              if (!alive) return
+              const next = mergeStartList(getLoadedPublicTwins(), buildOwnProfiles(enriched))
+              setRealStartTwins((bisher) => (next.length >= bisher.length ? next : bisher))
+            })
+            .catch(() => undefined)
+        })
       } catch (err) {
         if (!alive) return
         const message = err instanceof Error ? err.message : 'Profile konnten nicht geladen werden.'
@@ -1984,10 +2010,16 @@ function SmystStartPage({
       }
     }
 
+    // Katalog-Upgrade-Abo des authentifizierten Zweigs (Chunk-Ankunft): beim
+    // Effekt-Abbau wieder abbestellen, sonst baute ein alter Listener nach
+    // Ab-/Anmeldung die Liste mit veralteten eigenen Twins neu.
+    let stopCatalogWatch: (() => void) | null = null
+
     void loadRealProfiles()
 
     return () => {
       alive = false
+      stopCatalogWatch?.()
     }
   }, [auth.status])
 
@@ -3818,22 +3850,29 @@ function TwinProfileView({
   useEffect(() => {
     if (isPrivate || !slug) return
     let alive = true
+    const applyPool = (list: PublicTwinProfile[] | null) => {
+      if (!alive || !list) return
+      const pool = (list.length ? list : curatedPublicProfiles())
+        .filter(isCompletePublicProfile)
+        .map((item, index) => publicProfileToStartTwin(item, index))
+      const active = pool.find((item) => item.profileSlug === slug) ?? null
+      setSimilarTwins(similarProfiles(active, pool, 4) as StartTwin[])
+      setPublicProfileCount(pool.length)
+    }
+    // Frueher lud die Profilseite den VOLLSTAENDIGEN Katalog (41,5 MB), nur um
+    // vier aehnliche Profile zu waehlen — jeder Google-Besucher einer /t/-Seite
+    // bezahlte das mit minutenlang gesaettigter Leitung. Jetzt: Slim-Stand
+    // sofort, Chunk-Ankuenfte bauen "Aehnliche" und Profilzahl neu auf.
     void twinMvp
       .listPublicTwins()
-      .then((list) => {
-        if (!alive) return
-        const pool = (list?.length ? list : curatedPublicProfiles())
-          .filter(isCompletePublicProfile)
-          .map((item, index) => publicProfileToStartTwin(item, index))
-        const active = pool.find((item) => item.profileSlug === slug) ?? null
-        setSimilarTwins(similarProfiles(active, pool, 4) as StartTwin[])
-        setPublicProfileCount(pool.length)
-      })
+      .then(applyPool)
       .catch(() => {
         if (alive) setSimilarTwins([])
       })
+    const stopCatalogWatch = onPublicTwinsChanged(() => applyPool(getLoadedPublicTwins()))
     return () => {
       alive = false
+      stopCatalogWatch()
     }
   }, [slug, isPrivate])
 
