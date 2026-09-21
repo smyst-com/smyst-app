@@ -147,7 +147,37 @@ def ask_twin(
     prueft das Budget nur VOR Provider-Start: eine begonnene Antwort laeuft
     durch, und das done-Event nennt den Provider (mode) — die Degraded-
     Erkennung (mode=local) funktioniert daher unveraendert.
+
+    Langsame smyst-1.1-Antworten bedeuten Minuten lange SSE-Verbindungen;
+    auf denen sah der Runner-Versuch vom 21.09. wiederholt transienten
+    SSL-Abbruch (ReadError: DECRYPTION_FAILED_OR_BAD_RECORD_MAC). Solche
+    Transportfehler sind kein Qualitaetsurteil ueber den Twin — zwei
+    kurze Wiederholungen, erst danach zaehlt der Fehlschlag.
     """
+    from time import sleep
+
+    import httpx
+
+    last_error: Exception | None = None
+    for attempt in range(3):
+        if attempt:
+            sleep(5)
+        try:
+            return _ask_twin_once(
+                twin_id, question, language, api_base=api_base, timeout=timeout
+            )
+        except httpx.TransportError as error:  # inkl. ReadError, Timeouts
+            last_error = error
+    raise last_error  # type: ignore[misc]
+
+
+def _ask_twin_once(
+    twin_id: str,
+    question: str,
+    language: str | None,
+    api_base: str,
+    timeout: float,
+) -> tuple[str, str | None]:  # pragma: no cover - Netz
     import httpx
 
     with httpx.Client(timeout=timeout, follow_redirects=True) as client:
