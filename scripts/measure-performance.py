@@ -28,7 +28,11 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 FRONTEND = "https://smyst.com"
-API = "https://smyst-api.zeabur.app"
+# api.smyst.com statt der alten Zeabur-Domain smyst-api.zeabur.app: Deren Edge
+# beantwortet POSTs aus US-Rechenzentren (GitHub-Runner) seit Ende August 2026
+# mit 403 — vier Montagsmessungen in Folge schlugen daran still fehl, während
+# die Custom Domain vom selben Runner problemlos antwortet (App-Guardian, 5-min-Takt).
+API = "https://api.smyst.com"
 REFERENCE = "https://example.com/"
 TIMEOUT = 60
 UA = "smyst-perf-check/1.0 (+https://smyst.com)"
@@ -154,7 +158,15 @@ def measure_chat(rounds: int) -> dict[str, Samples]:
                         first_delta.fail("Stream meldete einen Fehler")
                         break
         except (urllib.error.URLError, TimeoutError, OSError, ValueError, KeyError) as exc:
-            first_byte.fail(f"{type(exc).__name__}: {exc}")
+            detail = ""
+            if isinstance(exc, urllib.error.HTTPError):
+                # Body mitloggen: ein 403 vom Edge ist ohne Meldung nicht von
+                # einem 403 der Anwendung unterscheidbar (Vorfall 24.08.2026).
+                try:
+                    detail = f" — {exc.read()[:200].decode('utf-8', 'replace')}"
+                except OSError:
+                    pass
+            first_byte.fail(f"{type(exc).__name__}: {exc}{detail}")
 
     # Entfernungsfeste Groesse: erstes Byte und erstes Fragment werden auf
     # DERSELBEN Verbindung gemessen, die Wegstrecke steckt in beiden gleich
