@@ -71,7 +71,7 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Botanik": ("Q2374149",),                         # botanist
     "Psychologie": ("Q212980",),                      # psychologist
     "Drehbuch": ("Q28389",),                          # screenwriter
-    "Buehne": ("Q214917", "Q5716684"),                # playwright, dancer
+    "Buehne": ("Q214917", "Q5716684", "Q2259451"),    # playwright, dancer, stage actor
     "Archaeologie": ("Q3621491",),                    # archaeologist
     "Uebersetzen": ("Q333634",),                      # translator
     # Nachschub Batch 2 (18.09.2026, Inhaber-Auftrag 'Tagesziel jeden Tag'):
@@ -109,6 +109,35 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Kunstgeschichte": ("Q1792450",),                 # art historian
     "Musikwissenschaft": ("Q14915627",),              # musicologist
     "Orientalistik": ("Q1731155",),                   # orientalist
+    # Nachschub Batch 4 (21.09.2026, gleiche Methode): alle QIDs einzeln
+    # gegen wbgetentities verifiziert (Label + Beschreibung gelesen;
+    # Fehltreffer 'weaver'/'brewer' = Familiennamen und 'alchemist' =
+    # Spieleentwickler wurden verworfen; playwright war schon in Buehne).
+    "Schach": ("Q10873124",),                         # chess player
+    "Anthropologie": ("Q4773904",),                   # anthropologist
+    "Soziologie": ("Q2306091",),                      # sociologist
+    "Sprachwissenschaft": ("Q14467526",),             # linguist
+    "Essayistik": ("Q11774202",),                     # essayist
+    "Zauberkunst": ("Q15855449",),                    # magician
+    "Bergsteigen": ("Q9149093",),                     # mountaineer
+    "Mode": ("Q3501317",),                            # fashion designer
+    "Silberschmiede": ("Q2216340",),                  # silversmith
+    "Zimmerer": ("Q154549",),                         # carpenter
+    "Astrologie": ("Q155647",),                       # astrologer
+    "Druckerei": ("Q175151",),                        # printer
+    "Liedtext": ("Q822146",),                         # lyricist
+    "Zoologie": ("Q350979",),                         # zoologist
+    "Geografie": ("Q901402",),                        # geographer
+    "Zahnmedizin": ("Q27349",),                       # dentist
+    "Apotheker": ("Q105186",),                        # pharmacist
+    "Museen": ("Q674426",),                           # curator
+    "Orgel": ("Q765778",),                            # organist
+    "Violine": ("Q1259917",),                         # violinist
+    "Cello": ("Q13219637",),                          # cellist
+    "Ballett": ("Q805221",),                          # ballet dancer
+    "Satztechnik": ("Q4108101",),                     # typesetter
+    "Telegrafie": ("Q2024200",),                      # telegraphist
+    "Stenografie": ("Q18810149",),                    # stenographer
 }
 
 
