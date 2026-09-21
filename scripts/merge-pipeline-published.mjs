@@ -624,6 +624,37 @@ writeFileSync(
 );
 console.log(`merge-pipeline-published: slim.json mit ${kuratiert.length + neuestePipeline.length} Eintraegen.`);
 
+// Chunk-Katalog (Performance 21.09.2026): Die Vollversion ist auf 41,5 MB
+// gewachsen (47k Profile, +5.000/Tag). Jeder NEUE Besucher lud sie komplett
+// (Hintergrund-Upgrade des Grids) — auf dem Handy minutenlang gesaettigte
+// Leitung plus mehrsekündiger JSON.parse-Freeze. Ab sofort gibt es ZUSAETZLICH
+// ein Manifest (catalog.json) plus Chunks c000.json, c001.json, ... mit je
+// 1.000 Eintraegen (~0,9 MB). Die App laedt slim.json sofort und die Chunks
+// einzeln in Leerlaufphasen nach (useTwinMvp.ts). Die Vollversion unter
+// /api/public/twins/ bleibt UNVERAENDERT komplett: publish_profiles.py,
+// run_model_eval.py und curated-profile-database-audit.mjs lesen sie am
+// Live-Stand (Autopilot-Freeze — an deren Datenquelle dreht dieser PR nicht).
+const CHUNK_SIZE = 1000;
+const chunkNames = [];
+for (let start = 0; start < twins.length; start += CHUNK_SIZE) {
+  const part = twins.slice(start, start + CHUNK_SIZE);
+  const chunkName = `c${String(Math.floor(start / CHUNK_SIZE)).padStart(4, '0')}.json`;
+  writeFileSync(
+    resolve(DIST, 'api', 'public', 'twins', chunkName),
+    JSON.stringify({ twins: part.map(catalogEntry) }),
+    'utf8',
+  );
+  chunkNames.push(chunkName);
+}
+writeFileSync(
+  resolve(DIST, 'api', 'public', 'twins', 'catalog.json'),
+  JSON.stringify({ version: 1, count: twins.length, chunkSize: CHUNK_SIZE, chunks: chunkNames }),
+  'utf8',
+);
+console.log(
+  `merge-pipeline-published: ${chunkNames.length} Katalog-Chunk(s) + catalog.json fuer ${twins.length} Profile geschrieben.`,
+);
+
 // Sitemap-Chunking (14.09.2026, scripts/lib/sitemap-chunks.mjs): 5.000 neue
 // Profile/Tag laufen gegen das 50.000-URL-Limit pro Sitemap-Datei (erstmals
 // erreicht ca. 19.09.2026). Pipeline-URLs landen jetzt in

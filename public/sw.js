@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'smyst-v17';
+const CACHE_VERSION = 'smyst-v18';
 const APP_CACHE = `${CACHE_VERSION}:app`;
 const RUNTIME_CACHE = `${CACHE_VERSION}:runtime`;
 
@@ -72,6 +72,33 @@ async function networkFirst(request) {
   }
 }
 
+// Navigationen stale-while-revalidate (Performance 21.09.2026): network-first
+// liess JEDEDE Seitenanfrage auf den Netz-Roundtrip warten — Warm-Besuche
+// zahlten TTFB ~0,8-1 s (gemessen: domcontentloaded 1.157 ms bei vollem
+// Cache). SWR liefert die gecachte Shell SOFORT und frischt sie im
+// Hintergrund nach; beim naechsten Besuch steht die neue Version. Frische
+// Inhalte gefaehrdet das nicht: slim.json bleibt network-first (neue Profile
+// taeglich sichtbar) und Assets sind gehasht. Offline: Cache, sonst
+// offline.html. Gespiegelt wird NUR die Start-Shell auf '/' — alte Versionen
+// schrieben jede besuchte /t/-Seite auf '/' und zeigten offline dort eine
+// falsche Profilseite.
+async function navigateStaleWhileRevalidate(request) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  const cached = (await cache.match(request)) || (await cache.match('/'));
+  const isRoot = new URL(request.url).pathname === '/';
+  const fresh = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        void cache.put(request, response.clone());
+        if (isRoot) void cache.put('/', response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+  const response = cached || (await fresh);
+  return response || (await caches.match('/offline.html')) || Response.error();
+}
+
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(RUNTIME_CACHE);
   const cached = await cache.match(request);
@@ -93,7 +120,7 @@ self.addEventListener('fetch', (event) => {
   if (isPrivatePath(url.pathname)) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request));
+    event.respondWith(navigateStaleWhileRevalidate(request));
     return;
   }
 
@@ -101,8 +128,11 @@ self.addEventListener('fetch', (event) => {
   // Netz: Der Inhaber (13.09.) sah taeglich keine neuen Profile, weil
   // stale-while-revalidate den Katalog genau einen Besuch hinter dem Stand
   // ausliefert. slim ist klein genug fuer network-first (Cache bleibt
-  // Offline-Fallback). Der 23-MB-Vollkatalog bleibt stale-while-revalidate.
-  if (url.pathname === '/api/public/twins/slim.json') {
+  // Offline-Fallback). Dasselbe gilt fuer catalog.json (Chunk-Manifest,
+  // Performance 21.09.2026): es taeglich neue Chunks verzeichnet, darf also
+  // keinen Besuch hinterherlaufen. Die Chunks c000.json … bleiben
+  // stale-while-revalidate (unveraenderlich, per Prefix-Regel unten).
+  if (url.pathname === '/api/public/twins/slim.json' || url.pathname === '/api/public/twins/catalog.json') {
     event.respondWith(networkFirst(request));
     return;
   }
