@@ -118,16 +118,18 @@ jobs:
           if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
           # Ausgabe doppelt verwenden: Konsole fuer die Log-Suche, Datei fuer die
           # Zusammenfassung. set -o pipefail, damit ein Eval-Fehler den Job
-          # rot macht statt still durch tee zu verschwinden.
+          # rot macht statt still durch tee zu verschwinden. python -u: ohne
+          # Unbuffered blieb die Python-Ausgabe bei einem harten Prozess-Kill
+          # komplett im Pipe-Puffer und das Log war leer (Vorfall 21.09.2026).
           set -o pipefail
           # Erster Versuch; bei Fehlschlag einmal 60 Minuten warten und
           # wiederholen (transiente Erschoepfung des Groq-Tageslimits).
-          if python -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt; then
+          if python -u -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt; then
             echo "attempt=1-ok" >> "$GITHUB_OUTPUT"
           else
             echo "Erster Versuch fehlgeschlagen — retry in 60 min." >&2
             sleep 3600
-            python -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt
+            python -u -m app.workers.run_model_eval $ARGS | tee /tmp/eval-out.txt
             echo "attempt=2-ok" >> "$GITHUB_OUTPUT"
           fi
 
