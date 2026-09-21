@@ -50,7 +50,8 @@ jobs:
         # published/Tag. 24 Shards verdoppeln die QA je Lauf (~600/Lauf,
         # Laufzeit je Shard unveraendert ~1,5-3 h, 300-min-Timeout passt).
         # Lane B: die andere Haelfte der 24er-Partition (Komplement zu Lane A).
-        shard_index: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+        shard_index: [12, 13, 14, 15, 16, 17, 18, 19]
+
 
     defaults:
       run:
