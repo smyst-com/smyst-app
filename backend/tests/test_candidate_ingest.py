@@ -530,9 +530,16 @@ def test_neue_kategorien_verifizierte_qids() -> None:
     # 35 Kategorien, 6 je Lauf x 12 Laeufe/Tag — Slot 0..11 muessen zusammen
     # mindestens je 2 Treffer der neuen Menge liefern (Sicherheit gegen
     # Vertipper im Rotationsindex).
+    # 21.09.2026: Mit 86 Kategorien deckt ein Eintagesraster (12 Slots)
+    # nicht mehr alle ab — die Rotation verteilt ueber mehrere Tage (der
+    # Slot-Index rotiert mit run_date.toordinal()). Erfassung jetzt ueber
+    # 3 Tagesraster = 36 Laeufe, das reicht fuer vollstaendige Abdeckung.
     gesammelt: set[str] = set()
-    for slot in range(12):
-        gesammelt.update(categories_for_run(date(2026, 9, 14), slot=slot))
+    for tag_offset in range(3):
+        for slot in range(12):
+            gesammelt.update(
+                categories_for_run(date(2026, 9, 14 + tag_offset), slot=slot)
+            )
     assert neue <= gesammelt
     assert CATEGORIES_PER_RUN == 6
 
