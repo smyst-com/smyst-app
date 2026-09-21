@@ -23,7 +23,11 @@ jobs:
   quality:
     name: Qualitaetsschleife
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # 2026-09-20 lief die Schleife erstmals in das 120-min-Limit (122 min,
+    # abgebrochen): bei ~47k Profilen dauern 40 Evals + 200 Freshness-Checks
+    # je nach Provider-Lage laenger als frueher. 180 min gibt Luft nach oben,
+    # ohne den 6-h-Rahmen von GitHub auch nur annaehernd zu erreichen.
+    timeout-minutes: 180
     permissions:
       contents: read
       # actions:read fuer die Tagesbilanz (Liste der heutigen Pipeline-Laeufe).
