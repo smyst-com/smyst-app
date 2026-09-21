@@ -55,8 +55,13 @@ jobs:
         run: |
           pip install -q -e ".[dev]"
           git fetch origin pipeline-backup
-          # Konkreter Backup-Commit (HEAD waere der heutige 3.3k-Stand!):
-          git show ${{ github.event.inputs.backup_sha }}:backup/pipeline-published-index.json > /tmp/index-alt.json
+          # Konkreter Backup-Commit (HEAD waere der heutige 3.3k-Stand!).
+          # Seit 21.09.2026 liegt der Index gzip-komprimiert im Branch; alte
+          # Restore-SHAs von vor der Umstellung haben noch die Rohdatei.
+          ( git show ${{ github.event.inputs.backup_sha }}:backup/pipeline-published-index.json.gz \
+              | gunzip > /tmp/index-alt.json 2>/dev/null ) \
+            || git show ${{ github.event.inputs.backup_sha }}:backup/pipeline-published-index.json > /tmp/index-alt.json
+          python3 -c "import json; print('Backup geladen:', len(json.load(open('/tmp/index-alt.json'))), 'Eintraege')"
           python3 << 'PY'
           import json
           from datetime import datetime, timezone

@@ -41,32 +41,51 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           mkdir -p backup
-          aws s3 cp s3://smyst-memories/pipeline/published/index.json backup/pipeline-published-index.json \
+          # Seit ~47.000 Profilen ist der rohe Index >100 MB und wird von
+          # GitHubs Dateigrenze abgewiesen (Vorfall 21.09.2026). gzip drueckt
+          # das JSON auf ein Bruchteil; der Restore entpackt es wieder.
+          aws s3 cp s3://smyst-memories/pipeline/published/index.json /tmp/index-raw.json \
             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
-          python3 -c "import json; d=json.load(open('backup/pipeline-published-index.json')); print('Profile im Index:', len(d))"
+          gzip -9 -c /tmp/index-raw.json > backup/pipeline-published-index.json.gz
+          rm -f /tmp/index-raw.json
+          # Validierung VOR dem Commit: Datei muss entpackbar, gueltiges JSON
+          # und unter GitHubs 100-MB-Grenze bleiben (Guard gegen stillen
+          # Datenverlust durch abgeschnittene Downloads).
+          gunzip -t backup/pipeline-published-index.json.gz
+          SIZE=$(stat -c%s backup/pipeline-published-index.json.gz)
+          COUNT=$(gunzip -c backup/pipeline-published-index.json.gz | python3 -c "import json,sys; print(len(json.load(sys.stdin)))")
+          echo "Profile im Index: ${COUNT} | gzip-Groesse: $((SIZE / 1024 / 1024)) MB (${SIZE} Bytes)"
+          if [ "$SIZE" -ge 94371840 ]; then
+            echo "FEHLER: Komprimierter Index zu gross fuer GitHub (>=90 MB) — Backup abgebrochen." >&2
+            exit 1
+          fi
 
       # main ist branch-geschuetzt — das Backup lebt auf dem eigenen Branch
       # `pipeline-backup` mit fortlaufender Historie (jeder Tag = 1 Commit).
       - name: Aenderungen committen (Branch pipeline-backup, nur bei Diff)
         run: |
-          cp backup/pipeline-published-index.json /tmp/index-neu.json
+          cp backup/pipeline-published-index.json.gz /tmp/index-neu.json.gz
           # Die frisch geladene Datei liegt als UNTRACKED im Baum und auf dem
           # Backup-Branch als TRACKED Datei — genau diese Kombination liess
           # seit 17.08. jeden Checkout scheitern ("would be overwritten").
           # Nach /tmp kopiert kann sie hier bedenkenlos weg.
-          rm -f backup/pipeline-published-index.json
+          rm -f backup/pipeline-published-index.json.gz
           git fetch origin pipeline-backup 2>/dev/null \
             && git checkout -B pipeline-backup origin/pipeline-backup \
             || git checkout -B pipeline-backup
           mkdir -p backup
-          cp /tmp/index-neu.json backup/pipeline-published-index.json
-          git add backup/pipeline-published-index.json
+          cp /tmp/index-neu.json.gz backup/pipeline-published-index.json.gz
+          # Uebergang: die unkomprimierte Datei aus Zeiten <100 MB einmalig
+          # vom Branch nehmen, sonst waechst der Branch weiter mit beiden.
+          git rm -q --cached backup/pipeline-published-index.json 2>/dev/null || true
+          rm -f backup/pipeline-published-index.json
+          git add backup/pipeline-published-index.json.gz
           if git diff --cached --quiet; then
             echo "Keine Aenderung — nichts zu sichern."
             exit 0
           fi
-          COUNT=$(python3 -c "import json; print(len(json.load(open('backup/pipeline-published-index.json'))))")
+          COUNT=$(gunzip -c backup/pipeline-published-index.json.gz | python3 -c "import json,sys; print(len(json.load(sys.stdin)))")
           git config user.name "smyst-backup-bot"
           git config user.email "smyst247@gmail.com"
-          git commit -m "backup: Publish-Index vom $(date -u +%F) (${COUNT} Profile)"
+          git commit -m "backup: Publish-Index vom $(date -u +%F) (${COUNT} Profile, gzip)"
           git push origin pipeline-backup
