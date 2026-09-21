@@ -6,7 +6,7 @@ die ein eigenes Modell spaeter schlagen muss; danach vergleicht jeder
 Trainings-Checkpoint gegen dieselben, NIE veraenderten Fragen.
 
 Die Antworten kommen ueber die OEFFENTLICHE Chat-API — denselben Weg, den ein
-Nutzer nimmt (/api/chat/start + /api/chat/messages). Das hat zwei Gruende:
+Nutzer nimmt (/api/chat/start + /api/chat/messages/stream). Das hat zwei Gruende:
 1. Es prueft den echten Produktionspfad samt Persona-Aufbau und Sprachlogik.
 2. Es braucht KEINE e2-Zugaenge; der Kandidatenspeicher enthaelt die
    kuratierten Twins ohnehin nicht (die 100 beruehmten Figuren liegen als
@@ -138,6 +138,15 @@ def ask_twin(
 
     Pro Frage ein frischer Chat — sonst faerbt der Verlauf die naechste Antwort
     und die Fragen waeren nicht mehr unabhaengig bewertbar.
+
+    Stream-Endpunkt wie die Website selbst (App streamt /messages/stream):
+    Der nicht-streamende Zwilling /api/chat/messages bricht bei langsamer
+    Generierung auf das 20-s-Chat-Zeitbudget und antwortet dann aus dem
+    Not-Fallback — gemessen waere die Degraded-Meldung, nicht der Twin
+    (Vorfall ab 17.09.2026: taegliche Modell-Eval-Laeufe rot). Der Stream
+    prueft das Budget nur VOR Provider-Start: eine begonnene Antwort laeuft
+    durch, und das done-Event nennt den Provider (mode) — die Degraded-
+    Erkennung (mode=local) funktioniert daher unveraendert.
     """
     import httpx
 
@@ -148,10 +157,34 @@ def ask_twin(
         body: dict[str, Any] = {"chatId": chat_id, "message": question}
         if language:
             body["language"] = language
-        answer = client.post(f"{api_base}/api/chat/messages", json=body)
-        answer.raise_for_status()
-        payload = answer.json()
-        return str(payload["message"]["content"] or ""), payload.get("mode")
+        fragments: list[str] = []
+        mode: str | None = None
+        with client.stream(
+            "POST", f"{api_base}/api/chat/messages/stream", json=body
+        ) as response:
+            response.raise_for_status()
+            for line in response.iter_lines():
+                if not line.startswith("data:"):
+                    continue  # ": warmup"-Kommentar oeffnet den Stream, traegt keinen Text
+                try:
+                    event = json.loads(line[5:].strip())
+                except json.JSONDecodeError:
+                    continue
+                delta = event.get("delta")
+                if isinstance(delta, str):
+                    fragments.append(delta)
+                if event.get("error"):
+                    raise RuntimeError(
+                        f"Chat-Stream abgebrochen (Provider {event.get('provider', 'unbekannt')})"
+                    )
+                if event.get("done"):
+                    mode = event.get("mode") or mode
+                    # Krisenantworten senden NUR ein done-Event ohne Deltas;
+                    # der komplette Text steht dort in message.content.
+                    complete = str((event.get("message") or {}).get("content") or "")
+                    if complete:
+                        return complete, mode
+        return "".join(fragments), mode
 
 
 def parse_judge_verdict(raw: str) -> int | None:
