@@ -145,7 +145,7 @@ def run_assessment(
     *, store: CandidateStore, config: PipelineConfig, limit: int, dry_run: bool, run_date: date,
     concurrency: int | None = None,
 ) -> dict:
-    documents = store.candidate_documents_by_status(PipelineStatus.RESEARCHED.value, limit=limit)
+    documents = store.documents_by_status_progressive(PipelineStatus.RESEARCHED.value, limit=limit)
     report: dict = {
         "worker": "assess_risk",
         "run_date": run_date.isoformat(),
