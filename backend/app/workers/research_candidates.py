@@ -213,7 +213,8 @@ def run_research(
     *, store: CandidateStore, config: PipelineConfig, limit: int, dry_run: bool, run_date: date,
     concurrency: int | None = None,
 ) -> dict:
-    documents = store.candidate_documents_by_status(PipelineStatus.CANDIDATE.value, limit=limit)
+    # 21.09.2026: progressiv durch stale Marker (DELETE-Sperre) graben
+    documents = store.documents_by_status_progressive(PipelineStatus.CANDIDATE.value, limit=limit)
     report: dict = {
         "worker": "research_candidates",
         "run_date": run_date.isoformat(),

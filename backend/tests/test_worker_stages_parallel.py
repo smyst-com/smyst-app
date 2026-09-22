@@ -28,6 +28,9 @@ class FakeStore:
         self.changelogs: list[dict] = []
         self.requested_status: str | None = None
 
+    def documents_by_status_progressive(self, status: str, *, limit: int, max_gets: int = 5000, initial_window: int | None = None) -> list[dict]:
+        return self.candidate_documents_by_status(status, limit=limit)
+
     def candidate_documents_by_status(self, status: str, *, limit: int | None = None) -> list[dict]:
         self.requested_status = status
         return self._documents[: limit or len(self._documents)]

@@ -288,6 +288,45 @@ class CandidateStore:
                 break
         return documents
 
+    def documents_by_status_progressive(
+        self, status: str, *, limit: int, max_gets: int = 5000,
+        initial_window: int | None = None,
+    ) -> list[dict]:
+        """Bis `limit` echte Dokumente eines Status — graebt durch stale Marker.
+
+        21.09.2026: Seit der e2-DELETE-Sperre bleiben alte Status-Marker
+        liegen; die sortierten Marker-Listen sind an ihren Koepfen mit
+        veralteten Eintraegen gepflastert. Das starre Erstes-Fenster lief
+        deshalb leer. Diese Variante verbreitert das Ladefenster progressiv
+        (x4), bis `limit` echte Treffer beisammen sind oder der GET-Deckel
+        erreicht ist — Korrektheit wie der Voll-Scan, Kosten gedeckelt.
+
+        Ohne Status-Marker (nie backfillt) greift der klassische Weg.
+        """
+        if not self._status_index_present():
+            return self.candidate_documents_by_status(status, limit=limit)
+        qids = self.qids_by_status(status)
+        window = initial_window or max(limit, 1) * 4
+        documents: list[dict] = []
+        cursor = 0
+        budget = min(len(qids), max_gets)
+        while len(documents) < limit and cursor < len(qids) and budget > 0:
+            batch = qids[cursor : cursor + window]
+            cursor += len(batch)
+            budget -= len(batch)
+            for qid in batch:
+                try:
+                    document = self.load_candidate_document(qid)
+                except Exception:
+                    continue  # verwaister Marker
+                if document.get("status") != status:
+                    continue  # veralteter Marker — Dokument entscheidet
+                documents.append(document)
+                if len(documents) >= limit:
+                    return documents
+            window *= 4
+        return documents
+
     def save_source_snapshot(
         self, qid: str, filename: str, content: bytes, *, content_type: str = "application/json"
     ) -> str:
