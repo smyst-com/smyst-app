@@ -103,7 +103,7 @@ def run_build(
     *, store: CandidateStore, config: PipelineConfig, limit: int, dry_run: bool, run_date: date,
     concurrency: int | None = None,
 ) -> dict:
-    documents = store.candidate_documents_by_status(PipelineStatus.VERIFIED.value, limit=limit)
+    documents = store.documents_by_status_progressive(PipelineStatus.VERIFIED.value, limit=limit)
     report: dict = {
         "worker": "build_capsules",
         "run_date": run_date.isoformat(),
