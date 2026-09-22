@@ -81,18 +81,20 @@ live bewiesen (Runtime-Log: 127.0.0.1:8080 200 OK) und eingefroren:
    smyst_llm ok:true liefern UND ein Gast-Chat auf smyst.com muss eine echte
    Antwort liefern (nicht die Degraded-Meldung).
 
-## Funktions-Freeze Autopilot 5.000 Profile/Tag (Pflicht, 100 % geschuetzt, ab 14.09.2026)
+## Funktions-Freeze Autopilot 10.000 Profile/Tag (Pflicht, 100 % geschuetzt, ab 22.09.2026)
 
 Der tagesautomatische Profil-Autopilot (Auftrag Inhaber 14.09.2026: „Unser
 eigenes Modell und unser eigener Autopilot veroeffentlichen dauerhaft jeden
 Tag automatisch 5.000 neue gueltige Profile, vollstaendig ohne manuelle
-Bedienung") ist nach der Reparatur vom 14.09.2026 eingefroren. Details,
-Diagnose und Runbook: `docs/AUTOPILOT_5000.md`.
+Bedienung"; TAGESZIEL ANGEHOBEN auf 10.000/Tag am 22.09.2026, schriftliche
+Freigabe des Inhabers im Chat: „Ja, 10.000/Tag") ist nach der Reparatur vom
+14.09.2026 eingefroren. Details, Diagnose und Runbook: `docs/AUTOPILOT_5000.md`
+(Abschnitt 8 dokumentiert die 10.000er-Anhebung).
 
 Geschuetzte Dateien:
 - Workflows: pipeline-scale-2k.yml, pipeline-scale-2k-lane-b.yml (Selbst-Takt),
   pipeline-run.yml (Cron-Takt), pipeline-publish.yml (Auto-Publish, Deckel
-  5000/Tag), pipeline-watchdog.yml (Quota-Eskalation), pipeline-health.yml
+  10000/Tag), pipeline-watchdog.yml (Quota-Eskalation), pipeline-health.yml
   (Health/Alarm-Issue)
 - Backend: app/workers/sharded_runner.py (Marker-Auswahl + QA-Fairness),
   app/workers/qa_candidates.py (QA-Gate + Retry-Cap QA_MAX_ATTEMPTS=5),
@@ -102,7 +104,7 @@ Geschuetzte Dateien:
 
 Regeln:
 1. Ohne schriftliche Freigabe des Inhabers verboten: Workflow-Dateien aus dem
-   Scheduler entfernen/deaktivieren, Tagesziel (5000) oder Publish-Deckel
+   Scheduler entfernen/deaktivieren, Tagesziel (10000) oder Publish-Deckel
    senken, QA-Gate aufweichen, Marker-Auswahl/Fairness/Retry-Cap/Published-
    Summary ausbauen, Kategorie-Erweiterung rueckabwickeln.
 2. Gilt auch fuer Restores/Reverts: vor jedem Merge pruefen, dass die Marker

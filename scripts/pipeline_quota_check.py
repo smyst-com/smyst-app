@@ -11,7 +11,7 @@ extrahierbar):
 
     {
       "day": "2026-09-14",
-      "daily_target": 5000,
+      "daily_target": 10000,
       "published_today": 123,
       "remaining": 4877,
       "totals": {"published": 25971, ...},
@@ -35,7 +35,8 @@ import boto3
 from botocore.config import Config
 
 STATUS_PREFIX = "pipeline/status/"
-DEFAULT_TARGET = 5000
+# 5000 -> 10000 (22.09.2026, Freigabe Inhaber im Chat: 'Ja, 10.000/Tag')
+DEFAULT_TARGET = 10000
 WATCHED = (
     "candidate", "researched", "verified", "generated",
     "reviewed", "published", "rejected", "unpublished",
@@ -68,7 +69,7 @@ def status_entries(client, bucket: str, status: str) -> list[tuple[str, dt.datet
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Tagesquoten-Check (read-only)")
-    parser.add_argument("--target", type=int, default=None, help="Tagesziel (Default 5000)")
+    parser.add_argument("--target", type=int, default=None, help="Tagesziel (Default 10000)")
     parser.add_argument("--statuses", default=",".join(WATCHED))
     args = parser.parse_args()
 
