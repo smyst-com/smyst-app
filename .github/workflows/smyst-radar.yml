@@ -1,0 +1,183 @@
+name: smyst radar
+
+# Zweite Wissens-Schiene (getrennt von der Modell-Trainingsschiene!):
+# Tägliche Internetrecherche über KOSTENLOSE offizielle Quellen/APIs,
+# regelbasierte Prüfung + Versionierung, kontrollierter RAG-Abruf und
+# Testantwort mit dem EIGENEN smyst-Modell (llama-server, wie Produktion).
+# Ergebnis: Wissensbasis (radar-data Branch + Object Brain e2) + Tagesbericht
+# "Was hat smyst radar heute dazugelernt?" für den Autopilot-Adminbereich.
+#
+# Schutzregeln dieses Workflows:
+# - berührt NICHT: Produktion, Modelle der Trainingsschiene, Chats, Nutzerdaten
+# - Notaus: radar-state/control.json {"enabled": false} stoppt Recherche
+# - Budgets: max. API-Aufrufe/Lauf + Tages-/Monatsdeckel (verify_store.py)
+# - keine parallelen Radar-Jobs (concurrency), Timeout hart, fail-soft je Quelle
+# - Internetinhalte sind DATEN (Anti-Prompt-Injection in scripts/radar/*)
+
+on:
+  schedule:
+    - cron: "37 4 * * *" # täglich 04:37 UTC (06:37 Berlin) — ressourcenschonend
+  workflow_dispatch:
+
+permissions:
+  contents: write # radar-data Branch (öffentlicher Wissens-Spiegel fürs Admin)
+  actions: read
+
+concurrency:
+  group: smyst-radar
+  cancel-in-progress: false
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Wissensstand vom radar-data Branch laden
+        run: |
+          git config user.name "smyst-radar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          if git fetch --depth=1 origin radar-data; then
+            git worktree add radar-state origin/radar-data || mkdir -p radar-state
+            # worktree hat .git-Datei — stört spätere relative Nutzung nicht
+          else
+            mkdir -p radar-state/knowledge/entries radar-state/reports
+            echo '{"enabled": true, "note": "Notaus: enabled=false stoppt Recherche-Laeufe."}' > radar-state/control.json
+            echo "radar-data Branch neu — leere Wissensbasis."
+          fi
+
+      - name: Notaus prüfen (Kill Switch)
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          c = json.loads(pathlib.Path("radar-state/control.json").read_text()) if pathlib.Path("radar-state/control.json").exists() else {"enabled": True}
+          print("Radar enabled:", c.get("enabled", True))
+          sys.exit(0 if c.get("enabled", True) else 42)
+          PY
+
+      - name: Performance-Vorher-Messung (smyst.com unberührt halten)
+        run: |
+          for i in 1 2 3; do
+            curl -s -o /dev/null -w "vorher: %{http_code} %{time_total}s\n" --max-time 20 https://smyst.com/ || echo "vorher: Fehler"
+          done
+
+      - name: Recherche (echte Quellen, Budget begrenzt)
+        run: |
+          python3 scripts/radar/research.py --selftest
+          python3 scripts/radar/research.py --out radar-out/research.json --max-per-source 10 --max-calls 50
+
+      - name: Prüfen, vergleichen, versionieren, Tagesbericht schreiben
+        run: |
+          python3 scripts/radar/verify_store.py --selftest
+          python3 scripts/radar/verify_store.py --research radar-out/research.json --state-dir radar-state --api-calls 50
+
+      - name: llama-server + smyst-Modell bereitstellen (wie Produktion)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/lm && cd /tmp/lm
+          curl -sL --retry 3 -o lm.zip https://github.com/ggml-org/llama.cpp/releases/download/b6362/llama-b6362-bin-ubuntu-x64.zip
+          unzip -o -q lm.zip
+          find /tmp/lm -name "llama-server" -o -name "llama-quantize" | head -5
+          SERVER=$(find /tmp/lm -type f -name llama-server | head -1)
+          test -n "$SERVER" || { echo "llama-server Binary fehlt"; exit 3; }
+          # smyst-1.1 Q4_K_M aus dem Release (Teile zusammenfuegen)
+          mkdir -p /tmp/s11parts && cd /tmp/s11parts
+          gh release download v-smyst-1.1-gguf -R "$GITHUB_REPOSITORY" -p "s11p*" --clobber
+          cat $(ls s11p* | sort) > /tmp/smyst-1.1-Q4_K_M.gguf
+          ls -lh /tmp/smyst-1.1-Q4_K_M.gguf
+          nohup "$SERVER" -m /tmp/smyst-1.1-Q4_K_M.gguf --port 8081 --ctx-size 4096 --alias smyst-1.1 > /tmp/llama-server.log 2>&1 &
+          for i in $(seq 1 60); do
+            sleep 2
+            curl -s -m 2 http://127.0.0.1:8081/health | grep -q '"ok"' && { echo "llama-server bereit"; exit 0; } || true
+          done
+          echo "llama-server wurde nicht rechtzeitig bereit"; tail -20 /tmp/llama-server.log; exit 4
+
+      - name: RAG-Tests + echte Testantwort (smyst-Modell)
+        run: |
+          python3 scripts/radar/rag.py --selftest
+          python3 scripts/radar/rag.py --state-dir radar-state --base-url http://127.0.0.1:8081 \
+            || python3 scripts/radar/rag.py --state-dir radar-state --skip-answer
+          pkill -f llama-server || true
+
+      - name: Performance-Nachher-Messung
+        run: |
+          for i in 1 2 3; do
+            curl -s -o /dev/null -w "nachher: %{http_code} %{time_total}s\n" --max-time 20 https://smyst.com/ || echo "nachher: Fehler"
+          done
+
+      - name: Wissensbasis nach Object Brain (e2) spiegeln
+        if: always()
+        env:
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          pip install --quiet boto3
+          python3 - <<'PY'
+          import boto3, os, pathlib, sys
+          key, secret = os.getenv("IDRIVE_E2_ACCESS_KEY"), os.getenv("IDRIVE_E2_SECRET_KEY")
+          if not key or not secret:
+              print("e2-Keys fehlen — Object-Brain-Spiegel uebersprungen (Branch-Spiegel bleibt).")
+              sys.exit(0)
+          c = boto3.client("s3", endpoint_url=os.getenv("E2_ENDPOINT", "https://api.e2.idrivee2.com"),
+                           aws_access_key_id=key, aws_secret_access_key=secret)
+          root = pathlib.Path("radar-state")
+          n = 0
+          for p in sorted(root.rglob("*.json")):
+              if ".git" in p.parts or not p.is_file():
+                  continue
+              c.put_object(Bucket="smyst-memories", Key=f"radar/{p.relative_to(root).as_posix()}",
+                           Body=p.read_bytes(), ContentType="application/json")
+              n += 1
+          print(f"e2-Spiegel: {n} JSON-Dateien nach radar/ geschrieben.")
+          PY
+
+      - name: radar-data Branch aktualisieren (Admin-Frontend-Daten)
+        if: always()
+        run: |
+          cd radar-state
+          git add -A
+          git commit -m "radar: Lauf $(date -u +%F)" || echo "Keine Änderungen am Wissensstand."
+          git push origin HEAD:radar-data || {
+            git pull --rebase origin radar-data && git push origin HEAD:radar-data
+          }
+
+      - name: Lauf-Zusammenfassung
+        if: always()
+        run: |
+          {
+            echo "## smyst radar — Lauf $(date -u '+%F %H:%M') UTC"
+            python3 - <<'PY'
+            import json, pathlib
+            state = pathlib.Path("radar-state")
+            rep = sorted((state / "reports").glob("*.json"))
+            if rep:
+                r = json.loads(rep[-1].read_text())
+                echo = print
+                echo("### " + r.get("title", "?"))
+                echo("")
+                echo(r.get("summary", "keine Zusammenfassung"))
+                echo("")
+                echo(f"- Quellen untersucht: {r.get('sources_ok_count', 0)}/{r.get('sources_examined_count', 0)} erreichbar")
+                echo(f"- Neue Erkenntnisse: {len(r.get('new_insights', []))}")
+                echo(f"- Verworfen: {len(r.get('rejected', []))} | Aktualisiert: {len(r.get('updated', []))} | Veraltet: {len(r.get('outdated', []))}")
+                ru = r.get("rag_usage") or {}
+                tests = ru.get("tests", [])
+                if tests:
+                    ok = sum(1 for t in tests if t.get("found_correct_category"))
+                    echo(f"- RAG-Testfragen: {ok}/{len(tests)} bestanden")
+                ans = ru.get("answers", [])
+                if ans:
+                    ok = sum(1 for a in ans if a.get("ok"))
+                    echo(f"- Testantworten (smyst-Modell): {ok}/{len(ans)} erfolgreich")
+                else:
+                    echo("- Testantworten: nicht ausgeführt (kein Server/keine Treffer)")
+            else:
+                echo("Kein Tagesbericht geschrieben — Lauf prüfen.")
+            PY
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -51,6 +51,7 @@ AUTOPILOT_WORKFLOWS: list[dict[str, Any]] = [
     {"file": "morning-report.yml", "name": "Morgenbericht", "cadence": "täglich 06:00", "intervalHours": 24},
     {"file": "quality-autopilot.yml", "name": "Quality-Autopilot", "cadence": "täglich", "intervalHours": 24},
     {"file": "eval.yml", "name": "Chat-Eval", "cadence": "täglich", "intervalHours": 24},
+    {"file": "smyst-radar.yml", "name": "smyst radar", "cadence": "täglich 06:37", "intervalHours": 24},
     {"file": "model-eval.yml", "name": "Modell-Eval", "cadence": "täglich", "intervalHours": 24},
     {"file": "voice-qa-daily.yml", "name": "Sprach-QA", "cadence": "täglich", "intervalHours": 24},
     {"file": "pipeline-backup.yml", "name": "Backup", "cadence": "täglich", "intervalHours": 24},
