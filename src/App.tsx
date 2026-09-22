@@ -5873,6 +5873,7 @@ type AdminSection =
   | 'autopilot'
   | 'approvals'
   | 'ideas'
+  | 'radar'
   | 'look'
   | 'users'
   | 'registrations'
@@ -5997,6 +5998,91 @@ type AdminAutopilotApi = {
     } | null
   }>
   checkedAt?: number
+}
+
+// === smyst radar: Typen der Wissens-Schiene (radar-data Branch) ===
+type RadarEntryApi = {
+  id: string
+  title: string
+  topic?: { category?: string; reason?: string; relevance_score?: number }
+  summary?: string
+  key_points?: string[]
+  source?: { name?: string; kind?: string; trust?: number; trust_reason?: string }
+  source_url?: string
+  publisher?: string
+  published?: string | null
+  retrieved?: string
+  check?: string
+  check_reason?: string
+  trust_level?: number
+  freshness?: string
+  injection_suspicion?: string[]
+  contradiction_candidates?: string[]
+  tags?: string[]
+  relevance_smyst?: number
+  usage_status?: string
+  used_in_answer?: boolean
+  rag_used_count?: number
+  training_approved?: boolean
+  confirming_sources?: Array<{ publisher?: string; url?: string; at?: string }>
+  versions?: Array<{ version?: number; date?: string; reason?: string; previous?: unknown; current?: unknown }>
+  status?: string
+  status_history?: Array<{ at?: string; from?: string; to?: string; reason?: string }>
+}
+
+type RadarIndexApi = { generated_at?: string; entries?: RadarEntryApi[] }
+
+type RadarStatusApi = {
+  updated_at?: string
+  autopilot?: string
+  state?: string
+  enabled?: boolean
+  total_entries?: number
+  verified_entries?: number
+  rejected_entries?: number
+  outdated_entries?: number
+  rag_ready_entries?: number
+  used_in_answer_entries?: number
+  training_approved_entries?: number
+  last_run?: string
+  last_run_findings?: number
+  last_run_new_insights?: number
+  last_run_rejected?: number
+  budget?: { day?: { api_calls?: number }; month?: { api_calls?: number }; daily_limit?: number; monthly_limit?: number }
+}
+
+type RadarReportApi = {
+  title?: string
+  day?: string
+  generated_at?: string
+  paused?: boolean
+  summary?: string
+  topics_researched?: Array<{ source_id?: string; name?: string; items?: number; ok?: boolean }>
+  topics_reasons?: Array<{ id?: string; reason?: string }>
+  sources_examined_count?: number
+  sources_ok_count?: number
+  findings_count?: number
+  new_insights?: Array<{ id?: string; title?: string; category?: string; trust?: number; freshness?: string; url?: string }>
+  confirmed?: Array<{ id?: string; title?: string }>
+  updated?: Array<{ id?: string; title?: string; changed?: string[] }>
+  corrected?: Array<{ id?: string; title?: string }>
+  outdated?: Array<{ id?: string; title?: string }>
+  rejected?: Array<{ id?: string; title?: string; reason?: string }>
+  contradictions?: Array<{ entry_id?: string; title?: string; candidates?: string[]; note?: string }>
+  competitor_changes?: Array<{ id?: string; title?: string }>
+  new_models_tech?: Array<{ id?: string; title?: string }>
+  security_findings?: Array<{ id?: string; title?: string }>
+  improvement_suggestions?: Array<Record<string, unknown> & { title?: string; priority?: number }>
+  rag_usage?: {
+    tests?: Array<{ id?: string; question?: string; why?: string; found_correct_category?: boolean; top_matches?: Array<{ id?: string; title?: string; category?: string; freshness?: string; trust?: number; flags?: string[]; url?: string }> }>
+    answers?: Array<{ id?: string; question?: string; ok?: boolean; answer?: string | null; model?: string; error?: string; used_entry_ids?: string[] }>
+  }
+  rag_ready_count?: number
+  used_in_answer_count?: number
+  open_questions?: string[]
+  further_research?: string[]
+  errors?: number
+  costs?: { last_run_eur?: number; day_eur?: number; month_eur?: number; note?: string }
 }
 
 type AdminApprovalCard = {
@@ -6294,16 +6380,22 @@ const adminSections: Array<{ id: AdminSection; nr: string; label: string; detail
   { id: 'revenue', nr: '4.2', label: 'Revenue', detail: '25 % User-Anteil', group: 'Geld' },
   { id: 'finance', nr: '4.3', label: 'Finance', detail: 'Payouts, KYC, Tax', group: 'Geld' },
   { id: 'ideas', nr: '5.1', label: 'Modell & Ideen', detail: 'smyst 1.1, Autopilot-Vorschläge', group: 'Betrieb' },
-  { id: 'storage', nr: '5.2', label: 'Storage', detail: 'IDrive E2, Salad', group: 'Betrieb' },
-  { id: 'idrive', nr: '5.3', label: 'IDrive e2', detail: 'Object Map, Signed URLs', group: 'Betrieb' },
-  { id: 'salad', nr: '5.4', label: 'Salad', detail: 'Compute, Job-Pipeline, Jobs', group: 'Betrieb' },
-  { id: 'releases', nr: '5.5', label: 'Releases', detail: 'Apps, PWA, Rollback', group: 'Betrieb' },
-  { id: 'apps', nr: '5.6', label: 'Apps', detail: 'PWA, iPhone, Android', group: 'Betrieb' },
+  { id: 'radar', nr: '5.2', label: 'smyst radar', detail: 'Wissens-Recherche, RAG, Tagesbericht', group: 'Betrieb' },
+  { id: 'storage', nr: '5.3', label: 'Storage', detail: 'IDrive E2, Salad', group: 'Betrieb' },
+  { id: 'idrive', nr: '5.4', label: 'IDrive e2', detail: 'Object Map, Signed URLs', group: 'Betrieb' },
+  { id: 'salad', nr: '5.5', label: 'Salad', detail: 'Compute, Job-Pipeline, Jobs', group: 'Betrieb' },
+  { id: 'releases', nr: '5.6', label: 'Releases', detail: 'Apps, PWA, Rollback', group: 'Betrieb' },
+  { id: 'apps', nr: '5.7', label: 'Apps', detail: 'PWA, iPhone, Android', group: 'Betrieb' },
   { id: 'look', nr: '6.1', label: 'Look', detail: 'Design System', group: 'Referenz' },
   { id: 'checklist', nr: '6.2', label: 'A-Z', detail: 'Launch Kontrolle', group: 'Referenz' },
 ]
 
 const adminSectionOrder: string[] = ['Überblick', 'Menschen', 'Sicherheit', 'Geld', 'Betrieb', 'Referenz']
+
+// smyst radar: Stoppwörter des lokalen Retrieval-Tests (wie rag.py).
+const RAG_STOPWORDS_DE_EN = new Set(
+  'der die das und oder aber ein eine einer eines dem den des mit für von zu im in am an auf aus bei nach über unter vor wieder einmal will nicht ist sind war waren sein haben hat hatte können kann könnte soll sollte muss dürfen new via using the a an and or of for to in on at by with from is are was were be been this that these those it its as we you they i'.split(' '),
+)
 
 const adminMetricTone: Record<AdminMetric['tone'], string> = {
   green: 'bg-emerald-500',
@@ -6440,6 +6532,17 @@ function AdminControlCenterInner() {
   const [adminAutopilot, setAdminAutopilot] = useState<AdminAutopilotApi | null>(null)
   const [adminAutopilotBusy, setAdminAutopilotBusy] = useState<string | null>(null)
   const [adminAutopilotMessage, setAdminAutopilotMessage] = useState<string | null>(null)
+  // smyst radar: zweite Wissens-Schiene (Recherche → Prüfung → RAG → Bericht)
+  const [radarStatus, setRadarStatus] = useState<RadarStatusApi | null>(null)
+  const [radarIndex, setRadarIndex] = useState<RadarIndexApi | null>(null)
+  const [radarReport, setRadarReport] = useState<RadarReportApi | null>(null)
+  const [radarReportDay, setRadarReportDay] = useState<string>(new Date().toISOString().slice(0, 10))
+  const [radarRun, setRadarRun] = useState<{ status?: string | null; conclusion?: string | null; created_at?: string | null; html_url?: string | null } | null>(null)
+  const [radarBusy, setRadarBusy] = useState(false)
+  const [radarMessage, setRadarMessage] = useState<string | null>(null)
+  const [radarDetailId, setRadarDetailId] = useState<string | null>(null)
+  const [radarTestQuery, setRadarTestQuery] = useState('')
+  const [radarTestResults, setRadarTestResults] = useState<Array<{ entry: RadarEntryApi; score: number; reasons: string[] }> | null>(null)
   const [adminVersions, setAdminVersions] = useState<AdminVersionsApi | null>(null)
   const [adminVersionsBusy, setAdminVersionsBusy] = useState<string | null>(null)
   const [adminVersionsMessage, setAdminVersionsMessage] = useState<string | null>(null)
@@ -6903,6 +7006,75 @@ function AdminControlCenterInner() {
     }
   }, [activeSection])
 
+  // smyst radar: Status, Wissensindex und letzten Workflow-Lauf laden
+  // (öffentlicher radar-data Branch + öffentliche GitHub-API — ohne Backend-
+  // Deploy nutzbar;\Object Brain bleibt Persistenz, Branch ist der Spiegel).
+  useEffect(() => {
+    if (activeSection !== 'radar') return
+    let alive = true
+    const bust = Date.now()
+    const load = <T,>(url: string): Promise<T | null> =>
+      fetch(`${url}?t=${bust}`, { cache: 'no-store' })
+        .then((r) => (r.ok ? (r.json() as Promise<T>) : null))
+        .catch(() => null)
+    void (async () => {
+      const [status, index, runs] = await Promise.all([
+        load<RadarStatusApi>('https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/radar/status.json'),
+        load<RadarIndexApi>('https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/radar/knowledge/index.json'),
+        load<{ workflow_runs?: Array<{ status?: string | null; conclusion?: string | null; created_at?: string | null; html_url?: string | null }> }>('https://api.github.com/repos/smyst-com/smyst-app/actions/workflows/smyst-radar.yml/runs?per_page=1'),
+      ])
+      if (!alive) return
+      setRadarStatus(status)
+      setRadarIndex(index)
+      setRadarRun(runs?.workflow_runs?.[0] ?? null)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [activeSection, radarBusy])
+
+  // smyst radar: Tagesbericht eines Datums laden
+  const loadRadarReport = async (day: string) => {
+    setRadarBusy(true)
+    setRadarMessage(null)
+    try {
+      const r = await fetch(`https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/radar/reports/${day}.json?t=${Date.now()}`, { cache: 'no-store' })
+      setRadarReport(r.ok ? await r.json() : null)
+      if (!r.ok) setRadarMessage(`Für ${day} liegt kein Bericht vor (erster Lauf oder pausiert).`)
+    } catch {
+      setRadarReport(null)
+      setRadarMessage('Bericht konnte nicht geladen werden (Netz).')
+    } finally {
+      setRadarBusy(false)
+    }
+  }
+
+  // smyst radar: „Jetzt recherchieren" — Dispatch über das Backend; bis das
+  // Backend-Deploy die Radar-Zeile kennt, ehrlicher Fallback auf GitHub.
+  const actRadarResearch = async () => {
+    setRadarBusy(true)
+    setRadarMessage(null)
+    try {
+      const response = await fetchService('/api/admin/autopilot/rerun', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
+        body: JSON.stringify({ file: 'smyst-radar.yml' }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (response.ok && payload?.ok) {
+        setRadarMessage('Recherchelauf gestartet — Bericht erscheint nach ca. 10–20 Minuten.')
+      } else {
+        setRadarMessage('Start aktuell nur über GitHub möglich: smyst-radar → „Run workflow“ öffnen (Backend-Kennung folgt mit dem nächsten Deploy).')
+        window.open('https://github.com/smyst-com/smyst-app/actions/workflows/smyst-radar.yml', '_blank', 'noopener')
+      }
+    } catch {
+      setRadarMessage('Backend nicht erreichbar — Start über GitHub: smyst-radar → „Run workflow“.')
+    } finally {
+      setRadarBusy(false)
+    }
+  }
+
   // Autopilot-Workflow per GitHub-Dispatch erneut starten (CSRF + Audit)
   const actAdminAutopilotRerun = async (file: string) => {
     setAdminAutopilotBusy(file)
@@ -7352,6 +7524,376 @@ function AdminControlCenterInner() {
     )
   }
 
+  // === smyst radar: Detailansicht (zweite Wissens-Schiene) ===
+  const radarSources: Array<{ id: string; name: string; kind: string; trust: number }> = [
+    { id: 'arxiv-ai', name: 'arXiv (cs.AI, cs.CL, cs.CR)', kind: 'API (Primär)', trust: 5 },
+    { id: 'hf-models', name: 'Hugging Face Modelle', kind: 'API (offiziell)', trust: 5 },
+    { id: 'cisa-kev', name: 'CISA Known Exploited Vulnerabilities', kind: 'Behörde (Primär)', trust: 5 },
+    { id: 'openai-news', name: 'OpenAI Neuigkeiten', kind: 'RSS (offiziell)', trust: 4 },
+    { id: 'deepmind-blog', name: 'Google DeepMind Blog', kind: 'RSS (offiziell)', trust: 4 },
+    { id: 'google-ai-blog', name: 'Google AI Blog', kind: 'RSS (offiziell)', trust: 4 },
+    { id: 'gh-releases-llamacpp', name: 'llama.cpp Releases', kind: 'API (offiziell)', trust: 5 },
+    { id: 'gh-releases-ollama', name: 'Ollama Releases', kind: 'API (offiziell)', trust: 5 },
+  ]
+  const radarTokens = (text: string): string[] =>
+    (text.toLowerCase().match(/[a-z0-9äöüß]{3,}/g) ?? []).filter(
+      (t) => !RAG_STOPWORDS_DE_EN.has(t),
+    )
+  const radarRetrieveLocal = (query: string) => {
+    const entries = (radarIndex?.entries ?? []).filter(
+      (e) => e.status === 'rag_ready' && e.check === 'verified',
+    )
+    const q = radarTokens(query)
+    if (!q.length || !entries.length) {
+      setRadarTestResults([])
+      return
+    }
+    const docs = entries.map((e) =>
+      radarTokens(`${e.title ?? ''} ${e.summary ?? ''} ${e.topic?.category ?? ''}`),
+    )
+    const avgLen = docs.reduce((s, d) => s + d.length, 0) / Math.max(1, docs.length)
+    const freshBonus: Record<string, number> = { aktuell: 1.2, alt: 0.4, veraltet: -1, unbekannt: 0 }
+    const scored = entries
+      .map((entry, i) => {
+        const d = docs[i]
+        let score = 0
+        for (const tok of new Set(q)) {
+          const tf = d.filter((x) => x === tok).length
+          if (!tf) continue
+          const df = docs.filter((doc) => doc.includes(tok)).length
+          const idf = Math.max(0.1, (entries.length - df + 0.5) / (df + 0.5))
+          score += idf * (tf * 2.2) / (tf + 1.2 * (0.25 + 0.75 * d.length / Math.max(1, avgLen)))
+        }
+        score += 0.8 * ((entry.trust_level ?? 3) / 5)
+        score += freshBonus[entry.freshness ?? 'unbekannt'] ?? 0
+        const reasons = [
+          `Relevanz-Score ${score.toFixed(2)}`,
+          `Vertrauen ${entry.trust_level ?? '?'}/5`,
+          `Aktualität: ${entry.freshness ?? 'unbekannt'}`,
+          ...(entry.contradiction_candidates?.length ? ['Widerspruchskandidat — kennzeichnet'] : []),
+          ...(entry.freshness === 'veraltet' ? ['veraltet — nur wenn nichts Aktuelleres'] : []),
+        ]
+        return { entry, score, reasons }
+      })
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5)
+    setRadarTestResults(scored)
+  }
+
+  const renderRadar = () => {
+    const st = radarStatus
+    const idx = radarIndex
+    const rep = radarReport
+    const detail = idx?.entries?.find((e) => e.id === radarDetailId) ?? null
+    const runStateWord =
+      st?.enabled === false ? 'pausiert (Notaus)'
+      : radarRun?.status === 'in_progress' ? (radarRun?.conclusion === null ? 'recherchiert/prüft' : 'recherchiert')
+      : radarRun?.conclusion === 'failure' ? 'Fehler'
+      : (st?.state ?? 'wartet')
+    const dayCalls = st?.budget?.day?.api_calls ?? 0
+    const monthCalls = st?.budget?.month?.api_calls ?? 0
+    const dailyLimit = st?.budget?.daily_limit ?? 200
+    const monthlyLimit = st?.budget?.monthly_limit ?? 3000
+    return (
+      <div className="grid gap-5">
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold text-[#f4f7fb]">smyst radar</h2>
+              <p className="mt-1 text-sm font-semibold text-[#9aa6b7]">
+                Zweite Wissens-Schiene: recherchiert täglich offizielle Quellen, prüft und versioniert
+                Erkenntnisse und stellt sie per RAG bereit — getrennt von der Modell-Trainingsschiene.
+                Gespeichertes Wissen ist kein Nachweis für Modelltraining.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center gap-2 rounded-md border border-white/10 px-3 py-1.5 text-sm font-bold ${st?.enabled === false ? 'text-amber-300' : 'text-emerald-300'}`}>
+                <span className={`h-2.5 w-2.5 rounded-full ${st?.enabled === false ? 'bg-amber-400' : 'bg-emerald-500'}`} />
+                {st?.enabled === false ? 'Aus (Notaus aktiv)' : 'Ein'}
+              </span>
+              <button
+                type="button"
+                disabled={radarBusy}
+                onClick={() => void actRadarResearch()}
+                className="rounded-md bg-[#2563eb] px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
+              >
+                Jetzt recherchieren
+              </button>
+              <button
+                type="button"
+                onClick={() => { setRadarDetailId(null); void loadRadarReport(radarReportDay) }}
+                className="rounded-md border border-white/15 px-4 py-2 text-sm font-bold text-[#e6ecf4]"
+              >
+                Tagesbericht laden
+              </button>
+            </div>
+          </div>
+          {radarMessage && <p className="mt-3 rounded-md border border-sky-400/30 bg-sky-400/10 px-3 py-2 text-sm text-sky-200">{radarMessage}</p>}
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <AdminMetricCard metric={{ label: 'Status', value: runStateWord, detail: `Automatik: täglich 06:37 (Berlin) — nächster geplanter Lauf.`, tone: st?.enabled === false ? 'amber' : 'green' }} />
+            <AdminMetricCard metric={{ label: 'Letzter Lauf', value: st?.last_run ? new Date(st.last_run).toLocaleString('de-DE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—', detail: radarRun?.html_url ? 'GitHub-Lauf verlinkt im Bereich Fehler & Läufe.' : 'Noch kein Lauf bekannt.', tone: 'navy' }} />
+            <AdminMetricCard metric={{ label: 'Wissenseinträge', value: String(st?.total_entries ?? idx?.entries?.length ?? 0), detail: `${st?.verified_entries ?? 0} geprüft · ${st?.rag_ready_entries ?? 0} RAG-frei · ${st?.outdated_entries ?? 0} veraltet`, tone: 'cyan' }} />
+            <AdminMetricCard metric={{ label: 'In Antworten verwendet', value: String(st?.used_in_answer_entries ?? 0), detail: 'Nachweislich in Testantworten genutzt (smyst-Modell).', tone: 'green' }} />
+            <AdminMetricCard metric={{ label: 'Kosten letzter Lauf', value: `${(rep?.costs?.last_run_eur ?? 0).toFixed(2)} €`, detail: `Tag ${(rep?.costs?.day_eur ?? 0).toFixed(2)} € · Monat ${(rep?.costs?.month_eur ?? 0).toFixed(2)} € — nur kostenlose Quellen.`, tone: 'green' }} />
+            <AdminMetricCard metric={{ label: 'Tagesbudget (API-Aufrufe)', value: `${Math.max(0, dailyLimit - dayCalls)} frei`, detail: `${dayCalls}/${dailyLimit} verbraucht · Monat ${Math.max(0, monthlyLimit - monthCalls)} frei (${monthCalls}/${monthlyLimit}).`, tone: dayCalls >= dailyLimit ? 'red' : 'green' }} />
+            <AdminMetricCard metric={{ label: 'Queue', value: 'max. 1 Lauf', detail: 'Keine parallelen Radar-Jobs (concurrency) — smyst.com-Betrieb hat immer Vorrang.', tone: 'navy' }} />
+            <AdminMetricCard metric={{ label: 'Für Training freigegeben', value: String(st?.training_approved_entries ?? 0), detail: 'Immer 0 — Modelltraining läuft nur über die getrennte erste Schiene mit Freigabe.', tone: 'amber' }} />
+          </div>
+        </section>
+
+        {rep && (
+          <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-lg font-bold text-[#f4f7fb]">{rep.title ?? 'Was hat smyst radar heute dazugelernt?'}</h3>
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={radarReportDay}
+                  onChange={(e) => setRadarReportDay(e.target.value)}
+                  className="rounded-md border border-white/15 bg-[#0b1220] px-3 py-1.5 text-sm text-[#e6ecf4]"
+                />
+                <button type="button" onClick={() => void loadRadarReport(radarReportDay)} className="rounded-md border border-white/15 px-3 py-1.5 text-sm font-bold text-[#e6ecf4]">Laden</button>
+              </div>
+            </div>
+            <p className="mt-2 text-sm text-[#c7d2e2]">{rep.summary ?? '—'}</p>
+            {rep.paused && <p className="mt-2 rounded-md border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-200">Radar ist pausiert (Notaus oder Budget) — kein Lernerfolg, kein erfundener Bericht.</p>}
+            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+              <div>
+                <h4 className="text-sm font-bold text-[#9aa6b7]">Recherchierte Themen und warum</h4>
+                <ul className="mt-2 grid gap-1.5 text-sm text-[#c7d2e2]">
+                  {(rep.topics_researched ?? []).map((s, i) => (
+                    <li key={s.source_id ?? i}>
+                      <span className={`mr-1 inline-block h-2 w-2 rounded-sm ${s.ok ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                      {s.name ?? s.source_id} — {rep.topics_reasons?.find((r) => r.id === s.source_id)?.reason ?? 'geplante Quelle'} ({s.items ?? 0} Funde)
+                    </li>
+                  ))}
+                  {!(rep.topics_researched ?? []).length && <li className="text-[#9aa6b7]">Keine Quellen untersucht (pausiert oder Fehler).</li>}
+                </ul>
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-[#9aa6b7]">Zahlen des Laufs</h4>
+                <ul className="mt-2 grid gap-1.5 text-sm text-[#c7d2e2]">
+                  <li>Quellen untersucht: {rep.sources_ok_count ?? 0}/{rep.sources_examined_count ?? 0} erreichbar · Fundstücke: {rep.findings_count ?? 0}</li>
+                  <li>Neue geprüfte Erkenntnisse: {(rep.new_insights ?? []).length} · Bestätigt: {(rep.confirmed ?? []).length} · Aktualisiert: {(rep.updated ?? []).length}</li>
+                  <li>Korrigiert: {(rep.corrected ?? []).length} · Veraltet markiert: {(rep.outdated ?? []).length} · Verworfen: {(rep.rejected ?? []).length}</li>
+                  <li>Widerspruchskandidaten: {(rep.contradictions ?? []).length} · Fehler: {rep.errors ?? 0}</li>
+                  <li>RAG-frei: {rep.rag_ready_count ?? 0} · In Antworten verwendet: {rep.used_in_answer_count ?? 0}</li>
+                </ul>
+              </div>
+            </div>
+            {!!(rep.new_insights ?? []).length && (
+              <div className="mt-4">
+                <h4 className="text-sm font-bold text-[#9aa6b7]">Neue Erkenntnisse (anklickbar)</h4>
+                <ul className="mt-2 grid gap-1.5">
+                  {(rep.new_insights ?? []).map((n) => (
+                    <li key={n.id}>
+                      <button type="button" onClick={() => setRadarDetailId(n.id ?? null)} className="w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-sm text-[#e6ecf4] hover:border-sky-400/40">
+                        <span className="mr-2 rounded bg-sky-400/15 px-1.5 py-0.5 text-xs font-bold text-sky-200">{n.category}</span>
+                        {n.title}
+                        <span className="ml-2 text-xs text-[#9aa6b7]">Vertrauen {n.trust}/5 · {n.freshness}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {!!(rep.rejected ?? []).length && (
+              <div className="mt-4">
+                <h4 className="text-sm font-bold text-[#9aa6b7]">Verworfen und warum</h4>
+                <ul className="mt-2 grid gap-1.5 text-sm text-[#c7d2e2]">
+                  {(rep.rejected ?? []).map((n) => (
+                    <li key={n.id}><span className="mr-1 text-red-300">×</span> {n.title} <span className="text-[#9aa6b7]">— {n.reason}</span></li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {!!(rep.contradictions ?? []).length && (
+              <div className="mt-4">
+                <h4 className="text-sm font-bold text-[#9aa6b7]">Widersprüchliche Informationen (gekennzeichnet)</h4>
+                <ul className="mt-2 grid gap-1.5 text-sm text-[#c7d2e2]">
+                  {(rep.contradictions ?? []).map((c, i) => (
+                    <li key={c.entry_id ?? i}><span className="mr-1 text-amber-300">!</span> {c.title} <span className="text-[#9aa6b7]">— {c.note}</span></li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {!!(rep.improvement_suggestions ?? []).length && (
+              <div className="mt-4">
+                <h4 className="text-sm font-bold text-[#9aa6b7]">Verbesserungsvorschläge für smyst.com (priorisiert, nur Vorschlag)</h4>
+                <ol className="mt-2 grid gap-2 text-sm text-[#c7d2e2]">
+                  {(rep.improvement_suggestions ?? []).map((s, i) => (
+                    <li key={i} className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2">
+                      <span className="mr-2 font-bold text-sky-200">#{i + 1}</span>{s.title}
+                      <div className="mt-1 text-xs text-[#9aa6b7]">Nutzen: {String(s.benefit ?? '')} · Risiken: {String(s.risks ?? '')} · Test: {String(s.test ?? '')}</div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            {!!rep.rag_usage?.tests?.length && (
+              <div className="mt-4">
+                <h4 className="text-sm font-bold text-[#9aa6b7]">RAG-Testfragen und echte Testantworten (smyst-Modell)</h4>
+                <div className="mt-2 grid gap-3">
+                  {rep.rag_usage.tests.map((t) => {
+                    const answer = rep.rag_usage?.answers?.find((a) => a.id === t.id)
+                    return (
+                      <div key={t.id} className="rounded-md border border-white/10 bg-white/[0.03] p-3 text-sm text-[#c7d2e2]">
+                        <p className="font-bold text-[#e6ecf4]">{t.question}</p>
+                        <p className="mt-1 text-xs text-[#9aa6b7]">{t.why}</p>
+                        <p className="mt-1">Trefferqualität: <span className={t.found_correct_category ? 'text-emerald-300' : 'text-red-300'}>{t.found_correct_category ? 'richtige Kategorie gefunden' : 'richtige Kategorie NICHT gefunden'}</span></p>
+                        <ul className="mt-1 grid gap-0.5 text-xs text-[#9aa6b7]">
+                          {(t.top_matches ?? []).slice(0, 2).map((m) => (
+                            <li key={m.id}>→ {m.title} ({m.category}, {m.freshness}, Vertrauen {m.trust}){m.flags?.length ? ` [${m.flags.join('; ')}]` : ''}</li>
+                          ))}
+                        </ul>
+                        {answer && (
+                          <div className="mt-2 rounded border border-white/10 bg-black/20 p-2">
+                            <p className="text-xs text-[#9aa6b7]">Testantwort ({answer.model ?? 'smyst-Modell'}):</p>
+                            <p className="mt-1 whitespace-pre-wrap">{answer.ok ? answer.answer : `FEHLER: ${answer.error ?? 'unbekannt'}`}</p>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            <div className="mt-4 grid gap-2 text-sm text-[#9aa6b7]">
+              <p>Offene Fragen: {(rep.open_questions ?? []).join(' · ') || 'keine'}</p>
+              <p>Weitere Recherche: {(rep.further_research ?? []).join(' · ') || 'keine'}</p>
+            </div>
+          </section>
+        )}
+
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h3 className="text-lg font-bold text-[#f4f7fb]">Wissensbasis (klickbar)</h3>
+          <p className="mt-1 text-sm text-[#9aa6b7]">
+            {idx ? `${idx.entries?.length ?? 0} Einträge · Stand ${idx.generated_at ? new Date(idx.generated_at).toLocaleString('de-DE') : '—'}` : 'Noch kein Wissensstand geladen — erster Lauf ausstehend oder radar-data Branch nicht vorhanden.'}
+          </p>
+          <ul className="mt-3 grid max-h-96 gap-1.5 overflow-auto pr-1">
+            {(idx?.entries ?? []).slice(0, 100).map((e) => (
+              <li key={e.id}>
+                <button type="button" onClick={() => setRadarDetailId(e.id === radarDetailId ? null : e.id)} className="w-full rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-sm text-[#e6ecf4] hover:border-sky-400/40">
+                  <span className="mr-2 rounded bg-sky-400/15 px-1.5 py-0.5 text-xs font-bold text-sky-200">{e.topic?.category ?? '?'}</span>
+                  {e.title}
+                  <span className={`ml-2 text-xs ${e.check === 'verified' ? 'text-emerald-300' : 'text-red-300'}`}>{e.check === 'verified' ? 'geprüft' : 'verworfen'}</span>
+                  <span className="ml-2 text-xs text-[#9aa6b7]">{e.freshness} · Vertrauen {e.trust_level}/5{e.used_in_answer ? ' · in Antwort verwendet' : ''}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {detail && (
+          <section className="rounded-lg border border-sky-400/25 bg-sky-400/[0.06] p-5">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="text-lg font-bold text-[#f4f7fb]">{detail.title}</h3>
+              <button type="button" onClick={() => setRadarDetailId(null)} className="rounded-md border border-white/15 px-3 py-1 text-sm font-bold text-[#e6ecf4]">Schließen</button>
+            </div>
+            <div className="mt-3 grid gap-3 text-sm text-[#c7d2e2] lg:grid-cols-2">
+              <div className="grid gap-1.5">
+                <p><span className="text-[#9aa6b7]">Thema:</span> {detail.topic?.category} — {detail.topic?.reason}</p>
+                <p><span className="text-[#9aa6b7]">Zusammenfassung:</span> {detail.summary}</p>
+                <div><span className="text-[#9aa6b7]">Kernaussagen:</span><ul className="ml-4 list-disc">{(detail.key_points ?? []).map((k, i) => <li key={i}>{k}</li>)}</ul></div>
+                <p><span className="text-[#9aa6b7]">Quelle:</span> {detail.publisher} (<span className="break-all">{detail.source_url}</span>)</p>
+                <p><span className="text-[#9aa6b7]">Veröffentlicht:</span> {detail.published ?? 'unbekannt'} · <span className="text-[#9aa6b7]">Abgerufen:</span> {detail.retrieved ? new Date(detail.retrieved).toLocaleString('de-DE') : '—'}</p>
+                <p><span className="text-[#9aa6b7]">Prüfstatus:</span> {detail.check} — {detail.check_reason}</p>
+                <p><span className="text-[#9aa6b7]">Vertrauen:</span> {detail.trust_level}/5 ({detail.source?.trust_reason}) · <span className="text-[#9aa6b7]">Aktualität:</span> {detail.freshness}</p>
+                <p><span className="text-[#9aa6b7]">Tags:</span> {(detail.tags ?? []).join(', ')}</p>
+                <p><span className="text-[#9aa6b7]">RAG-Verwendung:</span> {detail.used_in_answer ? `in ${detail.rag_used_count} Testantwort(en) verwendet` : 'noch nicht in einer Antwort verwendet'} · Status: {detail.status}</p>
+                <p><span className="text-[#9aa6b7]">Für Modelltraining freigegeben:</span> {detail.training_approved ? 'ja' : 'nein — getrennte Schiene, Inhaber-Freigabe nötig'}</p>
+                {!!(detail.confirming_sources ?? []).length && (
+                  <p><span className="text-[#9aa6b7]">Bestätigt durch weitere Quelle(n):</span> {(detail.confirming_sources ?? []).map((c) => c.publisher).join(', ')}</p>
+                )}
+                {!!(detail.contradiction_candidates ?? []).length && (
+                  <p className="text-amber-200"><span className="text-[#9aa6b7]">Widerspruchskandidaten:</span> {detail.contradiction_candidates?.join(', ')} — manuelle Gegenprüfung empfohlen</p>
+                )}
+                {!!(detail.injection_suspicion ?? []).length && (
+                  <p className="text-red-300">Manipulationsverdacht im Quellinhalt erkannt und neutralisiert (nur archiviert): {detail.injection_suspicion?.join(' | ')}</p>
+                )}
+              </div>
+              <div>
+                <p className="text-[#9aa6b7]">Änderungsverlauf (Versionierung — Rollback pro Eintrag möglich):</p>
+                <ol className="mt-2 grid gap-2">
+                  {(detail.versions ?? []).map((v, i) => (
+                    <li key={i} className="rounded-md border border-white/10 bg-black/20 p-2 text-xs">
+                      <p className="font-bold text-[#e6ecf4]">Version {v.version} · {v.date ? new Date(v.date).toLocaleString('de-DE') : '—'}</p>
+                      <p>{v.reason}</p>
+                      {v.previous != null && <p className="mt-1 text-[#9aa6b7]">vorher: {JSON.stringify(v.previous).slice(0, 220)}</p>}
+                      {v.current != null && <p className="text-[#9aa6b7]">nachher: {JSON.stringify(v.current).slice(0, 220)}</p>}
+                    </li>
+                  ))}
+                </ol>
+                <p className="mt-3 text-[#9aa6b7]">Zustands-Historie:</p>
+                <ol className="mt-1 grid gap-0.5 text-xs text-[#9aa6b7]">
+                  {(detail.status_history ?? []).map((s, i) => (
+                    <li key={i}>{s.at ? new Date(s.at).toLocaleString('de-DE') : '—'}: {s.from} → {s.to} ({s.reason})</li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h3 className="text-lg font-bold text-[#f4f7fb]">Testbereich: Wissensabruf live prüfen</h3>
+          <p className="mt-1 text-sm text-[#9aa6b7]">
+            Frage eingeben — das retrieval läuft lokal im Browser über die freigegebene Wissensbasis
+            (gleiches Ranking wie der Radar-Workflow: Relevanz + Vertrauen + Aktualität). Keine Kosten, keine Datenabflüsse.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <input
+              value={radarTestQuery}
+              onChange={(e) => setRadarTestQuery(e.target.value)}
+              placeholder="z. B. Welche Sicherheitslücke ist aktuell kritisch?"
+              className="min-w-64 flex-1 rounded-md border border-white/15 bg-[#0b1220] px-3 py-2 text-sm text-[#e6ecf4]"
+            />
+            <button type="button" onClick={() => radarRetrieveLocal(radarTestQuery)} className="rounded-md bg-[#2563eb] px-4 py-2 text-sm font-bold text-white">Abruf testen</button>
+          </div>
+          {radarTestResults && (
+            <ul className="mt-3 grid gap-1.5">
+              {radarTestResults.map((r) => (
+                <li key={r.entry.id} className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm">
+                  <button type="button" onClick={() => setRadarDetailId(r.entry.id)} className="text-left font-bold text-[#e6ecf4] hover:text-sky-200">{r.entry.title}</button>
+                  <p className="mt-0.5 text-xs text-[#9aa6b7]">{r.reasons.join(' · ')}</p>
+                  <p className="mt-0.5 text-xs text-[#c7d2e2]">{r.entry.summary?.slice(0, 220)}…</p>
+                </li>
+              ))}
+              {!radarTestResults.length && <li className="text-sm text-[#9aa6b7]">Keine ausreichend relevanten geprüften Einträge gefunden — ehrliche Leeranzeige.</li>}
+            </ul>
+          )}
+        </section>
+
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h3 className="text-lg font-bold text-[#f4f7fb]">Konfiguration, Quellen und Schutz</h3>
+          <div className="mt-2 grid gap-3 text-sm text-[#c7d2e2] lg:grid-cols-2">
+            <div>
+              <p className="font-bold text-[#9aa6b7]">Quellen (Priorität: Primär- und offizielle Quellen zuerst)</p>
+              <ul className="mt-1 grid gap-0.5">
+                {radarSources.map((s) => (
+                  <li key={s.id}>{s.name} — {s.kind}, Vertrauensbasis {s.trust}/5</li>
+                ))}
+              </ul>
+            </div>
+            <div className="grid gap-0.5">
+              <p className="font-bold text-[#9aa6b7]">Limits und Takt</p>
+              <p>Takt: täglich 06:37 Berlin · max. 50 API-Aufrufe/Lauf · Tagesdeckel {dailyLimit} · Monatsdeckel {monthlyLimit} · Laufzeit-Timeout 30 min · max. 1 paralleler Lauf.</p>
+              <p className="font-bold text-[#9aa6b7] mt-1">Notaus (Kill Switch)</p>
+              <p>control.json am radar-data Branch (enabled=false) stoppt alle Recherche-Läufe sofort.</p>
+              <p className="font-bold text-[#9aa6b7] mt-1">Fehler &amp; Läufe</p>
+              <p>
+                Letzter Workflow-Lauf: {radarRun?.created_at ? new Date(radarRun.created_at).toLocaleString('de-DE') : '—'} · Ergebnis: {radarRun?.conclusion ?? radarRun?.status ?? '—'}
+                {radarRun?.html_url && <> · <a href={radarRun.html_url} target="_blank" rel="noreferrer" className="text-sky-300 underline">GitHub-Lauf öffnen</a></>}
+              </p>
+              <p>Manipulationsschutz: alle Internetinhalte gelten als Daten (keine Anweisungen); Injection-Verdacht wird markiert und vom RAG ausgeschlossen.</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
   const renderAutopilot = () => {
     const summary = adminAutopilot?.summary
     const checkedAt = adminAutopilot?.checkedAt
@@ -7369,6 +7911,7 @@ function AdminControlCenterInner() {
       if (n.includes('health')) return 'Prüft die Tagesquote der Pipeline und legt bei Problemen automatisch einen Alarm-Issue an.'
       if (n.includes('lane') || n.includes('shard')) return 'Zweite Spur der Profil-Skalierung: übernimmt Shards 12–23 parallel zur Hauptspur.'
       if (n.includes('scale') || n.includes('2k') || n.includes('5000')) return 'Treibt die Profil-Erstellung Richtung Tagesziel: 5.000 neue, QA-geprüfte Profile pro Tag.'
+      if (n.includes('radar')) return 'Zweite Wissens-Schiene: recherchiert täglich offizielle Quellen, prüft und versioniert Erkenntnisse für den RAG-Abruf — getrennt von der Modell-Trainingsschiene.'
       if (n.includes('keepalive') || n.includes('tick')) return 'Selbst-Tick-Kette, die GitHub-Cron-Drosselung umgeht und alle Automatiken am Laufen hält.'
       if (n.includes('doctor') || n.includes('doktor')) return 'Profil-Doktor: prüft frisch veröffentlichte Profile auf datumsbasierte Widersprüche und repariert sie.'
       if (n.includes('version') || n.includes('freigab')) return 'Versions-Freigaben: bessere Profil-Versionen gehen nur mit deiner Freigabe live.'
@@ -8783,6 +9326,7 @@ function AdminControlCenterInner() {
 
   const renderActiveSection = () => {
     if (activeSection === 'overview') return renderOverview()
+    if (activeSection === 'radar') return renderRadar()
     if (activeSection === 'autopilot') return renderAutopilot()
     if (activeSection === 'approvals') return renderApprovals()
     if (activeSection === 'ideas') return renderIdeas()
