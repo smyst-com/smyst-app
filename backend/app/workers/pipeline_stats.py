@@ -6,7 +6,7 @@ ausgebremst hat:
 
 - Bestand je Status (Status-Marker, LIST-Aufrufe)
 - Statuswechsel HEUTE (UTC) je Status (Marker-LastModified)
-- Tagesziel (Env AUTOPILOT_DAILY_TARGET, Default 5000) + Erreichungsgrad
+- Tagesziel (Env AUTOPILOT_DAILY_TARGET, Default 10000) + Erreichungsgrad
 - Ingest-Cursor-Staende je Kategorie (1 GET)
 
     python -m app.workers.pipeline_stats                 # nur Ausgabe (JSON)
@@ -39,12 +39,17 @@ STATS_FILE_PREFIX = "stats-"
 WATCHED_STATUSES = tuple(status.value for status in PipelineStatus)
 
 
+#: Tagesziel des Autopiloten. 5000 -> 10000 (22.09.2026, Freigabe Inhaber
+#: im Chat: 'Ja, 10.000/Tag'). Env AUTOPILOT_DAILY_TARGET ueberschreibt.
+DEFAULT_DAILY_TARGET = 10000
+
+
 def daily_target() -> int:
     raw = os.environ.get("AUTOPILOT_DAILY_TARGET", "").strip()
     try:
-        return max(0, int(raw)) if raw else 5000
+        return max(0, int(raw)) if raw else DEFAULT_DAILY_TARGET
     except ValueError:
-        return 5000
+        return DEFAULT_DAILY_TARGET
 
 
 def utc_day_start(now: datetime | None = None) -> datetime:

@@ -20,13 +20,12 @@ on:
         required: true
         default: "smyst247@gmail.com"
       publish_limit:
-        description: "Tageslimit (dokumentierter Deckel 5000/Tag, Anweisung Betreiber 05.09.2026)"
+        description: "Tageslimit (dokumentierter Deckel 10000/Tag, Anweisung Betreiber 22.09.2026)"
         required: false
-        # 2500 -> 5000 (14.09.2026): Der Watchdog-Dispatch lief noch mit dem
-        # alten 2500er Deckel — beim Tagesziel 5000 haette er die Haelfte
-        # unbegricht gelassen, obwohl der Cron-Pfad in pipeline-run.yml
-        # bereits mit 5000 laeuft. QA-Gate unangetastet.
-        default: "5000"
+        # 5000 -> 10000 (22.09.2026, Freigabe Inhaber im Chat: 'Ja, 10.000/Tag'):
+        # Tagesziel-Anhebung von 5000 auf 10000 — QA-Gate unangetastet, nur der
+        # Deckel und die Ziel-Konstanten (Watchdog/Health/Stats) ziehen mit.
+        default: "10000"
       qids:
         description: "Optional: kommagetrennte QIDs — nur diese publizieren"
         required: false
@@ -86,7 +85,7 @@ jobs:
 
       # Tagesstatistik (14.09.2026): Nach JEDEM Publish in der Run-Summary
       # sichtbar machen, wie viele Profile HEUTE (UTC) live gegangen sind und
-      # wie weit das 5000er-Tagesziel bedient ist. Read-only LIST-Aggregation,
+      # wie weit das 10000er-Tagesziel bedient ist. Read-only LIST-Aggregation,
       # keine Voll-Scans. Fehler blockieren den Deploy-Pfad nicht.
       - name: "Tages-Statistik in Run-Summary"
         if: always()

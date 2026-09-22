@@ -247,3 +247,57 @@ Wahrend der Blockade: publishes/QA-Stufen schreiben nichts (keine
 Daten verloren — abgelehnte Schreibvorgaenge aendern den Store nicht);
 der Tagesquoten-Zähler bleibt bei 0 (14.09.). Health-Workflow oeffnet beim
 naechsten Lauf ein Alarm-Issue und vermerkt die Blockade in der Summary.
+
+---
+
+## 8. Tagesziel-Anhebung auf 10.000/Tag (22.09.2026)
+
+Freigabe des Inhabers (22.09.2026, Chat, wörtlich): „Ja, 10.000/Tag" —
+nach Experteneinschaetzung (Engpass: Pipeline-Kapazitaet, nicht das Modell)
+zum Ausbau des Tagesziels von 5.000 auf 10.000 veroeffentlichte Profile/Tag.
+
+### Änderungen (ein PR, alles in Richtung Tagesziel, QA-Gate unangetastet)
+
+| Stelle | Vorher | Nachher |
+|---|---|---|
+| `pipeline-publish.yml` publish_limit-Default | 5000 | 10000 |
+| `pipeline-run.yml` Auto-Publish `--daily-limit` | 5000 | 10000 |
+| `pipeline-run.yml` Ingest-Limit je run-small-Lauf | 1000 (12.000/Tag) | 1500 (18.000/Tag) |
+| `pipeline-watchdog.yml` AUTOPILOT_DAILY_TARGET + Publish-Dispatch | 5000 | 10000 |
+| `pipeline-health.yml` Ziel/REMAINING-Default/Alarm-Titel | 5000 | 10000 |
+| `pipeline_stats.py` DEFAULT_DAILY_TARGET (Konstante, vorher Inline-5000) | 5000 | 10000 |
+| `pipeline_quota_check.py` DEFAULT_TARGET | 5000 | 10000 |
+| Scale-2k Lane A + B `batch_size_per_shard` | 50 | 60 |
+| Scale-2k Lane A Matrix | Shards 0-7 (8) | Shards 0-9 (10) |
+| Scale-2k Lane B Matrix | Shards 12-19 (8) | Shards 10-19 (10) |
+| `TOTAL_SHARDS` (beide Lanes) | 24 | 20 |
+| Lane B Cron | 4 Slots (`30 1,7,13,19`) | 6 Slots (`30 1,5,9,13,17,21`) |
+| `test_pipeline_stats.py` Default-Erwartung | 5000 | 10000 |
+
+### Warum total_shards 24 -> 20 (Blindfleck-Fix)
+
+Seit der Runner-Entlastung (36628f4f, 8+8 Shards bei total 24) waren die
+QID-Partitionen 8-11 und 20-23 nie aktiv — rund ein Drittel des Kandidaten-
+pools (darunter ~1/3 von 50.311 `generated`) wurde von keiner QA erreicht.
+10+10 aktive Shards bei total_shards=20 decken JEDE QID ab. 20 parallele
+Matrix-Jobs pro Lane-Welle passen ins Standard-Runner-Limit; Ueberschuss
+queut (fail-fast:false, Concurrency wartet statt zu canceln).
+
+### Kapazitaetsrechnung (ehrlich, Messbasis 14.09./22.09.)
+
+- QA: 20 Shards x 60 x (12 Lane-A-Slots + 6 Lane-B-Slots + Selbst-Takt/
+  Watchdog-Eskalation) ≈ 21.600+ QA-Versuche/Tag — noetig sind ~15.000
+  bei 10.000 Veroeffentlichungen (65-70 % Pass-Quote).
+- Nachschub: 12 x 1.500 = 18.000 Ingest/Tag (frische Pools seit 14.09.).
+- Live-Befund 22.09. 18:47 UTC: 761/5000 veroeffentlicht — das System
+  schoepfte die 5.000 bereits nicht aus (Runner-Knappheit, blinde Shards).
+  10.000/Tag ist das Ziel, das der Watchdog jetzt den ganzen Tag aktiv
+  nachschiebt; realistische Erreichung haengt von Runner-Verfuegbarkeit
+  und e2-Schreibkontingent ab. Health-Workflow (Ziel 10000) macht die
+  Tagesquote weiterhin sichtbar und alarmiert bei Stillstand.
+
+### Rollback
+
+`git revert` des Merge-Commits stellt 5.000/Tag wieder her (alle Zahlen
+sind im selben PR geaendert, keine Migration noetig — die QID-Partition
+total_shards 24/20 ist zustandslos).

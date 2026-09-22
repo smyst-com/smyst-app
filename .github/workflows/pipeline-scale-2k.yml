@@ -1,8 +1,8 @@
 name: Pipeline Skalierung 2k Profile per Tag
 
 # Fuehrt die smyst.com Autopilot-Pipeline auf 2.000+ Profile/Tag skaliert aus.
-# Verwendet 12 parallele Matrix-Jobs (Shards 0..11, Lane A) + Lane-B-
-# Workflow (12..23) GLEICHZEITIG — IDrive e2 State-Management.
+# Verwendet 10 parallele Matrix-Jobs (Shards 0..9, Lane A) + Lane-B-
+# Workflow (10..19) GLEICHZEITIG — IDrive e2 State-Management.
 # Repo ist public -> GitHub-Actions-Minuten unbegrenzt kostenlos.
 #
 # LLM: smyst 1.0 (eigenes Modell) laeuft JEDEM Shard-Job lokal als llama-server
@@ -21,12 +21,15 @@ on:
         description: "Anzahl Kandidaten pro Shard"
         required: true
         # 30 -> 50 (14.09.2026, Tagesziel 5000/Tag): Die Store-Scans, die je
-        # Shard-Job 60-185 min fraessen (Lauf 34753151341: 70-190 min gesamt,
+        # Shard-Job 60-185 min fraesse (Lauf 34753151341: 70-190 min gesamt,
         # davon 15 min QA), sind durch Marker-Auswahl + Publish-Summary
         # beseitigt — die Shard-Laufzeit ist jetzt echte QA-Arbeit
         # (~30 s/Kandidat) plus Minuten-Overhead. 50 Kandidaten x 4 Stufen
         # passen bequem ins 300-min-Timeout.
-        default: "50"
+        # 50 -> 60 (22.09.2026, Tagesziel 10000/Tag): 20 Shards x 60 x ~18
+        # Laeufe/Tag ≈ 21.600 QA-Versuche/Tag — noetig fuer ~15.000 QA-
+        # Durchlaeufe bei 10.000 veroeffentlichten (65-70 % Pass-Quote).
+        default: "60"
 
 concurrency:
   group: pipeline-scale-2k
@@ -38,7 +41,7 @@ concurrency:
 
 jobs:
   run-sharded-pipeline:
-    name: A Shard ${{ matrix.shard_index }}/24
+    name: A Shard ${{ matrix.shard_index }}/20
     runs-on: ubuntu-latest
     timeout-minutes: 300  # 05.09.: 90 -> 300 — volle Shards (Risiko+Bild-Lizenzen+QA) ueberschreiten 90 min und wurden als 'cancelled' abgewuergt (gemischt success/cancelled im Lauf 33989427594)
     permissions:
@@ -51,11 +54,19 @@ jobs:
         # der neue Flaschenhals — 12 Shards x 25 x ~7 Laeufe/Tag ~ 500
         # published/Tag. 24 Shards verdoppeln die QA je Lauf (~600/Lauf,
         # Laufzeit je Shard unveraendert ~1,5-3 h, 300-min-Timeout passt).
-        # Lane A (13.09., Richtung 5000/Tag): Shards 0-11 — Lane B (own
-        # Workflow, group pipeline-scale-2k-b) faehrt 12-23 GLEICHZEITIG.
+        # Lane A: Shards 0-11 — Lane B (own Workflow, group
+        # pipeline-scale-2k-b) faehrt 12-23 GLEICHZEITIG.
         # total_shards bleibt 24 -> QID-Partition disjunkt, parallele
         # Laeufe auf verschiedenen QIDs sind store-sicher.
-        shard_index: [0, 1, 2, 3, 4, 5, 6, 7]
+        #
+        # 22.09.2026, Tagesziel 10000/Tag: 8 -> 10 Shards (0-9), total_shards
+        # 24 -> 20. Seit der Runner-Entlastung (36628f4f, 8+8 von 24) waren
+        # die Partitionen 8-11 und 20-23 BLIND — ein Drittel des QID-Raums
+        # wurde nie QA-iert. 10+10 aktive Shards bei total 20 decken ALLE
+        # QIDs ab, ohne blinde Partition; 20 parallele Matrix-Jobs passen
+        # ins Standard-Runner-Limit, Rest queut (fail-fast:false, keine
+        # Cancel-Gefahr).
+        shard_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
     defaults:
@@ -215,8 +226,8 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           SHARD_INDEX: ${{ matrix.shard_index }}
-          TOTAL_SHARDS: 24
-          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '50' }}
+          TOTAL_SHARDS: 20
+          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '60' }}
         run: |
           python -m app.workers.sharded_runner \
             --shard-index $SHARD_INDEX \

@@ -1,6 +1,7 @@
 name: Autopilot-Health
 
-# Health-Check des 5.000-Profile-Tagesautopiloten (14.09.2026).
+# Health-Check des Autopiloten (14.09.2026, Tagesziel 5000; angehoben auf
+# 10.000/Tag am 22.09.2026, Freigabe Inhaber im Chat: 'Ja, 10.000/Tag').
 #
 # Read-only: liest Tagesquoten + Trichter aus den Status-Markern im Object
 # Brain (pipeline_stats, LIST-Aggregationen) und prueft die letzten Läufe der
@@ -43,7 +44,7 @@ jobs:
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-          AUTOPILOT_DAILY_TARGET: "5000"
+          AUTOPILOT_DAILY_TARGET: "10000"
         run: |
           python -m app.workers.pipeline_stats --save > /tmp/stats.json
           python - <<'PY'
@@ -113,7 +114,7 @@ jobs:
           set -euo pipefail
           source /tmp/quota.env 2>/dev/null || true
           PUBLISHED_TODAY="${PUBLISHED_TODAY:-0}"
-          REMAINING="${REMAINING:-5000}"
+          REMAINING="${REMAINING:-10000}"
           AGE_SCALE_A=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k.yml/runs?per_page=1" --jq '(now - (.workflow_runs[0].created_at | fromdateiso8601)) | floor')
           AGE_SCALE_B=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k-lane-b.yml/runs?per_page=1" --jq '(now - (.workflow_runs[0].created_at | fromdateiso8601)) | floor')
           AGE_RUN=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-run.yml/runs?per_page=1" --jq '(now - (.workflow_runs[0].created_at | fromdateiso8601)) | floor')
@@ -123,7 +124,7 @@ jobs:
           YOUNGEST=$(( AGE_SCALE_A < AGE_SCALE_B ? AGE_SCALE_A : AGE_SCALE_B ))
           if [ "${YOUNGEST}" -lt 5400 ] && [ "${E2_WRITE_BLOCKED:-0}" != "1" ]; then STALLED=0; fi
           if [ "${AGE_RUN}" -lt 7200 ] && [ "${E2_WRITE_BLOCKED:-0}" != "1" ]; then STALLED=0; fi
-          TITLE="Autopilot steht still — Tagesziel 5000/Tag gefaehrdet"
+          TITLE="Autopilot steht still — Tagesziel 10000/Tag gefaehrdet"
           ISSUE=$(gh issue list -R "$GITHUB_REPOSITORY" --search "autopilot-stalled in:title" --state open --json number --jq '.[0].number')
           if [ "${STALLED}" -eq 1 ]; then
             BODY="$(date -u +%F' %T') — Quota offen: ${REMAINING} (heute publiziert: ${PUBLISHED_TODAY}). Letzte Starts (s): scale-2k=${AGE_SCALE_A}, lane-b=${AGE_SCALE_B}, run=${AGE_RUN}. Watchdog eskaliert automatisch; hier keine Aktion noetig, solange die Eskalationen greifen."

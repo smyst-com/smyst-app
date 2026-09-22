@@ -19,7 +19,7 @@ on:
     # Cron laeuft immer als run-small (Ingest bis QA). Publish siehe Auto-Publish.
   # 8 Laeufe/Tag (Anweisung Betreiber 02.08.2026: 1000 Profile/Tag real).
   # Concurrency-Gruppe serialisiert die Laeufe — sie stauen sich hoechstens,
-  # kollidieren aber nie. Stufen-Limit 250; Publish-Deckel 5000/Tag (05.09.).
+  # kollidieren aber nie. Stufen-Limit 250; Publish-Deckel 10000/Tag (22.09.).
   #
   # ACHTUNG, 14.08.2026 teuer gelernt: 250 ist KEINE Stellschraube fuer mehr
   # Profile. Der Versuch, ueber den QA-Ausschuss hinweg auf 2000 zu kommen
@@ -38,7 +38,8 @@ on:
   # war der Engpass — 8 Laeufe x ~143 akzeptierte Kandidaten = ~1.100/Tag,
   # daraus konnte nie mehr als ~500 live gehen). Concurrency-Gruppe
   # serialisiert die Laeufe — sie stauen sich hoechstens, kollidieren nie.
-  # Stufen-Limit 800; Publish-Deckel 5000/Tag (05.09., bestaetigt 14.09.).
+  # Stufen-Limit 800; Publish-Deckel 10000/Tag (05.09. 5000, 22.09. angehoben:
+  # Freigabe Inhaber 'Ja, 10.000/Tag'; Ingest-Limit 1500/Lauf fuer 18.000/Tag).
   #
   # ACHTUNG, 14.08.2026 teuer gelernt: 250 ist KEINE Stellschraube fuer mehr
   # Profile. Der Versuch, ueber den QA-Ausschuss hinweg auf 2000 zu kommen
@@ -225,7 +226,11 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           if [ "$MODE" = "run-small" ]; then
-            python -m app.workers.ingest_candidates --enabled --limit "${{ inputs.ingest_limit || '1000' }}"
+            # 1000 -> 1500 (22.09.2026, Tagesziel 10000/Tag): 12 Laeufe x 1500
+            # = 18.000 neue Kandidaten/Tag — fuer ~15.000 noetige QA-Durchlaeufe
+            # bei ~65-70 % Pass-Quote. Fuenfte schreiben (35 Kategorien, seit
+            # 14.09. verifizierte frische Pools) reicht laut AUTOPILOT-Doku.
+            python -m app.workers.ingest_candidates --enabled --limit "${{ inputs.ingest_limit || '1500' }}"
           else
             python -m app.workers.ingest_candidates --dry-run --category Wissenschaft
           fi
@@ -307,8 +312,8 @@ jobs:
       # automatisch. Bestehende Schutzmechanismen bleiben aktiv: nur
       # reviewed+qa_passed, Duplikat-Schutz gegen kuratierte Live-Profile,
       # Audit-Trail mit approved_by. Kein Loeschen.
-      # Deckel 5000/Tag (schriftliche Anweisung Betreiber 05.09.2026:
-      # 'jeden tag 2000 und 5000 Profilen online'; Vorgaenger 2500 vom 05.08.).
+      # Deckel 10000/Tag (schriftliche Freigabe Inhaber 22.09.2026 im Chat:
+      # 'Ja, 10.000/Tag'; Vorgaenger 5000 vom 05.09./14.09., 2500 vom 05.08.).
       # Publish-Zahl landet in der Run-Summary, damit der
       # Tagesdurchsatz ohne Log-Graben sichtbar ist.
       # watchdog=true: Nachhol-Lauf des Pipeline-Watchdogs zaehlt wie ein Cron.
@@ -320,12 +325,12 @@ jobs:
         run: |
           set -o pipefail
           python -m app.workers.publish_profiles publish --all-reviewed \
-            --approved-by "smyst247@gmail.com" --enabled --daily-limit 5000 \
+            --approved-by "smyst247@gmail.com" --enabled --daily-limit 10000 \
             | tee /tmp/publish-out.log
           COUNT=$( (grep -o 'published (slug' /tmp/publish-out.log || true) | wc -l | tr -d ' ')
           {
             echo "### Auto-Publish"
-            echo "- Publiziert in diesem Lauf: **${COUNT}** Profile (Deckel 5000/Tag)"
+            echo "- Publiziert in diesem Lauf: **${COUNT}** Profile (Deckel 10000/Tag)"
           } >> "$GITHUB_STEP_SUMMARY"
 
       # Die 500er-Seed-Kandidaten wurden ohne birth_place/death_place ingestiert

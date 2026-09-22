@@ -1,6 +1,7 @@
 """Tests fuer die Autopilot-Statistik (pipeline_stats) und die Tagesquoten.
 
-Grundlage des 5.000-Profile-Tagesautopiloten (14.09.2026): HEUTE-Zahlen kommen
+Grundlage des Tagesautopiloten (14.09.2026, 5000/Tag; 22.09.2026 auf
+10000/Tag angehoben, Freigabe Inhaber): HEUTE-Zahlen kommen
 aus den LastModified-Zeitstempeln der Status-Marker (LIST) — kein Voll-Scan.
 """
 
@@ -112,7 +113,7 @@ def test_save_report_writes_daily_doc() -> None:
     assert key.startswith("pipeline/changelogs/stats-")
     body = json.loads(store._client.objects[key])  # noqa: SLF001
     assert body["worker"] == "pipeline_stats"
-    assert body["daily_target"] == 5000
+    assert body["daily_target"] == 10000  # Default seit 22.09.2026 (10.000/Tag)
 
 
 def test_published_summary_roundtrip() -> None:
