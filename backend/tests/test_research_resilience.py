@@ -118,6 +118,9 @@ def test_report_carries_error_kinds(monkeypatch) -> None:
     )
 
     class Store:
+        def documents_by_status_progressive(self, status: str, *, limit: int, max_gets: int = 5000, initial_window: int | None = None) -> list[dict]:
+            return self.candidate_documents_by_status(status, limit=limit)
+
         def candidate_documents_by_status(self, status, *, limit=None):
             return [{"wikidata_qid": "Q1"}]
 
