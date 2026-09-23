@@ -15,7 +15,7 @@ import {
   type DiscoveryProfile,
 } from '@/lib/profileDiscovery'
 import { DEFAULT_TRANSLATIONS, useStaticTranslations, type StaticTranslations } from '@/lib/staticTranslations'
-import { useAuth } from '@/lib/useAuth'
+import { isSmystAdmin, useAuth, type AuthUser } from '@/lib/useAuth'
 import {
   detectRequestedLanguage,
   detectVoiceLanguage,
@@ -679,9 +679,7 @@ export default function App() {
   const showAgeGate = ageConfirmation === 'pending' && chatRelevantView
   const chatBlockedForMinors = ageConfirmation === 'under13' && chatRelevantView
   const auth = useAuth()
-  const canSeeAdmin = Boolean(
-    auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
-  )
+  const canSeeAdmin = isSmystAdmin(auth.user)
 
   // Systemwechsel des Geraets live uebernehmen, solange "System" gewaehlt ist
   useEffect(() => {
@@ -2855,9 +2853,7 @@ function SmystStartPage({
     { label: lang === DEFAULT_LANG ? 'Einstellungen' : t.nav.settings, view: 'settings', detail: lang === DEFAULT_LANG ? 'Sprache, Theme, Account und Logout' : t.nav.settingsDetail, more: true },
     { label: lang === DEFAULT_LANG ? 'Admin' : t.nav.admin, view: 'admin', detail: lang === DEFAULT_LANG ? 'User, Werbung, Umsatz, Sicherheit und Betrieb' : t.nav.adminDetail, adminOnly: true, more: true },
   ]
-  const canSeeAdmin = Boolean(
-    auth.user?.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase())),
-  )
+  const canSeeAdmin = isSmystAdmin(auth.user)
   const visibleMenuItems = menuItems.filter((item) => !item.adminOnly || canSeeAdmin)
 
   const goFromMenu = (view: AppView) => {
@@ -6469,29 +6465,43 @@ function AdminTable({ columns, rows }: { columns: string[]; rows: AdminRow[] }) 
 }
 
 function AdminControlCenterView() {
-  const [adminGateAuthed, setAdminGateAuthed] = useState<boolean | null>(null)
+  // Gate prueft die ROLLE bzw. die freigegebenen Admin-E-Mails — nicht nur
+  // 'authenticated' (Vorfall 23.09.2026: jedes eingeloggte Konto sah die
+  // Adminkonsole; die Admin-APIs 403ten zwar, aber das UI war offen).
+  const [adminGateState, setAdminGateState] = useState<'loading' | 'allowed' | 'anonymous' | 'denied'>('loading')
   useEffect(() => {
     let cancelled = false
     // fetchService statt fetch: relativer Pfad 404t auf GitHub Pages —
     // das Gate hielt sonst JEDEN fuer ausgeloggt (Befund A-Z-Check 01.08.).
     fetchService('/auth/me', { credentials: 'include' })
       .then((response) => (response.ok ? response.json() : { authenticated: false }))
-      .then((data: { authenticated?: boolean } | null) => {
-        if (!cancelled) setAdminGateAuthed(Boolean(data?.authenticated))
+      .then((data: { authenticated?: boolean; user?: AuthUser } | null) => {
+        if (cancelled) return
+        if (!data?.authenticated || !data.user) {
+          setAdminGateState('anonymous')
+          return
+        }
+        setAdminGateState(isSmystAdmin(data.user) ? 'allowed' : 'denied')
       })
       .catch(() => {
-        if (!cancelled) setAdminGateAuthed(false)
+        if (!cancelled) setAdminGateState('anonymous')
       })
     return () => {
       cancelled = true
     }
   }, [])
-  if (adminGateAuthed === null) return null
-  if (!adminGateAuthed) {
+  if (adminGateState === 'loading') return null
+  if (adminGateState !== 'allowed') {
     return (
       <div className="mx-auto max-w-md px-6 py-16 text-center">
-        <h1 className="text-2xl font-bold">Zugriff nur mit Anmeldung</h1>
-        <p className="mt-2 text-sm opacity-80">Der Admin-Bereich von smyst.com ist geschützt. Bitte melde dich zuerst an.</p>
+        <h1 className="text-2xl font-bold">
+          {adminGateState === 'denied' ? 'Kein Zugriff' : 'Zugriff nur mit Anmeldung'}
+        </h1>
+        <p className="mt-2 text-sm opacity-80">
+          {adminGateState === 'denied'
+            ? 'Dein Konto hat keine Admin-Berechtigung. Der Admin-Bereich von smyst.com ist reserviert.'
+            : 'Der Admin-Bereich von smyst.com ist geschützt. Bitte melde dich zuerst an.'}
+        </p>
       </div>
     )
   }
