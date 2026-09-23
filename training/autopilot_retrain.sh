@@ -267,7 +267,9 @@ fi
 log "Qualitaets-Tor bestanden (Q4_K_M + Q8_0)."
 
 # 11) Release: 30-MB-Teile + SHA256SUMS, Upload-Loop im Hintergrund
-NN=$(echo "$VERSION" | sed 's/smyst-1\.//')
+# Fix 23.09.: NN ohne Punkt-Verlust — aus smyst-1.3 wurde frueher "3"
+# (Tag v-smyst-3-gguf); jetzt korrekt "1.3" (Tag v-smyst-1.3-gguf).
+NN=$(echo "$VERSION" | sed 's/^smyst-//')
 TAG="v-smyst-$NN-gguf"
 PARTS_DIR="$PARTS_BASE/parts-$NN"
 rm -rf "$PARTS_DIR" && mkdir -p "$PARTS_DIR"
