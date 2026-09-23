@@ -39,12 +39,15 @@ jobs:
           python-version: "3.12"
 
       - name: Wissensstand vom radar-data Branch laden
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git config user.name "smyst-radar-bot"
           git config user.email "actions@users.noreply.github.com"
-          if git fetch --depth=1 origin radar-data; then
-            git worktree add radar-state origin/radar-data || mkdir -p radar-state
-            # worktree hat .git-Datei — stört spätere relative Nutzung nicht
+          REPO_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads "$REPO_URL" radar-data >/dev/null 2>&1; then
+            git clone -q --branch radar-data --depth=1 "$REPO_URL" radar-state
+            echo "radar-state vom Branch geladen."
           else
             mkdir -p radar-state/knowledge/entries radar-state/reports
             echo '{"enabled": true, "note": "Notaus: enabled=false stoppt Recherche-Laeufe."}' > radar-state/control.json
@@ -143,21 +146,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          # Deterministisch: frisches Mini-Repo aus den öffentlichen JSON-Dateien
+          # bauen (kein Worktree, keine Branch-Reste) und als radar-data pushen.
+          rm -rf radar-publish
+          mkdir -p radar-publish
+          ( cd radar-state && find . -type f -name "*.json" -not -path "./.git/*" \
+              | while read -r f; do
+                  mkdir -p "../radar-publish/$(dirname "$f")"
+                  cp "$f" "../radar-publish/$f"
+                done )
+          cd radar-publish
+          git init -q -b main
           git config user.name "smyst-radar-bot"
           git config user.email "actions@users.noreply.github.com"
-          # radar-state ist beim Erstlauf ein einfacher Ordner (Branch fehlt
-          # noch) — dann hier ein eigenes Mini-Repo daraus machen.
-          if [ ! -e "radar-state/.git" ]; then
-            ( cd radar-state && git init -q -b radar-data )
-          fi
-          # Remote sicherstellen (Worktree hat ihn, Mini-Repo noch nicht).
-          ( cd radar-state \
-            && ( git remote get-url origin >/dev/null 2>&1 \
-                 || git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ) )
-          cd radar-state
           git add -A
-          git commit -m "radar: Lauf $(date -u +%F)" || echo "Keine Änderungen am Wissensstand."
-          git push -q origin radar-data
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen am Wissensstand."
+            exit 0
+          fi
+          git commit -qm "radar: Lauf $(date -u +%F)"
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git ls-remote --exit-code --heads origin radar-data >/dev/null 2>&1; then
+            git fetch -q --depth=1 origin radar-data
+            git pull -q --rebase --allow-unrelated-histories origin radar-data || true
+          fi
+          git push -q origin main:radar-data
 
       - name: Lauf-Zusammenfassung
         if: always()
