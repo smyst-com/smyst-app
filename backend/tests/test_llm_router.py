@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 import httpx
 import pytest
 
@@ -579,3 +581,141 @@ async def test_smyst_llm_sends_anti_loop_sampling(monkeypatch) -> None:
     assert payload["presence_penalty"] == 0.2
     # Der Router meldet den Provider unter seinem Namen (AntiLoop-Wrapper).
     assert [p.name for p in router.providers][0] == "smyst_llm"
+
+
+#─── Chat-Vorfahrt (23.09.2026): Hintergrund-Anfragen warten auf Chats ───
+
+
+class SlowProvider(LLMProvider):
+    """Antwortet erst, wenn ein externes Event den Abschluss freigibt."""
+
+    name = "slow"
+    model = "slow-model"
+
+    def __init__(self) -> None:
+        self.freigabe: asyncio.Event = asyncio.Event()
+        self.gestartet: asyncio.Event = asyncio.Event()
+
+    async def complete(self, request: LLMRequest) -> LLMResponse:
+        self.gestartet.set()
+        await self.freigabe.wait()
+        return LLMResponse(
+            text="fertig",
+            provider=self.name,
+            model=self.model,
+            input_tokens=1,
+            output_tokens=1,
+            latency_ms=1,
+            degraded=False,
+        )
+
+
+def _gate_zuruecksetzen() -> None:
+    import app.ai.llm_router as router_mod
+
+    router_mod._chat_priority_gate._condition = None
+    router_mod._chat_priority_gate._loop = None
+    router_mod._chat_priority_gate.interactive = 0
+    router_mod._chat_priority_gate.background = 0
+
+
+@pytest.mark.asyncio
+async def test_background_waits_while_interactive_chat_streams() -> None:
+    _gate_zuruecksetzen()
+    chat_provider = SlowProvider()
+    hintergrund_provider = SlowProvider()
+    chat_router = LLMRouter([chat_provider])
+    hintergrund_router = LLMRouter([hintergrund_provider])
+
+    chat_task = asyncio.create_task(
+        chat_router.complete(LLMRequest(prompt="frage", system_prompt="", background=False))
+    )
+    await chat_provider.gestartet.wait()
+
+    hintergrund_task = asyncio.create_task(
+        hintergrund_router.complete(LLMRequest(prompt="qa", system_prompt="", background=True))
+    )
+    await asyncio.sleep(0.05)
+    assert not hintergrund_provider.gestartet.is_set(), (
+        "Hintergrund-Anfrage darf nicht starten, waehrend ein Chat laeuft"
+    )
+
+    chat_provider.freigabe.set()
+    hintergrund_provider.freigabe.set()
+    await asyncio.wait_for(asyncio.gather(chat_task, hintergrund_task), timeout=2)
+    assert hintergrund_provider.gestartet.is_set()
+
+
+@pytest.mark.asyncio
+async def test_background_concurrency_is_capped() -> None:
+    _gate_zuruecksetzen()
+    anbieter = [SlowProvider() for _ in range(3)]
+    router = [LLMRouter([a]) for a in anbieter]
+
+    erster = asyncio.create_task(
+        router[0].complete(LLMRequest(prompt="a", system_prompt="", background=True))
+    )
+    zweiter = asyncio.create_task(
+        router[1].complete(LLMRequest(prompt="b", system_prompt="", background=True))
+    )
+    await anbieter[0].gestartet.wait()
+    await anbieter[1].gestartet.wait()
+
+    dritter = asyncio.create_task(
+        router[2].complete(LLMRequest(prompt="c", system_prompt="", background=True))
+    )
+    await asyncio.sleep(0.05)
+    assert not anbieter[2].gestartet.is_set(), "Dritte Hintergrund-Anfrage muss warten"
+
+    anbieter[0].freigabe.set()
+    anbieter[1].freigabe.set()
+    anbieter[2].freigabe.set()
+    await asyncio.wait_for(asyncio.gather(erster, zweiter, dritter), timeout=2)
+
+
+@pytest.mark.asyncio
+async def test_background_admission_timeout_raises_health_error(monkeypatch) -> None:
+    _gate_zuruecksetzen()
+    import app.ai.llm_router as router_mod
+
+    monkeypatch.setattr(router_mod, "BACKGROUND_LLM_WAIT_SECONDS", 0.05)
+    chat_provider = SlowProvider()
+    chat_router = LLMRouter([chat_provider])
+    chat_task = asyncio.create_task(
+        chat_router.complete(LLMRequest(prompt="frage", system_prompt=""))
+    )
+    await chat_provider.gestartet.wait()
+
+    hintergrund = LLMRouter([SlowProvider()])
+    with pytest.raises(ProviderHealthError):
+        await hintergrund.complete(LLMRequest(prompt="qa", system_prompt="", background=True))
+
+    chat_provider.freigabe.set()
+    await chat_task
+
+
+@pytest.mark.asyncio
+async def test_interactive_requests_never_wait_for_background() -> None:
+    _gate_zuruecksetzen()
+    # Beide Hintergrund-Slots belegt -> ein Chat muss TROTZDEM sofort starten.
+    hintergrund = [SlowProvider() for _ in range(2)]
+    aufgaben = [
+        asyncio.create_task(
+            LLMRouter([anbieter]).complete(
+                LLMRequest(prompt="qa", system_prompt="", background=True)
+            )
+        )
+        for anbieter in hintergrund
+    ]
+    await asyncio.gather(*(a.gestartet.wait() for a in hintergrund))
+
+    chat_provider = SlowProvider()
+    chat = LLMRouter([chat_provider])
+    chat_task = asyncio.create_task(
+        chat.complete(LLMRequest(prompt="frage", system_prompt=""))
+    )
+    await asyncio.wait_for(chat_provider.gestartet.wait(), timeout=0.2)
+    for a in hintergrund:
+        a.freigabe.set()
+    chat_provider.freigabe.set()
+    await asyncio.wait_for(asyncio.gather(chat_task, *aufgaben), timeout=2)

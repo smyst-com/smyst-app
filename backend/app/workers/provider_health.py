@@ -52,7 +52,8 @@ async def _generation_pings() -> dict[str, dict]:
 
     router = build_default_router()
     request = LLMRequest(
-        prompt="Antworte mit einem Wort: ja", system_prompt="", max_tokens=8, temperature=0.0
+        prompt="Antworte mit einem Wort: ja", system_prompt="", max_tokens=8, temperature=0.0,
+        background=True,  # Health-Ping = Hintergrund (Chat-Vorfahrt 23.09.)
     )
 
     async def _ping(provider):

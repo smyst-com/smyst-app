@@ -97,6 +97,9 @@ def build_chat_fn(
                         system_prompt=capsule_doc.get("persona_prompt", ""),
                         max_tokens=400,
                         **({} if temperature is None else {"temperature": temperature}),
+                        # Chat-Vorfahrt (23.09.): QA ist Hintergrundarbeit —
+                        # der Router bremst sie, solange echte Nutzer chatten.
+                        background=True,
                     )
                 )
             )

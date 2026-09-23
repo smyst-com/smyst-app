@@ -143,6 +143,7 @@ def generate_ideas(*, limit: int = 3, dry_run: bool = False) -> int:
                 system_prompt="Du antwortest ausschliesslich mit validem JSON.",
                 max_tokens=800,
                 temperature=0.7,
+                background=True,  # Ideen-Autopilot = Hintergrund (Chat-Vorfahrt 23.09.)
             )
         )
     )
