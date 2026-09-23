@@ -76,11 +76,20 @@ def _safe_return_to(raw: str | None) -> str:
     return "/"
 
 
+# Von Code fixiert (Inhaber-Anweisung 23.09.2026): NUR diese zwei Konten sind
+# Admin. Env-Listen (SMYST_OWNER_EMAILS/SMYST_ADMIN_EMAILS) bleiben das
+# Hauptmechanismus und gewinnen; dieser Fallback greift nur, falls die Env im
+# Deployment fehlt oder einen Fehler enthaelt (Vorfall: Admin-UI fuer alle offen,
+# weil Env nie gesetzt war).
+_CODE_OWNER_EMAILS = {"smyst247@gmail.com"}
+_CODE_ADMIN_EMAILS = {"alanbestus@gmail.com"}
+
+
 def _roles_for_email(email: str) -> list[str]:
-    normalized = email.lower()
-    if normalized in settings.smyst_owner_emails:
+    normalized = email.strip().lower()
+    if normalized in settings.smyst_owner_emails or normalized in _CODE_OWNER_EMAILS:
         return ["owner"]
-    if normalized in settings.smyst_admin_emails:
+    if normalized in settings.smyst_admin_emails or normalized in _CODE_ADMIN_EMAILS:
         return ["admin"]
     return ["member"]
 

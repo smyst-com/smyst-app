@@ -45,6 +45,21 @@ export interface AuthState {
   user: AuthUser | null;
 }
 
+// Admin-Zulassung (Inhaber-Anweisung 23.09.2026): NUR diese zwei Konten
+// duerfen den Admin-Bereich sehen. Rollen kommen env-gesteuert vom Backend;
+// diese Liste ist die code-seitige Absicherung (Vorfall 23.09.: das
+// /admin-Gate pruefte nur 'authenticated' — jedes eingeloggte Konto sah die
+// Adminkonsole). Deckungsgleich mit dem Backend-Fallback in auth.py.
+const SMYST_ADMIN_EMAILS = new Set(['smyst247@gmail.com', 'alanbestus@gmail.com']);
+
+export function isSmystAdmin(user: AuthUser | null | undefined): boolean {
+  if (!user) return false;
+  if (user.roles?.some((role) => ['owner', 'admin', 'super_admin', 'super-admin'].includes(role.toLowerCase()))) {
+    return true;
+  }
+  return SMYST_ADMIN_EMAILS.has((user.email || '').trim().toLowerCase());
+}
+
 interface MeResponse {
   authenticated: boolean;
   user?: AuthUser;
