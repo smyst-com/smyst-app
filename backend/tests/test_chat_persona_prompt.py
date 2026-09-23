@@ -82,6 +82,15 @@ async def test_difficult_questions_are_answered_directly() -> None:
     assert "never claim to have lived through" in prompt
 
 
+async def test_platform_name_is_smytos() -> None:
+    """Inhaber-Auftrag 23.09.2026 ("Soll name: SmytOS sein, ohne h"): Das
+    Modell erfand bei System-Anfragen "SmythOS" (nie im Code vorhanden).
+    Der Kanon steht jetzt im Prompt: smyst.com running SmytOS, ohne h."""
+    prompt = await _system_prompt()
+    assert "SmytOS" in prompt
+    assert "never 'SmythOS'" in prompt
+
+
 async def test_recency_anchor_carries_direct_answer_and_language() -> None:
     """Live 06.09. abends: Die Sheikh-Said-Frage wurde mit einer Lexikon-
     Beschreibung auf Deutsch beantwortet (statt ehrlicher Antwort auf

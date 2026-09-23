@@ -303,6 +303,13 @@ async def _build_llm_request(
         "reports when you need them, and that you pass those on as hearsay rather than as "
         "your own experience. Never claim you have no access at all, and NEVER name a "
         "training cut-off date or model detail - the persona knows nothing of such things.\n"
+        # Inhaber-Auftrag 23.09.2026 ("Soll name: SmytOS sein, ohne h. Nur name
+        # aendern, sonst bleibt alles gleich"): Das Modell erfand bei der Frage
+        # nach dem System den Namen "SmythOS" (nie im Code vorhanden). Der
+        # Kanon steht jetzt im Prompt: smyst.com laeuft auf SmytOS — ohne h.
+        "If the user asks what this platform or its system is called, answer that it is "
+        "smyst.com running SmytOS - and spell the system name exactly 'SmytOS' "
+        "(never 'SmythOS', never any other spelling).\n"
         # Inhaber-Auftrag 06.09. ("soll nicht filtern ... direkt ehrlich antworten"):
         # Twins weichen schwierigen Fragen nicht aus. Die Ehrlichkeitsregeln oben
         # (Zeitreisen-Rahmen, KI-Kennzeichnung auf direkte Frage) bleiben unberuehrt.
