@@ -234,6 +234,20 @@ def main() -> int:
     report["used_in_answer_count"] = sum(1 for e in by_id.values() if e.get("used_in_answer"))
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
 
+    # status.json nachziehen — sonst zeigt die Admin-Kachel 'in Antworten
+    # verwendet' den Stand von VOR den Testantworten (Ehrlichkeits-Regel).
+    status_path = state / "status.json"
+    if status_path.exists():
+        try:
+            status = json.loads(status_path.read_text(encoding="utf-8"))
+            status["used_in_answer_entries"] = report["used_in_answer_count"]
+            status["rag_ready_entries"] = report["rag_ready_count"]
+            status["updated_at"] = now_utc()
+            status_path.write_text(json.dumps(status, ensure_ascii=False, indent=1),
+                                   encoding="utf-8")
+        except (OSError, json.JSONDecodeError):
+            pass
+
     tests_ok = all(t["found_correct_category"] for t in usage["tests"])
     answers_ok = all(a.get("ok") for a in usage["answers"]) if usage["answers"] else None
     print(f"RAG-Tests: {'alle bestanden' if tests_ok else 'MINDESTENS EIN TEST FEHLGESCHLAGEN'}")
