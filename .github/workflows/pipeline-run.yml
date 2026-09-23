@@ -85,7 +85,12 @@ on:
       ingest_limit:
         description: "Neuaufnahmen je Ingest-Lauf (run-small; 20000 = Komplett-Sweep des Wikidata-Pools)"
         required: false
-        default: "250"
+        # 250 -> 1500 (23.09.2026, Tagesziel 10000/Tag): Der workflow_dispatch-
+        # Default 250 uebersteuerte den Schedule-Fallback ('1500') bei JEDEM
+        # Watchdog-Nachhol-Lauf — Lauf 35821901315 (05:19 UTC) ingestete real
+        # mit --limit 250. Watchdog-Dispatches sind aber der Regelfall, weil
+        # GitHub-Crons unter Last ausfallen. Jetzt konsistent 1500 (18.000/Tag).
+        default: "1500"
       publish_limit:
         description: "Optional (publish-reviewed): Tageslimit-Override fuer dokumentierte Sonderfreigaben"
         required: false
