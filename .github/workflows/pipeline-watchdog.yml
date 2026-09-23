@@ -18,7 +18,14 @@ on:
     # Alle 15 Minuten: prueft (a) den klassischen Pipeline-Takt und (b) die
     # Scale-2k-Pipeline. Dichter Takt, weil GitHub-Crons unter Last ausfallen
     # und Scale-2k-Laeufe durch den 90-min-Timeout abgebrochen werden koennen.
+    # 23.09.2026 ZWEITER versetzter Takt (7,22,37,52): Beobachtet fielen ganze
+    # Stunden des 15-min-Crons ersatzlos aus (22.09. 19:56->22:19 UTC Luecke)
+    # — der Watchdog ist die zentrale Heilkraft des 10.000er-Tagesziels
+    # (Publish-Takt, Lane-Nachschub, Ingest-Eskalation). Ein versetzter
+    # Zweit-Takt verdoppelt die Zaend-Chancen; Doppelzuedndungen faengt die
+    # Concurrency-Gruppe (cancel-in-progress) sauber ab.
     - cron: "*/15 * * * *"
+    - cron: "7,22,37,52 * * * *"
   workflow_dispatch:
 
 permissions:
