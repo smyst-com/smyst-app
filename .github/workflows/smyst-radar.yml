@@ -17,6 +17,9 @@ name: smyst radar
 on:
   schedule:
     - cron: "37 4 * * *" # täglich 04:37 UTC (06:37 Berlin) — ressourcenschonend
+    - cron: "41 11 * * *" # Backup-Slot: GitHub drosselt Schedule-Läufe teils
+    #                 komplett (heute: 04:37-Lauf erschien nie). Der zweite Slot
+    #                 rettet den Tagesbericht; Duplikate filtert verify_store.
   workflow_dispatch:
 
 permissions:
