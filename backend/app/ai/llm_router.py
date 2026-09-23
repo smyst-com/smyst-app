@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
+import os
 from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from time import perf_counter
@@ -42,6 +44,93 @@ RETRY_BACKOFF_SECONDS = 0.15
 # minutenlange Wartezeiten zu verwandeln (Eval-Timeout 20min, Router-Deadline
 # 45s pro Anfrage).
 RATE_LIMIT_BACKOFF_SECONDS = 6.0
+
+# ─── Chat-Vorfahrt (23.09.2026, Inhaber-Auftrag "100 % billig schneller") ───
+#
+# Vorfall: Der Profil-Doktor (24/7-Qualitaetsschleife) und weitere Hintergrund-
+# jobs feuern ueber das CI-Gateway Daueranfragen an den EINZIGEN llama-server
+# (2 Slots, 2 vCPU). Gemessen 23.09. im Runtime-Log: 8.247 Slot-Tasks in den
+# ersten 165 s nach Containerstart — Chats kamen dabei auf 0,11 Token/s und
+# der Container in OOM-Restart-Schleifen.
+#
+# Das Tor: Anfragen mit LLMRequest.background=True (QA, Eval, Doktor, Gateway,
+# Ideas, Health) teilen sich maximal BACKGROUND_LLM_CONCURRENCY gleichzeitige
+# Router-Durchlaeufe und warten ZUSAETZLICH, solange ein interaktiver Chat
+# (background=False) laeuft. Chats laufen selbst ungedrosselt. Tagesziel,
+# QA-Gate, Provider-Reihenfolge und alle Freeze-Parameter bleiben unberuehrt —
+# Hintergrundarbeit wird nur ANGEORDNET, nicht abgeschwaecht (weniger
+# gleichzeitige, dafuer schnellere Generierungen heben den Gesamtdurchsatz auf
+# einem gesaettigten 2-Kern-Server erfahrungsgemaess sogar).
+BACKGROUND_LLM_CONCURRENCY = max(1, int(os.environ.get("BACKGROUND_LLM_CONCURRENCY", "2")))
+BACKGROUND_LLM_WAIT_SECONDS = float(os.environ.get("BACKGROUND_LLM_WAIT_SECONDS", "600"))
+
+
+class _ChatPriorityGate:
+    """Interaktive-Zaehler + Hintergrund-Zulassung, robust gegen Loop-Wechsel.
+
+    Der QA-Worker ruft asyncio.run() JE Anfrage (jeweils neuer Event-Loop) —
+    eine Condition darf deshalb nicht an einen toten Loop haengen bleiben.
+    Zaehler und Condition werden daher je Loop neu aufgesetzt; im API-Server
+    (ein Loop fuer die Prozesslebensdauer) verhaelt sich das Tor beharrlich.
+    """
+
+    def __init__(self) -> None:
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._condition: asyncio.Condition | None = None
+        self.interactive = 0
+        self.background = 0
+
+    def _cond(self) -> asyncio.Condition:
+        loop = asyncio.get_running_loop()
+        if self._condition is None or self._loop is not loop:
+            self._loop = loop
+            self._condition = asyncio.Condition()
+            self.interactive = 0
+            self.background = 0
+        return self._condition
+
+    @contextlib.asynccontextmanager
+    async def interactive_slot(self):
+        cond = self._cond()
+        async with cond:
+            self.interactive += 1
+        try:
+            yield
+        finally:
+            async with cond:
+                self.interactive -= 1
+                if self.interactive == 0:
+                    cond.notify_all()
+
+    @contextlib.asynccontextmanager
+    async def background_slot(self):
+        cond = self._cond()
+        deadline = perf_counter() + BACKGROUND_LLM_WAIT_SECONDS
+        async with cond:
+            while self.interactive > 0 or self.background >= BACKGROUND_LLM_CONCURRENCY:
+                remaining = deadline - perf_counter()
+                if remaining <= 0:
+                    # Kein harter Fehler nach oben: ProviderHealthError laesst
+                    # QA den Kandidaten als 'skipped' unbewertet lassen und der
+                    # naechste Lauf probiert erneut (etablierte Semantik).
+                    raise ProviderHealthError(
+                        "background llm admission timeout (chat-priority gate)",
+                        category="timeout",
+                    )
+                try:
+                    await asyncio.wait_for(cond.wait(), timeout=remaining)
+                except asyncio.TimeoutError:
+                    continue
+            self.background += 1
+        try:
+            yield
+        finally:
+            async with cond:
+                self.background -= 1
+                cond.notify_all()
+
+
+_chat_priority_gate = _ChatPriorityGate()
 
 
 def _provider_error_detail(response: "httpx.Response") -> str:
@@ -793,6 +882,15 @@ class LLMRouter:
         return [*DEFAULT_PROVIDER_ORDER, *PROVIDER_ALIASES, "local"]
 
     async def complete(self, request: LLMRequest) -> LLMResponse:
+        # Chat-Vorfahrt: Hintergrund-Anfragen durchlaufen die Zulassungs-
+        # Bremse, interaktive nur den Zaehler (siehe _ChatPriorityGate).
+        if request.background:
+            async with _chat_priority_gate.background_slot():
+                return await self._complete_chain(request)
+        async with _chat_priority_gate.interactive_slot():
+            return await self._complete_chain(request)
+
+    async def _complete_chain(self, request: LLMRequest) -> LLMResponse:
         started = perf_counter()
         last_error: Exception | None = None
         for provider in self.providers:
@@ -833,6 +931,18 @@ class LLMRouter:
         der Client faellt dann auf den nicht-streamenden Endpoint zurueck.
         Provider ohne stream()-Support liefern die komplette Antwort als ein Delta.
         """
+        # Chat-Vorfahrt (siehe complete): das Tor bleibt waehrend des gesamten
+        # Streams offen — erst nach dem letzten Event wird der Platz freigegeben.
+        gate = (
+            _chat_priority_gate.background_slot()
+            if request.background
+            else _chat_priority_gate.interactive_slot()
+        )
+        async with gate:
+            async for event in self._stream_chain(request):
+                yield event
+
+    async def _stream_chain(self, request: LLMRequest) -> AsyncIterator[dict[str, Any]]:
         started = perf_counter()
         for provider in self.providers:
             is_local = isinstance(provider, LocalDeterministicProvider)

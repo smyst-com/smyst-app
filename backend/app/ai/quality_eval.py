@@ -151,6 +151,7 @@ async def judge_answer(
         system_prompt="You are an impartial evaluator. Output only the two required lines.",
         max_tokens=120,
         temperature=0.0,
+        background=True,  # Judge = Hintergrundarbeit; Chats haben Vorfahrt (23.09.)
     )
     try:
         response: LLMResponse = await complete(request)

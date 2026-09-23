@@ -177,6 +177,12 @@ class LLMRequest:
     max_tokens: int = 800
     temperature: float = 0.2
     metadata: dict[str, Any] = field(default_factory=dict)
+    # Hintergrund-Abarbeitung (QA/Eval/Doktor/Gateway, 23.09.2026): Der Router
+    # drosselt background=True-Anfragen (max. BACKGROUND_LLM_CONCURRENCY
+    # gleichzeitig) und haelt sie an, solange ein interaktiver Chat laeuft —
+    # Chats haben Vorfahrt auf dem einzigen llama-server. Voreinstellung False
+    # (= interaktiv) haelt jedes bestehende Verhalten unveraendert.
+    background: bool = False
 
 
 @dataclass(frozen=True)

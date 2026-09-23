@@ -90,6 +90,9 @@ def _messages_to_request(payload: dict[str, Any], settings: Settings) -> LLMRequ
         system_prompt="\n\n".join(system_parts),
         max_tokens=max_tokens,
         temperature=float(temperature) if isinstance(temperature, (int, float)) else 0.2,
+        # Chat-Vorfahrt (23.09.): Gateway-Kunden sind CI/Workers (Profil-Doktor,
+        # Evals) — Hintergrundarbeit, die echte Chats nie verdraengen darf.
+        background=True,
     )
 
 
@@ -155,7 +158,12 @@ async def chat_completions(request: Request) -> JSONResponse:
         return pinned
 
     if pinned is not None:
-        response = await pinned.complete(llm_request)
+        # Auch der feste Provider laeuft durch einen Ein-Provider-Router: nur
+        # so greift die Chat-Vorfahrt (background=True haelt die Anfrage an,
+        # solange echte Nutzer chatten).
+        from app.ai.llm_router import LLMRouter
+
+        response = await LLMRouter([pinned]).complete(llm_request)
     else:
         router_instance = build_default_router()
         router_instance.providers = [

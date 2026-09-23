@@ -287,7 +287,7 @@ async def _ai_enrich(platform: str, username: str, meta: dict[str, str]) -> dict
     try:
         response = await asyncio.wait_for(
             build_default_router().complete(
-                LLMRequest(prompt=prompt, system_prompt=system_prompt, max_tokens=180, temperature=0.1)
+                LLMRequest(prompt=prompt, system_prompt=system_prompt, max_tokens=180, temperature=0.1, background=True)
             ),
             timeout=AI_DEADLINE_SECONDS,
         )
