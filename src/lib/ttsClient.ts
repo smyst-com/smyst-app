@@ -131,9 +131,12 @@ export async function playRemoteSpeech(
                   const controller = new AbortController()
                   const timer = window.setTimeout(
                     () => controller.abort(),
-                    effectiveVoiceId === 'de-own' ? 45000 : 6000,
+                    effectiveVoiceId === 'de-own' ? 45000 : speechAbortMs(cleanText),
                   )
-                  const response = await fetch(buildServiceUrl('/api/tts'), {
+                  // Gateway-5xx einmal wiederholen: Der gemeinsame Backend-
+                  // Container wirft unter Last kurzzeitige 502 (gemessen
+                  // 22./23.09.2026), der zweite Versuch klappt meist.
+                  let response = await fetch(buildServiceUrl('/api/tts'), {
                             method: 'POST',
           credentials: 'include',
                             headers: { 'Content-Type': 'application/json' },
@@ -146,6 +149,22 @@ export async function playRemoteSpeech(
                             }),
                             signal: controller.signal,
                   })
+                  if ([502, 503, 504].includes(response.status)) {
+                    await new Promise((r) => setTimeout(r, 2500))
+                    response = await fetch(buildServiceUrl('/api/tts'), {
+                            method: 'POST',
+          credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                        text: cleanText,
+                                        lang: effectiveLang,
+                                        gender,
+                                        voiceId: effectiveVoiceId,
+                                        rate,
+                            }),
+                            signal: controller.signal,
+                  })
+                  }
                   window.clearTimeout(timer)
                   if (!response.ok) {
                         active = false
@@ -196,6 +215,16 @@ interface SentenceQueueHandle {
 
 let activeSentenceQueue: SentenceQueueHandle | null = null
 
+// Wie lange der Client auf Piper-Synthese warten darf, bevor er abbricht.
+// Gemessen 22./23.09.2026 am Produktions-Backend: 5-65 s pro kurzen Satz,
+// je nach Last des gemeinsam genutzten Containers (Chat-LLM + TTS + API).
+// Das fruehere Fest-Limit von 6 s riss deshalb IMMER ab — das Vorlesen
+// startete nie, die Sprachwelle erschien nie (Inhaber-Meldung 22.09.).
+// Laengen-abhaengig warten, hart gedeckelt bei 90 s gegen Haenger.
+function speechAbortMs(text: string): number {
+    return Math.min(90000, 20000 + text.length * 150)
+}
+
 async function fetchSpeechUrl(
     cleanText: string,
     lang: string | undefined,
@@ -216,21 +245,28 @@ async function fetchSpeechUrl(
         const controller = new AbortController()
         const timer = window.setTimeout(
             () => controller.abort(),
-            effectiveVoiceId === 'de-own' ? 45000 : 6000,
+            effectiveVoiceId === 'de-own' ? 45000 : speechAbortMs(cleanText),
         )
-        const response = await fetch(buildServiceUrl('/api/tts'), {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                text: cleanText,
-                lang: effectiveLang,
-                gender,
-                voiceId: effectiveVoiceId,
-                rate,
-            }),
-            signal: controller.signal,
-        })
+        // Gateway-5xx einmal wiederholen (kurzzeitige 502 unter Last).
+        const anfrage = () =>
+            fetch(buildServiceUrl('/api/tts'), {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    text: cleanText,
+                    lang: effectiveLang,
+                    gender,
+                    voiceId: effectiveVoiceId,
+                    rate,
+                }),
+                signal: controller.signal,
+            })
+        let response = await anfrage()
+        if ([502, 503, 504].includes(response.status)) {
+            await new Promise((r) => setTimeout(r, 2500))
+            response = await anfrage()
+        }
         window.clearTimeout(timer)
         if (!response.ok) return null
         const blob = await response.blob()
