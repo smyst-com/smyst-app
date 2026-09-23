@@ -116,15 +116,16 @@ jobs:
         env:
           IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+          IDRIVE_E2_ENDPOINT: ${{ secrets.IDRIVE_E2_ENDPOINT || 'https://s3.us-west-2.idrivee2.com' }}
         run: |
           pip install --quiet boto3
-          python3 - <<'PY'
+          python3 - <<'PYEOF'
           import boto3, os, pathlib, sys
           key, secret = os.getenv("IDRIVE_E2_ACCESS_KEY"), os.getenv("IDRIVE_E2_SECRET_KEY")
           if not key or not secret:
               print("e2-Keys fehlen — Object-Brain-Spiegel uebersprungen (Branch-Spiegel bleibt).")
               sys.exit(0)
-          c = boto3.client("s3", endpoint_url=os.getenv("E2_ENDPOINT", "https://api.e2.idrivee2.com"),
+          c = boto3.client("s3", endpoint_url=os.getenv("IDRIVE_E2_ENDPOINT"),
                            aws_access_key_id=key, aws_secret_access_key=secret)
           root = pathlib.Path("radar-state")
           n = 0
@@ -135,49 +136,29 @@ jobs:
                            Body=p.read_bytes(), ContentType="application/json")
               n += 1
           print(f"e2-Spiegel: {n} JSON-Dateien nach radar/ geschrieben.")
-          PY
+          PYEOF
 
       - name: radar-data Branch aktualisieren (Admin-Frontend-Daten)
         if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
+          git config user.name "smyst-radar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          # radar-state ist beim Erstlauf ein einfacher Ordner (Branch fehlt
+          # noch) — dann hier ein eigenes Mini-Repo daraus machen.
+          if [ ! -e "radar-state/.git" ]; then
+            ( cd radar-state && git init -q -b radar-data )
+          fi
+          # Remote sicherstellen (Worktree hat ihn, Mini-Repo noch nicht).
+          ( cd radar-state \
+            && ( git remote get-url origin >/dev/null 2>&1 \
+                 || git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" ) )
           cd radar-state
           git add -A
           git commit -m "radar: Lauf $(date -u +%F)" || echo "Keine Änderungen am Wissensstand."
-          git push origin HEAD:radar-data || {
-            git pull --rebase origin radar-data && git push origin HEAD:radar-data
-          }
+          git push -q origin radar-data
 
       - name: Lauf-Zusammenfassung
         if: always()
-        run: |
-          {
-            echo "## smyst radar — Lauf $(date -u '+%F %H:%M') UTC"
-            python3 - <<'PY'
-            import json, pathlib
-            state = pathlib.Path("radar-state")
-            rep = sorted((state / "reports").glob("*.json"))
-            if rep:
-                r = json.loads(rep[-1].read_text())
-                echo = print
-                echo("### " + r.get("title", "?"))
-                echo("")
-                echo(r.get("summary", "keine Zusammenfassung"))
-                echo("")
-                echo(f"- Quellen untersucht: {r.get('sources_ok_count', 0)}/{r.get('sources_examined_count', 0)} erreichbar")
-                echo(f"- Neue Erkenntnisse: {len(r.get('new_insights', []))}")
-                echo(f"- Verworfen: {len(r.get('rejected', []))} | Aktualisiert: {len(r.get('updated', []))} | Veraltet: {len(r.get('outdated', []))}")
-                ru = r.get("rag_usage") or {}
-                tests = ru.get("tests", [])
-                if tests:
-                    ok = sum(1 for t in tests if t.get("found_correct_category"))
-                    echo(f"- RAG-Testfragen: {ok}/{len(tests)} bestanden")
-                ans = ru.get("answers", [])
-                if ans:
-                    ok = sum(1 for a in ans if a.get("ok"))
-                    echo(f"- Testantworten (smyst-Modell): {ok}/{len(ans)} erfolgreich")
-                else:
-                    echo("- Testantworten: nicht ausgeführt (kein Server/keine Treffer)")
-            else:
-                echo("Kein Tagesbericht geschrieben — Lauf prüfen.")
-            PY
-          } >> "$GITHUB_STEP_SUMMARY"
+        run: python3 scripts/radar/summary.py radar-state >> "$GITHUB_STEP_SUMMARY"
