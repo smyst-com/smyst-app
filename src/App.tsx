@@ -7019,8 +7019,8 @@ function AdminControlCenterInner() {
         .catch(() => null)
     void (async () => {
       const [status, index, runs] = await Promise.all([
-        load<RadarStatusApi>('https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/radar/status.json'),
-        load<RadarIndexApi>('https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/radar/knowledge/index.json'),
+        load<RadarStatusApi>('https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/status.json'),
+        load<RadarIndexApi>('https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/knowledge/index.json'),
         load<{ workflow_runs?: Array<{ status?: string | null; conclusion?: string | null; created_at?: string | null; html_url?: string | null }> }>('https://api.github.com/repos/smyst-com/smyst-app/actions/workflows/smyst-radar.yml/runs?per_page=1'),
       ])
       if (!alive) return
@@ -7038,7 +7038,7 @@ function AdminControlCenterInner() {
     setRadarBusy(true)
     setRadarMessage(null)
     try {
-      const r = await fetch(`https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/radar/reports/${day}.json?t=${Date.now()}`, { cache: 'no-store' })
+      const r = await fetch(`https://raw.githubusercontent.com/smyst-com/smyst-app/radar-data/reports/${day}.json?t=${Date.now()}`, { cache: 'no-store' })
       setRadarReport(r.ok ? await r.json() : null)
       if (!r.ok) setRadarMessage(`Für ${day} liegt kein Bericht vor (erster Lauf oder pausiert).`)
     } catch {
