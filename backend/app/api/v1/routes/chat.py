@@ -17,6 +17,8 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from app.ai.crisis_guard import CRISIS_MODE, ist_krise, krisen_antwort
+from app.ai.language_detection import resolve_chat_language
+from app.ai.language_register import language_name as register_language_name
 from app.ai.llm_router import LLMRouter, build_default_router
 from app.ai.models import LLMRequest
 from app.ai.twin_context import twin_context
@@ -203,32 +205,17 @@ def _schedule_archive(chat: dict[str, object]) -> None:
         pass
 
 
-# Die 15 Sprachen der Voice-/UI-Matrix (src/lib/voiceLanguage.ts). Alles andere
-# wird verworfen, damit kein fremder Freitext in den Prompt gelangt.
-_LANGUAGE_NAMES: dict[str, str] = {
-    "en": "English",
-    "zh": "Chinese",
-    "es": "Spanish",
-    "ar": "Arabic",
-    "fr": "French",
-    "de": "German",
-    "pt": "Portuguese",
-    "ru": "Russian",
-    "tr": "Turkish",
-    "ja": "Japanese",
-    "ko": "Korean",
-    "it": "Italian",
-    "hi": "Hindi",
-    "id": "Indonesian",
-    "bn": "Bengali",
-}
-
-
+# Sprachnamen fuer Prompts stammen seit dem Mehrsprachigkeits-Auftrag
+# (24.09.2026) aus dem versionierten Sprachregister
+# (app/ai/language_register.py): die bisherigen 15 Voice-/UI-Sprachen PLUS
+# die P0-Sprachen Kurmandschi (ku) und Sorani (ckb) und die P2-Ausbaustufe.
+# Alles andere wird verworfen, damit kein fremder Freitext aus dem
+# language-Feld in den Prompt gelangt.
 def _language_name(language: str | None) -> str | None:
     if not language:
         return None
     base = str(language).strip().lower().replace("_", "-").split("-", 1)[0]
-    return _LANGUAGE_NAMES.get(base)
+    return register_language_name(base)
 
 
 
@@ -261,6 +248,7 @@ async def _build_llm_request(
     message: str,
     language: str | None = None,
     user_memory: str = "",
+    language_source: str = "frontend",
 ) -> LLMRequest:
     twin_id = chat.get("twinId")
     context = await twin_context(twin_id if isinstance(twin_id, str) else None)
@@ -359,16 +347,40 @@ async def _build_llm_request(
     # Standardsprache mit Wechsel-Erlaubnis: der fruehere harte Zwang ("Answer
     # strictly ... Do not switch languages") liess Twins Sprachwechsel-Bitten
     # ablehnen ("Ich kann nur auf Deutsch antworten", live 28.07.).
-    language_line = (
-        f"Default answer language: {_language_name(language)}. "
-        "You speak every language fluently. Highest priority: if the user asks "
-        "you to talk in another language (e.g. 'kannst du tuerkisch reden', "
-        "'speak English') or writes in another language, your ENTIRE reply must "
-        "already be in that requested language. Never refuse such a request and "
-        "never claim you can only speak one language.\n"
-        if _language_name(language)
-        else "Answer in the same language as the user.\n"
-    )
+    #
+    # Live-Fehler 24.09.2026 (Screenshot Inhaber, Atatuerk auf Tuerkisch
+    # gefragt -> deutsche Antwort + "ich kann kein Tuerkisch"): Das Frontend
+    # erkannte ASCII-Tuerkisch nicht, schickte die UI-Sprache de, und das
+    # kleine Modell folgte "Default answer language: German" bis zur
+    # Faehigkeits-Leugnung. Seitdem loest der SERVER die Sprache autoritativ
+    # auf (app/ai/language_detection.py): expliziter Wunsch > erkannte
+    # Nachrichtensprache > UI-Sprache. Der Prompt benennt die Quelle nun
+    # entsprechend deutlich.
+    resolved_name = _language_name(language)
+    if resolved_name and language_source == "explicit":
+        language_line = (
+            f"The user explicitly asked to talk in {resolved_name}. "
+            f"Your ENTIRE reply must be in {resolved_name} — starting with the "
+            "very first word. Never refuse such a request and never claim you "
+            f"can only speak one language.\n"
+        )
+    elif resolved_name:
+        source_phrase = (
+            f"The user's message is written in {resolved_name}. "
+            if language_source == "message"
+            else ""
+        )
+        language_line = (
+            f"Default answer language: {resolved_name}. "
+            + source_phrase
+            + "You speak every language fluently. Highest priority: if the user asks "
+            "you to talk in another language (e.g. 'kannst du tuerkisch reden', "
+            "'speak English') or writes in another language, your ENTIRE reply must "
+            "already be in that requested language. Never refuse such a request and "
+            "never claim you can only speak one language.\n"
+        )
+    else:
+        language_line = "Answer in the same language as the user.\n"
     # Recency-Anker: Kleine Modelle verlieren die Rolle unter dem langen
     # Regelblock (live 06.09.: Kontext da, Antwort trotzdem Lexikon). Der
     # Name + Ich-Form stehen deshalb auch am PROMPT-Ende, direkt vor der
@@ -404,13 +416,19 @@ async def _build_llm_request(
     # zurueck, den nur der Sprach-Pfad setzt. Im Text-Chat blieb deshalb NICHTS
     # uebrig und deutsche Nutzer sahen die englische Wartemeldung — live
     # beobachtet waehrend des Provider-Ausfalls am 15.08.2026, obwohl die
-    # Uebersetzung fuer alle 15 Sprachen laengst existiert.
+    # Uebersetzung fuer alle 15 Sprachen laengst existierte.
+    # language_source dient dem sprachbewussten Modell-Routing und der
+    # Trainingsdaten-Unterscheidung (explizit gewuenscht vs. erkannt).
+    metadata: dict[str, object] = {}
+    if language:
+        metadata["language"] = language
+        metadata["language_source"] = language_source
     return LLMRequest(
         prompt=prompt,
         system_prompt=system_prompt,
         max_tokens=220,
         temperature=0.2,
-        metadata={"language": language} if language else {},
+        metadata=metadata,
     )
 
 
@@ -556,8 +574,12 @@ async def send_message(body: SendMessageRequest, request: Request, response: Res
     _reject_foreign_chat(chat, request)
     user_sub = _user_sub_from(request)
     message = normalize_text(body.message, max_length=4000).value
+    # Sprache autoritativ im Server aufloesen (Fix 24.09.): Das Frontend
+    # erkennt ASCII-Tuerkisch/Kurdisch nicht zuverlaessig — auch die
+    # deterministische Krisenantwort braucht die richtige Sprache.
+    resolved_language, language_source = resolve_chat_language(body.language, message)
     if ist_krise(message):
-        assistant_message = _krisen_nachricht(chat, message, body.language)
+        assistant_message = _krisen_nachricht(chat, message, resolved_language)
         return {
             "chatId": body.chatId,
             "twinId": chat.get("twinId"),
@@ -569,7 +591,13 @@ async def send_message(body: SendMessageRequest, request: Request, response: Res
     # sich ihre Laufzeiten vor jeder Antwort; parallel zaehlt nur die laengere.
     user_memory = memory_block(user_sub)
     llm_request, research_response = await asyncio.gather(
-        _build_llm_request(chat, message, body.language, user_memory=user_memory),
+        _build_llm_request(
+            chat,
+            message,
+            resolved_language,
+            user_memory=user_memory,
+            language_source=language_source,
+        ),
         _research_for_chat(chat, message),
     )
     llm_request = _attach_web_research_evidence(llm_request, research_response)
@@ -584,7 +612,7 @@ async def send_message(body: SendMessageRequest, request: Request, response: Res
     web_research = _web_research_metadata(research_response)
     if web_research is not None:
         assistant_message["webResearch"] = web_research
-    _persist_exchange(chat, message, assistant_message, language=body.language)
+    _persist_exchange(chat, message, assistant_message, language=resolved_language)
     _remember_from_message(user_sub, message)
     return {
         "chatId": body.chatId,
@@ -669,6 +697,8 @@ async def send_message_stream(body: SendMessageRequest, http_request: Request) -
     chat = await _ensure_chat(body.chatId)
     _reject_foreign_chat(chat, http_request)
     message = normalize_text(body.message, max_length=4000).value
+    # Sprachaufloesung wie im nicht-streamenden Pfad (Fix 24.09.).
+    resolved_language, language_source = resolve_chat_language(body.language, message)
 
     def _sse(payload: dict[str, object]) -> str:
         return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
@@ -676,7 +706,7 @@ async def send_message_stream(body: SendMessageRequest, http_request: Request) -
     if ist_krise(message):
         # Krisenantwort auch im Stream-Pfad deterministisch: ein einzelnes
         # done-Event im selben Format, kein LLM, keine Recherche.
-        assistant_message = _krisen_nachricht(chat, message, body.language)
+        assistant_message = _krisen_nachricht(chat, message, resolved_language)
 
         async def krisen_quelle() -> AsyncIterator[str]:
             yield _sse({
@@ -716,7 +746,11 @@ async def send_message_stream(body: SendMessageRequest, http_request: Request) -
                     timings,
                     "twinContextMs",
                     _build_llm_request(
-                        chat, message, body.language, user_memory=memory_block(_user_sub_from(http_request))
+                        chat,
+                        message,
+                        resolved_language,
+                        user_memory=memory_block(_user_sub_from(http_request)),
+                        language_source=language_source,
                     ),
                 ),
                 _timed(timings, "webResearchMs", _research_for_chat(chat, message)),
@@ -748,7 +782,7 @@ async def send_message_stream(body: SendMessageRequest, http_request: Request) -
                     web_research = _web_research_metadata(research_response)
                     if web_research is not None:
                         assistant_message["webResearch"] = web_research
-                    _persist_exchange(chat, message, assistant_message, language=body.language)
+                    _persist_exchange(chat, message, assistant_message, language=resolved_language)
                     _remember_from_message(_user_sub_from(http_request), message)
                     timings["totalMs"] = int((perf_counter() - started_at) * 1000)
                     logger.info(

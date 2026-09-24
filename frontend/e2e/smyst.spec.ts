@@ -19,6 +19,17 @@ test.describe("Smyst current app", () => {
     });
   });
 
+  // Cookie-Consent (z-[55]) kann auf Mobil den Landing-Knopf ueberlagern
+  // (vorbestehender Mobil-Flake): wie im Login-Test vorher wegklicken.
+  // best-effort — Tests ohne Banner laufen unberuehrt weiter.
+  async function dismissConsentIfPresent(page: import("@playwright/test").Page) {
+    await page
+      .getByRole("button", { name: /Nur Notwendige|Alle akzeptieren/ })
+      .first()
+      .click({ timeout: 4_000 })
+      .catch(() => {});
+  }
+
   test("start page lets signed-out users chat with public historical profiles", async ({ page }) => {
     await page.route("**/auth/me", async (route) => {
       await route.fulfill({ json: { authenticated: false } });
@@ -115,6 +126,7 @@ test.describe("Smyst current app", () => {
     // Landing-Anmeldeseite (nur fuer nicht angemeldete Besucher, PR #641):
     // deterministisch auf ihren Erscheins-Moment warten (haengt vom /auth/me-
     // Mock ab) und schliessen — danach greifen die Shell-Assertions.
+    await dismissConsentIfPresent(page);
     const discoverButton = page.locator(".smyst-landing header").getByRole("button", { name: "Profile entdecken" });
     await expect(discoverButton).toBeVisible({ timeout: 8_000 });
     await discoverButton.click();
@@ -161,6 +173,7 @@ test.describe("Smyst current app", () => {
     });
 
     await page.goto("/");
+    await dismissConsentIfPresent(page);
     const discoverButton = page.locator(".smyst-landing header").getByRole("button", { name: "Profile entdecken" });
     await expect(discoverButton).toBeVisible({ timeout: 8_000 });
     await discoverButton.click();
