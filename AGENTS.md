@@ -81,6 +81,43 @@ live bewiesen (Runtime-Log: 127.0.0.1:8080 200 OK) und eingefroren:
    smyst_llm ok:true liefern UND ein Gast-Chat auf smyst.com muss eine echte
    Antwort liefern (nicht die Degraded-Meldung).
 
+## Funktions-Freeze Mehrsprachigkeit + Language-Autopilot (Pflicht, 100 % geschuetzt, ab 25.09.2026)
+
+Auftrag Inhaber 24.09.2026 (vollstaendige Mehrsprachigkeit, 24/7-Sprach-Autopilot,
+Icon-Tests, Aenderungsschutz). Kern-Fix: Atatuerk wurde auf Tuerkisch deutsch
+beantwortet mit Faehigkeits-Leugnung — die Antwort-Sprache wird seitdem
+SERVERSEITIG aufgeloest (expliziter Wunsch > Nachrichtensprache > UI-Sprache).
+
+Geschuetzte Dateien:
+- backend/app/ai/language_register.py (versioniertes Sprachregister v1.0.0,
+  Ethnologue 2026: 7.170 lebende Sprachen, P0: de/tr/en/ku/ckb)
+- backend/app/ai/language_detection.py (Sprachaufloesung, inkl. Kurmandschi/Sorani)
+- backend/app/api/v1/routes/chat.py (resolve_chat_language-Integration,
+  language_source im Prompt/Metadata)
+- backend/app/ai/llm_router.py (SMYST_LLM_LANGUAGES: DE/EN = smyst_llm zuerst,
+  andere Sprachen Cloud-Kette zuerst, smyst_llm bleibt Not-Fallback)
+- backend/app/workers/language_autopilot.py, app/integrations/language_report_store.py,
+  app/api/v1/routes/admin_language.py (24/7-Sprachpruefung, Matrix, Admin-API)
+- .github/workflows/language-autopilot.yml (Zeitplan alle 6 h + Icon-E2E)
+- frontend/e2e/language-icons.spec.ts (5-Icon-Suite, Desktop+Mobil)
+
+Regeln:
+1. Ohne schriftliche Freigabe des Inhabers verboten: Sprachregister-
+   Tiers aendern, P0-Sprachen entfernen, die serverseitige Sprachaufloesung
+   umgehen oder abschalten, SMYST_LLM_LANGUAGES aendern (ausser Erweiterung
+   um WEITERE Sprachen), Language-Autopilot deaktivieren/entfernen, Marker
+   (resolve_chat_language, SMYST_LLM_LANGUAGES, LANGUAGE_REGISTER_VERSION,
+   language-autopilot/) auszubauen.
+2. Deutsch-Chats bleiben smyst_llm-zuerst (siehe Funktions-Freeze Eigenes
+   Modell); QA/Pipeline (deutsch) unveraendert.
+3. Der Language-Autopilot ist rein lesend; seine Ergebnisse im Object Brain
+   werden nie geloescht.
+4. Vor jedem Merge: Marker pruefen (resolve_chat_language, _ordered_providers,
+   admin_language_router, language-autopilot.yml existiert).
+5. Pflicht nach Backend-Deploy: tuerkischer Gast-Chat (ASCII-Tuerkisch,
+  language-Feld de) MUSS tuerkisch antworten; /api/admin/language/autopilot
+  MUSS 401 ohne Admin-Session liefern.
+
 ## Funktions-Freeze Autopilot 10.000 Profile/Tag (Pflicht, 100 % geschuetzt, ab 22.09.2026)
 
 Der tagesautomatische Profil-Autopilot (Auftrag Inhaber 14.09.2026: „Unser
