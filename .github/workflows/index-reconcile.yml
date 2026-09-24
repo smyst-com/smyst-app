@@ -28,7 +28,11 @@ concurrency:
 jobs:
   reconcile:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # 24.09.2026: Restore nach Publish-Index-Verlust (51.200 Profile) — der
+    # Store-Vollscan (51k+ Dokumente) lief beim ersten Restore-Lauf (36063245702)
+    # in das 60-min-Limit, ohne eine Zeile Ausgabe. 180 min fuer den Vollscan;
+    # das Skript ist additiv/idempotent, ein Abbruch richtet keinen Schaden an.
+    timeout-minutes: 180
     env:
       IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
       IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
