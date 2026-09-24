@@ -129,11 +129,46 @@ def fetch_live_slugs(timeout_seconds: float = 20.0) -> set[str]:
         return set()
 
 
+
+def _ist_fehlender_index(fehler: Exception) -> bool:
+    """True nur bei 'Index existiert nicht' — nicht bei Netz-/Rechte-Fehlern.
+
+    boto3 meldet NoSuchKey als ClientError mit Code; die Test-Fakes raisen
+    KeyError. Alles andere (Timeout, AccessDenied, halbe Antwort) ist KEIN
+    fehlender Index und darf nicht still als [] durchgehen.
+    """
+    if isinstance(fehler, KeyError):
+        return True
+    response = getattr(fehler, "response", None)
+    if isinstance(response, dict):
+        code = (response.get("Error") or {}).get("Code")
+        if code == "NoSuchKey":
+            return True
+    return getattr(fehler, "code", None) == "NoSuchKey"
+
+
 def _load_index(store: CandidateStore) -> list[dict]:
+    """Laedt den Publish-Index; NUR ein fehlender Schluessel ist ein leerer Index.
+
+    Vorfall 24.09.2026: Ein transienter Lese-Fehler (Netz/Timeout) lieferte
+    still [] zurueck, der Publish-Lauf schrieb danach einen Teil-Index und
+    ersetzte so 51.200 Live-Profile durch ~380 (geblockt vom Deploy-Gate
+    'gebauter Katalog 380 vs live 51200'). Seitdem: NoSuchKey = legitimer
+    Erstzustand, JEDE andere Stoerung (Netz, Rechte, kaputtes JSON) wirft
+    und stoppt den Lauf, bevor der Index ueberschrieben werden kann.
+    """
     try:
         response = store._client.get_object(Bucket=store._bucket, Key=PUBLISH_INDEX_KEY)  # noqa: SLF001
         return json.loads(response["Body"].read().decode("utf-8"))
-    except Exception:
+    except Exception as fehler:
+        if not _ist_fehlender_index(fehler):
+            # Netz-, Rechte- oder JSON-Fehler: Lauf stoppen, bevor ein
+            # Teilbestand den echten Index ersetzen kann.
+            raise RuntimeError(
+                f"Publish-Index nicht ladbar ({type(fehler).__name__}: {fehler}) — "
+                "Lauf gestoppt, kein Ueberschreiben mit Teilbestand "
+                "(Vorfall 24.09.2026)."
+            ) from fehler
         return []
 
 
@@ -331,6 +366,15 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     if args.command == "publish" and args.all_reviewed:
         qids += [qid for qid in select_reviewed_qids(store) if qid not in qids]
     live_slugs = fetch_live_slugs() if args.command == "publish" else set()
+    # Sicherheitsnetz (Vorfall 24.09.2026): Index leer, obwohl live Profile
+    # existieren => Index unvollstaendig — publish wuerde die Live-Profile
+    # beim naechsten Deploy verschwinden lassen. Abbruch statt Teil-Index.
+    if args.command == "publish" and live_slugs and not _load_index(store):
+        raise SystemExit(
+            f"ABBRUCH: Publish-Index ist leer, aber live existieren "
+            f"{len(live_slugs)} Profile — index-reconcile.yml ausfuehren, "
+            "bevor erneut publiziert wird (Vorfall 24.09.2026)."
+        )
     # 15.09.2026: Index EINMAL je Lauf laden und durchreichen — publish_one
     # aktualisiert die Liste in-place (sonst je Profil ein ~30-MB-GET auf den
     # Index; bei 1.000er Chargen = 30 GB Egress + Stunden Laufzeit,
@@ -379,7 +423,14 @@ def refresh_published_summary(store: CandidateStore) -> str | None:
     den Publish-Lauf nicht roet enden lassen (Live-Befund 14.09.,
     Lauf 34789969666). Stattdessen None + Warnung.
     """
-    index = _load_index(store)
+    try:
+        index = _load_index(store)
+    except Exception as fehler:  # noqa: BLE001 - Summary ist best effort
+        print(
+            f"WARNUNG: Publish-Index fuer published-summary nicht lesbar "
+            f"({type(fehler).__name__}: {fehler}) — QA faellt auf den Voll-Scan zurueck."
+        )
+        return None
     entries = [
         {"wikidata_qid": entry.get("wikidata_qid"), "name": entry.get("name")}
         for entry in index

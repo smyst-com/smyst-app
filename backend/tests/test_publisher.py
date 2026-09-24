@@ -445,3 +445,30 @@ def test_publish_batch_loads_index_once(monkeypatch) -> None:
     # und der Store-Index ist aktuell
     stored = json.loads(counting.objects[PUBLISH_INDEX_KEY])  # noqa: SLF001
     assert {e["wikidata_qid"] for e in stored} >= {"Q1035", "Q2044"}
+
+
+def test_load_index_raises_on_read_error_instead_of_silent_empty():
+    """Vorfall 24.09.2026: Ein Lese-Fehler lieferte still [] und ein
+    Publish-Lauf ersetzte den 51.200er-Index durch ~380 Eintraege.
+    Seitdem darf NUR ein fehlender Schluessel [] liefern; Netz-/Rechte-
+    Fehler muessen werfen, damit der Lauf stoppt."""
+    from app.workers.publish_profiles import _load_index
+
+    class BrokenS3(FakeS3):
+        def get_object(self, *, Bucket, Key):
+            raise TimeoutError("e2 nicht erreichbar")
+
+    store = CandidateStore(BrokenS3(), "smyst-memories")
+    try:
+        _load_index(store)
+    except RuntimeError as fehler:
+        assert "Teilbestand" in str(fehler)
+    else:
+        raise AssertionError("_load_index darf bei Lese-Fehler nicht still [] liefern")
+
+
+def test_load_index_returns_empty_only_for_missing_key():
+    from app.workers.publish_profiles import _load_index
+
+    store = CandidateStore(FakeS3(), "smyst-memories")  # kein Index geschrieben
+    assert _load_index(store) == []
