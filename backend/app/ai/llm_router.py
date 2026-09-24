@@ -45,6 +45,43 @@ RETRY_BACKOFF_SECONDS = 0.15
 # 45s pro Anfrage).
 RATE_LIMIT_BACKOFF_SECONDS = 6.0
 
+# ─── Sprachbewusstes Modell-Routing (24.09.2026, Mehrsprachigkeits-Auftrag) ───
+#
+# Live-Befund 24.09.2026 (Inhaber-Screenshot, Atatuerk auf Tuerkisch): Das
+# kleine smyst-1.1 ist ein deutsch/englisch finetuntes CPU-Modell. Bei
+# anderen Sprachen leugnet es Faehigkeiten ("Nein, ich kann kein Tuerkisch
+# sprechen", live reproduziert) oder antwortet mit gebrochener Grammatik —
+# gemessen, nicht aus dem Modellnamen abgeleitet.
+#
+# Deshalb fuehrt die Kette das eigene Modell nur noch bei den Sprachen
+# zuerst, in denen es nachweislich funktioniert (Default de,en — Deutsch-
+# Chats bleiben exakt beim eingefrorenen smyst_llm-zuerst-Verhalten, inkl.
+# QA/Pipeline-Laeufen, die deutsch arbeiten). Alle anderen Chat-Sprachen
+# gehen direkt an die bewaehrte Cloud-Kette (OpenRouter/Groq, bereits
+# freigegebene Provider), smyst_llm bleibt in der Kette erreichbar, sobald
+# die Cloud-Provider ausfallen. Der Funktions-Freeze (ctx-size, Slots,
+# Alias, smyst_llm existiert, smyst_llm zuerst FUER DEUTSCH) bleibt
+# unberuehrt; umkehrbar per Env SMYST_LLM_LANGUAGES ohne Code-Aenderung.
+SMYST_LLM_LANGUAGES_RAW = os.environ.get("SMYST_LLM_LANGUAGES", "de,en").strip().lower()
+SMYST_LLM_LANGUAGES = frozenset(
+    code.strip().replace("_", "-").split("-", 1)[0]
+    for code in SMYST_LLM_LANGUAGES_RAW.split(",")
+    if code.strip()
+)
+
+
+def _language_of_request(request: "LLMRequest") -> str | None:
+    value = request.metadata.get("language") if request.metadata else None
+    if not isinstance(value, str) or not value.strip():
+        return None
+    return value.strip().lower().replace("_", "-").split("-", 1)[0]
+
+
+def _skips_smyst_llm(request: "LLMRequest") -> bool:
+    """True, wenn diese Anfrage smyst_llm ueberspringen soll (andere Sprache)."""
+    language = _language_of_request(request)
+    return bool(language) and language not in SMYST_LLM_LANGUAGES
+
 # ─── Chat-Vorfahrt (23.09.2026, Inhaber-Auftrag "100 % billig schneller") ───
 #
 # Vorfall: Der Profil-Doktor (24/7-Qualitaetsschleife) und weitere Hintergrund-
@@ -61,7 +98,11 @@ RATE_LIMIT_BACKOFF_SECONDS = 6.0
 # Hintergrundarbeit wird nur ANGEORDNET, nicht abgeschwaecht (weniger
 # gleichzeitige, dafuer schnellere Generierungen heben den Gesamtdurchsatz auf
 # einem gesaettigten 2-Kern-Server erfahrungsgemaess sogar).
-BACKGROUND_LLM_CONCURRENCY = max(1, int(os.environ.get("BACKGROUND_LLM_CONCURRENCY", "2")))
+# Default 1 (statt 2): der llama-server hat 2 Slots (Freeze) — EINE
+# Hintergrund-Generierung laesst dem Chat den zweiten Slot sofort frei,
+# statt ihn bis zum Ende einer laufenden QA-Antwort warten zu lassen
+# (gemessen 23.09. live: Chats schwankten sonst zwischen 0,4 und 5,5 t/s).
+BACKGROUND_LLM_CONCURRENCY = max(1, int(os.environ.get("BACKGROUND_LLM_CONCURRENCY", "1")))
 BACKGROUND_LLM_WAIT_SECONDS = float(os.environ.get("BACKGROUND_LLM_WAIT_SECONDS", "600"))
 
 
