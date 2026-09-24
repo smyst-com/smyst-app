@@ -30,6 +30,9 @@ DEGRADED_FALLBACK_MESSAGES: dict[str, str] = {
     "hi": "माफ़ कीजिए - मैं अभी अपनी जानकारी तक नहीं पहुँच पा रहा हूँ। कृपया थोड़ी देर में फिर कोशिश करें।",
     "id": "Maaf - saat ini saya tidak dapat mengakses pengetahuan saya. Silakan coba lagi sebentar lagi.",
     "bn": "দুঃখিত - এই মুহূর্তে আমি আমার জ্ঞানে পৌঁছাতে পারছি না। অনুগ্রহ করে একটু পরে আবার চেষ্টা করুন।",
+    # Kurmandschi und Sorani (P0-Sprachen, Mehrsprachigkeits-Auftrag 24.09.2026)
+    "ku": "Mixabin - niha nikarim bigihijm zanîna xwe. Ji kerema xwe piştre dîsa biceribîne.",
+    "ckb": "ببورە - ئێستا ناتوانم بگەم بە زانینی خۆم. تکایە دواتر دووبارە تاقی بکەوە.",
 }
 
 DEFAULT_DEGRADED_LANGUAGE = "en"

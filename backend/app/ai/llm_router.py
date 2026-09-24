@@ -82,6 +82,7 @@ def _skips_smyst_llm(request: "LLMRequest") -> bool:
     language = _language_of_request(request)
     return bool(language) and language not in SMYST_LLM_LANGUAGES
 
+
 # ─── Chat-Vorfahrt (23.09.2026, Inhaber-Auftrag "100 % billig schneller") ───
 #
 # Vorfall: Der Profil-Doktor (24/7-Qualitaetsschleife) und weitere Hintergrund-
@@ -922,6 +923,33 @@ class LLMRouter:
     def supported_provider_targets() -> list[str]:
         return [*DEFAULT_PROVIDER_ORDER, *PROVIDER_ALIASES, "local"]
 
+    def _ordered_providers(self, request: LLMRequest) -> list[LLMProvider]:
+        """Provider-Reihenfolge fuer DIESE Anfrage.
+
+        Deutsch-/Englisch-Chats (und alles ohne Sprach-Metadata, z. B. die
+        deutsche QA-Pipeline): unveraendert smyst_llm zuerst (Funktions-
+        Freeze). Andere Sprachen: Cloud-Kette zuerst, smyst_llm als
+        Not-Fallback direkt vor dem lokalen deterministischen Ende.
+        """
+        if not _skips_smyst_llm(request):
+            return self.providers
+        primary: list[LLMProvider] = []
+        own_model: list[LLMProvider] = []
+        local: list[LLMProvider] = []
+        for provider in self.providers:
+            if isinstance(provider, LocalDeterministicProvider):
+                local.append(provider)
+            elif provider.name == "smyst_llm":
+                own_model.append(provider)
+            else:
+                primary.append(provider)
+        logger.info(
+            "language routing: cloud chain first for language '%s' "
+            "(smyst_llm kept as fallback)",
+            _language_of_request(request),
+        )
+        return primary + own_model + local
+
     async def complete(self, request: LLMRequest) -> LLMResponse:
         # Chat-Vorfahrt: Hintergrund-Anfragen durchlaufen die Zulassungs-
         # Bremse, interaktive nur den Zaehler (siehe _ChatPriorityGate).
@@ -934,7 +962,7 @@ class LLMRouter:
     async def _complete_chain(self, request: LLMRequest) -> LLMResponse:
         started = perf_counter()
         last_error: Exception | None = None
-        for provider in self.providers:
+        for provider in self._ordered_providers(request):
             is_local = isinstance(provider, LocalDeterministicProvider)
             remaining: float | None = None
             if self.total_deadline_seconds is not None and not is_local:
@@ -985,7 +1013,7 @@ class LLMRouter:
 
     async def _stream_chain(self, request: LLMRequest) -> AsyncIterator[dict[str, Any]]:
         started = perf_counter()
-        for provider in self.providers:
+        for provider in self._ordered_providers(request):
             is_local = isinstance(provider, LocalDeterministicProvider)
             if self.total_deadline_seconds is not None and not is_local:
                 if self.total_deadline_seconds - (perf_counter() - started) <= 0:

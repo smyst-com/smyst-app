@@ -86,3 +86,5 @@ training/mlx-data/
 training/adapters/
 training/fused/
 training/.venv-mlx/
+frontend/test-results/
+frontend/playwright-report/

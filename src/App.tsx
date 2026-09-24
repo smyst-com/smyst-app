@@ -5867,6 +5867,7 @@ function NotFoundView({ onNavigate }: { onNavigate: (view: AppView) => void }) {
 type AdminSection =
   | 'overview'
   | 'autopilot'
+  | 'language'
   | 'approvals'
   | 'ideas'
   | 'radar'
@@ -5994,6 +5995,51 @@ type AdminAutopilotApi = {
     } | null
   }>
   checkedAt?: number
+}
+
+// === smyst language autopilot (Auftrag 24.09.2026): Typen der Sprachsektion ===
+type AdminLanguageApi = {
+  ok: boolean
+  enabled?: boolean
+  heartbeat?: string | null
+  lastRunAt?: string | null
+  runsCount?: number
+  lastRunSummary?: {
+    ranAt?: string
+    planned?: number
+    results?: Record<string, number>
+    profilesAvailable?: number
+  } | null
+  register?: {
+    version?: string
+    source?: string
+    ethnologueLivingLanguages?: number
+    registered?: number
+    tiers?: Record<string, number>
+    restTargetUntested?: number
+    signLanguages?: string
+  }
+  coverage?: {
+    matrixEntries?: number
+    resultCounts?: Record<string, number>
+    languagesTested?: number
+    languagesTestedOk?: number
+    profilesSeen?: number
+    registeredLanguages?: number
+    languagesUntested?: number
+    denominator?: string
+  }
+  errors?: Array<{
+    profile?: string | null
+    language?: string | null
+    function?: string | null
+    result?: string | null
+    error?: string | null
+    findings?: string[] | null
+    repro?: string | null
+    testedAt?: string | null
+  }>
+  runtimes?: { latencyMsAvg?: number; latencyMsMax?: number }
 }
 
 // === smyst radar: Typen der Wissens-Schiene (radar-data Branch) ===
@@ -6364,7 +6410,8 @@ type ComputeJobsApi = {
 const adminSections: Array<{ id: AdminSection; nr: string; label: string; detail: string; group: string }> = [
   { id: 'overview', nr: '1.1', label: 'Cockpit', detail: 'Alles Wichtige auf einen Blick', group: 'Überblick' },
   { id: 'autopilot', nr: '1.2', label: 'Autopilot', detail: 'Ampeln aller Automatiken', group: 'Überblick' },
-  { id: 'approvals', nr: '1.3', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen', group: 'Überblick' },
+  { id: 'language', nr: '1.3', label: 'Sprachen', detail: 'Language-Autopilot 24/7, Register, Abdeckung', group: 'Überblick' },
+  { id: 'approvals', nr: '1.4', label: 'Freigaben', detail: 'Postfach: Freigeben / Ablehnen', group: 'Überblick' },
   { id: 'users', nr: '2.1', label: 'Users', detail: 'Sperren, Rollen, Export', group: 'Menschen' },
   { id: 'registrations', nr: '2.2', label: 'Registrations', detail: 'Funnel und Bots', group: 'Menschen' },
   { id: 'profiles', nr: '2.3', label: 'Profiles', detail: 'AI Twins und Qualität', group: 'Menschen' },
@@ -6542,6 +6589,11 @@ function AdminControlCenterInner() {
   const [adminAutopilot, setAdminAutopilot] = useState<AdminAutopilotApi | null>(null)
   const [adminAutopilotBusy, setAdminAutopilotBusy] = useState<string | null>(null)
   const [adminAutopilotMessage, setAdminAutopilotMessage] = useState<string | null>(null)
+  // smyst language autopilot: Status, Toggle, Einzelttest (Auftrag 24.09.2026)
+  const [adminLanguage, setAdminLanguage] = useState<AdminLanguageApi | null>(null)
+  const [adminLanguageBusy, setAdminLanguageBusy] = useState<string | null>(null)
+  const [adminLanguageMessage, setAdminLanguageMessage] = useState<string | null>(null)
+  const [adminLanguageFilter, setAdminLanguageFilter] = useState({ profile: '', language: 'tr', function: 'text' })
   // smyst radar: zweite Wissens-Schiene (Recherche → Prüfung → RAG → Bericht)
   const [radarStatus, setRadarStatus] = useState<RadarStatusApi | null>(null)
   const [radarIndex, setRadarIndex] = useState<RadarIndexApi | null>(null)
@@ -7015,6 +7067,75 @@ function AdminControlCenterInner() {
       alive = false
     }
   }, [activeSection])
+
+  // smyst language autopilot: Status laden (nur in der Sprachsektion)
+  const refreshAdminLanguage = useCallback(() => {
+    fetchService('/api/admin/language/autopilot', { credentials: 'include' })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}))
+        if (response.ok && payload?.ok) setAdminLanguage(payload as AdminLanguageApi)
+        else setAdminLanguage(null)
+      })
+      .catch(() => setAdminLanguage(null))
+  }, [])
+
+  useEffect(() => {
+    if (activeSection !== 'language') return
+    refreshAdminLanguage()
+  }, [activeSection, refreshAdminLanguage])
+
+  const toggleAdminLanguage = async (enabled: boolean) => {
+    setAdminLanguageBusy('toggle')
+    setAdminLanguageMessage(null)
+    try {
+      const response = await fetchService('/api/admin/language/autopilot/toggle', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (response.ok && payload?.ok) {
+        setAdminLanguageMessage(enabled ? 'Sprach-Autopilot aktiviert.' : 'Sprach-Autopilot deaktiviert.')
+        refreshAdminLanguage()
+      } else {
+        setAdminLanguageMessage(payload?.message ?? 'Umschalten fehlgeschlagen.')
+      }
+    } catch {
+      setAdminLanguageMessage('Netzwerkfehler beim Umschalten.')
+    } finally {
+      setAdminLanguageBusy(null)
+    }
+  }
+
+  const runAdminLanguageTest = async () => {
+    setAdminLanguageBusy('run')
+    setAdminLanguageMessage(null)
+    try {
+      const response = await fetchService('/api/admin/language/autopilot/run', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profile: adminLanguageFilter.profile.trim() || null,
+          language: adminLanguageFilter.language.trim() || null,
+          function: adminLanguageFilter.function.trim() || null,
+          limit: 2,
+        }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (response.ok && payload?.ok) {
+        setAdminLanguageMessage('Testlauf gestartet — Ergebnis erscheint in der Abdeckung.')
+        setTimeout(refreshAdminLanguage, 20_000)
+      } else {
+        setAdminLanguageMessage(payload?.message ?? 'Start fehlgeschlagen.')
+      }
+    } catch {
+      setAdminLanguageMessage('Netzwerkfehler beim Start.')
+    } finally {
+      setAdminLanguageBusy(null)
+    }
+  }
 
   // smyst radar: Status, Wissensindex und letzten Workflow-Lauf laden
   // (öffentlicher radar-data Branch + öffentliche GitHub-API — ohne Backend-
@@ -8249,6 +8370,138 @@ function AdminControlCenterInner() {
     )
   }
 
+  const renderLanguage = () => {
+    const register = adminLanguage?.register
+    const coverage = adminLanguage?.coverage
+    const results = adminLanguage?.lastRunSummary?.results ?? {}
+    const heartbeat = adminLanguage?.heartbeat
+      ? new Date(adminLanguage.heartbeat).toLocaleString('de-DE')
+      : null
+    return (
+      <div className="grid gap-4">
+        <section className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.04] p-5 lg:grid-cols-[1fr_auto_auto] lg:items-center">
+          <div>
+            <h2 className="text-xl font-bold text-[#f4f7fb]">smyst language autopilot</h2>
+            <p className="mt-2 text-sm font-semibold text-[#9aa6b7]">
+              24/7-Hintergrunddienst: prüft Profil × Sprache × Funktion gegen das echte System
+              (alle 6 h Zeitplan + Einzeltests). Produktionschats haben Vorrang.
+            </p>
+            <p className="mt-1 text-xs font-bold text-[#93a0b4]">
+              {adminLanguage?.enabled ? 'Status: aktiv' : 'Status: deaktiviert'}
+              {heartbeat ? ` · Lebenszeichen: ${heartbeat}` : ' · noch kein Lauf'}
+              {adminLanguage?.runsCount ? ` · ${adminLanguage.runsCount} Läufe` : ''}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => void toggleAdminLanguage(!adminLanguage?.enabled)}
+            disabled={adminLanguageBusy === 'toggle'}
+            className={`min-h-11 rounded-md px-4 text-sm font-bold transition disabled:opacity-50 ${adminLanguage?.enabled ? 'bg-red-500/80 text-white hover:bg-red-500' : 'bg-emerald-500 text-[#0b1c44] hover:brightness-110'}`}
+          >
+            {adminLanguageBusy === 'toggle' ? 'Schaltet …' : adminLanguage?.enabled ? 'Autopilot ausschalten' : 'Autopilot einschalten'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void runAdminLanguageTest()}
+            disabled={adminLanguageBusy === 'run'}
+            className="min-h-11 rounded-md bg-[#59C7FF] px-4 text-sm font-bold text-[#0b1c44] transition hover:brightness-110 disabled:opacity-50"
+          >
+            {adminLanguageBusy === 'run' ? 'Startet …' : 'Jetzt testen'}
+          </button>
+        </section>
+
+        <section className="grid gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-5 sm:grid-cols-[repeat(auto-fit,minmax(220px,1fr))]">
+          {[
+            { label: 'Sprachen registriert', value: String(register?.registered ?? '–'), detail: `${register?.tiers ? Object.entries(register.tiers).map(([tier, count]) => `${tier}: ${count}`).join(' · ') : ''}` },
+            { label: 'Sprachen bestanden', value: `${coverage?.languagesTestedOk ?? 0} / ${register?.registered ?? '?'}`, detail: `${coverage?.languagesUntested ?? '?'} noch ungeprüft — ehrlich ausgewiesen` },
+            { label: 'Matrix-Einträge', value: String(coverage?.matrixEntries ?? '–'), detail: coverage?.resultCounts ? Object.entries(coverage.resultCounts).map(([k, v]) => `${k}: ${v}`).join(' · ') : 'noch keine Tests' },
+            { label: 'Ethnologue 2026', value: String(register?.ethnologueLivingLanguages ?? '7170'), detail: 'lebende Sprachen weltweit — Zielumfang des Registers' },
+            { label: 'Antwortzeit Ø', value: adminLanguage?.runtimes?.latencyMsAvg ? `${adminLanguage.runtimes.latencyMsAvg} ms` : '–', detail: adminLanguage?.runtimes?.latencyMsMax ? `max ${adminLanguage.runtimes.latencyMsMax} ms` : 'noch keine Messung' },
+            { label: 'Letzter Lauf', value: adminLanguage?.lastRunSummary?.planned != null ? `${adminLanguage.lastRunSummary.planned} Tests` : '–', detail: Object.keys(results).length ? Object.entries(results).map(([k, v]) => `${k}: ${v}`).join(' · ') : '–' },
+          ].map((card) => (
+            <div key={card.label} className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-3">
+              <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[#93a0b4]">{card.label}</p>
+              <p className="mt-2 text-2xl font-bold text-[#f4f7fb]">{card.value}</p>
+              <p className="mt-2 text-xs font-semibold text-[#93a0b4]">{card.detail}</p>
+            </div>
+          ))}
+        </section>
+
+        <section className="grid gap-3 rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h3 className="text-sm font-black uppercase tracking-[0.14em] text-[#93a0b4]">Einzeltest (Jetzt testen)</h3>
+          <div className="grid gap-3 sm:grid-cols-[1fr_140px_140px]">
+            <input
+              value={adminLanguageFilter.profile}
+              onChange={(event) => setAdminLanguageFilter((current) => ({ ...current, profile: event.target.value }))}
+              placeholder="Profil-Slug (leer = Rotation, z. B. mustafa-kemal-atatuerk)"
+              className="min-h-11 rounded-md border border-white/12 bg-white/[0.05] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59C7FF]/60"
+            />
+            <input
+              value={adminLanguageFilter.language}
+              onChange={(event) => setAdminLanguageFilter((current) => ({ ...current, language: event.target.value }))}
+              placeholder="Sprache (tr, ku, ckb …)"
+              className="min-h-11 rounded-md border border-white/12 bg-white/[0.05] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59C7FF]/60"
+            />
+            <select
+              value={adminLanguageFilter.function}
+              onChange={(event) => setAdminLanguageFilter((current) => ({ ...current, function: event.target.value }))}
+              className="min-h-11 rounded-md border border-white/12 bg-white/[0.05] px-3 text-sm text-[#f4f7fb] outline-none focus:border-[#59C7FF]/60"
+            >
+              <option value="text">Text-Chat</option>
+              <option value="tts">Vorlesen (TTS)</option>
+              <option value="asr">Diktieren (ASR)</option>
+            </select>
+          </div>
+          {adminLanguageMessage && <p className="text-sm font-bold text-[#59C7FF]">{adminLanguageMessage}</p>}
+          <p className="text-xs font-semibold text-[#93a0b4]">{coverage?.denominator ?? 'Abdeckung noch nicht geladen.'}</p>
+          {register?.signLanguages && <p className="text-xs font-semibold text-amber-300">{register.signLanguages}</p>}
+        </section>
+
+        <section className="rounded-lg border border-white/10 bg-white/[0.04] p-5">
+          <h3 className="text-sm font-black uppercase tracking-[0.14em] text-[#93a0b4]">Fehlerliste (reproduzierbar)</h3>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-xs uppercase tracking-wide text-[#93a0b4]">
+                  <th className="py-2 pr-4">Profil</th>
+                  <th className="py-2 pr-4">Sprache</th>
+                  <th className="py-2 pr-4">Funktion</th>
+                  <th className="py-2 pr-4">Ergebnis</th>
+                  <th className="py-2 pr-4">Fehler / Repro</th>
+                  <th className="py-2">Geprüft</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(adminLanguage?.errors ?? []).map((error, index) => (
+                  <tr key={`${error.profile}-${error.language}-${error.function}-${index}`} className="border-t border-white/[0.06]">
+                    <td className="py-2 pr-4 font-bold text-[#e6ecf4]">{error.profile ?? '–'}</td>
+                    <td className="py-2 pr-4">{error.language ?? '–'}</td>
+                    <td className="py-2 pr-4">{error.function ?? '–'}</td>
+                    <td className="py-2 pr-4">
+                      <AdminStatusChip tone={error.result === 'failed' ? 'red' : 'amber'}>{error.result ?? '?'}</AdminStatusChip>
+                    </td>
+                    <td className="py-2 pr-4 text-xs text-[#9aa6b7]">
+                      {error.error ?? (error.findings ?? []).join(', ') ?? '–'}
+                      {error.repro ? <span className="block opacity-70">Repro: {error.repro}</span> : null}
+                    </td>
+                    <td className="py-2 text-xs text-[#93a0b4]">{error.testedAt ?? '–'}</td>
+                  </tr>
+                ))}
+                {(adminLanguage?.errors ?? []).length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-3 text-sm font-bold text-emerald-300">
+                      {adminLanguage ? 'Keine fehlgeschlagenen oder blockierten Tests.' : 'Noch keine Daten — Backend /api/admin/language/autopilot prüfen.'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
   const renderOverview = () => {
     const ampelSummary = adminAutopilot?.summary
     const approvalCounts = adminApprovals?.counts
@@ -9338,6 +9591,7 @@ function AdminControlCenterInner() {
     if (activeSection === 'overview') return renderOverview()
     if (activeSection === 'radar') return renderRadar()
     if (activeSection === 'autopilot') return renderAutopilot()
+    if (activeSection === 'language') return renderLanguage()
     if (activeSection === 'approvals') return renderApprovals()
     if (activeSection === 'ideas') return renderIdeas()
     if (activeSection === 'look') return renderLook()

@@ -69,7 +69,12 @@ const WORD_MARKERS: Record<VoiceLang, readonly string[]> = {
   de: ['ich', 'du', 'der', 'die', 'das', 'und', 'nicht', 'bitte', 'danke', 'warum', 'ist', 'was', 'wie', 'ein', 'eine', 'mit', 'auch', 'für', 'über', 'schön', 'aber', 'hallo', 'erzähl', 'erzähle', 'erklär', 'erkläre', 'sag', 'mir', 'dir', 'mich', 'dich', 'wer', 'wo', 'wann', 'wieso', 'weshalb', 'welche', 'welcher', 'kann', 'kannst', 'bist', 'sind', 'hast', 'habe', 'haben', 'dein', 'deine', 'deiner', 'mein', 'meine', 'sehr', 'heute', 'jetzt', 'noch', 'schon', 'dann', 'oder', 'vom', 'zum', 'zur', 'auf', 'aus', 'bei', 'nach', 'von', 'wichtigste', 'wichtig'],
   pt: ['ola', 'obrigado', 'obrigada', 'como', 'porque', 'voce', 'para', 'com', 'muito', 'não', 'sim', 'quem', 'onde', 'conte', 'pode', 'sou', 'fale', 'falar'],
   ru: [],
-  tr: ['merhaba', 'tesekkur', 'ederim', 'nasilsin', 'nasıl', 'ben', 'bir', 'icin', 'için', 'degil', 'değil', 'lutfen', 'lütfen', 'çok', 'neden', 'güzel', 'önemli', 'kadar', 'evet', 'nedir', 'teşekkürler'],
+  // Tuerkisch ASCII-sicher erweitert (Mehrsprachigkeits-Auftrag 24.09.2026):
+  // Ohne Sonderzeichen ("Turkce konusabilir misin?") fiel die Erkennung auf
+  // die UI-Sprache zurueck und das Modell antwortete deutsch — der Server
+  // loest die Sprache inzwischen autoritativ (backend language_detection),
+  // die Frontend-Marker halten nur die Voice-/TTS-Sprache synchron.
+  tr: ['merhaba', 'tesekkur', 'ederim', 'nasilsin', 'nasilsiniz', 'nasıl', 'nasil', 'ben', 'sen', 'bir', 'icin', 'için', 'degil', 'değil', 'lutfen', 'lütfen', 'çok', 'cok', 'neden', 'güzel', 'guzel', 'önemli', 'onemli', 'kadar', 'evet', 'hayir', 'nedir', 'teşekkürler', 'musun', 'misin', 'var', 'yok', 'olarak', 'sizi', 'sana', 'bana', 'beni', 'peki', 'tamam', 'konus', 'konusabilir', 'cevap', 'yanit', 'yaz', 'cumhuriyet', 'millet', 'devlet'],
   ja: [],
   ko: [],
   it: ['ciao', 'grazie', 'come', 'perche', 'perchè', 'sono', 'voglio', 'con', 'chi', 'dove', 'cosa', 'sei', 'dimmi', 'puoi', 'raccontami', 'parlami'],

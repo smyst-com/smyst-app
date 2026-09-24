@@ -1,0 +1,137 @@
+name: Language Autopilot
+
+# smyst language autopilot — 24/7-Sprachpruefung (Auftrag Inhaber 24.09.2026).
+#
+# Prueft systematisch Profil x Sprache x Funktion gegen das echte System:
+# - Text-Chats in allen registrierten Sprachen (P0 zuerst, ROTATION ueber
+#   Pruefzyklen — jeder Lauf nimmt die am laengsten ungeprueften Kombis)
+# - TTS-/ASR-Faehigkeiten (Stimmen, Synthese-Smoke)
+# - Alle fuenf Chat-Icons im echten Frontend (Playwright, Desktop + Mobil)
+#
+# Ergebnisse landen im Object Brain (language-autopilot/) und im Adminbereich
+# (GET /api/admin/language/autopilot). Der Dienst ist per Status-Datei
+# ein-/ausschaltbar; ein abgeschalteter Lauf schreibt nur ein Herzschlag.
+#
+# Lastkontrolle: max. LIMIT Tests pro Lauf, Pausen zwischen Anfragen,
+# harte Timeouts, 1 Wiederholung (im Worker). Kein Parallelbetrieb mit
+# sich selbst (concurrency: cancel-in-progress: false, sequenziell im Job).
+# Produktionschats haben Vorrang: sequenzielle Gast-Tests, geringe Frequenz.
+#
+# Kein Loeschen, keine Profil-/Datenveraenderung: reine Pruefung.
+
+on:
+  schedule:
+    - cron: "15 */6 * * *" # alle 6 Stunden (24/7-Abdeckung, kontrollierte Last)
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max. Tests pro Lauf (Lastkontrolle)"
+        required: false
+        default: "16"
+      profile:
+        description: "Nur dieses Profil (leer = Rotation)"
+        required: false
+        default: ""
+      language:
+        description: "Nur diese Sprache (leer = Rotation, P0 zuerst)"
+        required: false
+        default: ""
+      force:
+        description: "Auch bei deaktiviertem Dienst einmal laufen (stellt Aus-Zustand wieder her)"
+        required: false
+        default: "false"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: language-autopilot
+  cancel-in-progress: false
+
+jobs:
+  language-matrix:
+    name: Sprach-Matrix gegen Live-Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Abhaengigkeiten installieren (minimal)
+        run: |
+          python -m pip install --quiet --upgrade pip
+          pip install --quiet boto3
+
+      - name: Autopilot-Lauf ausfuehren
+        env:
+          # Nur Keys als Secrets (wie pipeline-backup); Endpoint/Region/Bucket
+          # nutzt die geprueften Defaults aus app/core/config.py — ein fehlendes
+          # Secret wuerde sonst mit leerem String ueberschreiben.
+          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          python -m app.workers.language_autopilot \
+            --base-url https://api.smyst.com \
+            --limit "${{ github.event.inputs.limit || '16' }}" \
+            ${{ github.event.inputs.profile && format('--profile {0}', github.event.inputs.profile) || '' }} \
+            ${{ github.event.inputs.language && format('--language {0}', github.event.inputs.language) || '' }} \
+            ${{ github.event.inputs.force == 'true' && '--force' || '' }} \
+            --out language_autopilot_report.json
+
+      - name: Bericht als Artefakt sichern
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: language-autopilot-report
+          path: backend/language_autopilot_report.json
+          retention-days: 30
+
+  icons-e2e:
+    name: Chat-Icon-Suite im echten Frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Root-Abhaengigkeiten installieren
+        run: npm ci
+
+      - name: Frontend bauen (Vite)
+        run: npm run build
+
+      - name: Lokalen Preview starten (echtes Bundle)
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/smyst-preview.log 2>&1 &
+          sleep 5
+
+      - name: Test-Abhaengigkeiten (Playwright)
+        working-directory: frontend
+        run: npm install
+
+      - name: Chromium installieren
+        working-directory: frontend
+        run: npx playwright install chromium
+
+      - name: Icon-Suite ausfuehren (Desktop + Mobil)
+        working-directory: frontend
+        env:
+          WEB_BASE_URL: http://127.0.0.1:4173
+        run: npx playwright test language-icons.spec.ts
+
+      - name: Playwright-Report sichern
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: language-icons-playwright
+          path: frontend/playwright-report
+          retention-days: 14

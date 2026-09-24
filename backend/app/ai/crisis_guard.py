@@ -114,6 +114,22 @@ ANTWORTEN: dict[str, str] = {
         "en peligro inmediato, los servicios de emergencia. Habla hoy con "
         "alguien de confianza. No tienes que cargar con esto en soledad."
     ),
+    # Kurmandschi (P0-Sprache, Mehrsprachigkeits-Auftrag 24.09.2026)
+    "ku": (
+        "Ez dibinim ku ev bareki pir giran e, u ez we bi ciddi digirim. "
+        "Axaftineke wiha nikare we hilgire - ji kerema xwe niha bigihije "
+        "kesen ku dikarin rast alikari bikin: bijisk, xeta alikariye, u di "
+        "xetereya lez de servisene lezgin. Iro bi keseki pebawer re biaxive. "
+        "Ne hewce ye ku tu tene ev bar hilgiri."
+    ),
+    # Sorani (P0-Sprache, arabische Schrift)
+    "ckb": (
+        "ئەمە بارێکی زۆر قورسە و من بە جددی وەریدەگرم. گفتوگۆیەکی وەک ئەمە "
+        "ناتوانێت هەڵیبگرێت - تکایە ئێستا پەیوەندی بکە بەو کەسانەی دەتوانن "
+        "یارمەتی ڕاستەقەڵە بدەن: پزیشک، هێڵی یارمەتی، و لە مەترسی ڕاستەوخۆ "
+        "خزمەتگوزاری فریاکەوان. ئەمڕۆ لەگەڵ کەسێکی متمانەپێکراو قسە بکە. "
+        "پێویست ناکات ئەم بارە بە تەنها هەڵبگریت."
+    ),
 }
 
 STANDARD_SPRACHE = "en"

@@ -5,6 +5,7 @@ from app.api.v1.routes.admin_audit import router as admin_audit_router
 from app.api.v1.routes.admin_finance import router as admin_finance_router
 from app.api.v1.routes.admin_ideas import router as admin_ideas_router
 from app.api.v1.routes.admin_moderation import router as admin_moderation_router
+from app.api.v1.routes.admin_language import router as admin_language_router
 from app.api.v1.routes.admin_overview import router as admin_overview_router
 from app.api.v1.routes.admin_quality import router as admin_quality_router
 from app.api.v1.routes.admin_registrations import router as admin_registrations_router
@@ -51,6 +52,7 @@ api_router.include_router(twins_delete_router)
 api_router.include_router(web_research_router)
 api_router.include_router(admin_quality_router)
 api_router.include_router(admin_versions_router)
+api_router.include_router(admin_language_router)
 api_router.include_router(admin_overview_router)
 api_router.include_router(admin_approvals_router)
 api_router.include_router(admin_ideas_router)
