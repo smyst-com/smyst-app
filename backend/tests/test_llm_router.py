@@ -647,7 +647,12 @@ async def test_background_waits_while_interactive_chat_streams() -> None:
 
 
 @pytest.mark.asyncio
-async def test_background_concurrency_is_capped() -> None:
+async def test_background_concurrency_is_capped(monkeypatch) -> None:
+    # Produktions-Default ist 1 (Chat-Slot immer frei); der Mechanismus-Test
+    # prueft das Limit bewusst mit 2, damit die Deckelung sichtbar bleibt.
+    import app.ai.llm_router as router_mod
+
+    monkeypatch.setattr(router_mod, "BACKGROUND_LLM_CONCURRENCY", 2)
     _gate_zuruecksetzen()
     anbieter = [SlowProvider() for _ in range(3)]
     router = [LLMRouter([a]) for a in anbieter]
@@ -695,7 +700,12 @@ async def test_background_admission_timeout_raises_health_error(monkeypatch) -> 
 
 
 @pytest.mark.asyncio
-async def test_interactive_requests_never_wait_for_background() -> None:
+async def test_interactive_requests_never_wait_for_background(monkeypatch) -> None:
+    # Beide Hintergrund-Slots belegt (Limit hierfuer explizit 2 — der
+    # Produktions-Default ist 1) -> ein Chat muss TROTZDEM sofort starten.
+    import app.ai.llm_router as router_mod
+
+    monkeypatch.setattr(router_mod, "BACKGROUND_LLM_CONCURRENCY", 2)
     _gate_zuruecksetzen()
     # Beide Hintergrund-Slots belegt -> ein Chat muss TROTZDEM sofort starten.
     hintergrund = [SlowProvider() for _ in range(2)]
