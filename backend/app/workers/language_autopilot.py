@@ -30,6 +30,7 @@ den vollen Nenner und die ungepruefte Restmenge.
 from __future__ import annotations
 
 import argparse
+import http.cookiejar
 import json
 import logging
 import re
@@ -107,6 +108,14 @@ def _now_iso() -> str:
     return datetime.now(UTC).isoformat()
 
 
+#: Chat-Besitzerbindung (Security-Fix 21.08.): /chat/start stellt ein
+#: Owner-Cookie aus, das /chat/messages zurueckbekommen MUSS — sonst 403
+#: "Chat gehoert einem anderen Nutzer" (Erstlauf 24.09. komplett rot).
+#: Der Worker haelt Cookies deshalb pro Lauf in einem Jar.
+_COOKIE_JAR = http.cookiejar.CookieJar()
+_OPENER = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(_COOKIE_JAR))
+
+
 def http_json(
     url: str,
     *,
@@ -125,7 +134,7 @@ def http_json(
         headers={"Content-Type": "application/json", "User-Agent": "smyst-language-autopilot/1.0"},
     )
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with _OPENER.open(request, timeout=timeout) as response:
             raw = response.read()
             elapsed = _time.perf_counter() - started
             try:
