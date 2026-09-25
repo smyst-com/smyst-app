@@ -63,10 +63,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Abhaengigkeiten installieren (minimal)
+      - name: Abhaengigkeiten installieren
         run: |
           python -m pip install --quiet --upgrade pip
-          pip install --quiet boto3
+          # Der Worker importiert die App-Module (config/register/store) und
+          # braucht daher die Backend-Basisdeps; -e . installiert pyproject.
+          pip install --quiet -e .
 
       - name: Autopilot-Lauf ausfuehren
         env:
