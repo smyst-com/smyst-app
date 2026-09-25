@@ -93,3 +93,13 @@ Faehigkeit. Fix in drei Schichten:
 `git revert` des PR-Merges setzt Code zurueck; das Routing ist zusaetzlich
 per Env `SMYST_LLM_LANGUAGES=de,en,tr,ku,ckb,...` steuerbar, ohne Code.
 Matrix/Berichte in e2 bleiben unberuehrt (nur anhängend, nie löschend).
+
+## Betriebstagebuch
+
+- 25.09.2026: Erstläufe — zwei Fixes (Workflow-Dependencies PR #859,
+  Chat-Owner-Cookie PR #860). Zweitlauf beweisfähig: de/tr ok,
+  ku/ckb ehrlich `failed (falsche_sprache:en)` gegen den ALTEN
+  Backend-Stand — kippt auf ok, sobald der Zeabur-Redeploy den
+  Sprach-Code aus PR #855 live bringt.
+- 25.09.2026: Publish-Index-Rettung dazwischen (PR #856 + Reconcile,
+  52.402 verifiziert) — siehe Memory_Bank 25.09.
