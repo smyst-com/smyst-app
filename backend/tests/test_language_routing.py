@@ -152,3 +152,38 @@ def register_languages() -> list[str]:
     from app.ai.language_register import registered_language_codes
 
     return registered_language_codes()
+
+
+class TestPlanSystemFunktionen:
+    """Nachpruefungs-Fund 25.09.: tts/asr mussten IMMER im geplanten Lauf
+    vorkommen (Auftrag: regelmaessige Vorlese-/Diktierpruefungen)."""
+
+    def test_default_plan_enthaelt_tts_und_asr(self):
+        from app.workers.language_autopilot import plan_combinations
+        from app.ai.language_register import registered_language_codes
+
+        plan = plan_combinations(
+            ["einstein", "atatuerk"], registered_language_codes(), [], limit=16
+        )
+        functions = {function for _profile, _language, function in plan}
+        assert "tts" in functions, f"tts fehlt im Plan: {plan}"
+        assert "asr" in functions, f"asr fehlt im Plan: {plan}"
+        # tts/asr laufen nur auf System-Ebene, nie pro echtem Profil
+        for profile, _language, function in plan:
+            if function in {"tts", "asr"}:
+                assert profile == "system"
+
+    def test_einzeltest_filter_bleibt_exakt(self):
+        from app.workers.language_autopilot import plan_combinations
+        from app.ai.language_register import registered_language_codes
+
+        plan = plan_combinations(
+            ["einstein"],
+            registered_language_codes(),
+            [],
+            limit=10,
+            only_profile="einstein",
+            only_language="tr",
+            only_function="text",
+        )
+        assert plan == [("einstein", "tr", "text")]

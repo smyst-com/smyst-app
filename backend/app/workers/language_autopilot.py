@@ -385,7 +385,7 @@ def plan_combinations(
     candidates: list[tuple[str, str, str]] = []
     selected_profiles = [only_profile] if only_profile else profiles or ["system"]
     selected_languages = [only_language] if only_language else languages
-    functions = [only_function] if only_function else ["text"]
+    functions = [only_function] if only_function else ["text", "tts", "asr"]
 
     for profile in selected_profiles:
         for language in selected_languages:
@@ -396,6 +396,17 @@ def plan_combinations(
                     continue  # Stimme/Diktat sind systemweit, nicht pro Profil
                 candidates.append((profile, language, function))
 
+    # Systemweite Funktionen (tts/asr) brauchen Kombinationen mit dem
+    # Pseudo-Profil "system" — echte Profile ueberspringen sie oben. Ohne
+    # diesen Block waeren Vorlesen/Diktieren NIE im geplanten Lauf (Fund
+    # der Nachpruefung 25.09.: Default war nur ["text"] UND system fehlte
+    # in der Kandidatenliste, solange echte Profile geladen waren).
+    if not only_profile:
+        for language in selected_languages:
+            for function in functions:
+                if function in {"tts", "asr"}:
+                    candidates.append(("system", language, function))
+
     def sort_key(combo: tuple[str, str, str]) -> tuple[int, str]:
         _profile, language, _function = combo
         tier = register.get(language, {}).get("tier", "P3")
@@ -403,7 +414,27 @@ def plan_combinations(
         return (tier_order.get(tier, 3), age)
 
     candidates.sort(key=sort_key)
-    return candidates[:limit]
+    plan = candidates[:limit]
+    # Mindestquote fuer systemweite Funktionen (tts/asr): Ohne Reserve
+    # verdraengen tausende gleich-alte Text-Kombinationen dieselben Slots
+    # dauerhaft (Nachpruefung 25.09.). Reserve: mindest 2, sonst ein
+    # Viertel des Limits — getauscht gegen die juengsten Text-Slots.
+    untested_system = [
+        combo
+        for combo in candidates
+        if combo[2] in {"tts", "asr"} and not last_tested.get(combo)
+    ]
+    if untested_system:
+        quota = max(2, limit // 4)
+        for combo in untested_system[:quota]:
+            if combo in plan:
+                continue
+            for index in range(len(plan) - 1, -1, -1):
+                if plan[index][2] == "text":
+                    plan[index] = combo
+                    break
+        plan = list(dict.fromkeys(plan))[:limit]
+    return plan
 
 
 def execute_run(
