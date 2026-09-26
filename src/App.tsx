@@ -125,6 +125,25 @@ function Speaker(props: IconProps) {
   )
 }
 
+function Copy(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <rect x="9" y="9" width="12" height="12" rx="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  )
+}
+
+function MoreVertical(props: IconProps) {
+  return (
+    <svg {...iconBase} {...props}>
+      <circle cx="12" cy="5" r="1" />
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="12" cy="19" r="1" />
+    </svg>
+  )
+}
+
 function Plus(props: IconProps) {
   return (
     <svg {...iconBase} {...props}>
@@ -518,6 +537,68 @@ function VoiceWaveStatus({
         <span className="block truncate text-xs font-black uppercase tracking-[0.14em]">{label}</span>
         <span className="block truncate text-[11px] font-semibold opacity-78">{detail}</span>
       </span>
+    </div>
+  )
+}
+
+// Drei-Punkte-Menü am Ende jeder Chat-Nachricht (Inhaber-Auftrag 26.09.2026,
+// ChatGPT-Stil): Kopieren / Vorlesen / Weiterleiten. ersetzt den Lautsprecher-
+// Button in der Schreibleiste — Vorlesen gehört zur einzelnen Nachricht.
+function MessageDotsMenu({
+  open,
+  speaking,
+  align,
+  labels,
+  onToggle,
+  onCopy,
+  onSpeak,
+  onShare,
+}: {
+  open: boolean
+  speaking: boolean
+  align: 'start' | 'end'
+  labels: { menuOpen: string; copy: string; speak: string; speakStop: string; forward: string }
+  onToggle: () => void
+  onCopy: () => void
+  onSpeak: () => void
+  onShare: () => void
+}) {
+  const itemClass = 'flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13px] font-semibold text-[#f4f7fb] transition-colors hover:bg-white/[0.08]'
+  return (
+    <div className="relative mt-0.5">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="grid h-7 w-7 place-items-center rounded-full text-[#aeb6c4]/80 transition-colors hover:bg-white/[0.12] hover:text-[#f4f7fb]"
+        aria-label={labels.menuOpen}
+        title={labels.menuOpen}
+        aria-expanded={open}
+      >
+        <MoreVertical className="h-4 w-4" />
+      </button>
+      {open && (
+        <>
+          <button type="button" aria-label="Menü schließen" className="fixed inset-0 z-20 cursor-default" onClick={onToggle} />
+          <div
+            className={`absolute bottom-[calc(100%+4px)] z-30 w-48 overflow-hidden rounded-xl border border-white/[0.16] bg-[#171b26]/[0.97] py-1 shadow-2xl backdrop-blur-xl ${
+              align === 'end' ? 'right-0' : 'left-0'
+            }`}
+          >
+            <button type="button" onClick={onCopy} className={itemClass}>
+              <Copy className="h-4 w-4 shrink-0" />
+              <span className="truncate">{labels.copy}</span>
+            </button>
+            <button type="button" onClick={onSpeak} className={itemClass}>
+              <Speaker className="h-4 w-4 shrink-0" />
+              <span className="truncate">{speaking ? labels.speakStop : labels.speak}</span>
+            </button>
+            <button type="button" onClick={onShare} className={itemClass}>
+              <Share className="h-4 w-4 shrink-0" />
+              <span className="truncate">{labels.forward}</span>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -1657,6 +1738,9 @@ function SmystStartPage({
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
   const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
+  // Drei-Punkte-Menü pro Nachricht (Inhaber-Auftrag 26.09.2026, ChatGPT-Stil)
+  const [openMessageMenuId, setOpenMessageMenuId] = useState<string | null>(null)
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null)
   const [lastVoiceLang, setLastVoiceLangState] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
   // Ref parallel zum State: Live-Loop-Callbacks (Timer/TTS-Resume) lesen sonst eine veraltete
   // Sprache, wodurch die Spracherkennung dauerhaft mit dem alten Sprachmodell weiterlief.
@@ -1780,8 +1864,6 @@ function SmystStartPage({
     if (snapshot.messages.length) liveGreetedRef.current = snapshot.twin.name?.trim() ?? 'twin'
   }, [])
 
-  const latestAssistantText =
-    [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
   const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
 
   const filteredTwins = useMemo(() => {
@@ -1838,7 +1920,6 @@ function SmystStartPage({
     : genericMessageLabel || DEFAULT_TRANSLATIONS.start.messagePlaceholder.replace(/\s*an\s*\{\{name\}\}/i, '').trim()
   const liveVoiceLabel = voiceState === 'idle' ? t.start.liveVoiceStart : t.start.liveVoiceStop
   const canSend = input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')
-  const canSpeak = latestAssistantText.length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const composerLine = selectedTwin ? 'border-white/[0.14]' : 'border-white/[0.08]'
   const showNamePicker = !selectedTwin && (namePickerOpen || query.trim().length > 0)
   const selectedSortOption = nameSortOptions.find((option) => option.mode === nameSortMode) ?? nameSortOptions[0]
@@ -2791,23 +2872,32 @@ function SmystStartPage({
     }
   }
 
-  const handleSpeakInput = () => {
+  // Nachrichtenmenü (Inhaber-Auftrag 26.09.2026): Kopieren / Vorlesen / Weiterleiten
+  // gehört zur einzelnen Nachricht — der Lautsprecher-Button in der Leiste entfällt.
+  const copyMessageText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const area = document.createElement('textarea')
+      area.value = text
+      document.body.appendChild(area)
+      area.select()
+      document.execCommand('copy')
+      area.remove()
+    }
+    addNotice(lang === DEFAULT_LANG ? 'Text kopiert.' : t.notices.messageCopied)
+  }
+
+  const toggleSpeakMessage = (message: ChatMessage) => {
     unlockAudioPlayback()
-    if (speechOutputEnabled || isSpeaking) {
-      // Aus: beendet Vorlesen UND einen evtl. aktiven Live-Modus sauber
-      liveVoiceActiveRef.current = false
+    if (speakingMessageId === message.id) {
+      // Nochmal tippen: beendet das Vorlesen sauber
       dictationActiveRef.current = false
-      clearLiveVoiceTimer()
       recognitionRef.current?.abort()
       window.speechSynthesis.cancel()
       stopRemoteSpeech()
       setIsSpeaking(false)
-      setSpeechOutputEnabled(false)
-      setVoiceState('idle')
-      return
-    }
-    if (!latestAssistantText) {
-      addNotice(lang === DEFAULT_LANG ? 'Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.' : t.notices.nothingToRead)
+      setSpeakingMessageId(null)
       return
     }
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
@@ -2817,10 +2907,25 @@ function SmystStartPage({
     // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
-    setSpeechOutputEnabled(true)
     markVoiceUsed()
-    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), (selectedTwin ?? activeTwin)?.name, (selectedTwin ?? activeTwin)?.voiceGender)
-    if (started) setIsSpeaking(true)
+    setSpeakingMessageId(message.id)
+    setIsSpeaking(true)
+    const started = speakText(message.content, lastVoiceLangRef.current || lang, () => {
+      setSpeakingMessageId(null)
+      setIsSpeaking(false)
+    }, (selectedTwin ?? activeTwin)?.name, (selectedTwin ?? activeTwin)?.voiceGender)
+    if (!started) {
+      setSpeakingMessageId(null)
+      setIsSpeaking(false)
+      addNotice(lang === DEFAULT_LANG ? 'Vorlesen wird von diesem Browser nicht unterstützt.' : t.notices.readAloudUnsupported)
+    }
+  }
+
+  const shareMessage = async (message: ChatMessage) => {
+    const twinName = (selectedTwin ?? activeTwin)?.name ?? 'smyst.com'
+    const outcome = await shareTwinAnswer(twinName, message.content)
+    if (outcome === 'copied') addNotice(lang === DEFAULT_LANG ? 'Text kopiert.' : t.notices.messageCopied)
+    if (outcome === 'failed') addNotice(lang === DEFAULT_LANG ? 'Weiterleiten ist hier gerade nicht möglich.' : t.notices.shareFailed)
   }
 
   const handleSendButtonClick = () => {
@@ -3456,7 +3561,7 @@ function SmystStartPage({
           {messages.length > 0 && (
             <div className="relative z-10 flex flex-col gap-1 px-[3px] py-1 sm:px-2 sm:py-2">
               {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={message.id} className={`flex flex-col ${message.role === 'user' ? 'items-end' : 'items-start'}`}>
                   <div
                     className={`max-w-[calc(100%-8px)] rounded-[10px] border px-3 py-2 text-[15px] leading-snug shadow-none sm:max-w-[94%] sm:text-base ${
                       message.role === 'user'
@@ -3479,6 +3584,30 @@ function SmystStartPage({
                       </p>
                     ) : null}
                   </div>
+                  {!message.streaming && message.content.trim().length > 0 ? (
+                    <MessageDotsMenu
+                      open={openMessageMenuId === message.id}
+                      speaking={speakingMessageId === message.id}
+                      align={message.role === 'user' ? 'end' : 'start'}
+                      labels={{
+                        menuOpen: lang === DEFAULT_LANG ? 'Nachrichtenmenü öffnen' : t.chatBar.messageMenu,
+                        copy: lang === DEFAULT_LANG ? 'Kopieren' : t.chatBar.copy,
+                        speak: lang === DEFAULT_LANG ? 'Vorlesen' : t.chatBar.speak,
+                        speakStop: lang === DEFAULT_LANG ? 'Vorlesen stoppen' : t.chatBar.speakStop,
+                        forward: lang === DEFAULT_LANG ? 'Weiterleiten' : t.chatBar.forward,
+                      }}
+                      onToggle={() => setOpenMessageMenuId(openMessageMenuId === message.id ? null : message.id)}
+                      onCopy={() => {
+                        void copyMessageText(message.content)
+                        setOpenMessageMenuId(null)
+                      }}
+                      onSpeak={() => toggleSpeakMessage(message)}
+                      onShare={() => {
+                        void shareMessage(message)
+                        setOpenMessageMenuId(null)
+                      }}
+                    />
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -3486,7 +3615,7 @@ function SmystStartPage({
         </div>
       </section>
 
-      <footer className={`smyst-glass-panel-strong shrink-0 border-t ${composerLine}`}>
+      <footer className="shrink-0 px-2 pb-2 pt-1 sm:px-3">
         <input
           ref={fileInputRef}
           type="file"
@@ -3509,7 +3638,10 @@ function SmystStartPage({
             event.target.value = ''
           }}
         />
-        <div className={`border-b ${composerLine} px-2 py-1 sm:px-3`}>
+        {/* ChatGPT-Schreibkasten (Inhaber-Auftrag 26.09.2026): viereckig mit
+            runden Ecken, EIN Kasten — Schreibfeld oben, Knöpfe unten im Kasten. */}
+        <div className={`overflow-hidden rounded-[24px] border ${composerLine} bg-white/[0.06] backdrop-blur-2xl`}>
+        <div className="px-3 pt-2 sm:px-3.5">
           <textarea
             ref={textareaRef}
             value={input}
@@ -3530,7 +3662,7 @@ function SmystStartPage({
           />
         </div>
         {(composerMenuOpen || attachments.length > 0 || composerNotice || memoryUpload.uploading) && (
-          <div className={`border-b ${composerLine} px-2 py-1 text-xs font-semibold text-[#d5dbe5] sm:px-3`}>
+          <div className="px-3 pb-1 pt-1 text-xs font-semibold text-[#d5dbe5] sm:px-3.5">
             {composerMenuOpen && (
               <div className="mb-1 flex gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none]">
                 <button type="button" onClick={() => fileInputRef.current?.click()} className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-white/[0.14] bg-white/[0.08] transition-colors hover:bg-white/[0.14]" aria-label={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto} title={lang === DEFAULT_LANG ? "Foto oder Video hinzufügen" : t.chatA11y.addPhoto}>
@@ -3582,7 +3714,7 @@ function SmystStartPage({
             <VoiceWaveStatus state={voiceState} isSpeaking={isSpeaking} variant={shellTheme === 'light' ? 'light' : 'dark'} mode={liveVoiceActiveRef.current ? 'live' : 'dictation'} />
           </div>
         )}
-        <div className="flex h-[44px] items-center justify-between px-2 text-white sm:px-3">
+        <div className="flex h-[46px] items-center justify-between px-2 pb-1.5 text-white sm:px-2.5">
           <div className="flex h-full items-center">
             <button
               type="button"
@@ -3607,18 +3739,6 @@ function SmystStartPage({
               title={speechRecognitionSupported() ? t.start.voiceInput : t.start.voiceInputUnsupported}
             >
               <Mic className="h-6 w-6" />
-            </button>
-            <button
-              type="button"
-              onClick={handleSpeakInput}
-              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
-                speechOutputEnabled || isSpeaking ? 'bg-white/[0.12]' : ''
-              }`}
-              data-ready={canSpeak ? 'true' : 'false'}
-              aria-label={speechOutputEnabled ? t.start.speechOutputOff : t.start.speechOutputOn}
-              title={speechOutputEnabled ? t.start.speechOutputOff : t.start.speechOutputOn}
-            >
-              <Speaker className="h-6 w-6" />
             </button>
             {/* Kombi-Button wie ChatGPT (Inhaber-Auftrag 26.09.2026): Text im
                 Feld -> Sendepfeil; leeres Feld -> Sprachwelle starten. Spart
@@ -3649,6 +3769,7 @@ function SmystStartPage({
             )}
           </div>
           </div>
+        </div>
         </footer>
     </main>
     </>
@@ -10934,6 +11055,9 @@ function TwinChatView({
   const memoryUpload = useMemoryUpload()
   const [speechOutputEnabled, setSpeechOutputEnabled] = useState(false)
   const [voiceState, setVoiceState] = useState<SpeechRecognitionState>('idle')
+  // Drei-Punkte-Menü pro Nachricht (Inhaber-Auftrag 26.09.2026, ChatGPT-Stil)
+  const [openMessageMenuId, setOpenMessageMenuId] = useState<string | null>(null)
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null)
   const [lastVoiceLang, setLastVoiceLangState] = useState<VoiceLang>(() => preferredVoiceLanguage(lang))
   // Ref parallel zum State: Live-Loop-Callbacks (Timer/TTS-Resume) lesen sonst eine veraltete
   // Sprache, wodurch die Spracherkennung dauerhaft mit dem alten Sprachmodell weiterlief.
@@ -10958,15 +11082,12 @@ function TwinChatView({
   }, [lang])
 
   const hasUserTurn = messages.some((message) => message.role === 'user')
-  const latestAssistantText =
-    [...messages].reverse().find((message) => message.role === 'ai' && message.speakable !== false && message.content.trim().length > 0)?.content ?? ''
   const pendingAttachmentCount = attachments.filter((attachment) => attachment.status === 'uploading').length
   const canSend =
     Boolean(activeTwin) &&
     (auth.status === 'authenticated' || Boolean(activeTwin?.publicProfile)) &&
     (input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) &&
     !isReplying
-  const canSpeak = latestAssistantText.length > 0 && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
   const initials = (activeTwin?.name ?? 'Smyst')
     .split(/\s+/)
     .filter(Boolean)
@@ -11684,22 +11805,31 @@ function TwinChatView({
     }
   }
 
-  const handleSpeakInput = () => {
-    if (speechOutputEnabled || isSpeaking) {
-      // Aus: beendet Vorlesen UND einen evtl. aktiven Live-Modus sauber
-      liveVoiceActiveRef.current = false
+  // Nachrichtenmenü (Inhaber-Auftrag 26.09.2026): Kopieren / Vorlesen / Weiterleiten
+  // gehört zur einzelnen Nachricht — der Lautsprecher-Button in der Leiste entfällt.
+  const copyMessageText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const area = document.createElement('textarea')
+      area.value = text
+      document.body.appendChild(area)
+      area.select()
+      document.execCommand('copy')
+      area.remove()
+    }
+    addNotice(lang === DEFAULT_LANG ? 'Text kopiert.' : t.notices.messageCopied)
+  }
+
+  const toggleSpeakMessage = (message: TwinChatUiMessage) => {
+    if (speakingMessageId === message.id) {
+      // Nochmal tippen: beendet das Vorlesen sauber
       dictationActiveRef.current = false
-      clearLiveVoiceTimer()
       recognitionRef.current?.abort()
       window.speechSynthesis.cancel()
       stopRemoteSpeech()
       setIsSpeaking(false)
-      setSpeechOutputEnabled(false)
-      setVoiceState('idle')
-      return
-    }
-    if (!latestAssistantText) {
-      addNotice(lang === DEFAULT_LANG ? 'Noch keine Antwort zum Vorlesen vorhanden. Sende zuerst eine Nachricht.' : t.notices.nothingToRead)
+      setSpeakingMessageId(null)
       return
     }
     if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
@@ -11709,10 +11839,25 @@ function TwinChatView({
     // Mikro aus, bevor vorgelesen wird - sonst hoert die App ihre eigene Stimme
     dictationActiveRef.current = false
     recognitionRef.current?.abort()
-    setSpeechOutputEnabled(true)
     markVoiceUsed()
-    const started = speakText(latestAssistantText, lastVoiceLangRef.current || lang, () => setIsSpeaking(false), activeTwin?.name, activeTwin?.voiceGender)
-    if (started) setIsSpeaking(true)
+    setSpeakingMessageId(message.id)
+    setIsSpeaking(true)
+    const started = speakText(message.content, lastVoiceLangRef.current || lang, () => {
+      setSpeakingMessageId(null)
+      setIsSpeaking(false)
+    }, activeTwin?.name, activeTwin?.voiceGender)
+    if (!started) {
+      setSpeakingMessageId(null)
+      setIsSpeaking(false)
+      addNotice(lang === DEFAULT_LANG ? 'Vorlesen wird von diesem Browser nicht unterstützt.' : t.notices.readAloudUnsupported)
+    }
+  }
+
+  const shareMessage = async (message: TwinChatUiMessage) => {
+    const twinName = activeTwin?.name ?? 'smyst.com'
+    const outcome = await shareTwinAnswer(twinName, message.content)
+    if (outcome === 'copied') addNotice(lang === DEFAULT_LANG ? 'Text kopiert.' : t.notices.messageCopied)
+    if (outcome === 'failed') addNotice(lang === DEFAULT_LANG ? 'Weiterleiten ist hier gerade nicht möglich.' : t.notices.shareFailed)
   }
 
   const handleExplainSimpler = () => {
@@ -12106,6 +12251,30 @@ function TwinChatView({
                     )}
                   </div>
                 )}
+                {!msg.streaming && msg.content.trim().length > 0 ? (
+                  <MessageDotsMenu
+                    open={openMessageMenuId === msg.id}
+                    speaking={speakingMessageId === msg.id}
+                    align={msg.role === 'user' ? 'end' : 'start'}
+                    labels={{
+                      menuOpen: lang === DEFAULT_LANG ? 'Nachrichtenmenü öffnen' : t.chatBar.messageMenu,
+                      copy: lang === DEFAULT_LANG ? 'Kopieren' : t.chatBar.copy,
+                      speak: lang === DEFAULT_LANG ? 'Vorlesen' : t.chatBar.speak,
+                      speakStop: lang === DEFAULT_LANG ? 'Vorlesen stoppen' : t.chatBar.speakStop,
+                      forward: lang === DEFAULT_LANG ? 'Weiterleiten' : t.chatBar.forward,
+                    }}
+                    onToggle={() => setOpenMessageMenuId(openMessageMenuId === msg.id ? null : msg.id)}
+                    onCopy={() => {
+                      void copyMessageText(msg.content)
+                      setOpenMessageMenuId(null)
+                    }}
+                    onSpeak={() => toggleSpeakMessage(msg)}
+                    onShare={() => {
+                      void shareMessage(msg)
+                      setOpenMessageMenuId(null)
+                    }}
+                  />
+                ) : null}
               </div>
               ))}
             </div>
@@ -12207,31 +12376,23 @@ function TwinChatView({
               </div>
             )}
 
-            <div className="flex items-end gap-1 rounded-[12px] border border-white/34 bg-white/24 p-1 shadow-none backdrop-blur-[18px]">
-              <button
-                type="button"
-                onClick={() => setComposerMenuOpen((open) => !open)}
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
-                  composerMenuOpen || attachments.length > 0 ? 'bg-white/24 text-[#16181b]' : ''
-                }`}
-                aria-label={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
-                title={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-              <textarea
-                ref={inputRef}
-                value={input}
-                rows={1}
-                onChange={(event) => resizeInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault()
-                    void handleSend()
-                  }
-                }}
-                placeholder={
-                  activeTwin
+            {/* ChatGPT-Schreibkasten (Inhaber-Auftrag 26.09.2026): viereckig mit
+                runden Ecken, EIN Kasten — Schreibfeld oben, Knöpfe unten im Kasten. */}
+            <div className="overflow-hidden rounded-[20px] border border-white/34 bg-white/24 backdrop-blur-[18px]">
+              <div className="px-2 pt-1">
+                <textarea
+                  ref={inputRef}
+                  value={input}
+                  rows={1}
+                  onChange={(event) => resizeInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault()
+                      void handleSend()
+                    }
+                  }}
+                  placeholder={
+                    activeTwin
                       ? lang === DEFAULT_LANG
                         ? `Nachricht an ${activeTwin.name}...`
                         : t.chatBar.messageTo.replace('{name}', activeTwin.name)
@@ -12242,59 +12403,63 @@ function TwinChatView({
                         : lang === DEFAULT_LANG
                           ? 'Zuerst KI-Profil auswählen'
                           : t.chatBar.selectAiProfileFirst
-                }
-                disabled={!activeTwin || (auth.status !== 'authenticated' && !activeTwin.publicProfile)}
-                className="max-h-[96px] min-h-[36px] flex-1 resize-none bg-transparent px-1 py-2 text-[15px] leading-5 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
-              />
-              <button
-                type="button"
-                onClick={() => startDictation()}
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
-                  voiceState === 'listening' ? 'bg-white/24 text-[#16181b]' : ''
-                }`}
-                aria-label={lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput}
-                title={speechRecognitionSupported() ? (lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput) : lang === DEFAULT_LANG ? 'Spracheingabe nicht unterstützt' : t.chatBar.voiceInputUnsupported}
-              >
-                <Mic className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleSpeakInput}
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
-                  speechOutputEnabled || isSpeaking ? 'bg-white/24 text-[#16181b]' : ''
-                }`}
-                data-ready={canSpeak ? 'true' : 'false'}
-                aria-label={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
-                title={speechOutputEnabled ? 'Sprachausgabe ausschalten' : 'Antworten vorlesen'}
-              >
-                <Speaker className="h-4 w-4" />
-              </button>
-              {/* Kombi-Button wie ChatGPT (Inhaber-Auftrag 26.09.2026): Text im
-                  Feld -> Sendepfeil; leeres Feld -> Sprachwelle starten. */}
-              {(input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) && !liveVoiceActiveRef.current ? (
+                  }
+                  disabled={!activeTwin || (auth.status !== 'authenticated' && !activeTwin.publicProfile)}
+                  className="max-h-[96px] min-h-[36px] w-full resize-none bg-transparent px-1 py-2 text-[15px] leading-5 text-[#16181b] outline-none placeholder:text-[#767d87] disabled:cursor-not-allowed disabled:opacity-70 sm:text-base"
+                />
+              </div>
+              <div className="flex items-center justify-between px-1.5 pb-1.5">
                 <button
                   type="button"
-                  onClick={handleSendButtonClick}
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-md shadow-none transition-colors bg-[#59C7FF] text-[#0b1c44] hover:bg-[#7dd5ff]"
-                  data-ready="true"
-                  aria-label={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
-                  title={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
-                >
-                  <ArrowUp className="h-5 w-5" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleToggleLiveVoice}
+                  onClick={() => setComposerMenuOpen((open) => !open)}
                   className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
-                    voiceState !== 'idle' ? 'bg-white/24 text-[#16181b]' : ''
+                    composerMenuOpen || attachments.length > 0 ? 'bg-white/24 text-[#16181b]' : ''
                   }`}
-                  aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
-                  title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
+                  aria-label={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
+                  title={lang === DEFAULT_LANG ? 'Medien hinzufügen' : t.chatBar.addMedia}
                 >
-                  <Waveform className="h-4 w-4" />
+                  <Plus className="h-4 w-4" />
                 </button>
-              )}
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => startDictation()}
+                    className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
+                      voiceState === 'listening' ? 'bg-white/24 text-[#16181b]' : ''
+                    }`}
+                    aria-label={lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput}
+                    title={speechRecognitionSupported() ? (lang === DEFAULT_LANG ? 'Spracheingabe' : t.chatBar.voiceInput) : lang === DEFAULT_LANG ? 'Spracheingabe nicht unterstützt' : t.chatBar.voiceInputUnsupported}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </button>
+                  {/* Kombi-Button wie ChatGPT (Inhaber-Auftrag 26.09.2026): Text im
+                      Feld -> Sendepfeil; leeres Feld -> Sprachwelle starten. */}
+                  {(input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) && !liveVoiceActiveRef.current ? (
+                    <button
+                      type="button"
+                      onClick={handleSendButtonClick}
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md shadow-none transition-colors bg-[#59C7FF] text-[#0b1c44] hover:bg-[#7dd5ff]"
+                      data-ready="true"
+                      aria-label={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
+                      title={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
+                    >
+                      <ArrowUp className="h-5 w-5" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleToggleLiveVoice}
+                      className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
+                        voiceState !== 'idle' ? 'bg-white/24 text-[#16181b]' : ''
+                      }`}
+                      aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
+                      title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
+                    >
+                      <Waveform className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
             {twinMvp.error && (
               <p className="mt-2 rounded-2xl bg-red-500/10 px-3 py-2 text-sm text-red-700">{twinMvp.error}</p>

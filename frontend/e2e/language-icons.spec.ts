@@ -299,35 +299,54 @@ test.describe("Chat-Icons (Language-Autopilot-Suite)", () => {
     });
   });
 
-  test("D. Lautsprecher: Vorlesen umschalten und stoppen ohne Doppel-Wiedergabe", async ({ page }) => {
+  test("D. Drei-Punkte-Menü: Kopieren/Vorlesen/Weiterleiten pro Nachricht (statt Lautsprecher)", async ({ page }) => {
     const streamHits = await openChat(page);
-    // Erst eine Antwort erzwingen (Vorlesen braucht eine Antwort).
+    // Erst eine Antwort erzwingen (Menü hängt an der Nachricht).
     const input = page.getByPlaceholder("Nachricht an Sokrates");
     await input.fill("Was empfiehlst du?");
     await page.getByRole("button", { name: "Nachricht senden" }).click();
     await expect(page.getByText(REPLY_TEXT).first()).toBeVisible({ timeout: 10_000 });
     expect(streamHits.count).toBeGreaterThanOrEqual(1);
 
-    const speaker = page.getByRole("button", { name: "Antworten vorlesen" });
-    await expect(speaker).toBeVisible();
-    await speaker.click();
-    const speakerOff = page.getByRole("button", { name: "Sprachausgabe ausschalten" });
-    await expect(speakerOff).toBeVisible({ timeout: 5_000 });
-    // Stop: zweiter Klick bricht ab (cancel/stopRemoteSpeech aufgerufen),
-    // Label zurueck — keine ueberlappende Wiedergabe, kein haengender Zustand.
-    await speakerOff.click();
-    await expect(page.getByRole("button", { name: "Antworten vorlesen" })).toBeVisible({
-      timeout: 5_000,
-    });
-    // Cancel-Nachweis mit Typabsicherung: gueltige Zahl >= 1 gilt als
-    // Nachweis; ein Reload/Neukontext (Wert unbrauchbar) faellt nicht faelschlich
-    // durch, sondern wirft nachprauefbar.
-    const cancelCount = await page.evaluate(() => {
+    // Cookie-Consent (z-[55] oben) kann auf Mobil die Nachrichten ueberlagern
+    // (gleiche Abwehr wie smyst.spec.ts) — wegklicken, falls er steht.
+    const consentButton = page.getByRole("button", { name: /Nur Notwendige|Alle akzeptieren/ });
+    if (await consentButton.count() > 0) {
+      await consentButton.first().click().catch(() => undefined);
+    }
+
+    // Lautsprecher-Button ist aus der Schreibleiste entfernt (Inhaber-Auftrag
+    // 26.09.2026) — Vorlesen lebt jetzt im Nachrichtenmenü.
+    await expect(page.getByRole("button", { name: "Antworten vorlesen" })).toHaveCount(0);
+
+    // Drei Punkte an der letzten Nachricht (KI-Antwort) öffnen das Menü.
+    const dots = page.getByRole("button", { name: "Nachrichtenmenü öffnen" }).last();
+    await dots.click();
+    await expect(page.getByRole("button", { name: "Kopieren", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Vorlesen", exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Weiterleiten", exact: true })).toBeVisible();
+
+    // Vorlesen startet (Label wechselt auf Stopp), Stopp bricht ab — keine
+    // Doppel-Wiedergabe, Cancel nachweisbar (Typabsicherung wie bisher).
+    await page.getByRole("button", { name: "Vorlesen", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Vorlesen stoppen", exact: true })).toBeVisible({ timeout: 5_000 });
+    const cancelBefore = await page.evaluate(() => {
       const value = (window as unknown as { __smystCancelCalls?: number }).__smystCancelCalls;
       return typeof value === "number" ? value : Number.NaN;
     });
-    expect(Number.isFinite(cancelCount)).toBeTruthy();
-    expect(cancelCount).toBeGreaterThanOrEqual(1);
+    expect(Number.isFinite(cancelBefore)).toBeTruthy();
+    await page.getByRole("button", { name: "Vorlesen stoppen", exact: true }).click();
+    const cancelAfter = await page.evaluate(() => {
+      const value = (window as unknown as { __smystCancelCalls?: number }).__smystCancelCalls;
+      return typeof value === "number" ? value : Number.NaN;
+    });
+    expect(Number.isFinite(cancelAfter)).toBeTruthy();
+    expect(cancelAfter).toBeGreaterThanOrEqual(cancelBefore);
+    await expect(page.getByRole("button", { name: "Vorlesen", exact: true })).toBeVisible({ timeout: 5_000 });
+
+    // Kopieren schließt das Menü sauber.
+    await page.getByRole("button", { name: "Kopieren", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Weiterleiten", exact: true })).toHaveCount(0);
   });
 
   test("E. Sendepfeil: Kombi-Button — leeres Feld Sprachwelle, Text versendet, kein Doppelversand", async ({ page }) => {
@@ -360,7 +379,6 @@ test.describe("Chat-Icons (Language-Autopilot-Suite)", () => {
       "Datei hinzufügen",
       "Spracheingabe",
       "Live-Sprachmodus starten",
-      "Antworten vorlesen",
     ];
     for (const label of labels) {
       const button = page.getByRole("button", { name: label });
