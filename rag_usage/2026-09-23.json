@@ -1,0 +1,166 @@
+{
+ "day": "2026-09-23",
+ "generated_at": "2026-09-23T00:28:09Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "cisa-kev-042bd106b079ac18",
+     "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+    },
+    {
+     "id": "gh-releases-ollama-1856a21b309afe62",
+     "title": "ollama/ollama: Release v0.34.3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.34.3"
+    },
+    {
+     "id": "hf-models-60416dc4a98b96cb",
+     "title": "nathanwei05/cs2881r-dobby-qwen2.5-3b-rlvr-lr1e-4-grpo100-step100",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/nathanwei05/cs2881r-dobby-qwen2.5-3b-rlvr-lr1e-4-grpo100-step100"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "deepmind-blog-56da2c8ef80375f1",
+     "title": "Introducing WeatherNext 3, our most advanced and accurate global weather AI model",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 4,
+     "flags": [
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+     ],
+     "url": "https://deepmind.google/blog/introducing-weathernext-3-our-most-advanced-and-accurate-global-weather-ai-model/"
+    },
+    {
+     "id": "google-ai-blog-a243976a4aeffe78",
+     "title": "AI for everyone in every language",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 4,
+     "flags": [],
+     "url": "https://blog.google/innovation-and-ai/technology/ai/ai-for-every-language/"
+    },
+    {
+     "id": "openai-news-3d48e529ad7a20b1",
+     "title": "Introducing GPT-6 Sol and Luna",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/introducing-gpt-6-sol-and-luna"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-530db518a73a5717",
+     "title": "Expanding OpenAI Academy with new learning paths",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/expanding-openai-academy-with-new-learning-paths"
+    },
+    {
+     "id": "openai-news-2c9792fbb14ae5db",
+     "title": "Building standards for the next phase of AI",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/building-standards-next-phase-ai"
+    },
+    {
+     "id": "openai-news-a7ca59844a94ccd6",
+     "title": "Advisory Group on Mathematics and Artificial Intelligence",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/advisory-group-on-mathematics-and-ai"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Es gibt keine verlässlichen Informationen über eine aktuell bekannte Sicherheitslücke, die in der Software der Arista VeloCloud Orchestrator aktiv ausgenutzt wurde. Die Liste der verwendeten Quellen enthält keine direkte Verbindung zu solchen Ereignissen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "cisa-kev-042bd106b079ac18",
+    "gh-releases-ollama-1856a21b309afe62",
+    "hf-models-60416dc4a98b96cb"
+   ],
+   "context_entry_ids": [
+    "cisa-kev-042bd106b079ac18",
+    "gh-releases-ollama-1856a21b309afe62",
+    "hf-models-60416dc4a98b96cb"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine genauen Informationen darüber, welche neue offenen KI-Modelle in der Zeit seit der letzten Fragezeit (2023) veröffentlicht wurden. Die Informationen, die ich habe, betreffen GPT-6 Sol und Luna, die zwei Models, die GPT-6 bringt, aber sie sind nicht offiziell als \"neue offene KI-Modelle\" bezeichnet. Es gibt keine direkten Informationen über neue offene KI-Modelle, die ich in der Zeit seit der letzten Fragezeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "deepmind-blog-56da2c8ef80375f1",
+    "google-ai-blog-a243976a4aeffe78",
+    "openai-news-3d48e529ad7a20b1"
+   ],
+   "context_entry_ids": [
+    "deepmind-blog-56da2c8ef80375f1",
+    "google-ai-blog-a243976a4aeffe78",
+    "openai-news-3d48e529ad7a20b1"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine direkte Informationen zu neuem Wissen oder Entwicklungen von Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die verwendeten Quellen beinhalten keine direkte Referenzen zu aktuellen Entwicklungen oder Aktualisierungen dieser Unternehmen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-530db518a73a5717",
+    "openai-news-2c9792fbb14ae5db",
+    "openai-news-a7ca59844a94ccd6"
+   ],
+   "context_entry_ids": [
+    "openai-news-530db518a73a5717",
+    "openai-news-2c9792fbb14ae5db",
+    "openai-news-a7ca59844a94ccd6"
+   ]
+  }
+ ]
+}

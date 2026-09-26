@@ -1,0 +1,93 @@
+{
+ "id": "gh-releases-ollama-d83f0c4f6531a69f",
+ "title": "ollama/ollama: Release v0.34.4",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, gpt, qwen, llama)",
+  "relevance_score": 3
+ },
+ "summary": "Offizielle Release-Notes (v0.34.4): ## What's Changed - Structured outputs on thinking models now apply in a single pass, making them faster and more reliable. - Fixed intermittent \"model not found\" errors with a large local library - Fixed the macOS app becoming unresponsive when checking if ChatGPT or Codex is running. - Qwen 3.8 prompt processing is faster on Apple Silicon. - Gemma 4 on Apple Silicon now picks the best image resolution per image, keeping more detail in high-resolution images. - Updated llama.cpp, MLX, and XGrammar. **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.3...v0.34.4",
+ "key_points": [
+  "Offizielle Release-Notes (v0.34.4): ## What's Changed - Structured outputs on thinking models now apply in a single pass, making them faster and more reliable",
+  "- Fixed intermittent \"model not found\" errors with a large local library - Fixed the macOS app becoming unresponsive when checking if ChatGPT or Codex is running",
+  "- Qwen 3.8 prompt processing is faster on Apple Silicon",
+  "- Gemma 4 on Apple Silicon now picks the best image resolution per image, keeping more detail in high-resolution images",
+  "- Updated llama.cpp, MLX, and XGrammar"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.34.4",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.34.4",
+ "publisher": "GitHub Releases",
+ "published": "2026-09-23",
+ "retrieved": "2026-09-26T09:29:52Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.34.4",
+    "summary": "Offizielle Release-Notes (v0.34.4): ## What's Changed - Structured outputs on thinking models now apply in a single pass, making them faster and more reliable. - Fixed intermittent \"model not found\" errors with a large local library - Fixed the macOS app becoming unresponsive when checking if ChatGPT or Codex is running. - Qwen 3.8 prompt processing is faster on Apple Silicon. - Gemma 4 on Apple Silicon now picks the best image resolution per image, keeping more detail in high-resolution images. - Updated llama.cpp, MLX, and XGrammar. **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.3...v0.34.4"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-09-26T15:06:47Z",
+ "confirmations": 1
+}

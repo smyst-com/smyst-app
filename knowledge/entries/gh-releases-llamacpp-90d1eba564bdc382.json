@@ -1,0 +1,824 @@
+{
+ "id": "gh-releases-llamacpp-90d1eba564bdc382",
+ "title": "ggml-org/llama.cpp: Release b11188",
+ "topic": {
+  "category": "infrastruktur",
+  "reason": "Infrastruktur, Frameworks, RAG- und Agentensysteme (Treffer: llama.cpp, framework)",
+  "relevance_score": 2
+ },
+ "summary": "Offizielle Release-Notes (b11188): Fixing the vulkan build issue of legacy GLSLC version that has no cooperativeMatrix API support (https://github.com/ggml-org/llama.cpp/issues/29373) (#29409) * vulkan : fix build issue of legacy glslc version by adding GGML_VULKAN_COOPMAT_GLSLC_SUPPORT macro check for Intel FA shader compiling * vulkan : add preprocess condition to filter out unsupported FA 2 phases kernels before creation. * vulkan : move lock_guard for Intel FA shader pointer creation under CM1 compiling preprocessor **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-xc",
+ "key_points": [
+  "Offizielle Release-Notes (b11188): Fixing the vulkan build issue of legacy GLSLC version that has no cooperativeMatrix API support (https://github.com/ggml-org/llama.cpp/issues/29373) (#29409) * vulkan : fix build issue of legacy glslc version by adding GGML_VULKAN_COOPMAT_GLSLC_SUPPORT macro check for Intel FA shader compiling * vulkan : add preprocess condition to filter out unsupported FA 2 phases kernels before creation",
+  "* vulkan : move lock_guard for Intel FA shader pointer creation under CM1 compiling preprocessor **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-xc"
+ ],
+ "source": {
+  "id": "gh-releases-llamacpp",
+  "name": "llama.cpp Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11115",
+ "url_normalized": "https://github.com/ggml-org/llama.cpp/releases/tag/b11115",
+ "publisher": "GitHub Releases",
+ "published": "2026-09-22",
+ "retrieved": "2026-09-23T00:28:00Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "infrastruktur",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ggml-org/llama.cpp: Release b11115",
+    "summary": "Offizielle Release-Notes (b11115): opencl: add bin kernel `kernel_gemm_noshuffle_q4_k_q8_1_dp4a_ila_a8_bin` (#29056) * opencl: add A8 Q4_K non-MoE dp4a binary kernel * opencl: rename binary kernel selection helpers **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com"
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11115): opencl: add bin kernel `kernel_gemm_noshuffle_q4_k_q8_1_dp4a_ila_a8_bin` (#29056) * opencl: add A8 Q4_K non-MoE dp4a binary kernel * opencl: rename binary kernel selection helpers **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com",
+    "title": "ggml-org/llama.cpp: Release b11115"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11114): server: fix router eviction races with the existing queue (#29217) * server: route every model load through the queue A model loaded by the fast path has no queue entry, so tick() evicts\nit at its LOADED transition before its own request is proxied. Every\nload now joins the queue, whose entry protects the model until its\nwaiters leave. * server: do not admit requests into a stopping model A request for a model that is being stopped still sees it LOADED and\nis proxied into the dying child. Such a request now joins the queue\nand is served by the next instance. The stopping mark is cleared\nunder the same lock that sets UNLOADED, so no request can see a\nmodel that is neither stopping nor unloaded while its child is gone. **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11114/llama-b11114-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llam",
+    "title": "ggml-org/llama.cpp: Release b11114"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11114): server: fix router eviction races with the existing queue (#29217) * server: route every model load through the queue A model loaded by the fast path has no queue entry, so tick() evicts\nit at its LOADED transition before its own request is proxied. Every\nload now joins the queue, whose entry protects the model until its\nwaiters leave. * server: do not admit requests into a stopping model A request for a model that is being stopped still sees it LOADED and\nis proxied into the dying child. Such a request now joins the queue\nand is served by the next instance. The stopping mark is cleared\nunder the same lock that sets UNLOADED, so no request can see a\nmodel that is neither stopping nor unloaded while its child is gone. **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11114/llama-b11114-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llam",
+    "title": "ggml-org/llama.cpp: Release b11114"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11113): server: do not pass log file to children (#29212) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml",
+    "title": "ggml-org/llama.cpp: Release b11113"
+   }
+  },
+  {
+   "version": 4,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11113): server: do not pass log file to children (#29212) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml",
+    "title": "ggml-org/llama.cpp: Release b11113"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11112): server: support input_image in function_call_output (#20663) (#22575) * server: support input_image in function_call_output (#20663) * server: fix if statement spacing * server: avoid repeated type lookup **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x",
+    "title": "ggml-org/llama.cpp: Release b11112"
+   }
+  },
+  {
+   "version": 5,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11112): server: support input_image in function_call_output (#20663) (#22575) * server: support input_image in function_call_output (#20663) * server: fix if statement spacing * server: avoid repeated type lookup **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x",
+    "title": "ggml-org/llama.cpp: Release b11112"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11111): vulkan: add Intel Xe flash attention optimization kernels (2/3, Xe-LPG Plus/Xe2/Xe3) (#24406) * vulkan : Intel FA kernel optimization for split k path * vulkan : Host code update for Intel split k FA kernel path selection, fix A770 Linux op test failures * vulkan : use symmetric coopMatMulAdd() in flash_attn_decode_phase_1 shader to resolve test op failre on A770 Linux with 26.2.3 mesa driver * vulkan : fix editorconfig issue in flash_attn_decode_phase_2.comp --------- Co-authored-by: Liu, Russell **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11111/lla",
+    "title": "ggml-org/llama.cpp: Release b11111"
+   }
+  },
+  {
+   "version": 6,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11111): vulkan: add Intel Xe flash attention optimization kernels (2/3, Xe-LPG Plus/Xe2/Xe3) (#24406) * vulkan : Intel FA kernel optimization for split k path * vulkan : Host code update for Intel split k FA kernel path selection, fix A770 Linux op test failures * vulkan : use symmetric coopMatMulAdd() in flash_attn_decode_phase_1 shader to resolve test op failre on A770 Linux with 26.2.3 mesa driver * vulkan : fix editorconfig issue in flash_attn_decode_phase_2.comp --------- Co-authored-by: Liu, Russell **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11111/lla",
+    "title": "ggml-org/llama.cpp: Release b11111"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11110): mtmd: add various sanity checks (#29276) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-org/llam",
+    "title": "ggml-org/llama.cpp: Release b11110"
+   }
+  },
+  {
+   "version": 7,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11110): mtmd: add various sanity checks (#29276) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-org/llam",
+    "title": "ggml-org/llama.cpp: Release b11110"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11109): metal : gate mul_mm_id src1 rescale behind ggml_prec (#29029) * metal : gate mul_mm_id src1 rescale behind ggml_prec Assisted-by: Claude Fable 5.1 * ggml-webgpu: reject MUL_MAT_ID when src1 precision is F32 * cuda/vulkan: reject MUL_MAT_ID in supports_op when src1 prec is F32 fix `supports_op` to return false for failing backends when the specified src1 precision is f32 Assisted-by: Claude Fable 5.1 --------- Co-authored-by: yomaytk **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https:/",
+    "title": "ggml-org/llama.cpp: Release b11109"
+   }
+  },
+  {
+   "version": 8,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11109): metal : gate mul_mm_id src1 rescale behind ggml_prec (#29029) * metal : gate mul_mm_id src1 rescale behind ggml_prec Assisted-by: Claude Fable 5.1 * ggml-webgpu: reject MUL_MAT_ID when src1 precision is F32 * cuda/vulkan: reject MUL_MAT_ID in supports_op when src1 prec is F32 fix `supports_op` to return false for failing backends when the specified src1 precision is f32 Assisted-by: Claude Fable 5.1 --------- Co-authored-by: yomaytk **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https:/",
+    "title": "ggml-org/llama.cpp: Release b11109"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11108): ggml : IQ1_M build prefix sums once per block (#28706) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com",
+    "title": "ggml-org/llama.cpp: Release b11108"
+   }
+  },
+  {
+   "version": 9,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11108): ggml : IQ1_M build prefix sums once per block (#28706) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com",
+    "title": "ggml-org/llama.cpp: Release b11108"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11105): jinja: use const for statement::execute and ::visit (#29271) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://gith",
+    "title": "ggml-org/llama.cpp: Release b11105"
+   }
+  },
+  {
+   "version": 10,
+   "date": "2026-09-23T00:28:03Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11105): jinja: use const for statement::execute and ::visit (#29271) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://gith",
+    "title": "ggml-org/llama.cpp: Release b11105"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11104): server: Add support for binding to multiple addresses (#28690) * Add support for binding llama-server to multiple addresses Assisted-by: Codex * remove redundant thread handler * make it clear about overlapping addr * reject --port 0 with multiple tcp addr * improve arg handler * nits * fix test * nits 2 * nits * nits 2 --------- Co-authored-by: Xuan Son Nguyen **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-",
+    "title": "ggml-org/llama.cpp: Release b11104"
+   }
+  },
+  {
+   "version": 11,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11104): server: Add support for binding to multiple addresses (#28690) * Add support for binding llama-server to multiple addresses Assisted-by: Codex * remove redundant thread handler * make it clear about overlapping addr * reject --port 0 with multiple tcp addr * improve arg handler * nits * fix test * nits 2 * nits * nits 2 --------- Co-authored-by: Xuan Son Nguyen **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-",
+    "title": "ggml-org/llama.cpp: Release b11104"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11192): vendor : update cpp-httplib to 0.58.0 (#29407) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-or",
+    "title": "ggml-org/llama.cpp: Release b11192"
+   }
+  },
+  {
+   "version": 12,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11192): vendor : update cpp-httplib to 0.58.0 (#29407) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-or",
+    "title": "ggml-org/llama.cpp: Release b11192"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11191): common,rpc : simplify fs_create_directory_with_parents() (#29432) The original function was broken on Windows for some unicode paths Paths without a trailing separator now create the last directory too,\nmatching the function name. All current callers already include a\ntrailing separator, so this change does not affect them. Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-ubuntu-",
+    "title": "ggml-org/llama.cpp: Release b11191"
+   }
+  },
+  {
+   "version": 13,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11191): common,rpc : simplify fs_create_directory_with_parents() (#29432) The original function was broken on Windows for some unicode paths Paths without a trailing separator now create the last directory too,\nmatching the function name. All current callers already include a\ntrailing separator, so this change does not affect them. Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-ubuntu-",
+    "title": "ggml-org/llama.cpp: Release b11191"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11190): mtmd: fix mel preprocessor in LFM2 audio (#29403) which resulted in different greedy transcripts for 4.5% of English and 6.5% of Japanese\ntest utterances. In Japanese, some differences changed entire words. This change: * uses `log(x + 2^-24)` instead of clamping to the log floor\n* uses a symmetric Hann window, equivalent to `torch.hann_window(periodic=False)`\n* adds the normalization epsilon to the standard deviation instead of inside the square root Only the `lfm2a` preprocessor opts into these behaviors. Other audio preprocessors are unchanged. Tested on top of 84e76d8 using `llama-server` with CUDA and `temperature=0`, compared against\nhttp://github.com/Liquid4All/liquid-audio fp32. Test set: * 200 LibriSpeech `test-clean` utterances (EN)\n* 200 Common Voice `ja` test utterances (JP)\n* identical 16 kHz audio passed to both implementations | Greedy transcript identical to `liquid-audio` | Without fix | With fix |\n| --------------------------------------------- | ----------: | -------",
+    "title": "ggml-org/llama.cpp: Release b11190"
+   }
+  },
+  {
+   "version": 14,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11190): mtmd: fix mel preprocessor in LFM2 audio (#29403) which resulted in different greedy transcripts for 4.5% of English and 6.5% of Japanese\ntest utterances. In Japanese, some differences changed entire words. This change: * uses `log(x + 2^-24)` instead of clamping to the log floor\n* uses a symmetric Hann window, equivalent to `torch.hann_window(periodic=False)`\n* adds the normalization epsilon to the standard deviation instead of inside the square root Only the `lfm2a` preprocessor opts into these behaviors. Other audio preprocessors are unchanged. Tested on top of 84e76d8 using `llama-server` with CUDA and `temperature=0`, compared against\nhttp://github.com/Liquid4All/liquid-audio fp32. Test set: * 200 LibriSpeech `test-clean` utterances (EN)\n* 200 Common Voice `ja` test utterances (JP)\n* identical 16 kHz audio passed to both implementations | Greedy transcript identical to `liquid-audio` | Without fix | With fix |\n| --------------------------------------------- | ----------: | -------",
+    "title": "ggml-org/llama.cpp: Release b11190"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11189): opencl: add bin kernel `kernel_gemm_noshuffle_q5_k_f32_32b_trans_ila_a8_bin`, `kernel_gemm_noshuffle_q5_k_q8_1_dp4a_ila_a8_bin` (#29401) * opencl: add A8 Q5_K non-MoE non dp4a + dp4a binary kernel * opencl: fix s transpose - s only transposed for bin kernels --------- Co-authored-by: Li He **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/lla",
+    "title": "ggml-org/llama.cpp: Release b11189"
+   }
+  },
+  {
+   "version": 15,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11189): opencl: add bin kernel `kernel_gemm_noshuffle_q5_k_f32_32b_trans_ila_a8_bin`, `kernel_gemm_noshuffle_q5_k_q8_1_dp4a_ila_a8_bin` (#29401) * opencl: add A8 Q5_K non-MoE non dp4a + dp4a binary kernel * opencl: fix s transpose - s only transposed for bin kernels --------- Co-authored-by: Li He **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/lla",
+    "title": "ggml-org/llama.cpp: Release b11189"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11188): Fixing the vulkan build issue of legacy GLSLC version that has no cooperativeMatrix API support (https://github.com/ggml-org/llama.cpp/issues/29373) (#29409) * vulkan : fix build issue of legacy glslc version by adding GGML_VULKAN_COOPMAT_GLSLC_SUPPORT macro check for Intel FA shader compiling * vulkan : add preprocess condition to filter out unsupported FA 2 phases kernels before creation. * vulkan : move lock_guard for Intel FA shader pointer creation under CM1 compiling preprocessor **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-xc",
+    "title": "ggml-org/llama.cpp: Release b11188"
+   }
+  },
+  {
+   "version": 16,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11188): Fixing the vulkan build issue of legacy GLSLC version that has no cooperativeMatrix API support (https://github.com/ggml-org/llama.cpp/issues/29373) (#29409) * vulkan : fix build issue of legacy glslc version by adding GGML_VULKAN_COOPMAT_GLSLC_SUPPORT macro check for Intel FA shader compiling * vulkan : add preprocess condition to filter out unsupported FA 2 phases kernels before creation. * vulkan : move lock_guard for Intel FA shader pointer creation under CM1 compiling preprocessor **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-xc",
+    "title": "ggml-org/llama.cpp: Release b11188"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11185): common : extract shared unicode path/string helpers (#29415) Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-s390x.tar.gz)\n- [Ub",
+    "title": "ggml-org/llama.cpp: Release b11185"
+   }
+  },
+  {
+   "version": 17,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11185): common : extract shared unicode path/string helpers (#29415) Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-s390x.tar.gz)\n- [Ub",
+    "title": "ggml-org/llama.cpp: Release b11185"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11184): metal: FWHT kernels for block widths above 512 (#29095) * metal: FWHT kernels for block widths above 512 The Metal FWHT covers widths 64 to 512, one row per simdgroup with N/32 values\nper lane. Wider blocks need more registers per lane than that layout allows. kernel_fwht_tg runs one row per threadgroup with 256 threads, so each thread\nkeeps N/256 values. Butterflies below the simdgroup width still shuffle, those\nup to the threadgroup width go through threadgroup memory, and the rest stay in\nregisters. Same butterfly and sign convention as the simdgroup kernel. Widths 64 to 512 keep the simdgroup kernel. 1024 through 8192 use the new one,\nfor both F32 and F16 sources. The wide kernels allocate float[N] of threadgroup memory, 32 KB at 8192, so the\nsize check takes the device limit and reports those widths as unsupported where\nthey would not fit. Without that a device with less threadgroup memory would\naccept the op and then abort on a nil pipeline. test-backend-ops on M5 Pro: MUL_MAT_HA",
+    "title": "ggml-org/llama.cpp: Release b11184"
+   }
+  },
+  {
+   "version": 18,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11184): metal: FWHT kernels for block widths above 512 (#29095) * metal: FWHT kernels for block widths above 512 The Metal FWHT covers widths 64 to 512, one row per simdgroup with N/32 values\nper lane. Wider blocks need more registers per lane than that layout allows. kernel_fwht_tg runs one row per threadgroup with 256 threads, so each thread\nkeeps N/256 values. Butterflies below the simdgroup width still shuffle, those\nup to the threadgroup width go through threadgroup memory, and the rest stay in\nregisters. Same butterfly and sign convention as the simdgroup kernel. Widths 64 to 512 keep the simdgroup kernel. 1024 through 8192 use the new one,\nfor both F32 and F16 sources. The wide kernels allocate float[N] of threadgroup memory, 32 KB at 8192, so the\nsize check takes the device limit and reports those widths as unsupported where\nthey would not fit. Without that a device with less threadgroup memory would\naccept the op and then abort on a nil pipeline. test-backend-ops on M5 Pro: MUL_MAT_HA",
+    "title": "ggml-org/llama.cpp: Release b11184"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11183): metal : split fa kernels into per-dtype libraries (#29329) * metal : split fa kernels into per-dtype libraries Assisted-by: pi:llama.cpp/DeepSeek-V4-Flash-Vision-Exp * cont : minor fix comment **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https",
+    "title": "ggml-org/llama.cpp: Release b11183"
+   }
+  },
+  {
+   "version": 19,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11183): metal : split fa kernels into per-dtype libraries (#29329) * metal : split fa kernels into per-dtype libraries Assisted-by: pi:llama.cpp/DeepSeek-V4-Flash-Vision-Exp * cont : minor fix comment **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11183/llama-b11183-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https",
+    "title": "ggml-org/llama.cpp: Release b11183"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11182): llama : add `llama_prec_policy` + model-driven W4A4 path (#24364) * Rebase and update based on #26675 Signed-off-by: ynankani * CI failure fix(launh_bounds overload on HIP) and cleanup Signed-off-by: ynankani * Address review comments Signed-off-by: ynankani * Use ggml tensor instead of name in act policy map Signed-off-by: ynankani * Address review comments and cleanup Signed-off-by: ynankani * Address review comments Signed-off-by: ynankani * Rename changes Signed-off-by: ynankani * Update ggml/src/ggml-cuda/mmq.cu Co-authored-by: Georgi Gerganov * MXFP4 dispatch changes for higher src prec Signed-off-by: ynankani * Refactor and address review comments Signed-off-by: ynankani * Updates based on review comments Signed-off-by: ynankani * Apply batched suggestions from code review Co-authored-by: Johannes Gäßler * Address review comments Signed-off-by: ynankani * Apply patch from review Signed-off-by: ynankani --------- Signed-off-by: ynankani Co-authored-by: Georgi Gerganov Co-authored",
+    "title": "ggml-org/llama.cpp: Release b11182"
+   }
+  },
+  {
+   "version": 20,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11182): llama : add `llama_prec_policy` + model-driven W4A4 path (#24364) * Rebase and update based on #26675 Signed-off-by: ynankani * CI failure fix(launh_bounds overload on HIP) and cleanup Signed-off-by: ynankani * Address review comments Signed-off-by: ynankani * Use ggml tensor instead of name in act policy map Signed-off-by: ynankani * Address review comments and cleanup Signed-off-by: ynankani * Address review comments Signed-off-by: ynankani * Rename changes Signed-off-by: ynankani * Update ggml/src/ggml-cuda/mmq.cu Co-authored-by: Georgi Gerganov * MXFP4 dispatch changes for higher src prec Signed-off-by: ynankani * Refactor and address review comments Signed-off-by: ynankani * Updates based on review comments Signed-off-by: ynankani * Apply batched suggestions from code review Co-authored-by: Johannes Gäßler * Address review comments Signed-off-by: ynankani * Apply patch from review Signed-off-by: ynankani --------- Signed-off-by: ynankani Co-authored-by: Georgi Gerganov Co-authored",
+    "title": "ggml-org/llama.cpp: Release b11182"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11181): HIP: bump HIP_VERSION requried for fp8 to avoid missing __hip_fp8_e4m3 support in 6.2 (#29231) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-ubuntu-s390x.tar.gz)\n-",
+    "title": "ggml-org/llama.cpp: Release b11181"
+   }
+  },
+  {
+   "version": 21,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11181): HIP: bump HIP_VERSION requried for fp8 to avoid missing __hip_fp8_e4m3 support in 6.2 (#29231) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11181/llama-b11181-bin-ubuntu-s390x.tar.gz)\n-",
+    "title": "ggml-org/llama.cpp: Release b11181"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11195): ggml-cpu: tiled mul_mat for k-quants (#27851) * Added tiled mul_mat. For each mul_mat_one_chunk, quants are unpacked into (max) 256x256 tiles of int8,\none routine per quent. Then microkernel computes 16x16 tiles before writing out\n256x256 float reults to main memory. Tests/benches in tests/test-tiled-mulmat.cpp. 3-6x speed improvement\nfor large matmul, break even at 4096x64 * 64x4096, 80% performance (net\nloss) for GEMV. Error rates trivial (order of 1-e04 max, 1-e05 rmse). * Fixes for ARM/windows builds * more windows fixes, ggml-cpu.h isn't visible in MSVC for some reason * unified iqp + tiled on the Q5_K, IQ4_XS set for benchmarking, updated benchmark * Fixed accidental removal of llama_build_and_test(test-backend-ops.cpp) * First integration of iqp code Co-authored-by Bartowski * Cleaning up declaration of iq unpacking helpers to align with the bit unpackers * Removed iqp path * Fix cross-platform warnings * Disabling benchmarks unless explicitly enabled * Fix backend_init for DLL-",
+    "title": "ggml-org/llama.cpp: Release b11195"
+   }
+  },
+  {
+   "version": 22,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11195): ggml-cpu: tiled mul_mat for k-quants (#27851) * Added tiled mul_mat. For each mul_mat_one_chunk, quants are unpacked into (max) 256x256 tiles of int8,\none routine per quent. Then microkernel computes 16x16 tiles before writing out\n256x256 float reults to main memory. Tests/benches in tests/test-tiled-mulmat.cpp. 3-6x speed improvement\nfor large matmul, break even at 4096x64 * 64x4096, 80% performance (net\nloss) for GEMV. Error rates trivial (order of 1-e04 max, 1-e05 rmse). * Fixes for ARM/windows builds * more windows fixes, ggml-cpu.h isn't visible in MSVC for some reason * unified iqp + tiled on the Q5_K, IQ4_XS set for benchmarking, updated benchmark * Fixed accidental removal of llama_build_and_test(test-backend-ops.cpp) * First integration of iqp code Co-authored-by Bartowski * Cleaning up declaration of iq unpacking helpers to align with the bit unpackers * Removed iqp path * Fix cross-platform warnings * Disabling benchmarks unless explicitly enabled * Fix backend_init for DLL-",
+    "title": "ggml-org/llama.cpp: Release b11195"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11194): opencl: add A8 Q8_0 non-MoE dp4a binary kernel (#29439) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.co",
+    "title": "ggml-org/llama.cpp: Release b11194"
+   }
+  },
+  {
+   "version": 23,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11194): opencl: add A8 Q8_0 non-MoE dp4a binary kernel (#29439) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.co",
+    "title": "ggml-org/llama.cpp: Release b11194"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11193): hexagon: find software divide calls using binary inspection tool (#29449) * hex-scripts: fix table alignment * hex-scripts: find sw div calls using binary inspection tool **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org",
+    "title": "ggml-org/llama.cpp: Release b11193"
+   }
+  },
+  {
+   "version": 24,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11193): hexagon: find software divide calls using binary inspection tool (#29449) * hex-scripts: fix table alignment * hex-scripts: find sw div calls using binary inspection tool **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org",
+    "title": "ggml-org/llama.cpp: Release b11193"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11192): vendor : update cpp-httplib to 0.58.0 (#29407) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-or",
+    "title": "ggml-org/llama.cpp: Release b11192"
+   }
+  },
+  {
+   "version": 25,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11192): vendor : update cpp-httplib to 0.58.0 (#29407) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-or",
+    "title": "ggml-org/llama.cpp: Release b11192"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11191): common,rpc : simplify fs_create_directory_with_parents() (#29432) The original function was broken on Windows for some unicode paths Paths without a trailing separator now create the last directory too,\nmatching the function name. All current callers already include a\ntrailing separator, so this change does not affect them. Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-ubuntu-",
+    "title": "ggml-org/llama.cpp: Release b11191"
+   }
+  },
+  {
+   "version": 26,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11191): common,rpc : simplify fs_create_directory_with_parents() (#29432) The original function was broken on Windows for some unicode paths Paths without a trailing separator now create the last directory too,\nmatching the function name. All current callers already include a\ntrailing separator, so this change does not affect them. Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-ubuntu-",
+    "title": "ggml-org/llama.cpp: Release b11191"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11190): mtmd: fix mel preprocessor in LFM2 audio (#29403) which resulted in different greedy transcripts for 4.5% of English and 6.5% of Japanese\ntest utterances. In Japanese, some differences changed entire words. This change: * uses `log(x + 2^-24)` instead of clamping to the log floor\n* uses a symmetric Hann window, equivalent to `torch.hann_window(periodic=False)`\n* adds the normalization epsilon to the standard deviation instead of inside the square root Only the `lfm2a` preprocessor opts into these behaviors. Other audio preprocessors are unchanged. Tested on top of 84e76d8 using `llama-server` with CUDA and `temperature=0`, compared against\nhttp://github.com/Liquid4All/liquid-audio fp32. Test set: * 200 LibriSpeech `test-clean` utterances (EN)\n* 200 Common Voice `ja` test utterances (JP)\n* identical 16 kHz audio passed to both implementations | Greedy transcript identical to `liquid-audio` | Without fix | With fix |\n| --------------------------------------------- | ----------: | -------",
+    "title": "ggml-org/llama.cpp: Release b11190"
+   }
+  },
+  {
+   "version": 27,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11190): mtmd: fix mel preprocessor in LFM2 audio (#29403) which resulted in different greedy transcripts for 4.5% of English and 6.5% of Japanese\ntest utterances. In Japanese, some differences changed entire words. This change: * uses `log(x + 2^-24)` instead of clamping to the log floor\n* uses a symmetric Hann window, equivalent to `torch.hann_window(periodic=False)`\n* adds the normalization epsilon to the standard deviation instead of inside the square root Only the `lfm2a` preprocessor opts into these behaviors. Other audio preprocessors are unchanged. Tested on top of 84e76d8 using `llama-server` with CUDA and `temperature=0`, compared against\nhttp://github.com/Liquid4All/liquid-audio fp32. Test set: * 200 LibriSpeech `test-clean` utterances (EN)\n* 200 Common Voice `ja` test utterances (JP)\n* identical 16 kHz audio passed to both implementations | Greedy transcript identical to `liquid-audio` | Without fix | With fix |\n| --------------------------------------------- | ----------: | -------",
+    "title": "ggml-org/llama.cpp: Release b11190"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11189): opencl: add bin kernel `kernel_gemm_noshuffle_q5_k_f32_32b_trans_ila_a8_bin`, `kernel_gemm_noshuffle_q5_k_q8_1_dp4a_ila_a8_bin` (#29401) * opencl: add A8 Q5_K non-MoE non dp4a + dp4a binary kernel * opencl: fix s transpose - s only transposed for bin kernels --------- Co-authored-by: Li He **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/lla",
+    "title": "ggml-org/llama.cpp: Release b11189"
+   }
+  },
+  {
+   "version": 28,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11189): opencl: add bin kernel `kernel_gemm_noshuffle_q5_k_f32_32b_trans_ila_a8_bin`, `kernel_gemm_noshuffle_q5_k_q8_1_dp4a_ila_a8_bin` (#29401) * opencl: add A8 Q5_K non-MoE non dp4a + dp4a binary kernel * opencl: fix s transpose - s only transposed for bin kernels --------- Co-authored-by: Li He **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/lla",
+    "title": "ggml-org/llama.cpp: Release b11189"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11188): Fixing the vulkan build issue of legacy GLSLC version that has no cooperativeMatrix API support (https://github.com/ggml-org/llama.cpp/issues/29373) (#29409) * vulkan : fix build issue of legacy glslc version by adding GGML_VULKAN_COOPMAT_GLSLC_SUPPORT macro check for Intel FA shader compiling * vulkan : add preprocess condition to filter out unsupported FA 2 phases kernels before creation. * vulkan : move lock_guard for Intel FA shader pointer creation under CM1 compiling preprocessor **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-xc",
+    "title": "ggml-org/llama.cpp: Release b11188"
+   }
+  },
+  {
+   "version": 29,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11188): Fixing the vulkan build issue of legacy GLSLC version that has no cooperativeMatrix API support (https://github.com/ggml-org/llama.cpp/issues/29373) (#29409) * vulkan : fix build issue of legacy glslc version by adding GGML_VULKAN_COOPMAT_GLSLC_SUPPORT macro check for Intel FA shader compiling * vulkan : add preprocess condition to filter out unsupported FA 2 phases kernels before creation. * vulkan : move lock_guard for Intel FA shader pointer creation under CM1 compiling preprocessor **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-xc",
+    "title": "ggml-org/llama.cpp: Release b11188"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11185): common : extract shared unicode path/string helpers (#29415) Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-s390x.tar.gz)\n- [Ub",
+    "title": "ggml-org/llama.cpp: Release b11185"
+   }
+  },
+  {
+   "version": 30,
+   "date": "2026-09-26T09:29:53Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11185): common : extract shared unicode path/string helpers (#29415) Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11185/llama-b11185-bin-ubuntu-s390x.tar.gz)\n- [Ub",
+    "title": "ggml-org/llama.cpp: Release b11185"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11184): metal: FWHT kernels for block widths above 512 (#29095) * metal: FWHT kernels for block widths above 512 The Metal FWHT covers widths 64 to 512, one row per simdgroup with N/32 values\nper lane. Wider blocks need more registers per lane than that layout allows. kernel_fwht_tg runs one row per threadgroup with 256 threads, so each thread\nkeeps N/256 values. Butterflies below the simdgroup width still shuffle, those\nup to the threadgroup width go through threadgroup memory, and the rest stay in\nregisters. Same butterfly and sign convention as the simdgroup kernel. Widths 64 to 512 keep the simdgroup kernel. 1024 through 8192 use the new one,\nfor both F32 and F16 sources. The wide kernels allocate float[N] of threadgroup memory, 32 KB at 8192, so the\nsize check takes the device limit and reports those widths as unsupported where\nthey would not fit. Without that a device with less threadgroup memory would\naccept the op and then abort on a nil pipeline. test-backend-ops on M5 Pro: MUL_MAT_HA",
+    "title": "ggml-org/llama.cpp: Release b11184"
+   }
+  },
+  {
+   "version": 31,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11184): metal: FWHT kernels for block widths above 512 (#29095) * metal: FWHT kernels for block widths above 512 The Metal FWHT covers widths 64 to 512, one row per simdgroup with N/32 values\nper lane. Wider blocks need more registers per lane than that layout allows. kernel_fwht_tg runs one row per threadgroup with 256 threads, so each thread\nkeeps N/256 values. Butterflies below the simdgroup width still shuffle, those\nup to the threadgroup width go through threadgroup memory, and the rest stay in\nregisters. Same butterfly and sign convention as the simdgroup kernel. Widths 64 to 512 keep the simdgroup kernel. 1024 through 8192 use the new one,\nfor both F32 and F16 sources. The wide kernels allocate float[N] of threadgroup memory, 32 KB at 8192, so the\nsize check takes the device limit and reports those widths as unsupported where\nthey would not fit. Without that a device with less threadgroup memory would\naccept the op and then abort on a nil pipeline. test-backend-ops on M5 Pro: MUL_MAT_HA",
+    "title": "ggml-org/llama.cpp: Release b11184"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11200): jinja : implement sameas test (#29448) * implement sameas test * add tests **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)",
+    "title": "ggml-org/llama.cpp: Release b11200"
+   }
+  },
+  {
+   "version": 32,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11200): jinja : implement sameas test (#29448) * implement sameas test * add tests **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11200/llama-b11200-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)",
+    "title": "ggml-org/llama.cpp: Release b11200"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11199): jinja : fix compile error (#29468) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-org/llama.cpp/",
+    "title": "ggml-org/llama.cpp: Release b11199"
+   }
+  },
+  {
+   "version": 33,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11199): jinja : fix compile error (#29468) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11199/llama-b11199-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-org/llama.cpp/",
+    "title": "ggml-org/llama.cpp: Release b11199"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11195): ggml-cpu: tiled mul_mat for k-quants (#27851) * Added tiled mul_mat. For each mul_mat_one_chunk, quants are unpacked into (max) 256x256 tiles of int8,\none routine per quent. Then microkernel computes 16x16 tiles before writing out\n256x256 float reults to main memory. Tests/benches in tests/test-tiled-mulmat.cpp. 3-6x speed improvement\nfor large matmul, break even at 4096x64 * 64x4096, 80% performance (net\nloss) for GEMV. Error rates trivial (order of 1-e04 max, 1-e05 rmse). * Fixes for ARM/windows builds * more windows fixes, ggml-cpu.h isn't visible in MSVC for some reason * unified iqp + tiled on the Q5_K, IQ4_XS set for benchmarking, updated benchmark * Fixed accidental removal of llama_build_and_test(test-backend-ops.cpp) * First integration of iqp code Co-authored-by Bartowski * Cleaning up declaration of iq unpacking helpers to align with the bit unpackers * Removed iqp path * Fix cross-platform warnings * Disabling benchmarks unless explicitly enabled * Fix backend_init for DLL-",
+    "title": "ggml-org/llama.cpp: Release b11195"
+   }
+  },
+  {
+   "version": 34,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11195): ggml-cpu: tiled mul_mat for k-quants (#27851) * Added tiled mul_mat. For each mul_mat_one_chunk, quants are unpacked into (max) 256x256 tiles of int8,\none routine per quent. Then microkernel computes 16x16 tiles before writing out\n256x256 float reults to main memory. Tests/benches in tests/test-tiled-mulmat.cpp. 3-6x speed improvement\nfor large matmul, break even at 4096x64 * 64x4096, 80% performance (net\nloss) for GEMV. Error rates trivial (order of 1-e04 max, 1-e05 rmse). * Fixes for ARM/windows builds * more windows fixes, ggml-cpu.h isn't visible in MSVC for some reason * unified iqp + tiled on the Q5_K, IQ4_XS set for benchmarking, updated benchmark * Fixed accidental removal of llama_build_and_test(test-backend-ops.cpp) * First integration of iqp code Co-authored-by Bartowski * Cleaning up declaration of iq unpacking helpers to align with the bit unpackers * Removed iqp path * Fix cross-platform warnings * Disabling benchmarks unless explicitly enabled * Fix backend_init for DLL-",
+    "title": "ggml-org/llama.cpp: Release b11195"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11194): opencl: add A8 Q8_0 non-MoE dp4a binary kernel (#29439) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.co",
+    "title": "ggml-org/llama.cpp: Release b11194"
+   }
+  },
+  {
+   "version": 35,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11194): opencl: add A8 Q8_0 non-MoE dp4a binary kernel (#29439) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11194/llama-b11194-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.co",
+    "title": "ggml-org/llama.cpp: Release b11194"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11193): hexagon: find software divide calls using binary inspection tool (#29449) * hex-scripts: fix table alignment * hex-scripts: find sw div calls using binary inspection tool **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org",
+    "title": "ggml-org/llama.cpp: Release b11193"
+   }
+  },
+  {
+   "version": 36,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11193): hexagon: find software divide calls using binary inspection tool (#29449) * hex-scripts: fix table alignment * hex-scripts: find sw div calls using binary inspection tool **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11193/llama-b11193-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org",
+    "title": "ggml-org/llama.cpp: Release b11193"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11192): vendor : update cpp-httplib to 0.58.0 (#29407) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-or",
+    "title": "ggml-org/llama.cpp: Release b11192"
+   }
+  },
+  {
+   "version": 37,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11192): vendor : update cpp-httplib to 0.58.0 (#29407) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11192/llama-b11192-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-or",
+    "title": "ggml-org/llama.cpp: Release b11192"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11191): common,rpc : simplify fs_create_directory_with_parents() (#29432) The original function was broken on Windows for some unicode paths Paths without a trailing separator now create the last directory too,\nmatching the function name. All current callers already include a\ntrailing separator, so this change does not affect them. Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-ubuntu-",
+    "title": "ggml-org/llama.cpp: Release b11191"
+   }
+  },
+  {
+   "version": 38,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11191): common,rpc : simplify fs_create_directory_with_parents() (#29432) The original function was broken on Windows for some unicode paths Paths without a trailing separator now create the last directory too,\nmatching the function name. All current callers already include a\ntrailing separator, so this change does not affect them. Signed-off-by: Adrien Gallouët **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11191/llama-b11191-bin-ubuntu-",
+    "title": "ggml-org/llama.cpp: Release b11191"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11190): mtmd: fix mel preprocessor in LFM2 audio (#29403) which resulted in different greedy transcripts for 4.5% of English and 6.5% of Japanese\ntest utterances. In Japanese, some differences changed entire words. This change: * uses `log(x + 2^-24)` instead of clamping to the log floor\n* uses a symmetric Hann window, equivalent to `torch.hann_window(periodic=False)`\n* adds the normalization epsilon to the standard deviation instead of inside the square root Only the `lfm2a` preprocessor opts into these behaviors. Other audio preprocessors are unchanged. Tested on top of 84e76d8 using `llama-server` with CUDA and `temperature=0`, compared against\nhttp://github.com/Liquid4All/liquid-audio fp32. Test set: * 200 LibriSpeech `test-clean` utterances (EN)\n* 200 Common Voice `ja` test utterances (JP)\n* identical 16 kHz audio passed to both implementations | Greedy transcript identical to `liquid-audio` | Without fix | With fix |\n| --------------------------------------------- | ----------: | -------",
+    "title": "ggml-org/llama.cpp: Release b11190"
+   }
+  },
+  {
+   "version": 39,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11190): mtmd: fix mel preprocessor in LFM2 audio (#29403) which resulted in different greedy transcripts for 4.5% of English and 6.5% of Japanese\ntest utterances. In Japanese, some differences changed entire words. This change: * uses `log(x + 2^-24)` instead of clamping to the log floor\n* uses a symmetric Hann window, equivalent to `torch.hann_window(periodic=False)`\n* adds the normalization epsilon to the standard deviation instead of inside the square root Only the `lfm2a` preprocessor opts into these behaviors. Other audio preprocessors are unchanged. Tested on top of 84e76d8 using `llama-server` with CUDA and `temperature=0`, compared against\nhttp://github.com/Liquid4All/liquid-audio fp32. Test set: * 200 LibriSpeech `test-clean` utterances (EN)\n* 200 Common Voice `ja` test utterances (JP)\n* identical 16 kHz audio passed to both implementations | Greedy transcript identical to `liquid-audio` | Without fix | With fix |\n| --------------------------------------------- | ----------: | -------",
+    "title": "ggml-org/llama.cpp: Release b11190"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11189): opencl: add bin kernel `kernel_gemm_noshuffle_q5_k_f32_32b_trans_ila_a8_bin`, `kernel_gemm_noshuffle_q5_k_q8_1_dp4a_ila_a8_bin` (#29401) * opencl: add A8 Q5_K non-MoE non dp4a + dp4a binary kernel * opencl: fix s transpose - s only transposed for bin kernels --------- Co-authored-by: Li He **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/lla",
+    "title": "ggml-org/llama.cpp: Release b11189"
+   }
+  },
+  {
+   "version": 40,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Offizielle Release-Notes (b11189): opencl: add bin kernel `kernel_gemm_noshuffle_q5_k_f32_32b_trans_ila_a8_bin`, `kernel_gemm_noshuffle_q5_k_q8_1_dp4a_ila_a8_bin` (#29401) * opencl: add A8 Q5_K non-MoE non dp4a + dp4a binary kernel * opencl: fix s transpose - s only transposed for bin kernels --------- Co-authored-by: Li He **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11189/llama-b11189-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/lla",
+    "title": "ggml-org/llama.cpp: Release b11189"
+   },
+   "current": {
+    "summary": "Offizielle Release-Notes (b11188): Fixing the vulkan build issue of legacy GLSLC version that has no cooperativeMatrix API support (https://github.com/ggml-org/llama.cpp/issues/29373) (#29409) * vulkan : fix build issue of legacy glslc version by adding GGML_VULKAN_COOPMAT_GLSLC_SUPPORT macro check for Intel FA shader compiling * vulkan : add preprocess condition to filter out unsupported FA 2 phases kernels before creation. * vulkan : move lock_guard for Intel FA shader pointer creation under CM1 compiling preprocessor **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11188/llama-b11188-xc",
+    "title": "ggml-org/llama.cpp: Release b11188"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-23T00:28:03Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-09-26T15:06:47Z",
+ "confirmations": 39
+}

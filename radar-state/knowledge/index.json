@@ -1,0 +1,3321 @@
+{
+ "generated_at": "2026-09-22T23:29:43Z",
+ "entries": [
+  {
+   "id": "gh-releases-ollama-1856a21b309afe62",
+   "title": "ollama/ollama: Release v0.34.3",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, llama)",
+    "relevance_score": 2
+   },
+   "summary": "Offizielle Release-Notes (v0.34.3): ## What's Changed `GET /api/show` now advertises each model's thinking controls and default: Available in the CLI with: ``` ollama show gemma4 ``` ``` thinking levels false, true default true ``` Available in the API with: ```sh curl http://localhost:11434/api/show -d '{\"model\": \"glm-5.3-flash:cloud\"}' ``` ```json { \"thinking\": { \"values\": [\"low\", \"high\", \"max\"], \"default\": \"max\" } } ``` Also available on ollama.com directly for cloud models. * **Nemotron H** vision models are now supported on Apple Silicon with MLX * Ollama's macOS app will now no longer reopen windows you've closed when activating it * Fix for model pulls from HuggingFace **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.2...v0.34.3",
+   "key_points": [
+    "Offizielle Release-Notes (v0.34.3): ## What's Changed `GET /api/show` now advertises each model's thinking controls and default: Available in the CLI with: ``` ollama show gemma4 ``` ``` thinking levels false, true default true ``` Available in the API with: ```sh curl http://localhost:11434/api/show -d '{\"model\": \"glm-5.3-flash:cloud\"}' ``` ```json { \"thinking\": { \"values\": [\"low\", \"high\", \"max\"], \"default\": \"max\" } } ``` Also available on ollama.com directly for cloud models",
+    "* **Nemotron H** vision models are now supported on Apple Silicon with MLX * Ollama's macOS app will now no longer reopen windows you've closed when activating it * Fix for model pulls from HuggingFace **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.2...v0.34.3"
+   ],
+   "source": {
+    "id": "gh-releases-ollama",
+    "name": "Ollama Releases (offizielle Änderungen)",
+    "kind": "github",
+    "trust": 5,
+    "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://github.com/ollama/ollama/releases/tag/v0.34.3",
+   "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.34.3",
+   "publisher": "GitHub Releases",
+   "published": "2026-09-19",
+   "retrieved": "2026-09-22T23:29:42Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "github",
+    "aktuell"
+   ],
+   "relevance_smyst": 2,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "ollama/ollama: Release v0.34.3",
+      "summary": "Offizielle Release-Notes (v0.34.3): ## What's Changed `GET /api/show` now advertises each model's thinking controls and default: Available in the CLI with: ``` ollama show gemma4 ``` ``` thinking levels false, true default true ``` Available in the API with: ```sh curl http://localhost:11434/api/show -d '{\"model\": \"glm-5.3-flash:cloud\"}' ``` ```json { \"thinking\": { \"values\": [\"low\", \"high\", \"max\"], \"default\": \"max\" } } ``` Also available on ollama.com directly for cloud models. * **Nemotron H** vision models are now supported on Apple Silicon with MLX * Ollama's macOS app will now no longer reopen windows you've closed when activating it * Fix for model pulls from HuggingFace **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.2...v0.34.3"
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:12Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11104",
+   "topic": {
+    "category": "infrastruktur",
+    "reason": "Infrastruktur, Frameworks, RAG- und Agentensysteme (Treffer: llama.cpp, framework)",
+    "relevance_score": 2
+   },
+   "summary": "Offizielle Release-Notes (b11104): server: Add support for binding to multiple addresses (#28690) * Add support for binding llama-server to multiple addresses Assisted-by: Codex * remove redundant thread handler * make it clear about overlapping addr * reject --port 0 with multiple tcp addr * improve arg handler * nits * fix test * nits 2 * nits * nits 2 --------- Co-authored-by: Xuan Son Nguyen **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-",
+   "key_points": [
+    "Offizielle Release-Notes (b11104): server: Add support for binding to multiple addresses (#28690) * Add support for binding llama-server to multiple addresses Assisted-by: Codex * remove redundant thread handler * make it clear about overlapping addr * reject --port 0 with multiple tcp addr * improve arg handler * nits * fix test * nits 2 * nits * nits 2 --------- Co-authored-by: Xuan Son Nguyen **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-"
+   ],
+   "source": {
+    "id": "gh-releases-llamacpp",
+    "name": "llama.cpp Releases (offizielle Änderungen)",
+    "kind": "github",
+    "trust": 5,
+    "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://github.com/ggml-org/llama.cpp/releases/tag/b11115",
+   "url_normalized": "https://github.com/ggml-org/llama.cpp/releases/tag/b11115",
+   "publisher": "GitHub Releases",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:41Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "infrastruktur",
+    "github",
+    "aktuell"
+   ],
+   "relevance_smyst": 2,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "ggml-org/llama.cpp: Release b11115",
+      "summary": "Offizielle Release-Notes (b11115): opencl: add bin kernel `kernel_gemm_noshuffle_q4_k_q8_1_dp4a_ila_a8_bin` (#29056) * opencl: add A8 Q4_K non-MoE dp4a binary kernel * opencl: rename binary kernel selection helpers **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com"
+     }
+    },
+    {
+     "version": 2,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11115): opencl: add bin kernel `kernel_gemm_noshuffle_q4_k_q8_1_dp4a_ila_a8_bin` (#29056) * opencl: add A8 Q4_K non-MoE dp4a binary kernel * opencl: rename binary kernel selection helpers **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11115/llama-b11115-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com",
+      "title": "ggml-org/llama.cpp: Release b11115"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11114): server: fix router eviction races with the existing queue (#29217) * server: route every model load through the queue A model loaded by the fast path has no queue entry, so tick() evicts\nit at its LOADED transition before its own request is proxied. Every\nload now joins the queue, whose entry protects the model until its\nwaiters leave. * server: do not admit requests into a stopping model A request for a model that is being stopped still sees it LOADED and\nis proxied into the dying child. Such a request now joins the queue\nand is served by the next instance. The stopping mark is cleared\nunder the same lock that sets UNLOADED, so no request can see a\nmodel that is neither stopping nor unloaded while its child is gone. **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11114/llama-b11114-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llam",
+      "title": "ggml-org/llama.cpp: Release b11114"
+     }
+    },
+    {
+     "version": 3,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11114): server: fix router eviction races with the existing queue (#29217) * server: route every model load through the queue A model loaded by the fast path has no queue entry, so tick() evicts\nit at its LOADED transition before its own request is proxied. Every\nload now joins the queue, whose entry protects the model until its\nwaiters leave. * server: do not admit requests into a stopping model A request for a model that is being stopped still sees it LOADED and\nis proxied into the dying child. Such a request now joins the queue\nand is served by the next instance. The stopping mark is cleared\nunder the same lock that sets UNLOADED, so no request can see a\nmodel that is neither stopping nor unloaded while its child is gone. **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11114/llama-b11114-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llam",
+      "title": "ggml-org/llama.cpp: Release b11114"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11113): server: do not pass log file to children (#29212) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml",
+      "title": "ggml-org/llama.cpp: Release b11113"
+     }
+    },
+    {
+     "version": 4,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11113): server: do not pass log file to children (#29212) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11113/llama-b11113-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml",
+      "title": "ggml-org/llama.cpp: Release b11113"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11112): server: support input_image in function_call_output (#20663) (#22575) * server: support input_image in function_call_output (#20663) * server: fix if statement spacing * server: avoid repeated type lookup **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x",
+      "title": "ggml-org/llama.cpp: Release b11112"
+     }
+    },
+    {
+     "version": 5,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11112): server: support input_image in function_call_output (#20663) (#22575) * server: support input_image in function_call_output (#20663) * server: fix if statement spacing * server: avoid repeated type lookup **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11112/llama-b11112-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x",
+      "title": "ggml-org/llama.cpp: Release b11112"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11111): vulkan: add Intel Xe flash attention optimization kernels (2/3, Xe-LPG Plus/Xe2/Xe3) (#24406) * vulkan : Intel FA kernel optimization for split k path * vulkan : Host code update for Intel split k FA kernel path selection, fix A770 Linux op test failures * vulkan : use symmetric coopMatMulAdd() in flash_attn_decode_phase_1 shader to resolve test op failre on A770 Linux with 26.2.3 mesa driver * vulkan : fix editorconfig issue in flash_attn_decode_phase_2.comp --------- Co-authored-by: Liu, Russell **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11111/lla",
+      "title": "ggml-org/llama.cpp: Release b11111"
+     }
+    },
+    {
+     "version": 6,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11111): vulkan: add Intel Xe flash attention optimization kernels (2/3, Xe-LPG Plus/Xe2/Xe3) (#24406) * vulkan : Intel FA kernel optimization for split k path * vulkan : Host code update for Intel split k FA kernel path selection, fix A770 Linux op test failures * vulkan : use symmetric coopMatMulAdd() in flash_attn_decode_phase_1 shader to resolve test op failre on A770 Linux with 26.2.3 mesa driver * vulkan : fix editorconfig issue in flash_attn_decode_phase_2.comp --------- Co-authored-by: Liu, Russell **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11111/llama-b11111-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11111/lla",
+      "title": "ggml-org/llama.cpp: Release b11111"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11110): mtmd: add various sanity checks (#29276) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-org/llam",
+      "title": "ggml-org/llama.cpp: Release b11110"
+     }
+    },
+    {
+     "version": 7,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11110): mtmd: add various sanity checks (#29276) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11110/llama-b11110-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com/ggml-org/llam",
+      "title": "ggml-org/llama.cpp: Release b11110"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11109): metal : gate mul_mm_id src1 rescale behind ggml_prec (#29029) * metal : gate mul_mm_id src1 rescale behind ggml_prec Assisted-by: Claude Fable 5.1 * ggml-webgpu: reject MUL_MAT_ID when src1 precision is F32 * cuda/vulkan: reject MUL_MAT_ID in supports_op when src1 prec is F32 fix `supports_op` to return false for failing backends when the specified src1 precision is f32 Assisted-by: Claude Fable 5.1 --------- Co-authored-by: yomaytk **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https:/",
+      "title": "ggml-org/llama.cpp: Release b11109"
+     }
+    },
+    {
+     "version": 8,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11109): metal : gate mul_mm_id src1 rescale behind ggml_prec (#29029) * metal : gate mul_mm_id src1 rescale behind ggml_prec Assisted-by: Claude Fable 5.1 * ggml-webgpu: reject MUL_MAT_ID when src1 precision is F32 * cuda/vulkan: reject MUL_MAT_ID in supports_op when src1 prec is F32 fix `supports_op` to return false for failing backends when the specified src1 precision is f32 Assisted-by: Claude Fable 5.1 --------- Co-authored-by: yomaytk **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11109/llama-b11109-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https:/",
+      "title": "ggml-org/llama.cpp: Release b11109"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11108): ggml : IQ1_M build prefix sums once per block (#28706) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com",
+      "title": "ggml-org/llama.cpp: Release b11108"
+     }
+    },
+    {
+     "version": 9,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11108): ggml : IQ1_M build prefix sums once per block (#28706) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11108/llama-b11108-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://github.com",
+      "title": "ggml-org/llama.cpp: Release b11108"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11105): jinja: use const for statement::execute and ::visit (#29271) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://gith",
+      "title": "ggml-org/llama.cpp: Release b11105"
+     }
+    },
+    {
+     "version": 10,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: summary, title",
+     "previous": {
+      "summary": "Offizielle Release-Notes (b11105): jinja: use const for statement::execute and ::visit (#29271) **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-x64.tar.gz)\n- [Ubuntu arm64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-arm64.tar.gz)\n- [Ubuntu s390x (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11105/llama-b11105-bin-ubuntu-s390x.tar.gz)\n- [Ubuntu x64 (Vulkan)](https://gith",
+      "title": "ggml-org/llama.cpp: Release b11105"
+     },
+     "current": {
+      "summary": "Offizielle Release-Notes (b11104): server: Add support for binding to multiple addresses (#28690) * Add support for binding llama-server to multiple addresses Assisted-by: Codex * remove redundant thread handler * make it clear about overlapping addr * reject --port 0 with multiple tcp addr * improve arg handler * nits * fix test * nits 2 * nits * nits 2 --------- Co-authored-by: Xuan Son Nguyen **Website:**\n- **Attestations:**\n- **macOS/iOS:**\n- [macOS Apple Silicon (arm64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-arm64.tar.gz)\n- macOS Apple Silicon (arm64, KleidiAI enabled) [DISABLED](https://github.com/ggml-org/llama.cpp/pull/23780)\n- [macOS Intel (x64)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-macos-x64.tar.gz)\n- [iOS XCFramework](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-xcframework.zip) **Linux:**\n- [Ubuntu x64 (CPU)](https://github.com/ggml-org/llama.cpp/releases/download/b11104/llama-b11104-bin-",
+      "title": "ggml-org/llama.cpp: Release b11104"
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rag_ready",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (summary, title)."
+    }
+   ],
+   "status": "updated",
+   "last_seen": "2026-09-22T23:29:43Z",
+   "confirmations": 9
+  },
+  {
+   "id": "google-ai-blog-079e661c04cec0b0",
+   "title": "New experts join Google’s AI & Economy team",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "We are expanding our AI & Economy team with world-class academic advisors, fellows, and core internal researchers.",
+   "key_points": [
+    "We are expanding our AI & Economy team with world-class academic advisors, fellows, and core internal researchers."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/expanding-ai-economy-research-bench/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/expanding-ai-economy-research-bench",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-18",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "New experts join Google’s AI & Economy team",
+      "summary": "We are expanding our AI & Economy team with world-class academic advisors, fellows, and core internal researchers."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "google-ai-blog-13d62ca6fcfd55d7",
+   "title": "Co-creating the future of fashion with Google",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "Google worked side-by-side with designers Jane Wade and Sergio Hudson to custom-design Google Flow tools to prep for NYFW.",
+   "key_points": [
+    "Google worked side-by-side with designers Jane Wade and Sergio Hudson to custom-design Google Flow tools to prep for NYFW."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-flow-fashion-week/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/google-flow-fashion-week",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-18",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Co-creating the future of fashion with Google",
+      "summary": "Google worked side-by-side with designers Jane Wade and Sergio Hudson to custom-design Google Flow tools to prep for NYFW."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "google-ai-blog-e7b9d12d1b3a7eb0",
+   "title": "Making global data easier to explore",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "Google and the UN system have launched the UN System Data Commons, a new open platform making global statistics accessible and easy to search.",
+   "key_points": [
+    "Google and the UN system have launched the UN System Data Commons, a new open platform making global statistics accessible and easy to search."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-un-data-commons-platform/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/google-un-data-commons-platform",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-17",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Making global data easier to explore",
+      "summary": "Google and the UN system have launched the UN System Data Commons, a new open platform making global statistics accessible and easy to search."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "google-ai-blog-18592959ad29d5e2",
+   "title": "AI for Societal Impact",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "Explore this collection to see how experts and local leaders are using AI breakthroughs to ensure everyone can share the opportunity of AI.",
+   "key_points": [
+    "Explore this collection to see how experts and local leaders are using AI breakthroughs to ensure everyone can share the opportunity of AI."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/ai-for-societal-impact/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/ai-for-societal-impact",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-15",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [
+    "deepmind-blog-383dbcd782aba68f"
+   ],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "AI for Societal Impact",
+      "summary": "Explore this collection to see how experts and local leaders are using AI breakthroughs to ensure everyone can share the opportunity of AI."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "google-ai-blog-b86d9a766fb72b73",
+   "title": "Building AI to accelerate science and improve lives",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "The true measure of AI is who it helps. Here’s how it’s impacting lives today. We're focused on key areas where advanced technology can help make extraordinary progress …",
+   "key_points": [
+    "The true measure of AI is who it helps",
+    "Here’s how it’s impacting lives today",
+    "We're focused on key areas where advanced technology can help make extraordinary progress …"
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/ai-applications-science-people/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/ai-applications-science-people",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-15",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Building AI to accelerate science and improve lives",
+      "summary": "The true measure of AI is who it helps. Here’s how it’s impacting lives today. We're focused on key areas where advanced technology can help make extraordinary progress …"
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "google-ai-blog-a243976a4aeffe78",
+   "title": "AI for everyone in every language",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model)",
+    "relevance_score": 1
+   },
+   "summary": "We’re moving beyond traditional text translation to build models that understand the world’s rich, living languages exactly as they are expressed.",
+   "key_points": [
+    "We’re moving beyond traditional text translation to build models that understand the world’s rich, living languages exactly as they are expressed."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/ai-for-every-language/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/ai-for-every-language",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-15",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "AI for everyone in every language",
+      "summary": "We’re moving beyond traditional text translation to build models that understand the world’s rich, living languages exactly as they are expressed."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready",
+   "_rag_flags": []
+  },
+  {
+   "id": "google-ai-blog-00e29a681a6f5e3b",
+   "title": "New insights from Google’s AI & Economy ATLAS",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "We’ve translated ATLAS’s millions of global data points into an interactive, open-access experience.",
+   "key_points": [
+    "We’ve translated ATLAS’s millions of global data points into an interactive, open-access experience."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/ai-economy-atlas-september-2026/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/ai-economy-atlas-september-2026",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-15",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [
+    "google-ai-blog-079e661c04cec0b0"
+   ],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "New insights from Google’s AI & Economy ATLAS",
+      "summary": "We’ve translated ATLAS’s millions of global data points into an interactive, open-access experience."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "google-ai-blog-b49b47db0b359f67",
+   "title": "Watch astronaut Christina Koch and Google’s James Manyika discuss space, technology, and discovery.",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "Christina Koch sits down with James Manyika, Google’s Senior Vice President of Research, Labs, Technology & Society.",
+   "key_points": [
+    "Christina Koch sits down with James Manyika, Google’s Senior Vice President of Research, Labs, Technology & Society."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/ai/dialogues-christina-koch/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/dialogues-christina-koch",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-14",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Watch astronaut Christina Koch and Google’s James Manyika discuss space, technology, and discovery.",
+      "summary": "Christina Koch sits down with James Manyika, Google’s Senior Vice President of Research, Labs, Technology & Society."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "google-ai-blog-bf70dc826a65d37e",
+   "title": "DevFest is back",
+   "topic": {
+    "category": "forschung",
+    "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: agent)",
+    "relevance_score": 1
+   },
+   "summary": "DevFest 2026 is back and here’s how you can connect with one of the more than 800 global events to build, secure, and scale in the agentic AI era.",
+   "key_points": [
+    "DevFest 2026 is back and here’s how you can connect with one of the more than 800 global events to build, secure, and scale in the agentic AI era."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/innovation-and-ai/technology/developers-tools/devfest2026/",
+   "url_normalized": "https://blog.google/innovation-and-ai/technology/developers-tools/devfest2026",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-14",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "forschung",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "DevFest is back",
+      "summary": "DevFest 2026 is back and here’s how you can connect with one of the more than 800 global events to build, secure, and scale in the agentic AI era."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "google-ai-blog-1852061b5cf6950b",
+   "title": "3 ways to prep for your next big race with Search",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "Search can help runners get race-day ready with registration alerts, tailored training plans, and more.",
+   "key_points": [
+    "Search can help runners get race-day ready with registration alerts, tailored training plans, and more."
+   ],
+   "source": {
+    "id": "google-ai-blog",
+    "name": "Google AI & DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://blog.google/products-and-platforms/products/search/running-race-training-tips/",
+   "url_normalized": "https://blog.google/products-and-platforms/products/search/running-race-training-tips",
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "published": "2026-09-10",
+   "retrieved": "2026-09-22T23:29:39Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [
+    "google-ai-blog-18592959ad29d5e2"
+   ],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "3 ways to prep for your next big race with Search",
+      "summary": "Search can help runners get race-day ready with registration alerts, tailored training plans, and more."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "deepmind-blog-f4c3141ce9f2ce84",
+   "title": "Introducing Gemini 3.8 Live and 3.8 Live Extended Thinking",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: gemini)",
+    "relevance_score": 1
+   },
+   "summary": "",
+   "key_points": [],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/introducing-gemini-3-8-live-and-3-8-live-extended-thinking/",
+   "url_normalized": "https://deepmind.google/blog/introducing-gemini-3-8-live-and-3-8-live-extended-thinking",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-09-15",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Introducing Gemini 3.8 Live and 3.8 Live Extended Thinking",
+      "summary": ""
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "deepmind-blog-80d284f58871ce28",
+   "title": "AlphaGenome Atlas: A predictive map of every possible DNA letter change in the human genome",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "AlphaGenome Atlas maps the molecular effects of 9 billion single-letter DNA variants across the human genome.",
+   "key_points": [
+    "AlphaGenome Atlas maps the molecular effects of 9 billion single-letter DNA variants across the human genome."
+   ],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/alphagenome-atlas-a-predictive-map-of-every-possible-dna-letter-change-in-the-human-genome/",
+   "url_normalized": "https://deepmind.google/blog/alphagenome-atlas-a-predictive-map-of-every-possible-dna-letter-change-in-the-human-genome",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-09-08",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "AlphaGenome Atlas: A predictive map of every possible DNA letter change in the human genome",
+      "summary": "AlphaGenome Atlas maps the molecular effects of 9 billion single-letter DNA variants across the human genome."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "deepmind-blog-56da2c8ef80375f1",
+   "title": "Introducing WeatherNext 3, our most advanced and accurate global weather AI model",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model)",
+    "relevance_score": 1
+   },
+   "summary": "",
+   "key_points": [],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/introducing-weathernext-3-our-most-advanced-and-accurate-global-weather-ai-model/",
+   "url_normalized": "https://deepmind.google/blog/introducing-weathernext-3-our-most-advanced-and-accurate-global-weather-ai-model",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-09-03",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [
+    "openai-news-3d48e529ad7a20b1"
+   ],
+   "tags": [
+    "ki-modelle",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Introducing WeatherNext 3, our most advanced and accurate global weather AI model",
+      "summary": ""
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:21Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t2)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "deepmind-blog-383dbcd782aba68f",
+   "title": "Proactive cyber defense for governments and enterprises",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "",
+   "key_points": [],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/proactive-cyber-defense-for-governments-and-enterprises/",
+   "url_normalized": "https://deepmind.google/blog/proactive-cyber-defense-for-governments-and-enterprises",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-09-02",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Proactive cyber defense for governments and enterprises",
+      "summary": ""
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "deepmind-blog-dfd1ea2e5518b0ed",
+   "title": "Introducing agentic video understanding with Gemini",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: gemini)",
+    "relevance_score": 1
+   },
+   "summary": "",
+   "key_points": [],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/introducing-agentic-video-in-gemini/",
+   "url_normalized": "https://deepmind.google/blog/introducing-agentic-video-in-gemini",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-09-01",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [
+    "deepmind-blog-f4c3141ce9f2ce84"
+   ],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Introducing agentic video understanding with Gemini",
+      "summary": ""
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "deepmind-blog-a13e39d4fa54504b",
+   "title": "Gemini Omni 1.1 Flash lets you build with more control",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: gemini)",
+    "relevance_score": 1
+   },
+   "summary": "",
+   "key_points": [],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/gemini-omni-1-1-flash-lets-you-build-with-more-control/",
+   "url_normalized": "https://deepmind.google/blog/gemini-omni-1-1-flash-lets-you-build-with-more-control",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-08-27",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [
+    "deepmind-blog-dfd1ea2e5518b0ed"
+   ],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Gemini Omni 1.1 Flash lets you build with more control",
+      "summary": ""
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "deepmind-blog-d9b2bc36ffdfc77e",
+   "title": "Piloting the world's first double-blind AI evaluations",
+   "topic": {
+    "category": "forschung",
+    "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: evaluation)",
+    "relevance_score": 1
+   },
+   "summary": "Piloting the world's first double-blind AI evaluations",
+   "key_points": [
+    "Piloting the world's first double-blind AI evaluations"
+   ],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/piloting-the-worlds-first-double-blind-ai-evaluations/",
+   "url_normalized": "https://deepmind.google/blog/piloting-the-worlds-first-double-blind-ai-evaluations",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-08-27",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "forschung",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Piloting the world's first double-blind AI evaluations",
+      "summary": "Piloting the world's first double-blind AI evaluations"
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "deepmind-blog-83abfc082897739b",
+   "title": "Intelligent transcription with Gemini 3.5 Transcribe",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: gemini)",
+    "relevance_score": 1
+   },
+   "summary": "Now you can get more intelligent speech-to-text transcription with Gemini 3.5 Transcribe.",
+   "key_points": [
+    "Now you can get more intelligent speech-to-text transcription with Gemini 3.5 Transcribe."
+   ],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/intelligent-transcription-with-gemini-3-5-transcribe/",
+   "url_normalized": "https://deepmind.google/blog/intelligent-transcription-with-gemini-3-5-transcribe",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-08-26",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+   "trust_level": 4,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [
+    "deepmind-blog-dfd1ea2e5518b0ed",
+    "deepmind-blog-a13e39d4fa54504b"
+   ],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "aktuell"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Intelligent transcription with Gemini 3.5 Transcribe",
+      "summary": "Now you can get more intelligent speech-to-text transcription with Gemini 3.5 Transcribe."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "deepmind-blog-06daba08af15aa42",
+   "title": "From Atari to EVE Online: Building on 15 Years of AI Research in Games",
+   "topic": {
+    "category": "allgemein",
+    "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+    "relevance_score": 0
+   },
+   "summary": "Google DeepMind partners with game studios to prototype breakthrough AI gameplay.",
+   "key_points": [
+    "Google DeepMind partners with game studios to prototype breakthrough AI gameplay."
+   ],
+   "source": {
+    "id": "deepmind-blog",
+    "name": "Google DeepMind Blog (RSS)",
+    "kind": "rss",
+    "trust": 4,
+    "trust_reason": "Quellklasse rss (Basis 4)"
+   },
+   "source_url": "https://deepmind.google/blog/from-atari-to-eve-online-building-on-15-years-of-ai-research-in-games/",
+   "url_normalized": "https://deepmind.google/blog/from-atari-to-eve-online-building-on-15-years-of-ai-research-in-games",
+   "publisher": "Google DeepMind Blog (RSS)",
+   "published": "2026-08-21",
+   "retrieved": "2026-09-22T23:29:38Z",
+   "check": "rejected",
+   "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+   "trust_level": 4,
+   "freshness": "alt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "allgemein",
+    "rss",
+    "alt"
+   ],
+   "relevance_smyst": 0,
+   "usage_status": "abgelehnt",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "From Atari to EVE Online: Building on 15 Years of AI Research in Games",
+      "summary": "Google DeepMind partners with game studios to prototype breakthrough AI gameplay."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "rejected",
+     "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rejected",
+     "to": "archiviert-als-abgelehnt",
+     "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+    }
+   ],
+   "status": "archiviert-als-abgelehnt"
+  },
+  {
+   "id": "openai-news-b6b1e4118cdbb529",
+   "title": "Better prompt caching for GPT-6",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: gpt)",
+    "relevance_score": 1
+   },
+   "summary": "Learn how GPT-6 improves prompt caching with higher cache hit rates, new diagnostics, explicit breakpoints, and controls that reduce latency and costs.",
+   "key_points": [
+    "Learn how GPT-6 improves prompt caching with higher cache hit rates, new diagnostics, explicit breakpoints, and controls that reduce latency and costs."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/better-prompt-caching-for-gpt-6",
+   "url_normalized": "https://openai.com/index/better-prompt-caching-for-gpt-6",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Better prompt caching for GPT-6",
+      "summary": "Learn how GPT-6 improves prompt caching with higher cache hit rates, new diagnostics, explicit breakpoints, and controls that reduce latency and costs."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "openai-news-3d48e529ad7a20b1",
+   "title": "Introducing GPT-6 Sol and Luna",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, gpt)",
+    "relevance_score": 2
+   },
+   "summary": "Meet GPT-6 Sol and Luna, two models that bring frontier intelligence to everyday work with different balances of capability and cost.",
+   "key_points": [
+    "Meet GPT-6 Sol and Luna, two models that bring frontier intelligence to everyday work with different balances of capability and cost."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/introducing-gpt-6-sol-and-luna",
+   "url_normalized": "https://openai.com/index/introducing-gpt-6-sol-and-luna",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 2,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Introducing GPT-6 Sol and Luna",
+      "summary": "Meet GPT-6 Sol and Luna, two models that bring frontier intelligence to everyday work with different balances of capability and cost."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "openai-news-ce45d8dc0f6c9cea",
+   "title": "Parallel cut research time and cost in half with GPT‑6 Astra",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, gpt)",
+    "relevance_score": 2
+   },
+   "summary": "GPT‑6 Astra allowed Parallel’s agents to research and synthesize labor-market data in half the time and at half the cost vs. prior models.",
+   "key_points": [
+    "GPT‑6 Astra allowed Parallel’s agents to research and synthesize labor-market data in half the time and at half the cost vs",
+    "prior models."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/parallel-cuts-time-and-cost-with-astra",
+   "url_normalized": "https://openai.com/index/parallel-cuts-time-and-cost-with-astra",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 2,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Parallel cut research time and cost in half with GPT‑6 Astra",
+      "summary": "GPT‑6 Astra allowed Parallel’s agents to research and synthesize labor-market data in half the time and at half the cost vs. prior models."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "openai-news-b4fb82cc1313a309",
+   "title": "Priorities and principles for effective third party assessments",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model)",
+    "relevance_score": 1
+   },
+   "summary": "OpenAI outlines priorities and principles for rigorous, secure, and independent third-party AI safety assessments of frontier models and safeguards.",
+   "key_points": [
+    "OpenAI outlines priorities and principles for rigorous, secure, and independent third-party AI safety assessments of frontier models and safeguards."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/priorities-principles-third-party-assessments",
+   "url_normalized": "https://openai.com/index/priorities-principles-third-party-assessments",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Priorities and principles for effective third party assessments",
+      "summary": "OpenAI outlines priorities and principles for rigorous, secure, and independent third-party AI safety assessments of frontier models and safeguards."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "openai-news-d37f5b2c59270d01",
+   "title": "Higgsfield AI ships new video features in a day with GPT-6 Astra",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: gpt)",
+    "relevance_score": 1
+   },
+   "summary": "With GPT-6 Astra, Higgsfield AI makes video ad creation easier for small businesses and brings new creative tools to market faster.",
+   "key_points": [
+    "With GPT-6 Astra, Higgsfield AI makes video ad creation easier for small businesses and brings new creative tools to market faster."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/higgsfield-from-prompt-to-production-with-astra",
+   "url_normalized": "https://openai.com/index/higgsfield-from-prompt-to-production-with-astra",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Higgsfield AI ships new video features in a day with GPT-6 Astra",
+      "summary": "With GPT-6 Astra, Higgsfield AI makes video ad creation easier for small businesses and brings new creative tools to market faster."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "openai-news-a7ca59844a94ccd6",
+   "title": "Advisory Group on Mathematics and Artificial Intelligence",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: openai)",
+    "relevance_score": 1
+   },
+   "summary": "OpenAI is working with an independent Advisory Group on Mathematics and Artificial Intelligence to guide the review and communication of emerging AI results.",
+   "key_points": [
+    "OpenAI is working with an independent Advisory Group on Mathematics and Artificial Intelligence to guide the review and communication of emerging AI results."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/advisory-group-on-mathematics-and-ai",
+   "url_normalized": "https://openai.com/index/advisory-group-on-mathematics-and-ai",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Advisory Group on Mathematics and Artificial Intelligence",
+      "summary": "OpenAI is working with an independent Advisory Group on Mathematics and Artificial Intelligence to guide the review and communication of emerging AI results."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready",
+   "_rag_flags": []
+  },
+  {
+   "id": "openai-news-2c9792fbb14ae5db",
+   "title": "Building standards for the next phase of AI",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: openai)",
+    "relevance_score": 1
+   },
+   "summary": "OpenAI outlines a path to shared global AI standards, calling for coordinated evaluation, reporting, and governance to improve safety.",
+   "key_points": [
+    "OpenAI outlines a path to shared global AI standards, calling for coordinated evaluation, reporting, and governance to improve safety."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/building-standards-next-phase-ai",
+   "url_normalized": "https://openai.com/index/building-standards-next-phase-ai",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Building standards for the next phase of AI",
+      "summary": "OpenAI outlines a path to shared global AI standards, calling for coordinated evaluation, reporting, and governance to improve safety."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:31Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t3)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "openai-news-530db518a73a5717",
+   "title": "Expanding OpenAI Academy with new learning paths",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: openai)",
+    "relevance_score": 1
+   },
+   "summary": "Explore new OpenAI Academy learning paths for employees, developers, leaders, educators, and students to build and demonstrate practical AI skills.",
+   "key_points": [
+    "Explore new OpenAI Academy learning paths for employees, developers, leaders, educators, and students to build and demonstrate practical AI skills."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/expanding-openai-academy-with-new-learning-paths",
+   "url_normalized": "https://openai.com/index/expanding-openai-academy-with-new-learning-paths",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Expanding OpenAI Academy with new learning paths",
+      "summary": "Explore new OpenAI Academy learning paths for employees, developers, leaders, educators, and students to build and demonstrate practical AI skills."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:31Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t3)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "openai-news-d1749ba76a98e7a5",
+   "title": "How V7 gives AI agents institutional memory",
+   "topic": {
+    "category": "forschung",
+    "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: memory, agent)",
+    "relevance_score": 2
+   },
+   "summary": "Using GPT-5.6, V7 turns scattered company files into context agents can use to complete complex, source-linked work.",
+   "key_points": [
+    "Using GPT-5.6, V7 turns scattered company files into context agents can use to complete complex, source-linked work."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/v7",
+   "url_normalized": "https://openai.com/index/v7",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "forschung",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 2,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "How V7 gives AI agents institutional memory",
+      "summary": "Using GPT-5.6, V7 turns scattered company files into context agents can use to complete complex, source-linked work."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready"
+  },
+  {
+   "id": "openai-news-559b0cf1119746d2",
+   "title": "Introducing the Australian Youth Safety Blueprint",
+   "topic": {
+    "category": "konkurrenz",
+    "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: openai)",
+    "relevance_score": 1
+   },
+   "summary": "OpenAI introduces the Australian Youth Safety Blueprint, a six-pillar roadmap for safer AI experiences that protect and empower young people.",
+   "key_points": [
+    "OpenAI introduces the Australian Youth Safety Blueprint, a six-pillar roadmap for safer AI experiences that protect and empower young people."
+   ],
+   "source": {
+    "id": "openai-news",
+    "name": "OpenAI Neuigkeiten (offizieller RSS)",
+    "kind": "rss",
+    "trust": 3,
+    "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+   },
+   "source_url": "https://openai.com/index/australian-youth-safety-blueprint",
+   "url_normalized": "https://openai.com/index/australian-youth-safety-blueprint",
+   "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+   "published": null,
+   "retrieved": "2026-09-22T23:29:36Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+   "trust_level": 3,
+   "freshness": "unbekannt",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "konkurrenz",
+    "rss",
+    "unbekannt"
+   ],
+   "relevance_smyst": 1,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "Introducing the Australian Youth Safety Blueprint",
+      "summary": "OpenAI introduces the Australian Youth Safety Blueprint, a six-pillar roadmap for safer AI experiences that protect and empower young people."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    }
+   ],
+   "status": "rag_ready",
+   "_rag_flags": []
+  },
+  {
+   "id": "cisa-kev-042bd106b079ac18",
+   "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)",
+   "topic": {
+    "category": "sicherheit",
+    "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-, vulnerability, exploit, security, patch)",
+    "relevance_score": 3
+   },
+   "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-09-22. Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+   "key_points": [
+    "Aktiv ausgenutzte Schwachstelle (CISA KEV)",
+    "Betroffen: Arista VeloCloud Orchestrator",
+    "Bekannt seit 2026-09-22",
+    "Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host",
+    "Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator"
+   ],
+   "source": {
+    "id": "cisa-kev",
+    "name": "CISA Known Exploited Vulnerabilities",
+    "kind": "api",
+    "trust": 5,
+    "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+   "url_normalized": "https://cisa.gov/known-exploited-vulnerabilities-catalog",
+   "publisher": "CISA (US-Behörde)",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:35Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "sicherheit",
+    "api",
+    "aktuell"
+   ],
+   "relevance_smyst": 3,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)",
+      "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-09-22. Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:12Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "hf-models-c5d149b3a7f89df5",
+   "title": "suwro/Llama-3.2-3B-Instruct-Q4_K_M-GGUF",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, instruct, modell, llama)",
+    "relevance_score": 3
+   },
+   "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers.",
+   "key_points": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0",
+    "Pipeline: text-generation",
+    "Bibliothek: transformers."
+   ],
+   "source": {
+    "id": "hf-models",
+    "name": "Hugging Face Modelle (neu veröffentlicht)",
+    "kind": "api",
+    "trust": 5,
+    "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://huggingface.co/suwro/Llama-3.2-3B-Instruct-Q4_K_M-GGUF",
+   "url_normalized": "https://huggingface.co/suwro/Llama-3.2-3B-Instruct-Q4_K_M-GGUF",
+   "publisher": "Hugging Face",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:34Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "api",
+    "aktuell"
+   ],
+   "relevance_smyst": 3,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "suwro/Llama-3.2-3B-Instruct-Q4_K_M-GGUF",
+      "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:12Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "hf-models-527203b3dc2a8ff2",
+   "title": "francesca9805/hin-deva-10mb-ppt-Dp-10mb-packed-bfd_seed10",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell)",
+    "relevance_score": 2
+   },
+   "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers.",
+   "key_points": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0",
+    "Pipeline: text-generation",
+    "Bibliothek: transformers."
+   ],
+   "source": {
+    "id": "hf-models",
+    "name": "Hugging Face Modelle (neu veröffentlicht)",
+    "kind": "api",
+    "trust": 5,
+    "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://huggingface.co/francesca9805/hin-deva-10mb-ppt-Dp-100mb-packed-bfd_seed10",
+   "url_normalized": "https://huggingface.co/francesca9805/hin-deva-10mb-ppt-Dp-100mb-packed-bfd_seed10",
+   "publisher": "Hugging Face",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:34Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "api",
+    "aktuell"
+   ],
+   "relevance_smyst": 2,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "francesca9805/hin-deva-10mb-ppt-Dp-100mb-packed-bfd_seed10",
+      "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers."
+     }
+    },
+    {
+     "version": 2,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: title",
+     "previous": {
+      "title": "francesca9805/hin-deva-10mb-ppt-Dp-100mb-packed-bfd_seed10"
+     },
+     "current": {
+      "title": "francesca9805/hin-deva-10mb-ppt-Dp-10mb-packed-bfd_seed3407"
+     }
+    },
+    {
+     "version": 3,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: title",
+     "previous": {
+      "title": "francesca9805/hin-deva-10mb-ppt-Dp-10mb-packed-bfd_seed3407"
+     },
+     "current": {
+      "title": "francesca9805/hin-deva-10mb-ppt-Dp-10mb-packed-bfd_seed455"
+     }
+    },
+    {
+     "version": 4,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: title",
+     "previous": {
+      "title": "francesca9805/hin-deva-10mb-ppt-Dp-10mb-packed-bfd_seed455"
+     },
+     "current": {
+      "title": "francesca9805/hin-deva-10mb-ppt-Dp-10mb-packed-bfd_seed10"
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rag_ready",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (title)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "updated",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (title)."
+    }
+   ],
+   "status": "updated",
+   "last_seen": "2026-09-22T23:29:43Z",
+   "confirmations": 3
+  },
+  {
+   "id": "hf-models-5b19e025f4654e4d",
+   "title": "nathanwei05/cs2881r-dobby-qwen2.5-3b-rlvr-grpo100-step100",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, qwen)",
+    "relevance_score": 3
+   },
+   "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers.",
+   "key_points": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0",
+    "Pipeline: text-generation",
+    "Bibliothek: transformers."
+   ],
+   "source": {
+    "id": "hf-models",
+    "name": "Hugging Face Modelle (neu veröffentlicht)",
+    "kind": "api",
+    "trust": 5,
+    "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://huggingface.co/nathanwei05/cs2881r-dobby-qwen2.5-3b-final-combined-grpo100-step25",
+   "url_normalized": "https://huggingface.co/nathanwei05/cs2881r-dobby-qwen2.5-3b-final-combined-grpo100-step25",
+   "publisher": "Hugging Face",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:34Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "api",
+    "aktuell"
+   ],
+   "relevance_smyst": 3,
+   "usage_status": "gespeichert-geprüft",
+   "used_in_answer": false,
+   "rag_used_count": 0,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "nathanwei05/cs2881r-dobby-qwen2.5-3b-final-combined-grpo100-step25",
+      "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers."
+     }
+    },
+    {
+     "version": 2,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Inhaltliche Änderung der Quelle: title",
+     "previous": {
+      "title": "nathanwei05/cs2881r-dobby-qwen2.5-3b-final-combined-grpo100-step25"
+     },
+     "current": {
+      "title": "nathanwei05/cs2881r-dobby-qwen2.5-3b-rlvr-grpo100-step100"
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "rag_ready",
+     "to": "updated",
+     "reason": "Quelle aktualisiert (title)."
+    }
+   ],
+   "status": "updated",
+   "last_seen": "2026-09-22T23:29:43Z",
+   "confirmations": 1
+  },
+  {
+   "id": "hf-models-ddea532d9ced5c20",
+   "title": "GhostScientist/semanticwiki-coder-7b-v2-gguf",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell)",
+    "relevance_score": 2
+   },
+   "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: gguf.",
+   "key_points": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0",
+    "Pipeline: text-generation",
+    "Bibliothek: gguf."
+   ],
+   "source": {
+    "id": "hf-models",
+    "name": "Hugging Face Modelle (neu veröffentlicht)",
+    "kind": "api",
+    "trust": 5,
+    "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://huggingface.co/GhostScientist/semanticwiki-coder-7b-v2-gguf",
+   "url_normalized": "https://huggingface.co/GhostScientist/semanticwiki-coder-7b-v2-gguf",
+   "publisher": "Hugging Face",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:34Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "api",
+    "aktuell"
+   ],
+   "relevance_smyst": 2,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "GhostScientist/semanticwiki-coder-7b-v2-gguf",
+      "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: gguf."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:21Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t2)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "hf-models-2eab5d373bfefeea",
+   "title": "TAKADOX/Bonsai-2-27B-Ternary-CRACK-GGUF",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, llama)",
+    "relevance_score": 3
+   },
+   "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: llama.cpp.",
+   "key_points": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0",
+    "Pipeline: text-generation",
+    "Bibliothek: llama.cpp."
+   ],
+   "source": {
+    "id": "hf-models",
+    "name": "Hugging Face Modelle (neu veröffentlicht)",
+    "kind": "api",
+    "trust": 5,
+    "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://huggingface.co/TAKADOX/Bonsai-2-27B-Ternary-CRACK-GGUF",
+   "url_normalized": "https://huggingface.co/TAKADOX/Bonsai-2-27B-Ternary-CRACK-GGUF",
+   "publisher": "Hugging Face",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:34Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "api",
+    "aktuell"
+   ],
+   "relevance_smyst": 3,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "TAKADOX/Bonsai-2-27B-Ternary-CRACK-GGUF",
+      "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: llama.cpp."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:21Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t2)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  },
+  {
+   "id": "hf-models-bb1913539909e8cb",
+   "title": "dawsaryahmad-jpg/Qwen2.5-Coder-14B-n8n-Workflow-Generator",
+   "topic": {
+    "category": "ki-modelle",
+    "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, qwen)",
+    "relevance_score": 3
+   },
+   "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: mlx.",
+   "key_points": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0",
+    "Pipeline: text-generation",
+    "Bibliothek: mlx."
+   ],
+   "source": {
+    "id": "hf-models",
+    "name": "Hugging Face Modelle (neu veröffentlicht)",
+    "kind": "api",
+    "trust": 5,
+    "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+   },
+   "source_url": "https://huggingface.co/dawsaryahmad-jpg/Qwen2.5-Coder-14B-n8n-Workflow-Generator",
+   "url_normalized": "https://huggingface.co/dawsaryahmad-jpg/Qwen2.5-Coder-14B-n8n-Workflow-Generator",
+   "publisher": "Hugging Face",
+   "published": "2026-09-22",
+   "retrieved": "2026-09-22T23:29:34Z",
+   "check": "verified",
+   "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+   "trust_level": 5,
+   "freshness": "aktuell",
+   "injection_suspicion": [],
+   "contradiction_candidates": [],
+   "tags": [
+    "ki-modelle",
+    "api",
+    "aktuell"
+   ],
+   "relevance_smyst": 3,
+   "usage_status": "in Antwort verwendet (Test)",
+   "used_in_answer": true,
+   "rag_used_count": 1,
+   "training_approved": false,
+   "versions": [
+    {
+     "version": 1,
+     "date": "2026-09-22T23:29:43Z",
+     "reason": "Erstfund durch smyst radar",
+     "previous": null,
+     "current": {
+      "title": "dawsaryahmad-jpg/Qwen2.5-Coder-14B-n8n-Workflow-Generator",
+      "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: mlx."
+     }
+    }
+   ],
+   "status_history": [
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "found",
+     "to": "analyzed",
+     "reason": "Kategorisiert und regelbasiert bewertet."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "analyzed",
+     "to": "verified",
+     "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "verified",
+     "to": "stored",
+     "reason": "In Wissensbasis gespeichert."
+    },
+    {
+     "at": "2026-09-22T23:29:43Z",
+     "from": "stored",
+     "to": "rag_ready",
+     "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+    },
+    {
+     "at": "2026-09-22T23:30:31Z",
+     "from": "rag_ready",
+     "to": "used_in_answer",
+     "reason": "Erfolgreich in Testantwort verwendet (Frage: t3)."
+    }
+   ],
+   "status": "used_in_answer",
+   "_rag_flags": []
+  }
+ ]
+}

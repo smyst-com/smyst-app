@@ -1,0 +1,58 @@
+{
+  "name": "smyst-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/generate-brand-icons.mjs && node scripts/generate-sitemap.mjs && tsc --noEmit && vite build && node scripts/generate-spa-route-fallbacks.mjs",
+    "deploy:idrive": "node scripts/deploy-idrive-static.mjs",
+    "deploy:idrive:dry-run": "node scripts/deploy-idrive-static.mjs --dry-run",
+    "deploy:salad:backend": "node scripts/deploy-salad-backend.mjs",
+    "check:live": "sh scripts/live-test.sh",
+    "check:ad-readiness": "node scripts/ad-readiness-audit.mjs",
+    "check:performance-pwa": "node scripts/performance-pwa-audit.mjs",
+    "check:native-toolchain": "node scripts/native-toolchain-audit.mjs",
+    "check:provider-exit": "python3 scripts/check-provider-exit.py",
+    "check:voice-wave": "node scripts/check-voice-wave-regression.mjs",
+    "preview": "vite preview",
+    "app:assets": "node scripts/generate-app-assets.mjs",
+    "app:sync": "npm run build && npm run app:assets && cap sync",
+    "app:ios": "npm run app:sync && cap open ios",
+    "app:android": "npm run app:sync && cap open android",
+    "lint:tsc": "tsc --noEmit",
+    "profiles:quality": "node scripts/public-profile-quality.mjs && node scripts/curated-profile-database-audit.mjs",
+    "profiles:seed:curated": "node scripts/seed-curated-public-profiles.mjs",
+    "salad:compute:deploy": "node scripts/deploy-salad-compute-worker.mjs",
+    "verify:free-stack:live-dns": "node scripts/verify-free-stack-live-dns.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
+    "@capacitor/ios": "^8.3.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1",
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "esbuild": "^0.28.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.5"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "ws": "^8.21.0"
+  }
+}

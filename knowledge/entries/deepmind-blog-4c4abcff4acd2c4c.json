@@ -1,0 +1,88 @@
+{
+ "id": "deepmind-blog-4c4abcff4acd2c4c",
+ "title": "Advancing Private AI Compute with secure, server-side memory",
+ "topic": {
+  "category": "digitale-zwillinge",
+  "reason": "Digitale Persönlichkeiten, KI-Zwillinge, Memory (Treffer: persona, personal ai)",
+  "relevance_score": 2
+ },
+ "summary": "Introducing private, server-side memory to Private AI Compute for personal AI.",
+ "key_points": [
+  "Introducing private, server-side memory to Private AI Compute for personal AI."
+ ],
+ "source": {
+  "id": "deepmind-blog",
+  "name": "Google DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://deepmind.google/blog/advancing-private-ai-compute-with-secure-server-side-memory/",
+ "url_normalized": "https://deepmind.google/blog/advancing-private-ai-compute-with-secure-server-side-memory",
+ "publisher": "Google DeepMind Blog (RSS)",
+ "published": "2026-09-23",
+ "retrieved": "2026-09-26T00:28:35Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 4/5, Aktualität aktuell",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "digitale-zwillinge",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Advancing Private AI Compute with secure, server-side memory",
+    "summary": "Introducing private, server-side memory to Private AI Compute for personal AI."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-09-26T15:06:47Z",
+ "confirmations": 1
+}

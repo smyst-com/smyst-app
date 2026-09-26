@@ -1,0 +1,28 @@
+{
+ "updated_at": "2026-09-26T15:07:15Z",
+ "autopilot": "smyst radar",
+ "state": "wartet",
+ "total_entries": 80,
+ "verified_entries": 68,
+ "rejected_entries": 12,
+ "outdated_entries": 0,
+ "rag_ready_entries": 21,
+ "used_in_answer_entries": 27,
+ "training_approved_entries": 0,
+ "budget": {
+  "day": {
+   "api_calls": 150
+  },
+  "month": {
+   "api_calls": 200
+  },
+  "daily_limit": 200,
+  "monthly_limit": 3000
+ },
+ "enabled": true,
+ "last_run": "2026-09-26T15:06:47Z",
+ "last_run_findings": 61,
+ "last_run_new_insights": 11,
+ "last_run_rejected": 0,
+ "last_report": "2026-09-26"
+}

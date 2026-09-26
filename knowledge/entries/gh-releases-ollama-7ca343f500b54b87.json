@@ -1,0 +1,86 @@
+{
+ "id": "gh-releases-ollama-7ca343f500b54b87",
+ "title": "ollama/ollama: Release v0.34.2",
+ "topic": {
+  "category": "infrastruktur",
+  "reason": "Infrastruktur, Frameworks, RAG- und Agentensysteme (Treffer: llama.cpp, ollama, mlx)",
+  "relevance_score": 3
+ },
+ "summary": "Offizielle Release-Notes (v0.34.2): ## What's Changed - Added first-run setup when running `ollama`, with options to sign in or continue locally. Setup completion is shared with the desktop app on macOS and Windows. - Added `ollama://apps` to open the desktop app’s Apps page directly on macOS and Windows. - Fixed excessive memory growth during long generations with MLX speculative decoding. - Updated llama.cpp. **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.1...v0.34.2",
+ "key_points": [
+  "Offizielle Release-Notes (v0.34.2): ## What's Changed - Added first-run setup when running `ollama`, with options to sign in or continue locally",
+  "Setup completion is shared with the desktop app on macOS and Windows",
+  "- Added `ollama://apps` to open the desktop app’s Apps page directly on macOS and Windows",
+  "- Fixed excessive memory growth during long generations with MLX speculative decoding",
+  "- Updated llama.cpp"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.34.2",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.34.2",
+ "publisher": "GitHub Releases",
+ "published": "2026-09-15",
+ "retrieved": "2026-09-26T15:06:46Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-releases-llamacpp-90d1eba564bdc382"
+ ],
+ "tags": [
+  "infrastruktur",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-26T15:06:47Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.34.2",
+    "summary": "Offizielle Release-Notes (v0.34.2): ## What's Changed - Added first-run setup when running `ollama`, with options to sign in or continue locally. Setup completion is shared with the desktop app on macOS and Windows. - Added `ollama://apps` to open the desktop app’s Apps page directly on macOS and Windows. - Fixed excessive memory growth during long generations with MLX speculative decoding. - Updated llama.cpp. **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.1...v0.34.2"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

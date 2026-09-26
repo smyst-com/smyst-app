@@ -1,0 +1,76 @@
+{
+ "id": "google-ai-blog-1852061b5cf6950b",
+ "title": "3 ways to prep for your next big race with Search",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "Search can help runners get race-day ready with registration alerts, tailored training plans, and more.",
+ "key_points": [
+  "Search can help runners get race-day ready with registration alerts, tailored training plans, and more."
+ ],
+ "source": {
+  "id": "google-ai-blog",
+  "name": "Google AI & DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://blog.google/products-and-platforms/products/search/running-race-training-tips/",
+ "url_normalized": "https://blog.google/products-and-platforms/products/search/running-race-training-tips",
+ "publisher": "Google AI & DeepMind Blog (RSS)",
+ "published": "2026-09-10",
+ "retrieved": "2026-09-23T00:27:58Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "google-ai-blog-18592959ad29d5e2"
+ ],
+ "tags": [
+  "allgemein",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "3 ways to prep for your next big race with Search",
+    "summary": "Search can help runners get race-day ready with registration alerts, tailored training plans, and more."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  }
+ ],
+ "status": "archiviert-als-abgelehnt"
+}

@@ -1,0 +1,94 @@
+{
+ "id": "deepmind-blog-a13e39d4fa54504b",
+ "title": "Gemini Omni 1.1 Flash lets you build with more control",
+ "topic": {
+  "category": "konkurrenz",
+  "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: gemini)",
+  "relevance_score": 1
+ },
+ "summary": "",
+ "key_points": [],
+ "source": {
+  "id": "deepmind-blog",
+  "name": "Google DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://deepmind.google/blog/gemini-omni-1-1-flash-lets-you-build-with-more-control/",
+ "url_normalized": "https://deepmind.google/blog/gemini-omni-1-1-flash-lets-you-build-with-more-control",
+ "publisher": "Google DeepMind Blog (RSS)",
+ "published": "2026-08-27",
+ "retrieved": "2026-09-23T00:27:57Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "deepmind-blog-dfd1ea2e5518b0ed"
+ ],
+ "tags": [
+  "konkurrenz",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Gemini Omni 1.1 Flash lets you build with more control",
+    "summary": ""
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-09-26T15:06:47Z",
+ "confirmations": 2
+}

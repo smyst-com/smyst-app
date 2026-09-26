@@ -1,0 +1,164 @@
+{
+ "day": "2026-09-22",
+ "generated_at": "2026-09-22T23:29:51Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "cisa-kev-042bd106b079ac18",
+     "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+    },
+    {
+     "id": "gh-releases-ollama-1856a21b309afe62",
+     "title": "ollama/ollama: Release v0.34.3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.34.3"
+    },
+    {
+     "id": "hf-models-c5d149b3a7f89df5",
+     "title": "suwro/Llama-3.2-3B-Instruct-Q4_K_M-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/suwro/Llama-3.2-3B-Instruct-Q4_K_M-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "deepmind-blog-56da2c8ef80375f1",
+     "title": "Introducing WeatherNext 3, our most advanced and accurate global weather AI model",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 4,
+     "flags": [],
+     "url": "https://deepmind.google/blog/introducing-weathernext-3-our-most-advanced-and-accurate-global-weather-ai-model/"
+    },
+    {
+     "id": "hf-models-ddea532d9ced5c20",
+     "title": "GhostScientist/semanticwiki-coder-7b-v2-gguf",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/GhostScientist/semanticwiki-coder-7b-v2-gguf"
+    },
+    {
+     "id": "hf-models-2eab5d373bfefeea",
+     "title": "TAKADOX/Bonsai-2-27B-Ternary-CRACK-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/TAKADOX/Bonsai-2-27B-Ternary-CRACK-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-bb1913539909e8cb",
+     "title": "dawsaryahmad-jpg/Qwen2.5-Coder-14B-n8n-Workflow-Generator",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/dawsaryahmad-jpg/Qwen2.5-Coder-14B-n8n-Workflow-Generator"
+    },
+    {
+     "id": "openai-news-530db518a73a5717",
+     "title": "Expanding OpenAI Academy with new learning paths",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/expanding-openai-academy-with-new-learning-paths"
+    },
+    {
+     "id": "openai-news-2c9792fbb14ae5db",
+     "title": "Building standards for the next phase of AI",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/building-standards-next-phase-ai"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **CVE-2026-93952**. Sie betrifft das Arista VeloCloud Orchestrator und ist ein **Improper Input Validation Vulnerability**. Ein erfolgreicher Angriff könnte die Privatsphäre, die Authentizität und die Verfügbarkeit des Orchestrators beeinträchtigen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "cisa-kev-042bd106b079ac18",
+    "gh-releases-ollama-1856a21b309afe62",
+    "hf-models-c5d149b3a7f89df5"
+   ],
+   "context_entry_ids": [
+    "cisa-kev-042bd106b079ac18",
+    "gh-releases-ollama-1856a21b309afe62",
+    "hf-models-c5d149b3a7f89df5"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikation von smyst-radar bekannt gemacht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "deepmind-blog-56da2c8ef80375f1",
+    "hf-models-ddea532d9ced5c20",
+    "hf-models-2eab5d373bfefeea"
+   ],
+   "context_entry_ids": [
+    "deepmind-blog-56da2c8ef80375f1",
+    "hf-models-ddea532d9ced5c20",
+    "hf-models-2eab5d373bfefeea"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine direkte Beurteilung von Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die Informationen sind auf AI-Entwickler-Entwickler-Websites und nicht auf der smyst-radar-Wissensbasis.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-bb1913539909e8cb",
+    "openai-news-530db518a73a5717",
+    "openai-news-2c9792fbb14ae5db"
+   ],
+   "context_entry_ids": [
+    "hf-models-bb1913539909e8cb",
+    "openai-news-530db518a73a5717",
+    "openai-news-2c9792fbb14ae5db"
+   ]
+  }
+ ]
+}
