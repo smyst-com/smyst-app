@@ -169,11 +169,12 @@ jobs:
           fi
           git commit -qm "radar: Lauf $(date -u +%F)"
           git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          if git ls-remote --exit-code --heads origin radar-data >/dev/null 2>&1; then
-            git fetch -q --depth=1 origin radar-data
-            git pull -q --rebase --allow-unrelated-histories origin radar-data || true
-          fi
-          git push -q origin main:radar-data
+          # Force-Push ist hier KORREKT: radar-data ist ein rein generierter
+          # Spiegel (jeder Lauf enthaelt den vollstaendigen Stand; radar-state
+          # wird vorher vom Branch geladen). Rebase-Pushes scheiterten ab dem
+          # 25.09. an der unverwandten Mini-Repo-Historie (Vorfall 36157317346);
+          # die Branch-Historie selbst hat keine Bedeutung.
+          git push -q --force origin main:radar-data
 
       - name: Lauf-Zusammenfassung
         if: always()
