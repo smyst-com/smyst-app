@@ -330,16 +330,18 @@ test.describe("Chat-Icons (Language-Autopilot-Suite)", () => {
     expect(cancelCount).toBeGreaterThanOrEqual(1);
   });
 
-  test("E. Sendepfeil: leere Nachricht blockiert, Versand werkt, kein Doppelversand", async ({ page }) => {
+  test("E. Sendepfeil: Kombi-Button — leeres Feld Sprachwelle, Text versendet, kein Doppelversand", async ({ page }) => {
     const streamHits = await openChat(page);
-    const send = page.getByRole("button", { name: "Nachricht senden" });
-    // Leerer Versand: Hinweis, kein API-Abruf.
-    await send.click();
-    await expect(page.getByText(/Schreibe zuerst eine Nachricht/)).toBeVisible({ timeout: 5_000 });
+    // Kombi-Button (Inhaber-Auftrag 26.09.2026, ChatGPT-Stil): Ohne Text gibt
+    // es KEINEN Senden-Button — der Platz zeigt die Sprachwelle statt Senden.
+    await expect(page.getByRole("button", { name: "Nachricht senden" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Live-Sprachmodus starten" })).toBeVisible();
     expect(streamHits.count).toBe(0);
     // Echter Versand: Nachricht + Antwort erscheinen.
     const input = page.getByPlaceholder("Nachricht an Sokrates");
     await input.fill("Was empfiehlst du jungen Leuten?");
+    const send = page.getByRole("button", { name: "Nachricht senden" });
+    await expect(send).toBeVisible();
     await send.click();
     await expect(page.getByText("Was empfiehlst du jungen Leuten?")).toBeVisible();
     await expect(page.getByText(REPLY_TEXT).first()).toBeVisible({ timeout: 10_000 });
@@ -359,7 +361,6 @@ test.describe("Chat-Icons (Language-Autopilot-Suite)", () => {
       "Spracheingabe",
       "Live-Sprachmodus starten",
       "Antworten vorlesen",
-      "Nachricht senden",
     ];
     for (const label of labels) {
       const button = page.getByRole("button", { name: label });
@@ -368,5 +369,13 @@ test.describe("Chat-Icons (Language-Autopilot-Suite)", () => {
       await button.focus();
       await expect(button).toBeFocused();
     }
+    // Kombi-Button: mit Text im Feld wird dieselbe Position zum Sendepfeil.
+    const input = page.getByPlaceholder("Nachricht an Sokrates");
+    await input.fill("Tastaturtest");
+    const send = page.getByRole("button", { name: "Nachricht senden" });
+    await expect(send).toBeVisible();
+    await expect(send).toBeEnabled();
+    await send.focus();
+    await expect(send).toBeFocused();
   });
 });
