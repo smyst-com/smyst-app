@@ -70,7 +70,11 @@ export function markServerAsrUnavailable(): void {
   serverAsrReadyCache = false
 }
 
-export async function recordAndTranscribeOnce(lang: string, maxMs = 5200): Promise<ServerAsrResult> {
+// lang=null lasst Whisper die gesprochene Sprache selbst erkennen (wie bei
+// ChatGPT). Eine erzwungene UI-Sprache machte z. B. Tuerkisch bei deutscher UI
+// unverstehbar (Inhaber-Befund 26.09.2026); die erkannte Sprache kommt als
+// result.language zurueck und steuert Antwort-, TTS- und Folge-Turn-Sprache.
+export async function recordAndTranscribeOnce(lang: string | null, maxMs = 5200): Promise<ServerAsrResult> {
   if (!serverAsrSupported()) throw new Error('Server-ASR wird von diesem Browser nicht unterstuetzt.')
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: {

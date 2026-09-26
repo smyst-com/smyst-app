@@ -2387,7 +2387,9 @@ function SmystStartPage({
       dictationSessionRef.current = ''
     }
     setVoiceState('listening')
-    void recordAndTranscribeOnce(speechLangFor(lastVoiceLangRef.current || lang), options.live ? 5200 : 6500)
+    // Sprache nicht mehr vorgeben: Whisper erkennt sie selbst (ChatGPT-Stil),
+    // die erkannte Sprache wandert via result.language in Antwort/TTS/Folge-Turn.
+    void recordAndTranscribeOnce(null, options.live ? 5200 : 6500)
       .then((result) => {
         const transcript = result.text.trim()
         const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLangRef.current || lang)
@@ -3608,17 +3610,6 @@ function SmystStartPage({
             </button>
             <button
               type="button"
-              onClick={handleToggleLiveVoice}
-              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
-                voiceState !== 'idle' ? 'bg-white/[0.12]' : ''
-              }`}
-              aria-label={liveVoiceLabel}
-              title={liveVoiceLabel}
-            >
-              <Waveform className="h-6 w-6" />
-            </button>
-            <button
-              type="button"
               onClick={handleSpeakInput}
               className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
                 speechOutputEnabled || isSpeaking ? 'bg-white/[0.12]' : ''
@@ -3629,18 +3620,33 @@ function SmystStartPage({
             >
               <Speaker className="h-6 w-6" />
             </button>
-            <button
-              type="button"
-              onClick={handleSendButtonClick}
-              className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
-                canSend ? 'bg-white/[0.12]' : 'opacity-70'
-              }`}
-              data-ready={canSend ? 'true' : 'false'}
-              aria-label={t.start.send}
-              title={t.start.send}
-            >
-              <ArrowUp className="h-7 w-7" />
-            </button>
+            {/* Kombi-Button wie ChatGPT (Inhaber-Auftrag 26.09.2026): Text im
+                Feld -> Sendepfeil; leeres Feld -> Sprachwelle starten. Spart
+                ein Icon, beide Funktionen bleiben voll erhalten. */}
+            {canSend && !liveVoiceActiveRef.current ? (
+              <button
+                type="button"
+                onClick={handleSendButtonClick}
+                className="smyst-icon-button grid h-10 w-10 place-items-center rounded-md bg-white/[0.12] text-white transition-colors"
+                data-ready="true"
+                aria-label={t.start.send}
+                title={t.start.send}
+              >
+                <ArrowUp className="h-7 w-7" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleToggleLiveVoice}
+                className={`smyst-icon-button grid h-10 w-10 place-items-center rounded-md text-white transition-colors ${
+                  voiceState !== 'idle' ? 'bg-white/[0.12]' : ''
+                }`}
+                aria-label={liveVoiceLabel}
+                title={liveVoiceLabel}
+              >
+                <Waveform className="h-6 w-6" />
+              </button>
+            )}
           </div>
           </div>
         </footer>
@@ -11198,7 +11204,9 @@ function TwinChatView({
       dictationSessionRef.current = ''
     }
     setVoiceState('listening')
-    void recordAndTranscribeOnce(speechLangFor(lastVoiceLangRef.current || lang), options.live ? 5200 : 6500)
+    // Sprache nicht mehr vorgeben: Whisper erkennt sie selbst (ChatGPT-Stil),
+    // die erkannte Sprache wandert via result.language in Antwort/TTS/Folge-Turn.
+    void recordAndTranscribeOnce(null, options.live ? 5200 : 6500)
       .then((result) => {
         const transcript = result.text.trim()
         const detectedLang = detectVoiceLanguage(transcript, result.language || lastVoiceLangRef.current || lang)
@@ -12251,17 +12259,6 @@ function TwinChatView({
               </button>
               <button
                 type="button"
-                onClick={handleToggleLiveVoice}
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
-                  voiceState !== 'idle' ? 'bg-white/24 text-[#16181b]' : ''
-                }`}
-                aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
-                title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
-              >
-                <Waveform className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
                 onClick={handleSpeakInput}
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
                   speechOutputEnabled || isSpeaking ? 'bg-white/24 text-[#16181b]' : ''
@@ -12272,18 +12269,32 @@ function TwinChatView({
               >
                 <Speaker className="h-4 w-4" />
               </button>
-              <button
-                type="button"
-                onClick={handleSendButtonClick}
-                className={`grid h-9 w-9 shrink-0 place-items-center rounded-md shadow-none transition-colors ${
-                  canSend ? 'bg-[#59C7FF] text-[#0b1c44] hover:bg-[#7dd5ff]' : 'bg-white/28 text-[#767d87]'
-                }`}
-                data-ready={canSend ? 'true' : 'false'}
-                aria-label={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
-                title={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
-              >
-                <ArrowUp className="h-5 w-5" />
-              </button>
+              {/* Kombi-Button wie ChatGPT (Inhaber-Auftrag 26.09.2026): Text im
+                  Feld -> Sendepfeil; leeres Feld -> Sprachwelle starten. */}
+              {(input.trim().length > 0 || attachments.some((attachment) => attachment.status === 'uploaded' || attachment.status === 'ready')) && !liveVoiceActiveRef.current ? (
+                <button
+                  type="button"
+                  onClick={handleSendButtonClick}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-md shadow-none transition-colors bg-[#59C7FF] text-[#0b1c44] hover:bg-[#7dd5ff]"
+                  data-ready="true"
+                  aria-label={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
+                  title={lang === DEFAULT_LANG ? 'Nachricht senden' : t.chatBar.sendMessage}
+                >
+                  <ArrowUp className="h-5 w-5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleToggleLiveVoice}
+                  className={`grid h-9 w-9 shrink-0 place-items-center rounded-md text-[#555b64] transition-colors hover:bg-white/24 ${
+                    voiceState !== 'idle' ? 'bg-white/24 text-[#16181b]' : ''
+                  }`}
+                  aria-label={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
+                  title={voiceState === 'idle' ? 'Live-Sprachmodus starten' : 'Live-Sprachmodus beenden'}
+                >
+                  <Waveform className="h-4 w-4" />
+                </button>
+              )}
             </div>
             {twinMvp.error && (
               <p className="mt-2 rounded-2xl bg-red-500/10 px-3 py-2 text-sm text-red-700">{twinMvp.error}</p>
