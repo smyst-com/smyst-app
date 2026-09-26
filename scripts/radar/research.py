@@ -223,7 +223,11 @@ def http_get_text(url: str, counter: dict) -> str | None:
     if counter["api_calls"] > counter["max_calls"]:
         counter["skipped_over_budget"] += 1
         return None
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    req = urllib.request.Request(url, headers={
+        "User-Agent": USER_AGENT,
+        # arXiv antwortet seit 25.09. mit 406 ohne expliziten Accept-Header
+        "Accept": "application/atom+xml, application/rss+xml, application/json, text/xml, */*",
+    })
     try:
         with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as r:
             return r.read().decode("utf-8", "replace")
