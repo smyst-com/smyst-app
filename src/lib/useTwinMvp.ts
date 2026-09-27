@@ -819,15 +819,33 @@ export function useTwinMvp() {
     (chatId: string, message: string, onPartial: (text: string) => void, language?: string) =>
       run(async () => {
         type ChatReply = { chatId: string; twinId: string | null; message: TwinChatMessage; mode: string }
+        // Haengender Stream (Inhaber-Befund 25.09./27.09.2026): Ohne Timeout kann
+        // reader.read() bei einer toten Verbindung fuer immer offen bleiben — die
+        // Nachricht blieb im streaming-Zustand, die Sperre (sendActiveRef bzw.
+        // isReplying) klebte fest und die zweite Nachricht wurde still verworfen.
+        // Idle-Timeout: 90 s ohne Chunk → Abbruch (deckt auch langsamen Kaltstart
+        // des ersten Tokens); Gesamtkappung nach 4 Minuten.
+        const STREAM_IDLE_TIMEOUT_MS = 90_000
+        const STREAM_TOTAL_TIMEOUT_MS = 240_000
+        const FALLBACK_TIMEOUT_MS = 75_000
+        const controller = new AbortController()
+        let idleTimer: ReturnType<typeof setTimeout> | null = null
+        const armIdleTimer = () => {
+          if (idleTimer) clearTimeout(idleTimer)
+          idleTimer = setTimeout(() => controller.abort(), STREAM_IDLE_TIMEOUT_MS)
+        }
+        const totalTimer = setTimeout(() => controller.abort(), STREAM_TOTAL_TIMEOUT_MS)
         try {
           const headers = new Headers()
           headers.set('Content-Type', 'application/json')
           headers.set('X-Smyst-CSRF', '1')
+          armIdleTimer()
           const res = await fetchService('/api/chat/messages/stream', {
             method: 'POST',
             credentials: 'include',
             headers,
             body: JSON.stringify({ chatId, message, language }),
+            signal: controller.signal,
           })
           if (!res.ok || !res.body) throw new Error(`stream failed (${res.status})`)
           const reader = res.body.getReader()
@@ -836,6 +854,7 @@ export function useTwinMvp() {
           let full = ''
           let finalReply: ChatReply | null = null
           for (;;) {
+            armIdleTimer()
             const chunk = await reader.read()
             if (chunk.done) break
             buffer += decoder.decode(chunk.value, { stream: true })
@@ -871,13 +890,29 @@ export function useTwinMvp() {
           if (!finalReply) throw new Error('stream ended without done event')
           return { ...finalReply, streamed: true }
         } catch {
-          const body = await apiJson<ChatReply>('/api/chat/messages', {
-            method: 'POST',
-            // language mitnehmen: Ohne ihn antwortete der Fallback-Pfad nach
-            // einem Stream-Abbruch in der UI-Sprache statt der Wunschsprache.
-            body: JSON.stringify({ chatId, message, language }),
-          })
-          return { ...body, streamed: false }
+          // Verbindung freigeben, falls der Abbruch mitten im Lesen traf.
+          try {
+            controller.abort()
+          } catch {
+            /* bereits abgebrochen */
+          }
+          const fallbackController = new AbortController()
+          const fallbackTimer = setTimeout(() => fallbackController.abort(), FALLBACK_TIMEOUT_MS)
+          try {
+            const body = await apiJson<ChatReply>('/api/chat/messages', {
+              method: 'POST',
+              // language mitnehmen: Ohne ihn antwortete der Fallback-Pfad nach
+              // einem Stream-Abbruch in der UI-Sprache statt der Wunschsprache.
+              body: JSON.stringify({ chatId, message, language }),
+              signal: fallbackController.signal,
+            })
+            return { ...body, streamed: false }
+          } finally {
+            clearTimeout(fallbackTimer)
+          }
+        } finally {
+          if (idleTimer) clearTimeout(idleTimer)
+          clearTimeout(totalTimer)
         }
       }),
     [run],
