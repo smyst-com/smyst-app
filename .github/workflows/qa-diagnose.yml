@@ -1,8 +1,4 @@
-name: QA-Diagnose (read-only)
-
-# Einmal-Diagnose 12.09.2026: seit 07.09. kommen ~0 Kandidaten durch die QA.
-# Dieses Skript liest Status-Verteilung + QA-Report-Issues aus IDrive e2 und
-# schreibt nichts. Nur manuell per workflow_dispatch startbar.
+name: QA-Diagnose (warum scheitern QA-Pruefungen?)
 
 on:
   workflow_dispatch:
@@ -10,26 +6,52 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: qa-diagnose
+  cancel-in-progress: true
+
 jobs:
-  diagnose:
-    name: QA-Issues aggregieren
+  diag:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    defaults:
-      run:
-        working-directory: backend
+    env:
+      IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+      IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
     steps:
       - uses: actions/checkout@v6
-
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: '3.12'
+      - name: QA-Reports fehlgeschlagener Kandidaten auslesen
+        working-directory: backend
+        run: |
+          pip install -q -e ".[dev]"
+          python3 << 'PY'
+          import json
+          from app.core.config import settings
+          from app.integrations.candidate_store import (
+              CandidateStore, build_s3_client,
+          )
 
-      - name: Backend installieren
-        run: pip install -e "."
+          s3 = build_s3_client()
+          store = CandidateStore(client=s3, bucket=settings.idrive_e2_bucket)
 
-      - name: QA-Issue-Summary (read-only)
-        env:
-          IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
-          IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
-        run: python ../scripts/qa_issue_summary.py --scan 500 --examples 3
+          generated = store.candidate_documents_by_status('generated', limit=1000)
+          print(f'generated gesamt: {len(generated)}')
+
+          mit_report = [d for d in generated if d.get('qa_report')]
+          ohne = len(generated) - len(mit_report)
+          print(f'mit qa_report: {len(mit_report)} | ohne Report (nie bewertet): {ohne}')
+
+          status_zaehler = {}
+          for d in mit_report[:500]:
+              rep = d['qa_report']
+              issues = tuple(rep.get('issues') or [])
+              status_zaehler[issues] = status_zaehler.get(issues, 0) + 1
+          print('--- Issue-Kombinationen (haeufigste):')
+          for issues, n in sorted(status_zaehler.items(), key=lambda x: -x[1])[:8]:
+              print(f'  {n}x: {issues}')
+          print('--- 2 Beispiele vollstaendig:')
+          for d in mit_report[:2]:
+              print(json.dumps(d.get('qa_report'), ensure_ascii=False)[:600])
+          PY
