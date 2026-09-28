@@ -51,9 +51,9 @@ def test_chat_router_caps_smyst_llm_timeout(monkeypatch) -> None:
 
     # Chat-Budget greift weiter ...
     assert result.total_deadline_seconds == 20.0
-    # ... aber smyst_llm bekommt nur noch 12 s, damit der Fallback im
+    # ... aber smyst_llm bekommt nur noch 15 s, damit der Fallback im
     # restlichen Budget eine echte Antwort liefern kann.
-    assert inner.timeout == 12.0
+    assert inner.timeout == 15.0
     # AntiLoop-Huelle bleibt unveraendert, andere Provider unberuehrt.
     assert getattr(wrapped, "timeout", None) is None
     assert other.timeout == 20.0
