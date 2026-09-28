@@ -1,15 +1,26 @@
 #!/bin/bash
 # smyst 1.0 — Startet llama-server als Hintergrundprozess neben der FastAPI.
-# Laedt das f16-Modell (988 MB) aus IDrive e2 beim ersten Start. Danach
-# laeuft der Server dauerhaft mit ~1.5 GB RAM ( von 8 GB auf Zeabur).
+# Laedt das aktive Modell aus IDrive e2 (nur solange das persistente Volume
+# /models noch leer ist oder einen anderen Kandidaten enthaelt). Danach
+# laeuft der Server dauerhaft mit ~1.2 GB RAM (von 8 GB auf Zeabur).
 
 MODEL="/models/smyst-active.gguf"
+# Markierung der aktiven Version (Volume /models ist persistent seit 28.09.):
+# Liegt bereits der WUNSCH-Kandidat im Volume, entfaellt der e2-Download beim
+# Container-Start komplett — sonst kaeme nach einem Modellwechsel immer der
+# alte Volume-Inhalt zum Zug.
+WANT_LABEL="smyst-1.1 Q4_K_M"
+HAVE_LABEL="$(cat /models/.smyst-model 2>/dev/null || echo "")"
 
-# Versionen in Prioritaet: smyst-1.1 v4 (Gate 550/600 erweitert, promoted 06.09.
-# mit Datenkur: KI-Outing-Fix + Faktenfix) zuerst,
-# smyst-1.0 vom 20.08. als Rueckfallebene. Q4_K_M statt f16: ~1.2 GB RAM,
-# CPU-Inference spuerbar schneller bei besserem Trainingsstand.
-if [ ! -f "$MODEL" ] && [ -n "$IDRIVE_E2_ACCESS_KEY" ]; then
+# Versionen in Prioritaet (Auftrag 28.09. "blitzschnell", Inhaber-Freigabe
+# "alle Rechte"): Q4_K_M zuerst — CPU-Inference (Prefill UND Generierung)
+# laeuft damit rund 2x schneller als Q8_0; die 2-Kern-VM schafft so ganze
+# Antworten im 20-s-Chat-Budget. Q8_0 v4 (Gate 550/600, Datenkur 06.09.)
+# dahinter als Rueckfallebene, smyst-1.0 f16 zuletzt. smyst-1.1 bleibt vor 1.0
+# (Freeze). Freeze-Parameter ctx 8192 / parallel 2 / alias / nproc-Threads
+# unveraendert.
+if [ ! -f "$MODEL" ] || [ "$HAVE_LABEL" != "$WANT_LABEL" ]; then
+  if [ -n "$IDRIVE_E2_ACCESS_KEY" ]; then
   echo "smyst: Lade Modell aus e2 (ein paar Minuten)..."
   mkdir -p /models
   python3 -c "
@@ -21,8 +32,8 @@ c = boto3.client('s3', endpoint_url='https://s3.us-west-2.idrivee2.com',
     aws_secret_access_key='$IDRIVE_E2_SECRET_KEY',
     config=Config(read_timeout=900, retries={'max_attempts': 10}))
 candidates = [
-    ('models/smyst-1.1/2026-08-23/smyst-1.1-v4-Q8_0.gguf', 'smyst-1.1 v4 Q8_0'),
     ('models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf', 'smyst-1.1 Q4_K_M'),
+    ('models/smyst-1.1/2026-08-23/smyst-1.1-v4-Q8_0.gguf', 'smyst-1.1 v4 Q8_0'),
     ('models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf', 'smyst-1.0 f16'),
 ]
 for key, label in candidates:
@@ -32,11 +43,13 @@ for key, label in candidates:
         print(label, 'nicht in e2 — naechster Kandidat.')
         continue
     c.download_file('smyst-memories', key, '$MODEL')
+    open('/models/.smyst-model', 'w').write(label)
     print('Modell geladen:', label)
     break
 else:
     sys.exit('kein Modell in e2 gefunden')
 " && echo "smyst: Modell bereit."
+  fi
 fi
 
 # Binary-Pfad: Dockerfile entpackt nach /opt/llama/llama-b*/ (inkl. Shared
@@ -53,11 +66,17 @@ if [ -f "$MODEL" ] && [ -n "$LLAMA_BIN" ] && [ -x "$LLAMA_BIN" ]; then
   # unter Chat-Last verhungerte k3s/kubelet zweimal (05.09.: K3s offline).
   # Mit lowerer Prioritaet behaelt die Control-Plane Vorrang, llama nutzt
   # beide Kerne weiter, wenn sie frei sind. Freeze-Parameter unveraendert.
+  # --cache-reuse 256 (28.09.): Der Chat-Prompt beginnt mit dem langen,
+  # pro Twin IDENTISCHEN System-Prompt — llama-server verschiebt per
+  # KV-Shifting den gemeinsamen Prefix aus dem Vorlauf-Cache in den Slot
+  # statt ihn neu zu berechnen. Folge-Nachrichten im selben Chat sparen
+  # damit fast den kompletten Prefill.
   nice -n 10 "$LLAMA_BIN" \
     --model "$MODEL" \
     --alias smyst-1.0 \
     --host 127.0.0.1 --port 8080 \
     --ctx-size 8192 --parallel 2 \
+    --cache-reuse 256 \
     --threads "$(nproc)" &
   export SMYST_LLM_BASE_URL=http://127.0.0.1:8080/v1
   echo "smyst: LLM-Server aktiv auf $SMYST_LLM_BASE_URL"

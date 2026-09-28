@@ -36,7 +36,13 @@ PROVIDER_CONFIGS: dict[str, ProviderConfig] = {
         name="openrouter",
         base_url="https://openrouter.ai/api/v1",
         api_key_attr="openrouter_api_key",
-        default_model="openai/gpt-4o",
+        # 28.09.: Das Konto hat kein Guthaben mehr — openai/gpt-4o antwortete
+        # mit 402 Payment Required und der Chat-Fallback endete in der
+        # degenerierten Local-Meldung (live 48 s Wartezeit, mode:local).
+        # :free-Modelle laufen auf demselben Key ohne Guthaben. Gemma-4-31b
+        # ist multilingual stark (P0-Sprachen de/tr/en/ku/ckb) und mit
+        # 262k Kontext fuer die Persona-Prompts reichlich dimensioniert.
+        default_model="google/gemma-4-31b-it:free",
     ),
     "openai": ProviderConfig(
         name="openai",
@@ -171,4 +177,7 @@ STALE_MODEL_ALIASES: dict[tuple[str, str], str] = {
     # 2026-08-16 abgeschaltet; offizielle Nachfolger laut Deprecation-Hinweis:
     ("groq", "llama-3.3-70b-versatile"): "openai/gpt-oss-120b",
     ("groq", "llama-3.1-8b-instant"): "openai/gpt-oss-20b",
+    # OpenRouter ohne Guthaben (402, siehe oben): auch ein per Env
+    # hereingereichter alter Default laeuft auf das freie Modell.
+    ("openrouter", "openai/gpt-4o"): "google/gemma-4-31b-it:free",
 }

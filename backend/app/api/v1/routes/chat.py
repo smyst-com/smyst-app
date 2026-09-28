@@ -164,12 +164,26 @@ def _chat_router() -> LLMRouter:
 
     getattr statt Direktzugriff: Tests injizieren Fake-Router ohne
     total_deadline_seconds (Pipeline-Lauf #57 schlug mit AttributeError fehl).
+
+    smyst_llm-Deckel (28.09., Inhaber-Auftrag "blitzschnell"): Der Provider
+    selbst steht auf 90 s (Funktions-Freeze Eigenes Modell — Pipeline braucht
+    das auch). Im CHAT frass das eigene CPU-Modell aber das komplette 20-s-
+    Budget (live: 46-48 s, dann degenerierte Local-Meldung, weil OpenRouter
+    mit remaining=0 uebersprungen wurde). Der Chat-Router kuerzt deshalb den
+    Request-Timeout von smyst_llm auf 12 s: Schafft es das eigene Modell
+    nicht, bleibt der Cloud-Kette noch ~8 s fuer eine echte Antwort.
+    Reihenfolge (smyst_llm zuerst) und alle Freeze-Marker unveraendert.
     """
     llm_router = build_default_router()
     chat_deadline = get_settings().llm_chat_total_deadline_seconds
     current = getattr(llm_router, "total_deadline_seconds", None)
     if current is None or current > chat_deadline:
         llm_router.total_deadline_seconds = chat_deadline
+    for provider in getattr(llm_router, "providers", []):
+        # AntiLoopProvider haelt das echte smyst_llm-Objekt in .inner
+        target = getattr(provider, "inner", provider)
+        if getattr(target, "name", "") == "smyst_llm" and chat_deadline > 15:
+            target.timeout = min(getattr(target, "timeout", 90.0), 12.0)
     return llm_router
 
 
