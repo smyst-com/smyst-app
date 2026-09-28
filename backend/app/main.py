@@ -7,7 +7,11 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.http_client import aclose_shared_client
 from app.core.logging import configure_logging
-from app.security.middleware import RateLimitMiddleware, SecurityHeadersMiddleware
+from app.security.middleware import (
+    CookieCsrfMiddleware,
+    RateLimitMiddleware,
+    SecurityHeadersMiddleware,
+)
 
 
 @asynccontextmanager
@@ -26,7 +30,11 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
         title="Smyst API",
         version="0.1.0",
-        openapi_url=f"/api/{settings.api_version}/openapi.json",
+        # In Produktion bleibt das API-Schema komplett verborgen (live
+        # 28.09.2026: /api/v1/openapi.json war oeffentlich abrufbar).
+        openapi_url=None
+        if settings.app_env == "production"
+        else f"/api/{settings.api_version}/openapi.json",
         docs_url=f"/api/{settings.api_version}/docs" if settings.app_env != "production" else None,
         redoc_url=None,
     )
@@ -39,6 +47,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(CookieCsrfMiddleware)
     app.add_middleware(SecurityHeadersMiddleware)
 
     app.include_router(api_router, prefix=f"/api/{settings.api_version}")

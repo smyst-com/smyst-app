@@ -1,10 +1,33 @@
-from fastapi import APIRouter, status
+from typing import Any
+
+from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.integrations.storage import get_storage_config_status
 from app.services.health import check_readiness
 from app.services.production_readiness import production_readiness
+
+
+def _require_admin(request: Request) -> JSONResponse | None:
+    """Deep-/Production-Checks exponieren Infrastruktur-Details (Storage-
+    Endpoint, Bucket, Provider-Fehlkonfigurationen) - nur Admins (28.09.2026)."""
+    from app.api.v1.routes.auth import _session_from_request
+
+    session = _session_from_request(request)
+    if not session:
+        return JSONResponse(
+            status_code=401,
+            content={"ok": False, "code": "auth_required", "message": "Bitte melde dich an."},
+        )
+    permissions = session.get("permissions") or []
+    roles = {str(role).lower() for role in (session.get("roles") or [])}
+    if "admin:read" not in permissions and not ({"admin", "owner"} & roles):
+        return JSONResponse(
+            status_code=403,
+            content={"ok": False, "code": "forbidden", "message": "Nur fuer Admins."},
+        )
+    return None
 
 router = APIRouter(tags=["health"])
 
@@ -36,7 +59,10 @@ async def ready() -> JSONResponse:
 
 
 @router.get("/health/deep")
-async def deep() -> dict[str, object]:
+async def deep(request: Request) -> Any:
+    denied = _require_admin(request)
+    if denied is not None:
+        return denied
     result = await check_readiness()
     storage = get_storage_config_status()
     return {
@@ -66,5 +92,8 @@ async def deep() -> dict[str, object]:
 
 
 @router.get("/health/production")
-async def production() -> dict[str, object]:
+async def production(request: Request) -> Any:
+    denied = _require_admin(request)
+    if denied is not None:
+        return denied
     return await production_readiness()

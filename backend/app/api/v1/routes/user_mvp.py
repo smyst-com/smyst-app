@@ -182,6 +182,30 @@ def _clean_avatar_url(value: str | None) -> str:
     return ""
 
 
+def _clean_image_url(value: str | None) -> str:
+    """Twin-Bild-URL: nur https:// oder App-relativ (wie Avatar-Regel).
+
+    Verhindert gespeicherte javascript:/data:-URLs, die im Frontend als href/
+    src landen koennten (Stored-XSS-Vektor, Security-Fix 28.09.2026).
+    """
+    cleaned = _clean_text(value, 400)
+    if not cleaned:
+        return ""
+    if cleaned.startswith("https://") or cleaned.startswith("/"):
+        return cleaned
+    return ""
+
+
+def _clean_image_key(value: str | None) -> str:
+    """Storage-Key fuer Twin-Bilder: keine URL-Schemata, keine Traversale."""
+    cleaned = _clean_text(value, 400)
+    if not cleaned:
+        return ""
+    if "://" in cleaned or ".." in cleaned or cleaned.startswith("/"):
+        return ""
+    return cleaned
+
+
 def _session_picture(request: Request) -> str:
     session = _session_from_request(request)
     if not session:
@@ -388,8 +412,8 @@ def create_twin(request: Request, payload: TwinCreate) -> Any:
         "name": name,
         "slug": slug,
         "description": description,
-        "imageUrl": _clean_text(payload.imageUrl, 400),
-        "imageKey": _clean_text(payload.imageKey, 400),
+        "imageUrl": _clean_image_url(payload.imageUrl),
+        "imageKey": _clean_image_key(payload.imageKey),
         "categories": _clean_list(payload.categories),
         "languages": _clean_list(payload.languages, max_items=5, max_len=8) or ["de"],
         "visibility": payload.visibility if payload.visibility in TWIN_VISIBILITIES else "private",
@@ -439,9 +463,9 @@ def patch_twin(request: Request, twin_id: str, patch: TwinPatch) -> Any:
     if patch.slug is not None:
         twin["slug"] = _slugify(_clean_text(patch.slug, 80) or twin["name"])
     if patch.imageUrl is not None:
-        twin["imageUrl"] = _clean_text(patch.imageUrl, 400)
+        twin["imageUrl"] = _clean_image_url(patch.imageUrl)
     if patch.imageKey is not None:
-        twin["imageKey"] = _clean_text(patch.imageKey, 400)
+        twin["imageKey"] = _clean_image_key(patch.imageKey)
     if patch.categories is not None:
         twin["categories"] = _clean_list(patch.categories)
     if patch.languages is not None:

@@ -36,6 +36,7 @@ permissions:
   contents: read
   issues: write
   actions: write
+  id-token: write
 
 concurrency:
   group: model-keepalive
@@ -53,7 +54,13 @@ jobs:
           # Bewertet den smyst_llm-Eintrag: ok / alive-slow / dead.
           # Heredoc-Endmarker "PY" muss exakt auf der Grund-Einzugsebene des
           # YAML-Blocks liegen (YAML entfernt sie, bash sieht Spalte 1).
+          # OIDC-Token fuer den privilegierten Provider-Ping (Security 28.09.2026:
+          # /ai/providers?ping=true verlangt Admin-Session oder CI-OIDC).
+          OIDC=$(curl -sLS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=smyst-ci-llm-gateway" | python3 -c "import json,sys; print(json.load(sys.stdin).get('value',''))")
+          PING_AUTH=(-H "Authorization: Bearer $OIDC")
           code=$(curl -s -o /tmp/ping.json -w "%{http_code}" --max-time 120 \
+            "${PING_AUTH[@]}" \
             "https://api.smyst.com/api/ai/providers?ping=true") || code="000"
           PING_CODE="$code" python3 - <<'PY' > /tmp/verdict.txt
           import json, os, sys

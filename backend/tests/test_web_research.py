@@ -6,6 +6,10 @@ import pytest
 import httpx
 from fastapi.testclient import TestClient
 
+import time
+
+from app.api.v1.routes.auth import SESSION_COOKIE, _make_token
+
 from app.ai.web_research import (
     InMemoryResearchCacheStore,
     OpenAIWebSearchProvider,
@@ -543,7 +547,19 @@ def test_api_run_response_marks_search_and_returns_clickable_sources(monkeypatch
 
     response = client.post(
         "/api/v1/web-research/run",
+        cookies={
+            SESSION_COOKIE: _make_token(
+                {
+                    "sub": "google:research-user",
+                    "email": "research@example.com",
+                    "roles": ["member"],
+                    "permissions": [],
+                    "expiresAt": int(time.time() * 1000) + 3_600_000,
+                }
+            )
+        },
         json={"question": "Bitte suche online aktuelle News.", "max_results": 1},
+        headers={"X-Smyst-CSRF": "1"},
     )
 
     assert response.status_code == 200

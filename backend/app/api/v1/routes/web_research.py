@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from typing import Any
+
+from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.ai.web_research import (
@@ -11,6 +14,19 @@ from app.ai.web_research import (
 )
 
 router = APIRouter(prefix="/web-research", tags=["web-research"])
+
+
+def _require_session(request: Request) -> JSONResponse | None:
+    """/run und Suggestions verbrauchen Such-Provider-Quota bzw. schreiben
+    Vorschlaege - beides nur fuer angemeldete Nutzer (Security-Fix 28.09.2026)."""
+    from app.api.v1.routes.auth import _session_from_request
+
+    if _session_from_request(request):
+        return None
+    return JSONResponse(
+        status_code=401,
+        content={"ok": False, "code": "auth_required", "message": "Bitte melde dich an."},
+    )
 
 
 class ResearchContextIn(BaseModel):
@@ -63,11 +79,14 @@ async def preview_research(request: ResearchPreviewRequest) -> dict[str, object]
 
 
 @router.post("/run")
-async def run_research(request: ResearchRunRequest) -> dict[str, object]:
+async def run_research(request: Request, body: ResearchRunRequest) -> Any:
+    denied = _require_session(request)
+    if denied is not None:
+        return denied
     response = await VerifiedWebResearchService().research(
-        request.question,
-        context=request.context.to_domain(),
-        max_results=request.max_results,
+        body.question,
+        context=body.context.to_domain(),
+        max_results=body.max_results,
     )
     if response is None:
         return {"searched": False, "message": "Keine Internetrecherche ausgeführt."}
@@ -85,11 +104,16 @@ async def run_research(request: ResearchRunRequest) -> dict[str, object]:
 
 
 @router.post("/public-profile-suggestions")
-async def suggest_public_profile_update(request: PublicProfileSuggestionRequest) -> dict[str, object]:
+async def suggest_public_profile_update(
+    request: Request, body: PublicProfileSuggestionRequest
+) -> Any:
+    denied = _require_session(request)
+    if denied is not None:
+        return denied
     suggestion = await VerifiedWebResearchService().suggest_public_profile_update(
-        request.question,
-        profile_id=request.profile_id,
-        context=request.context.to_domain(),
+        body.question,
+        profile_id=body.profile_id,
+        context=body.context.to_domain(),
     )
     if suggestion is None:
         return {"suggested": False, "message": "Keine Public-Knowledge-Aktualisierung vorgeschlagen."}

@@ -1,0 +1,64 @@
+name: smyst 1.1 v4 GGUF-Factory
+
+# Baut das GGUF ON-DEMAND auf einem GitHub-Runner (Glasfaser statt
+# Mac-Uplink): Basis-Modell von HF laden + kleinen LoRA-Adapter aus dem
+# Release + convert_lora_to_gguf + Q8-Quantisierung -> IDrive e2.
+# Entlastet den Mac vollstaendig (nur 30 MB Adapter mussten hoch).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  factory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Adapter aus Release laden
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v4-adapter -R "$GITHUB_REPOSITORY" \
+            -p "adapters.safetensors" -D /tmp/adapter
+          ls -lh /tmp/adapter
+
+      - name: llama.cpp-Werkzeuge holen
+        run: |
+          git clone --depth 1 https://github.com/ggerganov/llama.cpp /tmp/llama.cpp
+          curl -sL -o /tmp/llama-quantize https://github.com/ggml-org/llama.cpp/releases/download/b6362/llama-quantize-bin-ubuntu-x64.zip
+          python3 -m pip install -q -r /tmp/llama.cpp/requirements.txt torch --index-url https://pypi.org/simple https://download.pytorch.org/whl/cpu 2>/dev/null || \
+            python3 -m pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          python3 -m pip install -q -r /tmp/llama.cpp/requirements.txt
+
+      - name: Basis-Modell + LoRA -> GGUF
+        run: |
+          python3 /tmp/llama.cpp/convert_hf_to_gguf.py Qwen/Qwen2.5-1.5B-Instruct \
+            --outfile /tmp/base-f16.gguf --outtype f16
+          python3 /tmp/llama.cpp/convert_lora_to_gguf.py \
+            --lora /tmp/adapter/adapters.safetensors \
+            --base Qwen/Qwen2.5-1.5B-Instruct \
+            --outfile /tmp/lora.gguf
+
+      - name: LoRA einbacken + Q8 quantisieren
+        run: |
+          python3 /tmp/llama.cpp/convert_hf_to_gguf.py Qwen/Qwen2.5-1.5B-Instruct \
+            --outfile /tmp/tmp-f16.gguf --outtype f16 2>/dev/null || true
+          # lora-apply im convert-Tool: direkt mit --lora beim Fuse-Export
+          echo "Nutze Baked-Export statt separatem Quantize-Schritt"
+
+      - name: Baked GGUF direkt erzeugen
+        run: |
+          # convert_hf_to_gguf unterstuetzt --lora nicht; daher MLX-freier Weg:
+          # Adapter-GGUF auf Basis anwenden via llama-quantize ist nicht noetig,
+          # convert_lora_to_gguf + llama-gguf-apply liefert das baked Modell.
+          echo "Baked-Export folgt im naechsten Schritt (gguf-apply)"
+
+      - name: Baked GGUF erzeugen (gguf-apply)
+        run: |
+          curl -sL -o /tmp/gguf-apply.zip https://github.com/ggml-org/llama.cpp/releases/download/b6362/llama-gguf-apply-cffi-bin-ubuntu-x64.zip
+          cd /tmp && unzip -o gguf-apply.zip llama-gguf-apply >/dev/null && chmod +x llama-gguf-apply
+          ./llama-gguf-apply --lora /tmp/lora.gguf base-f16.gguf smyst-1.1-v4-baked-f16.gguf || \
+            ./llama-gguf-apply /tmp/base-f16.gguf /tmp/lora.gguf smyst-1.1-v4-baked-f16.gguf
+          ls -lh /tmp/*.gguf

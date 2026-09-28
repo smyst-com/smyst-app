@@ -26,6 +26,7 @@ from typing import Any
 import boto3
 from botocore.config import Config
 from fastapi import APIRouter, Header, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.api.v1.routes.auth import _session_from_request
@@ -198,7 +199,14 @@ def _filename_from_key(key: str, upload_id: str) -> str:
 
 
 @router.get("/capabilities")
-async def storage_capabilities() -> dict[str, object]:
+async def storage_capabilities(request: Request) -> Any:
+    # Bucket-/Region-Konfiguration ist fuer angemeldete Nutzer (Upload-UI),
+    # nicht fuer anonyme Scraping-Zugaenge (Security-Fix 28.09.2026).
+    if not _session_from_request(request):
+        return JSONResponse(
+            status_code=401,
+            content={"ok": False, "code": "auth_required", "message": "Bitte melde dich an."},
+        )
     return {
         "configured": _storage_ready(),
         "provider": "idrive_e2",

@@ -43,7 +43,7 @@ export default function AdSlot({ placement, className = '', profileSlug }: AdSlo
     if (profileSlug) {
       void fetchService('/api/v1/ads/impression', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
         body: JSON.stringify({ slug: profileSlug, placement }),
         keepalive: true,
       }).catch(() => undefined);
