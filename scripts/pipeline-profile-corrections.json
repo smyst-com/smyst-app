@@ -1,5 +1,5 @@
 {
-  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King). Zusatz 03.08.2026: birthPlace/deathPlace als kuratierte Orts-Overrides fuer Faelle, in denen Wikidata falsch liegt oder keinen heutigen Staat kennt (der Backfill haengt nur ein Land an und schreibt einen Ort nie um). Zusatz 05.09.2026: gender als Stimmen-Geschlecht-Override (Wikidata P21) fuer Pipeline-Profile, deren Publish-Record kein P21 liefert — sonst sprachen sie mit dem geschlechtslosen Maenner-Fallback (Freigabe Adam King: Korrekturliste nachpflegen). Ergaenzung 06.09.2026 (Inhaber-Auftrag alles zuende zu bringen): die 3 bislang offenen Identitaets-Sonderfaelle. Quelle je Wikidata P21: d-Eon = trans Frau -> female; Catalina de Erauso = trans Mann -> male; Claude Cahun = nichtbinaer -> Naeherung female (deutsche Wikipedia durchgehend weibliche Formen; Plattform hat keine neutrale Stimme; Inhaber kann jederzeit aendern).",
+  "comment": "Kuratierte Anzeige-Korrekturen fuer Pipeline-Profile. 'roles' ueberschreibt mainCategory (Anzeigetext unter dem Namen, Zeile 4 des Profilformats), 'categories' ersetzt die Kategorien-Zuordnung. Alle uebrigen Felder kommen unveraendert aus dem Publish-Index (IDrive e2: pipeline/published/index.json). Wird von scripts/merge-pipeline-published.mjs beim Pages-Build angewendet. Ziel: Zeile 4 nennt den Beruf, nicht das Themengebiet. Zusatz 18.07.2026: birthLabel/birthYear/deathLabel/deathYear als kuratierte Lebensdaten-Overrides (Freigabe Adam King). Zusatz 03.08.2026: birthPlace/deathPlace als kuratierte Orts-Overrides fuer Faelle, in denen Wikidata falsch liegt oder keinen heutigen Staat kennt (der Backfill haengt nur ein Land an und schreibt einen Ort nie um). Zusatz 05.09.2026: gender als Stimmen-Geschlecht-Override (Wikidata P21) fuer Pipeline-Profile, deren Publish-Record kein P21 liefert — sonst sprachen sie mit dem geschlechtslosen Maenner-Fallback (Freigabe Adam King: Korrekturliste nachpflegen). Ergaenzung 06.09.2026 (Inhaber-Auftrag alles zuende zu bringen): die 3 bislang offenen Identitaets-Sonderfaelle. Quelle je Wikidata P21: d-Eon = trans Frau -> female; Catalina de Erauso = trans Mann -> male; Claude Cahun = nichtbinaer -> Naeherung female (deutsche Wikipedia durchgehend weibliche Formen; Plattform hat keine neutrale Stimme; Inhaber kann jederzeit aendern). Ergaenzung 06.09. II (Stimmen-Wache, Inhaber-Vollmacht): 340 Nachschuelinge der grossen Massenpublikation — 335 per Wikidata P21 eindeutig (25 weiblich/310 maennlich), 5 Identitaets-Sonderfaelle nach P21 dokumentiert (Vay trans M, Falleni trans M, Pulaski inter M, Nikiforowa inter F, Meister gesticktes Laub ohne P21 maennliche Attribution).",
   "profiles": {
     "carl-von-linne": {
       "roles": "Naturforscher, Botaniker",
@@ -7,7 +7,8 @@
         "Wissenschaft",
         "Forschung",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "alfred-nobel": {
       "roles": "Chemiker, Erfinder",
@@ -15,7 +16,8 @@
         "Wissenschaft",
         "Technologie",
         "Wirtschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "david-hilbert": {
       "roles": "Mathematiker",
@@ -23,21 +25,24 @@
         "Mathematik",
         "Wissenschaft",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "diego-velazquez": {
       "roles": "Maler",
       "categories": [
         "Kunst",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "william-blake": {
       "roles": "Maler, Dichter",
       "categories": [
         "Kunst",
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "khalil-gibran": {
       "roles": "Dichter, Maler",
@@ -45,32 +50,37 @@
         "Literatur",
         "Kunst",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "francisco-de-goya": {
       "roles": "Maler, Grafiker",
       "categories": [
         "Kunst",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "vincent-van-gogh": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "katsushika-hokusai": {
       "roles": "Maler, Holzschnittmeister",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "henri-matisse": {
       "roles": "Maler, Bildhauer",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "mohandas-karamchand-gandhi": {
       "roles": "Freiheitskämpfer, Staatsmann",
@@ -79,7 +89,8 @@
         "Ethik",
         "Geschichte",
         "Führung"
-      ]
+      ],
+      "gender": "male"
     },
     "ludwik-lejzer-zamenhof": {
       "roles": "Augenarzt, Sprachschöpfer",
@@ -87,7 +98,8 @@
         "Medizin",
         "Bildung",
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "william-james": {
       "roles": "Psychologe, Philosoph",
@@ -95,14 +107,16 @@
         "Philosophie",
         "Wissenschaft",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "francois-rabelais": {
       "roles": "Schriftsteller, Arzt",
       "categories": [
         "Literatur",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "friedrich-schiller": {
       "roles": "Dichter, Dramatiker",
@@ -110,7 +124,8 @@
         "Literatur",
         "Geschichte",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "louis-daguerre": {
       "roles": "Fotopionier, Maler",
@@ -118,7 +133,8 @@
         "Kunst",
         "Technologie",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "abraham-lincoln": {
       "roles": "Staatsmann, Präsident",
@@ -126,7 +142,8 @@
         "Politik",
         "Geschichte",
         "Führung"
-      ]
+      ],
+      "gender": "male"
     },
     "henri-poincare": {
       "roles": "Mathematiker, Physiker",
@@ -134,35 +151,40 @@
         "Mathematik",
         "Wissenschaft",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "srinivasa-ramanujan": {
       "roles": "Mathematiker",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "ernest-rutherford": {
       "roles": "Physiker, Chemiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "max-planck": {
       "roles": "Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "enrico-fermi": {
       "roles": "Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "james-watt": {
       "roles": "Ingenieur, Erfinder",
@@ -170,7 +192,8 @@
         "Technologie",
         "Wissenschaft",
         "Wirtschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "henry-ford": {
       "roles": "Industrieller, Unternehmer",
@@ -178,21 +201,24 @@
         "Wirtschaft",
         "Technologie",
         "Führung"
-      ]
+      ],
+      "gender": "male"
     },
     "joseph-fourier": {
       "roles": "Mathematiker, Physiker",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "friedrich-holderlin": {
       "roles": "Dichter",
       "categories": [
         "Literatur",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "konigin-victoria": {
       "roles": "Königin, Staatsoberhaupt",
@@ -200,7 +226,8 @@
         "Politik",
         "Geschichte",
         "Führung"
-      ]
+      ],
+      "gender": "female"
     },
     "alessandro-volta": {
       "roles": "Physiker",
@@ -208,7 +235,8 @@
         "Wissenschaft",
         "Forschung",
         "Technologie"
-      ]
+      ],
+      "gender": "male"
     },
     "christopher-wren": {
       "roles": "Architekt, Astronom",
@@ -217,14 +245,16 @@
         "Technologie",
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "john-ruskin": {
       "roles": "Kunstkritiker, Schriftsteller",
       "categories": [
         "Kunst",
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "gustave-eiffel": {
       "roles": "Ingenieur, Konstrukteur",
@@ -232,40 +262,46 @@
         "Kunst",
         "Technologie",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "jean-auguste-dominique-ingres": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "antoni-gaudi": {
       "roles": "Architekt",
       "categories": [
         "Kunst",
         "Technologie"
-      ]
+      ],
+      "gender": "male"
     },
     "alfred-russel-wallace": {
       "roles": "Naturforscher, Biologe",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "el-greco": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "theodore-roosevelt": {
       "roles": "Staatsmann, Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "arthur-conan-doyle": {
       "roles": "Schriftsteller, Arzt",
@@ -273,7 +309,8 @@
         "Literatur",
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "alexander-fleming": {
       "roles": "Bakteriologe, Mediziner",
@@ -281,7 +318,8 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "wladimir-iljitsch-lenin": {
       "roles": "Revolutionär, Politiker",
@@ -295,14 +333,16 @@
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "wilhelm-conrad-rontgen": {
       "roles": "Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "robert-koch": {
       "roles": "Mediziner, Bakteriologe",
@@ -310,7 +350,8 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "edward-jenner": {
       "roles": "Arzt, Impfpionier",
@@ -318,7 +359,8 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "guglielmo-marconi": {
       "roles": "Erfinder, Funkpionier",
@@ -326,20 +368,23 @@
         "Wissenschaft",
         "Forschung",
         "Technologie"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-mann": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "carl-benz": {
       "roles": "Ingenieur, Automobilpionier",
       "categories": [
         "Technologie",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "jean-baptiste-le-rond-d-alembert": {
       "roles": "Mathematiker, Physiker",
@@ -347,20 +392,23 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "francis-drake": {
       "roles": "Seefahrer, Freibeuter",
       "categories": [
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "heinrich-heine": {
       "roles": "Dichter, Publizist",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-babbage": {
       "roles": "Mathematiker, Computerpionier",
@@ -368,14 +416,16 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "ernst-haeckel": {
       "roles": "Zoologe, Naturforscher",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "mustafa-kemal-ataturk": {
       "roles": "Staatsmann, Feldherr",
@@ -388,7 +438,8 @@
       "roles": "Maler, Radierer",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "peter-paul-rubens": {
       "roles": "Maler, Diplomat",
@@ -396,27 +447,31 @@
         "Kunst",
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "sinan": {
       "roles": "Architekt, Baumeister",
       "categories": [
         "Kunst",
         "Technologie"
-      ]
+      ],
+      "gender": "male"
     },
     "matsuo-basho": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "novalis": {
       "roles": "Dichter, Philosoph",
       "categories": [
         "Literatur",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "pjotr-alexejewitsch-kropotkin": {
       "roles": "Geograph, Sozialtheoretiker",
@@ -424,7 +479,8 @@
         "Geschichte",
         "Forschung",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "alexander-von-humboldt": {
       "roles": "Naturforscher, Geograph",
@@ -432,7 +488,8 @@
         "Wissenschaft",
         "Forschung",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "andre-marie-ampere": {
       "roles": "Physiker, Mathematiker",
@@ -440,54 +497,62 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "rabindranath-tagore": {
       "roles": "Dichter, Komponist",
       "categories": [
         "Musik",
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "george-washington": {
       "roles": "Staatsmann, General",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "james-cook": {
       "roles": "Seefahrer, Entdecker",
       "categories": [
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "mary-wollstonecraft": {
       "roles": "Schriftstellerin, Philosophin",
       "categories": [
         "Literatur",
         "Philosophie"
-      ]
+      ],
+      "gender": "female"
     },
     "harriet-tubman": {
       "roles": "Fluchthelferin, Aktivistin",
       "categories": [
         "Ethik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "caspar-david-friedrich": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "johann-heinrich-pestalozzi": {
       "roles": "Pädagoge, Reformer",
       "categories": [
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "aryabhata": {
       "roles": "Mathematiker, Astronom",
@@ -495,7 +560,8 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "hypatia": {
       "roles": "Mathematikerin, Philosophin",
@@ -503,20 +569,23 @@
         "Philosophie",
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "female"
     },
     "rudolf-diesel": {
       "roles": "Ingenieur, Erfinder",
       "categories": [
         "Technologie",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "charlotte-bronte": {
       "roles": "Schriftstellerin",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "female"
     },
     "maimonides": {
       "roles": "Philosoph, Arzt",
@@ -524,13 +593,15 @@
         "Philosophie",
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "hieronymus-bosch": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "maria-montessori": {
       "roles": "Ärztin, Pädagogin",
@@ -538,34 +609,39 @@
         "Medizin",
         "Wissenschaft",
         "Bildung"
-      ]
+      ],
+      "gender": "female"
     },
     "henry-david-thoreau": {
       "roles": "Schriftsteller, Philosoph",
       "categories": [
         "Literatur",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "maria-theresia": {
       "roles": "Erzherzogin, Regentin",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "john-dewey": {
       "roles": "Philosoph, Pädagoge",
       "categories": [
         "Philosophie",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "plotin": {
       "roles": "Philosoph",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "augustus": {
       "roles": "Kaiser, Staatsmann",
@@ -574,14 +650,16 @@
         "Geschichte"
       ],
       "birthLabel": "23.09.63 v. Chr.",
-      "birthYear": -61
+      "birthYear": -61,
+      "gender": "male"
     },
     "wilhelm-herschel": {
       "roles": "Astronom, Musiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "santiago-ramon-y-cajal": {
       "roles": "Mediziner, Histologe",
@@ -589,13 +667,15 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "robert-louis-stevenson": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "georg-simon-ohm": {
       "roles": "Physiker, Mathematiker",
@@ -603,7 +683,8 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "luigi-galvani": {
       "roles": "Arzt, Naturforscher",
@@ -611,20 +692,23 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "william-turner": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "gian-lorenzo-bernini": {
       "roles": "Bildhauer, Architekt",
       "categories": [
         "Kunst",
         "Technologie"
-      ]
+      ],
+      "gender": "male"
     },
     "andreas-vesalius": {
       "roles": "Anatom, Arzt",
@@ -632,34 +716,39 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "tokugawa-ieyasu": {
       "roles": "Feldherr, Shogun",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "mary-cassatt": {
       "roles": "Malerin",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "female"
     },
     "filippo-brunelleschi": {
       "roles": "Architekt, Baumeister",
       "categories": [
         "Kunst",
         "Technologie"
-      ]
+      ],
+      "gender": "male"
     },
     "benito-juarez": {
       "roles": "Staatsmann, Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "sofja-kowalewskaja": {
       "roles": "Mathematikerin",
@@ -667,13 +756,15 @@
         "Mathematik",
         "Wissenschaft"
       ],
-      "deathPlace": "Stockholm, Schweden"
+      "deathPlace": "Stockholm, Schweden",
+      "gender": "female"
     },
     "george-bernard-shaw": {
       "roles": "Dramatiker, Kritiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "susan-b-anthony": {
       "roles": "Frauenrechtlerin, Reformerin",
@@ -681,7 +772,8 @@
         "Bildung",
         "Ethik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "utagawa-hiroshige": {
       "roles": "Maler, Holzschnittmeister",
@@ -689,7 +781,8 @@
         "Kunst"
       ],
       "birthPlace": "Edo, Japan",
-      "deathPlace": "Edo, Japan"
+      "deathPlace": "Edo, Japan",
+      "gender": "male"
     },
     "evliya-celebi": {
       "roles": "Reisender, Chronist",
@@ -697,34 +790,39 @@
         "Literatur",
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "toussaint-louverture": {
       "roles": "Freiheitskämpfer, Staatsmann",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "dede-efendi": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "emmeline-pankhurst": {
       "roles": "Frauenrechtlerin, Aktivistin",
       "categories": [
         "Ethik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "frederick-douglass": {
       "roles": "Publizist, Reformer",
       "categories": [
         "Literatur",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "piri-reis": {
       "roles": "Kartograph, Admiral",
@@ -732,20 +830,23 @@
         "Politik",
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "jean-francois-champollion": {
       "roles": "Ägyptologe, Sprachforscher",
       "categories": [
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "claude-monet": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "nasir-ad-din-at-tusi": {
       "roles": "Astronom, Mathematiker",
@@ -753,28 +854,32 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "karl-der-grosse": {
       "roles": "Kaiser, Herrscher",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "sigmund-freud": {
       "roles": "Neurologe, Psychoanalytiker",
       "categories": [
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "roald-amundsen": {
       "roles": "Polarforscher, Entdecker",
       "categories": [
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "william-harvey": {
       "roles": "Arzt, Anatom",
@@ -782,7 +887,8 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "ibn-al-haytham": {
       "roles": "Physiker, Mathematiker",
@@ -790,142 +896,164 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "niels-henrik-abel": {
       "roles": "Mathematiker",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "johann-amos-comenius": {
       "roles": "Pädagoge, Theologe",
       "categories": [
         "Philosophie",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "harun-ar-raschid": {
       "roles": "Kalif, Herrscher",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "auguste-rodin": {
       "roles": "Bildhauer",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "machado-de-assis": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "mehmet-akif-ersoy": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
       ],
-      "deathPlace": "Istanbul, Türkei"
+      "deathPlace": "Istanbul, Türkei",
+      "gender": "male"
     },
     "friedrich-der-grosse": {
       "roles": "König, Feldherr",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "nam-k-kemal": {
       "roles": "Dichter, Publizist",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "alexander-graham-bell": {
       "roles": "Erfinder, Ingenieur",
       "categories": [
         "Technologie",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "mehmed-ii": {
       "roles": "Sultan, Feldherr",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "gotthold-ephraim-lessing": {
       "roles": "Dichter, Dramatiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "gustav-klimt": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "rudyard-kipling": {
       "roles": "Schriftsteller, Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "paul-cezanne": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "baruch-de-spinoza": {
       "roles": "Philosoph",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "katharina-die-grosse": {
       "roles": "Kaiserin, Regentin",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "tycho-brahe": {
       "roles": "Astronom",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "henrik-ibsen": {
       "roles": "Dramatiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "donatello": {
       "roles": "Bildhauer",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-hobbes": {
       "roles": "Philosoph, Staatstheoretiker",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "paul-gauguin": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "wang-yangming": {
       "roles": "Philosoph, Staatsmann",
@@ -933,34 +1061,39 @@
         "Philosophie",
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "yunus-emre": {
       "roles": "Dichter, Mystiker",
       "categories": [
         "Literatur",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "alexandre-dumas": {
       "roles": "Schriftsteller, Dramatiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "christiaan-huygens": {
       "roles": "Physiker, Astronom",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "antoine-lavoisier": {
       "roles": "Chemiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "ibn-ruschd": {
       "roles": "Philosoph, Arzt",
@@ -968,83 +1101,96 @@
         "Philosophie",
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "pierre-auguste-renoir": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "edouard-manet": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "virginia-woolf": {
       "roles": "Schriftstellerin",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "female"
     },
     "jonathan-swift": {
       "roles": "Schriftsteller, Satiriker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "heinrich-hertz": {
       "roles": "Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "jan-vermeer": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "henri-becquerel": {
       "roles": "Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "john-dalton": {
       "roles": "Chemiker, Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "franz-liszt": {
       "roles": "Komponist, Pianist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "edvard-munch": {
       "roles": "Maler, Grafiker",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "federico-garcia-lorca": {
       "roles": "Dichter, Dramatiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "michel-de-montaigne": {
       "roles": "Philosoph, Essayist",
       "categories": [
         "Literatur",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "justinian-i": {
       "roles": "Kaiser, Gesetzgeber",
@@ -1052,19 +1198,22 @@
         "Politik",
         "Geschichte"
       ],
-      "birthPlace": "Tauresium, Nordmazedonien"
+      "birthPlace": "Tauresium, Nordmazedonien",
+      "gender": "male"
     },
     "henri-bergson": {
       "roles": "Philosoph",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "caravaggio": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-morus": {
       "roles": "Staatsmann, Humanist",
@@ -1072,7 +1221,8 @@
         "Philosophie",
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "iwan-pawlow": {
       "roles": "Physiologe, Mediziner",
@@ -1080,58 +1230,67 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "pieter-bruegel-der-altere": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "robert-boyle": {
       "roles": "Chemiker, Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "gustave-flaubert": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "erasmus-von-rotterdam": {
       "roles": "Humanist, Gelehrter",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "antoni-van-leeuwenhoek": {
       "roles": "Mikroskopiker, Naturforscher",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "nikolai-gogol": {
       "roles": "Schriftsteller, Dramatiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "oliver-cromwell": {
       "roles": "Feldherr, Staatsmann",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "emily-dickinson": {
       "roles": "Dichterin",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "female"
     },
     "pierre-simon-laplace": {
       "roles": "Mathematiker, Astronom",
@@ -1139,19 +1298,22 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "edgar-degas": {
       "roles": "Maler, Bildhauer",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "ibn-arabi": {
       "roles": "Philosoph, Mystiker",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "edmond-halley": {
       "roles": "Astronom, Mathematiker",
@@ -1159,57 +1321,66 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "tizian": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "herman-melville": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "john-stuart-mill": {
       "roles": "Philosoph, Ökonom",
       "categories": [
         "Philosophie",
         "Wirtschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-baudelaire": {
       "roles": "Dichter, Kritiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "emile-zola": {
       "roles": "Schriftsteller, Publizist",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "giuseppe-garibaldi": {
       "roles": "Freiheitskämpfer, General",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "sandro-botticelli": {
       "roles": "Maler",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "lord-byron": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "paul-ehrlich": {
       "roles": "Mediziner, Immunologe",
@@ -1217,7 +1388,8 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "heinrich-schliemann": {
       "roles": "Archäologe, Kaufmann",
@@ -1225,21 +1397,24 @@
         "Geschichte",
         "Forschung",
         "Wirtschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "ignaz-semmelweis": {
       "roles": "Arzt, Geburtshelfer",
       "categories": [
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "hermann-von-helmholtz": {
       "roles": "Physiker, Physiologe",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "marco-polo": {
       "roles": "Kaufmann, Reisender",
@@ -1247,95 +1422,110 @@
         "Geschichte",
         "Forschung",
         "Wirtschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "wassily-kandinsky": {
       "roles": "Maler, Kunsttheoretiker",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "hafis": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "s-ren-kierkegaard": {
       "roles": "Philosoph, Theologe",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "moliere": {
       "roles": "Dramatiker, Schauspieler",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "james-joyce": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "li-bai": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "evariste-galois": {
       "roles": "Mathematiker",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "emmy-noether": {
       "roles": "Mathematikerin",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "female"
     },
     "marcel-proust": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "alexander-puschkin": {
       "roles": "Dichter, Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "elisabeth-i": {
       "roles": "Königin, Regentin",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "jeanne-d-arc": {
       "roles": "Feldherrin, Nationalheldin",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "johannes-brahms": {
       "roles": "Komponist, Pianist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "georg-friedrich-handel": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "ibn-battuta": {
       "roles": "Reisender, Chronist",
@@ -1343,7 +1533,8 @@
         "Literatur",
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "zheng-he": {
       "roles": "Admiral, Seefahrer",
@@ -1351,20 +1542,23 @@
         "Politik",
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "joseph-haydn": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "kublai-khan": {
       "roles": "Großkhan, Herrscher",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "pierre-de-fermat": {
       "roles": "Mathematiker, Jurist",
@@ -1372,14 +1566,16 @@
         "Mathematik",
         "Wissenschaft",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "georg-cantor": {
       "roles": "Mathematiker",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "rudolf-virchow": {
       "roles": "Mediziner, Pathologe",
@@ -1387,65 +1583,75 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "rainer-maria-rilke": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "meister-eckhart": {
       "roles": "Theologe, Mystiker",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "friedrich-frobel": {
       "roles": "Pädagoge, Reformer",
       "categories": [
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "ludwig-xiv": {
       "roles": "König, Herrscher",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "wilhelm-von-humboldt": {
       "roles": "Gelehrter, Bildungsreformer",
       "categories": [
         "Philosophie",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "stefan-zweig": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "john-milton": {
       "roles": "Dichter, Publizist",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "franklin-d-roosevelt": {
       "roles": "Staatsmann, Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "augustinus-von-hippo": {
       "roles": "Theologe, Philosoph",
       "categories": [
         "Philosophie"
       ],
-      "birthPlace": "Thagaste, Algerien"
+      "birthPlace": "Thagaste, Algerien",
+      "gender": "male"
     },
     "joseph-louis-lagrange": {
       "roles": "Mathematiker, Astronom",
@@ -1453,13 +1659,15 @@
         "Wissenschaft",
         "Forschung",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "walt-whitman": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-augustin-de-coulomb": {
       "roles": "Physiker, Ingenieur",
@@ -1467,7 +1675,8 @@
         "Wissenschaft",
         "Forschung",
         "Technologie"
-      ]
+      ],
+      "gender": "male"
     },
     "murasaki-shikibu": {
       "roles": "Schriftstellerin, Hofdame",
@@ -1475,52 +1684,60 @@
         "Literatur"
       ],
       "birthPlace": "Heian-kyō, Japan",
-      "deathPlace": "Heian-kyō, Japan"
+      "deathPlace": "Heian-kyō, Japan",
+      "gender": "female"
     },
     "george-berkeley": {
       "roles": "Philosoph, Theologe",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "john-keats": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "henri-de-toulouse-lautrec": {
       "roles": "Maler, Grafiker",
       "categories": [
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "michail-bulgakow": {
       "roles": "Schriftsteller, Dramatiker",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "konstantin-der-grosse": {
       "roles": "Kaiser, Herrscher",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "ludwig-boltzmann": {
       "roles": "Physiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "suleyman-der-prachtige": {
       "roles": "Sultan, Gesetzgeber",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "peter-der-grosse": {
       "roles": "Zar, Reformer",
@@ -1528,28 +1745,32 @@
         "Politik",
         "Geschichte",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "sun-yat-sen": {
       "roles": "Revolutionär, Staatsmann",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "akbar": {
       "roles": "Großmogul, Herrscher",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "simon-bolivar": {
       "roles": "Freiheitskämpfer, Staatsmann",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-alva-edison": {
       "roles": "Erfinder, Unternehmer",
@@ -1557,134 +1778,154 @@
         "Technologie",
         "Wissenschaft",
         "Wirtschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "john-maynard-keynes": {
       "roles": "Ökonom",
       "categories": [
         "Wirtschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "ludwig-wittgenstein": {
       "roles": "Philosoph",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "zhu-xi": {
       "roles": "Philosoph, Gelehrter",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-von-aquin": {
       "roles": "Theologe, Philosoph",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "al-ghazali": {
       "roles": "Theologe, Philosoph",
       "categories": [
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "ernest-shackleton": {
       "roles": "Polarforscher, Entdecker",
       "categories": [
         "Geschichte",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "honore-de-balzac": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "wu-zetian": {
       "roles": "Kaiserin, Herrscherin",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "john-adams": {
       "roles": "Politiker, 2. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "james-madison": {
       "roles": "Politiker, 4. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "james-monroe": {
       "roles": "Politiker, 5. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "john-quincy-adams": {
       "roles": "Politiker, 6. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "martin-van-buren": {
       "roles": "Politiker, 8. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "grover-cleveland": {
       "roles": "Politiker, 22. und 24. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "william-howard-taft": {
       "roles": "Politiker, 27. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "woodrow-wilson": {
       "roles": "Politiker, 28. US-Präsident",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "georges-clemenceau": {
       "roles": "Staatsmann, Ministerpräsident Frankreichs",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "jean-paul-marat": {
       "roles": "Revolutionär, Publizist",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "leo-trotzki": {
       "roles": "Revolutionär, Politiker",
       "categories": [
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "friedrich-engels": {
       "roles": "Philosoph, Ökonom",
@@ -1692,21 +1933,24 @@
         "Philosophie",
         "Politik",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "leopold-i": {
       "roles": "Kaiser des Heiligen Römischen Reiches",
       "categories": [
         "Geschichte",
         "Politik"
-      ]
+      ],
+      "gender": "male"
     },
     "abdulaziz": {
       "roles": "Sultan des Osmanischen Reiches",
       "categories": [
         "Geschichte",
         "Politik"
-      ]
+      ],
+      "gender": "male"
     },
     "philip-jaisohn": {
       "roles": "Unabhängigkeitsaktivist, Arzt",
@@ -1714,26 +1958,30 @@
         "Politik",
         "Geschichte",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "maxim-gorki": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "george-eliot": {
       "roles": "Schriftstellerin",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "female"
     },
     "george-orwell": {
       "roles": "Schriftsteller, Essayist",
       "categories": [
         "Literatur",
         "Politik"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-paine": {
       "roles": "Schriftsteller, Aufklärer",
@@ -1741,145 +1989,168 @@
         "Literatur",
         "Politik",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "taras-schewtschenko": {
       "roles": "Dichter, Maler",
       "categories": [
         "Literatur",
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "octave-mirbeau": {
       "roles": "Schriftsteller, Kunstkritiker",
       "categories": [
         "Literatur",
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "oliver-goldsmith": {
       "roles": "Schriftsteller, Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "antoine-de-saint-exupery": {
       "roles": "Schriftsteller, Pilot",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "lewis-carroll": {
       "roles": "Schriftsteller, Mathematiker",
       "categories": [
         "Literatur",
         "Mathematik"
-      ]
+      ],
+      "gender": "male"
     },
     "william-butler-yeats": {
       "roles": "Dichter, Nobelpreisträger",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "daniel-defoe": {
       "roles": "Schriftsteller, Journalist",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "henryk-sienkiewicz": {
       "roles": "Schriftsteller, Nobelpreisträger",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "anatole-france": {
       "roles": "Schriftsteller, Nobelpreisträger",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "iwan-sergejewitsch-turgenew": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "selma-lagerlof": {
       "roles": "Schriftstellerin, Nobelpreisträgerin",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "female"
     },
     "denis-diderot": {
       "roles": "Schriftsteller, Philosoph",
       "categories": [
         "Literatur",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "william-wordsworth": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "jack-london": {
       "roles": "Schriftsteller, Journalist",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "romain-rolland": {
       "roles": "Schriftsteller, Nobelpreisträger",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "andre-gide": {
       "roles": "Schriftsteller, Nobelpreisträger",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "ralph-waldo-emerson": {
       "roles": "Philosoph, Essayist",
       "categories": [
         "Philosophie",
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "arthur-rimbaud": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "jean-de-la-fontaine": {
       "roles": "Fabeldichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "walter-scott": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "guy-de-maupassant": {
       "roles": "Schriftsteller",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "percy-bysshe-shelley": {
       "roles": "Dichter",
       "categories": [
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-de-secondat-baron-de-montesquieu": {
       "roles": "Staatsphilosoph, Schriftsteller",
@@ -1887,14 +2158,16 @@
         "Philosophie",
         "Politik",
         "Literatur"
-      ]
+      ],
+      "gender": "male"
     },
     "vivekananda": {
       "roles": "Mönch, Philosoph",
       "categories": [
         "Philosophie",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "e-t-a-hoffmann": {
       "roles": "Schriftsteller, Komponist",
@@ -1903,14 +2176,16 @@
         "Musik",
         "Kunst"
       ],
-      "birthPlace": "Königsberg (heute Kaliningrad), Russland"
+      "birthPlace": "Königsberg (heute Kaliningrad), Russland",
+      "gender": "male"
     },
     "isabelle-de-charriere": {
       "roles": "Schriftstellerin, Komponistin",
       "categories": [
         "Literatur",
         "Musik"
-      ]
+      ],
+      "gender": "female"
     },
     "elias-lonnrot": {
       "roles": "Philologe, Arzt",
@@ -1918,7 +2193,8 @@
         "Literatur",
         "Medizin",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "ronald-ross": {
       "roles": "Mediziner, Nobelpreisträger",
@@ -1926,20 +2202,23 @@
         "Medizin",
         "Forschung",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "samuel-hahnemann": {
       "roles": "Arzt, Begründer der Homöopathie",
       "categories": [
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "francois-quesnay": {
       "roles": "Arzt, Ökonom",
       "categories": [
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "jose-rizal": {
       "roles": "Schriftsteller, Arzt",
@@ -1947,28 +2226,32 @@
         "Literatur",
         "Medizin",
         "Geschichte"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-louis-alphonse-laveran": {
       "roles": "Mediziner, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "allvar-gullstrand": {
       "roles": "Augenarzt, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "cesare-lombroso": {
       "roles": "Arzt, Kriminologe",
       "categories": [
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "claude-bernard": {
       "roles": "Physiologe",
@@ -1976,56 +2259,64 @@
         "Medizin",
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-scott-sherrington": {
       "roles": "Neurophysiologe, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-richet": {
       "roles": "Physiologe, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "johannes-fibiger": {
       "roles": "Pathologe, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "john-james-rickard-macleod": {
       "roles": "Physiologe, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "marcello-malpighi": {
       "roles": "Anatom",
       "categories": [
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-nicolle": {
       "roles": "Arzt, Mikrobiologe",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "elizabeth-blackwell": {
       "roles": "Ärztin, Pionierin der Frauenmedizin",
       "categories": [
         "Medizin",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "gustave-le-bon": {
       "roles": "Psychologe, Soziologe",
@@ -2033,84 +2324,96 @@
         "Wissenschaft",
         "Philosophie",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "florence-nightingale": {
       "roles": "Begründerin der modernen Krankenpflege",
       "categories": [
         "Medizin",
         "Geschichte"
-      ]
+      ],
+      "gender": "female"
     },
     "albrecht-kossel": {
       "roles": "Mediziner, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "julien-offray-de-la-mettrie": {
       "roles": "Arzt, Philosoph",
       "categories": [
         "Medizin",
         "Philosophie"
-      ]
+      ],
+      "gender": "male"
     },
     "emil-von-behring": {
       "roles": "Immunologe, erster Medizin-Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "siegbert-tarrasch": {
       "roles": "Schachmeister, Arzt",
       "categories": [
         "Medizin",
         "Bildung"
-      ]
+      ],
+      "gender": "male"
     },
     "robert-barany": {
       "roles": "Mediziner, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "julius-wagner-jauregg": {
       "roles": "Psychiater, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "karl-landsteiner": {
       "roles": "Pathologe, Entdecker der Blutgruppen",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "camillo-golgi": {
       "roles": "Mediziner, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "august-krogh": {
       "roles": "Physiologe, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "frederick-banting": {
       "roles": "Mediziner, Nobelpreisträger",
       "categories": [
         "Medizin",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-hunt-morgan": {
       "roles": "Zoologe, Genetiker",
@@ -2118,7 +2421,8 @@
         "Wissenschaft",
         "Forschung",
         "Medizin"
-      ]
+      ],
+      "gender": "male"
     },
     "daniel-bernoulli": {
       "roles": "Mathematiker, Physiker",
@@ -2126,21 +2430,24 @@
         "Mathematik",
         "Physik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "jakob-i-bernoulli": {
       "roles": "Mathematiker",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "peter-simon-pallas": {
       "roles": "Naturforscher, Geograph",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "william-gilbert": {
       "roles": "Arzt, Naturforscher",
@@ -2148,14 +2455,16 @@
         "Medizin",
         "Wissenschaft",
         "Physik"
-      ]
+      ],
+      "gender": "male"
     },
     "james-hutton": {
       "roles": "Geologe, Naturforscher",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "thomas-young": {
       "roles": "Physiker, Augenarzt",
@@ -2163,14 +2472,16 @@
         "Physik",
         "Medizin",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "hans-fischer": {
       "roles": "Chemiker, Nobelpreisträger",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "gustav-theodor-fechner": {
       "roles": "Physiker, Philosoph",
@@ -2178,14 +2489,16 @@
         "Physik",
         "Philosophie",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "fritz-pregl": {
       "roles": "Chemiker, Nobelpreisträger",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "jean-perrin": {
       "roles": "Physiker, Nobelpreisträger",
@@ -2193,141 +2506,163 @@
         "Physik",
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "jons-jakob-berzelius": {
       "roles": "Chemiker",
       "categories": [
         "Wissenschaft",
         "Forschung"
-      ]
+      ],
+      "gender": "male"
     },
     "gerard-desargues": {
       "roles": "Mathematiker",
       "categories": [
         "Mathematik",
         "Wissenschaft"
-      ]
+      ],
+      "gender": "male"
     },
     "gaetano-donizetti": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "hector-berlioz": {
       "roles": "Komponist, Musikkritiker",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "maurice-ravel": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "george-gershwin": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "christoph-willibald-gluck": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "clara-schumann": {
       "roles": "Pianistin, Komponistin",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "female"
     },
     "richard-strauss": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "camille-saint-saens": {
       "roles": "Komponist, Pianist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "arnold-schonberg": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "carl-maria-von-weber": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "giovanni-pierluigi-da-palestrina": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "edward-elgar": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "charles-gounod": {
       "roles": "Komponist",
       "categories": [
         "Musik"
-      ]
+      ],
+      "gender": "male"
     },
     "karl-friedrich-schinkel": {
       "roles": "Architekt, Maler",
       "categories": [
         "Architektur",
         "Kunst"
-      ]
+      ],
+      "gender": "male"
     },
     "el-lissitzky": {
       "roles": "Maler, Architekt",
       "categories": [
         "Kunst",
         "Architektur"
-      ]
+      ],
+      "gender": "male"
     },
     "albrecht-altdorfer": {
       "roles": "Maler, Baumeister",
       "categories": [
         "Kunst",
         "Architektur"
-      ]
+      ],
+      "gender": "male"
     },
     "theo-van-doesburg": {
       "roles": "Maler, Kunsttheoretiker",
       "categories": [
         "Kunst",
         "Architektur"
-      ]
+      ],
+      "gender": "male"
     },
     "laszlo-moholy-nagy": {
       "roles": "Maler, Fotograf",
       "categories": [
         "Kunst",
         "Architektur"
-      ]
+      ],
+      "gender": "male"
     },
     "akseli-gallen-kallela": {
       "roles": "Maler, Architekt",
       "categories": [
         "Kunst",
         "Architektur"
-      ]
+      ],
+      "gender": "male"
     },
     "sei-shonagon": {
       "birthPlace": "Heian-kyō, Japan"
@@ -2713,6 +3048,21 @@
     },
     "claude-cahun": {
       "gender": "female"
+    },
+    "sandor-vay": {
+      "gender": "male"
+    },
+    "eugene-falleni": {
+      "gender": "male"
+    },
+    "kazimierz-pu-aski": {
+      "gender": "male"
+    },
+    "marija-nikiforowa": {
+      "gender": "female"
+    },
+    "meister-mit-dem-gestickten-laub": {
+      "gender": "male"
     }
   }
 }
