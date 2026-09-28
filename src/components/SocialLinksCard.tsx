@@ -7,6 +7,7 @@ import { Check, MoreHorizontal, Pencil, RotateCw, Trash2, X } from 'lucide-react
 import { fetchService } from '@/lib/serviceEndpoints'
 import { DEFAULT_LANG, useLanguage } from '@/lib/i18n'
 import { useStaticTranslations } from '@/lib/staticTranslations'
+import { safeHref } from '../lib/safeUrl'
 
 interface SocialLink {
   id: string
@@ -347,7 +348,7 @@ export default function SocialLinksCard() {
                 )}
               </div>
               <a
-                href={link.url}
+                href={safeHref(link.url)}
                 target="_blank"
                 rel="noopener noreferrer nofollow"
                 className="mt-1 block break-all text-xs text-[#59C7FF] hover:underline"

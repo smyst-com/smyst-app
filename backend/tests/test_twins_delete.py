@@ -32,6 +32,7 @@ def _create_twin(cookies: dict[str, str], name: str) -> dict:
         "/api/twins",
         json={"name": name, "description": "Testprofil fuer Soft-Delete"},
         cookies=cookies,
+        headers={"X-Smyst-CSRF": "1"},
     )
     assert response.status_code == 200, response.text
     return response.json()["twin"]
@@ -49,7 +50,11 @@ def test_delete_requires_auth() -> None:
 
 
 def test_delete_unknown_twin_returns_404() -> None:
-    response = client.delete("/api/twins/gibt-es-nicht", cookies=_cookies("google:sd-404"))
+    response = client.delete(
+        "/api/twins/gibt-es-nicht",
+        cookies=_cookies("google:sd-404"),
+        headers={"X-Smyst-CSRF": "1"},
+    )
     assert response.status_code == 404
 
 
@@ -59,7 +64,11 @@ def test_soft_delete_moves_twin_to_trash_and_restore_brings_it_back() -> None:
     twin = _create_twin(cookies, "Soft Delete Proband")
     assert twin["id"] in _twin_ids(cookies)
 
-    response = client.delete(f"/api/twins/{twin['id']}", cookies=cookies)
+    response = client.delete(
+        f"/api/twins/{twin['id']}",
+        cookies=cookies,
+        headers={"X-Smyst-CSRF": "1"},
+    )
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["ok"] is True
@@ -77,7 +86,11 @@ def test_soft_delete_moves_twin_to_trash_and_restore_brings_it_back() -> None:
     assert twin["id"] in [t["id"] for t in listing.json()["twins"]]
 
     # Wiederherstellen:
-    restore = client.post(f"/api/twins/{twin['id']}/restore", cookies=cookies)
+    restore = client.post(
+        f"/api/twins/{twin['id']}/restore",
+        cookies=cookies,
+        headers={"X-Smyst-CSRF": "1"},
+    )
     assert restore.status_code == 200, restore.text
     assert twin["id"] in _twin_ids(cookies)
     doc = user_store.load_user_doc(sub)
@@ -86,6 +99,8 @@ def test_soft_delete_moves_twin_to_trash_and_restore_brings_it_back() -> None:
 
 def test_restore_unknown_twin_returns_404() -> None:
     response = client.post(
-        "/api/twins/nie-geloescht/restore", cookies=_cookies("google:sd-restore-404")
+        "/api/twins/nie-geloescht/restore",
+        cookies=_cookies("google:sd-restore-404"),
+        headers={"X-Smyst-CSRF": "1"},
     )
     assert response.status_code == 404

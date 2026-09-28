@@ -18,11 +18,20 @@ DEFAULT_AVATAR_PLACEHOLDER = "/branding/avatar-placeholder.svg"
 
 
 def _clean(value: str | None) -> str | None:
-    """Leere/whitespace-only Strings gelten als 'nicht gesetzt' (None)."""
+    """Leere/whitespace-only Strings gelten als 'nicht gesetzt' (None).
+
+    Zudem werden nur https-URLs und App-relative Pfade durchgereicht - ein
+    Twin-Override mit javascript:/data:-Schema faellt auf den naechsten
+    Fallback zurueck, statt im Markup zu landen (Security-Fix 28.09.2026).
+    """
     if value is None:
         return None
     trimmed = value.strip()
-    return trimmed or None
+    if not trimmed:
+        return None
+    if trimmed.startswith("https://") or trimmed.startswith("/"):
+        return trimmed
+    return None
 
 
 def resolve_avatar_url(

@@ -28,6 +28,7 @@ on:
 permissions:
   contents: read
   issues: write
+  id-token: write
 
 concurrency:
   group: weekly-smoke
@@ -70,7 +71,13 @@ jobs:
           # Backend hart kodiert; gemessen 14.09.2026) = Modell lebt,
           # antwortet nur langsam — kein Alarm, Hinweis im Log.
           # Alles andere (Verbindungsfehler, Provider fehlt) = FEHLER.
+          # OIDC-Token fuer den privilegierten Provider-Ping (Security 28.09.2026:
+          # /ai/providers?ping=true verlangt Admin-Session oder CI-OIDC).
+          OIDC=$(curl -sLS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=smyst-ci-llm-gateway" | python3 -c "import json,sys; print(json.load(sys.stdin).get('value',''))")
+          PING_AUTH=(-H "Authorization: Bearer $OIDC")
           code=$(curl -s -o /tmp/providers.json -w "%{http_code}" --max-time 120 \
+            "${PING_AUTH[@]}" \
             "https://api.smyst.com/api/ai/providers?ping=true") || code="000"
           PING_CODE="$code" python3 - <<'PY' > /tmp/model-status.txt
           import json, os, sys

@@ -185,19 +185,51 @@ class _MetaParser(HTMLParser):
             self.title += data
 
 
+def _redirect_target_allowed(location: str) -> bool:
+    """SSRF: Auch Redirect-Ziele muessen der Link-Policy entsprechen.
+
+    Der initiale URL-Check des Aufrufers prueft nur die EINGABE-URL - ein
+    Redirect auf http://169.254.169.254/ oder eine private IP wuerde ihn
+    umgehen. Jeder Hop wird deshalb erneut validiert (Security-Fix 28.09.2026).
+    """
+    from urllib.parse import urlparse
+
+    try:
+        parsed = urlparse(location)
+    except Exception:
+        return False
+    return _suspicious_reason(location, parsed) == "" and _resolves_public(parsed.hostname or "")
+
+
 async def _fetch_public_meta(url: str) -> tuple[str, dict[str, str]]:
     """Laedt die Profilseite und extrahiert Meta-Tags.
+
+    Redirects werden MANUELL verfolgt und jeder Hop gegen die Link-Policy
+    geprueft (kein automatisches follow_redirects mehr).
 
     Rueckgabe: (status, meta) mit status in ok|limited|unreachable.
     """
     try:
+        current_url = url
         async with httpx.AsyncClient(
-            follow_redirects=True,
-            max_redirects=4,
+            follow_redirects=False,
             timeout=FETCH_TIMEOUT_SECONDS,
             headers={"User-Agent": USER_AGENT, "Accept-Language": "de,en;q=0.8"},
         ) as client:
-            response = await client.get(url)
+            for _hop in range(5):  # 1 Request + max. 4 Redirects wie vorher
+                response = await client.get(current_url)
+                if response.status_code not in {301, 302, 303, 307, 308}:
+                    break
+                location = response.headers.get("location", "")
+                if not location:
+                    break
+                from urllib.parse import urljoin
+
+                current_url = urljoin(current_url, location)
+                if not _redirect_target_allowed(current_url):
+                    return "unreachable", {}
+            else:
+                return "unreachable", {}
     except Exception:
         return "unreachable", {}
     if response.status_code in {401, 403, 429, 999}:

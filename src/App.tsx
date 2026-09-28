@@ -60,6 +60,7 @@ import { SmystLoginGate } from '@/components/SmystLoginGate'
 import PasswordResetGate from '@/components/PasswordResetGate'
 import UserVoiceCard from '@/components/UserVoiceCard'
 import SocialLinksCard from '@/components/SocialLinksCard'
+import { safeHref } from './lib/safeUrl'
 
 type IconProps = SVGProps<SVGSVGElement>
 
@@ -3870,7 +3871,7 @@ function TwinProfileView({
     if (!slug) return
     void fetchService('/api/v1/visits', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
       body: JSON.stringify({ slug }),
       keepalive: true,
     }).catch(() => undefined)
@@ -4323,7 +4324,7 @@ function TwinProfileView({
                       .map((source) => (
                         <a
                           key={source.url}
-                          href={readableSourceUrl(source.url)}
+                          href={safeHref(readableSourceUrl(source.url))}
                           target="_blank"
                           rel="noreferrer"
                           className="rounded-lg border border-white/32 bg-white/16 px-4 py-3 text-sm font-medium text-[#0b1c44] transition-colors hover:bg-white/28"
@@ -5110,7 +5111,7 @@ function AccountProfileView({ onNavigate }: { onNavigate: (view: AppView) => voi
                         {(publicKnowledgeSuggestion.sources ?? []).slice(0, 3).map((source) => (
                           <a
                             key={source.url}
-                            href={source.url}
+                            href={safeHref(source.url)}
                             target="_blank"
                             rel="noreferrer"
                             className="max-w-full truncate rounded-md border border-white/30 bg-white/18 px-2.5 py-1 text-xs font-medium text-[#0b1c44] transition-colors hover:bg-white/34"
@@ -7218,7 +7219,7 @@ function AdminControlCenterInner() {
       const response = await fetchService('/api/admin/language/autopilot/toggle', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
         body: JSON.stringify({ enabled }),
       })
       const payload = await response.json().catch(() => ({}))
@@ -7242,7 +7243,7 @@ function AdminControlCenterInner() {
       const response = await fetchService('/api/admin/language/autopilot/run', {
         method: 'POST',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
         body: JSON.stringify({
           profile: adminLanguageFilter.profile.trim() || null,
           language: adminLanguageFilter.language.trim() || null,
@@ -12161,7 +12162,7 @@ function TwinChatView({
                         {msg.webResearch.sources.slice(0, 3).map((source) => (
                           <a
                             key={source.url}
-                            href={source.url}
+                            href={safeHref(source.url)}
                             target="_blank"
                             rel="noreferrer"
                             className="max-w-full truncate rounded-md border border-white/30 bg-white/20 px-2 py-1 font-medium text-[#0b1c44] transition-colors hover:bg-white/36"

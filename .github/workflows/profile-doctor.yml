@@ -54,14 +54,15 @@ jobs:
     permissions:
       contents: read
       actions: write
+      id-token: write
     defaults:
       run:
         working-directory: backend
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.12"
           cache: "pip"
@@ -264,7 +265,10 @@ jobs:
             echo "${slug}: API ${API}, Seite ${SEITE}"
             [ "$OK" = "0" ] && FEHLER=$((FEHLER+1))
           done
-          PING=$(curl -sf "https://api.smyst.com/api/ai/providers?ping=true" || true)
+          # OIDC fuer privilegierten Ping (Security 28.09.2026)
+          OIDC=$(curl -sLS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=smyst-ci-llm-gateway" | python3 -c "import json,sys; print(json.load(sys.stdin).get('value',''))")
+          PING=$(curl -sf -H "Authorization: Bearer $OIDC" "https://api.smyst.com/api/ai/providers?ping=true" || true)
           echo "$PING" | head -c 400; echo
           # Pflicht-Smoke (Autopilot-Freeze): smyst_llm muss ok:true liefern.
           cat > /tmp/check_ping.py <<'PYEOF'

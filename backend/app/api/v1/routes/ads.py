@@ -11,13 +11,16 @@ dieser Store leer (Free-only-Betrieb unberuehrt).
 
 from __future__ import annotations
 
-import json
-import logging
-import uuid
-from datetime import UTC, datetime
 from typing import Any
 
+import json
+import logging
+import re
+import uuid
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from app.integrations.feedback_store import _client
@@ -29,6 +32,11 @@ router = APIRouter(prefix="/ads", tags=["ads"])
 IMPRESSION_PREFIX = "pipeline/ads/impressions/"
 _STATS: dict[str, int] = {}
 
+#: Profil-Slugs sind kleingeschrieben mit Bindestrich (siehe public_twins);
+#: alles andere ist kein gueltiger Zaehlschluessel und wird abgewiesen, statt
+#: die Payout-Verteilung (pro-rata pro Slug) mit Fantasi-Slugs aufzublasen.
+SLUG_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]{0,159}$")
+
 
 class ImpressionRequest(BaseModel):
     slug: str = Field(min_length=1, max_length=160)
@@ -37,15 +45,22 @@ class ImpressionRequest(BaseModel):
 
 
 @router.post("/impression")
-async def record_impression(body: ImpressionRequest, request: Request) -> dict[str, object]:
+async def record_impression(body: ImpressionRequest, request: Request) -> Any:
     """Eine ausgelieferte Werbung zaehlen (fire-and-forget vom AdSlot)."""
-    _STATS[body.slug] = _STATS.get(body.slug, 0) + 1
+    slug = body.slug.strip()
+    if not SLUG_PATTERN.fullmatch(slug):
+        return JSONResponse(
+            status_code=400,
+            content={"ok": False, "error": "invalid_slug", "message": "Ungueltiger Profil-Slug."},
+        )
+    creator_sub = (body.creatorSub or "").strip()[:160] or None
+    _STATS[slug] = _STATS.get(slug, 0) + 1
     entry = {
         "id": str(uuid.uuid4()),
         "createdAt": datetime.now(UTC).isoformat(),
-        "slug": body.slug,
+        "slug": slug,
         "placement": body.placement,
-        "creatorSub": body.creatorSub,
+        "creatorSub": creator_sub,
     }
     client = _client() if __import__('app.integrations.feedback_store', fromlist=['storage_configured']).storage_configured() else None
     if client is not None:

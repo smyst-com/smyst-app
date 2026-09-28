@@ -29,7 +29,7 @@ def test_status_requires_login(client: TestClient) -> None:
 
 def test_checkout_returns_503_without_stripe_config(client: TestClient, monkeypatch) -> None:
     monkeypatch.setattr(billing, "_stripe_configured", lambda: False)
-    response = client.post("/api/v1/billing/checkout-session", cookies=_auth_cookie())
+    response = client.post("/api/v1/billing/checkout-session", cookies=_auth_cookie(), headers={"X-Smyst-CSRF": "1"})
     assert response.status_code == 503
     assert response.json()["error"] == "billing_not_configured"
 
@@ -56,7 +56,8 @@ def test_checkout_returns_url_when_configured(client: TestClient, monkeypatch) -
     )
     response = client.post(
         "/api/v1/billing/checkout-session",
-        cookies=_auth_cookie(), headers={"origin": "https://smyst.com"},
+        cookies=_auth_cookie(),
+            headers={"origin": "https://smyst.com", "X-Smyst-CSRF": "1"},
     )
     assert response.status_code == 200
     assert response.json()["checkoutUrl"].startswith("https://checkout.stripe.com")

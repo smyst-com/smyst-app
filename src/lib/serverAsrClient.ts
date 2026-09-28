@@ -148,7 +148,7 @@ export async function recordAndTranscribeOnce(lang: string | null, maxMs = 5200)
   const response = await fetchService('/api/asr/transcribe', {
     method: 'POST',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Smyst-CSRF': '1' },
     body: JSON.stringify({
       audioBase64,
       contentType: blob.type || 'audio/webm',

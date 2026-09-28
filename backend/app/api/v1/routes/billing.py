@@ -57,6 +57,30 @@ def _verify_webhook_event(*, payload: bytes, signature: str, secret: str) -> Any
     return stripe.Webhook.construct_event(payload, signature, secret)
 
 
+def _safe_checkout_origin(request: Request) -> str:
+    """Stripe success/cancel-URLs nur auf bekannte eigene Origins leiten.
+
+    Ein beliebig vom Client setzbarer Origin-Header wuerde die Redirect-
+    Ziel-URL nach der Zahlung bestimmen (Post-Payment-Phishing, 28.09.2026).
+    """
+    from app.core.config import get_settings as _load_settings
+
+    settings = _load_settings()
+    raw_origins = getattr(settings, "cors_origins", []) or []
+    public_base = str(getattr(settings, "public_base_url", "")).rstrip("/")
+    auth_base = str(getattr(settings, "auth_public_base_url", "")).rstrip("/")
+    allowed = {origin.rstrip("/") for origin in raw_origins if str(origin).strip()}
+    allowed.update({public_base, auth_base} - {""})
+    candidate = str(request.headers.get("origin") or "").rstrip()
+    if candidate:
+        if candidate in allowed:
+            return candidate
+        return public_base or str(request.base_url).rstrip("/")
+    # Ohne Origin-Header ist der Aufruf same-origin - dann gilt wie bisher
+    # die Basis-URL der Anfrage selbst.
+    return str(request.base_url).rstrip("/")
+
+
 @router.post("/checkout-session")
 async def create_checkout_session(request: Request) -> Any:
     sub, error = _require_sub(request)
@@ -67,7 +91,7 @@ async def create_checkout_session(request: Request) -> Any:
             status_code=503,
             content={"error": "billing_not_configured", "message": "Premium ist gerade nicht verfügbar."},
         )
-    origin = str(request.headers.get("origin") or request.base_url).rstrip("/")
+    origin = _safe_checkout_origin(request)
     settings = get_settings()
     session = _create_checkout_session(
         price_id=settings.stripe_premium_price_id,
