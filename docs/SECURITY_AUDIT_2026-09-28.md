@@ -74,3 +74,28 @@ und Live-Nachweis je Massnahme.
    GitHub-Environment mit Reviewern einrichten (nur Inhaber, UI-Aktion).
 5. **Pages-Header**: GitHub Pages setzt keine Security-Header; Meta-CSP +
    Framebuster sind die maximal moegliche Mitigation auf dieser Infra.
+
+
+---
+
+## Runde 2 (Nacht 29.09., PR #875) — Restpunkte geschlossen
+
+Auftrag Inhaber: "100 % fertig, lass nichts offen." Alle drei Rest-Risiken aus
+Runde 1 mit technischer Loesbarkeit sind behoben und live bewiesen:
+
+| # | Bereich | Vorher | Fix | Live-Nachweis |
+|---|---|---|---|---|
+| R2-1 | Sessions | Gestohlene Tokens bis 30 Tage gueltig, logout ohne Widerruf | session_revocation.py: Epoch-Widerruf, e2-persistiert, 60s-Cache, wirkt zentral in _session_from_request (alle Guards erben); Trigger: logout-all, Admin-Block, Passwort-Reset, Konto-Loeschung | E2E: Register→Login→logout-all→alter Token authenticated:false + 401 (mode: revoked-server-side) |
+| R2-2 | SSRF-Rest | DNS-Rebinding-Fenster zwischen IP-Pruefung und Verbindung | _pinned_http_get: TCP an validierte IP gepinnt, TLS-SNI+Zertifikat gegen Original-Host; httpx aus der Route entfernt | Unit-Tests (private Hosts leer, Chunked-Decoding); Redirect-Hop-Validierung bleibt |
+| R2-3 | Uploads | Groessenlimit nur Client-Versprechen, Objekt blieb bei Luge im Bucket | Presigned-PUT signiert ContentLength=body.size (S3 prueft signierten Header) | Unit-Test: Params enthalten ContentLength; HEAD-Check bleibt als 2. Netzebene |
+| R2-4 | Freigabe-Workflow | autopilot-approve-all mit Storage-Secrets frei dispatchbar | actor-Filter smyst-com + Environment security-approve (5-Min-Wait-Timer via API angelegt) | Workflow-Datei + Environment existieren |
+
+Tests: 741 passed (+6: Revocation-Epoche/logout-all/Guard-Vererbung,
+IP-Pinning-Units, Presign-ContentLength; Erase-Idempotenz-Test auf das
+strengere 401-Verhalten angepasst). Build + 4 Guards gruen, Freeze-Marker intakt.
+
+Bleibende Grenzen (nicht technisch behebbar durch Agenten):
+- Trennung Inhaber- vs. Agent-Identitaet: Alle Repo-Rechte liegen auf EINEM
+  GitHub-Konto; ein zweites, menschliches Admin-Konto + Branch-Protection-
+  Review waere die echte Trennung (Inhaber-Entscheidung, Zugangsdaten).
+- Zeabur-Login 2FA / GOOGLE_OAUTH_CLIENT_SECRET: Zugangsdaten, nur Inhaber.
