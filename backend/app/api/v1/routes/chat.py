@@ -167,12 +167,17 @@ def _chat_router() -> LLMRouter:
 
     smyst_llm-Deckel (28.09., Inhaber-Auftrag "blitzschnell"): Der Provider
     selbst steht auf 90 s (Funktions-Freeze Eigenes Modell — Pipeline braucht
-    das auch). Im CHAT frass das eigene CPU-Modell aber das komplette 20-s-
-    Budget (live: 46-48 s, dann degenerierte Local-Meldung, weil OpenRouter
-    mit remaining=0 uebersprungen wurde). Der Chat-Router kuerzt deshalb den
-    Request-Timeout von smyst_llm auf 12 s: Schafft es das eigene Modell
-    nicht, bleibt der Cloud-Kette noch ~8 s fuer eine echte Antwort.
-    Reihenfolge (smyst_llm zuerst) und alle Freeze-Marker unveraendert.
+    das auch). Im CHAT frass das eigene CPU-Modell aber das komplette Budget
+    (live: 46-48 s, dann degenerierte Local-Meldung, weil OpenRouter mit
+    remaining=0 uebersprungen wurde). Der Chat-Router kuerzt deshalb den
+    Request-Timeout von smyst_llm auf 15 s: Schafft es das eigene Modell
+    nicht, bleibt der Cloud-Kette noch ~15 s fuer eine echte Antwort
+    (Chat-Gesamtbudget 30 s via LLM_CHAT_TOTAL_DEADLINE_SECONDS in Zeabur).
+    12 s erwiesen sich als zu knapp: complete() muss die GANZE Antwort
+    abwarten (~4-8 Token/s heissen 140 Token ~ 18-35 s). Der Stream-Pfad
+    (Frontend-Hauptweg) ist vom Deckel unberuehrt — dort zaehlt nur die Zeit
+    zwischen Token-Stuecken. Reihenfolge (smyst_llm zuerst) und alle
+    Freeze-Marker unveraendert.
     """
     llm_router = build_default_router()
     chat_deadline = get_settings().llm_chat_total_deadline_seconds
@@ -182,8 +187,8 @@ def _chat_router() -> LLMRouter:
     for provider in getattr(llm_router, "providers", []):
         # AntiLoopProvider haelt das echte smyst_llm-Objekt in .inner
         target = getattr(provider, "inner", provider)
-        if getattr(target, "name", "") == "smyst_llm" and chat_deadline > 15:
-            target.timeout = min(getattr(target, "timeout", 90.0), 12.0)
+        if getattr(target, "name", "") == "smyst_llm" and chat_deadline > 18:
+            target.timeout = min(getattr(target, "timeout", 90.0), 15.0)
     return llm_router
 
 
@@ -440,7 +445,11 @@ async def _build_llm_request(
     return LLMRequest(
         prompt=prompt,
         system_prompt=system_prompt,
-        max_tokens=220,
+        # 140 statt 220 (28.09., "blitzschnell"): Das CPU-Modell erzeugt nur
+        # ~4-8 Token/s — jede Token-Grenze ist 1:1 Antwortzeit. 140 deckt die
+        # concise-Antworten des Persona-Stils (der Prompt fordert ohnehin
+        # "Keep it concise.") und halbiert die Generierungszeit gegenueber 220.
+        max_tokens=140,
         temperature=0.2,
         metadata=metadata,
     )
