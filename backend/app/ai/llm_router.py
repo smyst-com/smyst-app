@@ -383,12 +383,28 @@ class OpenAICompatibleProvider(LLMProvider):
         """
         payload = {**self._build_payload(request), "stream": True}
         headers = {"Authorization": f"Bearer {self.api_key}", **self.extra_headers}
+        # Lese-Timeout entkoppelt vom complete()-Timeout (28.09., Auftrag
+        # "blitzschnell"): Ein float-Timeout gilt in httpx fuer jede Phase —
+        # der Chat-Deckel (15 s) kappte so auch den STREAM, und zwar bevor der
+        # ERSTE Token kam: Das CPU-Modell prefillt kalte Persona-Prompts in
+        # 12-20 s (modelFirstTokenMs 15.266 s live gemessen) — der Stream
+        # starb Haarsekunde vor dem ersten Token und die Kette endete in der
+        # degenerierten Local-Meldung. Fuer Streams zaehlt stattdessen
+        # Idle-Toleranz: 90 s ohne Chunk (tote Verbindung), deckungsgleich
+        # mit dem Frontend-Idle-Timeout in useTwinMvp.ts. complete() behaelt
+        # weiterhin self.timeout — der API-Fallback-Weg bleibt gedeckelt.
+        stream_timeout = httpx.Timeout(
+            connect=min(self.timeout, 10.0),
+            read=90.0,
+            write=15.0,
+            pool=min(self.timeout, 10.0),
+        )
         async with shared_client().stream(
             "POST",
             self.chat_completions_url,
             headers=headers,
             json=payload,
-            timeout=self.timeout,
+            timeout=stream_timeout,
         ) as response:
             if response.status_code >= 400:
                 # Beim Streamen ist der Body noch nicht gelesen — ohne aread()
