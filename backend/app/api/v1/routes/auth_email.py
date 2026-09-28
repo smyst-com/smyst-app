@@ -251,5 +251,12 @@ async def reset(body: ResetRequest, request: Request) -> JSONResponse:
         account = await asyncio.to_thread(store.update_account, account)
     except Exception:
         return _error(502, "storage_error", "Speicherdienst nicht erreichbar. Bitte später erneut versuchen.")
+    # Passwort-Reset meldet ueberall ab: alle alten Session-Tokens des
+    # Kontos verfallen serverseitig (Security-Runde 2, 29.09.2026). Die
+    # neue Session hierzu wird mit frischem createdAt NACH dem Widerruf
+    # ausgestellt und bleibt gueltig.
+    from app.security.session_revocation import revoke_sub
+
+    await asyncio.to_thread(revoke_sub, str(account.get("sub") or account.get("email") or ""), "password_reset")
     # Nach erfolgreichem Reset direkt anmelden.
     return _session_response(account)

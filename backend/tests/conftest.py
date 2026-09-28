@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import pytest
 
+from app.security import session_revocation
 from app.security.rate_limit import rate_limiter
 
 
 @pytest.fixture(autouse=True)
 def _reset_rate_limiter() -> None:
     rate_limiter._buckets.clear()
+    session_revocation.reset_cache_for_tests()

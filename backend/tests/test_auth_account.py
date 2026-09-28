@@ -163,4 +163,7 @@ def test_delete_is_idempotent() -> None:
     second = client.post(
         "/auth/account/erase", headers={**DELETE_HEADERS, "Authorization": f"Bearer {token}"}
     )
-    assert second.status_code == 200 and second.json()["deleted"]["accountRecord"] is False
+    # Security-Runde 2: Token ist nach Kontoloesung serverseitig widerrufen
+    # — der zweite Aufruf wird 401 abgewiesen (strenger als frueheres 200/False,
+    # bleibt idempotent: es passiert nichts weiter).
+    assert second.status_code == 401

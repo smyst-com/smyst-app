@@ -349,12 +349,25 @@ async def google_token_login(payload: dict[str, Any]) -> JSONResponse:
 
 
 def _session_from_request(request: Request) -> dict[str, Any] | None:
+    from app.security.session_revocation import is_revoked
+
     authorization = request.headers.get("Authorization", "")
+    session: dict[str, Any] | None = None
     if authorization.startswith("Bearer "):
         session = _read_token(authorization.removeprefix("Bearer ").strip())
         if session:
-            return session
-    return _read_token(request.cookies.get(SESSION_COOKIE, ""))
+            pass
+        else:
+            return None
+    if session is None:
+        session = _read_token(request.cookies.get(SESSION_COOKIE, ""))
+    if not session:
+        return None
+    # Serverseitiger Widerruf (logout-all, Admin-Block, Passwort-Reset):
+    # Tokens, die VOR dem Widerruf-Zeitpunkt ausgestellt wurden, sind tot.
+    if is_revoked(str(session.get("sub") or ""), int(session.get("createdAt") or 0)):
+        return None
+    return session
 
 
 @router.get("/me")
@@ -396,7 +409,25 @@ async def logout() -> JSONResponse:
 
 
 @router.post("/logout-all")
-async def logout_all() -> JSONResponse:
-    response = JSONResponse({"ok": True, "mode": "stateless-current-session-cleared"})
+async def logout_all(request: Request) -> JSONResponse:
+    """Meldet ueberall ab: widerruft serverseitig ALLE Tokens des Nutzers.
+
+    Die Session wird direkt aus dem Token gelesen (nicht via
+    _session_from_request), damit auch ein bereits widerrufener Aufruf das
+    Cookie sauber loeschen kann.
+    """
+    from app.security.session_revocation import revoke_sub
+
+    authorization = request.headers.get("Authorization", "")
+    token = authorization.removeprefix("Bearer ").strip() if authorization.startswith("Bearer ") else ""
+    if not token:
+        token = request.cookies.get(SESSION_COOKIE, "")
+    session = _read_token(token)
+    revoked = False
+    if session:
+        revoked = revoke_sub(str(session.get("sub") or ""), reason="logout_all")
+    response = JSONResponse(
+        {"ok": True, "mode": "revoked-server-side" if revoked else "no-session", "revoked": revoked}
+    )
     _clear_session_cookie(response)
     return response

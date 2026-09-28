@@ -152,4 +152,10 @@ async def admin_user_status(body: UserStatusRequest, request: Request) -> Any:
         target_id=body.sub,
         detail=f"Status -> {new_status} ({updated.get('email')})",
     )
+    if body.action == "block":
+        # Bestehende Sessions sofort ungültig machen (nicht nur neue Logins
+        # sperren) — serverseitiger Widerruf, Security-Runde 2 (29.09.2026).
+        from app.security.session_revocation import revoke_sub
+
+        await asyncio.to_thread(revoke_sub, body.sub, "admin_block")
     return {"ok": True, "user": updated}

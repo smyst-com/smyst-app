@@ -290,3 +290,58 @@ def test_openapi_disabled_in_production(monkeypatch) -> None:
     prod_app = create_app()
     assert prod_app.openapi_url is None
     assert prod_app.docs_url is None
+
+
+# ------------------------------------------------- Security-Runde 2: IP-Pinning
+def test_resolve_public_ips_rejects_private_hosts() -> None:
+    from app.api.v1.routes.social_links import _resolve_public_ips
+
+    assert _resolve_public_ips("127.0.0.1") == []
+    assert _resolve_public_ips("localhost") == []
+    assert _resolve_public_ips("169.254.169.254") == []
+    assert _resolve_public_ips("10.0.0.1") == []
+
+
+def test_dechunk_decodes_chunked_body() -> None:
+    from app.api.v1.routes.social_links import _dechunk
+
+    chunked = b"4\r\nWiki\r\n5\r\npedia\r\n0\r\n\r\n"
+    assert _dechunk(chunked) == b"Wikipedia"
+    # Ungueltige Eingabe bricht sauber ab (kein Crash)
+    assert isinstance(_dechunk(b"m\u00fclk"), bytes)
+
+
+# ------------------------------------------- Security-Runde 2: Upload-Presign
+def test_upload_presign_signs_content_length() -> None:
+    import json as _json
+    from unittest.mock import patch
+
+    from app.api.v1.routes import storage as storage_route
+
+    captured: dict = {}
+
+    class FakeClient:
+        def generate_presigned_url(self, operation, Params, ExpiresIn):
+            captured[operation] = Params
+            return "https://signed.example/fake"
+
+        def head_object(self, **kwargs):
+            return {"ContentLength": 1}
+
+    with patch.object(storage_route, "_storage_ready", lambda: True), \
+         patch.object(storage_route, "_client", lambda: FakeClient()):
+        response = client.post(
+            "/api/storage/upload-url",
+            cookies=_session_cookie(["member"]),
+            headers={"X-Smyst-CSRF": "1"},
+            json={
+                "filename": "memo.png",
+                "contentType": "image/png",
+                "category": "image",
+                "size": 1234,
+            },
+        )
+    assert response.status_code == 200, response.text
+    params = captured.get("put_object")
+    assert params is not None
+    assert params.get("ContentLength") == 1234
