@@ -21,13 +21,13 @@ import asyncio
 import ipaddress
 import re
 import socket
+import ssl
 import time
 import uuid
 from html.parser import HTMLParser
 from typing import Any
 from urllib.parse import urlparse, urlunparse
 
-import httpx
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 
@@ -201,45 +201,173 @@ def _redirect_target_allowed(location: str) -> bool:
     return _suspicious_reason(location, parsed) == "" and _resolves_public(parsed.hostname or "")
 
 
+def _resolve_public_ips(host: str) -> list[str]:
+    """Loest den Host auf und liefert NUR global routbare IPs (SSRF-Gate).
+
+    Private/Loopback/Link-Local-Adressen fuehren zu einer leeren Liste.
+    """
+    try:
+        infos = socket.getaddrinfo(host, None, proto=socket.IPPROTO_TCP)
+    except OSError:
+        return []
+    public: list[str] = []
+    for info in infos:
+        address = info[4][0]
+        try:
+            ip = ipaddress.ip_address(address)
+        except ValueError:
+            continue
+        if ip.is_global and address not in public:
+            public.append(address)
+    return public
+
+
+def _read_http_response(sock: socket.socket, max_bytes: int) -> tuple[int, dict[str, str], bytes]:
+    """Liest die rohe HTTP/1.1-Antwort bis zum Verbindungs-Ende (Connection: close)."""
+    raw = bytearray()
+    while len(raw) < max_bytes + 64 * 1024:
+        chunk = sock.recv(64 * 1024)
+        if not chunk:
+            break
+        raw.extend(chunk)
+    head, _, body = bytes(raw).partition(b"\r\n\r\n")
+    lines = head.decode("iso-8859-1", errors="replace").split("\r\n")
+    if not lines or " " not in lines[0]:
+        return 0, {}, b""
+    try:
+        status = int(lines[0].split(" ")[1])
+    except (IndexError, ValueError):
+        return 0, {}, b""
+    headers: dict[str, str] = {}
+    for line in lines[1:]:
+        if ":" in line:
+            key, _, value = line.partition(":")
+            headers[key.strip().lower()] = value.strip()
+    if headers.get("transfer-encoding", "").lower() == "chunked":
+        body = _dechunk(body)
+    return status, headers, body[:max_bytes]
+
+
+def _dechunk(data: bytes) -> bytes:
+    """Entfernt HTTP/1.1 Chunked-Encoding (einfaches, robustes Dekodieren)."""
+    out = bytearray()
+    view = memoryview(data)
+    while True:
+        nl = view.tobytes().find(b"\r\n")
+        if nl < 0:
+            break
+        try:
+            size = int(view.tobytes()[:nl].split(b";")[0], 16)
+        except ValueError:
+            break
+        if size == 0:
+            break
+        start = nl + 2
+        if start + size > len(view):
+            break
+        out.extend(view[start : start + size])
+        view = view[start + size + 2 :] if start + size + 2 <= len(view) else b""
+    return bytes(out)
+
+
+def _pinned_http_get(
+    ip: str, port: int, host: str, use_tls: bool, path: str, timeout: float
+) -> tuple[int, dict[str, str], bytes]:
+    """HTTP-GET mit auf die validierte IP GEPINNTER Verbindung (DNS-Rebinding-Kill).
+
+    TLS: SNI + Zertifikatspruefung laufen gegen den ORIGINAL-Hostnamen,
+    wahrend die TCP-Verbindung an die vorab validierte oeffentliche IP
+    gebunden ist. Der Server kann die Adress-Aufloesung nicht mehr zwischen
+    Pruefung und Verbindung umschalten.
+    """
+    request = (
+        f"GET {path} HTTP/1.1\r\n"
+        f"Host: {host}\r\n"
+        f"User-Agent: {USER_AGENT}\r\n"
+        "Accept: text/html,application/xhtml+xml,*/*;q=0.8\r\n"
+        "Accept-Language: de,en;q=0.8\r\n"
+        "Accept-Encoding: identity\r\n"
+        "Connection: close\r\n\r\n"
+    ).encode("ascii")
+    with socket.create_connection((ip, port), timeout=timeout) as sock:
+        sock.settimeout(timeout)
+        if use_tls:
+            context = ssl.create_default_context()
+            with context.wrap_socket(sock, server_hostname=host) as tls_sock:
+                tls_sock.sendall(request)
+                return _read_http_response(tls_sock, MAX_FETCH_BYTES)
+        sock.sendall(request)
+        return _read_http_response(sock, MAX_FETCH_BYTES)
+
+
 async def _fetch_public_meta(url: str) -> tuple[str, dict[str, str]]:
     """Laedt die Profilseite und extrahiert Meta-Tags.
 
     Redirects werden MANUELL verfolgt und jeder Hop gegen die Link-Policy
     geprueft (kein automatisches follow_redirects mehr).
 
+    Verbindung an validierte IP gepinnt (kein DNS-Rebinding-Fenster),
+    Redirects werden pro Hop neu gegen die Link-Policy geprueft.
+
     Rueckgabe: (status, meta) mit status in ok|limited|unreachable.
     """
+    from urllib.parse import urljoin
+
     try:
         current_url = url
-        async with httpx.AsyncClient(
-            follow_redirects=False,
-            timeout=FETCH_TIMEOUT_SECONDS,
-            headers={"User-Agent": USER_AGENT, "Accept-Language": "de,en;q=0.8"},
-        ) as client:
-            for _hop in range(5):  # 1 Request + max. 4 Redirects wie vorher
-                response = await client.get(current_url)
-                if response.status_code not in {301, 302, 303, 307, 308}:
+        for _hop in range(5):  # 1 Request + max. 4 Redirects wie vorher
+            parsed = urlparse(current_url)
+            if parsed.scheme not in {"http", "https"}:
+                return "unreachable", {}
+            host = parsed.hostname or ""
+            port = parsed.port or (443 if parsed.scheme == "https" else 80)
+            ips = await asyncio.to_thread(_resolve_public_ips, host)
+            if not ips:
+                return "unreachable", {}
+            path = parsed.path or "/"
+            if parsed.query:
+                path = f"{path}?{parsed.query}"
+            status = 0
+            headers: dict[str, str] = {}
+            body = b""
+            # Bis zu zwei der validierten IPs probieren (Ausfallsicherheit);
+            # jede wurde bereits als global routbar geprueft.
+            for ip in ips[:2]:
+                try:
+                    status, headers, body = await asyncio.to_thread(
+                        _pinned_http_get,
+                        ip,
+                        port,
+                        host,
+                        parsed.scheme == "https",
+                        path,
+                        FETCH_TIMEOUT_SECONDS,
+                    )
                     break
-                location = response.headers.get("location", "")
+                except (OSError, ssl.SSLError):
+                    continue
+            if status == 0:
+                return "unreachable", {}
+            if status in {301, 302, 303, 307, 308}:
+                location = headers.get("location", "")
                 if not location:
                     break
-                from urllib.parse import urljoin
-
                 current_url = urljoin(current_url, location)
                 if not _redirect_target_allowed(current_url):
                     return "unreachable", {}
-            else:
-                return "unreachable", {}
+                continue
+            break
+        else:
+            return "unreachable", {}
     except Exception:
         return "unreachable", {}
-    if response.status_code in {401, 403, 429, 999}:
+    if status in {401, 403, 429, 999}:
         return "limited", {}
-    if response.status_code >= 400:
+    if status >= 400:
         return "unreachable", {}
-    body = response.text[:MAX_FETCH_BYTES]
     parser = _MetaParser()
     try:
-        parser.feed(body)
+        parser.feed(body.decode("utf-8", errors="replace"))
     except Exception:
         return "limited", {}
     meta = parser.meta

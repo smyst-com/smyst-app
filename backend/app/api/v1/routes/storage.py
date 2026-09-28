@@ -325,6 +325,11 @@ def create_upload_url(
                 "Bucket": settings.idrive_e2_bucket,
                 "Key": key,
                 "ContentType": body.contentType,
+                # Deklarierte Groesse MITsignieren: Der PUT laesst sich dann nur
+                # mit exakt dieser Content-Length ausfuehren (S3 prueft den
+                # signierten Header) - das Kategorie-Limit gilt serverseitig,
+                # nicht nur per Client-Versprechen (Security-Runde 2).
+                "ContentLength": body.size,
             },
             ExpiresIn=UPLOAD_URL_TTL_SECONDS,
         )

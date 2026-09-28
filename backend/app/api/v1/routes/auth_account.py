@@ -135,6 +135,11 @@ async def delete_account(request: Request, background_tasks: BackgroundTasks) ->
             # Endgültigen Objekt-Delete NACH der Antwort ausführen.
             background_tasks.add_task(_hard_delete_in_background, store, email)
 
+    # Gelöschtes Konto = sofort alle Sessions tot (Security-Runde 2).
+    from app.security.session_revocation import revoke_sub
+
+    await asyncio.to_thread(revoke_sub, str(session.get("sub") or ""), "account_delete")
+
     # Datenschutz: Audit ohne E-Mail-Adresse, nur Sub-Typ.
     audit_log_service.record(
         AuditEvent(

@@ -66,7 +66,9 @@ jobs:
         # QIDs ab, ohne blinde Partition; 20 parallele Matrix-Jobs passen
         # ins Standard-Runner-Limit, Rest queut (fail-fast:false, keine
         # Cancel-Gefahr).
-        shard_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        # 20.09./05.09.-Skalierung fuer 10000/Tag: alle 20 Partitionen aktiv
+        # (GitHub-Free-Limit: 20 parallele Jobs — genau deckend).
+        shard_index: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
 
 
     defaults:
@@ -227,7 +229,7 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           SHARD_INDEX: ${{ matrix.shard_index }}
           TOTAL_SHARDS: 20
-          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '60' }}
+          BATCH_LIMIT: ${{ inputs.batch_size_per_shard || '80' }}
         run: |
           python -m app.workers.sharded_runner \
             --shard-index $SHARD_INDEX \
