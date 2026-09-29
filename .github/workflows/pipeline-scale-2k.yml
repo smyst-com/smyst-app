@@ -76,6 +76,20 @@ jobs:
         working-directory: backend
 
     steps:
+      - name: "Dispatch-Guard: nur EIN Lauf gleichzeitig"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          ANDERE=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/pipeline-scale-2k.yml/runs?per_page=20" \
+            --jq '[.workflow_runs[] | select(.id != '"$RUN_ID"' and (.status == "in_progress" or .status == "queued" or .status == "pending" or .status == "waiting"))] | length')
+          if [ "${ANDERE}" -gt 0 ]; then
+            echo "Anderer Scale-2k-Lauf aktiv/wartend (${ANDERE}) — dieser Lauf beendet sich sauber."
+            exit 0
+          fi
+          echo "Kein anderer Lauf — Start freigegeben."
+
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
