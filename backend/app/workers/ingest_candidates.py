@@ -59,6 +59,19 @@ PAGE_SIZE = 125
 # bei ~1000 Dubletten je Lauf, waehrend die QA 250 verarbeiten koennte).
 CATEGORIES_PER_RUN = 6  # 14.09.2026: 4 -> 6 — mehr Kategorien je Lauf, damit das gemeinsame Budget auch dann voll wird, wenn einzelne abgegrast sind oder Timeout liefen
 
+# Nachschub-Reserve (29.09.2026): die Batch-5-Kategorien aus PR #880 sind
+# komplette FRISCHE Pools (Cursor 0), landen in der Ring-Rotation aber erst
+# ueber die naechsten Tage (Simulation 29.09.: an keinem der 8 Tages-Slots war
+# eine davon dabei). Sie werden deshalb an jeden Lauf als Reserve angehaengt —
+# angefragt NUR, wenn die rotierten Kategorien das Budget nicht fuelleten
+# (run_ingest bricht bei leerem Topf ab): volle Ringe zahlen keinerlei
+# WDQS-Mehrlast, duenne Laeufe bekommen sofort frisches Material.
+RESERVE_CATEGORIES: tuple[str, ...] = (
+    "Komik", "Chirurgie", "Richter", "Pflege", "Klavier", "Illustration",
+    "Liedschaffen", "Offiziere", "Lehrwesen", "Kunstschaffende",
+    "Uhrmacher", "Orgelbau",
+)
+
 # Mindest-Bekanntheit der besten Person einer Seite. Die SPARQL-Liste ist nach
 # Sitelinks absteigend sortiert; sinkt schon der Spitzenwert einer Seite unter
 # diese Schwelle, ist die Kategorie beim aktuellen Qualitaetsanspruch
@@ -145,7 +158,10 @@ def categories_for_run(
     count = max(1, min(count, len(names)))
     index = (run_date.toordinal() * 8 + slot) % len(names)
     step = len(names) // count
-    return [names[(index + offset * step) % len(names)] for offset in range(count)]
+    selected = [names[(index + offset * step) % len(names)] for offset in range(count)]
+    # Reserve dahinter (siehe RESERVE_CATEGORIES): wird erst angefragt, wenn
+    # die rotierten Kategorien das gemeinsame Budget nicht fuellten.
+    return selected + [c for c in RESERVE_CATEGORIES if c not in selected]
 
 
 def categories_for_today(run_date: date, *, all_categories: bool) -> list[str]:
