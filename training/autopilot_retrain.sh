@@ -161,8 +161,12 @@ PY
 #     Nur wenn >= 30 Praeferenzpaare im Export liegen; scheitert DPO, geht es
 #     mit dem reinen SFT-Stand weiter — das Gate entscheidet ohnehin neutral.
 FUSED_FOR_GATE="$TRAIN_HOME/fused/$VERSION"
+# DPO-Bauer: lokale Kopie bevorzugt (das Google-Drive-Repo kann auf einem
+# Feature-Branch stehen — launchd darf ihn nicht wechseln)
+DPO_BUILDER="$HOME/Library/smyst-autopilots/bin/build_dpo_dataset.py"
+[ -f "$DPO_BUILDER" ] || DPO_BUILDER="$REPO_ROOT/training/build_dpo_dataset.py"
 if [ -x "$TRAIN_HOME/.venv-dpo/bin/mlx_lm_lora.train" ]; then
-  if python3 "$REPO_ROOT/training/build_dpo_dataset.py" --export-dir "$EXPORT_DIR" \
+  if python3 "$DPO_BUILDER" --export-dir "$EXPORT_DIR" \
       --out "$TRAIN_HOME/dpo-data" --min-pairs 30 >> "$LOG" 2>&1 \
      && [ -s "$TRAIN_HOME/dpo-data/train.jsonl" ]; then
     PAARE=$(($(wc -l < "$TRAIN_HOME/dpo-data/train.jsonl" | tr -d ' ') + $(wc -l < "$TRAIN_HOME/dpo-data/valid.jsonl" | tr -d ' ')))
