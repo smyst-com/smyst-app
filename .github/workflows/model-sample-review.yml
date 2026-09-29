@@ -253,10 +253,11 @@ jobs:
           json.dump({"monat": MONAT, "auswahl": auswahl, "modelle": modelle,
                      "ergebnisse": ergebnisse},
                     open("/tmp/stichprobe.json", "w"), ensure_ascii=False, indent=1)
-          # Katastrophen-Fall sichtbar machen (Issue-Label unten)
+          # Katastrophen-Fall sichtbar machen (Issue-Label unten) — Datei NUR
+          # bei echtem Alarm anlegen (leere Datei wuerde -f ebenfalls treffen)
           leer = {n: sum(1 for e in ergebnisse[n] if not e["antwort"].strip()) for n in namen}
-          alarm = any(v > len(auswahl) // 2 for v in leer.values())
-          open("/tmp/alarm", "w").write("1" if alarm else "")
+          if any(v > len(auswahl) // 2 for v in leer.values()):
+              open("/tmp/alarm", "w").write("1")
           print(report_md[:2000])
           PY
 
