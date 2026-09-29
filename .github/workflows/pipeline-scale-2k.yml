@@ -77,6 +77,7 @@ jobs:
 
     steps:
       - name: "Dispatch-Guard: nur EIN Lauf gleichzeitig"
+        working-directory: ${{ github.workspace }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.run_id }}
