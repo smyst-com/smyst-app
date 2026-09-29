@@ -1,0 +1,294 @@
+# Modell-Stichprobe: monatliche Qualitaets-Kontrolle fuer den Inhaber
+# (Auftrag 29.09.2026: "monatliche Stichproben-Pruefung einrichten").
+#
+# Was es tut:
+#   1. Live-Modell (Produktion) und neuesten Champion aus dem Object Brain (e2)
+#      laden — Champion wird automatisch erkannt (neueste *-Q4_K_M.gguf unter
+#      models/, Live-Modell per Input/Default).
+#   2. Mit llama-server (llama.cpp b10606, PRODUKTIONS-Sampling inkl.
+#      Anti-Loop-Parameter wie im Backend) eine monatlich wechselnde, deterministische
+#      Stichprobe aus dem 40-Fragen-Gate-Set (8 Personas x 5 Fragen, identisches
+#      System-Prompt-Schema wie gate.py) stellen.
+#   3. Antworten mit den 6 Gate-Metriken BEWERTEN (nur berichtend, kein Gate:
+#      die Stichprobe informiert den Inhaber, sie blockiert nichts).
+#   4. Report (Markdown + JSON) nach e2 pipeline/model-samples/<JJJJ-MM>/ laden
+#      und als GitHub-Issue "Modell-Stichprobe <JJJJ-MM>" veroeffentlichen —
+#      fuer den Inhaber lesbar, mit kompletten Frage-Antwort-Paaren.
+#
+# Rein lesend gegenueber Profilen/Chats: es werden nur Modell-Dateien gelesen
+# und Reports geschrieben; nichts wird geloescht oder umgestellt.
+name: Modell-Stichprobe (monatlich)
+
+on:
+  schedule:
+    # 1. des Monats 06:30 UTC = 08:30 MESZ — nach dem naechtlichen Export,
+    # vor dem taeglichen Chef-Briefing (07:00 UTC) im Blick.
+    - cron: "30 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      anzahl:
+        description: "Fragen pro Modell (Stichprobe aus 40er-Set)"
+        required: false
+        default: "10"
+      live_key:
+        description: "e2-Objekt des Live-Modells (Q4_K_M)"
+        required: false
+        default: "models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: model-sample-review
+  cancel-in-progress: false
+
+jobs:
+  stichprobe:
+    name: Stichprobe fahren und Report schreiben
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      IDRIVE_E2_ACCESS_KEY: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+      IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: llama.cpp-Tools (Release b10606, wie pipeline-scale-2k)
+        run: |
+          mkdir -p /opt/llama
+          curl -fsSL https://github.com/ggml-org/llama.cpp/releases/download/b10606/llama-b10606-bin-ubuntu-x64.tar.gz \
+            | tar -xz -C /opt/llama/
+          BIN_DIR=$(dirname $(find /opt/llama -name llama-server | head -1))
+          echo "LLAMA_BIN=$BIN_DIR" >> "$GITHUB_ENV"
+          "$BIN_DIR/llama-server" --version | head -1 || true
+
+      - name: Modelle aus e2 laden (Live + neuester Champion)
+        run: |
+          pip install -q boto3
+          python3 << 'PY'
+          import boto3, os
+          from botocore.config import Config
+          from datetime import datetime
+
+          LIVE_KEY = "${{ inputs.live_key || 'models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf' }}"
+          c = boto3.client('s3', endpoint_url='https://s3.us-west-2.idrivee2.com',
+                           region_name='us-west-2',
+                           aws_access_key_id=os.environ['IDRIVE_E2_ACCESS_KEY'],
+                           aws_secret_access_key=os.environ['IDRIVE_E2_SECRET_KEY'],
+                           config=Config(read_timeout=900, retries={'max_attempts': 10}))
+          BUCKET = 'smyst-memories'
+
+          # Champion = neueste *-Q4_K_M.gguf unter models/ (nicht das Live-Modell)
+          pager = c.get_paginator('list_objects_v2')
+          kandidaten = []
+          for page in pager.paginate(Bucket=BUCKET, Prefix='models/'):
+              for o in page.get('Contents', []):
+                  k = o['Key']
+                  if k.endswith('Q4_K_M.gguf') and k != LIVE_KEY:
+                      kandidaten.append((o['LastModified'], k))
+          assert kandidaten, 'Kein Champion-GGUF unter models/ gefunden'
+          kandidaten.sort()
+          CHAMP_KEY = kandidaten[-1][1]
+          print('Champion erkannt:', CHAMP_KEY)
+
+          for name, key in (('live', LIVE_KEY), ('champion', CHAMP_KEY)):
+              ziel = f'/tmp/model-{name}.gguf'
+              print(f'lade {key} -> {ziel}')
+              c.download_file(BUCKET, key, ziel)
+              assert os.path.getsize(ziel) > 100_000_000, f'{ziel} zu klein'
+          with open('/tmp/modelle.json', 'w') as f:
+              import json
+              json.dump({'live_key': LIVE_KEY, 'champion_key': CHAMP_KEY,
+                         'gleich': LIVE_KEY == CHAMP_KEY}, f)
+          PY
+
+      - name: Fragen stellen, bewerten, Report bauen
+        run: |
+          python3 << 'PY'
+          import json, os, random, re, subprocess, time, urllib.request
+
+          ANZAHL = int("${{ inputs.anzahl || '10' }}" or 10)
+          MONAT = time.strftime('%Y-%m')
+          LLAMA = os.environ['LLAMA_BIN']
+
+          # — exakt das Gate-Schema aus ~/smyst-train/gate.py (gleiche Massstaebe) —
+          PERSONAS = [
+              ("Albert Einstein", "Physik", "1879-03-14", "1955-04-18"),
+              ("Marie Curie", "Chemie", "1867-11-07", "1934-07-04"),
+              ("Napoleon Bonaparte", "Militaer", "1769-08-15", "1821-05-05"),
+              ("Cleopatra", "Politik", "-69-01-01", "-30-08-12"),
+              ("Wolfgang Amadeus Mozart", "Musik", "1756-01-27", "1791-12-05"),
+              ("William Shakespeare", "Literatur", "1564-04-26", "1616-04-23"),
+              ("Sokrates", "Philosophie", "-470-01-01", "-399-01-01"),
+              ("Ada Lovelace", "Mathematik", "1815-12-10", "1852-11-27"),
+          ]
+          FRAGEN = [
+              "Wer bist du?",
+              "Erzaehl mir von deiner Kindheit.",
+              "Was ist dein groesstes Werk?",
+              "Was haeltst du vom Internet?",
+              "Was war der schwerste Moment in deinem Leben?",
+          ]
+          DEUTSCH_WOERTER = re.compile(
+              r"\b(ich|bin|und|der|die|das|nicht|ist|war|ich habe|mein|meine|mit|auch|eine|einer|"
+              r"sehr|aber|denn|weil|ueber|fuer|jahr|leben|werk|zeit|menschen|heute)\b", re.I)
+          ZEITMARKER = re.compile(
+              r"(nach meiner zeit|nach meinem tod|nach meinem ableben|keine persoenliche erfahrung|"
+              r"keine eigenen erfahrungen|das kannte ich (nicht|zu meiner zeit)|zu meiner zeit (gab|existierte)"
+              r"|dies kannte ich|erfahrung damit|erst lange nach|kannte ich nicht)", re.I)
+
+          def system_prompt(p):
+              return (f"Du bist ein KI-Zwilling der historischen Person {p['name']} "
+                      f"({p['kat']}, {p['geb']} bis {p['tod']}). Antworte immer in der ersten Person, "
+                      f"auf Deutsch, hoeflich und kurz. Behaupte nie, Dinge erlebt zu haben, die "
+                      f"nach deinem Tod passiert sind — ordne sie ehrlich ein.")
+
+          # 40 Paare wie im Gate, monatlich deterministische Stichprobe (Seed = Monat)
+          paare = [{"id": f"persona-{i+1:03d}",
+                    "name": PERSONAS[i % 8][0], "kat": PERSONAS[i % 8][1],
+                    "geb": PERSONAS[i % 8][2], "tod": PERSONAS[i % 8][3],
+                    "frage": FRAGEN[(i // 8) % 5],
+                    "zeitfrage": FRAGEN[(i // 8) % 5].startswith("Was haeltst du vom Internet")}
+                   for i in range(40)]
+          rng = random.Random(int(MONAT.replace('-', '')))
+          auswahl = sorted(rng.sample(range(40), min(ANZAHL, 40)))
+
+          def bewerte(a, p):
+              a = (a or '').strip()
+              teile = [t for t in re.split(r"\s+", p['name']) if len(t) > 3]
+              woerter = a.split()
+              wiederholung = any(' '.join(woerter[i:i+n]).lower() ==
+                                 ' '.join(woerter[i+n:i+2*n]).lower()
+                                 for n in (8, 5, 4) for i in range(0, max(0, len(woerter)-2*n)+1))
+              return {
+                  "persona_nennung": any(t.lower() in a.lower() for t in teile) if a else False,
+                  "deutsch": bool(DEUTSCH_WOERTER.search(a)) if a else False,
+                  "erste_person": bool(re.search(r"\b(ich|mein|meine|mir|mich)\b", a, re.I)) if a else False,
+                  "keine_wiederholung": (a != '' and not wiederholung),
+                  "kein_zeitbruch": (bool(ZEITMARKER.search(a)) if (a and p['zeitfrage']) else True),
+                  "vollstaendig": len(woerter) >= 20,
+              }
+
+          def frage_server(port, p):
+              body = json.dumps({
+                  "messages": [{"role": "system", "content": system_prompt(p)},
+                               {"role": "user", "content": p["frage"]}],
+                  "max_tokens": 250, "temperature": 0.2, "top_p": 0.95, "min_p": 0.05,
+                  "repeat_penalty": 1.18, "repeat_last_n": 384,
+                  "frequency_penalty": 0.25, "presence_penalty": 0.2,
+              }).encode()
+              req = urllib.request.Request(
+                  f"http://127.0.0.1:{port}/v1/chat/completions", data=body,
+                  headers={"Content-Type": "application/json"})
+              with urllib.request.urlopen(req, timeout=420) as r:
+                  return json.load(r)["choices"][0]["message"]["content"]
+
+          modelle = json.load(open('/tmp/modelle.json'))
+          namen = ['live'] + ([] if modelle['gleich'] else ['champion'])
+          ergebnisse = {n: [] for n in namen}
+          for name in namen:
+              env = dict(os.environ, LD_LIBRARY_PATH=LLAMA)
+              srv = subprocess.Popen(
+                  [f"{LLAMA}/llama-server", "-m", f"/tmp/model-{name}.gguf",
+                   "--host", "127.0.0.1", "--port", "8090", "--ctx-size", "2048",
+                   "--threads", "2"],
+                  env=env, stdout=open(f"/tmp/llama-{name}.log", "w"), stderr=subprocess.STDOUT)
+              try:
+                  for _ in range(120):
+                      try:
+                          urllib.request.urlopen("http://127.0.0.1:8090/health", timeout=5); break
+                      except Exception:
+                          time.sleep(5)
+                  else:
+                      raise RuntimeError(f'llama-server ({name}) kam nicht hoch')
+                  for i in auswahl:
+                      p = paare[i]
+                      try:
+                          antwort = frage_server(8090, p)
+                      except Exception as e:
+                          antwort = ""
+                          print(f"WARNUNG {name} frage {p['id']}: {e}")
+                      ergebnisse[name].append({"id": p["id"], "persona": p["name"],
+                                               "frage": p["frage"], "antwort": antwort,
+                                               "metriken": bewerte(antwort, p)})
+                      print(f"{name} {p['id']} ({p['name']}): {len(antwort.split())} Woerter")
+              finally:
+                  srv.terminate(); srv.wait(timeout=60)
+
+          # — Report bauen (Markdown, inhaber-lesbar) —
+          def score(n):
+              met = [e["metriken"] for e in ergebnisse[n] if e["metriken"]]
+              if not met: return 0.0, {k: 0 for k in met}
+              keys = ["persona_nennung", "deutsch", "erste_person",
+                      "keine_wiederholung", "kein_zeitbruch", "vollstaendig"]
+              proz = {k: round(100 * sum(m[k] for m in met) / len(met), 1) for k in keys}
+              return round(sum(proz.values()), 1), proz
+
+          titel_namen = {"live": "LIVE (Produktion)", "champion": "Champion (neuester Kandidat)"}
+          zeilen = [f"# Modell-Stichprobe {MONAT}", "",
+                    f"Datum: {time.strftime('%d.%m.%Y')} — {len(auswahl)} Fragen pro Modell, "
+                    f"monatlich wechselnde Auswahl aus dem 40-Fragen-Gate-Set.", "",
+                    f"- **LIVE:** `{modelle['live_key']}` — Score **{score('live')[0]} / 600**"]
+          if 'champion' in namen:
+              zeilen.append(f"- **Champion:** `{modelle['champion_key']}` — Score **{score('champion')[0]} / 600**")
+          zeilen += ["", "> Score wie im Trainings-Gate (max 600): Persona erkannt, Deutsch, "
+                     "Ich-Form, keine Wiederholung, kein Zeitbruch, vollstaendig (je max 100).", ""]
+
+          for i in auswahl:
+              p = paare[i]
+              zeilen += [f"## {p['name']} — „{p['frage']}“", ""]
+              for n in namen:
+                  e = next(x for x in ergebnisse[n] if x["id"] == p["id"])
+                  mark = "".join("✓" if v else "✗" for v in e["metriken"].values())
+                  antwort = e["antwort"].strip() or "_(keine Antwort)_"
+                  zeilen += [f"**{titel_namen[n]}** `{mark}`", "", f"> {antwort}", ""]
+          report_md = "\n".join(zeilen)
+          open("/tmp/stichprobe.md", "w").write(report_md)
+          json.dump({"monat": MONAT, "auswahl": auswahl, "modelle": modelle,
+                     "ergebnisse": ergebnisse},
+                    open("/tmp/stichprobe.json", "w"), ensure_ascii=False, indent=1)
+          # Katastrophen-Fall sichtbar machen (Issue-Label unten)
+          leer = {n: sum(1 for e in ergebnisse[n] if not e["antwort"].strip()) for n in namen}
+          alarm = any(v > len(auswahl) // 2 for v in leer.values())
+          open("/tmp/alarm", "w").write("1" if alarm else "")
+          print(report_md[:2000])
+          PY
+
+      - name: Report nach e2 (Object Brain) legen
+        run: |
+          python3 - << 'PY'
+          import boto3, os
+          from botocore.config import Config
+          c = boto3.client('s3', endpoint_url='https://s3.us-west-2.idrivee2.com',
+                           region_name='us-west-2',
+                           aws_access_key_id=os.environ['IDRIVE_E2_ACCESS_KEY'],
+                           aws_secret_access_key=os.environ['IDRIVE_E2_SECRET_KEY'])
+          monat = __import__('time').strftime('%Y-%m')
+          for datei in ('stichprobe.md', 'stichprobe.json'):
+              key = f'pipeline/model-samples/{monat}/{datei}'
+              c.upload_file(f'/tmp/{datei}', 'smyst-memories', key)
+              print('hochgeladen:', key)
+          PY
+
+      - name: Issue fuer den Inhaber eroeffnen
+        run: |
+          MONAT=$(date -u +%Y-%m)
+          TITEL="Modell-Stichprobe ${MONAT}"
+          gh label create "modell-stichprobe" --color 5319e7 --description "Monatliche Modell-Stichprobe" 2>/dev/null || true
+          LABELS="modell-stichprobe"
+          if [ -f /tmp/alarm ]; then
+            gh label create "modell-alarm" --color b60205 2>/dev/null || true
+            LABELS="modell-stichprobe,modell-alarm"
+          fi
+          VORHANDEN=$(gh issue list --state open --search "\"${TITEL}\" in:title" --json number --jq 'length')
+          if [ "$VORHANDEN" = "0" ]; then
+            gh issue create --title "$TITEL" --body-file /tmp/stichprobe.md --label "$LABELS"
+          else
+            gh issue comment "$VORHANDEN" --body-file /tmp/stichprobe.md || true
+          fi

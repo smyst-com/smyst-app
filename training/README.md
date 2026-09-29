@@ -63,6 +63,25 @@ Ergebnis (lokal, NICHT einchecken — enthaelt Nutzereingaben):
 - `preference-<datum>.jsonl` — nur bewertete Antworten (`rating: up/down`),
   Rohmaterial fuer DPO-Paare
 
+## DPO-Feinschliff (aktiviert 29.09.2026, Startkriterium 30 Paare)
+
+Daumen-hoch/runter-Feedback wird zum DPO-Training (Direct Preference
+Optimization): `build_dpo_dataset.py` baut aus `preference-*.jsonl`
+Paare `{prompt, chosen, rejected, system}` (05/95-Split), der Re-Trainings-
+Autopilot haengt nach dem SFT-fuse einen DPO-LoRA-Lauf obendrauf
+(Referenz = SFT-Stand, mlx-lm-lora `train_mode: dpo`, beta 0.1, 300
+Iterationen) und schickt die Verfeinerung durch dasselbe Promotions-Gate
+(40 Fragen, max 600) und Rauch-Tor wie jeden Kandidaten — DPO hat KEINEN
+Freibrief. Das Startkriterium wurde von 100 auf **30 Paare** gesenkt
+(Inhaber-Auftrag 29.09.); darunter wird sauber uebersprungen. Umgebung:
+`~/smyst-train/.venv-dpo` (Python 3.11, `mlx-lm-lora==3.1.3` — mlx-lm
+selbst hat keinen DPO-Trainer).
+
+```
+python3 training/build_dpo_dataset.py --export-dir ../training-export \
+  --out ~/smyst-train/dpo-data --min-pairs 30
+```
+
 ## QA-Urteile (Trainingsdaten fuer das Pipeline-Modell)
 
 Damit smyst 1.0 spaeter die **Pruefarbeit** der Pipeline uebernehmen kann (das
