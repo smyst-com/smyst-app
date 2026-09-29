@@ -499,15 +499,24 @@ def test_volles_budget_stoppt_weitere_kategorien(monkeypatch) -> None:
 
 def test_kategorien_je_lauf_gleichmaessig_verteilt() -> None:
     from app.ai.wikidata_candidates import CATEGORY_OCCUPATIONS
-    from app.workers.ingest_candidates import CATEGORIES_PER_RUN, categories_for_run
+    from app.workers.ingest_candidates import (
+        CATEGORIES_PER_RUN,
+        RESERVE_CATEGORIES,
+        categories_for_run,
+    )
 
     picks = categories_for_run(date(2026, 8, 13), slot=2)
 
     # 14.09.2026: 4 -> 6 Kategorien je Lauf (Tagesziel 5000/Tag, siehe
     # ingest_candidates.KATEGORIES-Kommentar) — der Test folgt der Konstante.
-    assert len(picks) == CATEGORIES_PER_RUN
-    assert len(set(picks)) == len(picks)  # keine Kategorie doppelt
+    assert len(picks[:CATEGORIES_PER_RUN]) == CATEGORIES_PER_RUN
+    assert len(set(picks)) == len(picks)  # keine Kategorie doppelt (auch Reserve)
     assert set(picks) <= set(CATEGORY_OCCUPATIONS)
+    # 29.09.2026: frische Batch-5-Pools als Nachschub-Reserve hinter der
+    # Rotation — sie werden erst angefragt, wenn der Ring das Budget nicht
+    # fuellte (Befund 29.09.: keinem der 8 Tages-Slots war eine davon zugeteilt).
+    assert set(RESERVE_CATEGORIES) <= set(CATEGORY_OCCUPATIONS)
+    assert picks[CATEGORIES_PER_RUN:] == list(RESERVE_CATEGORIES)
     # deterministisch: gleicher Tag + Slot -> gleiche Auswahl (replaybar)
     assert categories_for_run(date(2026, 8, 13), slot=2) == picks
 
