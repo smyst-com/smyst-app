@@ -136,8 +136,28 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Cello": ("Q13219637",),                          # cellist
     "Ballett": ("Q805221",),                          # ballet dancer
     "Satztechnik": ("Q4108101",),                     # typesetter
-    "Telegrafie": ("Q2024200",),                      # telegraphist
-    "Stenografie": ("Q18810149",),                    # stenographer
+    "Telegrafie": ("Q2024200",),                       # telegraphist
+    "Stenografie": ("Q18810149",),                     # stenographer
+    # Nachschub Batch 5 (29.09.2026, Inhaber-Auftrag '10.000/Tag — warum klappt
+    # das nicht?'): Diagnose Lauf 36510643631: accepted 0 bei 10.736 Dubletten —
+    # die kleinen Pools sind abgegrast, die grossen (Politik: 34.977 Personen
+    # = 279 Seiten) werden am alten Tiefendeckel 90 gekoepft. Alle QIDs am
+    # 29.09.2026 gegen wbsearchentities verifiziert (Label + Beschreibung
+    # gelesen; verworfen: Q77715187 Comedian-Kunstwerk, Q15752473 Chirurgen-
+    # Journal, Q150804 Film 'The Pianist', Q37471278/Q6302457 Familiennamen,
+    # Q51029455 Band 'Watchmaker').
+    "Komik": ("Q245068",),                             # comedian
+    "Chirurgie": ("Q774306",),                         # surgeon
+    "Richter": ("Q16533",),                            # judge
+    "Pflege": ("Q186360",),                            # nurse
+    "Klavier": ("Q486748",),                           # pianist
+    "Illustration": ("Q644687",),                      # illustrator
+    "Liedschaffen": ("Q753110",),                      # songwriter
+    "Offiziere": ("Q189290",),                         # military officer
+    "Lehrwesen": ("Q37226",),                          # teacher
+    "Kunstschaffende": ("Q483501",),                   # artist
+    "Uhrmacher": ("Q157798",),                         # watchmaker
+    "Orgelbau": ("Q1937431",),                         # organ builder
 }
 
 

@@ -301,3 +301,54 @@ queut (fail-fast:false, Concurrency wartet statt zu canceln).
 `git revert` des Merge-Commits stellt 5.000/Tag wieder her (alle Zahlen
 sind im selben PR geaendert, keine Migration noetig — die QID-Partition
 total_shards 24/20 ist zustandslos).
+
+
+## 9. Nachschub-Rettung 29.09.2026 — Pool erschöpft, Deckel gekoepft (PR claude/wikidata-nachschub)
+
+### Diagnose (Beweise)
+
+- Health 29.09. 00:06 UTC: 200/10000 veroeffentlicht (2 %). Ingest-Lauf
+  36510643631 02:12 UTC: `accepted 0, skipped_duplicates 10736`.
+- Einbruch-Marke: 28.09. 14:03 UTC lief der Ingest noch mit 1.500 accepted,
+  ab 17:03 UTC nur noch 0-5 — der Cursor-Ring rotierte durch Bekanntes.
+- COUNT-Messung 29.09. gegen WDQS (>= 5 Sitelinks, gest. 1400-1955):
+  Politik 34.977 Personen (279 Seiten a 125), Schauspiel 4.757, Fussball
+  2.013, Gesang 1.367. Kleine Kategorien sind restlos abgegrast; Politik
+  wurde am Tiefendeckel MAX_CURSOR_PAGE=90 gekoepft — die ~23.600 Kandidaten
+  ab Seite 91 waren systematisch unsichtbar.
+
+### Fix (alles innerhalb der erlaubten Kapazitaets-Erhoehungen)
+
+1. `MAX_CURSOR_PAGE`/`MAX_PAGES_PER_CATEGORY` 90 -> 240 (30.000 Tiefe je
+   Kategorie; Politik bis Seite 240 offen, Rest Reserve fuer Batch 6).
+2. Nachschub-Batch 5: 12 neue Kategorien, jede QID am 29.09. gegen
+   wbsearchentities verifiziert (Kommentar in wikidata_candidates.py):
+   Komik, Chirurgie, Richter, Pflege, Klavier, Illustration, Liedschaffen,
+   Offiziere, Lehrwesen, Kunstschaffende, Uhrmacher, Orgelbau.
+3. Pflege unberuehrt: PAGE_SIZE 125 (Cursor bleiben gueltig), QA-Gate,
+   Publish-Deckel 10000, min_sitelinks 5, Sterbefenster 1400-1955.
+
+### Portal-Strategie (Inhaber-Auftrag 29.09.: 'weitere Portale … Infos holen')
+
+Prinzip: Kandidaten-Entdeckung bleibt Wikidata — die QID ist Dedup-Anker
+und Shard-Schluessel; Portale liefern NUR Anreicherung/Belege dazu.
+- Aktiv: Wikidata SPARQL + EntityData, Wikipedia de/en/fr/es/it (Abstracts,
+  Belege), Wikimedia Commons (Bilder).
+- Bewertet, NOCH kein Code (Livetests 29.09. vom Arbeitsplatz):
+  - lobid.org/GND (Deutsche Nationalbibliothek; Beruf/Orte via P227,
+    kostenfrei, kein Key): vom Arbeitsplatz nicht erreichbar (Timeout) —
+    erst auf GitHub-Runnern messen, dann als zusaetzliche SourceRef.
+  - DBpedia: JSON-Endpunkt liefert 200 KB+/Person, SPARQL brauchte 6,6 s
+    mit teils leeren Antworten — fuer Masse ungeeignet, hoechstens
+    Einzelfall-Anreicherung.
+  - VIAF/OCLC (Nutzungsbedingungen klaeren), Europeana/Getty ULAN
+    (benoetigen Keys) — nur mit Eintrag in FREE_ONLY_INFRASTRUCTURE.md.
+- Freigabe-Option fuer Batch 6, wenn auch Seite 240+ einmal reicht:
+  Sterbefenster 1955 -> spaeter (riesiger zusaetzlicher Pool; beruehrt
+  die Art der Profile, deshalb Inhaber-Entscheidung, nicht automatisch).
+
+### Rollback
+
+`git revert` des Merge-Commits: Deckel zurueck auf 90, Batch-5-Kategorien
+entfallen (bereits gespeicherte Kandidaten bleiben unberuehrt — Dedup
+ueber QIDs ist zustaendslos).

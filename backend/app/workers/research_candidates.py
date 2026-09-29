@@ -171,6 +171,13 @@ def research_one(
             )
             sources.append(SourceRef(title, f"{lang}.wikipedia.org", url, key))
 
+    # Portal-Strategie 29.09. (Inhaber-Auftrag 'weitere Portale'): Kandidaten-
+    # Entdeckung bleibt Wikidata (QID = Dedup-Anker); Wikipedia (5 Sprachen)
+    # und Commons liefern Belege/Bilder. Weitere Portale bewertet in
+    # docs/AUTOPILOT_5000.md Abschnitt 9 — absichtlich NOCH kein Code: lobid/GND
+    # war beim Livetest unerreichbar, DBpedia brauchte 6,6 s/Person bei leeren
+    # Antworten. Erst auf GitHub-Runnern messen, dann anschalten.
+
     research = with_sources(research, sources if not dry_run else
                             [SourceRef("dry-run", "-", "-", "-")] * (1 + len(extracts)))
     outcome: ResearchOutcome = evaluate_research(
