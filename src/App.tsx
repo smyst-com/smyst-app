@@ -5940,10 +5940,6 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
         'Betreiber: iMild LLC',
         'Sitz: 1401 21st St, Ste R, Sacramento, CA 95811, USA',
         'Postanschrift: 2648 International Blvd, Ste 301 #285, Oakland, CA 94601, USA',
-        'E-Mail: s@smyst.com',
-        'Rechtsform: Limited Liability Company (LLC), registriert im Bundesstaat Kalifornien, USA',
-        'Registereintrag: California Secretary of State, Registernummer B20260312817',
-        'Vertretungsberechtigter Manager und inhaltlich Verantwortlicher: Müslüm Akdeniz, Anschrift wie oben',
       ],
     },
   }[kind]
@@ -5960,6 +5956,19 @@ function LegalView({ kind }: { kind: 'privacy' | 'terms' | 'imprint' }) {
               <p className="text-sm leading-relaxed text-[#d5dbe5]">{point}</p>
             </div>
           ))}
+          {kind === 'imprint' && (
+            <div className="border border-white/[0.08] bg-white/[0.04] p-4">
+              <p className="text-sm leading-relaxed text-[#d5dbe5]">
+                E-Mail:{' '}
+                <img
+                  src="/imprint/contact-email.png"
+                  alt="E-Mail-Adresse"
+                  draggable={false}
+                  className="ml-1 inline-block h-[17px] w-auto select-none align-[-2px]"
+                />
+              </p>
+            </div>
+          )}
         </div>
         {kind === 'imprint' && (
           <p className="mt-6 text-sm text-[#9aa6b7]">
