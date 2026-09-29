@@ -32,6 +32,7 @@ from botocore.config import Config
 
 from app.core.config import settings
 from app.integrations.chat_store import CHAT_ARCHIVE_PREFIX
+from app.integrations.feedback_store import FEEDBACK_PREFIX
 
 #: Mehr Verlauf bringt kein Signal mehr, blaeht die Records aber stark auf.
 HISTORY_LIMIT = 8
@@ -68,6 +69,87 @@ def iter_chat_archives(client: Any, *, limit: int | None = None) -> Iterator[dic
             if isinstance(data, dict) and data.get("id"):
                 count += 1
                 yield data
+
+
+def iter_feedback_records(client: Any, *, limit: int | None = None) -> Iterator[dict]:
+    """Liest Daumen-Feedback aus e2 (chat-feedback/); defekte Objekte still skippen.
+
+    Die Chat-Route speichert jede Bewertung ZUSAETZlich zum Archiv-Eintrag
+    einzeln unter chat-feedback/<twin>/<messageId>.json (mit Frage und
+    Antwort im Record) — genau diese Quelle macht den Export unabhaengig
+    davon, ob das Archiv die feedback-Einbettung rechtzeitig erhalten hat.
+    """
+    count = 0
+    paginator = client.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=settings.idrive_e2_bucket, Prefix=FEEDBACK_PREFIX):
+        for entry in page.get("Contents", []) or []:
+            if limit is not None and count >= limit:
+                return
+            try:
+                response = client.get_object(Bucket=settings.idrive_e2_bucket, Key=entry["Key"])
+                data = json.loads(response["Body"].read().decode("utf-8"))
+            except Exception:
+                continue
+            if isinstance(data, dict) and data.get("messageId"):
+                count += 1
+                yield data
+
+
+def feedback_to_preference(record: dict) -> dict | None:
+    """chat-feedback/-Record -> Preference-Record (oder None ohne Signal)."""
+    rating = record.get("rating")
+    frage = record.get("question")
+    antwort = record.get("answer")
+    twin_id = record.get("twinId")
+    if rating not in ("up", "down"):
+        return None
+    if not isinstance(frage, str) or not frage.strip():
+        return None
+    if not isinstance(antwort, str) or not antwort.strip():
+        return None
+    if not isinstance(twin_id, str) or not twin_id:
+        return None
+    return {
+        "twinId": twin_id,
+        "chatId": record.get("chatId"),
+        "language": None,
+        "history": [],
+        "prompt": frage.strip(),
+        "response": antwort.strip(),
+        "createdAt": record.get("createdAt"),
+        "rating": rating,
+        "comment": record.get("comment"),
+        "source": "chat-feedback",
+    }
+
+
+def merge_feedback_records(preference_records: list[dict], feedback_rows: list[dict]) -> list[dict]:
+    """Fuehrt chat-feedback/-Bewertungen hinzu, dedupliziert gegen Archiv-Einbettung.
+
+    Die Chat-Route bettet Feedback zusaetzlich ins Chat-Archiv ein — dieselbe
+    Bewertung darf im Export nicht doppelt zaehlen. Schluessel:
+    (twinId, rating, prompt, response). Rein, testbar.
+    """
+    gesehen = {
+        (
+            r.get("twinId"),
+            r.get("rating"),
+            (r.get("prompt") or "").strip(),
+            (r.get("response") or "").strip(),
+        )
+        for r in preference_records
+    }
+    ergaenzt: list[dict] = []
+    for row in feedback_rows:
+        pref = feedback_to_preference(row)
+        if pref is None:
+            continue
+        schluessel = (pref["twinId"], pref["rating"], pref["prompt"], pref["response"])
+        if schluessel in gesehen:
+            continue
+        gesehen.add(schluessel)
+        ergaenzt.append(pref)
+    return ergaenzt
 
 
 def _text(message: dict) -> str:
@@ -154,8 +236,16 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
         sft_all.extend(sft)
         preference_all.extend(preference)
 
+    feedback_rows = list(iter_feedback_records(_client()))
+    ergaenzt = merge_feedback_records(preference_all, feedback_rows)
+    preference_all.extend(ergaenzt)
+
     stamp = datetime.now(timezone.utc).date().isoformat()
-    print(f"{chats} Chat-Archive gelesen -> {len(sft_all)} SFT-Records, {len(preference_all)} Preference-Records")
+    print(
+        f"{chats} Chat-Archive + {len(feedback_rows)} Feedback-Records gelesen -> "
+        f"{len(sft_all)} SFT-Records, {len(preference_all)} Preference-Records "
+        f"({len(ergaenzt)} zusaetzlich aus chat-feedback/)"
+    )
     if args.dry_run:
         print("Dry-Run: nichts geschrieben.")
         return 0
