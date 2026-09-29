@@ -224,6 +224,26 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: python -m app.workers.seed_candidates --file ../smyst_1000_candidates_v3.json --enabled
 
+      - name: "Portal-Check: lobid/GND (Erreichbarkeit auf Runner messen)"
+        # Inhaber-Auftrag 29.09. 'weitere Portale': lobid ist als Anreicherungs-
+        # quelle vorbereitet (FREE_ONLY_INFRASTRUCTURE.md, AUTOPILOT_5000.md
+        # Abschnitt 9), vom Arbeitsplatz aber zweimal nicht erreichbar. Der
+        # Dry-run misst die Erreichbarkeit direkt vom GitHub-Runner — 200 =>
+        # Aktivierung moeglich; sonst bleibt sie zurueckgestellt. Nur im
+        # dry-run: Produktionslaefe zahlen nichts dafuer.
+        if: env.MODE == 'dry-run'
+        run: |
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            -H "Accept: application/json" \
+            -H "User-Agent: smyst.com-research/1.0 (https://smyst.com; pipeline)" \
+            "https://lobid.org/gnd/118540238" || true)
+          echo "lobid/GND HTTP-Status: ${CODE:-timeout}"
+          if [ "$CODE" = "200" ]; then
+            echo "lobid vom Runner ERREICHBAR — Aktivierung der GND-Anreicherung moeglich (AUTOPILOT_5000.md Abschnitt 9)"
+          else
+            echo "lobid vom Runner NICHT erreichbar — Aktivierung bleibt zurueckgestellt"
+          fi
+
       - name: "Worker 1: Wikidata-Ingest"
         if: env.MODE == 'dry-run' || env.MODE == 'run-small'
         env:
