@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import json
 
-from app.workers.export_training_data import HISTORY_LIMIT, build_training_records, write_jsonl
+from app.workers.export_training_data import (
+    HISTORY_LIMIT,
+    build_training_records,
+    feedback_to_preference,
+    merge_feedback_records,
+    write_jsonl,
+)
 
 
 def _chat(messages: list[dict], twin_id: str | None = "albert-einstein") -> dict:
@@ -76,3 +82,52 @@ def test_write_jsonl_roundtrip(tmp_path) -> None:
     write_jsonl(records, target)
     lines = target.read_text(encoding="utf-8").strip().split("\n")
     assert [json.loads(line) for line in lines] == records
+
+
+def _feedback_row(rating: str = "up", frage: str = "Wer bist du?", antwort: str = "Ich bin Albert.") -> dict:
+    return {
+        "chatId": "chat-9",
+        "messageId": "msg-9",
+        "twinId": "albert-einstein",
+        "rating": rating,
+        "comment": None,
+        "question": frage,
+        "answer": antwort,
+        "createdAt": 1759100000000,
+    }
+
+
+def test_feedback_record_becomes_preference_record() -> None:
+    pref = feedback_to_preference(_feedback_row(rating="up"))
+    assert pref is not None
+    assert pref["twinId"] == "albert-einstein"
+    assert pref["prompt"] == "Wer bist du?"
+    assert pref["response"] == "Ich bin Albert."
+    assert pref["rating"] == "up"
+    assert pref["source"] == "chat-feedback"
+
+
+def test_feedback_without_signal_is_rejected() -> None:
+    assert feedback_to_preference(_feedback_row(rating="report")) is None
+    ohne_frage = _feedback_row() | {"question": "  "}
+    assert feedback_to_preference(ohne_frage) is None
+    ohne_twin = _feedback_row() | {"twinId": None}
+    assert feedback_to_preference(ohne_twin) is None
+
+
+def test_merge_dedupes_against_archive_embedding() -> None:
+    # Dieselbe Bewertung steckt bereits im Archiv ( eingebettetes feedback)
+    archiv = [{
+        "twinId": "albert-einstein", "rating": "up",
+        "prompt": "Wer bist du?", "response": "Ich bin Albert.",
+    }]
+    ergaenzt = merge_feedback_records(archiv, [_feedback_row()])
+    assert ergaenzt == []
+
+    # Eine NUR in chat-feedback/ liegende Bewertung kommt hinzu
+    neu = merge_feedback_records(archiv, [_feedback_row(antwort="Ich bin Albert Einstein.")])
+    assert len(neu) == 1
+    assert neu[0]["response"] == "Ich bin Albert Einstein."
+
+    # Dieselbe chat-feedback/-Bewertung zweimal zaehlt einfach
+    assert len(merge_feedback_records(archiv, [_feedback_row(antwort="Andere."), _feedback_row(antwort="Andere.")])) == 1
