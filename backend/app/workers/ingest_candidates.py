@@ -45,7 +45,7 @@ SPARQL_TIMEOUT_SECONDS = 90.0
 
 # Obergrenze der OFFSET-Seiten je Kategorie: schuetzt WDQS vor Dauerfeuer,
 # wenn der Store irgendwann fast alle bekannten Namen einer Kategorie enthaelt.
-MAX_PAGES_PER_CATEGORY = 90  # 29.08.2026: 40 -> 90 — Pool >= 5 Sitelinks hat tiefere Kategorien (Betreiber-Anweisung 28.08.)
+MAX_PAGES_PER_CATEGORY = 240  # 29.09.2026: 90 -> 240 — folgt MAX_CURSOR_PAGE (Befund s. dort)
 
 # Feste Seitengroesse fuer LIMIT/OFFSET. Frueher war das die Tagesquote geteilt
 # durch die Kategorienzahl — damit verschob jede Aenderung an Quote oder
@@ -76,8 +76,15 @@ MIN_PAGE_SITELINKS = 5  # 29.08.2026: 12 -> 5, folgt min_sitelinks (Betreiber-An
 
 # Harte Obergrenze der Cursor-Tiefe als Rueckfallebene, falls die Sitelink-
 # Bremse einmal nicht greift (z.B. Kategorie mit vielen gut verlinkten, aber
-# bildlosen Personen). 40 Seiten a 125 = 5000 Eintraege je Kategorie.
-MAX_CURSOR_PAGE = 90  # 29.08.2026: 40 -> 90 — Deckel folgt der neuen Pool-Tiefe (>= 5 Sitelinks)
+# bildlosen Personen).
+MAX_CURSOR_PAGE = 240  # 29.09.2026: 90 -> 240 — der Deckel koepfte die grossen Pools:
+# COUNT-Messung 29.09. gegen WDQS: Politik (Q82955) haelt 34.977 Personen
+# (>= 5 Sitelinks, gest. 1400-1955) = 279 Seiten, Schauspiel 4.757, Fussball
+# 2.013. Die kleinen Kategorien sind komplett abgegrast (Seite < 90), Politik
+# dagegen rotierte seit Wochen zwischen Seite 0 und 90 durch lauter Bekannte
+# (Lauf 36510643631: accepted 0, 10.736 Dubletten) — die ~23.600 Kandidaten
+# ab Seite 91 waren unsichtbar. 240 Seiten a 125 = 30.000 Tiefe deckt Politik
+# bis Seite 240 auf; der Rest (279) bleibt bewusst als Reserve fuer Batch 6.
 
 
 def fetch_bindings(
