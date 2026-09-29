@@ -38,7 +38,7 @@ mkdir -p "$EVAL_OUT" "$PARTS_BASE" 2>/dev/null || true
 if [ -f "$HOME/.smyst-secrets/gh_token" ] && ! gh auth status >/dev/null 2>&1; then
   export GH_TOKEN="$(cat "$HOME/.smyst-secrets/gh_token")"
 fi
-export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
 # 0) Voraussetzungen
 if [ ! -x "$PY" ]; then log "FEHLER: $PY fehlt (venv) — kein Training."; exit 0; fi
@@ -155,9 +155,69 @@ d.pop("extra_special_tokens", None)
 json.dump(d, open(p, "w"), indent=2, ensure_ascii=False)
 PY
 
+# 7b) DPO-Feinschliff aus 👍/👎-Nutzerfeedback (Inhaber-Auftrag 29.09.2026:
+#     "DPO-Startkriterium vorziehen" — Schwelle von 100 auf 30 Paare gesenkt).
+#     Kette: SFT-fuse → DPO-LoRA obendrauf (Referenz = SFT-Stand) → auto-fuse.
+#     Nur wenn >= 30 Praeferenzpaare im Export liegen; scheitert DPO, geht es
+#     mit dem reinen SFT-Stand weiter — das Gate entscheidet ohnehin neutral.
+FUSED_FOR_GATE="$TRAIN_HOME/fused/$VERSION"
+if [ -x "$TRAIN_HOME/.venv-dpo/bin/mlx_lm_lora.train" ]; then
+  if python3 "$REPO_ROOT/training/build_dpo_dataset.py" --export-dir "$EXPORT_DIR" \
+      --out "$TRAIN_HOME/dpo-data" --min-pairs 30 >> "$LOG" 2>&1 \
+     && [ -s "$TRAIN_HOME/dpo-data/train.jsonl" ]; then
+    PAARE=$(($(wc -l < "$TRAIN_HOME/dpo-data/train.jsonl" | tr -d ' ') + $(wc -l < "$TRAIN_HOME/dpo-data/valid.jsonl" | tr -d ' ')))
+    log "DPO: $PAARE Praeferenzpaare — Feinschliff auf $VERSION (Referenz = SFT-Stand) …"
+    rm -rf "$TRAIN_HOME/adapters/$VERSION-dpo"
+    cat > "$TRAIN_HOME/config-dpo.yaml" <<EOF
+model: "$TRAIN_HOME/fused/$VERSION"
+train: true
+train_type: lora
+train_mode: dpo
+data: "$TRAIN_HOME/dpo-data"
+batch_size: 1
+iters: 300
+learning_rate: 5.0e-06
+beta: 0.1
+max_seq_length: 2048
+num_layers: 16
+save_every: 150
+steps_per_eval: 150
+steps_per_report: 25
+adapter_path: "$TRAIN_HOME/adapters/$VERSION-dpo"
+lora_parameters:
+  rank: 8
+  dropout: 0.0
+  scale: 20.0
+EOF
+    if "$TRAIN_HOME/.venv-dpo/bin/mlx_lm_lora.train" --config "$TRAIN_HOME/config-dpo.yaml" >> "$LOG" 2>&1; then
+      python3 - "$TRAIN_HOME/adapters/$VERSION-dpo/tokenizer_config.json" <<'PY' >> "$LOG" 2>&1
+import json, sys, os
+p = sys.argv[1]
+if os.path.exists(p):
+    d = json.load(open(p)); d.pop("extra_special_tokens", None)
+    json.dump(d, open(p, "w"), indent=2, ensure_ascii=False)
+PY
+      if [ -f "$TRAIN_HOME/adapters/$VERSION-dpo/model.safetensors" ] \
+         || [ -f "$TRAIN_HOME/adapters/$VERSION-dpo/model-00001-of-00001.safetensors" ] \
+         || ls "$TRAIN_HOME/adapters/$VERSION-dpo/"*.safetensors >/dev/null 2>&1; then
+        FUSED_FOR_GATE="$TRAIN_HOME/adapters/$VERSION-dpo"
+        log "DPO abgeschlossen (auto-gefused) — Gate prueft die DPO-Verfeinerung."
+      else
+        log "WARNUNG: DPO-Ausgabe unvollstaendig — Gate prueft den reinen SFT-Stand."
+      fi
+    else
+      log "WARNUNG: DPO-Feinschliff fehlgeschlagen — Gate prueft den reinen SFT-Stand."
+    fi
+  else
+    log "DPO uebersprungen (weniger als 30 Praeferenzpaare im Export)."
+  fi
+else
+  log "DPO uebersprungen (.venv-dpo/mlx_lm_lora.train fehlt)."
+fi
+
 # 8) Promotions-Gate: 40 identische Fragen gegen den Champion (Max 600)
 GATE_JSON="$TRAIN_HOME/gate-$VERSION-neu.json"
-if ! "$PY" "$TRAIN_HOME/gate.py" "$TRAIN_HOME/fused/$VERSION" "$GATE_JSON" >> "$LOG" 2>&1; then
+if ! "$PY" "$TRAIN_HOME/gate.py" "$FUSED_FOR_GATE" "$GATE_JSON" >> "$LOG" 2>&1; then
   log "Promotions-Gate: Eval fehlgeschlagen – KEINE Promotion, alter Stand bleibt."
   exit 0
 fi
@@ -194,7 +254,7 @@ if [ ! -x "$CVENV" ]; then log "FEHLER: GGUF-venv fehlt ($CVENV) — kein Releas
 F16="/tmp/$VERSION-f16.gguf"
 Q4="/tmp/$VERSION-Q4_K_M.gguf"
 Q8="/tmp/$VERSION-Q8_0.gguf"
-rm -rf "/tmp/$VERSION-hf" && cp -r "$TRAIN_HOME/fused/$VERSION" "/tmp/$VERSION-hf"
+rm -rf "/tmp/$VERSION-hf" && cp -r "$FUSED_FOR_GATE" "/tmp/$VERSION-hf"
 python3 - "/tmp/$VERSION-hf/tokenizer_config.json" <<'PY' >> "$LOG" 2>&1
 import json, sys
 p = sys.argv[1]
