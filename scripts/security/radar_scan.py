@@ -70,11 +70,31 @@ def severity_of(vuln: dict) -> str:
     specific = vuln.get("database_specific") or {}
     for key in ("severity", "cvss"):
         value = str(specific.get(key, "")).lower()
-        if value in {"critical", "high", "medium", "low"}:
-            return value
-    # GitHub-Advisories liefern oft severity im database_specific.severity;
-    # PyPI/OSV teils unter severity[].type CVSS_V4/V3 — Label bleibt dann unbekannt.
+        if value in {"critical", "high", "medium", "moderate", "low"}:
+            return "medium" if value == "moderate" else value
     return "unknown"
+
+
+def _enrich_with_details(vuln: dict) -> dict:
+    """Laedt die Voll-Details einer Vuln nach (GET /v1/vulns/{id}).
+
+    Die Query-Batch-Antwort enthaelt die Schweregrade NICHT (live bewiesen
+    30.09.: 13 Funde mit sev=unknown, Details lieferten 1x CRITICAL +
+    7x HIGH). Nur fuer TREFFER aufgerufen (selten), 0.4 s Abstand.
+    """
+    vuln_id = vuln.get("id")
+    if not vuln_id:
+        return vuln
+    try:
+        detail = _get_json(OSV_VULN + vuln_id)
+    except Exception:
+        return vuln
+    time.sleep(0.4)
+    merged = dict(vuln)
+    for key in ("database_specific", "severity", "summary", "details", "aliases", "references"):
+        if detail.get(key):
+            merged[key] = detail[key]
+    return merged
 
 
 def aliases_of(vuln: dict) -> list[str]:
@@ -104,7 +124,8 @@ def main() -> int:
             continue
         for component, result in zip(chunk, response.get("results", [])):
             checked += 1
-            for vuln in result.get("vulns", []) or []:
+            for raw_vuln in result.get("vulns", []) or []:
+                vuln = _enrich_with_details(raw_vuln)
                 aliases = aliases_of(vuln)
                 in_kev = bool(kev and (set(aliases) & kev))
                 severity = severity_of(vuln)
