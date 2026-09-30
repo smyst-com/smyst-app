@@ -149,6 +149,19 @@ def main() -> int:
     ]
     DOCS.mkdir(parents=True, exist_ok=True)
     (DOCS / "SECURITY_STATUS.md").write_text("\n".join(lines), encoding="utf-8")
+
+    # Kurzfassung fuer die Workflow-Step-Summary (Lauf-Ansicht auf GitHub)
+    summary = [
+        f"## Security-Zentrale: Ampel {state}",
+        "",
+        f"- Live-Probe: {probe.get('checksTotal', 0) - len(failed)}/{probe.get('checksTotal', 0)} Checks"
+        + (f" — Fails: " + ", ".join(r["name"] for r in failed) if failed else ""),
+        f"- Radar: {critical} CRITICAL / {relevant} RELEVANT / {possibly} POSSIBLY",
+        f"- Canary: {'TREFFER!' if canary_hit else 'unberührt'} · Guards: {len(guard_fails)} Fail(s)",
+        "",
+        "> Im überwachten Umfang geprüft — keine '100 % sicher'-Aussage.",
+    ]
+    (SEC / "summary.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
     print(f"STATUS: {state} (guards={len(guard_fails)}F avail={len(avail_fails)}F radar C/R/P={critical}/{relevant}/{possibly}) -> docs/security/SECURITY_STATUS.md")
     return 0
 

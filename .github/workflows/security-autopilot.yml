@@ -12,7 +12,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: read
   issues: write
 
 concurrency:
@@ -58,16 +58,21 @@ jobs:
         id: status
         run: python3 scripts/security/compose_status.py
 
-      - name: Ergebnis committen
-        run: |
-          git config user.name "security-autopilot[bot]"
-          git config user.email "actions@users.noreply.github.com"
-          git add .security docs/security/SECURITY_STATUS.md
-          if git diff --cached --quiet; then echo "keine Aenderungen"; exit 0; fi
-          STATE=$(python3 -c "import json;print(json.load(open('.security/state.json'))['state'])")
-          git commit -q -m "security(autopilot): Lauf $(date -u '+%Y-%m-%d %H:%M') UTC — Ampel ${STATE} [skip ci]"
-          git pull --rebase --autostash origin main || true
-          git push
+      - name: Lauf-Zusammenfassung in die Step-Summary
+        run: cat .security/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ergebnisse als Artefakt sichern (Historie)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: security-run-${{ github.run_id }}
+          path: .security/
+          retention-days: 90
+
+      - name: Ampel ins Dauerdashboard-Issue tragen
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/security/update_status_issue.py
 
       - name: Alarm-Issue bei nicht-GREEN (idempotent)
         env:
