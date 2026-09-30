@@ -9,16 +9,17 @@ MODEL="/models/smyst-active.gguf"
 # Liegt bereits der WUNSCH-Kandidat im Volume, entfaellt der e2-Download beim
 # Container-Start komplett — sonst kaeme nach einem Modellwechsel immer der
 # alte Volume-Inhalt zum Zug.
-WANT_LABEL="smyst-1.1 Q4_K_M"
+WANT_LABEL="smyst-1.3 Q4_K_M"
 HAVE_LABEL="$(cat /models/.smyst-model 2>/dev/null || echo "")"
 
-# Versionen in Prioritaet (Auftrag 28.09. "blitzschnell", Inhaber-Freigabe
-# "alle Rechte"): Q4_K_M zuerst — CPU-Inference (Prefill UND Generierung)
-# laeuft damit rund 2x schneller als Q8_0; die 2-Kern-VM schafft so ganze
-# Antworten im 20-s-Chat-Budget. Q8_0 v4 (Gate 550/600, Datenkur 06.09.)
-# dahinter als Rueckfallebene, smyst-1.0 f16 zuletzt. smyst-1.1 bleibt vor 1.0
-# (Freeze). Freeze-Parameter ctx 8192 / parallel 2 / alias / nproc-Threads
-# unveraendert.
+# Versionen in Prioritaet (Produktions-Wechsel auf smyst-1.3 am 30.09.,
+# Inhaber-Vollmacht 'alle Rechte von A bis Z 100 %, mach komplett fertig'):
+# smyst-1.3 Q4_K_M (Gate 532,5/600 > 1.2er 530 > 1.1; Monats-Stichprobe
+# Issue #882: 550 vs. 475 gegen das bisherige Live-Modell) jetzt zuerst,
+# smyst-1.1 Q4_K_M (bisheriges Live-Modell) als bewaehrte Rueckfallebene,
+# Q8_0 v4 dahinter, smyst-1.0 f16 zuletzt. Q4_K_M bleibt zuerst (28.09.
+# "blitzschnell": ~2x CPU-Speed gegen Q8_0). Freeze-Parameter ctx 8192 /
+# parallel 2 / alias / nproc-Threads unveraendert.
 if [ ! -f "$MODEL" ] || [ "$HAVE_LABEL" != "$WANT_LABEL" ]; then
   if [ -n "$IDRIVE_E2_ACCESS_KEY" ]; then
   echo "smyst: Lade Modell aus e2 (ein paar Minuten)..."
@@ -32,6 +33,7 @@ c = boto3.client('s3', endpoint_url='https://s3.us-west-2.idrivee2.com',
     aws_secret_access_key='$IDRIVE_E2_SECRET_KEY',
     config=Config(read_timeout=900, retries={'max_attempts': 10}))
 candidates = [
+    ('models/smyst-1.3/2026-09-23/smyst-1.3-Q4_K_M.gguf', 'smyst-1.3 Q4_K_M'),
     ('models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf', 'smyst-1.1 Q4_K_M'),
     ('models/smyst-1.1/2026-08-23/smyst-1.1-v4-Q8_0.gguf', 'smyst-1.1 v4 Q8_0'),
     ('models/smyst-1.0/2026-08-20/smyst-1.0-f16.gguf', 'smyst-1.0 f16'),
