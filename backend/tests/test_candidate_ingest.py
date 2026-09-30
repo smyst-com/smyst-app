@@ -92,7 +92,7 @@ def test_screening_dedup_blacklist_and_limits() -> None:
         binding("Q7245", "Mark Twain", "1910-04-21T00:00:00Z", 200),       # manual_review
         binding("Q1035", "Charles Darwin", "1882-04-19T00:00:00Z", 250),   # Dublette im Lauf
         binding("Q555", "Vergessener Autor", "1950-01-01T00:00:00Z", 5),   # zu wenig Sitelinks
-        binding("Q666", "Zu Spaet", "1990-01-01T00:00:00Z", 100),          # nach Cutoff
+        binding("Q666", "Zu Spaet", "2005-01-01T00:00:00Z", 100),          # nach Cutoff 1995 (Pool-Fenster-Sprung 30.09.)
         binding("Q777", "Schon Da", "1900-01-01T00:00:00Z", 100),          # bereits im Store
     )
     parsed = parse_sparql_bindings(rows, category="Wissenschaft")

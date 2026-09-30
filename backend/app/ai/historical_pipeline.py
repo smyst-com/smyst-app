@@ -62,6 +62,13 @@ class TransitionError(ValueError):
     """Ungueltiger oder unvollstaendiger Statusuebergang."""
 
 
+#: Werke-Schwelle (70 Jahre p.m.a.): Alles nach 1955 verlangt
+#: works=restricted — Verteidigung in der Tiefe, unabhaengig vom Pool-Fenster
+#: config.max_death_year (seit 30.09.1995-oeffnung entkoppelt; risk_checks
+#: uebernimmt dieselbe Konstante, damit beide Schichten nie auseinanderlaufen).
+WORKS_RESTRICTED_AFTER_YEAR = 1955
+
+
 @dataclass(frozen=True)
 class PipelineConfig:
     """Spiegel der pipeline_config-Tabelle; Werte ohne Deployment aenderbar."""
@@ -73,7 +80,15 @@ class PipelineConfig:
     # Lauf begrenzt weiterhin die Rechenzeit der Worker-Kette (~100-120).
     daily_candidate_limit: int = 1000
     min_sources: int = 3
-    max_death_year: int = 1955
+    # 30.09.2026: 1955 -> 1995 (Vollmacht Inhaber 30.09.: 'alle Rechte A-Z,
+    # komplett fertig'). Vorratsmessung 29./30.09.: Die Tiefe-240-OEffnung
+    # (PR #880/#885) traegt nur ~3-4 Tage; allein Politik haelt im Fenster
+    # 1956-1995 zusaetzlich 12.546 Personen (>= 5 Sitelinks, WDQS-COUNT
+    # 30.09.). Urheberrechtsschonung bleibt uneingeschraenkt: risk_checks
+    # erzwingt fuer alles nach WORKS_RESTRICTED_AFTER_YEAR=1955 weiterhin
+    # works=restricted (keine Originalzitate/Werkauszuege) — die Schwelle
+    # ist dafuer von diesem Pool-Fenster ENTKOPPELT worden.
+    max_death_year: int = 1995
     # 13.08.2026: 15 -> 10 (Entscheidung Betreiber nach Messung). Direkt gegen
     # Wikidata gezaehlt, mit genau den Filtern aus build_sparql_query
     # (gestorben 1400-1955, 18 Kategorien, COUNT je Kategorie):
@@ -177,9 +192,9 @@ def _check_target_guards(
             "Risiko-Check enthaelt 'block'; Kandidat muss rejected werden",
         )
         _guard(
-            candidate.death_date.year <= config.max_death_year
+            candidate.death_date.year <= WORKS_RESTRICTED_AFTER_YEAR
             or candidate.risk_flags.get("works") == RiskResult.RESTRICTED.value,
-            f"Sterbejahr > {config.max_death_year} nur mit works=restricted "
+            f"Sterbejahr > {WORKS_RESTRICTED_AFTER_YEAR} nur mit works=restricted "
             "(keine Originalzitate/Werkauszuege) zulaessig",
         )
 

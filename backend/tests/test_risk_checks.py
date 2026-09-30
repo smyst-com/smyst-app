@@ -92,6 +92,21 @@ def test_late_death_year_marks_works_restricted() -> None:
     assert b.flags["works"] == "restricted" and not b.reject
 
 
+def test_pool_window_1995_keeps_works_restricted() -> None:
+    # 30.09.2026, Pool-Fenster-Sprung 1955 -> 1995 (historical_pipeline): Die
+    # Werke-Schwelle ist von config.max_death_year ENTKOPPELT — selbst wenn der
+    # Ingest Juengere aufnimmt, bleibt der Urheberrechtsschutz bei 1955 stehen.
+    from app.ai.historical_pipeline import DEFAULT_CONFIG
+
+    assert DEFAULT_CONFIG.max_death_year == 1995
+    inside_pool = assess_risk(
+        make_candidate(name="Willy Brandt", qid="Q569", death=date(1992, 10, 8)),
+        config=DEFAULT_CONFIG, image_commons_file=None, image_license_short_name=None,
+    )
+    assert inside_pool.flags["works"] == "restricted" and not inside_pool.reject
+    assert any("1992" in n for n in inside_pool.notes)
+
+
 def test_artist_death_after_1950_marks_works_restricted() -> None:
     # Rechtsanalyse 2026-07-04, 2.3: Kunst + Sterbejahr > 1950 -> works=restricted,
     # auch wenn der allgemeine max_death_year-Cutoff (1955) noch PASS ergaebe.

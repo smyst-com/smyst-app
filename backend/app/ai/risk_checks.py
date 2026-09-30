@@ -18,7 +18,12 @@ import unicodedata
 from dataclasses import dataclass
 
 from app.ai.estate_blacklist import find_estate_entry, publicity_risk
-from app.ai.historical_pipeline import HistoricalCandidate, PipelineConfig, RiskResult
+from app.ai.historical_pipeline import (
+    WORKS_RESTRICTED_AFTER_YEAR,
+    HistoricalCandidate,
+    PipelineConfig,
+    RiskResult,
+)
 
 
 def _n(name: str) -> str:
@@ -134,11 +139,13 @@ def assess_risk(
     """
     notes: list[str] = []
 
-    # 1. Werke
-    if candidate.death_date.year > config.max_death_year:
+    # 1. Werke — eigene Schwelle (WORKS_RESTRICTED_AFTER_YEAR), NICHT das
+    # Pool-Fenster config.max_death_year: Das Ingest-Fenster darf wachsen,
+    # ohne dass der Urheberrechtsschutz mitwandert (30.09.2026).
+    if candidate.death_date.year > WORKS_RESTRICTED_AFTER_YEAR:
         works = RiskResult.RESTRICTED
         notes.append(
-            f"Sterbejahr {candidate.death_date.year} > {config.max_death_year}: "
+            f"Sterbejahr {candidate.death_date.year} > {WORKS_RESTRICTED_AFTER_YEAR}: "
             "keine Originalzitate/Werkauszuege, nur paraphrasierte Fakten"
         )
     elif (
