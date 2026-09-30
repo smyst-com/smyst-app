@@ -136,3 +136,100 @@ def test_report_carries_error_kinds(monkeypatch) -> None:
         dry_run=True, run_date=date(2026, 8, 13), concurrency=1,
     )
     assert report["error_kinds"] == {"ConnectError": 1}
+
+class _RecordingStore:
+    """Minimal-Store fuer research_one: zaehlt Snapshots, schreibt nichts."""
+
+    def __init__(self) -> None:
+        self.snapshots: list[str] = []
+
+    def save_source_snapshot(self, qid, name, data) -> str:  # noqa: ANN001
+        self.snapshots.append(name)
+        return f"{qid}/{name}"
+
+    def save_research_document(self, qid, document) -> None:  # noqa: ANN001
+        pass
+
+    def save_candidate_document(self, qid, document, previous_status=None) -> None:  # noqa: ANN001
+        pass
+
+
+def _entity_payload(qid: str, with_gnd: bool) -> dict:
+    claims: dict = {
+        "P570": [{"mainsnak": {"snaktype": "value",
+                               "datavalue": {"value": {"time": "+1879-03-14T00:00:00Z"}}}}],
+    }
+    if with_gnd:
+        claims["P227"] = [{"mainsnak": {"snaktype": "value", "datavalue": {"value": "118540238"}}}]
+    return {"entities": {qid: {
+        "labels": {"de": {"value": "Immanuel Kant"}},
+        "sitelinks": {"dewiki": {"title": "Immanuel Kant"},
+                      "enwiki": {"title": "Immanuel Kant"}},
+        "claims": claims,
+    }}}
+
+
+def _research_document(qid: str) -> dict:
+    return {
+        "wikidata_qid": qid, "name": "Immanuel Kant",
+        "death_date": "1879-03-14", "category": "Philosophie",
+        "sitelink_count": 200, "status": "candidate",
+        "risk_flags": {}, "source_count": 0,
+    }
+
+
+def _wiki_summary() -> dict:
+    return {"extract": "Immanuel Kant (1724-1804) war ein Philosoph."}
+
+
+def test_gnd_helper_extracts_p227_string_claim() -> None:
+    from app.workers.research_candidates import _gnd_from_entity
+
+    assert _gnd_from_entity(_entity_payload("Q9316", with_gnd=True), "Q9316") == "118540238"
+    assert _gnd_from_entity(_entity_payload("Q9316", with_gnd=False), "Q9316") is None
+
+
+def test_research_one_cites_lobid_gnd_when_substantive(monkeypatch) -> None:
+    # lobid aktiviert 30.09. (Runner-Beweis HTTP 200): Die GND-Antwort mit
+    # Substanz wird als Quelle 'lobid.org' verbucht — snapshot + SourceRef.
+    from datetime import date
+
+    from app.ai.historical_pipeline import PipelineConfig
+
+    summary = _Response(200, _wiki_summary())
+    gnd = _Response(200, {"preferredName": "Immanuel Kant",
+                          "professionOrOccupation": [{"label": "Philosoph"}]})
+    _patch_get(monkeypatch, [
+        _Response(200, _entity_payload("Q9316", with_gnd=True)),  # EntityData
+        summary, summary,                                            # de/en-Wikipedia
+        gnd,                                                         # lobid/GND
+    ])
+    store = _RecordingStore()
+    _qid, result = research_candidates.research_one(
+        _research_document("Q9316"), store=store,
+        config=PipelineConfig(enabled=True, min_sources=3),
+        dry_run=False,
+    )
+    assert result == "researched"
+    assert "lobid-gnd.json" in store.snapshots
+
+
+def test_research_one_survives_lobid_outage(monkeypatch) -> None:
+    # DNB-Ausfall (TransportError) darf die Recherche niemals bremsen oder
+    # ablehnen — ein Versuch, dann weiter ohne die Quelle.
+    from app.ai.historical_pipeline import PipelineConfig
+
+    summary = _Response(200, _wiki_summary())
+    _patch_get(monkeypatch, [
+        _Response(200, _entity_payload("Q9316", with_gnd=True)),
+        summary, summary,
+        httpx.ConnectError("lobid down"),
+    ])
+    store = _RecordingStore()
+    _qid, result = research_candidates.research_one(
+        _research_document("Q9316"), store=store,
+        config=PipelineConfig(enabled=True, min_sources=3),
+        dry_run=False,
+    )
+    assert result == "researched"
+    assert "lobid-gnd.json" not in store.snapshots

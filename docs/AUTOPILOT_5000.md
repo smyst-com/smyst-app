@@ -336,8 +336,10 @@ und Shard-Schluessel; Portale liefern NUR Anreicherung/Belege dazu.
   Belege), Wikimedia Commons (Bilder).
 - Bewertet, NOCH kein Code (Livetests 29.09. vom Arbeitsplatz):
   - lobid.org/GND (Deutsche Nationalbibliothek; Beruf/Orte via P227,
-    kostenfrei, kein Key): vom Arbeitsplatz nicht erreichbar (Timeout) —
-    erst auf GitHub-Runnern messen, dann als zusaetzliche SourceRef.
+    kostenfrei, kein Key): AKTIV seit 30.09. — Runner-Messung HTTP 200
+    (Lauf 36743040833; der Arbeitsplatz-Timeout war lokal bedingt).
+    research_candidates zieht die GND je Person (1 Versuch/10 s) als
+    zusaetzliche SourceRef; Ausfall ueberspringt die Quelle.
   - DBpedia: JSON-Endpunkt liefert 200 KB+/Person, SPARQL brauchte 6,6 s
     mit teils leeren Antworten — fuer Masse ungeeignet, hoechstens
     Einzelfall-Anreicherung.

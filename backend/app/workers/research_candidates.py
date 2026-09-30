@@ -64,6 +64,12 @@ ENTITY_URL = "https://www.wikidata.org/wiki/Special:EntityData/{qid}.json"
 SUMMARY_URL = "https://{lang}.wikipedia.org/api/rest_v1/page/summary/{title}"
 USER_AGENT = "smyst.com-research/1.0 (https://smyst.com; pipeline)"
 
+#: Deutsche Nationalbibliothek (lobid/GND) — kostenfreie Anreicherungsquelle
+#: (Beruf, Lebensdaten, Wirkungsorte). GND-ID kommt als P227-String-Claim
+#: direkt aus dem EntityData; Abruf ohne Suffix mit Accept-Header (so am
+#: 30.09.2026 vom Runner mit HTTP 200 bewiesen, Lauf 36743040833).
+LOBID_GND_URL = "https://lobid.org/gnd/{gnd}"
+
 
 #: Wikimedia drosselt gleichzeitige Abrufe pro IP, und GitHub-Runner teilen
 #: sich IPs. Seit die Stufen parallel laufen (13.08.2026) stieg die
@@ -80,13 +86,15 @@ def _get_json(
     timeout_seconds: float = 30.0,
     attempts: int = _MAX_ATTEMPTS,
     sleep: Callable[[float], None] = time.sleep,
+    headers: dict[str, str] | None = None,
 ) -> dict:
     import httpx  # lazy: Domain-Tests brauchen keinen HTTP-Client
 
     for attempt in range(1, attempts + 1):
         try:
             response = httpx.get(
-                url, headers={"User-Agent": USER_AGENT}, timeout=timeout_seconds,
+                url, headers={"User-Agent": USER_AGENT, **(headers or {})},
+                timeout=timeout_seconds,
                 follow_redirects=True,
             )
             response.raise_for_status()
@@ -117,6 +125,18 @@ def _safe_date(value: str) -> date:
             m -= 1
         import calendar
         return date(y, m, calendar.monthrange(y, m)[1])
+
+
+def _gnd_from_entity(payload: dict, qid: str) -> str | None:
+    """GND-ID (P227, String-Claim) aus Wikidata-EntityData — Anker fuer lobid."""
+    claims = payload.get("entities", {}).get(qid, {}).get("claims", {})
+    for claim in claims.get("P227", []):
+        snak = claim.get("mainsnak", {})
+        if snak.get("snaktype") == "value":
+            value = snak.get("datavalue", {}).get("value")
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+    return None
 
 
 def _candidate_from_document(document: dict) -> HistoricalCandidate:
@@ -171,12 +191,34 @@ def research_one(
             )
             sources.append(SourceRef(title, f"{lang}.wikipedia.org", url, key))
 
-    # Portal-Strategie 29.09. (Inhaber-Auftrag 'weitere Portale'): Kandidaten-
-    # Entdeckung bleibt Wikidata (QID = Dedup-Anker); Wikipedia (5 Sprachen)
-    # und Commons liefern Belege/Bilder. Weitere Portale bewertet in
-    # docs/AUTOPILOT_5000.md Abschnitt 9 — absichtlich NOCH kein Code: lobid/GND
-    # war beim Livetest unerreichbar, DBpedia brauchte 6,6 s/Person bei leeren
-    # Antworten. Erst auf GitHub-Runnern messen, dann anschalten.
+    # Deutsche Nationalbibliothek (lobid/GND) — Inhaber-Auftrag 29.09. 'weitere
+    # Portale'; aktiviert 30.09. nach Runner-Beweis HTTP 200 (Lauf 36743040833,
+    # der Arbeitsplatz-Timeout war ein lokales Netzproblem). Ein Versuch mit
+    # kurzem Timeout: eine optionale Anreicherung darf die Recherche nie
+    # bremsen. Die Quelle zaehlt nur, wenn die Antwort Substanz hat
+    # (Portal-Strategie: Wikidata = Kandidaten-Anker, Portale = Belege).
+    gnd_id = _gnd_from_entity(entity_payload, qid)
+    if gnd_id:
+        gnd_url = LOBID_GND_URL.format(gnd=gnd_id)
+        try:
+            gnd_payload = _get_json(
+                gnd_url,
+                timeout_seconds=10.0,
+                attempts=1,
+                headers={"Accept": "application/json"},
+            )
+            if any(k in gnd_payload for k in (
+                "preferredName", "professionOrOccupation",
+                "dateOfBirthAndDeath", "biographicalOrHistoricalInformation",
+            )):
+                if not dry_run:
+                    key = store.save_source_snapshot(
+                        qid, "lobid-gnd.json",
+                        json.dumps(gnd_payload).encode("utf-8"),
+                    )
+                    sources.append(SourceRef(f"GND {gnd_id}", "lobid.org", gnd_url, key))
+        except Exception:
+            pass  # DNB-Ausfall ist kein Ablehnungsgrund — Wikipedia bleibt
 
     research = with_sources(research, sources if not dry_run else
                             [SourceRef("dry-run", "-", "-", "-")] * (1 + len(extracts)))

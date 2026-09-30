@@ -29,11 +29,12 @@ Kostenlos:
 - Wikimedia (Wikidata SPARQL/EntityData, Wikipedia de/en/fr/es/it, Commons) -
   Profil-Nachschub, Belege und Bilder der Autopilot-Pipeline. Offene APIs,
   kein Key; eigene User-Agents mit Kontakt-URL.
-- lobid.org (Deutsche Nationalbibliothek, GND) - bewertete Anreicherungs-
-  quelle (Beruf, Wirkungsorte via Wikidata P227), kostenfrei, kein Key;
-  Inhaber-Auftrag 'weitere Portale' 29.09.2026. Aktivierung erst nach
-  Erreichbarkeitsmessung auf GitHub-Runnern (Arbeitsplatz-Test 29.09.:
-  Timeout); siehe docs/AUTOPILOT_5000.md Abschnitt 9.
+- lobid.org (Deutsche Nationalbibliothek, GND) - AKTIVE Anreicherungsquelle
+  seit 30.09.2026 (Beruf, Lebensdaten via Wikidata P227), kostenfrei, kein
+  Key; Inhaber-Auftrag 'weitere Portale' 29.09.2026. Runner-Messung 30.09.:
+  HTTP 200 (Lauf 36743040833) — der Timeout vom Arbeitsplatz war ein lokales
+  Netzproblem. Ein Versuch/10 s je Person, Ausfall uebersprungen die Quelle;
+  siehe docs/AUTOPILOT_5000.md Abschnitt 9.
 - DBpedia - bewertet und fuer den Massenbetrieb ABGELEHNT (200 KB+ pro Person,
   SPARQL 6,6 s mit teils leeren Antworten, Livetest 29.09.). Hoechstens
   spaeter fuer Einzelfall-Anreicherung.
