@@ -1,58 +1,15 @@
 {
- "scannedAtUtc": "2026-09-30T09:01:57.973973+00:00",
+ "scannedAtUtc": "2026-09-30T13:48:58.301185+00:00",
  "sources": [
   "osv.dev",
   "cisa-kev"
  ],
- "componentsChecked": 285,
+ "componentsChecked": 327,
  "kevEntries": 0,
  "counts": {
   "critical": 0,
   "relevant": 0,
-  "possibly": 3
+  "possibly": 0
  },
- "findings": [
-  {
-   "package": "brace-expansion",
-   "ecosystem": "npm",
-   "installedVersion": "5.0.9",
-   "vulnId": "GHSA-6j4f-fj2g-mc7p",
-   "aliases": [
-    "GHSA-6J4F-FJ2G-MC7P"
-   ],
-   "severity": "unknown",
-   "inCisaKev": false,
-   "classification": "POSSIBLY",
-   "summary": "",
-   "url": "https://osv.dev/vulnerability/GHSA-6j4f-fj2g-mc7p"
-  },
-  {
-   "package": "brace-expansion",
-   "ecosystem": "npm",
-   "installedVersion": "5.0.9",
-   "vulnId": "GHSA-q2hr-2g5m-vwhr",
-   "aliases": [
-    "GHSA-Q2HR-2G5M-VWHR"
-   ],
-   "severity": "unknown",
-   "inCisaKev": false,
-   "classification": "POSSIBLY",
-   "summary": "",
-   "url": "https://osv.dev/vulnerability/GHSA-q2hr-2g5m-vwhr"
-  },
-  {
-   "package": "brace-expansion",
-   "ecosystem": "npm",
-   "installedVersion": "5.0.9",
-   "vulnId": "GHSA-qhr7-859c-m2p7",
-   "aliases": [
-    "GHSA-QHR7-859C-M2P7"
-   ],
-   "severity": "unknown",
-   "inCisaKev": false,
-   "classification": "POSSIBLY",
-   "summary": "",
-   "url": "https://osv.dev/vulnerability/GHSA-qhr7-859c-m2p7"
-  }
- ]
+ "findings": []
 }

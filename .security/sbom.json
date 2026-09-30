@@ -1,6 +1,6 @@
 {
  "schema": "smyst-sbom-v1",
- "generatedAtUtc": "2026-09-30T08:57:54.296577+00:00",
+ "generatedAtUtc": "2026-09-30T13:48:52.394881+00:00",
  "technologyProfile": {
   "frontend": "react+vite (github pages)",
   "backend": "python/fastapi (zeabur)",
@@ -756,7 +756,7 @@
   {
    "ecosystem": "npm",
    "name": "brace-expansion",
-   "version": "5.0.9",
+   "version": "5.0.12",
    "scope": "production-lockfile"
   },
   {
@@ -1724,11 +1724,263 @@
    "name": "yauzl",
    "version": "2.10.0",
    "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "annotated-doc",
+   "version": "0.0.5",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "annotated-types",
+   "version": "0.8.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "anyio",
+   "version": "4.14.2",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "asyncpg",
+   "version": "0.31.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "boto3",
+   "version": "1.43.72",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "botocore",
+   "version": "1.43.72",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "certifi",
+   "version": "2026.7.22",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "cffi",
+   "version": "2.1.1",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "charset-normalizer",
+   "version": "3.5.2",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "click",
+   "version": "8.4.2",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "colorama",
+   "version": "0.4.6",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "cryptography",
+   "version": "50.0.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "fastapi",
+   "version": "0.141.1",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "greenlet",
+   "version": "3.5.5",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "h11",
+   "version": "0.16.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "httpcore",
+   "version": "1.0.9",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "httptools",
+   "version": "0.8.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "httpx",
+   "version": "0.28.1",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "idna",
+   "version": "3.18",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "jmespath",
+   "version": "1.1.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "pycparser",
+   "version": "3.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "pydantic",
+   "version": "2.13.4",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "pydantic-core",
+   "version": "2.46.4",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "pydantic-settings",
+   "version": "2.15.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "pyjwt",
+   "version": "2.15.1",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "python-dateutil",
+   "version": "2.9.0.post0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "python-dotenv",
+   "version": "1.2.3",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "pyyaml",
+   "version": "6.0.3",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "redis",
+   "version": "8.1.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "requests",
+   "version": "2.34.2",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "s3transfer",
+   "version": "0.19.2",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "six",
+   "version": "1.17.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "sqlalchemy",
+   "version": "2.0.52",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "starlette",
+   "version": "1.6.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "stripe",
+   "version": "15.6.1",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "typing-extensions",
+   "version": "4.16.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "typing-inspection",
+   "version": "0.4.4",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "urllib3",
+   "version": "2.7.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "uvicorn",
+   "version": "0.52.3",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "uvloop",
+   "version": "0.22.1",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "watchfiles",
+   "version": "1.2.0",
+   "scope": "backend-lockfile"
+  },
+  {
+   "ecosystem": "PyPI",
+   "name": "websockets",
+   "version": "17.0.1",
+   "scope": "backend-lockfile"
   }
  ],
  "counts": {
   "npm": 285,
-  "pypi": 0,
-  "total": 285
+  "pypi": 42,
+  "total": 327
  }
 }
