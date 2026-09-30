@@ -1,0 +1,1734 @@
+{
+ "schema": "smyst-sbom-v1",
+ "generatedAtUtc": "2026-09-30T08:57:54.296577+00:00",
+ "technologyProfile": {
+  "frontend": "react+vite (github pages)",
+  "backend": "python/fastapi (zeabur)",
+  "database": "keine SQL-DB; IDrive e2 (S3, Object Brain)",
+  "cache": "In-Process-RAM (kein Redis in Produktion)",
+  "ai": "smyst-1.1 (llama.cpp) + OpenRouter/Groq-Kette",
+  "auth": "HMAC-Session-Tokens + Google-OIDC-Login + E-Mail-Konten (scrypt)",
+  "containers": "python:3.12-slim (backend), github-hosted runner (ci)",
+  "os": "debian-slim-Basis im Container; CI ubuntu-24.04",
+  "ci": "github actions (alle uses SHA-gepinnt)",
+  "storage": "idrive e2 (privat) + github pages (statisch)",
+  "dns_tls": "spaceship dns; zeabur ingress TLS"
+ },
+ "components": [
+  {
+   "ecosystem": "npm",
+   "name": "@alloc/quick-lru",
+   "version": "5.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/code-frame",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/compat-data",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/core",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/generator",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-compilation-targets",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-globals",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-module-imports",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-module-transforms",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-plugin-utils",
+   "version": "7.28.6",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-string-parser",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-validator-identifier",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helper-validator-option",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/helpers",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/parser",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/plugin-transform-react-jsx-self",
+   "version": "7.27.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/plugin-transform-react-jsx-source",
+   "version": "7.27.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/template",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/traverse",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@babel/types",
+   "version": "7.29.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@capacitor/android",
+   "version": "8.3.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@capacitor/cli",
+   "version": "8.3.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@capacitor/cli/node_modules/commander",
+   "version": "12.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@capacitor/cli/node_modules/semver",
+   "version": "7.8.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@capacitor/core",
+   "version": "8.3.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@capacitor/ios",
+   "version": "8.3.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/aix-ppc64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/android-arm",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/android-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/android-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/darwin-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/darwin-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/freebsd-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/freebsd-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-arm",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-ia32",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-loong64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-mips64el",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-ppc64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-riscv64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-s390x",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/linux-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/netbsd-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/netbsd-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/openbsd-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/openbsd-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/openharmony-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/sunos-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/win32-arm64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/win32-ia32",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@esbuild/win32-x64",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/cli-framework-output",
+   "version": "2.2.8",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-array",
+   "version": "2.1.6",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-fs",
+   "version": "3.1.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-fs/node_modules/fs-extra",
+   "version": "9.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-object",
+   "version": "2.1.6",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-process",
+   "version": "2.1.12",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-stream",
+   "version": "3.1.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-subprocess",
+   "version": "3.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@ionic/utils-terminal",
+   "version": "2.3.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@isaacs/fs-minipass",
+   "version": "4.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@jridgewell/gen-mapping",
+   "version": "0.3.13",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@jridgewell/remapping",
+   "version": "2.3.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@jridgewell/resolve-uri",
+   "version": "3.1.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@jridgewell/sourcemap-codec",
+   "version": "1.5.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@jridgewell/trace-mapping",
+   "version": "0.3.31",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@nodelib/fs.scandir",
+   "version": "2.1.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@nodelib/fs.stat",
+   "version": "2.0.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@nodelib/fs.walk",
+   "version": "1.2.8",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rolldown/pluginutils",
+   "version": "1.0.0-beta.27",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-android-arm-eabi",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-android-arm64",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-darwin-arm64",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-darwin-x64",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-freebsd-arm64",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-freebsd-x64",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-arm-gnueabihf",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-arm-musleabihf",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-arm64-gnu",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-arm64-musl",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-loong64-gnu",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-loong64-musl",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-ppc64-gnu",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-ppc64-musl",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-riscv64-gnu",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-riscv64-musl",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-s390x-gnu",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-x64-gnu",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-linux-x64-musl",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-openbsd-x64",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-openharmony-arm64",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-win32-arm64-msvc",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-win32-ia32-msvc",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-win32-x64-gnu",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@rollup/rollup-win32-x64-msvc",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/babel__core",
+   "version": "7.20.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/babel__generator",
+   "version": "7.27.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/babel__template",
+   "version": "7.4.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/babel__traverse",
+   "version": "7.28.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/estree",
+   "version": "1.0.8",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/fs-extra",
+   "version": "8.1.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/node",
+   "version": "25.7.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/prop-types",
+   "version": "15.7.15",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/react",
+   "version": "18.3.28",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/react-dom",
+   "version": "18.3.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@types/slice-ansi",
+   "version": "4.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@vitejs/plugin-react",
+   "version": "4.7.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@xmldom/xmldom",
+   "version": "0.9.12",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "ansi-regex",
+   "version": "5.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "ansi-styles",
+   "version": "4.3.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "any-promise",
+   "version": "1.3.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "anymatch",
+   "version": "3.1.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "arg",
+   "version": "5.0.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "astral-regex",
+   "version": "2.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "at-least-node",
+   "version": "1.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "autoprefixer",
+   "version": "10.5.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "balanced-match",
+   "version": "4.0.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "base64-js",
+   "version": "1.5.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "baseline-browser-mapping",
+   "version": "2.11.21",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "big-integer",
+   "version": "1.6.52",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "binary-extensions",
+   "version": "2.3.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "bplist-parser",
+   "version": "0.3.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "brace-expansion",
+   "version": "5.0.9",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "braces",
+   "version": "3.0.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "browserslist",
+   "version": "4.28.9",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "buffer-crc32",
+   "version": "0.2.13",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "camelcase-css",
+   "version": "2.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "caniuse-lite",
+   "version": "1.0.30001810",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "chokidar",
+   "version": "3.6.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "chokidar/node_modules/glob-parent",
+   "version": "5.1.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "chownr",
+   "version": "3.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "class-variance-authority",
+   "version": "0.7.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "clsx",
+   "version": "2.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "color-convert",
+   "version": "2.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "color-name",
+   "version": "1.1.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "commander",
+   "version": "4.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "convert-source-map",
+   "version": "2.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "cookie",
+   "version": "1.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "cross-spawn",
+   "version": "7.0.6",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "cssesc",
+   "version": "3.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "csstype",
+   "version": "3.2.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "debug",
+   "version": "4.4.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "define-lazy-prop",
+   "version": "2.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "didyoumean",
+   "version": "1.2.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "dlv",
+   "version": "1.1.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "electron-to-chromium",
+   "version": "1.5.422",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "elementtree",
+   "version": "0.1.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "emoji-regex",
+   "version": "8.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "env-paths",
+   "version": "2.2.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "es-errors",
+   "version": "1.3.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "esbuild",
+   "version": "0.28.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "escalade",
+   "version": "3.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fast-glob",
+   "version": "3.3.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fast-glob/node_modules/glob-parent",
+   "version": "5.1.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fastq",
+   "version": "1.20.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fd-slicer",
+   "version": "1.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fill-range",
+   "version": "7.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fraction.js",
+   "version": "5.3.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fs-extra",
+   "version": "11.3.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "fsevents",
+   "version": "2.3.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "function-bind",
+   "version": "1.1.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "gensync",
+   "version": "1.0.0-beta.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "glob",
+   "version": "13.0.6",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "glob-parent",
+   "version": "6.0.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "graceful-fs",
+   "version": "4.2.11",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "hasown",
+   "version": "2.0.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "inherits",
+   "version": "2.0.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "ini",
+   "version": "4.1.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-binary-path",
+   "version": "2.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-core-module",
+   "version": "2.16.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-docker",
+   "version": "2.2.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-extglob",
+   "version": "2.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-fullwidth-code-point",
+   "version": "3.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-glob",
+   "version": "4.0.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-number",
+   "version": "7.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "is-wsl",
+   "version": "2.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "isexe",
+   "version": "2.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "jiti",
+   "version": "1.21.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "js-tokens",
+   "version": "4.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "jsesc",
+   "version": "3.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "json5",
+   "version": "2.2.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "jsonfile",
+   "version": "6.2.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "kleur",
+   "version": "4.1.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "lilconfig",
+   "version": "3.1.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "lines-and-columns",
+   "version": "1.2.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "loose-envify",
+   "version": "1.4.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "lru-cache",
+   "version": "5.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "lucide-react",
+   "version": "0.468.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "merge2",
+   "version": "1.4.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "micromatch",
+   "version": "4.0.8",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "minimatch",
+   "version": "10.2.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "minipass",
+   "version": "7.1.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "minizlib",
+   "version": "3.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "ms",
+   "version": "2.1.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "mz",
+   "version": "2.7.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "nanoid",
+   "version": "3.3.18",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "native-run",
+   "version": "2.0.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "node-releases",
+   "version": "2.0.54",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "normalize-path",
+   "version": "3.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "object-assign",
+   "version": "4.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "object-hash",
+   "version": "3.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "open",
+   "version": "8.4.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "package-json-from-dist",
+   "version": "1.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "path-key",
+   "version": "3.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "path-parse",
+   "version": "1.0.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "path-scurry",
+   "version": "2.0.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "path-scurry/node_modules/lru-cache",
+   "version": "11.3.6",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "pend",
+   "version": "1.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "picocolors",
+   "version": "1.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "picomatch",
+   "version": "2.3.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "pify",
+   "version": "2.3.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "pirates",
+   "version": "4.0.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "plist",
+   "version": "3.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "postcss",
+   "version": "8.5.28",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "postcss-import",
+   "version": "15.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "postcss-js",
+   "version": "4.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "postcss-load-config",
+   "version": "6.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "postcss-nested",
+   "version": "6.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "postcss-selector-parser",
+   "version": "6.1.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "postcss-value-parser",
+   "version": "4.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "prompts",
+   "version": "2.4.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "prompts/node_modules/kleur",
+   "version": "3.0.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "queue-microtask",
+   "version": "1.2.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "react",
+   "version": "18.3.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "react-dom",
+   "version": "18.3.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "react-refresh",
+   "version": "0.17.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "react-router",
+   "version": "7.18.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "react-router-dom",
+   "version": "7.18.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "read-cache",
+   "version": "1.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "readable-stream",
+   "version": "3.6.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "readdirp",
+   "version": "3.6.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "resolve",
+   "version": "1.22.12",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "reusify",
+   "version": "1.1.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "rimraf",
+   "version": "6.1.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "rollup",
+   "version": "4.60.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "run-parallel",
+   "version": "1.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "safe-buffer",
+   "version": "5.2.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "sax",
+   "version": "1.1.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "scheduler",
+   "version": "0.23.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "semver",
+   "version": "6.3.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "set-cookie-parser",
+   "version": "2.7.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "shebang-command",
+   "version": "2.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "shebang-regex",
+   "version": "3.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "signal-exit",
+   "version": "3.0.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "sisteransi",
+   "version": "1.0.5",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "slice-ansi",
+   "version": "4.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "source-map-js",
+   "version": "1.2.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "split2",
+   "version": "4.2.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "string-width",
+   "version": "4.2.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "string_decoder",
+   "version": "1.3.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "strip-ansi",
+   "version": "6.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "sucrase",
+   "version": "3.35.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "supports-preserve-symlinks-flag",
+   "version": "1.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tailwind-merge",
+   "version": "2.6.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tailwindcss",
+   "version": "3.4.19",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tailwindcss-animate",
+   "version": "1.0.7",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tar",
+   "version": "7.5.22",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tar/node_modules/yallist",
+   "version": "5.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "thenify",
+   "version": "3.3.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "thenify-all",
+   "version": "1.6.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "through2",
+   "version": "4.0.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tinyglobby",
+   "version": "0.2.16",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tinyglobby/node_modules/fdir",
+   "version": "6.5.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tinyglobby/node_modules/picomatch",
+   "version": "4.0.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "to-regex-range",
+   "version": "5.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tree-kill",
+   "version": "1.2.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "ts-interface-checker",
+   "version": "0.1.13",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "tslib",
+   "version": "2.8.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "typescript",
+   "version": "5.6.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "undici-types",
+   "version": "7.21.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "universalify",
+   "version": "2.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "untildify",
+   "version": "4.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "update-browserslist-db",
+   "version": "1.3.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "util-deprecate",
+   "version": "1.0.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "vite",
+   "version": "6.4.3",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "vite/node_modules/fdir",
+   "version": "6.5.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "vite/node_modules/picomatch",
+   "version": "4.0.4",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "which",
+   "version": "2.0.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "wrap-ansi",
+   "version": "7.0.0",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "xml2js",
+   "version": "0.6.2",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "xml2js/node_modules/xmlbuilder",
+   "version": "11.0.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "xmlbuilder",
+   "version": "15.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "yallist",
+   "version": "3.1.1",
+   "scope": "production-lockfile"
+  },
+  {
+   "ecosystem": "npm",
+   "name": "yauzl",
+   "version": "2.10.0",
+   "scope": "production-lockfile"
+  }
+ ],
+ "counts": {
+  "npm": 285,
+  "pypi": 0,
+  "total": 285
+ }
+}

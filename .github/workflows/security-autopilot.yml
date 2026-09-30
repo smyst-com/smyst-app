@@ -1,0 +1,79 @@
+name: Security-Autopilot
+
+# Autopilot SECURITY (29.09.2026, Master-Auftrag "Security Autopilot + Radar"):
+# Prueft alle 6 Stunden die PRODUKTION black-box (Live-Probe), haelt SBOM
+# aktuell, laeuft die Security-Regressionstests und schreibt die zentrale
+# Sicherheits-Ampel (docs/security/SECURITY_STATUS.md + .security/state.json).
+# Bei YELLOW/ORANGE/RED wird ein Alarm-Issue (Label security-alert)
+# aktualisiert. Keine destruktiven Tests; kein Login-Dauerfeuer.
+on:
+  schedule:
+    - cron: "20 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: security-autopilot
+  cancel-in-progress: false
+
+jobs:
+  security:
+    name: Scan + Probe + Status
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: SBOM aktualisieren (npm + Backend)
+        run: |
+          python -m pip install --quiet uv
+          cd backend && uv export --frozen --no-emit-project --no-hashes -o /tmp/requirements.txt -q
+          cd .. && python3 scripts/security/generate_sbom.py /tmp/requirements.txt
+
+      - name: Security-Regressionstests (Backend)
+        run: |
+          cd backend
+          uv sync --frozen --extra dev --quiet
+          uv run --frozen pytest tests/test_security_hardening.py tests/test_session_revocation.py -q
+
+      - name: Freeze-Guards
+        run: |
+          python3 scripts/check-security-freeze-guard.py
+          python3 scripts/check-profile-image-design-guard.py
+          python3 scripts/check-profile-memory-contract.py
+
+      - name: Live-Probe gegen Produktion
+        id: probe
+        continue-on-error: true
+        run: python3 scripts/security/live_probe.py
+
+      - name: Status komponieren (Ampel)
+        id: status
+        run: python3 scripts/security/compose_status.py
+
+      - name: Ergebnis committen
+        run: |
+          git config user.name "security-autopilot[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add .security docs/security/SECURITY_STATUS.md
+          if git diff --cached --quiet; then echo "keine Aenderungen"; exit 0; fi
+          STATE=$(python3 -c "import json;print(json.load(open('.security/state.json'))['state'])")
+          git commit -q -m "security(autopilot): Lauf $(date -u '+%Y-%m-%d %H:%M') UTC — Ampel ${STATE} [skip ci]"
+          git pull --rebase --autostash origin main || true
+          git push
+
+      - name: Alarm-Issue bei nicht-GREEN (idempotent)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STATE=$(python3 -c "import json;print(json.load(open('.security/state.json'))['state'])" 2>/dev/null || echo UNKNOWN)
+          if [ "$STATE" = "GREEN" ]; then echo "Ampel GREEN - kein Alarm."; exit 0; fi
+          gh label create "security-alert" --color d93f0b --description "Security-Autopilot/Radar: Ampel nicht GREEN" 2>/dev/null || true
+          python3 scripts/security/issue_alert.py --source autopilot --state "$STATE"

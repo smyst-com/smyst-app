@@ -1,0 +1,69 @@
+name: Security-Radar
+
+# Autopilot SECURITY RADAR (29.09.2026): taeglicher Abgleich der weltweiten
+# Bedrohungslage (OSV.dev — macht das Version-Matching serverseitig gegen
+# unsere installierten Versionen — plus CISA-KEV fuer aktiv ausgenutzte
+# CVEs) mit dem smyst-Bestand aus der SBOM. CRITICAL/RELEVANT => Alarm-Issue
+# (security-alert) + Ampel-Update. Klassifikation: KEV/critical => CRITICAL,
+# high => RELEVANT, sonst POSSIBLY. Nie '100% sicher'-Sprache.
+on:
+  schedule:
+    - cron: "40 5 * * *"
+  workflow_dispatch: {}
+  push:
+    paths:
+      - "package-lock.json"
+      - "backend/uv.lock"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: security-radar
+  cancel-in-progress: false
+
+jobs:
+  radar:
+    name: OSV + CISA-KEV Abgleich
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.12"
+
+      - name: SBOM aufbauen
+        run: |
+          python -m pip install --quiet uv
+          cd backend && uv export --frozen --no-emit-project --no-hashes -o /tmp/requirements.txt -q
+          cd .. && python3 scripts/security/generate_sbom.py /tmp/requirements.txt
+
+      - name: Radar-Scan (OSV.dev + CISA-KEV)
+        run: python3 scripts/security/radar_scan.py
+
+      - name: Status komponieren
+        run: python3 scripts/security/compose_status.py
+
+      - name: Ergebnis committen
+        run: |
+          git config user.name "security-radar[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add .security docs/security/SECURITY_STATUS.md
+          if git diff --cached --quiet; then echo "keine Aenderungen"; exit 0; fi
+          git commit -q -m "security(radar): Lauf $(date -u '+%Y-%m-%d %H:%M') UTC [skip ci]"
+          git pull --rebase --autostash origin main || true
+          git push
+
+      - name: Alarm-Issue bei CRITICAL/RELEVANT (idempotent)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          CRIT=$(python3 -c "import json;print(json.load(open('.security/radar.json'))['counts']['critical'])")
+          REL=$(python3 -c "import json;print(json.load(open('.security/radar.json'))['counts']['relevant'])")
+          echo "critical=$CRIT relevant=$REL"
+          if [ "$CRIT" = "0" ] && [ "$REL" = "0" ]; then echo "kein Radar-Alarm."; exit 0; fi
+          gh label create "security-alert" --color d93f0b --description "Security-Autopilot/Radar: Ampel nicht GREEN" 2>/dev/null || true
+          python3 scripts/security/issue_alert.py --source radar --state ORANGE

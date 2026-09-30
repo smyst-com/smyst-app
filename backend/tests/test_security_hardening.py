@@ -345,3 +345,20 @@ def test_upload_presign_signs_content_length() -> None:
     params = captured.get("put_object")
     assert params is not None
     assert params.get("ContentLength") == 1234
+
+
+# ------------------------------------------------- Canary-Honeypot (Radar-26)
+def test_canary_status_zero_and_tripwire_404(monkeypatch) -> None:
+    from app.api.v1.routes import security as security_route
+
+    monkeypatch.setattr(security_route, "_CANARY_COUNT", {"count": None, "loaded_at": 0.0})
+    response = client.get("/api/security/canary/status")
+    assert response.status_code == 200
+    assert response.json()["count"] == 0
+
+    # Ohne e2-Konfiguration landet der Treffer nur im Audit-Log (RAM).
+    response = client.get("/api/security/canary/.env.bak")
+    assert response.status_code == 404
+    # Cache wurde durch den Hit NICHT veraendert (Zaehlung laeuft ueber e2-List)
+    response = client.get("/api/security/canary/status")
+    assert response.status_code == 200

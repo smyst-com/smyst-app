@@ -1,0 +1,121 @@
+{
+ "probedAtUtc": "2026-09-30T09:08:10.161576+00:00",
+ "targets": {
+  "web": "https://smyst.com",
+  "api": "https://api.smyst.com"
+ },
+ "checksTotal": 22,
+ "checksFailed": 2,
+ "results": [
+  {
+   "name": "website_up",
+   "ok": true,
+   "detail": "smyst.com -> 200"
+  },
+  {
+   "name": "api_up",
+   "ok": true,
+   "detail": "health/live -> 200"
+  },
+  {
+   "name": "guard_overview",
+   "ok": true,
+   "detail": "anon GET -> 401"
+  },
+  {
+   "name": "guard_users",
+   "ok": true,
+   "detail": "anon GET -> 401"
+  },
+  {
+   "name": "guard_recent",
+   "ok": true,
+   "detail": "anon GET -> 401"
+  },
+  {
+   "name": "guard_deep",
+   "ok": true,
+   "detail": "anon GET -> 401"
+  },
+  {
+   "name": "guard_production",
+   "ok": true,
+   "detail": "anon GET -> 401"
+  },
+  {
+   "name": "guard_capabilities",
+   "ok": true,
+   "detail": "anon GET -> 401"
+  },
+  {
+   "name": "guard_run",
+   "ok": true,
+   "detail": "anon POST -> 401"
+  },
+  {
+   "name": "forged_token_rejected",
+   "ok": true,
+   "detail": "-> 401"
+  },
+  {
+   "name": "openapi_hidden",
+   "ok": true,
+   "detail": "-> 404"
+  },
+  {
+   "name": "providers_redacted",
+   "ok": true,
+   "detail": "Felder: ['configured', 'provider', 'supported']"
+  },
+  {
+   "name": "providers_ping_gated",
+   "ok": true,
+   "detail": "anon ping -> 403"
+  },
+  {
+   "name": "ads_slug_validated",
+   "ok": true,
+   "detail": "boeser Slug -> 400"
+  },
+  {
+   "name": "hsts_present",
+   "ok": true,
+   "detail": "HSTS auf api.smyst.com"
+  },
+  {
+   "name": "csp_present",
+   "ok": true,
+   "detail": "CSP auf api.smyst.com"
+  },
+  {
+   "name": "nosniff_present",
+   "ok": true,
+   "detail": "nosniff"
+  },
+  {
+   "name": "anti_frame_script",
+   "ok": true,
+   "detail": "-> 200"
+  },
+  {
+   "name": "tts_ready",
+   "ok": true,
+   "detail": "ready=True voices=19"
+  },
+  {
+   "name": "session_revocation_live",
+   "ok": true,
+   "detail": "mode=no-session"
+  },
+  {
+   "name": "guest_chat_real_answer",
+   "ok": false,
+   "detail": "Versuch 2: mode=local Antwort='Entschuldige - ich kann gerade nicht auf mein Wissen zugreif'"
+  },
+  {
+   "name": "canary_clean",
+   "ok": false,
+   "detail": "status=404 count=-1"
+  }
+ ]
+}
