@@ -44,25 +44,8 @@ jobs:
       - name: Radar-Scan (OSV.dev + CISA-KEV)
         run: python3 scripts/security/radar_scan.py
 
-      - name: Status komponieren
-        run: python3 scripts/security/compose_status.py
-
-      - name: Lauf-Zusammenfassung in die Step-Summary
-        run: cat .security/summary.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Radar-Ergebnis als Artefakt sichern
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: always()
-        with:
-          name: security-radar-${{ github.run_id }}
-          path: .security/radar.json
-          retention-days: 180
-
-      - name: Ampel ins Dauerdashboard-Issue tragen
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/security/update_status_issue.py
-
+      - name: Radar-Zahlen in die Step-Summary
+        run: python3 scripts/security/radar_summary.py
       - name: Alarm-Issue bei CRITICAL/RELEVANT (idempotent)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

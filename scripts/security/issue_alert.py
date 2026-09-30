@@ -59,13 +59,15 @@ def main() -> int:
         pass
     body = "\n".join(lines) or "Keine Details verfuegbar."
 
-    open_issues = _gh(["issue", "list", "--label", "security-alert", "--state", "open", "--json", "number", "--jq", "length"])
+    # Dashboard-Issue (Titelpraefix) NICHT als Alarm-Ziel missbrauchen
+    selector = '.[] | select(.title | startswith("Security-Zentrale") | not) | .number'
+    numbers = _gh(["issue", "list", "--label", "security-alert", "--state", "open", "--json", "number,title", "--jq", selector])
     title = f"Security-Alarm ({source}): Ampel {state} — {__import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M')} UTC"
-    if open_issues == "0":
+    if not numbers:
         _gh(["issue", "create", "--title", title, "--label", "security-alert", "--body", body])
         print("Alarm-Issue erstellt")
     else:
-        number = _gh(["issue", "list", "--label", "security-alert", "--state", "open", "--json", "number", "--jq", ".[0].number"])
+        number = numbers.splitlines()[0]
         _gh(["issue", "comment", number, "--body", body])
         print(f"Alarm-Issue #{number} aktualisiert")
     return 0
