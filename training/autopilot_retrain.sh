@@ -59,6 +59,16 @@ if [ -f "$MARKER" ]; then
 fi
 date +%s > "$MARKER"
 
+# 2b) Netzwerk-Warteschleife (30.09.): launchd feuert oft Sekunden nach dem
+#     Aufwachen aus dem Ruhezustand — gh/git scheiterten dann sofort (Vorfall
+#     30.09. 03:00:03, kompletter Trainingslauf verfiel). Bis zu 2 min auf
+#     Erreichbarkeit warten, dann normal weiter.
+for _ in $(seq 1 12); do
+  curl -sf --max-time 5 https://api.github.com/zen >/dev/null 2>&1 && break
+  log "Netzwerk noch nicht bereit – warte 10 s …"
+  sleep 10
+done
+
 # 3) Trainingsdaten-Export anstossen und Artefakt holen. Scheitert der
 #    Export (offline, API-Limit), laeuft der Zyklus mit dem letzten Stand.
 EXPORT_RUN_ID=""
