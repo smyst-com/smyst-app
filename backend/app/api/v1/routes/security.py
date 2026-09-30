@@ -185,3 +185,99 @@ async def csp_report(report: dict[str, Any]) -> dict[str, bool]:
         )
     )
     return {"ok": True}
+
+
+# ------------------------------------------------------------- Canary (Radar 26)
+#: Honeypot: Niemand legitimer ruft /security/canary/* auf - jeder Treffer
+#: ist ein Scanner/Angreifer und wird als Security-Event archiviert
+#: (e2-Objekt, vom Autopilot per /canary/status gezaehlt). Antwort ist
+#: bewusst ein 404, damit der Angreifer nichts ueber den Tripwire lernt.
+CANARY_PREFIX = "security-events/canary/"
+
+#: RAM-Cache des Zaehlers (LIST ist teuer; 60s Frische reichen).
+_CANARY_COUNT: dict[str, object] = {"count": None, "loaded_at": 0.0}
+
+
+def _canary_client():
+    import boto3
+    from botocore.config import Config
+
+    from app.core.config import settings
+
+    if not (settings.idrive_e2_access_key and settings.idrive_e2_secret_key):
+        return None
+    return boto3.client(
+        "s3",
+        endpoint_url=settings.idrive_e2_endpoint,
+        region_name=settings.idrive_e2_region,
+        aws_access_key_id=settings.idrive_e2_access_key,
+        aws_secret_access_key=settings.idrive_e2_secret_key,
+        config=Config(connect_timeout=3, read_timeout=4, retries={"max_attempts": 1}),
+    )
+
+
+def _canary_count() -> int:
+    import time as _time
+
+    from app.core.config import settings
+
+    now = _time.time()
+    if _CANARY_COUNT["count"] is not None and now - float(_CANARY_COUNT["loaded_at"]) < 60:
+        return int(_CANARY_COUNT["count"])
+    client = _canary_client()
+    count = 0
+    if client is not None:
+        try:
+            paginator = client.get_paginator("list_objects_v2")
+            for page in paginator.paginate(Bucket=settings.idrive_e2_bucket, Prefix=CANARY_PREFIX):
+                count += len(page.get("Contents", []) or [])
+        except Exception:
+            pass
+    _CANARY_COUNT.update(count=count, loaded_at=now)
+    return count
+
+
+def _record_canary_hit(path: str, request: Request) -> None:
+    import json as _json
+    import time as _time
+    import uuid as _uuid
+
+    from app.core.config import settings
+
+    audit_log_service.record(
+        event=AuditEvent(
+            action="security.canary_hit",
+            resource_type="honeypot",
+            metadata={"path": path[:120], "method": request.method},
+        )
+    )
+    client = _canary_client()
+    if client is not None:
+        try:
+            stamp = _time.time()
+            key = f"{CANARY_PREFIX}{int(stamp * 1000)}-{_uuid.uuid4().hex[:8]}.json"
+            payload = _json.dumps(
+                {"at": stamp, "path": path[:200], "method": request.method, "ua": (request.headers.get("user-agent") or "")[:200]}
+            ).encode("utf-8")
+            client.put_object(Bucket=settings.idrive_e2_bucket, Key=key, Body=payload, ContentType="application/json")
+            _CANARY_COUNT.update(count=_canary_count() + 1)
+        except Exception:
+            pass
+
+
+@router.get("/canary/status")
+async def canary_status() -> dict[str, object]:
+    """Zaehler fuer den Security-Autopilot (0 = unberuehrt).
+
+    Muss VOR dem Catch-all registriert sein, sonst schluckt der Tripwire
+    die Statusroute selbst.
+    """
+    return {"count": _canary_count(), "prefix": CANARY_PREFIX}
+
+
+@router.api_route("/canary/{probe_path:path}", methods=["GET", "POST", "HEAD", "PUT", "DELETE", "PATCH"])
+async def canary_tripwire(probe_path: str, request: Request) -> JSONResponse:
+    if probe_path == "status":
+        return await canary_status()
+    _record_canary_hit(f"/security/canary/{probe_path}", request)
+    return JSONResponse(status_code=404, content={"detail": "Not Found"})

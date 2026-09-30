@@ -1,0 +1,12 @@
+{
+ "state": "RED",
+ "updatedAtUtc": "2026-09-30T09:19:50.618265+00:00",
+ "drivers": {
+  "criticalRadar": 0,
+  "relevantRadar": 0,
+  "possiblyRadar": 3,
+  "guardFails": 1,
+  "availabilityFails": 1,
+  "canaryHit": true
+ }
+}
