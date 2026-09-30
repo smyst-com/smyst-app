@@ -54,6 +54,13 @@ jobs:
         continue-on-error: true
         run: python3 scripts/security/live_probe.py
 
+      # Radar im selben Lauf: Die Ampel-Komposition braucht frische Daten
+      # BEIDER Disziplinen (kein gemeinsamer Speicher zwischen Laeufen).
+      - name: Radar-Scan (OSV + CISA-KEV)
+        id: radar
+        continue-on-error: true
+        run: python3 scripts/security/radar_scan.py
+
       - name: Status komponieren (Ampel)
         id: status
         run: python3 scripts/security/compose_status.py
