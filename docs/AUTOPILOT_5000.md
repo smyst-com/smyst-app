@@ -352,3 +352,21 @@ und Shard-Schluessel; Portale liefern NUR Anreicherung/Belege dazu.
 `git revert` des Merge-Commits: Deckel zurueck auf 90, Batch-5-Kategorien
 entfallen (bereits gespeicherte Kandidaten bleiben unberuehrt — Dedup
 ueber QIDs ist zustaendslos).
+
+### 9.1 Pool-Fenster Sterbejahr 1995 (30.09.2026, PR #899)
+
+Freigabe: Vollmacht des Inhabers 30.09. ("alle Rechte A-Z, komplett fertig,
+lass nichts offen") — deckt die hier als Option beschriebene Batch-6-Entscheidung.
+Messung: allein Politik haelt im Fenster 1956-1995 zusaetzlich 12.546 Personen
+(>= 5 Sitelinks, WDQS-COUNT 30.09.); ueber alle Kategorien ist der Vorrat damit
+auf Monate gesichert.
+
+- `max_death_year` 1955 -> 1995 (Ingest/SPARQL/Screening).
+- Urheberrechtsschutz VERSTAERKT: `WORKS_RESTRICTED_AFTER_YEAR = 1955` (neue
+  Konstante in historical_pipeline, von risk_checks importiert) — alle
+  1956-1995 Verstorbenen bekommen automatisch works=restricted (keine
+  Originalzitate/Werkauszuege, nur Paraphrase, 70 Jahre p.m.a.); der
+  Transition-Guard verified prueft gegen die Werke-Schwelle (Verteidigung in
+  der Tiefe), Kunst behaelt zusaetzlich 1950.
+- QA-Gate, Zeitreisenden-Rahmen (berichtetes Wissen), Estate-Blacklist,
+  Publish-Deckel unveraendert.
