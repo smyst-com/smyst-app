@@ -40,7 +40,7 @@ jobs:
       - name: Security-Regressionstests (Backend)
         run: |
           cd backend
-          uv sync --frozen --quiet
+          uv sync --frozen --extra dev --quiet
           uv run --frozen pytest tests/test_security_hardening.py tests/test_session_revocation.py -q
 
       - name: Freeze-Guards

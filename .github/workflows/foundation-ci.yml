@@ -68,7 +68,7 @@ jobs:
       - name: Security-Tests ausfuehren
         run: |
           python -m pip install --quiet uv
-          uv sync --frozen --quiet
+          uv sync --frozen --extra dev --quiet
           uv run --frozen pytest tests/test_security_hardening.py tests/test_session_revocation.py -q
 
   root-app:
