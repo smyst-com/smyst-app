@@ -74,16 +74,16 @@ done
 EXPORT_RUN_ID=""
 if command -v gh >/dev/null 2>&1; then
   log "Stosse Trainingsdaten-Export (GitHub) an …"
-  if gh workflow run training-export.yml --ref main >> "$LOG" 2>&1; then
+  if gh workflow run training-export.yml -R smyst-com/smyst-app --ref main >> "$LOG" 2>&1; then
     for _ in $(seq 1 210); do
       sleep 20
-      EXPORT_RUN_ID=$(gh run list --workflow=training-export.yml --limit 1 --json databaseId,status,conclusion -q '.[0] | select(.status=="completed") | .databaseId' 2>/dev/null)
+      EXPORT_RUN_ID=$(gh run list -R smyst-com/smyst-app --workflow=training-export.yml --limit 1 --json databaseId,status,conclusion -q '.[0] | select(.status=="completed") | .databaseId' 2>/dev/null)
       [ -n "$EXPORT_RUN_ID" ] && break
     done
     if [ -n "$EXPORT_RUN_ID" ]; then
-      CONCL=$(gh run view "$EXPORT_RUN_ID" --json conclusion -q .conclusion 2>/dev/null)
+      CONCL=$(gh run view -R smyst-com/smyst-app "$EXPORT_RUN_ID" --json conclusion -q .conclusion 2>/dev/null)
       rm -rf "$EXPORT_DIR" && mkdir -p "$EXPORT_DIR"
-      if [ "$CONCL" = "success" ] && gh run download "$EXPORT_RUN_ID" -n training-export -D "$EXPORT_DIR" >> "$LOG" 2>&1; then
+      if [ "$CONCL" = "success" ] && gh run download -R smyst-com/smyst-app "$EXPORT_RUN_ID" -n training-export -D "$EXPORT_DIR" >> "$LOG" 2>&1; then
         log "Export-Artefakt geholt (Run $EXPORT_RUN_ID)."
         echo "$EXPORT_RUN_ID" > "$EXPORT_DIR/.run-id"
       else
