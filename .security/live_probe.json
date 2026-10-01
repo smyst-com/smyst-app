@@ -1,11 +1,11 @@
 {
- "probedAtUtc": "2026-09-30T09:08:10.161576+00:00",
+ "probedAtUtc": "2026-10-01T01:22:58.967461+00:00",
  "targets": {
   "web": "https://smyst.com",
   "api": "https://api.smyst.com"
  },
  "checksTotal": 22,
- "checksFailed": 2,
+ "checksFailed": 0,
  "results": [
   {
    "name": "website_up",
@@ -109,13 +109,13 @@
   },
   {
    "name": "guest_chat_real_answer",
-   "ok": false,
-   "detail": "Versuch 2: mode=local Antwort='Entschuldige - ich kann gerade nicht auf mein Wissen zugreif'"
+   "ok": true,
+   "detail": "Versuch 1: mode=smyst_llm Antwort='Ja natürlich! Was kann ich für dich tun?'"
   },
   {
    "name": "canary_clean",
-   "ok": false,
-   "detail": "status=404 count=-1"
+   "ok": true,
+   "detail": "status=200 count=0"
   }
  ]
 }
