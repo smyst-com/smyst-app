@@ -136,18 +136,18 @@ jobs:
           export MODEL
           # 14.09.2026 (Inhaber-Anweisung "keine anderen Kosten mehr"):
           # Modell VORRANGIG aus dem eigenen GitHub-Release zusammensetzen
-          # (32 Teile a 30 MB, Tag v-smyst-1.1-gguf) — GitHub-Release-Downloads
+          # (32 Teile a 30 MB, Tag v-smyst-3-gguf) — GitHub-Release-Downloads
           # sind kostenfrei und verursachen KEINEN IDrive-e2-Egress. Die
           # monatlichen Egress-Gebuehren (14,19 USD im Sept) kamen genau
           # daher. e2 ist nur noch Rueckfallebene, wenn das Release nicht
           # erreichbar ist.
           RELEASE_OK=true
-          curl -fsSL --retry 2 "https://github.com/smyst-com/smyst-app/releases/download/v-smyst-1.1-gguf/s11p00" -o "$MODEL.part" || RELEASE_OK=false
+          curl -fsSL --retry 2 "https://github.com/smyst-com/smyst-app/releases/download/v-smyst-3-gguf/s3q4p00" -o "$MODEL.part" || RELEASE_OK=false
           if [ "$RELEASE_OK" = "true" ]; then
             mv "$MODEL.part" "$MODEL"
             for i in $(seq -w 1 31); do
               curl -fsSL --retry 3 --retry-delay 5 \
-                "https://github.com/smyst-com/smyst-app/releases/download/v-smyst-1.1-gguf/s11p$i" \
+                "https://github.com/smyst-com/smyst-app/releases/download/v-smyst-3-gguf/s3q4p$i" \
                 >> "$MODEL" || { RELEASE_OK=false; break; }
             done
             # Grobe Vollstaendigkeitspruefung: 32 Teile x 30 MB = ~960 MB
@@ -175,8 +175,11 @@ jobs:
           # Q4_K_M bevorzugt (~350 MB, auf CPU ~2-3x schneller als f16 —
           # mehr QA-Kandidaten pro 90-min-Job); f16 als Fallback.
           candidates = [
-              # smyst-1.1 (Score 575/600, promoted 24.08.) — seit 29.08. als
-              # Q4_K_M in e2, konvertiert aus ~/smyst-train/fused/smyst-1.1-v4
+              # smyst-1.3 (Gate 532,5/600, Stichprobe #882: 550 vs. 475 gegen
+              # 1.1; Live-Chat seit 30.09. auf 1.3, Inhaber-Vollmacht A-Z) —
+              # QA-Lane-Wechsel 01.10., gestufter Rollout abgeschlossen.
+              ("models/smyst-1.3/2026-09-23/smyst-1.3-Q4_K_M.gguf", "smyst-1.3 Q4_K_M"),
+              # Rueckfallebene: smyst-1.1 Q4_K_M (bewaehrt, 10k/Tag)
               ("models/smyst-1.0/2026-08-25/smyst-1.1-Q4_K_M.gguf", "smyst-1.1 Q4_K_M"),
               # Rueckfallebene: smyst-1.0 vom 20.08
               ("models/smyst-1.0/2026-08-20/smyst-1.0-Q4_K_M.gguf", "Q4_K_M"),
