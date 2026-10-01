@@ -48,16 +48,18 @@ if [ "${FREE_GB:-0}" -lt 15 ]; then log "FEHLER: nur ${FREE_GB} GB frei (<15) �
 # 1) Neuesten Code holen (Autopilot aktualisiert sich selbst)
 git -C "$REPO_ROOT" pull --quiet >> "$LOG" 2>&1 || log "WARNUNG: git pull fehlgeschlagen (offline?) – fahre mit lokalem Stand fort."
 
-# 2) Schutzpause 2 h gegen Doppellauf (Starter + manueller Lauf)
+# 2) Schutzpause 2 h gegen Doppellauf (Starter + manueller Lauf).
+#    Marker wird seit 01.10. erst NACH dem Daten-Gate geschrieben — ein
+#    abgebrochener Vorlauf (Akku, Export-Wartezeit) blockiert den Nachhole-
+#    lauf nicht mehr (Vorfall 01.10. 04:35).
 if [ -f "$MARKER" ]; then
   LAST=$(cat "$MARKER" 2>/dev/null || echo 0)
   NOW=$(date +%s)
   if [ $(( NOW - LAST )) -lt $((2*3600)) ]; then
-    log "Letzter Lauf erst $(( (NOW - LAST) / 60 ))min her – Schutzpause, nichts zu tun."
+    log "Letzter Lauf erst $(( (NOW - LAST ) / 60 ))min her – Schutzpause, nichts zu tun."
     exit 0
   fi
 fi
-date +%s > "$MARKER"
 
 # 2b) Netzwerk-Warteschleife (30.09.): launchd feuert oft Sekunden nach dem
 #     Aufwachen aus dem Ruhezustand — gh/git scheiterten dann sofort (Vorfall
@@ -71,30 +73,45 @@ done
 
 # 3) Trainingsdaten-Export anstossen und Artefakt holen. Scheitert der
 #    Export (offline, API-Limit), laeuft der Zyklus mit dem letzten Stand.
+#    01.10.: (a) Es wird auf DEN EIGENEN DISPATCHED-Run gewartet (der Tages-
+#    Cron ueberdeckte bisher die 'letzter Run'-Abfrage) und das Fenster auf
+#    150 min erweitert (Export braucht seit Wochenwachstum 90-120 min).
+#    (b) Liegt bereits ein ABGESCHLOSSENER Erfolgs-Run vor, der noch nicht
+#    trainiert wurde, wird er direkt genutzt — kein neuer Dispatch noetig
+#    (spart 2 h; Vorfall 01.10.: Run 36802040281 fertig, Skript wartete auf
+#    einen frischen).
 EXPORT_RUN_ID=""
 if command -v gh >/dev/null 2>&1; then
-  log "Stosse Trainingsdaten-Export (GitHub) an …"
-  if gh workflow run training-export.yml --ref main >> "$LOG" 2>&1; then
-    for _ in $(seq 1 210); do
+  TRAINIERT_BIS="$(python3 -c "import json;print(json.load(open('$STATE')).get('last_data_run',''))" 2>/dev/null || echo "")"
+  FRISCHER_RUN="$(gh run list -R smyst-com/smyst-app --workflow=training-export.yml --limit 8 \
+    --json databaseId,status,conclusion \
+    -q '[.[] | select(.status=="completed" and .conclusion=="success")] | .[0].databaseId' 2>/dev/null)"
+  if [ -n "$FRISCHER_RUN" ] && [ "$FRISCHER_RUN" != "$TRAINIERT_BIS" ]; then
+    log "Frischer Export-Run $FRISCHER_RUN bereits fertig – kein neuer Dispatch nötig."
+    EXPORT_RUN_ID="$FRISCHER_RUN"
+  elif gh workflow run training-export.yml -R smyst-com/smyst-app --ref main >> "$LOG" 2>&1; then
+    sleep 30
+    DISPATCHED_ID=$(gh run list -R smyst-com/smyst-app --workflow=training-export.yml --limit 1 --json databaseId -q '.[0].databaseId' 2>/dev/null)
+    log "Export-Run gestartet: ${DISPATCHED_ID:-unbekannt} — warte auf Abschluss (bis 150 min) …"
+    for _ in $(seq 1 450); do
       sleep 20
-      EXPORT_RUN_ID=$(gh run list --workflow=training-export.yml --limit 1 --json databaseId,status,conclusion -q '.[0] | select(.status=="completed") | .databaseId' 2>/dev/null)
-      [ -n "$EXPORT_RUN_ID" ] && break
+      STATUS=$(gh run view -R smyst-com/smyst-app "$DISPATCHED_ID" --json status -q .status 2>/dev/null)
+      if [ "$STATUS" = "completed" ]; then EXPORT_RUN_ID="$DISPATCHED_ID"; break; fi
     done
-    if [ -n "$EXPORT_RUN_ID" ]; then
-      CONCL=$(gh run view "$EXPORT_RUN_ID" --json conclusion -q .conclusion 2>/dev/null)
-      rm -rf "$EXPORT_DIR" && mkdir -p "$EXPORT_DIR"
-      if [ "$CONCL" = "success" ] && gh run download "$EXPORT_RUN_ID" -n training-export -D "$EXPORT_DIR" >> "$LOG" 2>&1; then
-        log "Export-Artefakt geholt (Run $EXPORT_RUN_ID)."
-        echo "$EXPORT_RUN_ID" > "$EXPORT_DIR/.run-id"
-      else
-        log "WARNUNG: Export-Run $EXPORT_RUN_ID endete mit '$CONCL' – verwende letzten Stand."
-        LATEST=$(ls -t "$TRAIN_HOME"/catalog-cache.json 2>/dev/null | head -1)
-      fi
-    else
-      log "WARNUNG: Export-Run nicht rechtzeitig fertig – verwende letzten Stand."
-    fi
   else
     log "WARNUNG: Export-Dispatch fehlgeschlagen (API-Limit?) – verwende letzten Stand."
+  fi
+  if [ -n "$EXPORT_RUN_ID" ]; then
+    CONCL=$(gh run view -R smyst-com/smyst-app "$EXPORT_RUN_ID" --json conclusion -q .conclusion 2>/dev/null)
+    rm -rf "$EXPORT_DIR" && mkdir -p "$EXPORT_DIR"
+    if [ "$CONCL" = "success" ] && gh run download -R smyst-com/smyst-app "$EXPORT_RUN_ID" -n training-export -D "$EXPORT_DIR" >> "$LOG" 2>&1; then
+      log "Export-Artefakt geholt (Run $EXPORT_RUN_ID)."
+      echo "$EXPORT_RUN_ID" > "$EXPORT_DIR/.run-id"
+    else
+      log "WARNUNG: Export-Run $EXPORT_RUN_ID endete mit '$CONCL' – verwende letzten Stand."
+    fi
+  else
+    log "WARNUNG: Export-Run ${DISPATCHED_ID:-?} nicht rechtzeitig fertig – verwende letzten Stand."
   fi
 fi
 
@@ -113,6 +130,7 @@ fi
 # 5) Version + Trainingsdaten bauen (bewiesener Weg, Katalog-Slug-Auflösung)
 VERSION=$(python3 -c "import json;v=json.load(open('$STATE'))['champion']['version'];m=v.split('-')[1].split('.');print(f\"smyst-{m[0]}.{int(m[1])+1}\")" 2>/dev/null)
 [ -n "$VERSION" ] || { log "FEHLER: Version aus State nicht lesbar."; exit 0; }
+date +%s > "$MARKER"
 log "NEUE Trainingsdaten (Run $THIS_RUN) – baue Datensatz fuer $VERSION …"
 if ! python3 "$TRAIN_HOME/baue-trainingsdaten.py" "$EXPORT_DIR" >> "$LOG" 2>&1; then
   log "FEHLER beim Datensatz-Bau – kein Training, Live-Modell unangetastet."
