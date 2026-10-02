@@ -349,8 +349,15 @@ jobs:
           IDRIVE_E2_SECRET_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
           set -o pipefail
+          # --max-count 300 (02.10.2026): Der Publish-Schritt lief bis zu 4 h am
+          # Stueck und kippte ganze Laeufe ins 5h50m-Job-Timeout (Totalverlust,
+          # Befund 36954530333). 300 x ~13 s = ~65 min — der Rest bleibt
+          # reviewed+qa_passed und wird vom naechsten Cron-Lauf (alle 2 h) oder
+          # dem Watchdog-Publish (eigene Concurrency-Gruppe) geholt. Tagesdeckel
+          # 10000/Tag und QA-Gate unveraendert.
           python -m app.workers.publish_profiles publish --all-reviewed \
             --approved-by "smyst247@gmail.com" --enabled --daily-limit 10000 \
+            --max-count 300 \
             | tee /tmp/publish-out.log
           COUNT=$( (grep -o 'published (slug' /tmp/publish-out.log || true) | wc -l | tr -d ' ')
           {

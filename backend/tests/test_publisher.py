@@ -472,3 +472,17 @@ def test_load_index_returns_empty_only_for_missing_key():
 
     store = CandidateStore(FakeS3(), "smyst-memories")  # kein Index geschrieben
     assert _load_index(store) == []
+
+def test_cap_reviewed_pool_respects_max_count() -> None:
+    # 02.10.2026, Befund 36954530333: Auto-Publish lief 4 h am Stueck und
+    # kippte den Lauf ins Job-Timeout. --max-count kuerzt den Pool dieses
+    # Laufs; der Rest bleibt reviewed+qa_passed fuer den Folgelauf.
+    from app.workers.publish_profiles import cap_reviewed_pool
+
+    pool = ["Q1", "Q2", "Q3", "Q4", "Q5"]
+    assert cap_reviewed_pool(pool, max_count=None, already_picked=0) == pool
+    assert cap_reviewed_pool(pool, max_count=0, already_picked=0) == pool
+    assert cap_reviewed_pool(pool, max_count=3, already_picked=0) == ["Q1", "Q2", "Q3"]
+    # explizite --qid-Liste belegt das Lauf-Budget zuerst
+    assert cap_reviewed_pool(pool, max_count=3, already_picked=2) == ["Q1"]
+    assert cap_reviewed_pool(pool, max_count=8, already_picked=0) == pool
