@@ -328,6 +328,17 @@ def unpublish_one(
     return f"unpublished ({reason})"
 
 
+def cap_reviewed_pool(pool: list[str], *, max_count: int | None, already_picked: int) -> list[str]:
+    """Kuerzt den reviewed-Pool auf das Lauf-Budget (--max-count).
+
+    Kein Gate-Eingriff: QA, Tagesdeckel und Freigaben bleiben unberuehrt —
+    nicht Veroeffentlichtes bleibt reviewed+qa_passed fuer den naechsten Lauf.
+    """
+    if not max_count or max_count <= 0:
+        return pool
+    return pool[: max(0, max_count - already_picked)]
+
+
 def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdrahtung
     parser = argparse.ArgumentParser(description="smyst.com publish-Schritt (menschliche Freigabe)")
     parser.add_argument("command", choices=["publish", "unpublish"])
@@ -343,6 +354,15 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     parser.add_argument(
         "--daily-limit", type=int, default=None,
         help="Tageslimit-Override fuer dokumentierte Sonderfreigaben (z. B. kuratierter Seed-Batch); wirkt nur zusammen mit --approved-by",
+    )
+    parser.add_argument(
+        "--max-count", type=int, default=None,
+        help="Obergrenze der Veroeffentlichungen DIESES Laufs (0/ausgelassen = unbegrenzt). "
+             "Der Rest bleibt reviewed+qa_passed und nimmt der naechste Lauf oder der "
+             "Watchdog-Publish — Schutz gegen Auto-Publish-Schritte, die sonst Stunden "
+             "laufen und am Job-Timeout komplett verfallen (Befund 02.10.2026: "
+             "Publish-Schritt 4 h am Stueck, Lauf 36954530333 kippte bei 5h50m). "
+             "Tagesdeckel --daily-limit bleibt unberuehrt.",
     )
     args = parser.parse_args(argv)
 
@@ -364,7 +384,11 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     store = CandidateStore(build_s3_client(), _pipeline_bucket())
     qids = list(args.qid or [])
     if args.command == "publish" and args.all_reviewed:
-        qids += [qid for qid in select_reviewed_qids(store) if qid not in qids]
+        qids += cap_reviewed_pool(
+            [qid for qid in select_reviewed_qids(store) if qid not in qids],
+            max_count=args.max_count,
+            already_picked=len(qids),
+        )
     live_slugs = fetch_live_slugs() if args.command == "publish" else set()
     # Sicherheitsnetz (Vorfall 24.09.2026): Index leer, obwohl live Profile
     # existieren => Index unvollstaendig — publish wuerde die Live-Profile
