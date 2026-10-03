@@ -1,0 +1,91 @@
+{
+ "id": "cisa-kev-042bd106b079ac18",
+ "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-, vulnerability, exploit, security, patch)",
+  "relevance_score": 3
+ },
+ "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-09-22. Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+ "key_points": [
+  "Aktiv ausgenutzte Schwachstelle (CISA KEV)",
+  "Betroffen: Arista VeloCloud Orchestrator",
+  "Bekannt seit 2026-09-22",
+  "Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host",
+  "Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator"
+ ],
+ "source": {
+  "id": "cisa-kev",
+  "name": "CISA Known Exploited Vulnerabilities",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+ "url_normalized": "https://cisa.gov/known-exploited-vulnerabilities-catalog",
+ "publisher": "CISA (US-Behörde)",
+ "published": "2026-09-22",
+ "retrieved": "2026-09-22T23:29:35Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-22T23:29:43Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)",
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-09-22. Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-22T23:30:12Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+  }
+ ],
+ "status": "used_in_answer",
+ "_rag_flags": []
+}

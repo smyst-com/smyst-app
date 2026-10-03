@@ -1,0 +1,74 @@
+{
+ "id": "google-ai-blog-13d62ca6fcfd55d7",
+ "title": "Co-creating the future of fashion with Google",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "Google worked side-by-side with designers Jane Wade and Sergio Hudson to custom-design Google Flow tools to prep for NYFW.",
+ "key_points": [
+  "Google worked side-by-side with designers Jane Wade and Sergio Hudson to custom-design Google Flow tools to prep for NYFW."
+ ],
+ "source": {
+  "id": "google-ai-blog",
+  "name": "Google AI & DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://blog.google/innovation-and-ai/technology/ai/google-flow-fashion-week/",
+ "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/google-flow-fashion-week",
+ "publisher": "Google AI & DeepMind Blog (RSS)",
+ "published": "2026-09-18",
+ "retrieved": "2026-09-22T23:29:39Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "allgemein",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-22T23:29:43Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Co-creating the future of fashion with Google",
+    "summary": "Google worked side-by-side with designers Jane Wade and Sergio Hudson to custom-design Google Flow tools to prep for NYFW."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  }
+ ],
+ "status": "archiviert-als-abgelehnt"
+}

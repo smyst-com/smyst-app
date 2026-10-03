@@ -1,0 +1,147 @@
+{
+ "day": "2026-09-28",
+ "generated_at": "2026-09-28T18:43:44Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-3246ce47dc55d3e6",
+     "title": "itamarstahl/lment-1b-control-2e-b131k",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/itamarstahl/lment-1b-control-2e-b131k"
+    },
+    {
+     "id": "hf-models-9824b252a51cc9d3",
+     "title": "hammamwahab/jev-model-demo",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/hammamwahab/jev-model-demo"
+    },
+    {
+     "id": "hf-models-1223661ef0ccbeff",
+     "title": "hammamwahab/jev-agnews-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/hammamwahab/jev-agnews-lora"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-3246ce47dc55d3e6",
+     "title": "itamarstahl/lment-1b-control-2e-b131k",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/itamarstahl/lment-1b-control-2e-b131k"
+    },
+    {
+     "id": "hf-models-9824b252a51cc9d3",
+     "title": "hammamwahab/jev-model-demo",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/hammamwahab/jev-model-demo"
+    },
+    {
+     "id": "hf-models-1223661ef0ccbeff",
+     "title": "hammamwahab/jev-agnews-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/hammamwahab/jev-agnews-lora"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-216d56bba26ca458",
+     "title": "The Lenfest Institute grows landmark program with expanded OpenAI support",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/lenfest-ai-collaborative-expansion"
+    },
+    {
+     "id": "hf-models-b54b301a924aec8a",
+     "title": "blackpirates/SmolLM2-135M-Reasoning",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/blackpirates/SmolLM2-135M-Reasoning"
+    },
+    {
+     "id": "hf-models-f0d361a3d8241dee",
+     "title": "ZeyuLing/HFTrainer-TinyLlama-1.1B-Chat",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ZeyuLing/HFTrainer-TinyLlama-1.1B-Chat"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Liste veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-3246ce47dc55d3e6",
+    "hf-models-9824b252a51cc9d3",
+    "hf-models-1223661ef0ccbeff"
+   ],
+   "context_entry_ids": [
+    "hf-models-3246ce47dc55d3e6",
+    "hf-models-9824b252a51cc9d3",
+    "hf-models-1223661ef0ccbeff"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine offiziellen Informationen über neue Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die angegebenen Quellen beinhalten keine direkte Bezugspunkte zu solchen Unternehmen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-216d56bba26ca458",
+    "hf-models-b54b301a924aec8a",
+    "hf-models-f0d361a3d8241dee"
+   ],
+   "context_entry_ids": [
+    "openai-news-216d56bba26ca458",
+    "hf-models-b54b301a924aec8a",
+    "hf-models-f0d361a3d8241dee"
+   ]
+  }
+ ]
+}

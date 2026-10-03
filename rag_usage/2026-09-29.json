@@ -1,0 +1,130 @@
+{
+ "day": "2026-09-29",
+ "generated_at": "2026-09-29T17:00:18Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-dac180a6ef97f681",
+     "title": "DuoNeural/DeepSeek-R1-Distill-Qwen-1.5B-GTAP-v3-Q4_K_M-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DuoNeural/DeepSeek-R1-Distill-Qwen-1.5B-GTAP-v3-Q4_K_M-GGUF"
+    },
+    {
+     "id": "hf-models-135f7f3bd1e013fc",
+     "title": "arefehRajabian/qwen3_8b_fp8_finetune_base_model_16bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/arefehRajabian/qwen3_8b_fp8_finetune_base_model_16bit"
+    },
+    {
+     "id": "hf-models-15bab057c9a495f1",
+     "title": "smutuvi/sikia-interviewer-lora-v4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/smutuvi/sikia-interviewer-lora-v4"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-a19058831da35381",
+     "title": "maksymK4198/bd697b9dbe117323",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/maksymK4198/bd697b9dbe117323"
+    },
+    {
+     "id": "hf-models-15bab057c9a495f1",
+     "title": "smutuvi/sikia-interviewer-lora-v4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/smutuvi/sikia-interviewer-lora-v4"
+    },
+    {
+     "id": "hf-models-476574139c74a8d0",
+     "title": "ahmadsy/tashkeel-nano-4p5m",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ahmadsy/tashkeel-nano-4p5m"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-98c3a413d068013f",
+     "title": "nickkats1/qwen-instruct-chat",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/nickkats1/qwen-instruct-chat"
+    },
+    {
+     "id": "hf-models-786f4953e5fb5326",
+     "title": "m-b-edw/llama-3.2-3b-sft-indonesian",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/m-b-edw/llama-3.2-3b-sft-indonesian"
+    },
+    {
+     "id": "hf-models-1275fa000ddaecd8",
+     "title": "DeV-ZEr0/highontherapy-native",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DeV-ZEr0/highontherapy-native"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit der letzten Fragezeitung (2026-09-29) veröffentlicht wurden. Die bisherigen Modelle sind:\n\n1. maksymK4198/bd697b9dbe117323\n2. smutuvi/sikia-interviewer-lora-v4\n3. ahmadsy/tashkeel-nano-4p5m\n4. nickkats1/qwen-instruct-chat\n5. m-b-edw/llama-3.2-3b-sft-indonesian\n\nDiese Modelle sind auf Hugging Face veröffentlicht und haben keine Downloads oder Likes. Es gibt keine neuen offenen KI-Modelle in der Zeit seit der letzten Fragezeitung.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-a19058831da35381",
+    "hf-models-15bab057c9a495f1",
+    "hf-models-476574139c74a8d0"
+   ],
+   "context_entry_ids": [
+    "hf-models-a19058831da35381",
+    "hf-models-15bab057c9a495f1",
+    "hf-models-476574139c74a8d0"
+   ]
+  }
+ ]
+}
