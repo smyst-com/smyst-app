@@ -77,9 +77,25 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          aws s3 cp s3://smyst-memories/pipeline/published/index.json pipeline-published-index.json \
-            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
-            || { if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; else cat s3-index-err.log; echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."; exit 1; fi; }
+          # 04.10.2026, Befund Lauf 37204632511: 'Contents of stored object ... did
+          # not match expected ETag' — ein Publish-Lauf (seit den Laufdeckeln #908/
+          #910 fast kontinuierlich aktiv) hat den 245-MiB-Index NEU GESCHRIEBEN,
+          # waehrend dieser Download lief. Kein Dauerzustand: kurze Pause und nochmal.
+          for versuch in 1 2 3 4 5; do
+            aws s3 cp s3://smyst-memories/pipeline/published/index.json pipeline-published-index.json \
+              --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
+              && break
+            if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then
+              echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; break
+            fi
+            if grep -q "did not match expected ETag" s3-index-err.log && [ "$versuch" -lt 5 ]; then
+              echo "Index wurde waehrend des Downloads neu geschrieben (Publish-Lauf aktiv) — Versuch $versuch, warte 45 s."
+              sleep 45; continue
+            fi
+            cat s3-index-err.log
+            echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."
+            exit 1
+          done
 
       # FAQ-Antworten pro Profil (SEO, 21.08.): die QA der Autopilot-Pipeline
       # erzeugt fuer jedes Profil fuenf individuelle Antworten (bisher nur
