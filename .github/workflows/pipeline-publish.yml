@@ -30,6 +30,10 @@ on:
         description: "Optional: kommagetrennte QIDs — nur diese publizieren"
         required: false
         default: ""
+      max_count:
+        description: "Laufdeckel: max. Veroeffentlichungen DIESES Laufs; der Rest bleibt reviewed+qa_passed und nimmt der naechste Dispatch (04.10. gegen 150-min-Timeout-Opfer)"
+        required: false
+        default: "500"
 
 permissions:
   contents: read
@@ -79,8 +83,18 @@ jobs:
                 --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
             done
           else
+            # --max-count (Default 500, 04.10.2026): Watchdog-Publish-Laeufe
+            # starben wiederholt am 150-min-Job-Timeout (03.10.: 4 von 8
+            # cancelled, je exakt 150 min) — derselbe Befund wie PR #908 fuer
+            # die Kette. 500 x ~13 s = ~108 min, sicher unter dem Limit; der
+            # Rest bleibt reviewed+qa_passed und nimmt der naechste Dispatch
+            # (~15 min Spaeter). Tagesdeckel und QA-Gate unveraendert.
+            MAX_COUNT_ARGS=""
+            if [ -n "${{ inputs.max_count }}" ]; then
+              MAX_COUNT_ARGS="--max-count ${{ inputs.max_count }}"
+            fi
             python -m app.workers.publish_profiles publish --all-reviewed \
-              --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS
+              --approved-by "${{ inputs.approved_by }}" --enabled $LIMIT_ARGS $MAX_COUNT_ARGS
           fi
 
       # Tagesstatistik (14.09.2026): Nach JEDEM Publish in der Run-Summary
