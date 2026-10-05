@@ -21,7 +21,7 @@ jobs:
   build:
     name: Build static site
     runs-on: ubuntu-latest
-    timeout-minutes: 300  # 29.08.: 60 -> 300 — der Union-Restore (18.875 Profile) spiegelt tausende Bilder im Merge-Schritt
+    timeout-minutes: 350  # 05.10.: 300 -> 350 — Bau 3h43m + volle Pillow-Verdichtung (~30 min) + 8-GB-Artefakt-Upload brauchen Luft
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
@@ -139,32 +139,22 @@ jobs:
             || { echo "::error::Bild-Cache nicht lesbar (z.B. AccessDenied) — Abbruch, sonst gehen Profilseiten ohne gespiegelte Bilder live (leerer Prefix ist fuer sync kein Fehler)."; exit 1; }
           echo "Bilder im Cache: $(ls -1 dist/public/profile-images 2>/dev/null | wc -l)"
 
-      # Bild-Cache verdichten (04.10.2026): Das Pages-Artefakt ueberschritt
-      # erstmals die HARTE 10-GB-Grenze von GitHub Pages — der Deploy-Step
-      # lehnte es seit 03.10. 22:11 UTC viermal ab ("total size is less than
-      # 10GB"), die Website zeigte keine neuen Profile mehr. Commons-Originale
-      # sind oft mehrere MB gross; fuer Profilkarten und Profilseiten reichen
-      # 900 px Randlaenge. Gleiche Dateien, gleiche URLs — nur kleiner. Nur
-      # Dateien >150 kB werden angefasst (bereits verdichtete ueberspringt
-      # find in Sekunden); der Actions-Cache sichert den verdichteten Stand,
-      # Folgelaefe verdichten nur die neu gesyncten Bilder.
-      - name: Shrink oversized profile images (10-GB Pages limit)
+      # Bild-Cache verdichten (05.10.2026, nach Wirksamkeits-Beweis):
+      # Das Pages-Artefakt (Bilder ~8,2-8,4 GB bei ~79k Profilen) wurde vom
+      # Deploy-Step weiterhin abgelehnt ("total size is less than 10GB") —
+      # nicht Einzel-Riesen, sondern die MASSE wiegt (Durchschnitt ~100 kB
+      # nach der alten 512-px-Diaet). Der erste Versuch (PR #911 mit
+      # ImageMagick) war ein No-op: magick/convert sind auf ubuntu-latest
+      # NICHT vorinstalliert (gleiche Falle wie Deploy 32432444735). Jetzt
+      # Pillow mit 8 Prozessen: JPEGs >40 kB auf 512 px / Qualitaet 65 —
+      # Ersetzung nur, wenn das Ergebnis KLEINER ist (idempotent, keine
+      # sichtbare Design-Aenderung); PNG und Klein-Dateien bleiben unberuehrt.
+      # Der Actions-Cache (profile-images-*) sichert den verdichteten Stand,
+      # Folgelaefe verdichten nur Neuzugaenge.
+      - name: Shrink profile images below Pages limit (Pillow)
         run: |
-          BEFORE=$(du -sm dist/public/profile-images | cut -f1)
-          find dist/public/profile-images -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \) -size +150k -print0 \
-            | xargs -0 -P 8 -I{} bash -c '
-                img="{}"; tmp="${img}.shrunk.$$"
-                if (magick "$img" -resize "900x900>" -quality 78 "$tmp" 2>/dev/null \
-                     || convert "$img" -resize "900x900>" -quality 78 "$tmp" 2>/dev/null) \
-                   && [ -s "$tmp" ] && [ "$(stat -c%s "$tmp")" -lt "$(stat -c%s "$img")" ]; then
-                  mv "$tmp" "$img"
-                else
-                  rm -f "$tmp"
-                fi' \
-            || true
-          AFTER=$(du -sm dist/public/profile-images | cut -f1)
-          echo "Bilder verdichtet: ${BEFORE} MB -> ${AFTER} MB"
-          du -sm dist | cut -f1 | sed 's/^/dist gesamt: /'
+          python3 -m pip install --quiet --disable-pip-version-check Pillow
+          python3 scripts/shrink_profile_images.py
 
       # Ausgemusterte Altbilder (Freigabe Adam 06.08.2026): euklid.jpg zeigte
       # das Rathaus von Euclid/Ohio, julius-caesar.jpg hatte ungeklaerte
