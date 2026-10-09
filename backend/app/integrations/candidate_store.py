@@ -289,7 +289,7 @@ class CandidateStore:
         return documents
 
     def documents_by_status_progressive(
-        self, status: str, *, limit: int, max_gets: int = 5000,
+        self, status: str, *, limit: int, max_gets: int = 15000,
         initial_window: int | None = None,
     ) -> list[dict]:
         """Bis `limit` echte Dokumente eines Status — graebt durch stale Marker.
