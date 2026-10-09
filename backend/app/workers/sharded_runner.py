@@ -101,7 +101,12 @@ def select_shard_documents(
     # als der alte Voll-Scan ueber alle Shards.
     documents: list[dict] = []
     window = max(limit, 1) * (FAIRNESS_OVERSAMPLE if fairness else 1)
-    max_gets = min(len(qids), max(window, 2500))
+    # 09.10.2026: 2500 -> 7500 — die Leichenquote in den Marker-Listen
+    # wuchs mit dem Bestand (131k candidate/107k generated): die Shards fanden
+    # nur noch 0-3 echte Treffer je Stufe, QA und Publish gingen gegen Null
+    # (Lauf-Beweis 09.10.: published_today 845 bei 88k reviewed). Dreifaches
+    # Fenster ≈ dreifalte Treffer je Shard-Job gegen ~+10 min Laufzeit.
+    max_gets = min(len(qids), max(window, 7500))
     cursor = 0
     while len(documents) < limit and cursor < len(qids) and max_gets > 0:
         batch = qids[cursor : cursor + window]
