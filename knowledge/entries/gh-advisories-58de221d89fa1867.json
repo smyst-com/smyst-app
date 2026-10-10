@@ -1,0 +1,83 @@
+{
+ "id": "gh-advisories-58de221d89fa1867",
+ "title": "GHSA-9h23-53f4-q947: Nginx UI: Bundled reverse proxy can bypass IP allowlists and enable shared login lockout",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/0xJacky/Nginx-UI. CVE: CVE-2026-107804. Zusammenfassung: Nginx UI: Bundled reverse proxy can bypass IP allowlists and enable shared login lockout",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium",
+  "Betroffenes Paket: github.com/0xJacky/Nginx-UI",
+  "CVE: CVE-2026-107804",
+  "Zusammenfassung: Nginx UI: Bundled reverse proxy can bypass IP allowlists and enable shared login lockout"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-9h23-53f4-q947",
+ "url_normalized": "https://github.com/advisories/GHSA-9h23-53f4-q947",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-09",
+ "retrieved": "2026-10-10T16:31:42Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-10T16:31:47Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-9h23-53f4-q947: Nginx UI: Bundled reverse proxy can bypass IP allowlists and enable shared login lockout",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/0xJacky/Nginx-UI. CVE: CVE-2026-107804. Zusammenfassung: Nginx UI: Bundled reverse proxy can bypass IP allowlists and enable shared login lockout"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

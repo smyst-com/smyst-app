@@ -1,0 +1,130 @@
+{
+ "day": "2026-09-27",
+ "generated_at": "2026-09-27T15:47:28Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-7d7a6109aa6e68fd",
+     "title": "ollama/ollama: Release v0.34.0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.34.0"
+    },
+    {
+     "id": "hf-models-669e6ec5cef580e3",
+     "title": "OceanLabs/Ocean-Horizon-3.7B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/OceanLabs/Ocean-Horizon-3.7B"
+    },
+    {
+     "id": "hf-models-21ad68cc70318d1b",
+     "title": "bcckfdn/cevher-test-5.5-decay-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bcckfdn/cevher-test-5.5-decay-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-26643e4733f2c453",
+     "title": "LouieR09112/WikiAI1.5B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/LouieR09112/WikiAI1.5B"
+    },
+    {
+     "id": "hf-models-669e6ec5cef580e3",
+     "title": "OceanLabs/Ocean-Horizon-3.7B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/OceanLabs/Ocean-Horizon-3.7B"
+    },
+    {
+     "id": "hf-models-782a87a055ca0f64",
+     "title": "ArdaAydogdu/turklm-443m-sft",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ArdaAydogdu/turklm-443m-sft"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-7d7a6109aa6e68fd",
+     "title": "ollama/ollama: Release v0.34.0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.34.0"
+    },
+    {
+     "id": "hf-models-9eb8e520e1bcfd69",
+     "title": "LyNxFliX/nietzsche-gpt-15m",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/LyNxFliX/nietzsche-gpt-15m"
+    },
+    {
+     "id": "hf-models-98c3a413d068013f",
+     "title": "nickkats1/qwen-instruct-chat",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/nickkats1/qwen-instruct-chat"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die von mir bekannter Name veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-26643e4733f2c453",
+    "hf-models-669e6ec5cef580e3",
+    "hf-models-782a87a055ca0f64"
+   ],
+   "context_entry_ids": [
+    "hf-models-26643e4733f2c453",
+    "hf-models-669e6ec5cef580e3",
+    "hf-models-782a87a055ca0f64"
+   ]
+  }
+ ]
+}

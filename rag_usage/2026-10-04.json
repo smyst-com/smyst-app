@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-04",
+ "generated_at": "2026-10-04T15:59:36Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-14b75f3eae043bbf",
+     "title": "queensone/stockforge-router",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/queensone/stockforge-router"
+    },
+    {
+     "id": "hf-models-056b642e6a60fd21",
+     "title": "Davide531/KyroLM-V2-Experimental",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Davide531/KyroLM-V2-Experimental"
+    },
+    {
+     "id": "hf-models-f61f370d1ee37c49",
+     "title": "winterdewdev/anlp-a2-optimizers-mars",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/winterdewdev/anlp-a2-optimizers-mars"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-14b75f3eae043bbf",
+     "title": "queensone/stockforge-router",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/queensone/stockforge-router"
+    },
+    {
+     "id": "hf-models-056b642e6a60fd21",
+     "title": "Davide531/KyroLM-V2-Experimental",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Davide531/KyroLM-V2-Experimental"
+    },
+    {
+     "id": "hf-models-ed051e6a98d45a0e",
+     "title": "bench-labs/cagliostro-v3.5",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bench-labs/cagliostro-v3.5"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-f61f370d1ee37c49",
+     "title": "winterdewdev/anlp-a2-optimizers-mars",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/winterdewdev/anlp-a2-optimizers-mars"
+    },
+    {
+     "id": "hf-models-dbf308a18ae369b9",
+     "title": "rafmacalaba/lfm2.5-350M-focus-metadata",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/rafmacalaba/lfm2.5-350M-focus-metadata"
+    },
+    {
+     "id": "hf-models-334467e445b2fdb7",
+     "title": "Efso/Nemotron-3-Nano-30B-A3B-GR",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Efso/Nemotron-3-Nano-30B-A3B-GR"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine offenen KI-Modelle, die in der Zeit seit der letzten Fragezeit (2026-10-04) veröffentlicht wurden. Die neuesten offenen KI-Modelle, die ich habe, sind aus der Liste [1] und [2] und haben keine Publikationen in dieser Zeit.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-14b75f3eae043bbf",
+    "hf-models-056b642e6a60fd21",
+    "hf-models-ed051e6a98d45a0e"
+   ],
+   "context_entry_ids": [
+    "hf-models-14b75f3eae043bbf",
+    "hf-models-056b642e6a60fd21",
+    "hf-models-ed051e6a98d45a0e"
+   ]
+  }
+ ]
+}

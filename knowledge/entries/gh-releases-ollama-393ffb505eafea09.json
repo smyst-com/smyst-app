@@ -1,0 +1,105 @@
+{
+ "id": "gh-releases-ollama-393ffb505eafea09",
+ "title": "ollama/ollama: Release v0.40.2",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, llama)",
+  "relevance_score": 2
+ },
+ "summary": "Offizielle Release-Notes (v0.40.2): ## Model upgrades Models downloaded with earlier versions of Ollama are upgraded in the background the first time you run them, for better performance and compatibility when running on llama.cpp. To make downgrading safe, Ollama keeps the original copy as a backup, so upgraded models are temporarily kept on disk. A future release will remove these backups automatically. To remove backed up models now (requires `jq`): ```shell curl -s localhost:11434/api/tags | jq -r '.models[].name' | while read -r m; do curl -s localhost:11434/api/show -d \"{\\\"model\\\":\\\"$m\\\"}\" | jq -r \\ 'select(any(.manifests[]?; .runner == \"llamacpp\")) | .manifests[] | select(.runner == \"ggml\") | .digest' done | sort -u | xargs -n1 ollama rm ``` This only deletes the backups. If you later downgrade to a version older than 0.40, you'll need to re-pull those models. **Other changes** * `ollama list` no longer shows duplicate entries for upgraded models by @dhiltgen in https://github.com/ollama/ollama/pull/18874 * `ollam",
+ "key_points": [
+  "Offizielle Release-Notes (v0.40.2): ## Model upgrades Models downloaded with earlier versions of Ollama are upgraded in the background the first time you run them, for better performance and compatibility when running on llama.cpp",
+  "To make downgrading safe, Ollama keeps the original copy as a backup, so upgraded models are temporarily kept on disk",
+  "A future release will remove these backups automatically",
+  "To remove backed up models now (requires `jq`): ```shell curl -s localhost:11434/api/tags | jq -r '.models[].name' | while read -r m; do curl -s localhost:11434/api/show -d \"{\\\"model\\\":\\\"$m\\\"}\" | jq -r \\ 'select(any(.manifests[]?; .runner == \"llamacpp\")) | .manifests[] | select(.runner == \"ggml\") | .digest' done | sort -u | xargs -n1 ollama rm ``` This only deletes the backups",
+  "If you later downgrade to a version older than 0.40, you'll need to re-pull those models"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.40.2",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.40.2",
+ "publisher": "GitHub Releases",
+ "published": "2026-10-08",
+ "retrieved": "2026-10-09T11:28:47Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-09T11:28:49Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.40.2",
+    "summary": "Offizielle Release-Notes (v0.40.2): ## Model upgrades Models downloaded with earlier versions of Ollama are upgraded in the background the first time you run them, for better performance and compatibility when running on llama.cpp. To make downgrading safe, Ollama keeps the original copy as a backup, so upgraded models are temporarily kept on disk. A future release will remove these backups automatically. To remove backed up models now (requires `jq`): ```shell curl -s localhost:11434/api/tags | jq -r '.models[].name' | while read -r m; do curl -s localhost:11434/api/show -d \"{\\\"model\\\":\\\"$m\\\"}\" | jq -r \\ 'select(any(.manifests[]?; .runner == \"llamacpp\")) | .manifests[] | select(.runner == \"ggml\") | .digest' done | sort -u | xargs -n1 ollama rm ``` This only deletes the backups. If you later downgrade to a version older than 0.40, you'll need to re-pull those models. **Other changes** * `ollama list` no longer shows duplicate entries for upgraded models by @dhiltgen in https://github.com/ollama/ollama/pull/18874 * `ollam"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-09T11:28:49Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-09T11:28:49Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-09T11:28:49Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-09T11:28:49Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-09T17:32:31Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-10T10:49:06Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-10T16:31:47Z",
+ "confirmations": 3
+}

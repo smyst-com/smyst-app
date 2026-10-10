@@ -1,0 +1,140 @@
+{
+ "id": "hf-models-8da590c790deafe4",
+ "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_ro",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, llm, instruct, modell, llama)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: peft."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr",
+ "url_normalized": "https://huggingface.co/GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr",
+ "publisher": "Hugging Face",
+ "published": "2026-10-08",
+ "retrieved": "2026-10-08T18:00:15Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-cfe3f7106420cb2d",
+  "hf-models-2977c1169033d72f",
+  "hf-models-e08128a985074b8c"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-08T18:00:24Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-08T18:00:24Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr"
+   },
+   "current": {
+    "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_phrase_de"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-10-08T18:00:24Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_phrase_de"
+   },
+   "current": {
+    "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_dependency_en"
+   }
+  },
+  {
+   "version": 4,
+   "date": "2026-10-10T16:31:47Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_dependency_en"
+   },
+   "current": {
+    "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_ro"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-10T16:31:47Z",
+ "confirmations": 3
+}

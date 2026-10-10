@@ -1,0 +1,115 @@
+{
+ "id": "gh-releases-ollama-81a0b4d6f86dd623",
+ "title": "ollama/ollama: Release v0.40.1",
+ "topic": {
+  "category": "infrastruktur",
+  "reason": "Infrastruktur, Frameworks, RAG- und Agentensysteme (Treffer: ollama, mlx, server)",
+  "relevance_score": 3
+ },
+ "summary": "Offizielle Release-Notes (v0.40.1): ## What's Changed * server: proxy cloud usage and balance APIs by @drifkin in https://github.com/ollama/ollama/pull/18829 * llama: fix clef head reads past 2GiB on windows by @Gigrise in https://github.com/ollama/ollama/pull/18777 * cmd: remove account step from CLI onboarding by @hoyyeva in https://github.com/ollama/ollama/pull/18826 * manifest: avoid symlinks on Windows by @dhiltgen in https://github.com/ollama/ollama/pull/18852 * docs: fix 6 dead links in README community integrations list by @aniketkrs in https://github.com/ollama/ollama/pull/18814 * docs: fix broken download links in app README by @chenlichao in https://github.com/ollama/ollama/pull/18233 * mlx: drop carried metal residency patch now that it is upstream by @dhiltgen in https://github.com/ollama/ollama/pull/18854 ## New Contributors * @Gigrise made their first contribution in https://github.com/ollama/ollama/pull/18777 * @aniketkrs made their first contribution in https://github.com/ollama/ollama/pull/18814 * @chen",
+ "key_points": [
+  "Offizielle Release-Notes (v0.40.1): ## What's Changed * server: proxy cloud usage and balance APIs by @drifkin in https://github.com/ollama/ollama/pull/18829 * llama: fix clef head reads past 2GiB on windows by @Gigrise in https://github.com/ollama/ollama/pull/18777 * cmd: remove account step from CLI onboarding by @hoyyeva in https://github.com/ollama/ollama/pull/18826 * manifest: avoid symlinks on Windows by @dhiltgen in https://github.com/ollama/ollama/pull/18852 * docs: fix 6 dead links in README community integrations list by @aniketkrs in https://github.com/ollama/ollama/pull/18814 * docs: fix broken download links in app README by @chenlichao in https://github.com/ollama/ollama/pull/18233 * mlx: drop carried metal residency patch now that it is upstream by @dhiltgen in https://github.com/ollama/ollama/pull/18854 ## New Contributors * @Gigrise made their first contribution in https://github.com/ollama/ollama/pull/18777 * @aniketkrs made their first contribution in https://github.com/ollama/ollama/pull/18814 * @chen"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.40.1",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.40.1",
+ "publisher": "GitHub Releases",
+ "published": "2026-10-07",
+ "retrieved": "2026-10-08T11:38:51Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-releases-llamacpp-90d1eba564bdc382"
+ ],
+ "tags": [
+  "infrastruktur",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-08T11:38:53Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.40.1",
+    "summary": "Offizielle Release-Notes (v0.40.1): ## What's Changed * server: proxy cloud usage and balance APIs by @drifkin in https://github.com/ollama/ollama/pull/18829 * llama: fix clef head reads past 2GiB on windows by @Gigrise in https://github.com/ollama/ollama/pull/18777 * cmd: remove account step from CLI onboarding by @hoyyeva in https://github.com/ollama/ollama/pull/18826 * manifest: avoid symlinks on Windows by @dhiltgen in https://github.com/ollama/ollama/pull/18852 * docs: fix 6 dead links in README community integrations list by @aniketkrs in https://github.com/ollama/ollama/pull/18814 * docs: fix broken download links in app README by @chenlichao in https://github.com/ollama/ollama/pull/18233 * mlx: drop carried metal residency patch now that it is upstream by @dhiltgen in https://github.com/ollama/ollama/pull/18854 ## New Contributors * @Gigrise made their first contribution in https://github.com/ollama/ollama/pull/18777 * @aniketkrs made their first contribution in https://github.com/ollama/ollama/pull/18814 * @chen"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-08T11:38:53Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-08T11:38:53Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-08T11:38:53Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-08T11:38:53Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-09T11:28:49Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-09T17:32:31Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-10T10:49:06Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-10T16:31:47Z",
+ "confirmations": 5
+}
