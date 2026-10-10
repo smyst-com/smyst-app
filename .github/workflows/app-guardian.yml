@@ -65,7 +65,11 @@ jobs:
             fail "Keine Profil-URL in der Sitemap gefunden"
           fi
           # 6) Live-Chat (Backend-Antwort mit KI-Kennzeichnung)
-          CHAT=$(curl -sf --max-time 30 -X POST https://api.smyst.com/api/v1/chat/messages \
+          # 60 s statt 30 s (Fix 10.10.2026): smyst_llm antwortet auf der
+          # 2-Zeabur-Kernen real in 30-40 s — das 30-s-Fenster riss jedes
+          # Mal ab und der Guardian alamierte falsch ("Live-Chat antwortet
+          # nicht"), obwohl der Chat funktioniert.
+          CHAT=$(curl -sf --max-time 60 -X POST https://api.smyst.com/api/v1/chat/messages \
             -H "Content-Type: application/json" \
             -d "{\"chatId\":\"guardian-smoke\",\"message\":\"Hallo, wer bist du?\",\"twinId\":\"$FIRST_SLUG\"}")
           if [ -z "$CHAT" ]; then fail "Live-Chat antwortet nicht"; else
@@ -95,22 +99,30 @@ jobs:
         if: steps.checks.outputs.status == 'down'
         run: |
           gh label create app-outage --color b60205 --description "App-Guardian: Gesamtpruefung fehlgeschlagen" 2>/dev/null || true
-          TITLE="🚨 App-Guardian: App nicht einwandfrei"
+          # Tages-Rotation (Fix 10.10.2026): GitHub verweigert Kommentare auf
+          # Issues mit >2500 Kommentaren (GraphQL-Limit) — das fruehere
+          # Dauer-Issue (#808) erreichte das Limit und der Alarm-Kanal starb
+          # still: Jeder Alarm-Lauf schlug am Kommentieren fehl. Jetzt gibt
+          # es pro UTC-Kalendertag ein eigenes Issue; laeuft auch das voll,
+          # greift der create-Fallback.
+          DAY=$(date -u '+%F')
+          TITLE="🚨 App-Guardian: App nicht einwandfrei ($DAY)"
           BODY="$(date -u '+%F %H:%M') UTC — Pruefung fehlgeschlagen. Details im Lauf-Log."
-          ISSUE=$(gh issue list -R "$REPO" --search "$TITLE in:title" --state open --json number --jq '.[0].number')
+          ISSUE=$(gh issue list -R "$REPO" --label app-outage --state open --json number,title --jq ".[] | select(.title | contains(\"($DAY)\")) | .number" | head -1)
           if [ -z "$ISSUE" ]; then
             gh issue create -R "$REPO" -t "$TITLE" -l app-outage -b "$BODY"
           else
-            gh issue comment -R "$REPO" "$ISSUE" -b "$BODY"
+            gh issue comment -R "$REPO" "$ISSUE" -b "$BODY" \
+              || gh issue create -R "$REPO" -t "$TITLE" -l app-outage -b "$BODY"
           fi
       - name: "Entwarnung bei Gesundung"
         if: steps.checks.outputs.status == 'up'
         run: |
-          TITLE="🚨 App-Guardian: App nicht einwandfrei"
-          ISSUE=$(gh issue list -R "$REPO" --search "$TITLE in:title" --state open --json number --jq '.[0].number')
-          if [ -n "$ISSUE" ]; then
+          # Schliesst ALLE offenen app-outage-Issues (die Tages-Rotation kann
+          # mehrere anlegen, z. B. wenn ein Ausfall ueber Mitternacht reicht).
+          for ISSUE in $(gh issue list -R "$REPO" --label app-outage --state open --json number --jq '.[].number'); do
             gh issue close -R "$REPO" "$ISSUE" -c "Entwarnung $(date -u '+%F %H:%M') UTC: Alle Checks grün."
-          fi
+          done
       - name: "Selbst-Takt halten (GitHub drosselt Crons — Muster pipeline-run PR #573)"
         if: always()
         timeout-minutes: 5
