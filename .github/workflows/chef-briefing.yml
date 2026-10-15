@@ -42,12 +42,15 @@ jobs:
           KAP=$(( PIPE_OK * 12 * 17 ))
 
           OFFENE_VORFAELLE=$(gh issue list --state open --json labels --jq '[.[] | .labels[]?.name] | unique | map(select(. != "cost-report" and . != "chef-briefing" and . != "slo-report" and . != "dependencies")) | length')
+          # Limit NICHT per '| head -10': head schliesst die Pipe frueh, gh stirbt
+          # dabei abhaengig vom Timing an SIGPIPE (exit 141) und pipefail laesst
+          # den Schritt failen (Vorfaelle 12.10./14.10.). Begrenzung daher in jq.
           VORFALL_LISTE=$(gh issue list --state open -L 30 --json number,title,labels \
-            --jq '.[] | select([.labels[]?.name] | (inside(["cost-report","chef-briefing","slo-report","dependencies"]) | not)) | "- #\(.number) \(.title)"' | head -10)
+            --jq '[.[] | select([.labels[]?.name] | (inside(["cost-report","chef-briefing","slo-report","dependencies"]) | not))] | .[:10][] | "- #\(.number) \(.title)"')
 
           UP_PCT="n/a"
           if [ "${UP_ALL:-0}" != "0" ] 2>/dev/null && [ -n "${UP_ALL:-}" ]; then
-            UP_PCT=$(jq -n --argjson o "${UP_OK:-0}" --argjson a "$UP_ALL" '100 * $o / $a' | xargs printf '%.1f')
+            UP_PCT=$(printf '%.1f' "$(jq -n --argjson o "${UP_OK:-0}" --argjson a "$UP_ALL" '100 * $o / $a')")
           fi
 
           {
