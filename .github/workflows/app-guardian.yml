@@ -53,9 +53,22 @@ jobs:
           if [ -z "$TTS" ]; then fail "TTS /api/tts/voices nicht erreichbar"; else
             echo "$TTS" | grep -q '"ready": *true' || fail "TTS nicht ready"
           fi
-          # 4) Sitemap-Wachstum (stillen Schwund erkennen)
-          T_COUNT=$(curl -sf --max-time 15 https://smyst.com/sitemap.xml | grep -c "<loc>https://smyst.com/t/")
-          [ "${T_COUNT:-0}" -gt 1000 ] || fail "Sitemap: nur ${T_COUNT:-0} Live-Profile (Soll > 1000 — stiller Schwund?)"
+          # 4) Live-Profilbestand (stillen Schwund erkennen).
+          # Zaehlbasis Katalog + Sitemap-Chunks: Seit dem Sitemap-Chunking
+          # (14.09.2026) liegen die Pipeline-URLs in sitemap-pipeline-<n>.xml,
+          # die Haupt-Sitemap enthaelt nur noch die ~100 kuratierten /t/-URLs.
+          # Nur die Haupt-Sitemap zu zaehlen erzeugte dauerhafte Fehlalarme
+          # 'nur 100 Live-Profile' (Tages-Issues 10.-15.10.2026), obwohl
+          # ~96.000 Profile live waren. catalog.json (count = kuratiert +
+          # pipeline, vom Merge-Schritt geschrieben) ist die guenstige,
+          # vollstaendige Zaehlbasis; der Chunk-Existenz-Check sichert, dass
+          # robots.txt/Sitemap-Chunking nicht still zerbrochen ist.
+          T_COUNT=$(curl -sf --max-time 15 https://smyst.com/api/public/twins/catalog.json | grep -o '"count": *[0-9]*' | grep -o '[0-9]*$')
+          SM_PIPELINE=$(curl -sf --max-time 15 https://smyst.com/robots.txt | grep -c "^Sitemap: *https://smyst.com/sitemap-pipeline-")
+          [ "${T_COUNT:-0}" -gt 1000 ] || fail "Live-Profilbestand: nur ${T_COUNT:-0} (Soll > 1000 — stiller Schwund?)"
+          if [ "${T_COUNT:-0}" -gt 1000 ] && [ "${SM_PIPELINE:-0}" -eq 0 ]; then
+            fail "robots.txt nennt keine sitemap-pipeline-Chunks (Sitemap-Chunking zerbrochen?)"
+          fi
           # 5) Profilseite des ersten Live-Zwillings
           FIRST_SLUG=$(curl -sf --max-time 15 https://smyst.com/sitemap.xml | grep -oE "<loc>https://smyst.com/t/[^<]+" | head -1 | sed 's|.* /t/||; s|</loc>||; s|.*/t/||')
           if [ -n "$FIRST_SLUG" ]; then
