@@ -96,6 +96,24 @@ SOURCES: list[dict] = [
         "reason": "Offizielle Forschungs- und Produktankündigungen.",
     },
     {
+        "id": "gh-advisories",
+        "name": "GitHub Security Advisories (offiziell)",
+        "kind": "github",
+        "trust": 5,
+        "repo": "ADVISORIES",
+        "category": "sicherheit",
+        "reason": "Offizielle, geprüfte Sicherheitswarnungen des GitHub Advisory-Boards.",
+    },
+    {
+        "id": "arxiv-ml",
+        "name": "arXiv (cs.LG Machine Learning)",
+        "kind": "api",
+        "trust": 5,
+        "url": "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results={limit}",
+        "category": "forschung",
+        "reason": "Wissenschaftliche Neuerscheinungen zu Lernverfahren und Architekturen.",
+    },
+    {
         "id": "gh-releases-llamacpp",
         "name": "llama.cpp Releases (offizielle Änderungen)",
         "kind": "github",
@@ -362,7 +380,32 @@ def fetch_rss(source: dict, counter: dict, limit: int) -> list[dict]:
     return out
 
 
+def fetch_github_advisories(source: dict, counter: dict, limit: int) -> list[dict]:
+    """Offizielle GitHub Security Advisories (kostenlos, ohne Key)."""
+    data = http_get_json(f"https://api.github.com/advisories?per_page={min(limit, 10)}", counter)
+    if not isinstance(data, list):
+        return []
+    out = []
+    for a in data[:limit]:
+        ghsa = str(a.get("ghsa_id", "")).strip()
+        if not ghsa:
+            continue
+        published = str(a.get("published_at", ""))[:10] or None
+        title = f"{ghsa}: {a.get('summary', 'Sicherheitswarnung')[:140]}"
+        vuln = a.get("vulnerabilities") or [{}]
+        paket = (vuln[0].get("package") or {}).get("name", "unbekannt")
+        summary = (f"Offizielle GitHub-Sicherheitswarnung, Schweregrad {a.get('severity', '?')}. "
+                   f"Betroffenes Paket: {paket}. CVE: {a.get('cve_id') or 'keine'}. "
+                   f"Zusammenfassung: {a.get('summary', '')}")
+        out.append(make_finding(source, ghsa, title, summary,
+                                f"https://github.com/advisories/{ghsa}",
+                                "GitHub Advisory Board", published))
+    return out
+
+
 def fetch_github_releases(source: dict, counter: dict, limit: int) -> list[dict]:
+    if source.get("repo") == "ADVISORIES":
+        return fetch_github_advisories(source, counter, limit)
     url = f"https://api.github.com/repos/{source['repo']}/releases?per_page={min(limit, 10)}"
     data = http_get_json(url, counter)
     if not isinstance(data, list):
@@ -391,7 +434,7 @@ def research(max_per_source: int, max_calls: int) -> dict:
 
     for src in SOURCES:
         started = time.time()
-        if src["id"] == "arxiv-ai":
+        if src["id"] in ("arxiv-ai", "arxiv-ml"):
             items = fetch_arxiv(src, counter, max_per_source)
         elif src["id"] == "hf-models":
             items = fetch_hf_models(src, counter, max_per_source)
