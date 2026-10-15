@@ -158,6 +158,37 @@ CATEGORY_OCCUPATIONS: dict[str, tuple[str, ...]] = {
     "Kunstschaffende": ("Q483501",),                   # artist
     "Uhrmacher": ("Q157798",),                         # watchmaker
     "Orgelbau": ("Q1937431",),                         # organ builder
+    # Nachschub Batch 6 (15.10.2026, Inhaber-Auftrag '10.000/Tag komplett
+    # machen'): Durststrecken-Ursache sind leergegraste Pools — jede
+    # Erweiterung speist laut Messung 2-3 Tage Vollbetrieb. 18 neue Pools mit
+    # zusammen ~15.100 Kandidaten (SPARQL-Zaehlung 15.10.: tot <= 1995,
+    # >= 5 Sitelinks). Alle QIDs einzeln gegen wbsearchentities +
+    # wbgetentities verifiziert (Label + Beschreibung gelesen; verworfen:
+    # Q45722 cardinal + Q103163 abbot = Positionen ohne P106-Pool, SPARQL
+    # 0 Treffer; Q16865371 Cardinal, Q1158513 Abbot, Q13553587 Goldsmith,
+    # Q16870112 Gardener, Q6797626/Q44687528 Mayor = Familien-/Vornamen;
+    # Q30598698 Entrepreneur + Q122264540 Librarian = Videospiele;
+    # Q20446018 Cricketer + Q106772486/Q117215527 Baseball = Gemaelde;
+    # Q15759186 Statistician + Q24056144 Psychiatrist = Zeitschriften;
+    # Q67829197 Logician = Rennpferd; Q2860577 = akademischer Abschluss).
+    "Priester": ("Q42603",),                         # priest (739)
+    "Bischoefe": ("Q29182",),                        # bishop (1.583)
+    "Unternehmertum": ("Q131524",),                  # entrepreneur (2.121)
+    "Buergermeister": ("Q30185",),                   # mayor (431)
+    "Cricket": ("Q12299841",),                       # cricketer (1.789)
+    "Baseball": ("Q10871364",),                      # baseball player (750)
+    "Philologie": ("Q13418253",),                    # philologist (2.537)
+    "Bibliothekswesen": ("Q182436",),                # librarian (1.788)
+    "Archivwesen": ("Q635734",),                     # archivist (518)
+    "Numismatik": ("Q2004963",),                     # numismatist (388)
+    "Psychiatrie": ("Q211346",),                     # psychiatrist (577)
+    "Anatomie": ("Q10872101",),                      # anatomist (705)
+    "Pathologie": ("Q3368718",),                     # pathologist (433)
+    "Goldschmiedekunst": ("Q211423",),               # goldsmith (231)
+    "Gaertnerei": ("Q758780",),                      # gardener (183)
+    "Landvermessung": ("Q294126",),                  # surveyor (203)
+    "Statistik": ("Q2732142",),                      # statistician (421)
+    "Logik": ("Q14565331",),                         # logician (92)
 }
 
 
