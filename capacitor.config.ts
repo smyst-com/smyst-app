@@ -8,6 +8,11 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     iosScheme: 'https',
+    // Origin der App im WebView = https://smyst.com (statt https://localhost).
+    // Google Identity Services lehnt Anfragen von nicht autorisierten Origins
+    // ab ("verletzt OAuth-2.0-Richtlinien") — smyst.com ist als JavaScript-
+    // Origin des GIS-Clients hinterlegt, localhost nicht.
+    hostname: 'smyst.com',
   },
 }
 
