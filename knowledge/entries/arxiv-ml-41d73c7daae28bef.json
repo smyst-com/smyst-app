@@ -1,0 +1,108 @@
+{
+ "id": "arxiv-ml-41d73c7daae28bef",
+ "title": "Hitting-Time Bounds for Asynchronous Q-Learning",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model)",
+  "relevance_score": 1
+ },
+ "summary": "We study the last iterate of standard asynchronous Q-learning from a single trajectory of a finite Markov decision process. The trajectory follows a fixed behavior policy whose state--action chain is irreducible and may be periodic. For discount factor $γ$, write $H=(1-γ)^{-1}$, and let $μ_{\\min}$ be the minimum stationary state--action probability and $\\mathfrak h_\\star$ the largest expected hitting time of the reverse state--action chain. We prove that zero-initialized Q-learning with a constant step size achieves sup-norm error at most $\\varepsilon$ with high probability using $\\widetilde{O}(H^4/(μ_{\\min}\\varepsilon^2)+\\mathfrak h_\\star)$ transitions, for $0<\\varepsilon\\le1$. The statistical term retains the quartic effective-horizon dependence of standard Q-learning, while initialization cost is additive in $\\mathfrak h_\\star$. For aperiodic behavior chains, a comparison with mixing time yields a transient term $\\widetilde{O}(t_{\\mathrm{mix}}/μ_{\\min})$. An empirical state--action count rule selects a constant step size for a subsequent training run and attains the same rate without prior knowledge of model parameters, target accuracy, or confidence level. The output is the las",
+ "key_points": [
+  "We study the last iterate of standard asynchronous Q-learning from a single trajectory of a finite Markov decision process",
+  "The trajectory follows a fixed behavior policy whose state--action chain is irreducible and may be periodic",
+  "For discount factor $γ$, write $H=(1-γ)^{-1}$, and let $μ_{\\min}$ be the minimum stationary state--action probability and $\\mathfrak h_\\star$ the largest expected hitting time of the reverse state--action chain",
+  "We prove that zero-initialized Q-learning with a constant step size achieves sup-norm error at most $\\varepsilon$ with high probability using $\\widetilde{O}(H^4/(μ_{\\min}\\varepsilon^2)+\\mathfrak h_\\star)$ transitions, for $0<\\varepsilon\\le1$",
+  "The statistical term retains the quartic effective-horizon dependence of standard Q-learning, while initialization cost is additive in $\\mathfrak h_\\star$"
+ ],
+ "source": {
+  "id": "arxiv-ml",
+  "name": "arXiv (cs.LG Machine Learning)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.13901v1",
+ "url_normalized": "https://arxiv.org/abs/2610.13901v1",
+ "publisher": "arXiv",
+ "published": "2026-10-09",
+ "retrieved": "2026-10-12T12:22:58Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "arxiv-ai-05aaa0e631cf4f3a",
+  "arxiv-ai-ff2c55e6a4d5fc14",
+  "arxiv-ai-ce110fd48bb222ee"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-12T12:23:03Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Hitting-Time Bounds for Asynchronous Q-Learning",
+    "summary": "We study the last iterate of standard asynchronous Q-learning from a single trajectory of a finite Markov decision process. The trajectory follows a fixed behavior policy whose state--action chain is irreducible and may be periodic. For discount factor $γ$, write $H=(1-γ)^{-1}$, and let $μ_{\\min}$ be the minimum stationary state--action probability and $\\mathfrak h_\\star$ the largest expected hitting time of the reverse state--action chain. We prove that zero-initialized Q-learning with a constant step size achieves sup-norm error at most $\\varepsilon$ with high probability using $\\widetilde{O}(H^4/(μ_{\\min}\\varepsilon^2)+\\mathfrak h_\\star)$ transitions, for $0<\\varepsilon\\le1$. The statistical term retains the quartic effective-horizon dependence of standard Q-learning, while initialization cost is additive in $\\mathfrak h_\\star$. For aperiodic behavior chains, a comparison with mixing time yields a transient term $\\widetilde{O}(t_{\\mathrm{mix}}/μ_{\\min})$. An empirical state--action count rule selects a constant step size for a subsequent training run and attains the same rate without prior knowledge of model parameters, target accuracy, or confidence level. The output is the las"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-12T12:23:03Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-12T12:23:03Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-12T12:23:03Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-12T12:23:03Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-12T20:26:51Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-13T12:06:09Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-13T18:29:08Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-13T18:29:08Z",
+ "confirmations": 3
+}

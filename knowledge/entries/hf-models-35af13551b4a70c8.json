@@ -1,0 +1,138 @@
+{
+ "id": "hf-models-35af13551b4a70c8",
+ "title": "Savoxism/amid-kd-8xh200-gemma2-2b-it-amid",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, qwen)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: peft."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-nnm",
+ "url_normalized": "https://huggingface.co/Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-nnm",
+ "publisher": "Hugging Face",
+ "published": "2026-10-03",
+ "retrieved": "2026-10-03T15:13:22Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-03T15:13:32Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-nnm",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-03T15:13:32Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-nnm"
+   },
+   "current": {
+    "title": "Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-amid"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-10-03T15:13:32Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-amid"
+   },
+   "current": {
+    "title": "Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-csd"
+   }
+  },
+  {
+   "version": 4,
+   "date": "2026-10-03T15:13:32Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers.",
+    "title": "Savoxism/amid-kd-8xh200-qwen2.5-0.5b-it-csd"
+   },
+   "current": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+    "title": "Savoxism/amid-kd-8xh200-gemma2-2b-it-amid"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-03T15:13:32Z",
+ "confirmations": 3
+}

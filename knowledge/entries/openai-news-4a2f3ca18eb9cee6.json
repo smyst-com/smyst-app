@@ -1,0 +1,82 @@
+{
+ "id": "openai-news-4a2f3ca18eb9cee6",
+ "title": "Benefit Street Partners answers questions faster with Codex",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "Anant Kumar builds tools to compare loan valuations and analyze credit agreements, using Codex for code review and faster follow-ups.",
+ "key_points": [
+  "Anant Kumar builds tools to compare loan valuations and analyze credit agreements, using Codex for code review and faster follow-ups."
+ ],
+ "source": {
+  "id": "openai-news",
+  "name": "OpenAI Neuigkeiten (offizieller RSS)",
+  "kind": "rss",
+  "trust": 3,
+  "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+ },
+ "source_url": "https://openai.com/index/benefit-street-partners",
+ "url_normalized": "https://openai.com/index/benefit-street-partners",
+ "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+ "published": null,
+ "retrieved": "2026-10-17T09:09:49Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 3,
+ "freshness": "unbekannt",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "allgemein",
+  "rss",
+  "unbekannt"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-17T09:09:57Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Benefit Street Partners answers questions faster with Codex",
+    "summary": "Anant Kumar builds tools to compare loan valuations and analyze credit agreements, using Codex for code review and faster follow-ups."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-17T09:09:57Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-17T09:09:57Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-10-17T09:09:57Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "archiviert-als-abgelehnt",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-17T14:23:31Z",
+ "confirmations": 1
+}

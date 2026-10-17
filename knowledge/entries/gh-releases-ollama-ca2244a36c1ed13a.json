@@ -1,0 +1,98 @@
+{
+ "id": "gh-releases-ollama-ca2244a36c1ed13a",
+ "title": "ollama/ollama: Release v0.40.5",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, llama)",
+  "relevance_score": 2
+ },
+ "summary": "Offizielle Release-Notes (v0.40.5): ## NVIDIA Nemotron 3.5 Super [NVIDIA Nemotron 3.5 Super](https://ollama.com/library/nemotron-3.5-super) is a vision-language model for coding, reasoning, tool use, and document understanding. It pairs a 120B-parameter hybrid Mamba-2/Transformer mixture-of-experts backbone (12B active per token) with a C-RADIO vision encoder, and supports tool calling, an on/off thinking mode, and context up to 1M tokens. ``` ollama run nemotron-3.5-super ``` A compact sibling, [Nemotron 3.5 Bolt](https://ollama.com/library/nemotron-3.5-bolt), distills Super down to 74B parameters (9B active) tuned to fit a 24 GB NVIDIA GPU for everyday agentic tasks, with speculative decoding via its included drafter. ## What's Changed * Decision models are now available on cloud — use `clef:cloud` and `clef-flash:cloud` to run decision models through ollama.com cloud without pulling them locally * Continuing an OpenAI-compatible Responses conversation that includes custom tool calls no longer fails with an error * Cle",
+ "key_points": [
+  "Offizielle Release-Notes (v0.40.5): ## NVIDIA Nemotron 3.5 Super [NVIDIA Nemotron 3.5 Super](https://ollama.com/library/nemotron-3.5-super) is a vision-language model for coding, reasoning, tool use, and document understanding",
+  "It pairs a 120B-parameter hybrid Mamba-2/Transformer mixture-of-experts backbone (12B active per token) with a C-RADIO vision encoder, and supports tool calling, an on/off thinking mode, and context up to 1M tokens",
+  "``` ollama run nemotron-3.5-super ``` A compact sibling, [Nemotron 3.5 Bolt](https://ollama.com/library/nemotron-3.5-bolt), distills Super down to 74B parameters (9B active) tuned to fit a 24 GB NVIDIA GPU for everyday agentic tasks, with speculative decoding via its included drafter",
+  "## What's Changed * Decision models are now available on cloud — use `clef:cloud` and `clef-flash:cloud` to run decision models through ollama.com cloud without pulling them locally * Continuing an OpenAI-compatible Responses conversation that includes custom tool calls no longer fails with an error * Cle"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.40.5",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.40.5",
+ "publisher": "GitHub Releases",
+ "published": "2026-10-14",
+ "retrieved": "2026-10-16T09:14:23Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-16T09:14:24Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.40.5",
+    "summary": "Offizielle Release-Notes (v0.40.5): ## NVIDIA Nemotron 3.5 Super [NVIDIA Nemotron 3.5 Super](https://ollama.com/library/nemotron-3.5-super) is a vision-language model for coding, reasoning, tool use, and document understanding. It pairs a 120B-parameter hybrid Mamba-2/Transformer mixture-of-experts backbone (12B active per token) with a C-RADIO vision encoder, and supports tool calling, an on/off thinking mode, and context up to 1M tokens. ``` ollama run nemotron-3.5-super ``` A compact sibling, [Nemotron 3.5 Bolt](https://ollama.com/library/nemotron-3.5-bolt), distills Super down to 74B parameters (9B active) tuned to fit a 24 GB NVIDIA GPU for everyday agentic tasks, with speculative decoding via its included drafter. ## What's Changed * Decision models are now available on cloud — use `clef:cloud` and `clef-flash:cloud` to run decision models through ollama.com cloud without pulling them locally * Continuing an OpenAI-compatible Responses conversation that includes custom tool calls no longer fails with an error * Cle"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-16T15:33:46Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-17T14:23:31Z",
+ "confirmations": 2
+}

@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-05",
+ "generated_at": "2026-10-05T11:53:10Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-663295608d0087fc",
+     "title": "ollama/ollama: Release v0.40.0-rc3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.0-rc3"
+    },
+    {
+     "id": "hf-models-b5528714ce9096e0",
+     "title": "SpaceTimee/Suri-Qwen-3.8-27B-Companion-LoRA",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/SpaceTimee/Suri-Qwen-3.8-27B-Companion-LoRA"
+    },
+    {
+     "id": "hf-models-2ed02cea94a64410",
+     "title": "yiliankexi/Qwen3.8-27B-HauhauCS-Aggressive-Q8_K_P-GGUF-deploy-mirror",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/yiliankexi/Qwen3.8-27B-HauhauCS-Aggressive-Q8_K_P-GGUF-deploy-mirror"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-47e76f1e3878ad08",
+     "title": "Synin/Synin-1.0-flash",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Synin/Synin-1.0-flash"
+    },
+    {
+     "id": "hf-models-2aa3ec0b8779e87d",
+     "title": "Synin/Synin-1.0-Pro",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Synin/Synin-1.0-Pro"
+    },
+    {
+     "id": "hf-models-fcbabbe13463e6ba",
+     "title": "trychoosing/orbit-drafter-tinyllama-1.1b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/trychoosing/orbit-drafter-tinyllama-1.1b"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-3cbec84de8bf6155",
+     "title": "Building advertising for the way people use AI",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/new-chatgpt-ads-format-and-measurement"
+    },
+    {
+     "id": "hf-models-f61f370d1ee37c49",
+     "title": "winterdewdev/anlp-a2-optimizers-mars",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/winterdewdev/anlp-a2-optimizers-mars"
+    },
+    {
+     "id": "hf-models-9b14cf44a3c74d67",
+     "title": "ghananlpcommunity/ghana-assistant-flan-t5-small",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ghananlpcommunity/ghana-assistant-flan-t5-small"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen 2026-10-04 und 2026-10-05 veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-47e76f1e3878ad08",
+    "hf-models-2aa3ec0b8779e87d",
+    "hf-models-fcbabbe13463e6ba"
+   ],
+   "context_entry_ids": [
+    "hf-models-47e76f1e3878ad08",
+    "hf-models-2aa3ec0b8779e87d",
+    "hf-models-fcbabbe13463e6ba"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,109 @@
+{
+ "id": "arxiv-ml-4e77b634aa2d38e5",
+ "title": "Twice Upon a Time: Complementary Representations for Time-Series Reasoning",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, qwen)",
+  "relevance_score": 2
+ },
+ "summary": "Time Series Language Models (TSLMs) enable language-based understanding and reasoning over temporal data, yet a fundamental question remains: what information should their time-series representations preserve, and what variation should they factor out? Existing TSLMs typically expose the language model to a single representation, imposing a fixed inductive bias across downstream tasks. We instead introduce complementary representations as a design principle for time-series reasoning. Our model combines two visual views: line plots preserve absolute measurements and the observed coordinate frame, while normalized delay embeddings factor out positive amplitude rescaling and offsets while exposing temporal structure. Dedicated visual encoders integrate both views into a shared language model through visual tokens and multi-level feature fusion. Evaluation-time interventions verify that the two views exhibit distinct invariance profiles, while single-view ablations show that their combination is particularly beneficial beyond basic perception, with the large gains in prediction and reasoning. Built on Qwen3-VL-8B, our dual-view model improves overall TSRBench accuracy from 44.5% with l",
+ "key_points": [
+  "Time Series Language Models (TSLMs) enable language-based understanding and reasoning over temporal data, yet a fundamental question remains: what information should their time-series representations preserve, and what variation should they factor out? Existing TSLMs typically expose the language model to a single representation, imposing a fixed inductive bias across downstream tasks",
+  "We instead introduce complementary representations as a design principle for time-series reasoning",
+  "Our model combines two visual views: line plots preserve absolute measurements and the observed coordinate frame, while normalized delay embeddings factor out positive amplitude rescaling and offsets while exposing temporal structure",
+  "Dedicated visual encoders integrate both views into a shared language model through visual tokens and multi-level feature fusion",
+  "Evaluation-time interventions verify that the two views exhibit distinct invariance profiles, while single-view ablations show that their combination is particularly beneficial beyond basic perception, with the large gains in prediction and reasoning"
+ ],
+ "source": {
+  "id": "arxiv-ml",
+  "name": "arXiv (cs.LG Machine Learning)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.22327v1",
+ "url_normalized": "https://arxiv.org/abs/2610.22327v1",
+ "publisher": "arXiv",
+ "published": "2026-10-15",
+ "retrieved": "2026-10-16T09:14:20Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "arxiv-ai-bbb6da8211b585ca",
+  "arxiv-ml-41d73c7daae28bef",
+  "arxiv-ai-ce110fd48bb222ee"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-16T09:14:24Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Twice Upon a Time: Complementary Representations for Time-Series Reasoning",
+    "summary": "Time Series Language Models (TSLMs) enable language-based understanding and reasoning over temporal data, yet a fundamental question remains: what information should their time-series representations preserve, and what variation should they factor out? Existing TSLMs typically expose the language model to a single representation, imposing a fixed inductive bias across downstream tasks. We instead introduce complementary representations as a design principle for time-series reasoning. Our model combines two visual views: line plots preserve absolute measurements and the observed coordinate frame, while normalized delay embeddings factor out positive amplitude rescaling and offsets while exposing temporal structure. Dedicated visual encoders integrate both views into a shared language model through visual tokens and multi-level feature fusion. Evaluation-time interventions verify that the two views exhibit distinct invariance profiles, while single-view ablations show that their combination is particularly beneficial beyond basic perception, with the large gains in prediction and reasoning. Built on Qwen3-VL-8B, our dual-view model improves overall TSRBench accuracy from 44.5% with l"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-16T15:33:46Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-17T09:09:57Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-17T14:23:31Z",
+ "confirmations": 3
+}

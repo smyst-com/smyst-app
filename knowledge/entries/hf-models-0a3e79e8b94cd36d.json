@@ -1,0 +1,96 @@
+{
+ "id": "hf-models-0a3e79e8b94cd36d",
+ "title": "Nekodeus/qwen3-8b-openvino",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, qwen)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: openvino.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: openvino."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/Nekodeus/qwen3-8b-openvino",
+ "url_normalized": "https://huggingface.co/Nekodeus/qwen3-8b-openvino",
+ "publisher": "Hugging Face",
+ "published": "2026-10-07",
+ "retrieved": "2026-10-07T11:17:57Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-db1554c8cf9cfeee",
+  "hf-models-66657bdde76c4a41",
+  "hf-models-2ed02cea94a64410"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-07T11:18:07Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Nekodeus/qwen3-8b-openvino",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: openvino."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-07T11:18:07Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-07T11:18:07Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-07T11:18:07Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-07T11:18:07Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-07T11:18:24Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t2)."
+  }
+ ],
+ "status": "used_in_answer",
+ "_rag_flags": [
+  "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+ ]
+}

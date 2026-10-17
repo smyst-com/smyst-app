@@ -1,0 +1,94 @@
+{
+ "id": "arxiv-ai-ae2c9a5b98e1fd04",
+ "title": "Task Context Shapes Component Roles in Language Models",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, instruct, qwen)",
+  "relevance_score": 3
+ },
+ "summary": "Large language models reuse the same attention heads across tasks, but identifying these shared heads does not explain what they do differently in each task. A natural source of inspiration is task-dependent interactions among shared brain regions, which motivate a network view of language-model computation. Here, we compare fixed model components across tasks using identical graph facts, statements specifying which directed connections are present. We measure how interventions affect attention heads and the activation state in later layers (influence), as well as the answer (importance). Task changes redistribute the influence in five open-weight models spanning four families and 1.5-14 billion parameters. In Gemma-2-9B and Qwen3-14B, an activation edit changes an early internal activation vector and switches which fact the model reads while the written instruction stays fixed. The same heads then respond to different graph facts and influence later components differently. For each prompt, we construct two linear response maps, one before the edit and one after it. Each map predicts a later head's response from a measured change in an earlier head. For a separate factual intervent",
+ "key_points": [
+  "Large language models reuse the same attention heads across tasks, but identifying these shared heads does not explain what they do differently in each task",
+  "A natural source of inspiration is task-dependent interactions among shared brain regions, which motivate a network view of language-model computation",
+  "Here, we compare fixed model components across tasks using identical graph facts, statements specifying which directed connections are present",
+  "We measure how interventions affect attention heads and the activation state in later layers (influence), as well as the answer (importance)",
+  "Task changes redistribute the influence in five open-weight models spanning four families and 1.5-14 billion parameters"
+ ],
+ "source": {
+  "id": "arxiv-ai",
+  "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.13895v1",
+ "url_normalized": "https://arxiv.org/abs/2610.13895v1",
+ "publisher": "arXiv",
+ "published": "2026-10-09",
+ "retrieved": "2026-10-12T20:26:37Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "arxiv-ai-552af2f97fe397d5"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-12T20:26:51Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Task Context Shapes Component Roles in Language Models",
+    "summary": "Large language models reuse the same attention heads across tasks, but identifying these shared heads does not explain what they do differently in each task. A natural source of inspiration is task-dependent interactions among shared brain regions, which motivate a network view of language-model computation. Here, we compare fixed model components across tasks using identical graph facts, statements specifying which directed connections are present. We measure how interventions affect attention heads and the activation state in later layers (influence), as well as the answer (importance). Task changes redistribute the influence in five open-weight models spanning four families and 1.5-14 billion parameters. In Gemma-2-9B and Qwen3-14B, an activation edit changes an early internal activation vector and switches which fact the model reads while the written instruction stays fixed. The same heads then respond to different graph facts and influence later components differently. For each prompt, we construct two linear response maps, one before the edit and one after it. Each map predicts a later head's response from a measured change in an earlier head. For a separate factual intervent"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-12T20:26:51Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-12T20:26:51Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-12T20:26:51Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-12T20:26:51Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-13T18:29:08Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-13T18:29:08Z",
+ "confirmations": 1
+}

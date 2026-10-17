@@ -1,0 +1,90 @@
+{
+ "id": "gh-advisories-b3542354e80022ce",
+ "title": "GHSA-mp22-58ff-6fhr: Arcane: Environment access token bypasses the admin-required authorization gate on `/api/debug/pprof`",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/getarcaneapp/arcane/backend/v2. CVE: CVE-2026-96628. Zusammenfassung: Arcane: Environment access token bypasses the admin-required authorization gate on `/api/debug/pprof`",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium",
+  "Betroffenes Paket: github.com/getarcaneapp/arcane/backend/v2",
+  "CVE: CVE-2026-96628",
+  "Zusammenfassung: Arcane: Environment access token bypasses the admin-required authorization gate on `/api/debug/pprof`"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-mp22-58ff-6fhr",
+ "url_normalized": "https://github.com/advisories/GHSA-mp22-58ff-6fhr",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-16",
+ "retrieved": "2026-10-17T14:23:26Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-17T14:23:31Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-mp22-58ff-6fhr: Arcane: Environment access token bypasses the admin-required authorization gate on `/api/debug/pprof`",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/getarcaneapp/arcane/backend/v2. CVE: CVE-2026-96628. Zusammenfassung: Arcane: Environment access token bypasses the admin-required authorization gate on `/api/debug/pprof`"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-17T14:24:00Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+  }
+ ],
+ "status": "used_in_answer",
+ "_rag_flags": []
+}

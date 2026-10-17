@@ -1,0 +1,92 @@
+{
+ "id": "arxiv-ai-c8f408def77f17ba",
+ "title": "EmoRES-TTS: Residual-Enhanced Vector Steering for Emotional Speech Generation",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: we propose, study)",
+  "relevance_score": 2
+ },
+ "summary": "Emotion-conditioned text-to-speech (TTS) models may fail to express the requested emotion reliably, and improving controllability by additional training is costly in both computation and emotion-labeled speech training data. We therefore study vector steering, a training-free approach that modifies the internal representations of a frozen model. CoCoEmo, a conventional vector steering method for emotion TTS, treats each emotion vector as an indivisible direction controlled by a single global strength, limiting adherence to the requested emotion. In this work, we first discover that an emotion vector can be decomposed into a shared component that moves speech away from neutral expression and a residual component that directs generation toward the requested emotion. Building on this finding, we propose Emotion Residual-Enhanced Steering for TTS (EmoRES), a novel method that controls the two components without retraining the backbone. On IEMOCAP, EmoRES outperforms CoCoEmo across all four objective emotion metrics on the IndexTTS-2 and CosyVoice2 backbones. Rank correlation improves by 26.13 and 12.97 percentage points, corresponding to relative gains of 118.8% and 33.1%, while emotio",
+ "key_points": [
+  "Emotion-conditioned text-to-speech (TTS) models may fail to express the requested emotion reliably, and improving controllability by additional training is costly in both computation and emotion-labeled speech training data",
+  "We therefore study vector steering, a training-free approach that modifies the internal representations of a frozen model",
+  "CoCoEmo, a conventional vector steering method for emotion TTS, treats each emotion vector as an indivisible direction controlled by a single global strength, limiting adherence to the requested emotion",
+  "In this work, we first discover that an emotion vector can be decomposed into a shared component that moves speech away from neutral expression and a residual component that directs generation toward the requested emotion",
+  "Building on this finding, we propose Emotion Residual-Enhanced Steering for TTS (EmoRES), a novel method that controls the two components without retraining the backbone"
+ ],
+ "source": {
+  "id": "arxiv-ai",
+  "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2609.38157v1",
+ "url_normalized": "https://arxiv.org/abs/2609.38157v1",
+ "publisher": "arXiv",
+ "published": "2026-09-29",
+ "retrieved": "2026-09-30T10:45:26Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "forschung",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-30T10:45:37Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "EmoRES-TTS: Residual-Enhanced Vector Steering for Emotional Speech Generation",
+    "summary": "Emotion-conditioned text-to-speech (TTS) models may fail to express the requested emotion reliably, and improving controllability by additional training is costly in both computation and emotion-labeled speech training data. We therefore study vector steering, a training-free approach that modifies the internal representations of a frozen model. CoCoEmo, a conventional vector steering method for emotion TTS, treats each emotion vector as an indivisible direction controlled by a single global strength, limiting adherence to the requested emotion. In this work, we first discover that an emotion vector can be decomposed into a shared component that moves speech away from neutral expression and a residual component that directs generation toward the requested emotion. Building on this finding, we propose Emotion Residual-Enhanced Steering for TTS (EmoRES), a novel method that controls the two components without retraining the backbone. On IEMOCAP, EmoRES outperforms CoCoEmo across all four objective emotion metrics on the IndexTTS-2 and CosyVoice2 backbones. Rank correlation improves by 26.13 and 12.97 percentage points, corresponding to relative gains of 118.8% and 33.1%, while emotio"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-30T10:45:37Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-30T10:45:37Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-30T10:45:37Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-30T10:45:37Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-30T17:00:04Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-09-30T17:00:04Z",
+ "confirmations": 1
+}
