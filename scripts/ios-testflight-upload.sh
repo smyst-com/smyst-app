@@ -8,11 +8,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-API_KEY_ID="LCNMTW4TCQ"
+API_KEY_ID="L5FU48B323"
 API_ISSUER="649c9c72-6c69-43cc-92ee-a1e41ecb9c16"
 TEAM="443R27FNHX"
 IDENTITY="Apple Distribution: iMild LLC (443R27FNHX)"
-PROFILE="smyst App Store"
+PROFILE="smyst App Store 2"
+# Version des Release-Trains (1.0 ist nach dem Store-Release fuer neue Builds geschlossen)
+APP_VERSION="${APP_VERSION:-1.0.1}"
 BUILD_NUM="$(date +%Y%m%d%H%M)"
 OUT="/tmp/smyst_ipa_$BUILD_NUM"
 
@@ -37,6 +39,7 @@ xcodebuild archive \
   DEVELOPMENT_TEAM="$TEAM" \
   CODE_SIGN_IDENTITY="$IDENTITY" \
   PROVISIONING_PROFILE_SPECIFIER="$PROFILE" \
+  MARKETING_VERSION="$APP_VERSION" \
   CURRENT_PROJECT_VERSION="$BUILD_NUM"
 
 echo "== IPA exportieren =="
