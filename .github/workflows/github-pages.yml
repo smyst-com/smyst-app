@@ -77,25 +77,39 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          # 04.10.2026, Befund Lauf 37204632511: 'Contents of stored object ... did
-          # not match expected ETag' — ein Publish-Lauf (seit den Laufdeckeln #908/
-          #910 fast kontinuierlich aktiv) hat den 245-MiB-Index NEU GESCHRIEBEN,
-          # waehrend dieser Download lief. Kein Dauerzustand: kurze Pause und nochmal.
-          for versuch in 1 2 3 4 5; do
-            aws s3 cp s3://smyst-memories/pipeline/published/index.json pipeline-published-index.json \
-              --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
-              && break
-            if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then
-              echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; break
-            fi
-            if grep -q "did not match expected ETag" s3-index-err.log && [ "$versuch" -lt 5 ]; then
-              echo "Index wurde waehrend des Downloads neu geschrieben (Publish-Lauf aktiv) — Versuch $versuch, warte 45 s."
-              sleep 45; continue
-            fi
-            cat s3-index-err.log
-            echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."
-            exit 1
-          done
+          # Egress-Sparer (Vorfall 14.10.2026, 37,65-USD-Kontosperre): Der
+          # ~245-MiB-Klartext-Index wurde von JEDEM Deploy einzeln geladen.
+          # Publish-Laeufe schreiben seitdem zusaetzlich index.json.gz
+          # (~6-8x kleiner); fehlt die .gz-Variante (404), greift unten der
+          # alte Klartext-Weg unverändert.
+          INDEX_GZ_OK=true
+          aws s3 cp s3://smyst-memories/pipeline/published/index.json.gz /tmp/index.json.gz \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
+            || INDEX_GZ_OK=false
+          if [ "$INDEX_GZ_OK" = "true" ]; then
+            gunzip -c /tmp/index.json.gz > pipeline-published-index.json
+            echo "Publish-Index als .gz geladen ($(stat -c%s /tmp/index.json.gz) Bytes statt ~245 MiB Klartext)."
+          else
+            # 04.10.2026, Befund Lauf 37204632511: 'Contents of stored object ... did
+            # not match expected ETag' — ein Publish-Lauf (seit den Laufdeckeln #908/
+            # #910 fast kontinuierlich aktiv) hat den 245-MiB-Index NEU GESCHRIEBEN,
+            # waehrend dieser Download lief. Kein Dauerzustand: kurze Pause und nochmal.
+            for versuch in 1 2 3 4 5; do
+              aws s3 cp s3://smyst-memories/pipeline/published/index.json pipeline-published-index.json \
+                --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>s3-index-err.log \
+                && break
+              if grep -Eq "\(404\)|NoSuchKey|Not Found" s3-index-err.log; then
+                echo "Kein Publish-Index in IDrive e2 (ok, noch nichts publiziert)."; break
+              fi
+              if grep -q "did not match expected ETag" s3-index-err.log && [ "$versuch" -lt 5 ]; then
+                echo "Index wurde waehrend des Downloads neu geschrieben (Publish-Lauf aktiv) — Versuch $versuch, warte 45 s."
+                sleep 45; continue
+              fi
+              cat s3-index-err.log
+              echo "::error::Publish-Index nicht lesbar (z.B. AccessDenied) — Abbruch, sonst geht die Site OHNE die bereits publizierten Pipeline-Profile live (Vorfall 30.07.2026, Deploys #360/#361)."
+              exit 1
+            done
+          fi
 
       # FAQ-Antworten pro Profil (SEO, 21.08.): die QA der Autopilot-Pipeline
       # erzeugt fuer jedes Profil fuenf individuelle Antworten (bisher nur
@@ -108,7 +122,65 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
         run: |
-          aws s3 cp s3://smyst-memories/pipeline/published/qa-answers.json pipeline-qa-answers.json             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2             || echo "Keine FAQ-Antworten in e2 (ok — Seiten ohne FAQ-Schema)."
+          # Egress-Sparer (14.10.2026): .gz-Variante bevorzugt, Klartext-Rueckfallebene.
+          if aws s3 cp s3://smyst-memories/pipeline/published/qa-answers.json.gz /tmp/qa-answers.json.gz \
+              --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>/dev/null; then
+            gunzip -c /tmp/qa-answers.json.gz > pipeline-qa-answers.json
+          else
+            aws s3 cp s3://smyst-memories/pipeline/published/qa-answers.json pipeline-qa-answers.json             --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2             || echo "Keine FAQ-Antworten in e2 (ok — Seiten ohne FAQ-Schema)."
+          fi
+
+      # Egress-Metering (Vorfall 14.10.2026): die Bytes dieses Deploys ins
+      # Tages-Tally nach e2 legen (best effort, niemals laufblockierend).
+      # egress-guard.yml summiert die Tallys und alarmiert ab 60 % des
+      # 3-TB-Monatsfreibetrags von IDrive e2.
+      - name: Record egress tally (best effort)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > /tmp/tally-eintrag.json
+          import datetime, json, os
+          def draht(p_gz, p_klar):
+              # Wire-Bytes zaehlen: liegt die .gz-Abbildung noch vor, war sie
+              # die uebertragene Variante; sonst galt der Klartext-Download.
+              try:
+                  return os.path.getsize(p_gz)
+              except OSError:
+                  try:
+                      return os.path.getsize(p_klar)
+                  except OSError:
+                      return 0
+          bytes_by_key = {
+              "pipeline/published/index.json(.gz)": draht("/tmp/index.json.gz", "pipeline-published-index.json"),
+              "pipeline/published/qa-answers.json(.gz)": draht("/tmp/qa-answers.json.gz", "pipeline-qa-answers.json"),
+          }
+          print(json.dumps({
+              "source": "github-pages-deploy",
+              "finished_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "bytes_by_key": bytes_by_key,
+              "total_bytes": sum(bytes_by_key.values()),
+          }))
+          PY
+          TALLY_KEY="pipeline/metrics/egress/$(date -u +%F).json"
+          aws s3 cp "s3://smyst-memories/${TALLY_KEY}" /tmp/tally-stand.json \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 2>/dev/null \
+            || echo '{}' > /tmp/tally-stand.json
+          python3 - <<'PY'
+          import datetime, json
+          stand = json.load(open("/tmp/tally-stand.json"))
+          laeufe = stand.get("runs") if isinstance(stand.get("runs"), list) else []
+          laeufe.append(json.load(open("/tmp/tally-eintrag.json")))
+          json.dump(
+              {"month": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m"),
+               "runs": laeufe[-200:]},
+              open("/tmp/tally-neu.json", "w"), ensure_ascii=False, indent=1,
+          )
+          PY
+          aws s3 cp /tmp/tally-neu.json "s3://smyst-memories/${TALLY_KEY}" \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 \
+            || echo "egress-tally nicht speicherbar (ok — Deploy laeuft weiter)."
 
       # Egress-Sparer (Vorfall 31.07.2026: 10-GB-Frei-Egress von IDrive e2
       # aufgebraucht, alle e2-Zugriffe gesperrt, Deploys/Pipeline rot): die

@@ -158,8 +158,10 @@ def _load_index(store: CandidateStore) -> list[dict]:
     und stoppt den Lauf, bevor der Index ueberschrieben werden kann.
     """
     try:
-        response = store._client.get_object(Bucket=store._bucket, Key=PUBLISH_INDEX_KEY)  # noqa: SLF001
-        return json.loads(response["Body"].read().decode("utf-8"))
+        # Egress-Sparer (Vorfall 14.10.2026): .gz-Variante bevorzugt, nur bei
+        # fehlender .gz greift der Klartext-Key. Fehlen beide -> NoSuchKey ->
+        # leerer Index; jede andere Stoerung wirft (Schutzregel 24.09.2026).
+        return store.load_json_prefer_gz(PUBLISH_INDEX_KEY)
     except Exception as fehler:
         if not _ist_fehlender_index(fehler):
             # Netz-, Rechte- oder JSON-Fehler: Lauf stoppen, bevor ein
@@ -283,8 +285,10 @@ def publish_one(
 
     if not dry_run:
         _put_json(store, f"pipeline/published/{qid}/profile.json", record)
-        _put_json(store, PUBLISH_INDEX_KEY, new_index)
-        _put_json(store, SITEMAP_FRAGMENT_KEY, build_sitemap_fragment(new_index))
+        # Egress-Sparer (14.10.2026): Index + Sitemap-Fragment zusaetzlich als
+        # .gz — Klartext bleibt fuer alte Leser, Uploads sind bei e2 kostenlos.
+        store.save_json_with_gz(PUBLISH_INDEX_KEY, new_index)
+        store.save_json_with_gz(SITEMAP_FRAGMENT_KEY, build_sitemap_fragment(new_index))
         store.save_candidate_document(
             qid,
             {
@@ -314,8 +318,8 @@ def unpublish_one(
     new_index = mark_unpublished(_load_index(store), qid, reason=reason)
 
     if not dry_run:
-        _put_json(store, PUBLISH_INDEX_KEY, new_index)
-        _put_json(store, SITEMAP_FRAGMENT_KEY, build_sitemap_fragment(new_index))
+        store.save_json_with_gz(PUBLISH_INDEX_KEY, new_index)
+        store.save_json_with_gz(SITEMAP_FRAGMENT_KEY, build_sitemap_fragment(new_index))
         store.save_candidate_document(
             qid,
             {
@@ -423,6 +427,8 @@ def main(argv: list[str] | None = None) -> int:  # pragma: no cover - CLI-Verdra
     if not args.dry_run:
         refresh_published_summary(store)
         store.save_changelog(date.today(), {"worker": "publish_profiles", "results": results})
+        # Egress-Zaehler nur im Schreiblauf: dry_run schreibt nichts (Kontrakt).
+        store.flush_egress_tally("publish_profiles")
     print(json.dumps(results, ensure_ascii=False))
     return 0
 

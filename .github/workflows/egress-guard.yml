@@ -1,0 +1,121 @@
+# Egress-Budget-Waechter (Vorfall 14.10.2026: IDrive-e2-Kontosperre wegen
+# 37,65 USD Egress-Gebuehren auf dem bezahlten Jahresplan — 8+ Tage 0
+# veroeffentlichte Profile, Produktion still).
+#
+# IDrive e2 stellt monatlich 3x Storage an Download (Egress) frei — beim
+# 1-TB-Jahresplan also 3 TB/Monat. Darueber fallen 0,01 USD/GB an, und wenn
+# die Abbuchung scheitert, sperrt IDrive das GESAMTE Konto (September- und
+# Oktober-Vorfall). Dieser Guard summiert taeglich die Egress-Tallys
+# (pipeline/metrics/egress/, geschrieben von CandidateStore.flush_egress_tally
+# und dem Pages-Deploy) und alarmiert per Issue, lange bevor der Freibetrag
+# erschöpft ist:
+#   - ab 60 % (1,8 TB): Warnung + Aufforderung, die groessten Reader zu pruefen
+#   - ab 80 % (2,4 TB): Alarm + Empfehlung, Lauftakt/Publish-Deckel zu senken
+#
+# Ehrlichkeits-Hinweis: Die Tallys erfassen die instrumentierten Leser
+# (Publish-Worker, Profil-Doktor, Backfills, Pages-Deploy). Nicht erfasst
+# sind z. B. Zeabur-Runtime-Zugriffe — die Summe ist eine UNTERGRENZE.
+# Autoritativ bleiben zusaetzlich die IDrive-Warn-Mails (67 % des Limits).
+#
+# Kein neuer Paid-Service: laeuft auf kostenlosen GitHub-Actions-Minuten
+# (oeffentliches Repo) und liest nur wenige kleine JSON-Objekte aus e2.
+
+name: Egress-Budget-Waechter
+
+on:
+  schedule:
+    # Taeglich 05:23 UTC — nach dem Pipeline-Backup (02:37 UTC), damit der
+    # Vortag komplett erfasst ist. GitHub-Cron-Drosselung ist unkritisch:
+    # der Guard ist eine Tagesübersicht, kein Taktgeber.
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: egress-guard
+  cancel-in-progress: false
+
+jobs:
+  pruefen:
+    name: Monats-Egress gegen 3-TB-Freibetrag pruefen
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Tallys des Monats summieren
+        id: summe
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDRIVE_E2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDRIVE_E2_SECRET_KEY }}
+        run: |
+          set -euo pipefail
+          MONAT=$(date -u +%Y-%m)
+          mkdir -p /tmp/tallies
+          # Sync statt ls+cp: holt nur die Monats-Tallys, versagt still, wenn
+          # der Prefix (noch) leer ist — Erstsituation nach diesem Merge.
+          aws s3 sync "s3://smyst-memories/pipeline/metrics/egress/" /tmp/tallies \
+            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2 \
+            --exclude "*" --include "${MONAT}-*.json" \
+            || { echo "Tallys nicht lesbar (z.B. AccessDenied) — Guard endet gruen, die Sperre hat eigene Alarme."; exit 0; }
+          python3 - <<'PY' > /tmp/egress-stand.json
+          import glob, datetime, json
+          budget = 3_000_000_000_000  # 3 TB (dezimal, IDrive-Abrechnungsbasis)
+          gesamt = 0
+          laeufe = 0
+          for pfad in sorted(glob.glob("/tmp/tallies/*.json")):
+              try:
+                  with open(pfad, encoding="utf-8") as datei:
+                      tag = json.load(datei)
+                  for lauf in tag.get("runs", []):
+                      gesamt += int(lauf.get("total_bytes") or 0)
+                      laeufe += 1
+              except Exception as fehler:  # kaputte Einzeltally nie fatal
+                  print(f"WARNUNG {pfad}: {fehler}")
+          prozent = round(gesamt * 100 / budget, 2)
+          print(json.dumps({
+              "monat": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m"),
+              "budget_bytes": budget,
+              "gesamt_bytes": gesamt,
+              "prozent": prozent,
+              "erfasste_laeufe": laeufe,
+          }, ensure_ascii=False, indent=1))
+          PY
+          cat /tmp/egress-stand.json
+          PROZENT=$(python3 -c "import json; print(json.load(open('/tmp/egress-stand.json'))['prozent'])")
+          echo "prozent=${PROZENT}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Egress-Budget ${MONAT} (Untergrenze, instrumentierte Reader)"
+            echo '```json'
+            cat /tmp/egress-stand.json
+            echo '```'
+            echo "Freibetrag IDrive e2: 3 TB/Monat — Guard-Schwellen 60 %/80 %."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Warn-Issue ab 60 Prozent
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROZENT: ${{ steps.summe.outputs.prozent }}
+        run: |
+          set -euo pipefail
+          if [ -z "$PROZENT" ]; then echo "Keine Summe ermittelt — nichts zu tun."; exit 0; fi
+          SCHWELL=$(( PROZENT >= 80 ? 2 : PROZENT >= 60 ? 1 : 0 ))
+          if [ "$SCHWELL" -eq 0 ]; then echo "Entspannt: ${PROZENT} % des 3-TB-Freibetrags."; exit 0; fi
+          STUFE=$([ "$SCHWELL" -eq 2 ] && echo "🚨 ALARM (>=80 %)" || echo "⚠️ WARNUNG (>=60 %)")
+          EMPFEHLUNG=$([ "$SCHWELL" -eq 2 ] \
+            && echo "JETZT handeln: Profil-Doktor-Takt senken, Publish-Laeufe buendeln, Deploy-Frequenz reduzieren — sonst drohen Egress-Gebuehren und bei gescheiterter Abbuchung erneut eine KONTO-SPERRE (Vorfall 14.10.2026)." \
+            || echo "Groesste Reader pruefen (Profil-Doktor stuendlich, Publish-Laeufe, Pages-Deploys) und .gz-Varianten nutzen, wo noch Klartext gezogen wird.")
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ZEIT=$(date -u '+%Y-%m-%d %H:%M UTC')
+          # printf statt mehrzeiligem BODY=STRING: Fortsetzungszeilen in
+          # Spalte 1 wuerden den YAML-Block-Scalar vorzeitig beenden.
+          BODY=$(printf '%s\n\nMonats-Egress (instrumentierte Reader, Untergrenze): %s %% des 3-TB-Freibetrags von IDrive e2.\n\n%s\n\nLauf: %s\nZeitpunkt: %s\n\nHintergrund: IDrive Fair-Use = 3x Storage/Monat frei (1-TB-Plan: 3 TB); darueber 0,01 USD/GB; gescheiterte Abbuchung sperrt das komplette Konto (September- + Oktober-Vorfall 2026). Details: .github/workflows/egress-guard.yml' "$STUFE" "$PROZENT" "$EMPFEHLUNG" "$RUN_URL" "$ZEIT")
+          TITEL="Egress-Budget: Monatsfreibetrag zu ${PROZENT} % verbraucht"
+          EXISTIEREND=$(gh issue list --state open --search "Egress-Budget in:title" --json number --jq '.[0].number' || true)
+          if [ -n "$EXISTIEREND" ]; then
+            gh issue comment "$EXISTIEREND" --body "$BODY"
+          else
+            gh issue create --title "$TITEL" --body "$BODY"
+          fi
+          if [ "$SCHWELL" -eq 2 ]; then exit 1; fi
