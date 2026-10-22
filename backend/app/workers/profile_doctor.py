@@ -114,17 +114,18 @@ _ISO_MONTH_ONLY = re.compile(r"^(\d{4})-(\d{2})-01$")
 
 def _get_json_object(store: CandidateStore, key: str):
     try:
-        response = store._client.get_object(Bucket=store._bucket, Key=key)  # noqa: SLF001
-        return json.loads(response["Body"].read().decode("utf-8"))
+        # Egress-Sparer (Vorfall 14.10.2026): .gz-Variante bevorzugt — der
+        # stuendliche Doctor war der groesste Wiederholungsleser des ~245-MiB-
+        # Publish-Index (24 GETs/Tag = ~5,9 GB Egress/Tag). Fehlt die .gz-
+        # Variante, greift der Klartext-Key (candidate_store faellt zurueck).
+        return store.load_json_prefer_gz(key)
     except Exception:  # noqa: BLE001 - fehlende Objekte sind ein Normalfall
         return None
 
 
 def _put_json_object(store: CandidateStore, key: str, payload) -> None:
-    body = json.dumps(payload, ensure_ascii=False, indent=2, default=str).encode("utf-8")
-    store._client.put_object(  # noqa: SLF001
-        Bucket=store._bucket, Key=key, Body=body, ContentType="application/json"
-    )
+    # Klartext + .gz-Zwilling: Uploads sind bei e2 kostenlos, Downloads nicht.
+    store.save_json_with_gz(key, payload)
 
 
 # --- Wikidata-Hilfen --------------------------------------------------------
@@ -769,6 +770,9 @@ def run_doctor(
         report["finished_at"] = datetime.now(timezone.utc).isoformat()
         _put_json_object(store, REPORT_KEY, report)
         store.save_changelog(run_date, report, suffix="-profile-doctor")
+        # Egress-Zaehler nur im Schreiblauf: dry_run darf KEIN Objekt anfassen
+        # (Kontrakt test_doctor_dry_run_changes_nothing).
+        store.flush_egress_tally("profile_doctor")
 
     report["changed_slugs"] = sorted({
         str(by_qid.get(qid, {}).get("slug") or "")

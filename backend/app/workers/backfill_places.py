@@ -52,17 +52,15 @@ SNAPSHOT_FILENAME = "wikidata-entitydata.json"
 
 def _get_json_object(store: CandidateStore, key: str) -> dict | list | None:
     try:
-        response = store._client.get_object(Bucket=store._bucket, Key=key)  # noqa: SLF001
-        return json.loads(response["Body"].read().decode("utf-8"))
+        # Egress-Sparer (Vorfall 14.10.2026): .gz-Variante bevorzugt,
+        # Klartext-Rueckfallebene regelt candidate_store.
+        return store.load_json_prefer_gz(key)
     except Exception:  # noqa: BLE001 - fehlender Snapshot ist ein normaler Fall
         return None
 
 
 def _put_json_object(store: CandidateStore, key: str, payload) -> None:
-    body = json.dumps(payload, ensure_ascii=False, indent=2, default=str).encode("utf-8")
-    store._client.put_object(  # noqa: SLF001
-        Bucket=store._bucket, Key=key, Body=body, ContentType="application/json"
-    )
+    store.save_json_with_gz(key, payload)
 
 
 PLACE_FIELDS = (("birth_place", P_BIRTH_PLACE), ("death_place", P_DEATH_PLACE))

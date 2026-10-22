@@ -44,10 +44,19 @@ jobs:
           # Seit ~47.000 Profilen ist der rohe Index >100 MB und wird von
           # GitHubs Dateigrenze abgewiesen (Vorfall 21.09.2026). gzip drueckt
           # das JSON auf ein Bruchteil; der Restore entpackt es wieder.
-          aws s3 cp s3://smyst-memories/pipeline/published/index.json /tmp/index-raw.json \
-            --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
-          gzip -9 -c /tmp/index-raw.json > backup/pipeline-published-index.json.gz
-          rm -f /tmp/index-raw.json
+          # Egress-Sparer (Vorfall 14.10.2026): Publish-Laeufe schreiben seitdem
+          # zusaetzlich index.json.gz — die direkt verwenden, statt taeglich
+          # ~245 MiB Klartext zu ziehen und lokal neu zu packen. Fehlt die
+          # .gz-Variante (Uebergangszeit), greift der alte Weg.
+          if aws s3 cp s3://smyst-memories/pipeline/published/index.json.gz backup/pipeline-published-index.json.gz \
+              --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2; then
+            echo "Publish-Index als .gz aus e2 geladen (kein Klartext-Download)."
+          else
+            aws s3 cp s3://smyst-memories/pipeline/published/index.json /tmp/index-raw.json \
+              --endpoint-url https://s3.us-west-2.idrivee2.com --region us-west-2
+            gzip -9 -c /tmp/index-raw.json > backup/pipeline-published-index.json.gz
+            rm -f /tmp/index-raw.json
+          fi
           # Validierung VOR dem Commit: Datei muss entpackbar, gueltiges JSON
           # und unter GitHubs 100-MB-Grenze bleiben (Guard gegen stillen
           # Datenverlust durch abgeschnittene Downloads).

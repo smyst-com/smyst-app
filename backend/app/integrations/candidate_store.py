@@ -17,9 +17,11 @@ Postgres (Migration 0007) Pflicht.
 
 from __future__ import annotations
 
+import gzip
 import json
+import sys
 from dataclasses import asdict
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any, Protocol
 from uuid import UUID
 
@@ -56,6 +58,30 @@ STATUS_PREFIX = "pipeline/status/"
 #: neue Prefix pipeline/index/ antwortete PutObject AccessDenied und liess den
 #: Publish-Lauf roet enden — die Publikationen selbst waren schon durch).
 PUBLISHED_SUMMARY_KEY = "pipeline/published/summary.json"
+
+#: Egress-Tageszaehler. IDrive e2 stellt drei TB Download/Monat frei
+#: (Fair-Use: 3x Storage); darueber fallen Gebuehren an, und bei gescheiterter
+#: Abbuchung sperrt IDrive das KONTO komplett (Vorfaelle 14.09. und 14.10.2026:
+#: Production-Autopilot 0 Profile/Tag). Alle Python-Reader laufen ueber
+#: CandidateStore — hier wird jede Uebertragung gezaehlt und beim Laufende
+#: unter EGRESS_METRICS_PREFIX abgelegt (best effort, nie laufblockierend).
+#: Der Workflow egress-guard.yml summiert die Zaehler und alarmiert frueh.
+EGRESS_METRICS_PREFIX = "pipeline/metrics/egress/"
+
+#: Key -> im aktuellen Prozessprozess übertragene Bytes (Wire-Größe).
+EGRESS_TALLY: dict[str, int] = {}
+
+
+def ist_fehlender_schluessel(fehler: BaseException) -> bool:
+    """NoSuchKey-Erkennung ueber boto3- und Fake-Formen (Muster 24.09.2026)."""
+    if isinstance(fehler, KeyError):
+        return True
+    response = getattr(fehler, "response", None)
+    if isinstance(response, dict):
+        code = (response.get("Error") or {}).get("Code")
+        if code == "NoSuchKey":
+            return True
+    return getattr(fehler, "code", None) == "NoSuchKey"
 
 
 class S3Like(Protocol):
@@ -95,6 +121,103 @@ class CandidateStore:
     def __init__(self, client: S3Like, bucket: str) -> None:
         self._client = client
         self._bucket = bucket
+
+    # --- Egress-Sparer + Egress-Zaehler (Vorfall 14.10.2026) ----------------
+
+    def load_json_prefer_gz(self, key: str) -> Any:
+        """JSON aus e2 laden, bevorzugt die .gz-Variante (Egress-Sparer).
+
+        Der Publish-Index (pipeline/published/index.json, ~245 MiB bei ~96k
+        Profilen) wurde von JEDEM Consumer einzeln im Klartext geladen:
+        Pages-Deploy, Publish-Laeufe, Profil-Doktor (stuendlich), Backup —
+        zusammen Haupttreiber der IDrive-e2-Egress-Gebuehren (Konto-Sperre
+        14.10.2026, 37,65 USD). Schreiber legen seitdem zusaetzlich
+        {key}.gz ab; dieser Reader zieht die .gz-Variante (~6-8x kleiner)
+        und faellt NUR bei fehlender .gz-Variante auf den Klartext-Key
+        zurueck. Fehlen beide, durchlaeuft die NoSuchKey-Ausnahme (der
+        Aufrufer entscheidet, ob fehlend = leer ist); jeder andere Fehler
+        (Netz/Rechte/kaputtes JSON) wirft sofort — kein stiller Fallback
+        (Schutzregel Vorfall 24.09.2026, Teilbestand-Ueberschreiben).
+        """
+        try:
+            return self._load_json_from_key(key + ".gz", komprimiert=True)
+        except Exception as fehler:
+            if not ist_fehlender_schluessel(fehler):
+                raise
+            return self._load_json_from_key(key, komprimiert=False)
+
+    def save_json_with_gz(self, key: str, payload: Any) -> str:
+        """Schreibt key UND key.gz — Klartext bleibt fuer alte Leser lesbar.
+
+        Uploads (Ingress) sind bei IDrive e2 kostenlos, nur Downloads
+        (Egress) kosten — die Zweitfassung kostet daher nichts und nimmt
+        allen load_json_prefer_gz-Lesern ~85 % der Uebertragung.
+        """
+        body = json.dumps(
+            payload, ensure_ascii=False, indent=2, default=_json_default
+        ).encode("utf-8")
+        self._client.put_object(
+            Bucket=self._bucket, Key=key, Body=body, ContentType="application/json"
+        )
+        self._client.put_object(
+            Bucket=self._bucket,
+            Key=key + ".gz",
+            Body=gzip.compress(body),
+            ContentType="application/gzip",
+        )
+        return key
+
+    def _load_json_from_key(self, key: str, *, komprimiert: bool) -> Any:
+        response = self._client.get_object(Bucket=self._bucket, Key=key)
+        roh = response["Body"].read()
+        self._zaehle_egress(key, len(roh))
+        daten = gzip.decompress(roh) if komprimiert else roh
+        return json.loads(daten.decode("utf-8"))
+
+    def _zaehle_egress(self, key: str, anzahl_bytes: int) -> None:
+        if anzahl_bytes > 0:
+            EGRESS_TALLY[key] = EGRESS_TALLY.get(key, 0) + anzahl_bytes
+
+    def flush_egress_tally(self, source: str) -> None:
+        """Legt den Egress-Zaehler dieses Prozesses in e2 ab (best effort).
+
+        Kleiner Tageszaehler unter EGRESS_METRICS_PREFIX; egress-guard.yml
+        summiert ihn monatsweise und alarmiert ab 60 % des 3-TB-Freibetrags.
+        Metering darf Kernlaeufe NIEMALS blockieren: jeder Fehler wird nur
+        auf stderr gemeldet. Wettrennen zwischen parallelen Laeufen = ein
+        gelegentlich verlorener Zaehlerstand, die Summe bleibt Untergrenze.
+        """
+        if not EGRESS_TALLY:
+            return
+        eintrag = {
+            "source": source,
+            "finished_at": datetime.now(timezone.utc).isoformat(),
+            "bytes_by_key": dict(sorted(EGRESS_TALLY.items())),
+            "total_bytes": sum(EGRESS_TALLY.values()),
+        }
+        try:
+            key = f"{EGRESS_METRICS_PREFIX}{date.today().isoformat()}.json"
+            try:
+                response = self._client.get_object(Bucket=self._bucket, Key=key)
+                bisher = json.loads(response["Body"].read().decode("utf-8"))
+                if not isinstance(bisher, dict):
+                    bisher = {}
+            except Exception:  # noqa: BLE001 - Bestand lesen ist optional
+                bisher = {}
+            laeufe = bisher.get("runs") if isinstance(bisher.get("runs"), list) else []
+            laeufe.append(eintrag)
+            self._client.put_object(
+                Bucket=self._bucket,
+                Key=key,
+                Body=json.dumps(
+                    {"month": date.today().strftime("%Y-%m"), "runs": laeufe[-200:]},
+                    ensure_ascii=False,
+                    indent=1,
+                ).encode("utf-8"),
+                ContentType="application/json",
+            )
+        except Exception as fehler:  # noqa: BLE001 - Metering ist nie laufkritisch
+            print(f"egress-tally: Zaehlerstand nicht speicherbar ({fehler})", file=sys.stderr)
 
     def existing_qids(self) -> set[str]:
         """Alle bereits gespeicherten QIDs (Dedup-Grundlage).
