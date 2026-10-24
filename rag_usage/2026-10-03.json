@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-03",
+ "generated_at": "2026-10-03T15:13:38Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-8c2bdce675c5c464",
+     "title": "tadrianonet/lifecycle-mentor",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tadrianonet/lifecycle-mentor"
+    },
+    {
+     "id": "hf-models-6f4766f1adb0a528",
+     "title": "Epicbracelect221/Qwen3-14B-MLX-4bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Epicbracelect221/Qwen3-14B-MLX-4bit"
+    },
+    {
+     "id": "hf-models-2983f88e47d8b604",
+     "title": "cerulean-works/ben-lab4-c4-gpt2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/cerulean-works/ben-lab4-c4-gpt2"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-8c2bdce675c5c464",
+     "title": "tadrianonet/lifecycle-mentor",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tadrianonet/lifecycle-mentor"
+    },
+    {
+     "id": "hf-models-6f4766f1adb0a528",
+     "title": "Epicbracelect221/Qwen3-14B-MLX-4bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Epicbracelect221/Qwen3-14B-MLX-4bit"
+    },
+    {
+     "id": "hf-models-2983f88e47d8b604",
+     "title": "cerulean-works/ben-lab4-c4-gpt2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/cerulean-works/ben-lab4-c4-gpt2"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-06725a6d2a123bbf",
+     "title": "leandronunes/Qwen3.8-4B-UniCo-QLoRA-ckpt200",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/leandronunes/Qwen3.8-4B-UniCo-QLoRA-ckpt200"
+    },
+    {
+     "id": "hf-models-dbf308a18ae369b9",
+     "title": "rafmacalaba/lfm2.5-350M-focus-metadata",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/rafmacalaba/lfm2.5-350M-focus-metadata"
+    },
+    {
+     "id": "hf-models-334467e445b2fdb7",
+     "title": "Efso/Nemotron-3-Nano-30B-A3B-GR",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Efso/Nemotron-3-Nano-30B-A3B-GR"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Keine neuen offenen KI-Modelle, die ursprünglich von mir veröffentlicht wurden, wurden in der Liste genannt.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-8c2bdce675c5c464",
+    "hf-models-6f4766f1adb0a528",
+    "hf-models-2983f88e47d8b604"
+   ],
+   "context_entry_ids": [
+    "hf-models-8c2bdce675c5c464",
+    "hf-models-6f4766f1adb0a528",
+    "hf-models-2983f88e47d8b604"
+   ]
+  }
+ ]
+}

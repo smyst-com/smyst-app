@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-09",
+ "generated_at": "2026-10-09T17:32:38Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-261e2034756cfe48",
+     "title": "sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0"
+    },
+    {
+     "id": "hf-models-0f30a27e5d33c6ec",
+     "title": "tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF"
+    },
+    {
+     "id": "hf-models-41c00fc3acd02ce6",
+     "title": "alapozk/pgabl-legal-assistant-sft",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/alapozk/pgabl-legal-assistant-sft"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-261e2034756cfe48",
+     "title": "sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0"
+    },
+    {
+     "id": "hf-models-7a2fe6cdcf587db7",
+     "title": "abhinav655/qwen25-preference-expert",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/abhinav655/qwen25-preference-expert"
+    },
+    {
+     "id": "hf-models-41c00fc3acd02ce6",
+     "title": "alapozk/pgabl-legal-assistant-sft",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/alapozk/pgabl-legal-assistant-sft"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-189e19a80e365ae5",
+     "title": "kino1008/Qwen3-4B-Instruct-2507-heretic",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/kino1008/Qwen3-4B-Instruct-2507-heretic"
+    },
+    {
+     "id": "hf-models-e8ba32e6f16c5d55",
+     "title": "krxi123/asm-adlandirma-qwen3-8b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/krxi123/asm-adlandirma-qwen3-8b-lora"
+    },
+    {
+     "id": "hf-models-c613a99f564e1039",
+     "title": "thongbuind/SAI-for-VinFast-FP32_375M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/thongbuind/SAI-for-VinFast-FP32_375M"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen dem letzten bekannten Update (2026-10-09) und der Fragezeit (2027-01-10) veröffentlicht wurden. Die Liste der bisherigen Modelle enthält nur einige, die auf Hugging Face veröffentlicht wurden. Es gibt keine direkten Verlinkungen zu neuen, offenen Modelle, die in dieser Zeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-261e2034756cfe48",
+    "hf-models-7a2fe6cdcf587db7",
+    "hf-models-41c00fc3acd02ce6"
+   ],
+   "context_entry_ids": [
+    "hf-models-261e2034756cfe48",
+    "hf-models-7a2fe6cdcf587db7",
+    "hf-models-41c00fc3acd02ce6"
+   ]
+  }
+ ]
+}

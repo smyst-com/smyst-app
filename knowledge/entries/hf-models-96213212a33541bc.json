@@ -1,0 +1,108 @@
+{
+ "id": "hf-models-96213212a33541bc",
+ "title": "Irfanuruchi/Qwen3-14B-BuildEng",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, qwen)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: peft."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/Irfanuruchi/Qwen3-14B-BuildEng-GGUF",
+ "url_normalized": "https://huggingface.co/Irfanuruchi/Qwen3-14B-BuildEng-GGUF",
+ "publisher": "Hugging Face",
+ "published": "2026-10-04",
+ "retrieved": "2026-10-04T10:58:14Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-6f4766f1adb0a528",
+  "hf-models-70ebd6be211842ac",
+  "hf-models-bc3f57dd416c1bec"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-04T10:58:22Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Irfanuruchi/Qwen3-14B-BuildEng-GGUF",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: unbekannt."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-04T10:58:22Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: unbekannt.",
+    "title": "Irfanuruchi/Qwen3-14B-BuildEng-GGUF"
+   },
+   "current": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+    "title": "Irfanuruchi/Qwen3-14B-BuildEng"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-04T10:58:22Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-04T10:58:22Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-04T10:58:22Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-04T10:58:22Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-04T10:58:22Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-04T10:58:22Z",
+ "confirmations": 1
+}

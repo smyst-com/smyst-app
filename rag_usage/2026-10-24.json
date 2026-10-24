@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-24",
+ "generated_at": "2026-10-24T14:50:25Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-c05276cf464f5162",
+     "title": "ollama/ollama: Release v0.40.10",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.10"
+    },
+    {
+     "id": "hf-models-10073dabd505bf20",
+     "title": "manasa-arisankala45/geoai-outdoor-assistant",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/manasa-arisankala45/geoai-outdoor-assistant"
+    },
+    {
+     "id": "hf-models-bd66bd0e3be41163",
+     "title": "vynly/CAEL-0.3.1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/vynly/CAEL-0.3.1"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-bd66bd0e3be41163",
+     "title": "vynly/CAEL-0.3.1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/vynly/CAEL-0.3.1"
+    },
+    {
+     "id": "hf-models-131daa2d4b866b0f",
+     "title": "GRAFX24/ds41",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/GRAFX24/ds41"
+    },
+    {
+     "id": "hf-models-284f88f73a534b62",
+     "title": "r7194714R/FuzeAI-Final",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/r7194714R/FuzeAI-Final"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-9500f4e4d4b37435",
+     "title": "sahilchachra/Carbon-X-MXFP4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/sahilchachra/Carbon-X-MXFP4"
+    },
+    {
+     "id": "hf-models-df59e6589bdfd975",
+     "title": "DedeProGames/Wisp-15M-Instruct",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DedeProGames/Wisp-15M-Instruct"
+    },
+    {
+     "id": "hf-models-668c111546e2d95c",
+     "title": "Ibackup/DeepSeek-R1-Distill-Llama-8B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ibackup/DeepSeek-R1-Distill-Llama-8B"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen der letzten Antwort (2026-10-24) und der Fragezeit (2026-10-25) veröffentlicht wurden. Die Liste der bisherigen Modelle enthält nur die Modelle, die auf Hugging Face veröffentlicht wurden. Es gibt keine neuen offenen KI-Modelle, die in dieser Zeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-bd66bd0e3be41163",
+    "hf-models-131daa2d4b866b0f",
+    "hf-models-284f88f73a534b62"
+   ],
+   "context_entry_ids": [
+    "hf-models-bd66bd0e3be41163",
+    "hf-models-131daa2d4b866b0f",
+    "hf-models-284f88f73a534b62"
+   ]
+  }
+ ]
+}

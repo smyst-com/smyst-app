@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-23",
+ "generated_at": "2026-10-23T16:06:43Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-373f51f1ca7334c9",
+     "title": "ollama/ollama: Release v0.40.10-rc0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.10-rc0"
+    },
+    {
+     "id": "gh-advisories-26cb9d530ae56bc8",
+     "title": "GHSA-cgf9-327m-v77c: pypdf: Possible large memory usage when parsing content streams",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-cgf9-327m-v77c"
+    },
+    {
+     "id": "hf-models-001fdd4a2ecfeb53",
+     "title": "amongglue/topaz-grascii-english",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/amongglue/topaz-grascii-english"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-9ecc66082c88215c",
+     "title": "Lilgarca/Jkejw",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Lilgarca/Jkejw"
+    },
+    {
+     "id": "hf-models-aed2cbb855a3f8ce",
+     "title": "Binade/Qwen3.5-9B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Binade/Qwen3.5-9B"
+    },
+    {
+     "id": "hf-models-e3087ba07a9fa8ce",
+     "title": "Ahmadbader17/tiny-gpt",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ahmadbader17/tiny-gpt"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-9500f4e4d4b37435",
+     "title": "sahilchachra/Carbon-X-MXFP4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/sahilchachra/Carbon-X-MXFP4"
+    },
+    {
+     "id": "hf-models-001fdd4a2ecfeb53",
+     "title": "amongglue/topaz-grascii-english",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/amongglue/topaz-grascii-english"
+    },
+    {
+     "id": "hf-models-8e7ff04ad0361ca1",
+     "title": "Hobbylm/hobbylm-1B-computer-use",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Hobbylm/hobbylm-1B-computer-use"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Liste veröffentlicht wurden. Die Liste enthält nur Modelle, die auf Hugging Face veröffentlicht wurden und keine Informationen zu neuen, offenen Modellen bietet.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-9ecc66082c88215c",
+    "hf-models-aed2cbb855a3f8ce",
+    "hf-models-e3087ba07a9fa8ce"
+   ],
+   "context_entry_ids": [
+    "hf-models-9ecc66082c88215c",
+    "hf-models-aed2cbb855a3f8ce",
+    "hf-models-e3087ba07a9fa8ce"
+   ]
+  }
+ ]
+}
