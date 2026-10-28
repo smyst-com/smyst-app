@@ -83,7 +83,9 @@ jobs:
           }, ensure_ascii=False, indent=1))
           PY
           cat /tmp/egress-stand.json
-          PROZENT=$(python3 -c "import json; print(json.load(open('/tmp/egress-stand.json'))['prozent'])")
+          # Ganzzahl fuer die Bash-Schwellwert-Pruefung: round() liefert int,
+          # "0.0" wuerde $(( PROZENT >= 80 ... )) mit Syntaxfehler abstuerzen lassen.
+          PROZENT=$(python3 -c "import json; print(round(json.load(open('/tmp/egress-stand.json'))['prozent']))")
           echo "prozent=${PROZENT}" >> "$GITHUB_OUTPUT"
           {
             echo "### Egress-Budget ${MONAT} (Untergrenze, instrumentierte Reader)"
