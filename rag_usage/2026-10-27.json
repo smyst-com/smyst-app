@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-27",
+ "generated_at": "2026-10-27T16:50:47Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-3cea0d889839db91",
+     "title": "ollama/ollama: Release v0.40.12-rc1",
+     "category": "infrastruktur",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.12-rc1"
+    },
+    {
+     "id": "gh-advisories-64877654cf3300b7",
+     "title": "GHSA-6pq8-jhm2-2vcw: qs : qs.stringify with arrayFormat 'comma' throws an uncaught TypeError on array elements carrying a non-callable own toString (DoS)",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-6pq8-jhm2-2vcw"
+    },
+    {
+     "id": "gh-advisories-1fdfe433c7360b94",
+     "title": "GHSA-qq8j-7v2v-3rwp: undici WebSocket client vulnerable to Denial of Service via failed HTTP/2 handshake",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-qq8j-7v2v-3rwp"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-b79cb32c722765a2",
+     "title": "DavidJLN/merge-or-mix-1.5b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DavidJLN/merge-or-mix-1.5b"
+    },
+    {
+     "id": "hf-models-c6efb50deb7a5d5e",
+     "title": "efeisot/minicpm5-2b-rco",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/efeisot/minicpm5-2b-rco"
+    },
+    {
+     "id": "hf-models-3cdcd497f309f3be",
+     "title": "esatapedico/Nanbeige4.3-33B-NVFP4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/esatapedico/Nanbeige4.3-33B-NVFP4"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-a3a879144b2984ac",
+     "title": "OpenAI expands partnership with Oracle to bring its apps to ChatGPT",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/oracle-apps-in-chatgpt"
+    },
+    {
+     "id": "hf-models-3a5622c184f4d527",
+     "title": "fgparamio/sauron-lora-qwen3-4b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/fgparamio/sauron-lora-qwen3-4b"
+    },
+    {
+     "id": "hf-models-07159df68ca546fd",
+     "title": "ProCreations/Dory-Beam-4B-Accurate",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ProCreations/Dory-Beam-4B-Accurate"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in der Frage erwähnt wurde, ist die **CVE-2026-110816**. Diese Sicherheitslücke ist ein **DoS**-Attacken, der durch das **qs**-Paket, das **GitHub**-Advisory Board bekannt gemacht hat. Es ist ein **medium** Schweregrad und betroffen das **QS**-Paket.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-releases-ollama-3cea0d889839db91",
+    "gh-advisories-64877654cf3300b7",
+    "gh-advisories-1fdfe433c7360b94"
+   ],
+   "context_entry_ids": [
+    "gh-releases-ollama-3cea0d889839db91",
+    "gh-advisories-64877654cf3300b7",
+    "gh-advisories-1fdfe433c7360b94"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-b79cb32c722765a2",
+    "hf-models-c6efb50deb7a5d5e",
+    "hf-models-3cdcd497f309f3be"
+   ],
+   "context_entry_ids": [
+    "hf-models-b79cb32c722765a2",
+    "hf-models-c6efb50deb7a5d5e",
+    "hf-models-3cdcd497f309f3be"
+   ]
+  }
+ ]
+}

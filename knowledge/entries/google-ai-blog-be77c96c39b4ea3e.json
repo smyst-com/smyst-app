@@ -1,0 +1,132 @@
+{
+ "id": "google-ai-blog-be77c96c39b4ea3e",
+ "title": "Our newest AI Quest: Mapping the human brain",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "Learn AI literacy via Google’s latest AI Quests lesson on neuroscience, “Polar Peaks.”",
+ "key_points": [
+  "Learn AI literacy via Google’s latest AI Quests lesson on neuroscience, “Polar Peaks.”"
+ ],
+ "source": {
+  "id": "google-ai-blog",
+  "name": "Google AI & DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://blog.google/products-and-platforms/products/education/ai-quests-polar-peaks/",
+ "url_normalized": "https://blog.google/products-and-platforms/products/education/ai-quests-polar-peaks",
+ "publisher": "Google AI & DeepMind Blog (RSS)",
+ "published": "2026-10-26",
+ "retrieved": "2026-10-26T17:43:33Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "openai-news-7e67b43cf9d0e609"
+ ],
+ "tags": [
+  "allgemein",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-26T17:43:40Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Our newest AI Quest: Mapping the human brain",
+    "summary": "Learn AI literacy via Google’s latest AI Quests lesson on neuroscience, “Polar Peaks.”"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "archiviert-als-abgelehnt",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-28T11:04:19Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-28T17:19:29Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-29T17:31:34Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-30T11:10:36Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-30T17:08:16Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-31T11:01:32Z",
+ "confirmations": 9
+}

@@ -1,0 +1,174 @@
+{
+ "id": "hf-models-770728b580835fc8",
+ "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-BLOCK-5L",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, qwen)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: speculators.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: speculators."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-30L",
+ "url_normalized": "https://huggingface.co/RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-30L",
+ "publisher": "Hugging Face",
+ "published": "2026-10-21",
+ "retrieved": "2026-10-21T09:38:44Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-2edce5612a6a5360",
+  "hf-models-0d0e4d322c9bef4e",
+  "hf-models-8c4449327008ea4d"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-30L",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: speculators."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-30L"
+   },
+   "current": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-15L"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-15L"
+   },
+   "current": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-5L"
+   }
+  },
+  {
+   "version": 4,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-DYNAMIC-5L"
+   },
+   "current": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-BLOCK-30L"
+   }
+  },
+  {
+   "version": 5,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-BLOCK-30L"
+   },
+   "current": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-BLOCK-15L"
+   }
+  },
+  {
+   "version": 6,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-BLOCK-15L"
+   },
+   "current": {
+    "title": "RelaxingSnorlax/Qwen3.8-27B-DSpark-FP8-BLOCK-5L"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-21T09:38:56Z",
+ "confirmations": 5
+}

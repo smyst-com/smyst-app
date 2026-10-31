@@ -1,0 +1,97 @@
+{
+ "id": "arxiv-ml-a7f228b38462f739",
+ "title": "On the stability of learning",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model)",
+  "relevance_score": 1
+ },
+ "summary": "Learning algorithms are usually analyzed under the assumption that informative gradients are continuously available. But this is not always true---learning signals in biological neural networks, for example, may be sparse, local, and only intermittently available at any given synapse. In this work, we show that if gradient information is noisy and only intermittently available, learning may be unstable. In particular, even if average learning dynamics converge to the correct optimum, variance in learning may be asymptotically infinite. We explore this point in a number of analytically tractable settings, including single-layer and multi-layer linear networks, and derive explicit conditions under which learning is stable. These conditions complement, but are conceptually distinct from, existing conditions related to the stability of stochastic gradient descent. Our work demonstrates that unbiased credit assignment is not enough for reliable learning; sufficiently frequent and informative feedback is also required, which yields an additional constraint on models of biologically plausible learning.",
+ "key_points": [
+  "Learning algorithms are usually analyzed under the assumption that informative gradients are continuously available",
+  "But this is not always true---learning signals in biological neural networks, for example, may be sparse, local, and only intermittently available at any given synapse",
+  "In this work, we show that if gradient information is noisy and only intermittently available, learning may be unstable",
+  "In particular, even if average learning dynamics converge to the correct optimum, variance in learning may be asymptotically infinite",
+  "We explore this point in a number of analytically tractable settings, including single-layer and multi-layer linear networks, and derive explicit conditions under which learning is stable"
+ ],
+ "source": {
+  "id": "arxiv-ml",
+  "name": "arXiv (cs.LG Machine Learning)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.35856v1",
+ "url_normalized": "https://arxiv.org/abs/2610.35856v1",
+ "publisher": "arXiv",
+ "published": "2026-10-26",
+ "retrieved": "2026-10-27T10:06:45Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "arxiv-ml-713adbb393ee2702",
+  "arxiv-ai-aeff719d510164e5",
+  "arxiv-ai-fcd3b8e6edb6fba3"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-27T10:06:49Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "On the stability of learning",
+    "summary": "Learning algorithms are usually analyzed under the assumption that informative gradients are continuously available. But this is not always true---learning signals in biological neural networks, for example, may be sparse, local, and only intermittently available at any given synapse. In this work, we show that if gradient information is noisy and only intermittently available, learning may be unstable. In particular, even if average learning dynamics converge to the correct optimum, variance in learning may be asymptotically infinite. We explore this point in a number of analytically tractable settings, including single-layer and multi-layer linear networks, and derive explicit conditions under which learning is stable. These conditions complement, but are conceptually distinct from, existing conditions related to the stability of stochastic gradient descent. Our work demonstrates that unbiased credit assignment is not enough for reliable learning; sufficiently frequent and informative feedback is also required, which yields an additional constraint on models of biologically plausible learning."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-27T16:50:41Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-27T16:50:41Z",
+ "confirmations": 1
+}

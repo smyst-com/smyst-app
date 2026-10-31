@@ -1,0 +1,108 @@
+{
+ "id": "hf-models-09cd36991c06ed35",
+ "title": "techdj/apollo-v1-7b-F16-GGUF",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell)",
+  "relevance_score": 2
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: peft."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/techdj/attack-chain-simulator-mistral7b-lora-F16-GGUF",
+ "url_normalized": "https://huggingface.co/techdj/attack-chain-simulator-mistral7b-lora-F16-GGUF",
+ "publisher": "Hugging Face",
+ "published": "2026-10-25",
+ "retrieved": "2026-10-25T15:02:07Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-99e030acfe5a9b8e",
+  "hf-models-9a638d266c5a5089",
+  "hf-models-e3abecfb62dac564"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-25T15:02:19Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "techdj/attack-chain-simulator-mistral7b-lora-F16-GGUF",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: unbekannt."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-25T15:02:19Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: unbekannt.",
+    "title": "techdj/attack-chain-simulator-mistral7b-lora-F16-GGUF"
+   },
+   "current": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+    "title": "techdj/apollo-v1-7b-F16-GGUF"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-25T15:02:19Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-25T15:02:19Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-25T15:02:19Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-25T15:02:19Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-25T15:02:19Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-25T15:02:19Z",
+ "confirmations": 1
+}

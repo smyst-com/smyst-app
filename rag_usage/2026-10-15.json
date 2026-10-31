@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-15",
+ "generated_at": "2026-10-15T15:43:04Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-bc70c47e8ecffc2f",
+     "title": "ollama/ollama: Release v0.40.5-rc1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.5-rc1"
+    },
+    {
+     "id": "hf-models-80fbcb960bea5a2a",
+     "title": "notfakerv/LFM2.5-24B-A2B-abliterated",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/notfakerv/LFM2.5-24B-A2B-abliterated"
+    },
+    {
+     "id": "hf-models-dfac4e20af80f957",
+     "title": "maximedubourg/regex-sft-qwen3-0.6b-onnx",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/maximedubourg/regex-sft-qwen3-0.6b-onnx"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-e3abecfb62dac564",
+     "title": "SauravMahalik/kalinga-03-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/SauravMahalik/kalinga-03-GGUF"
+    },
+    {
+     "id": "hf-models-e9c1fb945df39d3e",
+     "title": "MaterialsandtheEnvironment/matenv-smollm2-360m",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/MaterialsandtheEnvironment/matenv-smollm2-360m"
+    },
+    {
+     "id": "hf-models-fc6736c749df0c5b",
+     "title": "rothgar/deepseek-v4.1-flash-p300x2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/rothgar/deepseek-v4.1-flash-p300x2"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-bc70c47e8ecffc2f",
+     "title": "ollama/ollama: Release v0.40.5-rc1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.5-rc1"
+    },
+    {
+     "id": "gh-releases-ollama-5c2dbc9747081a21",
+     "title": "ollama/ollama: Release v0.40.5-rc0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.5-rc0"
+    },
+    {
+     "id": "hf-models-96d91bd7c8c541dc",
+     "title": "KilaAI/kila-coder-1.5b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/KilaAI/kila-coder-1.5b-lora"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die direkt in der Frage erwähnt wurden. Die angegebenen Modelle sind alle auf Hugging Face veröffentlicht und haben keine Downloads oder Likes. Es gibt keine direkten Verweise auf neue offene Modelle in der Frage.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-e3abecfb62dac564",
+    "hf-models-e9c1fb945df39d3e",
+    "hf-models-fc6736c749df0c5b"
+   ],
+   "context_entry_ids": [
+    "hf-models-e3abecfb62dac564",
+    "hf-models-e9c1fb945df39d3e",
+    "hf-models-fc6736c749df0c5b"
+   ]
+  }
+ ]
+}

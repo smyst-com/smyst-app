@@ -1,0 +1,95 @@
+{
+ "id": "arxiv-ai-07c9c0128d2d766f",
+ "title": "Adaptive Frequency Threshold Byte Pair Encoding for Mixed Natural Language and Structured Symbolic Corpora",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: this paper, rag)",
+  "relevance_score": 2
+ },
+ "summary": "Modern language models rely on subwording tokenization to define the discrete units of input processing, typically using methods like Byte Pair Encoding (BPE) that treat whitespace as a fixed semantic boundary. This design is inherently limited, as many meaningful concepts---including multiword expressions and the structured environments of formal languages like LaTeX---frequently span across whitespaces. While recent superword tokenization methods attempt to address this by relaxing whitespace constraints, they often rely on greedy frequency-driven merging that fails to account for token length or the specific needs of underrepresented domain-specific languages. In this paper, we introduce Adaptive Frequency Threshold Byte Pair Encoding (AdaBPE), a new tokenization method that leverages an adaptive frequent-pattern mining approach. AdaBPE features a twofold dynamicity: it adapts minimum frequency thresholds based on both the length of a candidate token, to prevent favoring frequent short patterns, and its type, to distinguish between general and formal language patterns, using LaTeX as case in point. This allows the model to efficiently allocate vocabulary capacity to domain-speci",
+ "key_points": [
+  "Modern language models rely on subwording tokenization to define the discrete units of input processing, typically using methods like Byte Pair Encoding (BPE) that treat whitespace as a fixed semantic boundary",
+  "This design is inherently limited, as many meaningful concepts---including multiword expressions and the structured environments of formal languages like LaTeX---frequently span across whitespaces",
+  "While recent superword tokenization methods attempt to address this by relaxing whitespace constraints, they often rely on greedy frequency-driven merging that fails to account for token length or the specific needs of underrepresented domain-specific languages",
+  "In this paper, we introduce Adaptive Frequency Threshold Byte Pair Encoding (AdaBPE), a new tokenization method that leverages an adaptive frequent-pattern mining approach",
+  "AdaBPE features a twofold dynamicity: it adapts minimum frequency thresholds based on both the length of a candidate token, to prevent favoring frequent short patterns, and its type, to distinguish between general and formal language patterns, using LaTeX as case in point"
+ ],
+ "source": {
+  "id": "arxiv-ai",
+  "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.32921v1",
+ "url_normalized": "https://arxiv.org/abs/2610.32921v1",
+ "publisher": "arXiv",
+ "published": "2026-10-23",
+ "retrieved": "2026-10-26T10:25:53Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "arxiv-ml-0ce815de641243bb",
+  "arxiv-ai-122778bbb04ea983"
+ ],
+ "tags": [
+  "forschung",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-26T10:26:06Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Adaptive Frequency Threshold Byte Pair Encoding for Mixed Natural Language and Structured Symbolic Corpora",
+    "summary": "Modern language models rely on subwording tokenization to define the discrete units of input processing, typically using methods like Byte Pair Encoding (BPE) that treat whitespace as a fixed semantic boundary. This design is inherently limited, as many meaningful concepts---including multiword expressions and the structured environments of formal languages like LaTeX---frequently span across whitespaces. While recent superword tokenization methods attempt to address this by relaxing whitespace constraints, they often rely on greedy frequency-driven merging that fails to account for token length or the specific needs of underrepresented domain-specific languages. In this paper, we introduce Adaptive Frequency Threshold Byte Pair Encoding (AdaBPE), a new tokenization method that leverages an adaptive frequent-pattern mining approach. AdaBPE features a twofold dynamicity: it adapts minimum frequency thresholds based on both the length of a candidate token, to prevent favoring frequent short patterns, and its type, to distinguish between general and formal language patterns, using LaTeX as case in point. This allows the model to efficiently allocate vocabulary capacity to domain-speci"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-26T17:43:40Z",
+ "confirmations": 1
+}

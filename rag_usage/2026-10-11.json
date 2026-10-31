@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-11",
+ "generated_at": "2026-10-11T16:44:55Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-4b6b63719a5c6b44",
+     "title": "A-Martinez-2508/peak-monk-jun-run26",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/A-Martinez-2508/peak-monk-jun-run26"
+    },
+    {
+     "id": "hf-models-d107fb7d1ce8267c",
+     "title": "pjdawson2020/Qwen3-Coder-Next",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/pjdawson2020/Qwen3-Coder-Next"
+    },
+    {
+     "id": "hf-models-04371ad243fecaab",
+     "title": "FP8Enjoyer/Mellum2.1-12B-A2.5B-Thinking-NVFP4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/FP8Enjoyer/Mellum2.1-12B-A2.5B-Thinking-NVFP4"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-63074a5624bdbd54",
+     "title": "Nightmak/DeepSeek-V4-Flash",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Nightmak/DeepSeek-V4-Flash"
+    },
+    {
+     "id": "hf-models-d107fb7d1ce8267c",
+     "title": "pjdawson2020/Qwen3-Coder-Next",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/pjdawson2020/Qwen3-Coder-Next"
+    },
+    {
+     "id": "hf-models-c6b07628175a3579",
+     "title": "NCHUPPBL/nchu-qwen2.5-3b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/NCHUPPBL/nchu-qwen2.5-3b-lora"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-04371ad243fecaab",
+     "title": "FP8Enjoyer/Mellum2.1-12B-A2.5B-Thinking-NVFP4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/FP8Enjoyer/Mellum2.1-12B-A2.5B-Thinking-NVFP4"
+    },
+    {
+     "id": "hf-models-7a56c2e0f75cf824",
+     "title": "nipunaCBT/qwen2.5-1.5b-skin-intake-qlora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/nipunaCBT/qwen2.5-1.5b-skin-intake-qlora"
+    },
+    {
+     "id": "hf-models-380e5e6c2efe9f27",
+     "title": "KexuanShi/sft_gemma2_2b_full_p001",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/KexuanShi/sft_gemma2_2b_full_p001"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden. Die bisherigen Modelle, die ich aus der Liste habe, sind alle bereits veröffentlicht worden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-63074a5624bdbd54",
+    "hf-models-d107fb7d1ce8267c",
+    "hf-models-c6b07628175a3579"
+   ],
+   "context_entry_ids": [
+    "hf-models-63074a5624bdbd54",
+    "hf-models-d107fb7d1ce8267c",
+    "hf-models-c6b07628175a3579"
+   ]
+  }
+ ]
+}

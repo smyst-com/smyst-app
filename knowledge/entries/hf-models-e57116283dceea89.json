@@ -1,0 +1,193 @@
+{
+ "id": "hf-models-e57116283dceea89",
+ "title": "mlx-community/flint-oQ2.5e",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell)",
+  "relevance_score": 2
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: mlx.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: mlx."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/mlx-community/flint-mixed-3-4bit",
+ "url_normalized": "https://huggingface.co/mlx-community/flint-mixed-3-4bit",
+ "publisher": "Hugging Face",
+ "published": "2026-10-22",
+ "retrieved": "2026-10-22T09:34:46Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-7c500fa4e09b1688",
+  "hf-models-7c7e6ede0a62dc5e",
+  "hf-models-72c9376174cf91ed"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-22T09:34:58Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "mlx-community/flint-mixed-3-4bit",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 1, Downloads: 0. Pipeline: text-generation. Bibliothek: mlx."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-24T14:50:18Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 1, Downloads: 0. Pipeline: text-generation. Bibliothek: mlx.",
+    "title": "mlx-community/flint-mixed-3-4bit"
+   },
+   "current": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: mlx.",
+    "title": "mlx-community/flint-OptiQ-4bit"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-10-27T16:50:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "mlx-community/flint-OptiQ-4bit"
+   },
+   "current": {
+    "title": "mlx-community/flint-oQ5e"
+   }
+  },
+  {
+   "version": 4,
+   "date": "2026-10-27T16:50:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "mlx-community/flint-oQ5e"
+   },
+   "current": {
+    "title": "mlx-community/flint-oQ4e"
+   }
+  },
+  {
+   "version": 5,
+   "date": "2026-10-27T16:50:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "mlx-community/flint-oQ4e"
+   },
+   "current": {
+    "title": "mlx-community/flint-oQ3e"
+   }
+  },
+  {
+   "version": 6,
+   "date": "2026-10-27T16:50:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "mlx-community/flint-oQ3e"
+   },
+   "current": {
+    "title": "mlx-community/flint-oQ2.7e"
+   }
+  },
+  {
+   "version": 7,
+   "date": "2026-10-27T16:50:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "mlx-community/flint-oQ2.7e"
+   },
+   "current": {
+    "title": "mlx-community/flint-oQ2.5e"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-24T14:50:18Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-27T16:50:40Z",
+ "confirmations": 6
+}

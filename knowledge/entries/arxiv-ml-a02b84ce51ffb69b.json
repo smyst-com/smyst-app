@@ -1,0 +1,95 @@
+{
+ "id": "arxiv-ml-a02b84ce51ffb69b",
+ "title": "Knowledge Distillation across Item and Code Spaces for Parallel Generative Recommendation",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: we propose, distillation)",
+  "relevance_score": 2
+ },
+ "summary": "Generative recommendation with semantic IDs represents each item as a sequence of discrete codes derived from its semantic representation and predicts these codes to generate recommendations. Existing semantic-ID recommenders are typically trained with hard labels for the observed next item. Although such supervision identifies the target, it provides no explicit distributional information about alternative items conditioned on the same user history. Sequential recommenders can supply this item-level predictive knowledge, but transferring it to semantic-ID generation is challenging because the teacher and student operate in item and code spaces, respectively. We propose two complementary knowledge-distillation objectives for parallel semantic-ID recommenders, which predict all code positions simultaneously without autoregressive prefix conditioning. Item Distribution Matching (IDM) reconstructs a catalogue-level item distribution from the student's parallel code predictions and aligns it with the teacher's item distribution. Code Marginal Matching (CMM) projects the teacher's item probabilities onto each code position using fixed item-to-code assignments, then matches the resulting",
+ "key_points": [
+  "Generative recommendation with semantic IDs represents each item as a sequence of discrete codes derived from its semantic representation and predicts these codes to generate recommendations",
+  "Existing semantic-ID recommenders are typically trained with hard labels for the observed next item",
+  "Although such supervision identifies the target, it provides no explicit distributional information about alternative items conditioned on the same user history",
+  "Sequential recommenders can supply this item-level predictive knowledge, but transferring it to semantic-ID generation is challenging because the teacher and student operate in item and code spaces, respectively",
+  "We propose two complementary knowledge-distillation objectives for parallel semantic-ID recommenders, which predict all code positions simultaneously without autoregressive prefix conditioning"
+ ],
+ "source": {
+  "id": "arxiv-ml",
+  "name": "arXiv (cs.LG Machine Learning)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.32943v1",
+ "url_normalized": "https://arxiv.org/abs/2610.32943v1",
+ "publisher": "arXiv",
+ "published": "2026-10-23",
+ "retrieved": "2026-10-26T10:26:01Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "arxiv-ml-0ce815de641243bb"
+ ],
+ "tags": [
+  "forschung",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-26T10:26:06Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Knowledge Distillation across Item and Code Spaces for Parallel Generative Recommendation",
+    "summary": "Generative recommendation with semantic IDs represents each item as a sequence of discrete codes derived from its semantic representation and predicts these codes to generate recommendations. Existing semantic-ID recommenders are typically trained with hard labels for the observed next item. Although such supervision identifies the target, it provides no explicit distributional information about alternative items conditioned on the same user history. Sequential recommenders can supply this item-level predictive knowledge, but transferring it to semantic-ID generation is challenging because the teacher and student operate in item and code spaces, respectively. We propose two complementary knowledge-distillation objectives for parallel semantic-ID recommenders, which predict all code positions simultaneously without autoregressive prefix conditioning. Item Distribution Matching (IDM) reconstructs a catalogue-level item distribution from the student's parallel code predictions and aligns it with the teacher's item distribution. Code Marginal Matching (CMM) projects the teacher's item probabilities onto each code position using fixed item-to-code assignments, then matches the resulting"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-26T17:43:40Z",
+ "confirmations": 1
+}

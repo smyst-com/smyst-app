@@ -1,0 +1,877 @@
+{
+ "title": "Was hat smyst radar heute dazugelernt?",
+ "day": "2026-10-09",
+ "generated_at": "2026-10-09T17:32:31Z",
+ "paused": false,
+ "topics_researched": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.6,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.09,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.4,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.2,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 0,
+   "duration_s": 0.14,
+   "ok": false
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.41,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.61,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.44,
+   "ok": true
+  }
+ ],
+ "topics_reasons": [
+  {
+   "id": "arxiv-ai",
+   "reason": "Wissenschaftliche Neuerscheinungen zu KI, Sprachmodellen und Sicherheit."
+  },
+  {
+   "id": "hf-models",
+   "reason": "Neue offene KI-Modelle und deren Metadaten direkt vom Primäranbieter."
+  },
+  {
+   "id": "cisa-kev",
+   "reason": "Offizielle US-Behördenliste aktiv ausgenutzter Schwachstellen."
+  },
+  {
+   "id": "openai-news",
+   "reason": "Offizielle Veröffentlichungen eines Konkurrenz-Anbieters."
+  },
+  {
+   "id": "deepmind-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "google-ai-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "gh-releases-llamacpp",
+   "reason": "Relevante Infrastruktur für das eigene smyst-Modell (llama-server)."
+  },
+  {
+   "id": "gh-releases-ollama",
+   "reason": "Ökosystem-Entwicklungen für lokale LLM-Betrieb."
+  }
+ ],
+ "sources_examined": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.6,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.09,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.4,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.2,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 0,
+   "duration_s": 0.14,
+   "ok": false
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.41,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.61,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.44,
+   "ok": true
+  }
+ ],
+ "sources_examined_count": 8,
+ "sources_ok_count": 7,
+ "findings_count": 61,
+ "new_insights": [
+  {
+   "id": "hf-models-261e2034756cfe48",
+   "title": "sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0"
+  },
+  {
+   "id": "hf-models-0f30a27e5d33c6ec",
+   "title": "tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF"
+  },
+  {
+   "id": "hf-models-41c00fc3acd02ce6",
+   "title": "alapozk/pgabl-legal-assistant-sft",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/alapozk/pgabl-legal-assistant-sft"
+  },
+  {
+   "id": "hf-models-85dbfa6edb642e63",
+   "title": "BashCache/temp-llada-base-40-snr-weighted-adapters-v3",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/BashCache/temp-llada-base-40-snr-weighted-adapters-v3"
+  },
+  {
+   "id": "hf-models-e46195138e696b43",
+   "title": "nesoai-dev-org/Qwen-Qwen2.5-0.5B-Instruct",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/nesoai-dev-org/Qwen-Qwen2.5-0.5B-Instruct"
+  },
+  {
+   "id": "hf-models-7352dc023fde7962",
+   "title": "sartajbhuvaji/bonsai-distilled-depth12-experts80-vs-baseline-3k-warmup450-lr1e4-best",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/sartajbhuvaji/bonsai-distilled-depth12-experts80-vs-baseline-3k-warmup450-lr1e4-best"
+  },
+  {
+   "id": "hf-models-16074e4c155fab91",
+   "title": "hsilvosa/CIMA-Spanish-Medical-Qwen-LoRA",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/hsilvosa/CIMA-Spanish-Medical-Qwen-LoRA"
+  },
+  {
+   "id": "hf-models-189e19a80e365ae5",
+   "title": "kino1008/Qwen3-4B-Instruct-2507-heretic",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/kino1008/Qwen3-4B-Instruct-2507-heretic"
+  }
+ ],
+ "confirmed": [
+  {
+   "id": "arxiv-ai-49a57661c6ebd03e",
+   "title": "On the estimation and validity of AI time horizons---a statistical look at the METR plot"
+  },
+  {
+   "id": "arxiv-ai-76e5394d6fa63f90",
+   "title": "From Reactive Containment to Proactive Assurance: Lessons from OpenAI, Anthropic, and Google Agent Security Incidents"
+  },
+  {
+   "id": "arxiv-ai-2d01812af8db81aa",
+   "title": "BrickBench: Evaluating Agentic Brick Design"
+  },
+  {
+   "id": "arxiv-ai-c44b5dbefc5535a1",
+   "title": "Bi-FORK: Generative Modeling of High-Dimensional Bifurcating Systems"
+  },
+  {
+   "id": "arxiv-ai-78664ef56b1c11b0",
+   "title": "Caught in the Act: Probes Effectively Detect Sabotage and Catch Unverbalized Deception"
+  },
+  {
+   "id": "arxiv-ai-8562d75e93beb880",
+   "title": "Ecology of AI Agents: Collaboration Creates a Population Threshold for Takeoff"
+  },
+  {
+   "id": "arxiv-ai-a242d482d110fdeb",
+   "title": "FastBench: Can Streaming VLMs Perceive High-Dynamic Real-World Streams?"
+  },
+  {
+   "id": "arxiv-ai-c1bd1abc48cb3df3",
+   "title": "RoboRSI: Stable, efficient, and reusable robot self-evolution in complex real-world environments"
+  },
+  {
+   "id": "arxiv-ai-782f0560b8dcd80c",
+   "title": "WOVEN: Weaving Visual World Modeling into Multimodal LLMs"
+  },
+  {
+   "id": "arxiv-ai-4c339a0b89ce6f6b",
+   "title": "MAMHOI: Factorizing Scene-Aware Human-Object Interaction through Affordances"
+  },
+  {
+   "id": "cisa-kev-042bd106b079ac18",
+   "title": "CVE-2015-5477: ISC — BIND ( ISC BIND Data Processing Errors Vulnerability)"
+  },
+  {
+   "id": "openai-news-edd58468d564448f",
+   "title": "Sophos cuts threat investigation time by 96% with OpenAI Daybreak"
+  },
+  {
+   "id": "openai-news-112b5f00879d4fef",
+   "title": "How Oracle turns days of work into minutes with ChatGPT and Codex"
+  },
+  {
+   "id": "openai-news-ca1ec6c6a1a1314d",
+   "title": "Pollo AI turns creative ideas into campaigns with OpenAI"
+  },
+  {
+   "id": "openai-news-f6d3626eb7c890d9",
+   "title": "LegalOn halves Codex costs while maintaining development speed"
+  },
+  {
+   "id": "openai-news-077dea1e8a7adb2e",
+   "title": "Disrupting AI-enabled “false front” operations"
+  },
+  {
+   "id": "openai-news-ad4e14640e358f44",
+   "title": "Helping teens learn, plan, and shape the future of AI"
+  },
+  {
+   "id": "openai-news-04e9dc3828b5420c",
+   "title": "Radisson Hotel Group brings hotel discovery into ChatGPT"
+  },
+  {
+   "id": "openai-news-0ca1450969b5beb5",
+   "title": "GPT-6 and Intelligent UI for everyone"
+  },
+  {
+   "id": "openai-news-342677ae7eadb2eb",
+   "title": "How Jump Trading is scaling quant research with ChatGPT"
+  },
+  {
+   "id": "openai-news-47b9255d8fa0f8e8",
+   "title": "Sharing AI progress in mathematics"
+  },
+  {
+   "id": "google-ai-blog-22643d6fcb195220",
+   "title": "Introducing Playground: Create and play custom games"
+  },
+  {
+   "id": "google-ai-blog-1122627a66dfc215",
+   "title": "The latest AI news we announced in September 2026"
+  },
+  {
+   "id": "google-ai-blog-1eadd5627184a89f",
+   "title": "Watch the winning trailer from the Future Vision XPRIZE, The Gifted."
+  },
+  {
+   "id": "google-ai-blog-8a86c97089bb6492",
+   "title": "Google Beam expands with new regions, partners, and customers"
+  },
+  {
+   "id": "google-ai-blog-079e661c04cec0b0",
+   "title": "New experts join Google’s AI & Economy team"
+  },
+  {
+   "id": "google-ai-blog-13d62ca6fcfd55d7",
+   "title": "Co-creating the future of fashion with Google"
+  },
+  {
+   "id": "google-ai-blog-e7b9d12d1b3a7eb0",
+   "title": "Making global data easier to explore"
+  },
+  {
+   "id": "google-ai-blog-18592959ad29d5e2",
+   "title": "AI for Societal Impact"
+  },
+  {
+   "id": "google-ai-blog-b86d9a766fb72b73",
+   "title": "Building AI to accelerate science and improve lives"
+  },
+  {
+   "id": "google-ai-blog-a243976a4aeffe78",
+   "title": "AI for everyone in every language"
+  },
+  {
+   "id": "gh-releases-ollama-393ffb505eafea09",
+   "title": "ollama/ollama: Release v0.40.2"
+  },
+  {
+   "id": "gh-releases-ollama-81a0b4d6f86dd623",
+   "title": "ollama/ollama: Release v0.40.1"
+  },
+  {
+   "id": "gh-releases-ollama-88cd05e9f93a5e9a",
+   "title": "ollama/ollama: Release v0.40.0"
+  },
+  {
+   "id": "gh-releases-ollama-c1780d2c01331613",
+   "title": "ollama/ollama: Release v0.35.1"
+  },
+  {
+   "id": "gh-releases-ollama-9c7898181506d919",
+   "title": "ollama/ollama: Release v0.35.0"
+  },
+  {
+   "id": "gh-releases-ollama-d83f0c4f6531a69f",
+   "title": "ollama/ollama: Release v0.34.4"
+  },
+  {
+   "id": "gh-releases-ollama-1856a21b309afe62",
+   "title": "ollama/ollama: Release v0.34.3"
+  },
+  {
+   "id": "gh-releases-ollama-7ca343f500b54b87",
+   "title": "ollama/ollama: Release v0.34.2"
+  },
+  {
+   "id": "gh-releases-ollama-8351276c6ecd1817",
+   "title": "ollama/ollama: Release v0.34.1"
+  },
+  {
+   "id": "gh-releases-ollama-7d7a6109aa6e68fd",
+   "title": "ollama/ollama: Release v0.34.0"
+  }
+ ],
+ "updated": [
+  {
+   "id": "hf-models-7352dc023fde7962",
+   "title": "sartajbhuvaji/bonsai-distilled-depth12-experts80-vs-baseline-3k-warmup450-lr1e4",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "hf-models-6e0630852ec240ce",
+   "title": "francesca9805/swe-latn-100mb-after-ppt-mp-struct-core-100mb-ckpt500_seed10",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11532",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11531",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11530",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11529",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11528",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11527",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11526",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11524",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11523",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11521",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  }
+ ],
+ "corrected": [],
+ "outdated": [],
+ "rejected": [],
+ "contradictions": [
+  {
+   "entry_id": "hf-models-261e2034756cfe48",
+   "title": "sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0",
+   "candidates": [
+    "hf-models-65d3464ce59031d0"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-0f30a27e5d33c6ec",
+   "title": "tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF",
+   "candidates": [
+    "hf-models-7ef4ea3474d050d6",
+    "hf-models-0a3e79e8b94cd36d",
+    "hf-models-db1554c8cf9cfeee"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-85dbfa6edb642e63",
+   "title": "BashCache/temp-llada-base-40-snr-weighted-adapters-v3",
+   "candidates": [
+    "hf-models-b6b98eb71df424c4",
+    "hf-models-36635693340eb0b3"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-e46195138e696b43",
+   "title": "nesoai-dev-org/Qwen-Qwen2.5-0.5B-Instruct",
+   "candidates": [
+    "hf-models-4fbd2477b49f74d3",
+    "hf-models-dfb0fd79ed8c2153",
+    "hf-models-98c3a413d068013f"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-16074e4c155fab91",
+   "title": "hsilvosa/CIMA-Spanish-Medical-Qwen-LoRA",
+   "candidates": [
+    "hf-models-b5528714ce9096e0",
+    "hf-models-6848c6b6cdb819fa"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-189e19a80e365ae5",
+   "title": "kino1008/Qwen3-4B-Instruct-2507-heretic",
+   "candidates": [
+    "hf-models-0a3e79e8b94cd36d",
+    "hf-models-db1554c8cf9cfeee",
+    "hf-models-e08128a985074b8c"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  }
+ ],
+ "competitor_changes": [],
+ "new_models_tech": [
+  {
+   "id": "hf-models-261e2034756cfe48",
+   "title": "sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0"
+  },
+  {
+   "id": "hf-models-0f30a27e5d33c6ec",
+   "title": "tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF"
+  },
+  {
+   "id": "hf-models-41c00fc3acd02ce6",
+   "title": "alapozk/pgabl-legal-assistant-sft"
+  },
+  {
+   "id": "hf-models-85dbfa6edb642e63",
+   "title": "BashCache/temp-llada-base-40-snr-weighted-adapters-v3"
+  },
+  {
+   "id": "hf-models-e46195138e696b43",
+   "title": "nesoai-dev-org/Qwen-Qwen2.5-0.5B-Instruct"
+  },
+  {
+   "id": "hf-models-7352dc023fde7962",
+   "title": "sartajbhuvaji/bonsai-distilled-depth12-experts80-vs-baseline-3k-warmup450-lr1e4"
+  },
+  {
+   "id": "hf-models-16074e4c155fab91",
+   "title": "hsilvosa/CIMA-Spanish-Medical-Qwen-LoRA"
+  },
+  {
+   "id": "hf-models-189e19a80e365ae5",
+   "title": "kino1008/Qwen3-4B-Instruct-2507-heretic"
+  }
+ ],
+ "security_findings": [],
+ "improvement_suggestions": [
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF",
+   "sources": [
+    "https://huggingface.co/tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-0f30a27e5d33c6ec"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': nesoai-dev-org/Qwen-Qwen2.5-0.5B-Instruct",
+   "sources": [
+    "https://huggingface.co/nesoai-dev-org/Qwen-Qwen2.5-0.5B-Instruct"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 1, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-e46195138e696b43"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': hsilvosa/CIMA-Spanish-Medical-Qwen-LoRA",
+   "sources": [
+    "https://huggingface.co/hsilvosa/CIMA-Spanish-Medical-Qwen-LoRA"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-16074e4c155fab91"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': kino1008/Qwen3-4B-Instruct-2507-heretic",
+   "sources": [
+    "https://huggingface.co/kino1008/Qwen3-4B-Instruct-2507-heretic"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-189e19a80e365ae5"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0",
+   "sources": [
+    "https://huggingface.co/sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-261e2034756cfe48"
+  }
+ ],
+ "rag_usage": {
+  "day": "2026-10-09",
+  "generated_at": "2026-10-09T17:32:38Z",
+  "tests": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+    "found_correct_category": false,
+    "top_matches": [
+     {
+      "id": "hf-models-261e2034756cfe48",
+      "title": "sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0"
+     },
+     {
+      "id": "hf-models-0f30a27e5d33c6ec",
+      "title": "tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/tawei-amd/Qwen3.8-Flash-Next-strixflash-GGUF"
+     },
+     {
+      "id": "hf-models-41c00fc3acd02ce6",
+      "title": "alapozk/pgabl-legal-assistant-sft",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/alapozk/pgabl-legal-assistant-sft"
+     }
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "hf-models-261e2034756cfe48",
+      "title": "sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/sigmanih/MiniCPM5-2B-MLX-GGUF-Q8_0"
+     },
+     {
+      "id": "hf-models-7a2fe6cdcf587db7",
+      "title": "abhinav655/qwen25-preference-expert",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/abhinav655/qwen25-preference-expert"
+     },
+     {
+      "id": "hf-models-41c00fc3acd02ce6",
+      "title": "alapozk/pgabl-legal-assistant-sft",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/alapozk/pgabl-legal-assistant-sft"
+     }
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+    "found_correct_category": false,
+    "top_matches": [
+     {
+      "id": "hf-models-189e19a80e365ae5",
+      "title": "kino1008/Qwen3-4B-Instruct-2507-heretic",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/kino1008/Qwen3-4B-Instruct-2507-heretic"
+     },
+     {
+      "id": "hf-models-e8ba32e6f16c5d55",
+      "title": "krxi123/asm-adlandirma-qwen3-8b-lora",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/krxi123/asm-adlandirma-qwen3-8b-lora"
+     },
+     {
+      "id": "hf-models-c613a99f564e1039",
+      "title": "thongbuind/SAI-for-VinFast-FP32_375M",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/thongbuind/SAI-for-VinFast-FP32_375M"
+     }
+    ]
+   }
+  ],
+  "answers": [
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "ok": true,
+    "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen dem letzten bekannten Update (2026-10-09) und der Fragezeit (2027-01-10) veröffentlicht wurden. Die Liste der bisherigen Modelle enthält nur einige, die auf Hugging Face veröffentlicht wurden. Es gibt keine direkten Verlinkungen zu neuen, offenen Modelle, die in dieser Zeit veröffentlicht wurden.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "hf-models-261e2034756cfe48",
+     "hf-models-7a2fe6cdcf587db7",
+     "hf-models-41c00fc3acd02ce6"
+    ],
+    "context_entry_ids": [
+     "hf-models-261e2034756cfe48",
+     "hf-models-7a2fe6cdcf587db7",
+     "hf-models-41c00fc3acd02ce6"
+    ]
+   }
+  ]
+ },
+ "open_questions": [],
+ "further_research": [
+  "Widerspruchskandidaten manuell gegenprüfen (siehe contradictions).",
+  "Quellen ohne Datum nach Primärquelle durchsuchen."
+ ],
+ "errors": 1,
+ "costs": {
+  "last_run_eur": 0.0,
+  "day_eur": 0.0,
+  "month_eur": 0.0,
+  "note": "Ausschließlich kostenlose offizielle Quellen/APIs (Free-Only-Regel)."
+ },
+ "summary": "8 neue geprüfte Erkenntnisse, 41 bestätigt, 12 aktualisiert, 0 veraltet, 0 verworfen.",
+ "rag_ready_count": 90,
+ "used_in_answer_count": 132
+}

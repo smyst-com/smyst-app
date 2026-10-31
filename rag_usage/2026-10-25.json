@@ -1,0 +1,132 @@
+{
+ "day": "2026-10-25",
+ "generated_at": "2026-10-25T15:02:28Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-cc672400053875b0",
+     "title": "ollama/ollama: Release v0.40.8",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.8"
+    },
+    {
+     "id": "hf-models-d9288d5f2bfb2688",
+     "title": "shortice/shortik",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/shortice/shortik"
+    },
+    {
+     "id": "hf-models-530246a475bb814f",
+     "title": "eyes-ml/Nanbeige4.3-33B-Base",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/eyes-ml/Nanbeige4.3-33B-Base"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-d9288d5f2bfb2688",
+     "title": "shortice/shortik",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/shortice/shortik"
+    },
+    {
+     "id": "hf-models-02783303e48492a8",
+     "title": "helloAI333/LilyStory-ONNX",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/helloAI333/LilyStory-ONNX"
+    },
+    {
+     "id": "hf-models-530246a475bb814f",
+     "title": "eyes-ml/Nanbeige4.3-33B-Base",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/eyes-ml/Nanbeige4.3-33B-Base"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-70e7e77bf5a9be1e",
+     "title": "bouroo/flint-mlx-mxfp4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+     ],
+     "url": "https://huggingface.co/bouroo/flint-mlx-mxfp4"
+    },
+    {
+     "id": "hf-models-fefa64dacbe54d69",
+     "title": "ThakiCloud/Thaki-SecProof-2B-Preview",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ThakiCloud/Thaki-SecProof-2B-Preview"
+    },
+    {
+     "id": "hf-models-82fad3f991914011",
+     "title": "DuoNeural/FC-CDM-Poincare-7L-108M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DuoNeural/FC-CDM-Poincare-7L-108M"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikationen der letzten 24 Stunden (2026-10-25) veröffentlicht wurden. Die bisherigen Modelle sind:\n\n- shortice/shortik\n- helloAI333/LilyStory-ONNX\n- eyes-ml/Nanbeige4.3-33B-Base\n- bouroo/flint-mlx-mxfp4\n- ThakiCloud/Thaki-SecProof-2B-Preview\n\nDiese Modelle sind auf Hugging Face veröffentlicht und basieren auf der Transformer-Bibliothek.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-d9288d5f2bfb2688",
+    "hf-models-02783303e48492a8",
+    "hf-models-530246a475bb814f"
+   ],
+   "context_entry_ids": [
+    "hf-models-d9288d5f2bfb2688",
+    "hf-models-02783303e48492a8",
+    "hf-models-530246a475bb814f"
+   ]
+  }
+ ]
+}

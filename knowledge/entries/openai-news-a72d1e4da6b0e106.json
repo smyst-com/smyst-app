@@ -1,0 +1,145 @@
+{
+ "id": "openai-news-a72d1e4da6b0e106",
+ "title": "Bringing GPT-Rosalind to academic research labs",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: gpt)",
+  "relevance_score": 1
+ },
+ "summary": "Introducing the Rosalind Academic Plan, offering eligible academic labs sponsored access to GPT-Rosalind and tools to advance life sciences research.",
+ "key_points": [
+  "Introducing the Rosalind Academic Plan, offering eligible academic labs sponsored access to GPT-Rosalind and tools to advance life sciences research."
+ ],
+ "source": {
+  "id": "openai-news",
+  "name": "OpenAI Neuigkeiten (offizieller RSS)",
+  "kind": "rss",
+  "trust": 3,
+  "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+ },
+ "source_url": "https://openai.com/index/introducing-the-rosalind-academic-plan",
+ "url_normalized": "https://openai.com/index/introducing-the-rosalind-academic-plan",
+ "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+ "published": null,
+ "retrieved": "2026-10-16T09:14:15Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+ "trust_level": 3,
+ "freshness": "unbekannt",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-ed051e6a98d45a0e",
+  "hf-models-7ba4b307d3f3c0a0"
+ ],
+ "tags": [
+  "ki-modelle",
+  "rss",
+  "unbekannt"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-16T09:14:24Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Bringing GPT-Rosalind to academic research labs",
+    "summary": "Introducing the Rosalind Academic Plan, offering eligible academic labs sponsored access to GPT-Rosalind and tools to advance life sciences research."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-16T15:33:46Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-17T09:09:57Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-18T09:26:53Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-18T14:46:49Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-19T10:12:43Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-19T18:20:49Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-20T09:35:34Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-20T15:52:20Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-21T09:38:56Z",
+ "confirmations": 10
+}

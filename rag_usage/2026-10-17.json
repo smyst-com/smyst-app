@@ -1,0 +1,164 @@
+{
+ "day": "2026-10-17",
+ "generated_at": "2026-10-17T14:23:39Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-a7556a7a29d921f0",
+     "title": "ollama/ollama: Release v0.40.6",
+     "category": "infrastruktur",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.6"
+    },
+    {
+     "id": "gh-advisories-9a9fa5c6323a25bd",
+     "title": "GHSA-pw5q-rjx4-7f7p: Arcane: Delegated users:update permission allows admin account takeover via password reset (no privilege-hierarchy check)",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-pw5q-rjx4-7f7p"
+    },
+    {
+     "id": "gh-advisories-b3542354e80022ce",
+     "title": "GHSA-mp22-58ff-6fhr: Arcane: Environment access token bypasses the admin-required authorization gate on `/api/debug/pprof`",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-mp22-58ff-6fhr"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-96c85d110862d7df",
+     "title": "rsu/AnchorMass-Attention",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/rsu/AnchorMass-Attention"
+    },
+    {
+     "id": "hf-models-22754a1ca6bd8674",
+     "title": "AmirFazlollahi/Qwen3-1.7B-HendrycksMATH-GRPO",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/AmirFazlollahi/Qwen3-1.7B-HendrycksMATH-GRPO"
+    },
+    {
+     "id": "hf-models-7c500fa4e09b1688",
+     "title": "tomekcp/Kolibri-1-MLX-4bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tomekcp/Kolibri-1-MLX-4bit"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-7f146d621850784f",
+     "title": "GHSA-h4mw-j7qp-8mwm: Claude Agent SDK: Argument Injection via resume Option Allows Arbitrary Command Execution",
+     "category": "konkurrenz",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-h4mw-j7qp-8mwm"
+    },
+    {
+     "id": "gh-releases-ollama-bc70c47e8ecffc2f",
+     "title": "ollama/ollama: Release v0.40.5-rc1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.5-rc1"
+    },
+    {
+     "id": "gh-releases-ollama-5c2dbc9747081a21",
+     "title": "ollama/ollama: Release v0.40.5-rc0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.5-rc0"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die Remote Code Execution via unsafe deserialisierung in der LMCache-Bibliothek. Diese Sicherheitslücke ermöglicht es, dass Remote-Attacken auf die LMCache-Bibliothek ausführt.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-releases-ollama-a7556a7a29d921f0",
+    "gh-advisories-9a9fa5c6323a25bd",
+    "gh-advisories-b3542354e80022ce"
+   ],
+   "context_entry_ids": [
+    "gh-releases-ollama-a7556a7a29d921f0",
+    "gh-advisories-9a9fa5c6323a25bd",
+    "gh-advisories-b3542354e80022ce"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die seit der letzten Fragezeit veröffentlicht wurden. Die bisherigen Modelle, die ich aus der Liste habe, sind alle auf Hugging Face veröffentlicht worden und haben keine Downloads oder Likes.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-96c85d110862d7df",
+    "hf-models-22754a1ca6bd8674",
+    "hf-models-7c500fa4e09b1688"
+   ],
+   "context_entry_ids": [
+    "hf-models-96c85d110862d7df",
+    "hf-models-22754a1ca6bd8674",
+    "hf-models-7c500fa4e09b1688"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine offiziellen Informationen über neue Produkte oder Anbietende wie OpenAI oder Anthropic. Die Informationen, die du angegeben hast, sind keine direkte Beiträge oder Releases von solchen Unternehmen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-7f146d621850784f",
+    "gh-releases-ollama-bc70c47e8ecffc2f",
+    "gh-releases-ollama-5c2dbc9747081a21"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-7f146d621850784f",
+    "gh-releases-ollama-bc70c47e8ecffc2f",
+    "gh-releases-ollama-5c2dbc9747081a21"
+   ]
+  }
+ ]
+}

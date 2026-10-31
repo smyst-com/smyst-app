@@ -1,0 +1,104 @@
+{
+ "id": "openai-news-0dc3cf0b7c98dcde",
+ "title": "The future of the firm",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "How AI might enter the org chart—beneath, beside, and between us.",
+ "key_points": [
+  "How AI might enter the org chart—beneath, beside, and between us."
+ ],
+ "source": {
+  "id": "openai-news",
+  "name": "OpenAI Neuigkeiten (offizieller RSS)",
+  "kind": "rss",
+  "trust": 3,
+  "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+ },
+ "source_url": "https://openai.com/index/the-future-of-the-firm",
+ "url_normalized": "https://openai.com/index/the-future-of-the-firm",
+ "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+ "published": null,
+ "retrieved": "2026-10-29T11:03:11Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 3,
+ "freshness": "unbekannt",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "google-ai-blog-be77c96c39b4ea3e",
+  "deepmind-blog-996b33c09ad57427",
+  "google-ai-blog-1122627a66dfc215"
+ ],
+ "tags": [
+  "allgemein",
+  "rss",
+  "unbekannt"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-29T11:03:21Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "The future of the firm",
+    "summary": "How AI might enter the org chart—beneath, beside, and between us."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  },
+  {
+   "at": "2026-10-29T17:31:34Z",
+   "from": "archiviert-als-abgelehnt",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-30T11:10:36Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-30T17:08:16Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-31T11:01:32Z",
+ "confirmations": 4
+}

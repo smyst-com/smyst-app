@@ -1,0 +1,119 @@
+{
+ "id": "openai-news-f16aefe89a6e3f3b",
+ "title": "Working with academic communities to build scientific understanding",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model)",
+  "relevance_score": 1
+ },
+ "summary": "OpenAI shares model results on the Kakeya conjecture, Exponential Time Hypothesis, and quantum chromodynamics—and how researchers can verify and build on them.",
+ "key_points": [
+  "OpenAI shares model results on the Kakeya conjecture, Exponential Time Hypothesis, and quantum chromodynamics—and how researchers can verify and build on them."
+ ],
+ "source": {
+  "id": "openai-news",
+  "name": "OpenAI Neuigkeiten (offizieller RSS)",
+  "kind": "rss",
+  "trust": 3,
+  "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+ },
+ "source_url": "https://openai.com/index/building-scientific-understanding-with-academic-communities",
+ "url_normalized": "https://openai.com/index/building-scientific-understanding-with-academic-communities",
+ "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+ "published": null,
+ "retrieved": "2026-10-27T10:06:40Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+ "trust_level": 3,
+ "freshness": "unbekannt",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "rss",
+  "unbekannt"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-27T10:06:49Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Working with academic communities to build scientific understanding",
+    "summary": "OpenAI shares model results on the Kakeya conjecture, Exponential Time Hypothesis, and quantum chromodynamics—and how researchers can verify and build on them."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-27T10:07:16Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t3)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "used_in_answer",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-28T11:04:19Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-28T17:19:29Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-29T17:31:34Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-29T17:31:34Z",
+ "confirmations": 5
+}

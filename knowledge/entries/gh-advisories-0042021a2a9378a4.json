@@ -1,0 +1,94 @@
+{
+ "id": "gh-advisories-0042021a2a9378a4",
+ "title": "GHSA-cggf-277g-3q54: pypdf has possible large memory usage when parsing page tree",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: memory)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: pypdf. CVE: CVE-2026-119204. Zusammenfassung: pypdf has possible large memory usage when parsing page tree",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad high",
+  "Betroffenes Paket: pypdf",
+  "CVE: CVE-2026-119204",
+  "Zusammenfassung: pypdf has possible large memory usage when parsing page tree"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-cggf-277g-3q54",
+ "url_normalized": "https://github.com/advisories/GHSA-cggf-277g-3q54",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-30",
+ "retrieved": "2026-10-31T11:01:26Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-advisories-7495c7ffdcf06d4e",
+  "gh-advisories-e108960aecd3e179",
+  "gh-advisories-2a65a7cba5ce86ed"
+ ],
+ "tags": [
+  "forschung",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-31T11:01:32Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-cggf-277g-3q54: pypdf has possible large memory usage when parsing page tree",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: pypdf. CVE: CVE-2026-119204. Zusammenfassung: pypdf has possible large memory usage when parsing page tree"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-31T16:34:45Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+  }
+ ],
+ "status": "used_in_answer",
+ "_rag_flags": []
+}

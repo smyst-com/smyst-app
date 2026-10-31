@@ -1,0 +1,87 @@
+{
+ "id": "openai-news-d2282bcce1625c64",
+ "title": "Fair use benefits everyone",
+ "topic": {
+  "category": "konkurrenz",
+  "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: openai)",
+  "relevance_score": 1
+ },
+ "summary": "OpenAI shares excerpts from court briefs by creators, academics, accessibility advocates, and legal experts, among others, on how fair use supports AI training and innovation.",
+ "key_points": [
+  "OpenAI shares excerpts from court briefs by creators, academics, accessibility advocates, and legal experts, among others, on how fair use supports AI training and innovation."
+ ],
+ "source": {
+  "id": "openai-news",
+  "name": "OpenAI Neuigkeiten (offizieller RSS)",
+  "kind": "rss",
+  "trust": 3,
+  "trust_reason": "Quellklasse rss (Basis 4); kein Veröffentlichungsdatum (−1)"
+ },
+ "source_url": "https://openai.com/index/fair-use-benefits-everyone",
+ "url_normalized": "https://openai.com/index/fair-use-benefits-everyone",
+ "publisher": "OpenAI Neuigkeiten (offizieller RSS)",
+ "published": null,
+ "retrieved": "2026-10-31T11:01:22Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 3/5, Aktualität unbekannt",
+ "trust_level": 3,
+ "freshness": "unbekannt",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "konkurrenz",
+  "rss",
+  "unbekannt"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-31T11:01:32Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Fair use benefits everyone",
+    "summary": "OpenAI shares excerpts from court briefs by creators, academics, accessibility advocates, and legal experts, among others, on how fair use supports AI training and innovation."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-31T11:02:22Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t3)."
+  }
+ ],
+ "status": "used_in_answer",
+ "_rag_flags": []
+}

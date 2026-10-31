@@ -1,0 +1,93 @@
+{
+ "id": "gh-advisories-ab326c30db3499e7",
+ "title": "GHSA-f5m9-jfrj-jjj7: OpenTelemetry Python: Unbounded memory allocation in Jaeger baggage propagation",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: memory)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: opentelemetry-propagator-jaeger. CVE: CVE-2026-116694. Zusammenfassung: OpenTelemetry Python: Unbounded memory allocation in Jaeger baggage propagation",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium",
+  "Betroffenes Paket: opentelemetry-propagator-jaeger",
+  "CVE: CVE-2026-116694",
+  "Zusammenfassung: OpenTelemetry Python: Unbounded memory allocation in Jaeger baggage propagation"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-f5m9-jfrj-jjj7",
+ "url_normalized": "https://github.com/advisories/GHSA-f5m9-jfrj-jjj7",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-27",
+ "retrieved": "2026-10-28T11:04:13Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-advisories-08c11d197bb2aa2a"
+ ],
+ "tags": [
+  "forschung",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-28T11:04:19Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-f5m9-jfrj-jjj7: OpenTelemetry Python: Unbounded memory allocation in Jaeger baggage propagation",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: opentelemetry-propagator-jaeger. CVE: CVE-2026-116694. Zusammenfassung: OpenTelemetry Python: Unbounded memory allocation in Jaeger baggage propagation"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-28T11:04:19Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-28T11:04:19Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-28T11:04:19Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-28T11:04:19Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-28T17:19:29Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-28T17:19:29Z",
+ "confirmations": 1
+}

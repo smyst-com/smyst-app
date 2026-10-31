@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-22",
+ "generated_at": "2026-10-22T16:00:39Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-ef5da458f4dd1a6e",
+     "title": "bhadrie/Python-Tab-Completion-CodeLlama-70b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bhadrie/Python-Tab-Completion-CodeLlama-70b"
+    },
+    {
+     "id": "hf-models-e63fe5f5be7bff7e",
+     "title": "enriquemaldo/qwen25-3b-hybrid15k-3ep",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/enriquemaldo/qwen25-3b-hybrid15k-3ep"
+    },
+    {
+     "id": "hf-models-78b2fc2d74c00cc2",
+     "title": "tensorninja2/caveman-1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tensorninja2/caveman-1"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-78b2fc2d74c00cc2",
+     "title": "tensorninja2/caveman-1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tensorninja2/caveman-1"
+    },
+    {
+     "id": "hf-models-e63fe5f5be7bff7e",
+     "title": "enriquemaldo/qwen25-3b-hybrid15k-3ep",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/enriquemaldo/qwen25-3b-hybrid15k-3ep"
+    },
+    {
+     "id": "hf-models-10ab765e839494a7",
+     "title": "aagha24/novashop-support-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aagha24/novashop-support-lora"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-63c31ca523f91ccf",
+     "title": "What FDE means at OpenAI",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/forward-deployed-engineering-means"
+    },
+    {
+     "id": "hf-models-b717ded4bdf24d2d",
+     "title": "mradermacher/kisoku-1.6b-chat-i1-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mradermacher/kisoku-1.6b-chat-i1-GGUF"
+    },
+    {
+     "id": "hf-models-48983e0b2b1b13d1",
+     "title": "aikronus-labs/ribot-135m",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aikronus-labs/ribot-135m"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der aktuellen Liste veröffentlicht wurden. Die Liste ist jedoch ein Beispiel für die Verfügbarkeit von neuen offenen KI-Modellen auf Hugging Face.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-78b2fc2d74c00cc2",
+    "hf-models-e63fe5f5be7bff7e",
+    "hf-models-10ab765e839494a7"
+   ],
+   "context_entry_ids": [
+    "hf-models-78b2fc2d74c00cc2",
+    "hf-models-e63fe5f5be7bff7e",
+    "hf-models-10ab765e839494a7"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine offiziellen Informationen über neue Anbietungen von OpenAI oder Anthropic. Die verwendeten Quellen beinhalten keine direkte Beiträge zu aktuellen Entwicklungen in der Kunst der KI.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-63c31ca523f91ccf",
+    "hf-models-b717ded4bdf24d2d",
+    "hf-models-48983e0b2b1b13d1"
+   ],
+   "context_entry_ids": [
+    "openai-news-63c31ca523f91ccf",
+    "hf-models-b717ded4bdf24d2d",
+    "hf-models-48983e0b2b1b13d1"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,150 @@
+{
+ "day": "2026-10-20",
+ "generated_at": "2026-10-20T15:52:29Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-fa17b21782565c35",
+     "title": "GHSA-62vg-58rm-qff7: @angular/router: Denial of Service via Unmatched Empty-Path Outlet Route Matching in Server-Side Rendering (SSR)",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-62vg-58rm-qff7"
+    },
+    {
+     "id": "gh-advisories-bd580b213aa52e36",
+     "title": "GHSA-5r4p-p66f-jhc7: Hono: `serveStatic` decodes the request path a second time, leading to bypass of middleware on static paths",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-5r4p-p66f-jhc7"
+    },
+    {
+     "id": "gh-advisories-5de2be8b237b3f8b",
+     "title": "GHSA-w739-gvwx-grc3: @angular/platform-server: Open Redirect via Protocol-Relative URLs in Server-Side Rendering (SSR)",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-w739-gvwx-grc3"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-44dc62459daa2990",
+     "title": "johannhartmann/kolibri-1-2.5bit-de",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/johannhartmann/kolibri-1-2.5bit-de"
+    },
+    {
+     "id": "hf-models-1dd7383db0421aa7",
+     "title": "mphd1/pythia1.4b-dolly-public",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mphd1/pythia1.4b-dolly-public"
+    },
+    {
+     "id": "hf-models-c9de927966801544",
+     "title": "johannhartmann/Kohlibri-40B-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/johannhartmann/Kohlibri-40B-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-cdab90633ded82e3",
+     "title": "zachwel/Qwen2.5-Coder-7B-Instruct-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen",
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+     ],
+     "url": "https://huggingface.co/zachwel/Qwen2.5-Coder-7B-Instruct-GGUF"
+    },
+    {
+     "id": "hf-models-c7467239def6e793",
+     "title": "Coolboy11/qwen3.5-4b-cyber-agent-EXECUTOR",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Coolboy11/qwen3.5-4b-cyber-agent-EXECUTOR"
+    },
+    {
+     "id": "hf-models-260f2a9108e5d62c",
+     "title": "jacobdavis404/Qwen2.5-3B-Instruct-Random15K-SFT",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/jacobdavis404/Qwen2.5-3B-Instruct-Random15K-SFT"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **Open Redirect**-Lücke in **@angular/platform-server**. Diese Sicherheitslücke ermöglicht es, den Server zu manipulieren, um unbefugte Inhalte zu übertragen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-fa17b21782565c35",
+    "gh-advisories-bd580b213aa52e36",
+    "gh-advisories-5de2be8b237b3f8b"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-fa17b21782565c35",
+    "gh-advisories-bd580b213aa52e36",
+    "gh-advisories-5de2be8b237b3f8b"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Keine neuen offenen KI-Modelle, die in dieser Liste veröffentlicht wurden, sind neu oder offenen KI-Modelle, die in der offenen Source-Base veröffentlicht wurden. Die Liste ist jedoch ein Beispiel für die Verfügbarkeit von offenen KI-Modellen auf Hugging Face.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-44dc62459daa2990",
+    "hf-models-1dd7383db0421aa7",
+    "hf-models-c9de927966801544"
+   ],
+   "context_entry_ids": [
+    "hf-models-44dc62459daa2990",
+    "hf-models-1dd7383db0421aa7",
+    "hf-models-c9de927966801544"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-16",
+ "generated_at": "2026-10-16T15:33:54Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-ae8aa7f527767ca9",
+     "title": "TarunExhaustice/adapter",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/TarunExhaustice/adapter"
+    },
+    {
+     "id": "hf-models-0d5f02fca7172d51",
+     "title": "danielrosehill/S1-mini-Parakeet-Cleanup-LoRA",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/danielrosehill/S1-mini-Parakeet-Cleanup-LoRA"
+    },
+    {
+     "id": "hf-models-f3742eeb74e37ab7",
+     "title": "Tree-AI-lab/kouman-IA-1b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Tree-AI-lab/kouman-IA-1b"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-ae8aa7f527767ca9",
+     "title": "TarunExhaustice/adapter",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/TarunExhaustice/adapter"
+    },
+    {
+     "id": "hf-models-f3742eeb74e37ab7",
+     "title": "Tree-AI-lab/kouman-IA-1b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Tree-AI-lab/kouman-IA-1b"
+    },
+    {
+     "id": "hf-models-b706bed5b451a712",
+     "title": "nthngdy/cplm-baselines-360M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/nthngdy/cplm-baselines-360M"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-bc70c47e8ecffc2f",
+     "title": "ollama/ollama: Release v0.40.5-rc1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.5-rc1"
+    },
+    {
+     "id": "gh-releases-ollama-5c2dbc9747081a21",
+     "title": "ollama/ollama: Release v0.40.5-rc0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.5-rc0"
+    },
+    {
+     "id": "hf-models-22754a1ca6bd8674",
+     "title": "AmirFazlollahi/Qwen3-1.7B-HendrycksMATH-GRPO",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/AmirFazlollahi/Qwen3-1.7B-HendrycksMATH-GRPO"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden. Die Liste ist leer.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-ae8aa7f527767ca9",
+    "hf-models-f3742eeb74e37ab7",
+    "hf-models-b706bed5b451a712"
+   ],
+   "context_entry_ids": [
+    "hf-models-ae8aa7f527767ca9",
+    "hf-models-f3742eeb74e37ab7",
+    "hf-models-b706bed5b451a712"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,766 @@
+{
+ "id": "cisa-kev-042bd106b079ac18",
+ "title": "CVE-2026-118527: Ivanti — Connect Secure (Ivanti Connect Secure Generation of Predictable Numbers or Identifiers Vulnerability)",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-, vulnerability, exploit, security, patch)",
+  "relevance_score": 3
+ },
+ "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Ivanti Connect Secure. Bekannt seit 2026-10-30. Hinweis: Ivanti Connect Secure contains a generation of predictable numbers or identifiers vulnerability that allows a remote authenticated attacker to upload files with attacker-controlled content to a known location on disk. This vulnerability can be chained with CVE-2026-104935 and CVE-2026-111357. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+ "key_points": [
+  "Aktiv ausgenutzte Schwachstelle (CISA KEV)",
+  "Betroffen: Ivanti Connect Secure",
+  "Bekannt seit 2026-10-30",
+  "Hinweis: Ivanti Connect Secure contains a generation of predictable numbers or identifiers vulnerability that allows a remote authenticated attacker to upload files with attacker-controlled content to a known location on disk",
+  "This vulnerability can be chained with CVE-2026-104935 and CVE-2026-111357"
+ ],
+ "source": {
+  "id": "cisa-kev",
+  "name": "CISA Known Exploited Vulnerabilities",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+ "url_normalized": "https://cisa.gov/known-exploited-vulnerabilities-catalog",
+ "publisher": "CISA (US-Behörde)",
+ "published": "2026-09-22",
+ "retrieved": "2026-09-23T00:27:54Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-23T00:28:02Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)",
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-09-22. Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-09-26T00:28:40Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-09-22. Hinweis: Arista VeloCloud Orchestrator (VCO) on-prem contains an improper input validation vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-93952: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator Improper Input Validation Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: MikroTik RouterOS. Bekannt seit 2026-09-25. Hinweis: Mikrotik RouterOS contains an improper enforcement of behavioral workflow vulnerability that could allow an unauthenticated client to open a session channel and send an exec request. This vulnerability can be chained to achieve unauthenticated exploitation of CVE-2026-86060. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-67279: MikroTik — RouterOS (Mikrotik RouterOS Improper Enforcement of Behavioral Workflow Vulnerability)"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-09-28T11:11:05Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: MikroTik RouterOS. Bekannt seit 2026-09-25. Hinweis: Mikrotik RouterOS contains an improper enforcement of behavioral workflow vulnerability that could allow an unauthenticated client to open a session channel and send an exec request. This vulnerability can be chained to achieve unauthenticated exploitation of CVE-2026-86060. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-67279: MikroTik — RouterOS (Mikrotik RouterOS Improper Enforcement of Behavioral Workflow Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Citrix NetScaler. Bekannt seit 2026-09-27. Hinweis: Citrix NetScaler ADC and NetScaler Gateway contain an improper restriction of operations within the bounds of a memory buffer vulnerability that could allow for remote code execution or denial of service Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-88772: Citrix — NetScaler (Citrix NetScaler Improper Restriction of Operations within the Bounds of a Memory Buffer Vulnerability)"
+   }
+  },
+  {
+   "version": 4,
+   "date": "2026-09-29T17:00:11Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Citrix NetScaler. Bekannt seit 2026-09-27. Hinweis: Citrix NetScaler ADC and NetScaler Gateway contain an improper restriction of operations within the bounds of a memory buffer vulnerability that could allow for remote code execution or denial of service Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-88772: Citrix — NetScaler (Citrix NetScaler Improper Restriction of Operations within the Bounds of a Memory Buffer Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Apple Multiple Products. Bekannt seit 2026-09-29. Hinweis: Apple iOS, macOS, and iPadOS contain an out-of-bounds write vulnerability in CoreGraphics that may lead to arbitrary code execution. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-86950: Apple — Multiple Products (Apple Multiple Products Out-of-Bounds Write Vulnerability)"
+   }
+  },
+  {
+   "version": 5,
+   "date": "2026-10-01T11:08:35Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Apple Multiple Products. Bekannt seit 2026-09-29. Hinweis: Apple iOS, macOS, and iPadOS contain an out-of-bounds write vulnerability in CoreGraphics that may lead to arbitrary code execution. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-86950: Apple — Multiple Products (Apple Multiple Products Out-of-Bounds Write Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Cisco Catalyst SD-WAN Manager. Bekannt seit 2026-09-30. Hinweis: Cisco Catalyst SD-WAN Manager contains a hex encoding vulnerability that could allow an unauthenticated, remote attacker to access an affected system with privileges of the admin user due to improper handling of URI encoding in an HTTP request. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-76504: Cisco — Catalyst SD-WAN Manager (Cisco Catalyst SD-WAN Manager Hex Encoding Vulnerability)"
+   }
+  },
+  {
+   "version": 6,
+   "date": "2026-10-02T10:42:13Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Cisco Catalyst SD-WAN Manager. Bekannt seit 2026-09-30. Hinweis: Cisco Catalyst SD-WAN Manager contains a hex encoding vulnerability that could allow an unauthenticated, remote attacker to access an affected system with privileges of the admin user due to improper handling of URI encoding in an HTTP request. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-76504: Cisco — Catalyst SD-WAN Manager (Cisco Catalyst SD-WAN Manager Hex Encoding Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Fortinet FortiMail. Bekannt seit 2026-10-01. Hinweis: Fortinet FortiMail contains a path traversal and an improper neutralization of NULL byte or NULL character vulnerability that may allow an unauthenticated attacker to write arbitrary files on the underlying system via crafted HTTP or HTTPS requests. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-104286: Fortinet — FortiMail (Fortinet FortiMail Path Traversal Vulnerability)"
+   }
+  },
+  {
+   "version": 7,
+   "date": "2026-10-02T16:48:54Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Fortinet FortiMail. Bekannt seit 2026-10-01. Hinweis: Fortinet FortiMail contains a path traversal and an improper neutralization of NULL byte or NULL character vulnerability that may allow an unauthenticated attacker to write arbitrary files on the underlying system via crafted HTTP or HTTPS requests. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-104286: Fortinet — FortiMail (Fortinet FortiMail Path Traversal Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Zammad GmbH Zammad. Bekannt seit 2026-10-02. Hinweis: Zammad GmbH Zammad contains an improper privilege management vulnerability that can allow the local zammad user to escalate privileges to root. This vulnerability can be chained with CVE-2026-102489. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-102490: Zammad GmbH — Zammad (Zammad GmbH Zammad Improper Privilege Management Vulnerability)"
+   }
+  },
+  {
+   "version": 8,
+   "date": "2026-10-05T11:53:04Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Zammad GmbH Zammad. Bekannt seit 2026-10-02. Hinweis: Zammad GmbH Zammad contains an improper privilege management vulnerability that can allow the local zammad user to escalate privileges to root. This vulnerability can be chained with CVE-2026-102489. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-102490: Zammad GmbH — Zammad (Zammad GmbH Zammad Improper Privilege Management Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Citrix NetScaler. Bekannt seit 2026-10-04. Hinweis: Citrix NetScaler ADC (formerly Citrix ADC) and Citrix NetScaler Gateway (formerly Citrix Gateway) contain an improper restriction of operations within the bounds of a memory buffer vulnerability that could allow for a denial of service. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-88779: Citrix — NetScaler (Citrix NetScaler Improper Restriction of Operations within the Bounds of a Memory Buffer Vulnerability)"
+   }
+  },
+  {
+   "version": 9,
+   "date": "2026-10-08T18:00:24Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Citrix NetScaler. Bekannt seit 2026-10-04. Hinweis: Citrix NetScaler ADC (formerly Citrix ADC) and Citrix NetScaler Gateway (formerly Citrix Gateway) contain an improper restriction of operations within the bounds of a memory buffer vulnerability that could allow for a denial of service. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-88779: Citrix — NetScaler (Citrix NetScaler Improper Restriction of Operations within the Bounds of a Memory Buffer Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: ISC BIND. Bekannt seit 2026-10-08. Hinweis: ISC BIND contains a data processing errors vulnerability that could allow remote attackers to cause a denial of service via TKEY queries. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2015-5477: ISC — BIND ( ISC BIND Data Processing Errors Vulnerability)"
+   }
+  },
+  {
+   "version": 10,
+   "date": "2026-10-13T18:29:08Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: ISC BIND. Bekannt seit 2026-10-08. Hinweis: ISC BIND contains a data processing errors vulnerability that could allow remote attackers to cause a denial of service via TKEY queries. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2015-5477: ISC — BIND ( ISC BIND Data Processing Errors Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Ivanti Connect Secure. Bekannt seit 2026-10-13. Hinweis: Ivanti Connect Secure contains an authentication bypass by spoofing vulnerability that allows a remote unauthenticated attacker to execute arbitrary commands. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-104935: Ivanti — Connect Secure (Ivanti Connect Secure Authentication Bypass by Spoofing Vulnerability)"
+   }
+  },
+  {
+   "version": 11,
+   "date": "2026-10-15T09:32:12Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Ivanti Connect Secure. Bekannt seit 2026-10-13. Hinweis: Ivanti Connect Secure contains an authentication bypass by spoofing vulnerability that allows a remote unauthenticated attacker to execute arbitrary commands. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-104935: Ivanti — Connect Secure (Ivanti Connect Secure Authentication Bypass by Spoofing Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Ahsay AhsayCBS. Bekannt seit 2026-10-14. Hinweis: Ahsay AhsayCBS contains a command injection vulnerability that could allow a remote attacker to execute operating system commands via manipulation of the random parameter in the Replication Receiver component’s /rps/api/json/UpdateReceivers.do endpoint. This vulnerability can be chained with CVE-2026-105133. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-105134: Ahsay — AhsayCBS (Ahsay AhsayCBS Command Injection Vulnerability)"
+   }
+  },
+  {
+   "version": 12,
+   "date": "2026-10-16T09:14:24Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Ahsay AhsayCBS. Bekannt seit 2026-10-14. Hinweis: Ahsay AhsayCBS contains a command injection vulnerability that could allow a remote attacker to execute operating system commands via manipulation of the random parameter in the Replication Receiver component’s /rps/api/json/UpdateReceivers.do endpoint. This vulnerability can be chained with CVE-2026-105133. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-105134: Ahsay — AhsayCBS (Ahsay AhsayCBS Command Injection Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Atlassian Multiple Products. Bekannt seit 2026-10-15. Hinweis: Multiple Atlassian products (Bitbucket Data Center ,Confluence Data Center, Jira Service Management Data Center, Jira Software Data Center, Bamboo Data Center, Crowd Data Center, Crucible and Fisheye) contain a files or directories accessible to external parties vulnerability which could allow an unauthenticated attacker to access specific files within the web application root directory in affected versions. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-21589: Atlassian — Multiple Products (Atlassian Multiple Products Files or Directories Accessible to External Parties Vulnerability)"
+   }
+  },
+  {
+   "version": 13,
+   "date": "2026-10-17T09:09:57Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Atlassian Multiple Products. Bekannt seit 2026-10-15. Hinweis: Multiple Atlassian products (Bitbucket Data Center ,Confluence Data Center, Jira Service Management Data Center, Jira Software Data Center, Bamboo Data Center, Crowd Data Center, Crucible and Fisheye) contain a files or directories accessible to external parties vulnerability which could allow an unauthenticated attacker to access specific files within the web application root directory in affected versions. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-21589: Atlassian — Multiple Products (Atlassian Multiple Products Files or Directories Accessible to External Parties Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: BeyondTrust Remote Support. Bekannt seit 2026-10-16. Hinweis: BeyondTrust Remote Support contains an authentication bypass by spoofing vulnerability that could allow a remote attacker to perform file operations on the appliance. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-102764: BeyondTrust — Remote Support (BeyondTrust Remote Support Authentication Bypass by Spoofing Vulnerability)"
+   }
+  },
+  {
+   "version": 14,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: BeyondTrust Remote Support. Bekannt seit 2026-10-16. Hinweis: BeyondTrust Remote Support contains an authentication bypass by spoofing vulnerability that could allow a remote attacker to perform file operations on the appliance. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-102764: BeyondTrust — Remote Support (BeyondTrust Remote Support Authentication Bypass by Spoofing Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: EG Secure Solutions SiteGuard Server Edition. Bekannt seit 2026-10-20. Hinweis: EG Secure Solutions SiteGuard Server Edition contains an OS command injection vulnerability which may allow an attacker to execute arbitrary OS commands with root or SYSTEM privileges on the system running the affected product. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-106931: EG Secure Solutions — SiteGuard Server Edition (EG Secure Solutions SiteGuard Server Edition OS Command Injection Vulnerability)"
+   }
+  },
+  {
+   "version": 15,
+   "date": "2026-10-24T09:03:54Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: EG Secure Solutions SiteGuard Server Edition. Bekannt seit 2026-10-20. Hinweis: EG Secure Solutions SiteGuard Server Edition contains an OS command injection vulnerability which may allow an attacker to execute arbitrary OS commands with root or SYSTEM privileges on the system running the affected product. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-106931: EG Secure Solutions — SiteGuard Server Edition (EG Secure Solutions SiteGuard Server Edition OS Command Injection Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-10-23. Hinweis: Arista VeloCloud Orchestrator on-prem contains a SQL injection vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-114625: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator SQL Injection Vulnerability)"
+   }
+  },
+  {
+   "version": 16,
+   "date": "2026-10-27T10:06:49Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Arista VeloCloud Orchestrator. Bekannt seit 2026-10-23. Hinweis: Arista VeloCloud Orchestrator on-prem contains a SQL injection vulnerability that may allow a remote attacker to access privileged internal functionality and impact the VCO host. Successful exploitation may compromise the confidentiality, integrity, and availability of the orchestrator and data managed by the orchestrator. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-114625: Arista — VeloCloud Orchestrator (Arista VeloCloud Orchestrator SQL Injection Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: PHP Group PHP. Bekannt seit 2026-10-26. Hinweis: PHP contains an out-of-memory corruption vulnerability that allows for unauthenticated remote code execution. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-109618: PHP Group — PHP (PHP Memory Corruption Vulnerability)"
+   }
+  },
+  {
+   "version": 17,
+   "date": "2026-10-28T11:04:19Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: PHP Group PHP. Bekannt seit 2026-10-26. Hinweis: PHP contains an out-of-memory corruption vulnerability that allows for unauthenticated remote code execution. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-109618: PHP Group — PHP (PHP Memory Corruption Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Adobe Commerce and Magento. Bekannt seit 2026-10-27. Hinweis: Adobe Commerce and Magento contain an unrestricted upload of file with dangerous type vulnerability that could result in arbitrary code execution in the context of the current user, potentially gaining elevated access or control over the victim's account or session. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-48356: Adobe — Commerce and Magento (Adobe Commerce and Magento Unrestricted Upload of File with Dangerous Type Vulnerability)"
+   }
+  },
+  {
+   "version": 18,
+   "date": "2026-10-29T11:03:21Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Adobe Commerce and Magento. Bekannt seit 2026-10-27. Hinweis: Adobe Commerce and Magento contain an unrestricted upload of file with dangerous type vulnerability that could result in arbitrary code execution in the context of the current user, potentially gaining elevated access or control over the victim's account or session. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-48356: Adobe — Commerce and Magento (Adobe Commerce and Magento Unrestricted Upload of File with Dangerous Type Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Broadcom VMware ESX. Bekannt seit 2026-10-28. Hinweis: Broadcom VMWare ESX contains an insufficient logging vulnerability that could allow a malicious actor with admin access to perform certain operations without being logged. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-41709: Broadcom — VMware ESX (Broadcom VMWare ESX Insufficient Logging Vulnerability)"
+   }
+  },
+  {
+   "version": 19,
+   "date": "2026-10-30T11:10:36Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Broadcom VMware ESX. Bekannt seit 2026-10-28. Hinweis: Broadcom VMWare ESX contains an insufficient logging vulnerability that could allow a malicious actor with admin access to perform certain operations without being logged. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-41709: Broadcom — VMware ESX (Broadcom VMWare ESX Insufficient Logging Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: GitLab Community Edition and Enterprise Edition. Bekannt seit 2026-10-29. Hinweis: GitLab Community Edition and Enterprise Edition contain a integer overflow or wraparound vulnerability that could allow an unauthenticated user to execute arbitrary code on the GitLab server via a specially crafted regular expression in a CI/CD configuration, due to insufficient regular expression validation. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-97229: GitLab — Community Edition and Enterprise Edition (GitLab Community Edition and Enterprise Edition Integer Overflow or Wraparound Vulnerability)"
+   }
+  },
+  {
+   "version": 20,
+   "date": "2026-10-31T11:01:32Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: GitLab Community Edition and Enterprise Edition. Bekannt seit 2026-10-29. Hinweis: GitLab Community Edition and Enterprise Edition contain a integer overflow or wraparound vulnerability that could allow an unauthenticated user to execute arbitrary code on the GitLab server via a specially crafted regular expression in a CI/CD configuration, due to insufficient regular expression validation. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-97229: GitLab — Community Edition and Enterprise Edition (GitLab Community Edition and Enterprise Edition Integer Overflow or Wraparound Vulnerability)"
+   },
+   "current": {
+    "summary": "Aktiv ausgenutzte Schwachstelle (CISA KEV). Betroffen: Ivanti Connect Secure. Bekannt seit 2026-10-30. Hinweis: Ivanti Connect Secure contains a generation of predictable numbers or identifiers vulnerability that allows a remote authenticated attacker to upload files with attacker-controlled content to a known location on disk. This vulnerability can be chained with CVE-2026-104935 and CVE-2026-111357. Erforderliche Massnahme: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA’s BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance and CISA’s “Forensics Triage Requirements” (see URL in Notes). Follow applicable BOD 26-04 guidance for cloud services or discontinue use of the product if mitigations are unavailable. Stakeholders are responsible for evaluating each asset's internet exposure and ensuring adherence to BOD 26-04 patching guidelines.",
+    "title": "CVE-2026-118527: Ivanti — Connect Secure (Ivanti Connect Secure Generation of Predictable Numbers or Identifiers Vulnerability)"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-23T00:28:02Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-23T00:28:29Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+  },
+  {
+   "at": "2026-09-26T00:28:40Z",
+   "from": "used_in_answer",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-26T09:29:53Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-26T15:06:47Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-27T10:10:30Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-27T15:47:20Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-28T11:11:05Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-28T18:42:56Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-29T10:54:23Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-29T17:00:11Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-09-30T10:45:37Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-09-30T17:00:04Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-01T11:08:35Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-01T17:28:52Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-02T10:42:13Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-02T16:48:54Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-03T10:07:15Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-03T15:13:32Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-04T10:58:22Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-04T15:59:30Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-05T11:53:04Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-06T11:29:37Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-06T17:23:21Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-07T11:18:07Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-07T17:57:03Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-08T11:38:53Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-08T18:00:24Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-09T11:28:48Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-09T17:32:31Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-10T10:49:06Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-10T16:31:47Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-11T10:59:59Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-11T16:44:48Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-12T12:23:03Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-12T20:26:51Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-13T12:06:09Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-13T18:29:08Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-14T09:41:21Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-14T16:12:56Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-15T09:32:12Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-15T15:42:56Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-16T09:14:24Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-16T15:33:46Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-17T09:09:57Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-17T14:23:31Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-18T09:26:53Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-18T14:46:49Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-19T10:12:43Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-19T18:20:49Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-20T09:35:34Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-20T15:52:20Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-21T16:51:10Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-22T16:00:31Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-23T09:43:04Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-23T16:06:35Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-24T09:03:54Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-24T14:50:18Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-25T09:20:35Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-25T15:02:19Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-27T10:06:49Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-27T16:50:40Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-28T11:04:19Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-28T17:19:29Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-29T17:31:34Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-30T11:10:36Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-10-30T17:08:16Z",
+   "from": "updated",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "stored",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  }
+ ],
+ "status": "updated",
+ "_rag_flags": [],
+ "last_seen": "2026-10-31T11:01:32Z",
+ "confirmations": 71
+}

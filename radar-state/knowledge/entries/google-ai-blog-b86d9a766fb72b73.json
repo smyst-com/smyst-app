@@ -1,0 +1,76 @@
+{
+ "id": "google-ai-blog-b86d9a766fb72b73",
+ "title": "Building AI to accelerate science and improve lives",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "The true measure of AI is who it helps. Here’s how it’s impacting lives today. We're focused on key areas where advanced technology can help make extraordinary progress …",
+ "key_points": [
+  "The true measure of AI is who it helps",
+  "Here’s how it’s impacting lives today",
+  "We're focused on key areas where advanced technology can help make extraordinary progress …"
+ ],
+ "source": {
+  "id": "google-ai-blog",
+  "name": "Google AI & DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://blog.google/innovation-and-ai/technology/ai/ai-applications-science-people/",
+ "url_normalized": "https://blog.google/innovation-and-ai/technology/ai/ai-applications-science-people",
+ "publisher": "Google AI & DeepMind Blog (RSS)",
+ "published": "2026-09-15",
+ "retrieved": "2026-09-22T23:29:39Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "allgemein",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-22T23:29:43Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Building AI to accelerate science and improve lives",
+    "summary": "The true measure of AI is who it helps. Here’s how it’s impacting lives today. We're focused on key areas where advanced technology can help make extraordinary progress …"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-09-22T23:29:43Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  }
+ ],
+ "status": "archiviert-als-abgelehnt"
+}

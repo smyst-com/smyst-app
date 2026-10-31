@@ -1,0 +1,24 @@
+{
+ "updated_at": "2026-10-31T16:34:58Z",
+ "autopilot": "smyst radar",
+ "state": "budget-pausiert",
+ "total_entries": 1143,
+ "verified_entries": 1100,
+ "rejected_entries": 43,
+ "outdated_entries": 0,
+ "rag_ready_entries": 256,
+ "used_in_answer_entries": 336,
+ "training_approved_entries": 0,
+ "budget": {
+  "day": {
+   "api_calls": 50
+  },
+  "month": {
+   "api_calls": 3000
+  },
+  "daily_limit": 200,
+  "monthly_limit": 3000
+ },
+ "enabled": true,
+ "last_report": "2026-10-31"
+}

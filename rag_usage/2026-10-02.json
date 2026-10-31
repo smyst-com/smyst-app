@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-02",
+ "generated_at": "2026-10-02T16:49:02Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-bb1c8851992cb21f",
+     "title": "mzx/Soliloquy-Qwen3-4B-Blend10-MLX-4bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mzx/Soliloquy-Qwen3-4B-Blend10-MLX-4bit"
+    },
+    {
+     "id": "hf-models-8b9fbf987d70bfd6",
+     "title": "maksymK4198/50750d74214db97d",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/maksymK4198/50750d74214db97d"
+    },
+    {
+     "id": "hf-models-bd231a456fb3d8c3",
+     "title": "swdq/anison-lyrics-qwen35-4b-content-sft-v2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/swdq/anison-lyrics-qwen35-4b-content-sft-v2"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-8b9fbf987d70bfd6",
+     "title": "maksymK4198/50750d74214db97d",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/maksymK4198/50750d74214db97d"
+    },
+    {
+     "id": "hf-models-69931ccf93c4b2c1",
+     "title": "dwivedula/Samrudh-3-Brahma-7B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/dwivedula/Samrudh-3-Brahma-7B"
+    },
+    {
+     "id": "hf-models-c5dee6be1904ebe2",
+     "title": "Laerins/Qwen3.5-9B-abliterated",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Laerins/Qwen3.5-9B-abliterated"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-dbbcb34dc4b240af",
+     "title": "mvsakrishna/abhi-coder-14b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mvsakrishna/abhi-coder-14b"
+    },
+    {
+     "id": "hf-models-d831f49511e1eaf5",
+     "title": "onnx-community/TinyStories-33M-ONNX",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/onnx-community/TinyStories-33M-ONNX"
+    },
+    {
+     "id": "hf-models-cefca14b79b59591",
+     "title": "Ilikemechuri/rwkv7_quail_1p5b_sft",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ilikemechuri/rwkv7_quail_1p5b_sft"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikation von smyst-Radar bekannt gegeben wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-8b9fbf987d70bfd6",
+    "hf-models-69931ccf93c4b2c1",
+    "hf-models-c5dee6be1904ebe2"
+   ],
+   "context_entry_ids": [
+    "hf-models-8b9fbf987d70bfd6",
+    "hf-models-69931ccf93c4b2c1",
+    "hf-models-c5dee6be1904ebe2"
+   ]
+  }
+ ]
+}

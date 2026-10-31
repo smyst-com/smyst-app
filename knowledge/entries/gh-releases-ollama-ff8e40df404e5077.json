@@ -1,0 +1,122 @@
+{
+ "id": "gh-releases-ollama-ff8e40df404e5077",
+ "title": "ollama/ollama: Release v0.40.12",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, llama)",
+  "relevance_score": 2
+ },
+ "summary": "Offizielle Release-Notes (v0.40.12): ## Liquid AI LFM3 [LFM3](https://ollama.com/library/lfm3) is Liquid AI's new family of small models built for local agents, tool calling, and structured output, on Liquid's new tri-hybrid architecture. The family includes: - [lfm3](https://ollama.com/library/lfm3): a 1.7B text model with a 256K-token context window - [lfm3-vl](https://ollama.com/library/lfm3-vl): adds image understanding - [lfm3-audio](https://ollama.com/library/lfm3-audio): speech recognition, translation, and text-to-speech in 18 languages - [lfm3-omni](https://ollama.com/library/lfm3-omni): text, images, and audio in one model ```sh ollama run lfm3 ``` ## d1 decision models Liquid AI's d1 models now come in a 2B size, built on LFM3. [d1](https://ollama.com/library/d1) makes decisions about text and images, and [d1-omni](https://ollama.com/library/d1-omni) adds audio. ```sh ollama run d1:2b \"I was charged twice for order 4417.\" --ask \"Is this a billing issue?\" ``` Note: lfm3 and d1 2b are supported on Apple hardware",
+ "key_points": [
+  "Offizielle Release-Notes (v0.40.12): ## Liquid AI LFM3 [LFM3](https://ollama.com/library/lfm3) is Liquid AI's new family of small models built for local agents, tool calling, and structured output, on Liquid's new tri-hybrid architecture",
+  "The family includes: - [lfm3](https://ollama.com/library/lfm3): a 1.7B text model with a 256K-token context window - [lfm3-vl](https://ollama.com/library/lfm3-vl): adds image understanding - [lfm3-audio](https://ollama.com/library/lfm3-audio): speech recognition, translation, and text-to-speech in 18 languages - [lfm3-omni](https://ollama.com/library/lfm3-omni): text, images, and audio in one model ```sh ollama run lfm3 ``` ## d1 decision models Liquid AI's d1 models now come in a 2B size, built on LFM3",
+  "[d1](https://ollama.com/library/d1) makes decisions about text and images, and [d1-omni](https://ollama.com/library/d1-omni) adds audio",
+  "```sh ollama run d1:2b \"I was charged twice for order 4417.\" --ask \"Is this a billing issue?\" ``` Note: lfm3 and d1 2b are supported on Apple hardware"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.40.12",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.40.12",
+ "publisher": "GitHub Releases",
+ "published": "2026-10-27",
+ "retrieved": "2026-10-28T11:04:17Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-28T11:04:20Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.40.12",
+    "summary": "Offizielle Release-Notes (v0.40.12): ## Liquid AI LFM3 [LFM3](https://ollama.com/library/lfm3) is Liquid AI's new family of small models built for local agents, tool calling, and structured output, on Liquid's new tri-hybrid architecture. The family includes: - [lfm3](https://ollama.com/library/lfm3): a 1.7B text model with a 256K-token context window - [lfm3-vl](https://ollama.com/library/lfm3-vl): adds image understanding - [lfm3-audio](https://ollama.com/library/lfm3-audio): speech recognition, translation, and text-to-speech in 18 languages - [lfm3-omni](https://ollama.com/library/lfm3-omni): text, images, and audio in one model ```sh ollama run lfm3 ``` ## d1 decision models Liquid AI's d1 models now come in a 2B size, built on LFM3. [d1](https://ollama.com/library/d1) makes decisions about text and images, and [d1-omni](https://ollama.com/library/d1-omni) adds audio. ```sh ollama run d1:2b \"I was charged twice for order 4417.\" --ask \"Is this a billing issue?\" ``` Note: lfm3 and d1 2b are supported on Apple hardware"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-28T11:04:20Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-28T11:04:20Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-28T11:04:20Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-28T11:04:20Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-28T17:19:29Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-29T17:31:34Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-30T11:10:36Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-30T17:08:16Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-10-31T11:01:32Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-31T11:01:32Z",
+ "confirmations": 6
+}

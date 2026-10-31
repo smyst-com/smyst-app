@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-07",
+ "generated_at": "2026-10-07T17:57:11Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-3d4482debedbe463",
+     "title": "MergekitCloud/mergekit-118",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/MergekitCloud/mergekit-118"
+    },
+    {
+     "id": "hf-models-f180ef11665ed402",
+     "title": "Snapkitty/hilbert-4b-baseline-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Snapkitty/hilbert-4b-baseline-GGUF"
+    },
+    {
+     "id": "hf-models-a6fb9f5330d17506",
+     "title": "DebasishDhal99/Llama-3.2-3B-Instruct-synthetic-agriculture-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DebasishDhal99/Llama-3.2-3B-Instruct-synthetic-agriculture-lora"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-3d4482debedbe463",
+     "title": "MergekitCloud/mergekit-118",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/MergekitCloud/mergekit-118"
+    },
+    {
+     "id": "hf-models-2ca3c06e55b4bcc0",
+     "title": "ndemoss28/stormdesk-triage",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ndemoss28/stormdesk-triage"
+    },
+    {
+     "id": "hf-models-f180ef11665ed402",
+     "title": "Snapkitty/hilbert-4b-baseline-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Snapkitty/hilbert-4b-baseline-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-04e9dc3828b5420c",
+     "title": "Radisson Hotel Group brings hotel discovery into ChatGPT",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/radisson"
+    },
+    {
+     "id": "hf-models-db1554c8cf9cfeee",
+     "title": "bmkzl/Qwen3-Embedding-0.6B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bmkzl/Qwen3-Embedding-0.6B"
+    },
+    {
+     "id": "hf-models-66657bdde76c4a41",
+     "title": "aether-models/qwen3-4b-int8",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aether-models/qwen3-4b-int8"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikation von smyst radar bekannt sind.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-3d4482debedbe463",
+    "hf-models-2ca3c06e55b4bcc0",
+    "hf-models-f180ef11665ed402"
+   ],
+   "context_entry_ids": [
+    "hf-models-3d4482debedbe463",
+    "hf-models-2ca3c06e55b4bcc0",
+    "hf-models-f180ef11665ed402"
+   ]
+  }
+ ]
+}

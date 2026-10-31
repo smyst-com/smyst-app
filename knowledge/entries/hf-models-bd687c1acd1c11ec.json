@@ -1,0 +1,106 @@
+{
+ "id": "hf-models-bd687c1acd1c11ec",
+ "title": "tinyopsec/Jan-v3-4B-base-instruct-GGUF",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, instruct, modell)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: gguf.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: gguf."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/tinyopsec/rawda-4b-instruct-GGUF",
+ "url_normalized": "https://huggingface.co/tinyopsec/rawda-4b-instruct-GGUF",
+ "publisher": "Hugging Face",
+ "published": "2026-10-29",
+ "retrieved": "2026-10-29T11:03:08Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-69db3b6468dda1c2",
+  "hf-models-bf23e0b101f1e8ca",
+  "hf-models-1346a7a9abc70ba3"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-29T11:03:21Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "tinyopsec/rawda-4b-instruct-GGUF",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: gguf."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-29T11:03:21Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "tinyopsec/rawda-4b-instruct-GGUF"
+   },
+   "current": {
+    "title": "tinyopsec/Jan-v3-4B-base-instruct-GGUF"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-29T11:03:21Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-29T11:03:21Z",
+ "confirmations": 1
+}
