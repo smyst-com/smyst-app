@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-14",
+ "generated_at": "2026-10-14T16:13:05Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-9674c6bc1901f1ed",
+     "title": "GHSA-w6wh-p4g7-mpj2: Microsoft Security Advisory CVE-2026-96225 - .NET and Visual Studio Elevation of Privilege Vulnerability",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-w6wh-p4g7-mpj2"
+    },
+    {
+     "id": "gh-advisories-97c5d03e14d0c62c",
+     "title": "GHSA-qjpx-jqm5-h2c4: Microsoft Security Advisory CVE-2026-96230 - ASP.NET Core Remote Code Execution Vulnerability",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-qjpx-jqm5-h2c4"
+    },
+    {
+     "id": "hf-models-3f6492147fefa53b",
+     "title": "bbcnhk/Qwen3-4B-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bbcnhk/Qwen3-4B-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-d5284b8740938983",
+     "title": "talha085/Lale-3B-adapter",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/talha085/Lale-3B-adapter"
+    },
+    {
+     "id": "hf-models-6e7d29609afab2fe",
+     "title": "Avarian/granite-8b-polymath-v2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Avarian/granite-8b-polymath-v2"
+    },
+    {
+     "id": "hf-models-8bee8fbf82ee4d01",
+     "title": "xtools-at/Qwen3.5-9B-Medical-Reasoning",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/xtools-at/Qwen3.5-9B-Medical-Reasoning"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-fc6736c749df0c5b",
+     "title": "rothgar/deepseek-v4.1-flash-p300x2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/rothgar/deepseek-v4.1-flash-p300x2"
+    },
+    {
+     "id": "hf-models-96d91bd7c8c541dc",
+     "title": "KilaAI/kila-coder-1.5b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/KilaAI/kila-coder-1.5b-lora"
+    },
+    {
+     "id": "hf-models-d168b0b7dbf92186",
+     "title": "Angshul/TransWave-Meyer-96M-C4-4.5B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Angshul/TransWave-Meyer-96M-C4-4.5B"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in der Frage erwähnt wurde, ist die .NET und Visual Studio Elevation of Privilege Vulnerability. Diese Lücke wurde in der Microsoft Security Advisory CVE-2026-96225 beschrieben und ist ein Remote Code Execution-Vulnerability.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-9674c6bc1901f1ed",
+    "gh-advisories-97c5d03e14d0c62c",
+    "hf-models-3f6492147fefa53b"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-9674c6bc1901f1ed",
+    "gh-advisories-97c5d03e14d0c62c",
+    "hf-models-3f6492147fefa53b"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit der letzten Antwort veröffentlicht wurden. Die frühesten Modelle, die ich in der Liste haben sah, stammen von 2026.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-d5284b8740938983",
+    "hf-models-6e7d29609afab2fe",
+    "hf-models-8bee8fbf82ee4d01"
+   ],
+   "context_entry_ids": [
+    "hf-models-d5284b8740938983",
+    "hf-models-6e7d29609afab2fe",
+    "hf-models-8bee8fbf82ee4d01"
+   ]
+  }
+ ]
+}

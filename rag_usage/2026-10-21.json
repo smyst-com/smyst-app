@@ -1,0 +1,164 @@
+{
+ "day": "2026-10-21",
+ "generated_at": "2026-10-21T16:51:18Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-9747dad8c796b22e",
+     "title": "ollama/ollama: Release v0.40.8-rc0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.8-rc0"
+    },
+    {
+     "id": "gh-advisories-9b370c1868f5ec64",
+     "title": "GHSA-vxj4-q4g9-crj7: virtualenv bash activate runs commands from an environment name with a backslash before $",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-vxj4-q4g9-crj7"
+    },
+    {
+     "id": "gh-advisories-2a65a7cba5ce86ed",
+     "title": "GHSA-7mh2-4gg2-979f: pypdf: Possible large memory usage for streams with multiple filters",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-7mh2-4gg2-979f"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-61a2b3415532e3ce",
+     "title": "Harsha001/Spark-X2.6-4B-ROCmFPX",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Harsha001/Spark-X2.6-4B-ROCmFPX"
+    },
+    {
+     "id": "hf-models-738e500b06f8035f",
+     "title": "opencerebral/Boris-2-Preview-2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/opencerebral/Boris-2-Preview-2"
+    },
+    {
+     "id": "hf-models-99e030acfe5a9b8e",
+     "title": "hcnote/SparkMuse-4B-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/hcnote/SparkMuse-4B-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-61f4d0141ff303c0",
+     "title": "OpenAI models are coming to Google Cloud",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/openai-models-google-cloud"
+    },
+    {
+     "id": "openai-news-1de8e62ff715d1f1",
+     "title": "Using thousands of AI agents to uncover new leads in biological data",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/scaling-ai-research-for-complex-biological-data"
+    },
+    {
+     "id": "openai-news-edef63b51aedc012",
+     "title": "How we built ChatGPT’s novel ad stack for user trust and relevance",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/building-chatgpt-ad-stack"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die \"pypdf: Possible large memory usage for streams with multiple filters\" (CVE-2026-113795). Diese Sicherheitslücke ist in der pypdf-Paketrelease von GitHub bekannt und wird als Schweregrad medium angesehen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-releases-ollama-9747dad8c796b22e",
+    "gh-advisories-9b370c1868f5ec64",
+    "gh-advisories-2a65a7cba5ce86ed"
+   ],
+   "context_entry_ids": [
+    "gh-releases-ollama-9747dad8c796b22e",
+    "gh-advisories-9b370c1868f5ec64",
+    "gh-advisories-2a65a7cba5ce86ed"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-61a2b3415532e3ce",
+    "hf-models-738e500b06f8035f",
+    "hf-models-99e030acfe5a9b8e"
+   ],
+   "context_entry_ids": [
+    "hf-models-61a2b3415532e3ce",
+    "hf-models-738e500b06f8035f",
+    "hf-models-99e030acfe5a9b8e"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine direkte Informationen zu neuen Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die verwendeten Quellen beinhalten keine Details über neue Modelle oder Anbieter.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-61f4d0141ff303c0",
+    "openai-news-1de8e62ff715d1f1",
+    "openai-news-edef63b51aedc012"
+   ],
+   "context_entry_ids": [
+    "openai-news-61f4d0141ff303c0",
+    "openai-news-1de8e62ff715d1f1",
+    "openai-news-edef63b51aedc012"
+   ]
+  }
+ ]
+}

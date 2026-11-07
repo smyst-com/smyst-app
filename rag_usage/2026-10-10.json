@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-10",
+ "generated_at": "2026-10-10T16:31:54Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "arxiv-ml-332463a96e3d06ba",
+     "title": "A Balanced Data Diet: Addressing the Exploration Bottleneck in Mega-Scale RL for Robot Control",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "http://arxiv.org/abs/2610.12465v1"
+    },
+    {
+     "id": "arxiv-ml-c7f6a0a6cee9fb7b",
+     "title": "One Block, Multiple Depths: Recurrent Vision Transformers with Depth-Programmed Experts",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "http://arxiv.org/abs/2610.12448v1"
+    },
+    {
+     "id": "arxiv-ml-f2eaece98b83a545",
+     "title": "Rounding in Preconditioner Space: Redesigning 4-bit AdamW Optimizer-State Quantization",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "http://arxiv.org/abs/2610.12444v1"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-3d391dad6d361648",
+     "title": "FluidInference/clef-text-0.6b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/FluidInference/clef-text-0.6b"
+    },
+    {
+     "id": "hf-models-f69b558f6e6afb21",
+     "title": "GRAI-UNSTPB/llama3_1_ft_ro",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/GRAI-UNSTPB/llama3_1_ft_ro"
+    },
+    {
+     "id": "hf-models-9cc99ad055883a22",
+     "title": "SILICAM/silica-rtl-serving",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/SILICAM/silica-rtl-serving"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-c6b07628175a3579",
+     "title": "NCHUPPBL/nchu-qwen2.5-3b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/NCHUPPBL/nchu-qwen2.5-3b-lora"
+    },
+    {
+     "id": "hf-models-189e19a80e365ae5",
+     "title": "kino1008/Qwen3-4B-Instruct-2507-heretic",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/kino1008/Qwen3-4B-Instruct-2507-heretic"
+    },
+    {
+     "id": "hf-models-e8ba32e6f16c5d55",
+     "title": "krxi123/asm-adlandirma-qwen3-8b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/krxi123/asm-adlandirma-qwen3-8b-lora"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit der letzten Fragezeitung (2026-10-09) veröffentlicht wurden. Die Liste der bisherigen Modelle ist leer.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-3d391dad6d361648",
+    "hf-models-f69b558f6e6afb21",
+    "hf-models-9cc99ad055883a22"
+   ],
+   "context_entry_ids": [
+    "hf-models-3d391dad6d361648",
+    "hf-models-f69b558f6e6afb21",
+    "hf-models-9cc99ad055883a22"
+   ]
+  }
+ ]
+}

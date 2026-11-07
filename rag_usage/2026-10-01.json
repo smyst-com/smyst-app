@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-01",
+ "generated_at": "2026-10-01T17:29:10Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-dbf308a18ae369b9",
+     "title": "rafmacalaba/lfm2.5-350M-focus-metadata",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/rafmacalaba/lfm2.5-350M-focus-metadata"
+    },
+    {
+     "id": "hf-models-8bd2eea624abf870",
+     "title": "Ternarycore/ternarycore-sst2-student",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ternarycore/ternarycore-sst2-student"
+    },
+    {
+     "id": "hf-models-f4f13b40eff2d932",
+     "title": "OpenFlowLM/Hy-MT2-1.8B-NPU2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/OpenFlowLM/Hy-MT2-1.8B-NPU2"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-f4f13b40eff2d932",
+     "title": "OpenFlowLM/Hy-MT2-1.8B-NPU2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/OpenFlowLM/Hy-MT2-1.8B-NPU2"
+    },
+    {
+     "id": "hf-models-ca5445762a20af5c",
+     "title": "qxyz/sn56-i135-L",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/qxyz/sn56-i135-L"
+    },
+    {
+     "id": "hf-models-8bd2eea624abf870",
+     "title": "Ternarycore/ternarycore-sst2-student",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ternarycore/ternarycore-sst2-student"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-a80484c2d5849bdb",
+     "title": "How Albertsons Companies is reimagining retail from the inside out",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/albertsons-reimagining-retail"
+    },
+    {
+     "id": "hf-models-c5dee6be1904ebe2",
+     "title": "Laerins/Qwen3.5-9B-abliterated",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Laerins/Qwen3.5-9B-abliterated"
+    },
+    {
+     "id": "hf-models-dbbcb34dc4b240af",
+     "title": "mvsakrishna/abhi-coder-14b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mvsakrishna/abhi-coder-14b"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen der letzten Antwort und der aktuellen Frage veröffentlicht wurden. Die letzten veröffentlichten Modelle sind:\n\n1. Ternarycore/ternarycore-sst2-student (2026-10-01)\n2. Laerins/Qwen3.5-9B-abliterated (2026-09-26)\n3. mvsakrishna/abhi-coder-14b (2026-09-25)\n\nEs gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen der letzten Antwort und der aktuellen Frage veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-f4f13b40eff2d932",
+    "hf-models-ca5445762a20af5c",
+    "hf-models-8bd2eea624abf870"
+   ],
+   "context_entry_ids": [
+    "hf-models-f4f13b40eff2d932",
+    "hf-models-ca5445762a20af5c",
+    "hf-models-8bd2eea624abf870"
+   ]
+  }
+ ]
+}

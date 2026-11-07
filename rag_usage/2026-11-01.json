@@ -1,0 +1,130 @@
+{
+ "day": "2026-11-01",
+ "generated_at": "2026-11-01T17:14:06Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-e2271af8977ff092",
+     "title": "Sofetizm/qwen1.5b-text2sql-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Sofetizm/qwen1.5b-text2sql-lora"
+    },
+    {
+     "id": "hf-models-23280e7d8259a508",
+     "title": "Lesani/Groot-280B-A16B-261023-Q2_K-Experts-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Lesani/Groot-280B-A16B-261023-Q2_K-Experts-GGUF"
+    },
+    {
+     "id": "hf-models-b78fd8ef6650eda6",
+     "title": "jongstra/Swift-1.5-Qwen3.8-27b-oQ6-bf16-mtp-dflash2-kapitsa",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/jongstra/Swift-1.5-Qwen3.8-27b-oQ6-bf16-mtp-dflash2-kapitsa"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-e2271af8977ff092",
+     "title": "Sofetizm/qwen1.5b-text2sql-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Sofetizm/qwen1.5b-text2sql-lora"
+    },
+    {
+     "id": "hf-models-2cce9cd8181352c3",
+     "title": "saidutta69/EuroLLM-1.7B-Instruct-heretic",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/saidutta69/EuroLLM-1.7B-Instruct-heretic"
+    },
+    {
+     "id": "hf-models-8c593415ad7907e8",
+     "title": "Kanz4kii/Next-Concept-Modeling",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Kanz4kii/Next-Concept-Modeling"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-134e965b99acc92d",
+     "title": "iromu/Qwen3-0.6B-openjev-NVFP4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/iromu/Qwen3-0.6B-openjev-NVFP4"
+    },
+    {
+     "id": "hf-models-3a5622c184f4d527",
+     "title": "fgparamio/sauron-lora-qwen3-4b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/fgparamio/sauron-lora-qwen3-4b"
+    },
+    {
+     "id": "hf-models-07159df68ca546fd",
+     "title": "ProCreations/Dory-Beam-4B-Accurate",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ProCreations/Dory-Beam-4B-Accurate"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit meiner letzten Antwort (2023) veröffentlicht wurden. Die bisher bekanntesten sind die Qwen-Modelle, die auf der Qwen-Base-Model basieren.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-e2271af8977ff092",
+    "hf-models-2cce9cd8181352c3",
+    "hf-models-8c593415ad7907e8"
+   ],
+   "context_entry_ids": [
+    "hf-models-e2271af8977ff092",
+    "hf-models-2cce9cd8181352c3",
+    "hf-models-8c593415ad7907e8"
+   ]
+  }
+ ]
+}

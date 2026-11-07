@@ -1,0 +1,1094 @@
+{
+ "title": "Was hat smyst radar heute dazugelernt?",
+ "day": "2026-11-02",
+ "generated_at": "2026-11-02T20:55:49Z",
+ "paused": false,
+ "topics_researched": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.28,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.05,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.13,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.15,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.11,
+   "ok": true
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.2,
+   "ok": true
+  },
+  {
+   "source_id": "gh-advisories",
+   "name": "GitHub Security Advisories (offiziell)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.26,
+   "ok": true
+  },
+  {
+   "source_id": "arxiv-ml",
+   "name": "arXiv (cs.LG Machine Learning)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.03,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.61,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.3,
+   "ok": true
+  }
+ ],
+ "topics_reasons": [
+  {
+   "id": "arxiv-ai",
+   "reason": "Wissenschaftliche Neuerscheinungen zu KI, Sprachmodellen und Sicherheit."
+  },
+  {
+   "id": "hf-models",
+   "reason": "Neue offene KI-Modelle und deren Metadaten direkt vom Primäranbieter."
+  },
+  {
+   "id": "cisa-kev",
+   "reason": "Offizielle US-Behördenliste aktiv ausgenutzter Schwachstellen."
+  },
+  {
+   "id": "openai-news",
+   "reason": "Offizielle Veröffentlichungen eines Konkurrenz-Anbieters."
+  },
+  {
+   "id": "deepmind-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "google-ai-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "gh-advisories",
+   "reason": "Offizielle, geprüfte Sicherheitswarnungen des GitHub Advisory-Boards."
+  },
+  {
+   "id": "arxiv-ml",
+   "reason": "Wissenschaftliche Neuerscheinungen zu Lernverfahren und Architekturen."
+  },
+  {
+   "id": "gh-releases-llamacpp",
+   "reason": "Relevante Infrastruktur für das eigene smyst-Modell (llama-server)."
+  },
+  {
+   "id": "gh-releases-ollama",
+   "reason": "Ökosystem-Entwicklungen für lokale LLM-Betrieb."
+  }
+ ],
+ "sources_examined": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.28,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.05,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.13,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.15,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.11,
+   "ok": true
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.2,
+   "ok": true
+  },
+  {
+   "source_id": "gh-advisories",
+   "name": "GitHub Security Advisories (offiziell)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.26,
+   "ok": true
+  },
+  {
+   "source_id": "arxiv-ml",
+   "name": "arXiv (cs.LG Machine Learning)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.03,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.61,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.3,
+   "ok": true
+  }
+ ],
+ "sources_examined_count": 10,
+ "sources_ok_count": 10,
+ "findings_count": 89,
+ "new_insights": [
+  {
+   "id": "hf-models-419e0e8f45aa67b8",
+   "title": "Arabi32/Carbon-X",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Arabi32/Carbon-X"
+  },
+  {
+   "id": "hf-models-98e785d996c178ec",
+   "title": "sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-x2-retain90",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-x2-retain90"
+  },
+  {
+   "id": "hf-models-47100c9a05681754",
+   "title": "elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN"
+  },
+  {
+   "id": "hf-models-6b3f64d6ce7f804b",
+   "title": "amd/gemma-4-e2b-it-mobius-int4_rai_1.9.0_m_1.0.1_npu",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/amd/gemma-4-e2b-it-mobius-int4_rai_1.9.0_m_1.0.1_npu"
+  },
+  {
+   "id": "hf-models-c645e2e700ec6b85",
+   "title": "Convergent-ch/Alpina-Large-2.0-Mega-122B",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Convergent-ch/Alpina-Large-2.0-Mega-122B"
+  },
+  {
+   "id": "hf-models-c283cd6994c4415c",
+   "title": "Convergent-ch/Alpina-Titan-2.0-80B",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Convergent-ch/Alpina-Titan-2.0-80B"
+  },
+  {
+   "id": "hf-models-6c33fd02594c2f11",
+   "title": "Convergent-ch/Alpina-Big-2.0-300M",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Convergent-ch/Alpina-Big-2.0-300M"
+  },
+  {
+   "id": "openai-news-19244c7aa2063fd3",
+   "title": "Introducing the Grid Protectors Program",
+   "category": "konkurrenz",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/grid-protectors-program"
+  },
+  {
+   "id": "openai-news-ed4b58253682640f",
+   "title": "LifeVal",
+   "category": "ki-modelle",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/lifeval"
+  },
+  {
+   "id": "gh-advisories-7915c80c72ee906e",
+   "title": "GHSA-f9j6-8p6x-r9j6: SD JWT JS: Tampered disclosures silently dropped instead of rejected",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-f9j6-8p6x-r9j6"
+  }
+ ],
+ "confirmed": [
+  {
+   "id": "arxiv-ai-2d4126416bfc2ac8",
+   "title": "Latent Reasoning in Continuous Space for Unified Multimodal Models"
+  },
+  {
+   "id": "arxiv-ai-f8764c472eec7154",
+   "title": "Flide: Accelerating Decision Inference with Exact State Forking"
+  },
+  {
+   "id": "arxiv-ai-6a4a1209cfee6cf9",
+   "title": "Latent Sparse Attention: Towards Subquadratic Ultra-Long Context Attention"
+  },
+  {
+   "id": "arxiv-ai-4dc7ffde6eafda58",
+   "title": "Hierarchical World Models with Implicit Dynamics"
+  },
+  {
+   "id": "arxiv-ai-5a7e7713a6f937ab",
+   "title": "RoboArchitect: Automating the Design of Robotic Agents with Persistent Memory"
+  },
+  {
+   "id": "arxiv-ai-7680bfc6fc051005",
+   "title": "Counting on Dummies: Privacy Amplification with Observable Counts and Truncated Batches"
+  },
+  {
+   "id": "arxiv-ai-a74ca10338c0129e",
+   "title": "DecisionRank: On-Policy Distillation for Decision-Model Rerankers"
+  },
+  {
+   "id": "arxiv-ai-ff6ccbd497836306",
+   "title": "ACCT: Asymmetric Cross-LLM Context Transfer"
+  },
+  {
+   "id": "arxiv-ai-1d65181279633df5",
+   "title": "Subquadratic Attention with a Hierarchical Tree-Structured Indexer"
+  },
+  {
+   "id": "arxiv-ai-07cf97677f706a88",
+   "title": "CausalWAM: Learning the Causes of Actions in World Action Models"
+  },
+  {
+   "id": "cisa-kev-042bd106b079ac18",
+   "title": "CVE-2026-118527: Ivanti — Connect Secure (Ivanti Connect Secure Generation of Predictable Numbers or Identifiers Vulnerability)"
+  },
+  {
+   "id": "openai-news-25cc4c9bb2e3e7e5",
+   "title": "Making it easier for websites to express AI training preferences"
+  },
+  {
+   "id": "openai-news-c7606af40dbb903f",
+   "title": "Community safety report and new protections for teens"
+  },
+  {
+   "id": "openai-news-d2282bcce1625c64",
+   "title": "Fair use benefits everyone"
+  },
+  {
+   "id": "openai-news-7bf0065ceb1646f5",
+   "title": "An updated Model Spec for more capable and beneficial AI"
+  },
+  {
+   "id": "openai-news-d28967fce9c692cd",
+   "title": "How we detect frontier model misalignment"
+  },
+  {
+   "id": "openai-news-2d9928289658e986",
+   "title": "How Ropes & Gray is developing AI for transactional diligence"
+  },
+  {
+   "id": "openai-news-6750c2461412185f",
+   "title": "Credit Saison achieves 954% ROI in a ChatGPT Enterprise pilot"
+  },
+  {
+   "id": "deepmind-blog-b0da25ea6c1a2967",
+   "title": "Gemini 4 Carbon: Our next frontier model"
+  },
+  {
+   "id": "deepmind-blog-d17d13a0006a776d",
+   "title": "Genie 4: A new generation of world simulation"
+  },
+  {
+   "id": "deepmind-blog-e66e9796ba6be5e9",
+   "title": "Beyond tree cover: mapping the world’s forest types"
+  },
+  {
+   "id": "deepmind-blog-996b33c09ad57427",
+   "title": "Accelerating the search for antimicrobial peptides with Google Antigravity"
+  },
+  {
+   "id": "deepmind-blog-58e4191fcfe4b88c",
+   "title": "Google DeepMind and Singapore Government collaborate to build fine-tuned AI model for scam detection"
+  },
+  {
+   "id": "deepmind-blog-471508c04c304cbd",
+   "title": "Developing Gemini 4 Argon responsibly and safely"
+  },
+  {
+   "id": "deepmind-blog-884ebf3c3978ea46",
+   "title": "Gemini 4 Argon for Robotics"
+  },
+  {
+   "id": "deepmind-blog-f174716114a9131e",
+   "title": "Gemini 4 Argon: Built to solve your hardest problems"
+  },
+  {
+   "id": "deepmind-blog-4dd290070848fb61",
+   "title": "EmbeddingGemma 2: an open, lightweight multimodal embedding model"
+  },
+  {
+   "id": "google-ai-blog-be77c96c39b4ea3e",
+   "title": "Our newest AI Quest: Mapping the human brain"
+  },
+  {
+   "id": "google-ai-blog-1778fb273dbb6c0b",
+   "title": "Southeast Asia’s digital economy to hit $368 billion"
+  },
+  {
+   "id": "deepmind-blog-f174716114a9131e",
+   "title": "Gemini 4 Argon: Built to solve your hardest problems"
+  },
+  {
+   "id": "google-ai-blog-22643d6fcb195220",
+   "title": "Introducing Playground: Create and play custom games"
+  },
+  {
+   "id": "google-ai-blog-1eadd5627184a89f",
+   "title": "Watch the winning trailer from the Future Vision XPRIZE, The Gifted."
+  },
+  {
+   "id": "google-ai-blog-8a86c97089bb6492",
+   "title": "Google Beam expands with new regions, partners, and customers"
+  },
+  {
+   "id": "google-ai-blog-079e661c04cec0b0",
+   "title": "New experts join Google’s AI & Economy team"
+  },
+  {
+   "id": "google-ai-blog-13d62ca6fcfd55d7",
+   "title": "Co-creating the future of fashion with Google"
+  },
+  {
+   "id": "gh-advisories-ae7106780d805ce0",
+   "title": "GHSA-8fmv-6rg5-5924: Kubeflow Pipelines: Pipeline archive upload allows decompression bomb to exhaust server memory"
+  },
+  {
+   "id": "gh-advisories-933e6ba0217e8668",
+   "title": "GHSA-wg5q-x4j9-qm54: Kubeflow Pipelines: Run-log endpoint permits unauthorized access to pod logs"
+  },
+  {
+   "id": "gh-advisories-4f8a5f62b0f60a0d",
+   "title": "GHSA-5849-834g-hvw5: pypdf has possible infinite loop when hitting EOF in standard xref table during trailer search"
+  },
+  {
+   "id": "gh-advisories-0042021a2a9378a4",
+   "title": "GHSA-cggf-277g-3q54: pypdf has possible large memory usage when parsing page tree"
+  },
+  {
+   "id": "gh-advisories-e679292e76551902",
+   "title": "GHSA-mfr5-77xh-9j7h: pypdf has possible infinite loop when cloning dictionaries"
+  },
+  {
+   "id": "gh-advisories-225572748ecceca6",
+   "title": "GHSA-4528-x5fx-h6hg: joi: quadratic-time split in `string().email({ multiple: true })` allows denial of service"
+  },
+  {
+   "id": "gh-advisories-67a682b0c8ef52ef",
+   "title": "GHSA-8494-f6mr-cjpv: @hapi/content: quadratic-time parsing of Content-Disposition parameters allows denial of service"
+  },
+  {
+   "id": "gh-advisories-de828a96781e104b",
+   "title": "GHSA-g3hv-75wg-m249: minimatch has potential denial of service via globparts amplification"
+  },
+  {
+   "id": "arxiv-ml-ecbf7dfa72f863de",
+   "title": "A Better Critic Matters for Distribution Matching Distillation"
+  },
+  {
+   "id": "arxiv-ml-cd6ba781a8a8e436",
+   "title": "Instance-dependent sequential limits as an exact information ledger"
+  },
+  {
+   "id": "arxiv-ml-2b2ed7cdaee6ceed",
+   "title": "Physiological Trajectories and Observation Patterns in ICU Mortality Prediction: Transportability Under Changing Measurement Conditions"
+  },
+  {
+   "id": "arxiv-ml-0bcf675a9d8d3bb3",
+   "title": "Gradient Descent on Two ReLU Neurons: Global Landscape and Bifurcation Dynamics"
+  },
+  {
+   "id": "arxiv-ml-834fc3eb45f7a3af",
+   "title": "Fast Privacy Loss Accounting for Random Allocation via Multiscale FFT"
+  },
+  {
+   "id": "arxiv-ml-9a79b1accb65bbd1",
+   "title": "SATFRONT: Detecting Atmospheric Fronts with Satellite Data using Machine Learning"
+  },
+  {
+   "id": "arxiv-ml-cfc16ca56ddf6e84",
+   "title": "Regret-Optimal Wasserstein-Robust Linear Regression"
+  },
+  {
+   "id": "arxiv-ml-671e922d67b6dbc8",
+   "title": "Hard Constraint Projection in a Physics Informed Neural Network (Burgers)"
+  },
+  {
+   "id": "gh-releases-ollama-63b2d1bbe05c6963",
+   "title": "ollama/ollama: Release v0.40.13"
+  },
+  {
+   "id": "gh-releases-ollama-ff8e40df404e5077",
+   "title": "ollama/ollama: Release v0.40.12"
+  },
+  {
+   "id": "gh-releases-ollama-f30f5cb0d844a064",
+   "title": "ollama/ollama: Release v0.40.11"
+  },
+  {
+   "id": "gh-releases-ollama-c05276cf464f5162",
+   "title": "ollama/ollama: Release v0.40.10"
+  },
+  {
+   "id": "gh-releases-ollama-e97500606f0a704f",
+   "title": "ollama/ollama: Release v0.40.9"
+  },
+  {
+   "id": "gh-releases-ollama-cc672400053875b0",
+   "title": "ollama/ollama: Release v0.40.8"
+  },
+  {
+   "id": "gh-releases-ollama-3d68f04adcd0970f",
+   "title": "ollama/ollama: Release v0.40.7"
+  },
+  {
+   "id": "gh-releases-ollama-a7556a7a29d921f0",
+   "title": "ollama/ollama: Release v0.40.6"
+  },
+  {
+   "id": "gh-releases-ollama-ca2244a36c1ed13a",
+   "title": "ollama/ollama: Release v0.40.5"
+  },
+  {
+   "id": "gh-releases-ollama-8c1adb03594cb699",
+   "title": "ollama/ollama: Release v0.40.4"
+  }
+ ],
+ "updated": [
+  {
+   "id": "hf-models-98e785d996c178ec",
+   "title": "sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-x2-full",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "hf-models-98e785d996c178ec",
+   "title": "sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-full",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "hf-models-6b3f64d6ce7f804b",
+   "title": "amd/gemma-3-4b_rai_1.9.0_m_1.0.1_npu",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "google-ai-blog-1122627a66dfc215",
+   "title": "The latest AI news we announced in October 2026",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "google-ai-blog-1122627a66dfc215",
+   "title": "The latest AI news we announced in September 2026",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12058",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12057",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12054",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12053",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12052",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12050",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12048",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12047",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12040",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b12038",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  }
+ ],
+ "corrected": [],
+ "outdated": [],
+ "rejected": [
+  {
+   "id": "openai-news-598c6194c0d34c23",
+   "title": "Qodo builds context into AI code review with Codex",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "id": "deepmind-blog-094c331a98fae894",
+   "title": "Speeding up planning decisions with AI",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "id": "gh-advisories-a9cdc1eb95ca9d0b",
+   "title": "GHSA-j656-3hf2-fvjc: DBHub: MySQL and MariaDB comment interpretation bypasses read-only SQL validation",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  }
+ ],
+ "contradictions": [
+  {
+   "entry_id": "hf-models-419e0e8f45aa67b8",
+   "title": "Arabi32/Carbon-X",
+   "candidates": [
+    "deepmind-blog-b0da25ea6c1a2967",
+    "hf-models-9500f4e4d4b37435"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-98e785d996c178ec",
+   "title": "sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-x2-retain90",
+   "candidates": [
+    "hf-models-e749af32ccd6db29",
+    "hf-models-9787c5f59726d3c0",
+    "hf-models-446da94cc07b899c"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-47100c9a05681754",
+   "title": "elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN",
+   "candidates": [
+    "hf-models-8327d413705e8146",
+    "hf-models-2c2ccf2bac6159a0",
+    "hf-models-fd1434e6592406c2"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-6b3f64d6ce7f804b",
+   "title": "amd/gemma-4-e2b-it-mobius-int4_rai_1.9.0_m_1.0.1_npu",
+   "candidates": [
+    "hf-models-6658cf4518763c91",
+    "hf-models-5fee4bcd5a560f94",
+    "hf-models-16a3d6d7bace165f"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-c645e2e700ec6b85",
+   "title": "Convergent-ch/Alpina-Large-2.0-Mega-122B",
+   "candidates": [
+    "hf-models-93d1b68d0cd2e5d8"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "deepmind-blog-094c331a98fae894",
+   "title": "Speeding up planning decisions with AI",
+   "candidates": [
+    "openai-news-27825e3003584012",
+    "arxiv-ml-01db4d2113ea27bc"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  }
+ ],
+ "competitor_changes": [
+  {
+   "id": "openai-news-19244c7aa2063fd3",
+   "title": "Introducing the Grid Protectors Program"
+  }
+ ],
+ "new_models_tech": [
+  {
+   "id": "hf-models-419e0e8f45aa67b8",
+   "title": "Arabi32/Carbon-X"
+  },
+  {
+   "id": "hf-models-98e785d996c178ec",
+   "title": "sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-full"
+  },
+  {
+   "id": "hf-models-47100c9a05681754",
+   "title": "elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN"
+  },
+  {
+   "id": "hf-models-6b3f64d6ce7f804b",
+   "title": "amd/gemma-3-4b_rai_1.9.0_m_1.0.1_npu"
+  },
+  {
+   "id": "hf-models-c645e2e700ec6b85",
+   "title": "Convergent-ch/Alpina-Large-2.0-Mega-122B"
+  },
+  {
+   "id": "hf-models-c283cd6994c4415c",
+   "title": "Convergent-ch/Alpina-Titan-2.0-80B"
+  },
+  {
+   "id": "hf-models-6c33fd02594c2f11",
+   "title": "Convergent-ch/Alpina-Big-2.0-300M"
+  },
+  {
+   "id": "openai-news-ed4b58253682640f",
+   "title": "LifeVal"
+  }
+ ],
+ "security_findings": [
+  {
+   "id": "gh-advisories-7915c80c72ee906e",
+   "title": "GHSA-f9j6-8p6x-r9j6: SD JWT JS: Tampered disclosures silently dropped instead of rejected"
+  }
+ ],
+ "improvement_suggestions": [
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-full",
+   "sources": [
+    "https://huggingface.co/sungjuncho/Llama-3.1-8B-Instruct-TOFU-para-x2-retain90"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-98e785d996c178ec"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN",
+   "sources": [
+    "https://huggingface.co/elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-47100c9a05681754"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': Arabi32/Carbon-X",
+   "sources": [
+    "https://huggingface.co/Arabi32/Carbon-X"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-419e0e8f45aa67b8"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': amd/gemma-3-4b_rai_1.9.0_m_1.0.1_npu",
+   "sources": [
+    "https://huggingface.co/amd/gemma-4-e2b-it-mobius-int4_rai_1.9.0_m_1.0.1_npu"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-6b3f64d6ce7f804b"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': Convergent-ch/Alpina-Large-2.0-Mega-122B",
+   "sources": [
+    "https://huggingface.co/Convergent-ch/Alpina-Large-2.0-Mega-122B"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-c645e2e700ec6b85"
+  }
+ ],
+ "rag_usage": {
+  "day": "2026-11-02",
+  "generated_at": "2026-11-02T20:55:57Z",
+  "tests": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "gh-advisories-7915c80c72ee906e",
+      "title": "GHSA-f9j6-8p6x-r9j6: SD JWT JS: Tampered disclosures silently dropped instead of rejected",
+      "category": "sicherheit",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://github.com/advisories/GHSA-f9j6-8p6x-r9j6"
+     },
+     {
+      "id": "hf-models-419e0e8f45aa67b8",
+      "title": "Arabi32/Carbon-X",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/Arabi32/Carbon-X"
+     },
+     {
+      "id": "hf-models-47100c9a05681754",
+      "title": "elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN"
+     }
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "hf-models-c283cd6994c4415c",
+      "title": "Convergent-ch/Alpina-Titan-2.0-80B",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/Convergent-ch/Alpina-Titan-2.0-80B"
+     },
+     {
+      "id": "hf-models-6c33fd02594c2f11",
+      "title": "Convergent-ch/Alpina-Big-2.0-300M",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/Convergent-ch/Alpina-Big-2.0-300M"
+     },
+     {
+      "id": "hf-models-07159df68ca546fd",
+      "title": "ProCreations/Dory-Beam-4B-Accurate",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/ProCreations/Dory-Beam-4B-Accurate"
+     }
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "openai-news-19244c7aa2063fd3",
+      "title": "Introducing the Grid Protectors Program",
+      "category": "konkurrenz",
+      "freshness": "unbekannt",
+      "trust": 3,
+      "flags": [],
+      "url": "https://openai.com/index/grid-protectors-program"
+     },
+     {
+      "id": "hf-models-0dc6d6f7304893c3",
+      "title": "CzVod/Clop-Oops-0.55B",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/CzVod/Clop-Oops-0.55B"
+     },
+     {
+      "id": "hf-models-2d18054d35b19302",
+      "title": "kolada-app/Kolada-writer",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/kolada-app/Kolada-writer"
+     }
+    ]
+   }
+  ],
+  "answers": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "ok": true,
+    "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **[SD JWT JS](https://github.com/ghsa/ghsa-sd-jwt-js-2026-62374)**. Diese Lücke ist ein **Schwierigkeitsgrad hohes** (CVE-2026-62374) und betroffenes Paket ist **@sd-jwt/decode**.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "gh-advisories-7915c80c72ee906e",
+     "hf-models-419e0e8f45aa67b8",
+     "hf-models-47100c9a05681754"
+    ],
+    "context_entry_ids": [
+     "gh-advisories-7915c80c72ee906e",
+     "hf-models-419e0e8f45aa67b8",
+     "hf-models-47100c9a05681754"
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "ok": true,
+    "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen den letzten Antworten veröffentlicht wurden. Die letzten veröffentlichten Modelle sind:\n\n1. Convergent-ch/Alpina-Titan-2.0-80B\n2. Convergent-ch/Alpina-Big-2.0-300M\n3. ProCreations/Dory-Beam-4B-Accurate\n4. CzVod/Clop-Oops-0.55B\n5. kolada-app/Kolada-writer\n\nDiese Modelle sind alle auf Hugging Face veröffentlicht und haben keine Downloads oder Likes. Es gibt keine neuen offenen KI-Modelle, die in dieser Zeit veröffentlicht wurden.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "hf-models-c283cd6994c4415c",
+     "hf-models-6c33fd02594c2f11",
+     "hf-models-07159df68ca546fd"
+    ],
+    "context_entry_ids": [
+     "hf-models-c283cd6994c4415c",
+     "hf-models-6c33fd02594c2f11",
+     "hf-models-07159df68ca546fd"
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "ok": true,
+    "answer": "Es gibt keine offiziellen Informationen zu einem \"Konkurrenz-Anbietern\" wie OpenAI oder Anthropic. Die angegebenen Links beinhalten Entwicklungen in der Text-Generierung und KI-Bibliothek, aber keine direkten Bezugspunkte zur Frage.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "openai-news-19244c7aa2063fd3",
+     "hf-models-0dc6d6f7304893c3",
+     "hf-models-2d18054d35b19302"
+    ],
+    "context_entry_ids": [
+     "openai-news-19244c7aa2063fd3",
+     "hf-models-0dc6d6f7304893c3",
+     "hf-models-2d18054d35b19302"
+    ]
+   }
+  ]
+ },
+ "open_questions": [],
+ "further_research": [
+  "Widerspruchskandidaten manuell gegenprüfen (siehe contradictions).",
+  "Quellen ohne Datum nach Primärquelle durchsuchen."
+ ],
+ "errors": 0,
+ "costs": {
+  "last_run_eur": 0.0,
+  "day_eur": 0.0,
+  "month_eur": 0.0,
+  "note": "Ausschließlich kostenlose offizielle Quellen/APIs (Free-Only-Regel)."
+ },
+ "summary": "10 neue geprüfte Erkenntnisse, 61 bestätigt, 15 aktualisiert, 0 veraltet, 3 verworfen.",
+ "rag_ready_count": 256,
+ "used_in_answer_count": 354
+}

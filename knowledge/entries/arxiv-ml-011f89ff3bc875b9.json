@@ -1,0 +1,93 @@
+{
+ "id": "arxiv-ml-011f89ff3bc875b9",
+ "title": "Learning Positive Linear Combinations of ReLUs in Fully Polynomial Time",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: study, rag)",
+  "relevance_score": 2
+ },
+ "summary": "We study the fundamental problem of PAC learning positive linear combinations of $k$ arbitrary ReLU activations on $\\mathbb{R}^d$ with respect to the Gaussian distribution, in $L_2$ loss. We give the first fully-polynomial time algorithm for this learning task. Specifically, our algorithm draws $\\mathrm{poly}(d, k, 1/ε)$ samples, runs in $\\mathrm{poly}(d, k, 1/ε)$ time, and outputs a hypothesis that is $ε$-close to the target concept with high probability. All prior algorithms for this problem require super-polynomial time in $k$ or $1/ε$, or leverage strong well-conditioned assumptions on the weight matrix. On a technical level, our approach develops a novel boosting procedure of a ``weak'' learner that recovers the hidden weight vectors to constant error, in a list-decodable manner. To develop this ``weak'' learning procedure, we leverage implicit tensor computation techniques to construct a low-degree filtering procedure based on Hermite tensors of the target function. This procedure amplifies separation among (clusters of) weight vectors to learn each of them to constant error. We then argue that the same procedure can be used for improving the estimation of hidden weight vecto",
+ "key_points": [
+  "We study the fundamental problem of PAC learning positive linear combinations of $k$ arbitrary ReLU activations on $\\mathbb{R}^d$ with respect to the Gaussian distribution, in $L_2$ loss",
+  "We give the first fully-polynomial time algorithm for this learning task",
+  "Specifically, our algorithm draws $\\mathrm{poly}(d, k, 1/ε)$ samples, runs in $\\mathrm{poly}(d, k, 1/ε)$ time, and outputs a hypothesis that is $ε$-close to the target concept with high probability",
+  "All prior algorithms for this problem require super-polynomial time in $k$ or $1/ε$, or leverage strong well-conditioned assumptions on the weight matrix",
+  "On a technical level, our approach develops a novel boosting procedure of a ``weak'' learner that recovers the hidden weight vectors to constant error, in a list-decodable manner"
+ ],
+ "source": {
+  "id": "arxiv-ml",
+  "name": "arXiv (cs.LG Machine Learning)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.32940v1",
+ "url_normalized": "https://arxiv.org/abs/2610.32940v1",
+ "publisher": "arXiv",
+ "published": "2026-10-23",
+ "retrieved": "2026-10-26T10:26:01Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "forschung",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-26T10:26:06Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Learning Positive Linear Combinations of ReLUs in Fully Polynomial Time",
+    "summary": "We study the fundamental problem of PAC learning positive linear combinations of $k$ arbitrary ReLU activations on $\\mathbb{R}^d$ with respect to the Gaussian distribution, in $L_2$ loss. We give the first fully-polynomial time algorithm for this learning task. Specifically, our algorithm draws $\\mathrm{poly}(d, k, 1/ε)$ samples, runs in $\\mathrm{poly}(d, k, 1/ε)$ time, and outputs a hypothesis that is $ε$-close to the target concept with high probability. All prior algorithms for this problem require super-polynomial time in $k$ or $1/ε$, or leverage strong well-conditioned assumptions on the weight matrix. On a technical level, our approach develops a novel boosting procedure of a ``weak'' learner that recovers the hidden weight vectors to constant error, in a list-decodable manner. To develop this ``weak'' learning procedure, we leverage implicit tensor computation techniques to construct a low-degree filtering procedure based on Hermite tensors of the target function. This procedure amplifies separation among (clusters of) weight vectors to learn each of them to constant error. We then argue that the same procedure can be used for improving the estimation of hidden weight vecto"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "_rag_flags": [],
+ "last_seen": "2026-10-26T17:43:40Z",
+ "confirmations": 1
+}

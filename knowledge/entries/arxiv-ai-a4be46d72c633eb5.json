@@ -1,0 +1,92 @@
+{
+ "id": "arxiv-ai-a4be46d72c633eb5",
+ "title": "STROKE: Simple Sparse Structural Occlusions for Black-Box Adversarial Attacks",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: patch)",
+  "relevance_score": 1
+ },
+ "summary": "We introduce STROKE, a query-efficient score-based black-box adversarial attack that constructs perturbations from simple oriented rectangular occlusions. STROKE optimizes these perturbations through a lightweight greedy add-and-refine procedure. Across diverse image classifiers, STROKE achieves high attack success with low query counts at nominal 1--2\\% area settings, showing favorable performance relative to existing patch-based attacks in several configurations. Matched comparisons further demonstrate substantial reductions in wall-clock attack time, while ablation studies examine the key design choices and effectiveness across structural primitives. These findings suggest that simple structural occlusions offer an effective and computationally efficient search space for black-box adversarial attacks.",
+ "key_points": [
+  "We introduce STROKE, a query-efficient score-based black-box adversarial attack that constructs perturbations from simple oriented rectangular occlusions",
+  "STROKE optimizes these perturbations through a lightweight greedy add-and-refine procedure",
+  "Across diverse image classifiers, STROKE achieves high attack success with low query counts at nominal 1--2\\% area settings, showing favorable performance relative to existing patch-based attacks in several configurations",
+  "Matched comparisons further demonstrate substantial reductions in wall-clock attack time, while ablation studies examine the key design choices and effectiveness across structural primitives",
+  "These findings suggest that simple structural occlusions offer an effective and computationally efficient search space for black-box adversarial attacks."
+ ],
+ "source": {
+  "id": "arxiv-ai",
+  "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.32932v1",
+ "url_normalized": "https://arxiv.org/abs/2610.32932v1",
+ "publisher": "arXiv",
+ "published": "2026-10-23",
+ "retrieved": "2026-10-26T10:25:53Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-26T10:26:06Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "STROKE: Simple Sparse Structural Occlusions for Black-Box Adversarial Attacks",
+    "summary": "We introduce STROKE, a query-efficient score-based black-box adversarial attack that constructs perturbations from simple oriented rectangular occlusions. STROKE optimizes these perturbations through a lightweight greedy add-and-refine procedure. Across diverse image classifiers, STROKE achieves high attack success with low query counts at nominal 1--2\\% area settings, showing favorable performance relative to existing patch-based attacks in several configurations. Matched comparisons further demonstrate substantial reductions in wall-clock attack time, while ablation studies examine the key design choices and effectiveness across structural primitives. These findings suggest that simple structural occlusions offer an effective and computationally efficient search space for black-box adversarial attacks."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-26T10:26:06Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-26T17:43:40Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-26T17:43:40Z",
+ "confirmations": 1
+}

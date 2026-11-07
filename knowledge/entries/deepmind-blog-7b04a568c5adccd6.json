@@ -1,0 +1,114 @@
+{
+ "id": "deepmind-blog-7b04a568c5adccd6",
+ "title": "Agentic cheminformatics with Google Antigravity",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: agent)",
+  "relevance_score": 1
+ },
+ "summary": "Learn how Google Antigravity and our Cheminformatics Skills accelerate drug discovery workflows, search compounds, and propose novel rigidified macrocycles.",
+ "key_points": [
+  "Learn how Google Antigravity and our Cheminformatics Skills accelerate drug discovery workflows, search compounds, and propose novel rigidified macrocycles."
+ ],
+ "source": {
+  "id": "deepmind-blog",
+  "name": "Google DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://deepmind.google/blog/agentic-cheminformatics-with-google-antigravity/",
+ "url_normalized": "https://deepmind.google/blog/agentic-cheminformatics-with-google-antigravity",
+ "publisher": "Google DeepMind Blog (RSS)",
+ "published": "2026-11-03",
+ "retrieved": "2026-11-03T18:39:23Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "arxiv-ai-24a508076182780b"
+ ],
+ "tags": [
+  "forschung",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-03T18:39:32Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Agentic cheminformatics with Google Antigravity",
+    "summary": "Learn how Google Antigravity and our Cheminformatics Skills accelerate drug discovery workflows, search compounds, and propose novel rigidified macrocycles."
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-03T18:39:32Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-03T18:39:32Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-03T18:39:32Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-03T18:39:32Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-11-05T12:49:39Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-05T18:56:45Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-06T18:22:11Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-07T11:28:33Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-11-07T11:28:33Z",
+ "confirmations": 5
+}

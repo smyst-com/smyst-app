@@ -1,0 +1,77 @@
+{
+ "id": "gh-advisories-783ed4db5ff02487",
+ "title": "GHSA-f3fj-9625-rv3m: charmbracelet/soft-serve: Race in `SetPrivate` leaves a private repository readable by unauthenticated users",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/charmbracelet/soft-serve. CVE: keine. Zusammenfassung: charmbracelet/soft-serve: Race in `SetPrivate` leaves a private repository readable by unauthenticated users",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium",
+  "Betroffenes Paket: github.com/charmbracelet/soft-serve",
+  "CVE: keine",
+  "Zusammenfassung: charmbracelet/soft-serve: Race in `SetPrivate` leaves a private repository readable by unauthenticated users"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-f3fj-9625-rv3m",
+ "url_normalized": "https://github.com/advisories/GHSA-f3fj-9625-rv3m",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-30",
+ "retrieved": "2026-10-30T17:08:11Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "allgemein",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-30T17:08:16Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-f3fj-9625-rv3m: charmbracelet/soft-serve: Race in `SetPrivate` leaves a private repository readable by unauthenticated users",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/charmbracelet/soft-serve. CVE: keine. Zusammenfassung: charmbracelet/soft-serve: Race in `SetPrivate` leaves a private repository readable by unauthenticated users"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-30T17:08:16Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-30T17:08:16Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-10-30T17:08:16Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  }
+ ],
+ "status": "archiviert-als-abgelehnt"
+}

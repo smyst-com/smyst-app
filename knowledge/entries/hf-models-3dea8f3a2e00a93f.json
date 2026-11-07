@@ -1,0 +1,119 @@
+{
+ "id": "hf-models-3dea8f3a2e00a93f",
+ "title": "Naitik-sudo123/phi35-mini-gsm8k-lora",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell)",
+  "relevance_score": 2
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: peft."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/Naitik-sudo123/phi35-mini-gsm8k-dpo-lora",
+ "url_normalized": "https://huggingface.co/Naitik-sudo123/phi35-mini-gsm8k-dpo-lora",
+ "publisher": "Hugging Face",
+ "published": "2026-09-27",
+ "retrieved": "2026-09-27T10:10:20Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-09-27T10:10:30Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Naitik-sudo123/phi35-mini-gsm8k-dpo-lora",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: peft."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-09-27T10:10:30Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "Naitik-sudo123/phi35-mini-gsm8k-dpo-lora"
+   },
+   "current": {
+    "title": "Naitik-sudo123/phi35-mini-gsm8k-rft-lora"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-09-27T10:10:30Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "Naitik-sudo123/phi35-mini-gsm8k-rft-lora"
+   },
+   "current": {
+    "title": "Naitik-sudo123/phi35-mini-gsm8k-lora"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-09-27T10:10:30Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-09-27T10:10:30Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-09-27T10:10:30Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-09-27T10:10:30Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-09-27T10:10:30Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  },
+  {
+   "at": "2026-09-27T10:10:30Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-09-27T10:10:30Z",
+ "confirmations": 2
+}

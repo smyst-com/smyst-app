@@ -1,0 +1,83 @@
+{
+ "id": "gh-advisories-ccf971735753fee9",
+ "title": "GHSA-jg86-v3jv-hrpm: Pillow: Quadratic-time DoS in PDF save_all (PdfParser.next_object_id)",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: Pillow. CVE: CVE-2026-112894. Zusammenfassung: Pillow: Quadratic-time DoS in PDF save_all (PdfParser.next_object_id)",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad high",
+  "Betroffenes Paket: Pillow",
+  "CVE: CVE-2026-112894",
+  "Zusammenfassung: Pillow: Quadratic-time DoS in PDF save_all (PdfParser.next_object_id)"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-jg86-v3jv-hrpm",
+ "url_normalized": "https://github.com/advisories/GHSA-jg86-v3jv-hrpm",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-21",
+ "retrieved": "2026-10-22T09:34:52Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-22T09:34:58Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-jg86-v3jv-hrpm: Pillow: Quadratic-time DoS in PDF save_all (PdfParser.next_object_id)",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: Pillow. CVE: CVE-2026-112894. Zusammenfassung: Pillow: Quadratic-time DoS in PDF save_all (PdfParser.next_object_id)"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

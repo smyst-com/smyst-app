@@ -1,0 +1,1126 @@
+{
+ "title": "Was hat smyst radar heute dazugelernt?",
+ "day": "2026-10-21",
+ "generated_at": "2026-10-21T16:51:09Z",
+ "paused": false,
+ "topics_researched": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.74,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.14,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.14,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.18,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 0,
+   "duration_s": 0.16,
+   "ok": false
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.39,
+   "ok": true
+  },
+  {
+   "source_id": "gh-advisories",
+   "name": "GitHub Security Advisories (offiziell)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.54,
+   "ok": true
+  },
+  {
+   "source_id": "arxiv-ml",
+   "name": "arXiv (cs.LG Machine Learning)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.09,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.87,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.75,
+   "ok": true
+  }
+ ],
+ "topics_reasons": [
+  {
+   "id": "arxiv-ai",
+   "reason": "Wissenschaftliche Neuerscheinungen zu KI, Sprachmodellen und Sicherheit."
+  },
+  {
+   "id": "hf-models",
+   "reason": "Neue offene KI-Modelle und deren Metadaten direkt vom Primäranbieter."
+  },
+  {
+   "id": "cisa-kev",
+   "reason": "Offizielle US-Behördenliste aktiv ausgenutzter Schwachstellen."
+  },
+  {
+   "id": "openai-news",
+   "reason": "Offizielle Veröffentlichungen eines Konkurrenz-Anbieters."
+  },
+  {
+   "id": "deepmind-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "google-ai-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "gh-advisories",
+   "reason": "Offizielle, geprüfte Sicherheitswarnungen des GitHub Advisory-Boards."
+  },
+  {
+   "id": "arxiv-ml",
+   "reason": "Wissenschaftliche Neuerscheinungen zu Lernverfahren und Architekturen."
+  },
+  {
+   "id": "gh-releases-llamacpp",
+   "reason": "Relevante Infrastruktur für das eigene smyst-Modell (llama-server)."
+  },
+  {
+   "id": "gh-releases-ollama",
+   "reason": "Ökosystem-Entwicklungen für lokale LLM-Betrieb."
+  }
+ ],
+ "sources_examined": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.74,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.14,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.14,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.18,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 0,
+   "duration_s": 0.16,
+   "ok": false
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.39,
+   "ok": true
+  },
+  {
+   "source_id": "gh-advisories",
+   "name": "GitHub Security Advisories (offiziell)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.54,
+   "ok": true
+  },
+  {
+   "source_id": "arxiv-ml",
+   "name": "arXiv (cs.LG Machine Learning)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.09,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.87,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.75,
+   "ok": true
+  }
+ ],
+ "sources_examined_count": 10,
+ "sources_ok_count": 9,
+ "findings_count": 79,
+ "new_insights": [
+  {
+   "id": "hf-models-61a2b3415532e3ce",
+   "title": "Harsha001/Spark-X2.6-4B-ROCmFPX",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Harsha001/Spark-X2.6-4B-ROCmFPX"
+  },
+  {
+   "id": "hf-models-48983e0b2b1b13d1",
+   "title": "aikronus-labs/ribot-135m",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/aikronus-labs/ribot-135m"
+  },
+  {
+   "id": "hf-models-248ee32acb2c69c1",
+   "title": "antrip03/grpo-c4_kl_med_3b_a100-s42",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/antrip03/grpo-c4_kl_med_3b_a100-s42"
+  },
+  {
+   "id": "hf-models-321679f2aa37178e",
+   "title": "Nawal42/balochi-ocr-gemma4",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Nawal42/balochi-ocr-gemma4"
+  },
+  {
+   "id": "hf-models-738e500b06f8035f",
+   "title": "opencerebral/Boris-2-Preview-2",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/opencerebral/Boris-2-Preview-2"
+  },
+  {
+   "id": "hf-models-5a215e5e139f8866",
+   "title": "almanach/molt-blt-660m",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/almanach/molt-blt-660m"
+  },
+  {
+   "id": "hf-models-99e030acfe5a9b8e",
+   "title": "hcnote/SparkMuse-4B-GGUF",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/hcnote/SparkMuse-4B-GGUF"
+  },
+  {
+   "id": "hf-models-f58b6a49188863a8",
+   "title": "Steven-2025/Qwen3-Coder-30B-A3B-Instruct-FP8",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Steven-2025/Qwen3-Coder-30B-A3B-Instruct-FP8"
+  },
+  {
+   "id": "openai-news-61f4d0141ff303c0",
+   "title": "OpenAI models are coming to Google Cloud",
+   "category": "konkurrenz",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/openai-models-google-cloud"
+  },
+  {
+   "id": "openai-news-d3f519557f32dd3d",
+   "title": "Patch the Planet: global response coordination as agents uncover critical vulnerabilities",
+   "category": "sicherheit",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/coordinated-disclosure-of-critical-vulnerabilities"
+  },
+  {
+   "id": "openai-news-74fcf21eca7add4a",
+   "title": "ChatGPT Ads expands to 26 new countries as over 100,000 advertisers have used the platform",
+   "category": "ki-modelle",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/chatgpt-ads-expands-26-new-countries"
+  },
+  {
+   "id": "openai-news-1de8e62ff715d1f1",
+   "title": "Using thousands of AI agents to uncover new leads in biological data",
+   "category": "konkurrenz",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/scaling-ai-research-for-complex-biological-data"
+  },
+  {
+   "id": "openai-news-edef63b51aedc012",
+   "title": "How we built ChatGPT’s novel ad stack for user trust and relevance",
+   "category": "ki-modelle",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/building-chatgpt-ad-stack"
+  },
+  {
+   "id": "gh-advisories-9b370c1868f5ec64",
+   "title": "GHSA-vxj4-q4g9-crj7: virtualenv bash activate runs commands from an environment name with a backslash before $",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-vxj4-q4g9-crj7"
+  },
+  {
+   "id": "gh-advisories-2a65a7cba5ce86ed",
+   "title": "GHSA-7mh2-4gg2-979f: pypdf: Possible large memory usage for streams with multiple filters",
+   "category": "forschung",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-7mh2-4gg2-979f"
+  },
+  {
+   "id": "gh-advisories-4c4a898a0279ba2b",
+   "title": "GHSA-9jrq-w75r-8gcw: Vite: Cross origin script execution through Vite custom middleware",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-9jrq-w75r-8gcw"
+  },
+  {
+   "id": "gh-advisories-2d869b3471195d21",
+   "title": "GHSA-rq7h-c2jc-7f22: Vite: Files outside `server.fs.allow` could be served when project paths match system paths on non-Windows machine",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-rq7h-c2jc-7f22"
+  },
+  {
+   "id": "gh-advisories-362cfc6b59d03189",
+   "title": "GHSA-vfpm-58rq-9qcg: Vite: First 4 bytes of files outside of `server.fs` setting is exposed by `?vite-wasm-instance`",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-vfpm-58rq-9qcg"
+  },
+  {
+   "id": "gh-advisories-5b66192382944287",
+   "title": "GHSA-8rjx-v5ww-45pp: virtualenv activation scripts run code from a path that contains a placeholder name",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-8rjx-v5ww-45pp"
+  },
+  {
+   "id": "gh-advisories-65004657bd2f7cd1",
+   "title": "GHSA-26w4-8w32-4x3v: Slack Morphism verifier errors disclose valid HMACs in the logs",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-26w4-8w32-4x3v"
+  },
+  {
+   "id": "gh-advisories-70fd5f725e38c081",
+   "title": "GHSA-crwc-vw2r-qr6m: OGNL stricter-invocation block list bypass via java.lang.reflect reflection proxies",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-crwc-vw2r-qr6m"
+  },
+  {
+   "id": "gh-releases-ollama-9747dad8c796b22e",
+   "title": "ollama/ollama: Release v0.40.8-rc0",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/ollama/ollama/releases/tag/v0.40.8-rc0"
+  }
+ ],
+ "confirmed": [
+  {
+   "id": "arxiv-ai-8b5f62f9e8c02d61",
+   "title": "Joints, Camera, Action! Co-Generating 3D Motion and Video for Arbitrary Rigs"
+  },
+  {
+   "id": "arxiv-ai-b79a29f42a5e49d6",
+   "title": "GBClaw: An agentic AI framework for atomistic grain boundary research and mechanistic discovery"
+  },
+  {
+   "id": "arxiv-ai-83e35c8ac3d75adb",
+   "title": "UniWALM: Unified World Action Language Model for Embodied Robot Control"
+  },
+  {
+   "id": "arxiv-ai-ef08fff78dfdfee3",
+   "title": "Industrial ReMEmbR: Scaling Spatiotemporal Memory to Robot Fleets"
+  },
+  {
+   "id": "arxiv-ai-578fa576e920f863",
+   "title": "MindView: Benchmarking Generative Multi-View Spatial Intelligence"
+  },
+  {
+   "id": "arxiv-ai-000046c63fb80e0d",
+   "title": "Adaptive Multi-Token Prediction: How far should we go?"
+  },
+  {
+   "id": "arxiv-ai-76c8a705a417925c",
+   "title": "NarraSpace: Multimodal Scene-Grounded Evidence for Picture-Description Dementia Classification"
+  },
+  {
+   "id": "arxiv-ai-700681fd77d69c36",
+   "title": "Semantic Observability for Autonomous Systems Diagnostics"
+  },
+  {
+   "id": "arxiv-ai-841cd19960857631",
+   "title": "Benchmarking Arabic Dialects for Math Problems"
+  },
+  {
+   "id": "arxiv-ai-8fb7ca45013a5659",
+   "title": "Value-Rich, Differently Organized: Measuring Value Expression and Organization in AI-Generated Debates"
+  },
+  {
+   "id": "cisa-kev-042bd106b079ac18",
+   "title": "CVE-2026-106931: EG Secure Solutions — SiteGuard Server Edition (EG Secure Solutions SiteGuard Server Edition OS Command Injection Vulnerability)"
+  },
+  {
+   "id": "openai-news-b3fcb2e42d321123",
+   "title": "Franchisee reconciles cash in 94% less time with ChatGPT Work"
+  },
+  {
+   "id": "openai-news-a84b6a7bee5c68a6",
+   "title": "Terminal X matches senior investor judgment 88.6% with GPT-6.1"
+  },
+  {
+   "id": "openai-news-dbaa902542534b3a",
+   "title": "OpenAI acquires Orchestra Bio"
+  },
+  {
+   "id": "openai-news-7a364f356aab4946",
+   "title": "Advancing coding in low‑resource programming languages"
+  },
+  {
+   "id": "openai-news-65442e708214c10b",
+   "title": "How Itaú is building generative AI for its entire customer base"
+  },
+  {
+   "id": "google-ai-blog-1778fb273dbb6c0b",
+   "title": "Southeast Asia’s digital economy to hit $368 billion"
+  },
+  {
+   "id": "deepmind-blog-f174716114a9131e",
+   "title": "Gemini 4 Argon: Built to solve your hardest problems"
+  },
+  {
+   "id": "google-ai-blog-22643d6fcb195220",
+   "title": "Introducing Playground: Create and play custom games"
+  },
+  {
+   "id": "google-ai-blog-1122627a66dfc215",
+   "title": "The latest AI news we announced in September 2026"
+  },
+  {
+   "id": "google-ai-blog-1eadd5627184a89f",
+   "title": "Watch the winning trailer from the Future Vision XPRIZE, The Gifted."
+  },
+  {
+   "id": "google-ai-blog-8a86c97089bb6492",
+   "title": "Google Beam expands with new regions, partners, and customers"
+  },
+  {
+   "id": "google-ai-blog-079e661c04cec0b0",
+   "title": "New experts join Google’s AI & Economy team"
+  },
+  {
+   "id": "google-ai-blog-13d62ca6fcfd55d7",
+   "title": "Co-creating the future of fashion with Google"
+  },
+  {
+   "id": "google-ai-blog-e7b9d12d1b3a7eb0",
+   "title": "Making global data easier to explore"
+  },
+  {
+   "id": "google-ai-blog-18592959ad29d5e2",
+   "title": "AI for Societal Impact"
+  },
+  {
+   "id": "arxiv-ml-ccb954915fefe04e",
+   "title": "Learning Adaptable Dexterous Skills via Hybrid Dexterous Mimicking"
+  },
+  {
+   "id": "arxiv-ml-01db4d2113ea27bc",
+   "title": "Planning under Noise with Neural Operators"
+  },
+  {
+   "id": "arxiv-ml-a74205499142c3ed",
+   "title": "Efficient Edge-aware Attention Network for Graph Generation"
+  },
+  {
+   "id": "arxiv-ml-9948c6b9cd5f410c",
+   "title": "Turning TS2Vec into a Foundation Model for Time Series Classification"
+  },
+  {
+   "id": "arxiv-ml-ceb8ab1383363ffe",
+   "title": "Neural Implicit Energy Optimization for LiDAR Mapping"
+  },
+  {
+   "id": "arxiv-ml-7e46e02099abbf58",
+   "title": "PaPi: Parallel Picard-Duhamel Integration for Fast Neuro-Spectral Architectures"
+  },
+  {
+   "id": "arxiv-ml-4027e385ddb1dc1a",
+   "title": "WildMAE: Structure-Aware Masked Autoencoding for Wildlife Image Reconstruction"
+  },
+  {
+   "id": "arxiv-ml-de12458dc74d4c88",
+   "title": "Two $\\operatorname{ReLU}$ Layers is All You Need"
+  },
+  {
+   "id": "gh-releases-ollama-3d68f04adcd0970f",
+   "title": "ollama/ollama: Release v0.40.7"
+  },
+  {
+   "id": "gh-releases-ollama-a7556a7a29d921f0",
+   "title": "ollama/ollama: Release v0.40.6"
+  },
+  {
+   "id": "gh-releases-ollama-ca2244a36c1ed13a",
+   "title": "ollama/ollama: Release v0.40.5"
+  },
+  {
+   "id": "gh-releases-ollama-8c1adb03594cb699",
+   "title": "ollama/ollama: Release v0.40.4"
+  },
+  {
+   "id": "gh-releases-ollama-1506c729d9b4dc2d",
+   "title": "ollama/ollama: Release v0.40.3"
+  },
+  {
+   "id": "gh-releases-ollama-393ffb505eafea09",
+   "title": "ollama/ollama: Release v0.40.2"
+  },
+  {
+   "id": "gh-releases-ollama-81a0b4d6f86dd623",
+   "title": "ollama/ollama: Release v0.40.1"
+  },
+  {
+   "id": "gh-releases-ollama-88cd05e9f93a5e9a",
+   "title": "ollama/ollama: Release v0.40.0"
+  },
+  {
+   "id": "gh-releases-ollama-c1780d2c01331613",
+   "title": "ollama/ollama: Release v0.35.1"
+  }
+ ],
+ "updated": [
+  {
+   "id": "hf-models-102c7ec9c95d3800",
+   "title": "luisastellet/qwen-metaphor-unke-camada-25-literal-metaforica",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "hf-models-102c7ec9c95d3800",
+   "title": "luisastellet/qwen-metaphor-unke-camada-24-literal-metaforica",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11798",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11797",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11796",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11795",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11793",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11792",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11791",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11790",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11789",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11788",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  }
+ ],
+ "corrected": [],
+ "outdated": [],
+ "rejected": [],
+ "contradictions": [
+  {
+   "entry_id": "hf-models-61a2b3415532e3ce",
+   "title": "Harsha001/Spark-X2.6-4B-ROCmFPX",
+   "candidates": [
+    "hf-models-eedc4152e17702c7",
+    "hf-models-44285eb6eaf1d870"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-48983e0b2b1b13d1",
+   "title": "aikronus-labs/ribot-135m",
+   "candidates": [
+    "hf-models-ed051e6a98d45a0e"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-738e500b06f8035f",
+   "title": "opencerebral/Boris-2-Preview-2",
+   "candidates": [
+    "hf-models-fb92cce8b2a2af8f"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-99e030acfe5a9b8e",
+   "title": "hcnote/SparkMuse-4B-GGUF",
+   "candidates": [
+    "hf-models-307b70a0d4090406",
+    "hf-models-c9de927966801544",
+    "hf-models-cdab90633ded82e3"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-f58b6a49188863a8",
+   "title": "Steven-2025/Qwen3-Coder-30B-A3B-Instruct-FP8",
+   "candidates": [
+    "hf-models-cdab90633ded82e3",
+    "hf-models-b67c993a58b77cf5",
+    "hf-models-ae61561f6b4f1c36"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "openai-news-61f4d0141ff303c0",
+   "title": "OpenAI models are coming to Google Cloud",
+   "candidates": [
+    "arxiv-ai-76e5394d6fa63f90"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  }
+ ],
+ "competitor_changes": [
+  {
+   "id": "openai-news-61f4d0141ff303c0",
+   "title": "OpenAI models are coming to Google Cloud"
+  },
+  {
+   "id": "openai-news-1de8e62ff715d1f1",
+   "title": "Using thousands of AI agents to uncover new leads in biological data"
+  }
+ ],
+ "new_models_tech": [
+  {
+   "id": "hf-models-61a2b3415532e3ce",
+   "title": "Harsha001/Spark-X2.6-4B-ROCmFPX"
+  },
+  {
+   "id": "hf-models-48983e0b2b1b13d1",
+   "title": "aikronus-labs/ribot-135m"
+  },
+  {
+   "id": "hf-models-248ee32acb2c69c1",
+   "title": "antrip03/grpo-c4_kl_med_3b_a100-s42"
+  },
+  {
+   "id": "hf-models-321679f2aa37178e",
+   "title": "Nawal42/balochi-ocr-gemma4"
+  },
+  {
+   "id": "hf-models-738e500b06f8035f",
+   "title": "opencerebral/Boris-2-Preview-2"
+  },
+  {
+   "id": "hf-models-5a215e5e139f8866",
+   "title": "almanach/molt-blt-660m"
+  },
+  {
+   "id": "hf-models-99e030acfe5a9b8e",
+   "title": "hcnote/SparkMuse-4B-GGUF"
+  },
+  {
+   "id": "hf-models-f58b6a49188863a8",
+   "title": "Steven-2025/Qwen3-Coder-30B-A3B-Instruct-FP8"
+  },
+  {
+   "id": "openai-news-74fcf21eca7add4a",
+   "title": "ChatGPT Ads expands to 26 new countries as over 100,000 advertisers have used the platform"
+  },
+  {
+   "id": "openai-news-edef63b51aedc012",
+   "title": "How we built ChatGPT’s novel ad stack for user trust and relevance"
+  },
+  {
+   "id": "gh-advisories-2a65a7cba5ce86ed",
+   "title": "GHSA-7mh2-4gg2-979f: pypdf: Possible large memory usage for streams with multiple filters"
+  },
+  {
+   "id": "gh-releases-ollama-9747dad8c796b22e",
+   "title": "ollama/ollama: Release v0.40.8-rc0"
+  }
+ ],
+ "security_findings": [
+  {
+   "id": "openai-news-d3f519557f32dd3d",
+   "title": "Patch the Planet: global response coordination as agents uncover critical vulnerabilities"
+  },
+  {
+   "id": "gh-advisories-9b370c1868f5ec64",
+   "title": "GHSA-vxj4-q4g9-crj7: virtualenv bash activate runs commands from an environment name with a backslash before $"
+  },
+  {
+   "id": "gh-advisories-4c4a898a0279ba2b",
+   "title": "GHSA-9jrq-w75r-8gcw: Vite: Cross origin script execution through Vite custom middleware"
+  },
+  {
+   "id": "gh-advisories-2d869b3471195d21",
+   "title": "GHSA-rq7h-c2jc-7f22: Vite: Files outside `server.fs.allow` could be served when project paths match system paths on non-Windows machine"
+  },
+  {
+   "id": "gh-advisories-362cfc6b59d03189",
+   "title": "GHSA-vfpm-58rq-9qcg: Vite: First 4 bytes of files outside of `server.fs` setting is exposed by `?vite-wasm-instance`"
+  },
+  {
+   "id": "gh-advisories-5b66192382944287",
+   "title": "GHSA-8rjx-v5ww-45pp: virtualenv activation scripts run code from a path that contains a placeholder name"
+  },
+  {
+   "id": "gh-advisories-65004657bd2f7cd1",
+   "title": "GHSA-26w4-8w32-4x3v: Slack Morphism verifier errors disclose valid HMACs in the logs"
+  },
+  {
+   "id": "gh-advisories-70fd5f725e38c081",
+   "title": "GHSA-crwc-vw2r-qr6m: OGNL stricter-invocation block list bypass via java.lang.reflect reflection proxies"
+  }
+ ],
+ "improvement_suggestions": [
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': Steven-2025/Qwen3-Coder-30B-A3B-Instruct-FP8",
+   "sources": [
+    "https://huggingface.co/Steven-2025/Qwen3-Coder-30B-A3B-Instruct-FP8"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-f58b6a49188863a8"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': Harsha001/Spark-X2.6-4B-ROCmFPX",
+   "sources": [
+    "https://huggingface.co/Harsha001/Spark-X2.6-4B-ROCmFPX"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-61a2b3415532e3ce"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': aikronus-labs/ribot-135m",
+   "sources": [
+    "https://huggingface.co/aikronus-labs/ribot-135m"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-48983e0b2b1b13d1"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': antrip03/grpo-c4_kl_med_3b_a100-s42",
+   "sources": [
+    "https://huggingface.co/antrip03/grpo-c4_kl_med_3b_a100-s42"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-248ee32acb2c69c1"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': Nawal42/balochi-ocr-gemma4",
+   "sources": [
+    "https://huggingface.co/Nawal42/balochi-ocr-gemma4"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-321679f2aa37178e"
+  }
+ ],
+ "rag_usage": {
+  "day": "2026-10-21",
+  "generated_at": "2026-10-21T16:51:18Z",
+  "tests": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "gh-releases-ollama-9747dad8c796b22e",
+      "title": "ollama/ollama: Release v0.40.8-rc0",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://github.com/ollama/ollama/releases/tag/v0.40.8-rc0"
+     },
+     {
+      "id": "gh-advisories-9b370c1868f5ec64",
+      "title": "GHSA-vxj4-q4g9-crj7: virtualenv bash activate runs commands from an environment name with a backslash before $",
+      "category": "sicherheit",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://github.com/advisories/GHSA-vxj4-q4g9-crj7"
+     },
+     {
+      "id": "gh-advisories-2a65a7cba5ce86ed",
+      "title": "GHSA-7mh2-4gg2-979f: pypdf: Possible large memory usage for streams with multiple filters",
+      "category": "forschung",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://github.com/advisories/GHSA-7mh2-4gg2-979f"
+     }
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "hf-models-61a2b3415532e3ce",
+      "title": "Harsha001/Spark-X2.6-4B-ROCmFPX",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/Harsha001/Spark-X2.6-4B-ROCmFPX"
+     },
+     {
+      "id": "hf-models-738e500b06f8035f",
+      "title": "opencerebral/Boris-2-Preview-2",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/opencerebral/Boris-2-Preview-2"
+     },
+     {
+      "id": "hf-models-99e030acfe5a9b8e",
+      "title": "hcnote/SparkMuse-4B-GGUF",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/hcnote/SparkMuse-4B-GGUF"
+     }
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "openai-news-61f4d0141ff303c0",
+      "title": "OpenAI models are coming to Google Cloud",
+      "category": "konkurrenz",
+      "freshness": "unbekannt",
+      "trust": 3,
+      "flags": [],
+      "url": "https://openai.com/index/openai-models-google-cloud"
+     },
+     {
+      "id": "openai-news-1de8e62ff715d1f1",
+      "title": "Using thousands of AI agents to uncover new leads in biological data",
+      "category": "konkurrenz",
+      "freshness": "unbekannt",
+      "trust": 3,
+      "flags": [],
+      "url": "https://openai.com/index/scaling-ai-research-for-complex-biological-data"
+     },
+     {
+      "id": "openai-news-edef63b51aedc012",
+      "title": "How we built ChatGPT’s novel ad stack for user trust and relevance",
+      "category": "ki-modelle",
+      "freshness": "unbekannt",
+      "trust": 3,
+      "flags": [],
+      "url": "https://openai.com/index/building-chatgpt-ad-stack"
+     }
+    ]
+   }
+  ],
+  "answers": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "ok": true,
+    "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die \"pypdf: Possible large memory usage for streams with multiple filters\" (CVE-2026-113795). Diese Sicherheitslücke ist in der pypdf-Paketrelease von GitHub bekannt und wird als Schweregrad medium angesehen.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "gh-releases-ollama-9747dad8c796b22e",
+     "gh-advisories-9b370c1868f5ec64",
+     "gh-advisories-2a65a7cba5ce86ed"
+    ],
+    "context_entry_ids": [
+     "gh-releases-ollama-9747dad8c796b22e",
+     "gh-advisories-9b370c1868f5ec64",
+     "gh-advisories-2a65a7cba5ce86ed"
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "ok": true,
+    "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "hf-models-61a2b3415532e3ce",
+     "hf-models-738e500b06f8035f",
+     "hf-models-99e030acfe5a9b8e"
+    ],
+    "context_entry_ids": [
+     "hf-models-61a2b3415532e3ce",
+     "hf-models-738e500b06f8035f",
+     "hf-models-99e030acfe5a9b8e"
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "ok": true,
+    "answer": "Es gibt keine direkte Informationen zu neuen Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die verwendeten Quellen beinhalten keine Details über neue Modelle oder Anbieter.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "openai-news-61f4d0141ff303c0",
+     "openai-news-1de8e62ff715d1f1",
+     "openai-news-edef63b51aedc012"
+    ],
+    "context_entry_ids": [
+     "openai-news-61f4d0141ff303c0",
+     "openai-news-1de8e62ff715d1f1",
+     "openai-news-edef63b51aedc012"
+    ]
+   }
+  ]
+ },
+ "open_questions": [],
+ "further_research": [
+  "Widerspruchskandidaten manuell gegenprüfen (siehe contradictions).",
+  "Quellen ohne Datum nach Primärquelle durchsuchen."
+ ],
+ "errors": 1,
+ "costs": {
+  "last_run_eur": 0.0,
+  "day_eur": 0.0,
+  "month_eur": 0.0,
+  "note": "Ausschließlich kostenlose offizielle Quellen/APIs (Free-Only-Regel)."
+ },
+ "summary": "22 neue geprüfte Erkenntnisse, 43 bestätigt, 12 aktualisiert, 0 veraltet, 0 verworfen.",
+ "rag_ready_count": 169,
+ "used_in_answer_count": 237
+}

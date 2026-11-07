@@ -1,0 +1,83 @@
+{
+ "id": "gh-advisories-c8d14b75263c20cb",
+ "title": "GHSA-4fpj-g9jf-9rgg: A2A Java SDK: Android synchronous POST forwards credentials across authorities after incomplete redirect fix",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: org.a2aproject.sdk:a2a-java-sdk-http-client-android. CVE: CVE-2026-111765. Zusammenfassung: A2A Java SDK: Android synchronous POST forwards credentials across authorities after incomplete redirect fix",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad high",
+  "Betroffenes Paket: org.a2aproject.sdk:a2a-java-sdk-http-client-android",
+  "CVE: CVE-2026-111765",
+  "Zusammenfassung: A2A Java SDK: Android synchronous POST forwards credentials across authorities after incomplete redirect fix"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-4fpj-g9jf-9rgg",
+ "url_normalized": "https://github.com/advisories/GHSA-4fpj-g9jf-9rgg",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-20",
+ "retrieved": "2026-10-21T09:38:50Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-21T09:38:56Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-4fpj-g9jf-9rgg: A2A Java SDK: Android synchronous POST forwards credentials across authorities after incomplete redirect fix",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: org.a2aproject.sdk:a2a-java-sdk-http-client-android. CVE: CVE-2026-111765. Zusammenfassung: A2A Java SDK: Android synchronous POST forwards credentials across authorities after incomplete redirect fix"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-21T09:38:56Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

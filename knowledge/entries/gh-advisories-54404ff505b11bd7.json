@@ -1,0 +1,87 @@
+{
+ "id": "gh-advisories-54404ff505b11bd7",
+ "title": "GHSA-jjm6-p2m9-9w4x: Nuxt: Incomplete fix for GHSA-934w-87qh-qr26: a `javascript:` URL prefixed with an ASCII control character executes from ` ` when `",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad low. Betroffenes Paket: nuxt. CVE: CVE-2026-114130. Zusammenfassung: Nuxt: Incomplete fix for GHSA-934w-87qh-qr26: a `javascript:` URL prefixed with an ASCII control character executes from ` ` when `pages` is disabled",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad low",
+  "Betroffenes Paket: nuxt",
+  "CVE: CVE-2026-114130",
+  "Zusammenfassung: Nuxt: Incomplete fix for GHSA-934w-87qh-qr26: a `javascript:` URL prefixed with an ASCII control character executes from ` ` when `pages` is disabled"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-jjm6-p2m9-9w4x",
+ "url_normalized": "https://github.com/advisories/GHSA-jjm6-p2m9-9w4x",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-22",
+ "retrieved": "2026-10-23T09:42:59Z",
+ "check": "rejected",
+ "check_reason": "Verdacht auf versteckte Anweisungen (Prompt Injection) — Inhalt nur archiviert, keine Nutzung.",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [
+  "javascript\\s*:"
+ ],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-23T09:43:04Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-jjm6-p2m9-9w4x: Nuxt: Incomplete fix for GHSA-934w-87qh-qr26: a `javascript:` URL prefixed with an ASCII control character executes from ` ` when `",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad low. Betroffenes Paket: nuxt. CVE: CVE-2026-114130. Zusammenfassung: Nuxt: Incomplete fix for GHSA-934w-87qh-qr26: a `javascript:` URL prefixed with an ASCII control character executes from ` ` when `pages` is disabled"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-23T09:43:04Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-23T09:43:04Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Verdacht auf versteckte Anweisungen (Prompt Injection) — Inhalt nur archiviert, keine Nutzung."
+  },
+  {
+   "at": "2026-10-23T09:43:04Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  },
+  {
+   "at": "2026-10-23T16:06:35Z",
+   "from": "archiviert-als-abgelehnt",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-23T16:06:35Z",
+ "confirmations": 1
+}

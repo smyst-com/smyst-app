@@ -1,0 +1,148 @@
+{
+ "id": "deepmind-blog-825a50d1c0ad7f36",
+ "title": "Gemini Omni 1.2 Flash: Fast and cost-effective with longer clips",
+ "topic": {
+  "category": "konkurrenz",
+  "reason": "Konkurrenz-KI: Fähigkeiten, Preise, Limits (Treffer: gemini)",
+  "relevance_score": 1
+ },
+ "summary": "",
+ "key_points": [],
+ "source": {
+  "id": "deepmind-blog",
+  "name": "Google DeepMind Blog (RSS)",
+  "kind": "rss",
+  "trust": 4,
+  "trust_reason": "Quellklasse rss (Basis 4)"
+ },
+ "source_url": "https://deepmind.google/blog/gemini-omni-12-flash-fast-and-cost-effective-with-longer-clips/",
+ "url_normalized": "https://deepmind.google/blog/gemini-omni-12-flash-fast-and-cost-effective-with-longer-clips",
+ "publisher": "Google DeepMind Blog (RSS)",
+ "published": "2026-11-05",
+ "retrieved": "2026-11-05T18:56:37Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 4/5, Aktualität aktuell",
+ "trust_level": 4,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "deepmind-blog-471508c04c304cbd",
+  "deepmind-blog-e7107d9a76d915c4",
+  "deepmind-blog-f4c3141ce9f2ce84"
+ ],
+ "tags": [
+  "konkurrenz",
+  "rss",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-05T18:56:45Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Gemini Omni 1.2 Flash: Fast and cost-effective with longer clips",
+    "summary": ""
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-05T18:56:45Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-05T18:56:45Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-05T18:56:45Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-05T18:56:45Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-11-05T18:56:45Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Durch zweite Quelle bestätigt (kein neuer Eintrag)."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Durch zweite Quelle bestätigt (kein neuer Eintrag)."
+  },
+  {
+   "at": "2026-11-06T18:22:11Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-06T18:22:11Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Durch zweite Quelle bestätigt (kein neuer Eintrag)."
+  },
+  {
+   "at": "2026-11-07T11:28:33Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-07T11:28:33Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Durch zweite Quelle bestätigt (kein neuer Eintrag)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-11-07T11:28:33Z",
+ "confirmations": 7,
+ "confirming_sources": [
+  {
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "url": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
+   "at": "2026-11-05T18:56:45Z"
+  },
+  {
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "url": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
+   "at": "2026-11-06T12:57:52Z"
+  },
+  {
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "url": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
+   "at": "2026-11-06T18:22:11Z"
+  },
+  {
+   "publisher": "Google AI & DeepMind Blog (RSS)",
+   "url": "https://blog.google/innovation-and-ai/technology/developers-tools/introducing-gemini-omni-1-2-flash/",
+   "at": "2026-11-07T11:28:33Z"
+  }
+ ]
+}

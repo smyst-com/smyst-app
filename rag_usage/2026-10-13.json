@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-13",
+ "generated_at": "2026-10-13T18:29:17Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-7c7e6ede0a62dc5e",
+     "title": "Ishowbackup/LFM2.5-24B-A2B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ishowbackup/LFM2.5-24B-A2B"
+    },
+    {
+     "id": "hf-models-50dad884384925f7",
+     "title": "CanadaApollo6/Qwen3.8-27B-M3TiS-3090",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/CanadaApollo6/Qwen3.8-27B-M3TiS-3090"
+    },
+    {
+     "id": "hf-models-c0624b24340a3723",
+     "title": "aloudreader/gemma-3-270m-uk-verbalizer-ct2-int8",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aloudreader/gemma-3-270m-uk-verbalizer-ct2-int8"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-cbc9518879c23bf8",
+     "title": "m87techlabs/abc-folk",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/m87techlabs/abc-folk"
+    },
+    {
+     "id": "hf-models-7c7e6ede0a62dc5e",
+     "title": "Ishowbackup/LFM2.5-24B-A2B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ishowbackup/LFM2.5-24B-A2B"
+    },
+    {
+     "id": "hf-models-e91a837edb8e9af1",
+     "title": "alekseevpavel04/ru-it-vacancy-extractor-qwen3-1.7b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/alekseevpavel04/ru-it-vacancy-extractor-qwen3-1.7b"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "deepmind-blog-884ebf3c3978ea46",
+     "title": "Gemini 4 Argon for Robotics",
+     "category": "konkurrenz",
+     "freshness": "aktuell",
+     "trust": 4,
+     "flags": [],
+     "url": "https://deepmind.google/blog/gemini-4-argon-for-robotics/"
+    },
+    {
+     "id": "hf-models-c6a884627b2e7d8a",
+     "title": "edededdy/LittleKedi-mini-base",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/edededdy/LittleKedi-mini-base"
+    },
+    {
+     "id": "hf-models-6d0f5052580f922a",
+     "title": "softwareweaver/GLM-5.3-Uncensored-EXL3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/softwareweaver/GLM-5.3-Uncensored-EXL3"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der aktuellen Liste veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-cbc9518879c23bf8",
+    "hf-models-7c7e6ede0a62dc5e",
+    "hf-models-e91a837edb8e9af1"
+   ],
+   "context_entry_ids": [
+    "hf-models-cbc9518879c23bf8",
+    "hf-models-7c7e6ede0a62dc5e",
+    "hf-models-e91a837edb8e9af1"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine offiziellen Informationen darüber, was in der Zukunft für Konkurrenz-Anbietern wie OpenAI oder Anthropic neu erscheinen wird. Die Liste der neuesten offenen Modelle auf Hugging Face, die du angegeben hast, sind keine direkte Beiträge oder Entwicklungen in dieser Richtung.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "deepmind-blog-884ebf3c3978ea46",
+    "hf-models-c6a884627b2e7d8a",
+    "hf-models-6d0f5052580f922a"
+   ],
+   "context_entry_ids": [
+    "deepmind-blog-884ebf3c3978ea46",
+    "hf-models-c6a884627b2e7d8a",
+    "hf-models-6d0f5052580f922a"
+   ]
+  }
+ ]
+}

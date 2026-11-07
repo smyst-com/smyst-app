@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-18",
+ "generated_at": "2026-10-18T14:46:56Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-107b9d3633c43e5f",
+     "title": "Raqia32/sac-1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Raqia32/sac-1"
+    },
+    {
+     "id": "hf-models-2b6f94ef53d09eae",
+     "title": "Angshul/symbolic-wavelet-gutenberg-benchmark",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Angshul/symbolic-wavelet-gutenberg-benchmark"
+    },
+    {
+     "id": "hf-models-539b3f58bc3a3834",
+     "title": "muhamad-geosurge/invert-polarity-005f50bc-8d00-4966-a9ec-201d91b53265",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/muhamad-geosurge/invert-polarity-005f50bc-8d00-4966-a9ec-201d91b53265"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-107b9d3633c43e5f",
+     "title": "Raqia32/sac-1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Raqia32/sac-1"
+    },
+    {
+     "id": "hf-models-96d91bd7c8c541dc",
+     "title": "KilaAI/kila-coder-1.5b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/KilaAI/kila-coder-1.5b-lora"
+    },
+    {
+     "id": "hf-models-d168b0b7dbf92186",
+     "title": "Angshul/TransWave-Meyer-96M-C4-4.5B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Angshul/TransWave-Meyer-96M-C4-4.5B"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-2b6f94ef53d09eae",
+     "title": "Angshul/symbolic-wavelet-gutenberg-benchmark",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Angshul/symbolic-wavelet-gutenberg-benchmark"
+    },
+    {
+     "id": "hf-models-ebb1de2de6b268e9",
+     "title": "PrateekTikku/doomscroll-autopsy-gemma-3-270m",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/PrateekTikku/doomscroll-autopsy-gemma-3-270m"
+    },
+    {
+     "id": "hf-models-8d6da0841e8aef18",
+     "title": "darkstar008/gmaps-parser-qwen3-4b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/darkstar008/gmaps-parser-qwen3-4b-lora"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikation von smyst-radar bekannt wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-107b9d3633c43e5f",
+    "hf-models-96d91bd7c8c541dc",
+    "hf-models-d168b0b7dbf92186"
+   ],
+   "context_entry_ids": [
+    "hf-models-107b9d3633c43e5f",
+    "hf-models-96d91bd7c8c541dc",
+    "hf-models-d168b0b7dbf92186"
+   ]
+  }
+ ]
+}

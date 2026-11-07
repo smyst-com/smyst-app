@@ -1,0 +1,84 @@
+{
+ "id": "arxiv-ai-4fd505f638f829b3",
+ "title": "Unitary complexity in polynomial space",
+ "topic": {
+  "category": "forschung",
+  "reason": "Forschungsergebnisse zu KI und Sprachmodellen (Treffer: we propose, study)",
+  "relevance_score": 2
+ },
+ "summary": "We show that if quantum commitments exist, then either there is no polynomial-time solution to the unitary synthesis problem, or $\\mathsf{BPP} \\neq \\mathsf{NEXP}$. Thus, showing unconditionally that quantum commitments exist would require answering at least one of two longstanding open questions in complexity theory. We prove our main result as a consequence of a more general lemma, which shows that every unitary in $\\mathsf{unitaryPSPACE}$ either cannot be synthesized efficiently relative to any classical oracle, or can be synthesized efficiently with an oracle for $\\mathsf{NEXP}$ search problems. Our lemma has other noteworthy consequences, including that certain oracle separations involving $\\mathsf{unitaryPSPACE}$ would imply breakthrough classical lower bounds such as $\\mathsf{NC} \\neq \\mathsf{NP}$. Along the way, we propose new definitions for the unitary complexity classes $\\mathsf{unitaryP}$ and $\\mathsf{unitaryPSPACE}$. Our changes address the biggest conceptual issues with definitions suggested in prior work, and lead to elegant proofs. We study both implementations that erase garbage and implementations that allow it, because we cannot rule out the possibility that the t",
+ "key_points": [
+  "We show that if quantum commitments exist, then either there is no polynomial-time solution to the unitary synthesis problem, or $\\mathsf{BPP} \\neq \\mathsf{NEXP}$",
+  "Thus, showing unconditionally that quantum commitments exist would require answering at least one of two longstanding open questions in complexity theory",
+  "We prove our main result as a consequence of a more general lemma, which shows that every unitary in $\\mathsf{unitaryPSPACE}$ either cannot be synthesized efficiently relative to any classical oracle, or can be synthesized efficiently with an oracle for $\\mathsf{NEXP}$ search problems",
+  "Our lemma has other noteworthy consequences, including that certain oracle separations involving $\\mathsf{unitaryPSPACE}$ would imply breakthrough classical lower bounds such as $\\mathsf{NC} \\neq \\mathsf{NP}$",
+  "Along the way, we propose new definitions for the unitary complexity classes $\\mathsf{unitaryP}$ and $\\mathsf{unitaryPSPACE}$"
+ ],
+ "source": {
+  "id": "arxiv-ai",
+  "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "http://arxiv.org/abs/2610.03705v1",
+ "url_normalized": "https://arxiv.org/abs/2610.03705v1",
+ "publisher": "arXiv",
+ "published": "2026-10-02",
+ "retrieved": "2026-10-05T11:52:55Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "forschung",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-05T11:53:04Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "Unitary complexity in polynomial space",
+    "summary": "We show that if quantum commitments exist, then either there is no polynomial-time solution to the unitary synthesis problem, or $\\mathsf{BPP} \\neq \\mathsf{NEXP}$. Thus, showing unconditionally that quantum commitments exist would require answering at least one of two longstanding open questions in complexity theory. We prove our main result as a consequence of a more general lemma, which shows that every unitary in $\\mathsf{unitaryPSPACE}$ either cannot be synthesized efficiently relative to any classical oracle, or can be synthesized efficiently with an oracle for $\\mathsf{NEXP}$ search problems. Our lemma has other noteworthy consequences, including that certain oracle separations involving $\\mathsf{unitaryPSPACE}$ would imply breakthrough classical lower bounds such as $\\mathsf{NC} \\neq \\mathsf{NP}$. Along the way, we propose new definitions for the unitary complexity classes $\\mathsf{unitaryP}$ and $\\mathsf{unitaryPSPACE}$. Our changes address the biggest conceptual issues with definitions suggested in prior work, and lead to elegant proofs. We study both implementations that erase garbage and implementations that allow it, because we cannot rule out the possibility that the t"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-05T11:53:04Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-05T11:53:04Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-05T11:53:04Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-05T11:53:04Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

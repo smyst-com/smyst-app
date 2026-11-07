@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-30",
+ "generated_at": "2026-10-30T17:08:25Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-258d7dc4baf31a44",
+     "title": "GHSA-9pg5-8c7x-5hfx: joserfc: Compact JWS size guard allocates attacker-controlled segments before rejection",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-9pg5-8c7x-5hfx"
+    },
+    {
+     "id": "gh-advisories-94620250c11bc726",
+     "title": "GHSA-jpxq-7h8p-2q76: joserfc: Unbounded JWE General JSON `recipients` Array Leads to CPU Exhaustion (DoS) via Repeated RSA Private-Key Decryption",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-jpxq-7h8p-2q76"
+    },
+    {
+     "id": "gh-advisories-9831fb07361221b5",
+     "title": "GHSA-qm8w-vx34-5j9j: @nx/maven and @nx/gradle have OS command injection via nx.json plugin options",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-qm8w-vx34-5j9j"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-c326e5f8e60db07b",
+     "title": "zyr-AGENT/ZY-S2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/zyr-AGENT/ZY-S2"
+    },
+    {
+     "id": "hf-models-d60fd5b3fa12c38e",
+     "title": "sayurio/bn-tokenizer-32k",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/sayurio/bn-tokenizer-32k"
+    },
+    {
+     "id": "hf-models-e4d160037cd6440b",
+     "title": "mamiyusufdemi/Apex-Coder-8B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mamiyusufdemi/Apex-Coder-8B"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-c7606af40dbb903f",
+     "title": "Community safety report and new protections for teens",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/community-safety-report-and-new-protections-for-teens"
+    },
+    {
+     "id": "hf-models-4f65df5f99b5118d",
+     "title": "getenum/TACTutor-Q8_0-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/getenum/TACTutor-Q8_0-GGUF"
+    },
+    {
+     "id": "hf-models-b832f23de1bbd341",
+     "title": "Rgjur/gemma-3-270m-gguf",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Rgjur/gemma-3-270m-gguf"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **joserfc: Compact JWS size guard allocates attacker-controlled segments before rejection**. Diese Sicherheitslücke wird als **medium** Schweregrad angesehen und wird durch die offizielle GitHub-Sicherheitswarnung **CVE-2026-119284** beschrieben.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-258d7dc4baf31a44",
+    "gh-advisories-94620250c11bc726",
+    "gh-advisories-9831fb07361221b5"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-258d7dc4baf31a44",
+    "gh-advisories-94620250c11bc726",
+    "gh-advisories-9831fb07361221b5"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit veröffentlicht wurden, die der Frage relevant sind. Die Liste der Modelle, die ich habe, sind alle frühe Versionen oder Testversionen, die ich erstellt habe. Es gibt keine neuen offenen KI-Modelle, die in der Zeit veröffentlicht wurden, die der Frage relevant sind.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-c326e5f8e60db07b",
+    "hf-models-d60fd5b3fa12c38e",
+    "hf-models-e4d160037cd6440b"
+   ],
+   "context_entry_ids": [
+    "hf-models-c326e5f8e60db07b",
+    "hf-models-d60fd5b3fa12c38e",
+    "hf-models-e4d160037cd6440b"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-28",
+ "generated_at": "2026-10-28T17:19:36Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-23ceb10a5d2b11dd",
+     "title": "shiva123782/sunithaAI-small",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/shiva123782/sunithaAI-small"
+    },
+    {
+     "id": "hf-models-bcbba3468e8c4ee9",
+     "title": "arthurblg1802/AtoMinima",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/arthurblg1802/AtoMinima"
+    },
+    {
+     "id": "hf-models-2cce9cd8181352c3",
+     "title": "saidutta69/EuroLLM-1.7B-Instruct-heretic",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/saidutta69/EuroLLM-1.7B-Instruct-heretic"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-bcbba3468e8c4ee9",
+     "title": "arthurblg1802/AtoMinima",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/arthurblg1802/AtoMinima"
+    },
+    {
+     "id": "hf-models-23ceb10a5d2b11dd",
+     "title": "shiva123782/sunithaAI-small",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/shiva123782/sunithaAI-small"
+    },
+    {
+     "id": "hf-models-04be9e786cf06cee",
+     "title": "aimeri/name-generator-v2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aimeri/name-generator-v2"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-a5d973824536e656",
+     "title": "FastFlowLM/LFM3-1.7B-NPU2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/FastFlowLM/LFM3-1.7B-NPU2"
+    },
+    {
+     "id": "hf-models-69db3b6468dda1c2",
+     "title": "udgamlabs/Lilavati-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/udgamlabs/Lilavati-GGUF"
+    },
+    {
+     "id": "hf-models-bf23e0b101f1e8ca",
+     "title": "birgermoell/agora-9b-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/birgermoell/agora-9b-GGUF"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikationen der letzten Woche (2026-10-28) veröffentlicht wurden. Die meisten der angegebenen Modelle sind nur \"Neues offenes Modell auf Hugging Face\" und haben keine Anzahl von Likes oder Downloads. Es gibt keine Informationen darüber, ob diese Modelle als \"neues\" gelten.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-bcbba3468e8c4ee9",
+    "hf-models-23ceb10a5d2b11dd",
+    "hf-models-04be9e786cf06cee"
+   ],
+   "context_entry_ids": [
+    "hf-models-bcbba3468e8c4ee9",
+    "hf-models-23ceb10a5d2b11dd",
+    "hf-models-04be9e786cf06cee"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,149 @@
+{
+ "day": "2026-10-29",
+ "generated_at": "2026-10-29T17:31:41Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-5a925ba67ff9fa71",
+     "title": "GHSA-qr28-fpjm-wq7f: decode-uri-component vulnerable to denial of service via quadratic replacement of percent-encoded runs",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-qr28-fpjm-wq7f"
+    },
+    {
+     "id": "gh-advisories-681cedc07cbe7000",
+     "title": "GHSA-vpp8-g58w-m8mp: Twisted: Unauthenticated Remote Denial of Service in the Twisted HTTP/2 Server via Rapid Stream Reset",
+     "category": "infrastruktur",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-vpp8-g58w-m8mp"
+    },
+    {
+     "id": "gh-advisories-98e3038883eccd04",
+     "title": "GHSA-9hj8-73fh-9963: zip: legacy Shrink/Reduce/Implode decoder: denial of service from attacker-controlled ZIP64 uncompressed size",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-9hj8-73fh-9963"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-c83614b3deab1967",
+     "title": "ahpah/YokoCoder-4B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ahpah/YokoCoder-4B"
+    },
+    {
+     "id": "hf-models-014de2d5e0d765e6",
+     "title": "nyxtesla/GLM-5.3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/nyxtesla/GLM-5.3"
+    },
+    {
+     "id": "hf-models-bf23e0b101f1e8ca",
+     "title": "birgermoell/agora-9b-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/birgermoell/agora-9b-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-d28967fce9c692cd",
+     "title": "How we detect frontier model misalignment",
+     "category": "forschung",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/how-we-detect-frontier-model-misalignment"
+    },
+    {
+     "id": "hf-models-a0c148d0a27e59c0",
+     "title": "myronkoch/refusal-cut-3.7b-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+     ],
+     "url": "https://huggingface.co/myronkoch/refusal-cut-3.7b-GGUF"
+    },
+    {
+     "id": "hf-models-4d8ad5edfafe5527",
+     "title": "typewriter-ai/lora_physics_b177",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/typewriter-ai/lora_physics_b177"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Es gibt keine offizielle Sicherheitswarnung für eine neue, bekannte Sicherheitslücke in der aktuellen Zeit. Die bisherigen Warnungen sind alle auf alte, bekannte Sicherheitslücken aus der Vergangenheit zurückzuführen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-5a925ba67ff9fa71",
+    "gh-advisories-681cedc07cbe7000",
+    "gh-advisories-98e3038883eccd04"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-5a925ba67ff9fa71",
+    "gh-advisories-681cedc07cbe7000",
+    "gh-advisories-98e3038883eccd04"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen der letzten Frage und der Antwort veröffentlicht wurden. Die neuesten Modelle, die ich in der Nähe der Zeit veröffentlicht haben, sind die \"ahpah/YokoCoder-4B\", \"nyxtesla/GLM-5.3\", \"birgermoell/agora-9b-GGUF\" und \"typewriter-ai/lora_physics_b177\".",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-c83614b3deab1967",
+    "hf-models-014de2d5e0d765e6",
+    "hf-models-bf23e0b101f1e8ca"
+   ],
+   "context_entry_ids": [
+    "hf-models-c83614b3deab1967",
+    "hf-models-014de2d5e0d765e6",
+    "hf-models-bf23e0b101f1e8ca"
+   ]
+  }
+ ]
+}

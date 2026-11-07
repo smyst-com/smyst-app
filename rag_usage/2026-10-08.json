@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-08",
+ "generated_at": "2026-10-08T18:00:31Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-62aee843bae46aa0",
+     "title": "ollama/ollama: Release v0.40.2-rc0",
+     "category": "infrastruktur",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.2-rc0"
+    },
+    {
+     "id": "hf-models-c613a99f564e1039",
+     "title": "thongbuind/SAI-for-VinFast-FP32_375M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/thongbuind/SAI-for-VinFast-FP32_375M"
+    },
+    {
+     "id": "hf-models-c2bef3a328029fbf",
+     "title": "ahmed-amedo-1/DeepSeek-V4.1-Flash",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ahmed-amedo-1/DeepSeek-V4.1-Flash"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-ce0788877a51e5b6",
+     "title": "theprint/EventPlanner-v1-2B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/theprint/EventPlanner-v1-2B"
+    },
+    {
+     "id": "hf-models-c59e69cba73e5b3a",
+     "title": "OpenFlowLM/LFM2-2.6B-Transcript-NPU2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/OpenFlowLM/LFM2-2.6B-Transcript-NPU2"
+    },
+    {
+     "id": "hf-models-db1554c8cf9cfeee",
+     "title": "bmkzl/Qwen3-Embedding-0.6B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bmkzl/Qwen3-Embedding-0.6B"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-077dea1e8a7adb2e",
+     "title": "Disrupting AI-enabled “false front” operations",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/disrupting-ai-enabled-false-front-operations"
+    },
+    {
+     "id": "openai-news-ca1ec6c6a1a1314d",
+     "title": "Pollo AI turns creative ideas into campaigns with OpenAI",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/pollo-ai"
+    },
+    {
+     "id": "hf-models-66657bdde76c4a41",
+     "title": "aether-models/qwen3-4b-int8",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aether-models/qwen3-4b-int8"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit der letzten Fragezeitung (2026-10-06) veröffentlicht wurden. Die bisherigen Modelle sind:\n\n- Qwen3-Embedding-0.6B (Pipeline: feature-extraction, Bibliothek: sentence-transformers)\n- Qwen3-4b-int8 (Pipeline: text-generation, Bibliothek: unbekannt)\n- abhinav655/qwen25-preference-expert (Pipeline: text-generation, Bibliothek: peft)\n\nEs gibt keine neuen offenen KI-Modelle, die seit dieser Zeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-ce0788877a51e5b6",
+    "hf-models-c59e69cba73e5b3a",
+    "hf-models-db1554c8cf9cfeee"
+   ],
+   "context_entry_ids": [
+    "hf-models-ce0788877a51e5b6",
+    "hf-models-c59e69cba73e5b3a",
+    "hf-models-db1554c8cf9cfeee"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine direkte Information über neue Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die Informationen, die ich habe, betreffen verschiedene neue AI-Modelle und Dienste, aber keine spezifischen Informationen zu solchen Anbietern.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-077dea1e8a7adb2e",
+    "openai-news-ca1ec6c6a1a1314d",
+    "hf-models-66657bdde76c4a41"
+   ],
+   "context_entry_ids": [
+    "openai-news-077dea1e8a7adb2e",
+    "openai-news-ca1ec6c6a1a1314d",
+    "hf-models-66657bdde76c4a41"
+   ]
+  }
+ ]
+}

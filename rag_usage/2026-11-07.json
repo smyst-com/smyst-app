@@ -1,0 +1,147 @@
+{
+ "day": "2026-11-07",
+ "generated_at": "2026-11-07T11:28:43Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-8ffeb6cbe71db62e",
+     "title": "GHSA-r4hm-p9f9-fj9v: GeoNode has Stored XSS in Documents metadata abstract field",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-r4hm-p9f9-fj9v"
+    },
+    {
+     "id": "gh-advisories-6e42cb3017aedea0",
+     "title": "GHSA-fqpv-mq26-pr4j: GeoNode has Unrestricted File Upload",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-fqpv-mq26-pr4j"
+    },
+    {
+     "id": "gh-advisories-0ac7ab64b61e652d",
+     "title": "GHSA-9fpx-fr6j-2vh6: GeoNode has OS command injection via uploaded file layer name",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-9fpx-fr6j-2vh6"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-cc7132fc6071c993",
+     "title": "zarko1321/Bitsy-1B-pretrain-1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/zarko1321/Bitsy-1B-pretrain-1"
+    },
+    {
+     "id": "hf-models-3e0c9b2454895959",
+     "title": "GermannM/Kenga-One",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/GermannM/Kenga-One"
+    },
+    {
+     "id": "hf-models-a353f1a81e842593",
+     "title": "TeamFlaxia/plamo-3-translate-0.8b-onnx",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/TeamFlaxia/plamo-3-translate-0.8b-onnx"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-cfd4354afa14004f",
+     "title": "Measuring how AI agents handle everyday wet-lab science",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/measuring-how-ai-agents-handle-wet-lab-science"
+    },
+    {
+     "id": "hf-models-b3e628e1fa11f763",
+     "title": "howlermonkey360/nl-schrijfhulp-qwen3-4b-merged",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/howlermonkey360/nl-schrijfhulp-qwen3-4b-merged"
+    },
+    {
+     "id": "hf-models-deb099232d4b0deb",
+     "title": "fwefdsfe/Iraq-135M-Instruct",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/fwefdsfe/Iraq-135M-Instruct"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist ein **Stored XSS**-Defekt in der GeoNode-Software. Diese Sicherheitslücke wurde am 2026-11-06 bekanntgegeben und ist ein **medium**-schwerer Schwachpunkt. Die Lücke liegt in der Metadata-Abstraktheit eines Dokuments und ist ein **medium**-schwerer Schwachpunkt.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-8ffeb6cbe71db62e",
+    "gh-advisories-6e42cb3017aedea0",
+    "gh-advisories-0ac7ab64b61e652d"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-8ffeb6cbe71db62e",
+    "gh-advisories-6e42cb3017aedea0",
+    "gh-advisories-0ac7ab64b61e652d"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden. Die Liste, die ich gerade angezeigt habe, sind alle alte Modelle, die bereits von Hugging Face veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-cc7132fc6071c993",
+    "hf-models-3e0c9b2454895959",
+    "hf-models-a353f1a81e842593"
+   ],
+   "context_entry_ids": [
+    "hf-models-cc7132fc6071c993",
+    "hf-models-3e0c9b2454895959",
+    "hf-models-a353f1a81e842593"
+   ]
+  }
+ ]
+}

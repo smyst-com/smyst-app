@@ -1,0 +1,963 @@
+{
+ "title": "Was hat smyst radar heute dazugelernt?",
+ "day": "2026-10-08",
+ "generated_at": "2026-10-08T18:00:24Z",
+ "paused": false,
+ "topics_researched": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.41,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.1,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.36,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.23,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.11,
+   "ok": true
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.29,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.56,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.29,
+   "ok": true
+  }
+ ],
+ "topics_reasons": [
+  {
+   "id": "arxiv-ai",
+   "reason": "Wissenschaftliche Neuerscheinungen zu KI, Sprachmodellen und Sicherheit."
+  },
+  {
+   "id": "hf-models",
+   "reason": "Neue offene KI-Modelle und deren Metadaten direkt vom Primäranbieter."
+  },
+  {
+   "id": "cisa-kev",
+   "reason": "Offizielle US-Behördenliste aktiv ausgenutzter Schwachstellen."
+  },
+  {
+   "id": "openai-news",
+   "reason": "Offizielle Veröffentlichungen eines Konkurrenz-Anbieters."
+  },
+  {
+   "id": "deepmind-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "google-ai-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "gh-releases-llamacpp",
+   "reason": "Relevante Infrastruktur für das eigene smyst-Modell (llama-server)."
+  },
+  {
+   "id": "gh-releases-ollama",
+   "reason": "Ökosystem-Entwicklungen für lokale LLM-Betrieb."
+  }
+ ],
+ "sources_examined": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.41,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.1,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.36,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.23,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.11,
+   "ok": true
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.29,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.56,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.29,
+   "ok": true
+  }
+ ],
+ "sources_examined_count": 8,
+ "sources_ok_count": 8,
+ "findings_count": 71,
+ "new_insights": [
+  {
+   "id": "hf-models-c613a99f564e1039",
+   "title": "thongbuind/SAI-for-VinFast-FP32_375M",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/thongbuind/SAI-for-VinFast-FP32_375M"
+  },
+  {
+   "id": "hf-models-4c2fe23d879d3c8f",
+   "title": "ahmed-amedo-1/MiMo-V2.6-Pro-RL",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/ahmed-amedo-1/MiMo-V2.6-Pro-RL"
+  },
+  {
+   "id": "hf-models-c2bef3a328029fbf",
+   "title": "ahmed-amedo-1/DeepSeek-V4.1-Flash",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/ahmed-amedo-1/DeepSeek-V4.1-Flash"
+  },
+  {
+   "id": "hf-models-b747dd584a48e663",
+   "title": "nightmedia/Qwen3.6-35B-A3B-Mirage-qx64-hi-mlx",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/nightmedia/Qwen3.6-35B-A3B-Mirage-qx64-hi-mlx"
+  },
+  {
+   "id": "hf-models-8da590c790deafe4",
+   "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr"
+  },
+  {
+   "id": "hf-models-ce0788877a51e5b6",
+   "title": "theprint/EventPlanner-v1-2B",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/theprint/EventPlanner-v1-2B"
+  },
+  {
+   "id": "hf-models-c59e69cba73e5b3a",
+   "title": "OpenFlowLM/LFM2-2.6B-Transcript-NPU2",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/OpenFlowLM/LFM2-2.6B-Transcript-NPU2"
+  },
+  {
+   "id": "openai-news-112b5f00879d4fef",
+   "title": "How Oracle turns days of work into minutes with ChatGPT and Codex",
+   "category": "ki-modelle",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/oracle"
+  },
+  {
+   "id": "openai-news-ca1ec6c6a1a1314d",
+   "title": "Pollo AI turns creative ideas into campaigns with OpenAI",
+   "category": "konkurrenz",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/pollo-ai"
+  },
+  {
+   "id": "openai-news-077dea1e8a7adb2e",
+   "title": "Disrupting AI-enabled “false front” operations",
+   "category": "konkurrenz",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/disrupting-ai-enabled-false-front-operations"
+  },
+  {
+   "id": "gh-releases-ollama-62aee843bae46aa0",
+   "title": "ollama/ollama: Release v0.40.2-rc0",
+   "category": "infrastruktur",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/ollama/ollama/releases/tag/v0.40.2-rc0"
+  }
+ ],
+ "confirmed": [
+  {
+   "id": "arxiv-ai-457bf7986284a315",
+   "title": "Never Look Back: Understanding Persistence in 3D Object Memory from Egocentric Videos"
+  },
+  {
+   "id": "arxiv-ai-fb492828d90dd1b1",
+   "title": "Decoupling Exploration from Optimization in RLVR"
+  },
+  {
+   "id": "arxiv-ai-de0f909ac0884d8a",
+   "title": "EngramEdit: Decoupled Knowledge Updates in LLMs through Conditional Memory"
+  },
+  {
+   "id": "arxiv-ai-5a45b006676cc1ca",
+   "title": "Long-WAM: Scaling the Context of World-Action Models"
+  },
+  {
+   "id": "arxiv-ai-0e58d8d20196fd49",
+   "title": "Rephrase Before You Act: Characterizing and Mitigating Language Sensitivity in Vision-Language-Action Models"
+  },
+  {
+   "id": "arxiv-ai-060d6be6ffa5c8f2",
+   "title": "RoboJEPA: Scaling Robotic Latent World Models"
+  },
+  {
+   "id": "arxiv-ai-63030f1475e0b991",
+   "title": "SciExam for ENSO: Can AI Agents Build Climate Models?"
+  },
+  {
+   "id": "arxiv-ai-65f94037eef71e76",
+   "title": "Your Prompt Should Do More: Effects of Retrieval Instructions in Embedding Models"
+  },
+  {
+   "id": "arxiv-ai-37e59c20efe09bfa",
+   "title": "RECAST: Learning to Compute the Right Context through Adaptive Evidence Routing"
+  },
+  {
+   "id": "arxiv-ai-1d9af92edd6c46c9",
+   "title": "Validity Without Ground Truth: What Stated-Preference Economics Offers the Evaluation of Language Models"
+  },
+  {
+   "id": "openai-news-ad4e14640e358f44",
+   "title": "Helping teens learn, plan, and shape the future of AI"
+  },
+  {
+   "id": "openai-news-04e9dc3828b5420c",
+   "title": "Radisson Hotel Group brings hotel discovery into ChatGPT"
+  },
+  {
+   "id": "openai-news-0ca1450969b5beb5",
+   "title": "GPT-6 and Intelligent UI for everyone"
+  },
+  {
+   "id": "openai-news-342677ae7eadb2eb",
+   "title": "How Jump Trading is scaling quant research with ChatGPT"
+  },
+  {
+   "id": "openai-news-47b9255d8fa0f8e8",
+   "title": "Sharing AI progress in mathematics"
+  },
+  {
+   "id": "openai-news-9964af802e9c5fde",
+   "title": "Advancing computer use with Ironclad"
+  },
+  {
+   "id": "openai-news-60ef2af305e795fe",
+   "title": "Atlassian and OpenAI expand partnership to turn enterprise knowledge into action"
+  },
+  {
+   "id": "deepmind-blog-4dd290070848fb61",
+   "title": "EmbeddingGemma 2: an open, lightweight multimodal embedding model"
+  },
+  {
+   "id": "deepmind-blog-15e70ee5e4a75a6c",
+   "title": "Gemini 4 Argon: our next era of frontier intelligence"
+  },
+  {
+   "id": "deepmind-blog-0a622a33b8e3e3e9",
+   "title": "Introducing SynthID Bio"
+  },
+  {
+   "id": "deepmind-blog-e7107d9a76d915c4",
+   "title": "Introducing Gemini 3.8 Live with Live Avatar"
+  },
+  {
+   "id": "deepmind-blog-4c4abcff4acd2c4c",
+   "title": "Advancing Private AI Compute with secure, server-side memory"
+  },
+  {
+   "id": "deepmind-blog-be2314c62992cc2b",
+   "title": "Gemini 3.8 text-to-speech says hello"
+  },
+  {
+   "id": "deepmind-blog-f4c3141ce9f2ce84",
+   "title": "Introducing Gemini 3.8 Live and 3.8 Live Extended Thinking"
+  },
+  {
+   "id": "deepmind-blog-80d284f58871ce28",
+   "title": "AlphaGenome Atlas: A predictive map of every possible DNA letter change in the human genome"
+  },
+  {
+   "id": "deepmind-blog-56da2c8ef80375f1",
+   "title": "Introducing WeatherNext 3, our most advanced and accurate global weather AI model"
+  },
+  {
+   "id": "deepmind-blog-383dbcd782aba68f",
+   "title": "Proactive cyber defense for governments and enterprises"
+  },
+  {
+   "id": "google-ai-blog-22643d6fcb195220",
+   "title": "Introducing Playground: Create and play custom games"
+  },
+  {
+   "id": "google-ai-blog-1122627a66dfc215",
+   "title": "The latest AI news we announced in September 2026"
+  },
+  {
+   "id": "google-ai-blog-1eadd5627184a89f",
+   "title": "Watch the winning trailer from the Future Vision XPRIZE, The Gifted."
+  },
+  {
+   "id": "google-ai-blog-8a86c97089bb6492",
+   "title": "Google Beam expands with new regions, partners, and customers"
+  },
+  {
+   "id": "google-ai-blog-079e661c04cec0b0",
+   "title": "New experts join Google’s AI & Economy team"
+  },
+  {
+   "id": "google-ai-blog-13d62ca6fcfd55d7",
+   "title": "Co-creating the future of fashion with Google"
+  },
+  {
+   "id": "google-ai-blog-e7b9d12d1b3a7eb0",
+   "title": "Making global data easier to explore"
+  },
+  {
+   "id": "google-ai-blog-18592959ad29d5e2",
+   "title": "AI for Societal Impact"
+  },
+  {
+   "id": "google-ai-blog-b86d9a766fb72b73",
+   "title": "Building AI to accelerate science and improve lives"
+  },
+  {
+   "id": "google-ai-blog-a243976a4aeffe78",
+   "title": "AI for everyone in every language"
+  },
+  {
+   "id": "gh-releases-ollama-81a0b4d6f86dd623",
+   "title": "ollama/ollama: Release v0.40.1"
+  },
+  {
+   "id": "gh-releases-ollama-88cd05e9f93a5e9a",
+   "title": "ollama/ollama: Release v0.40.0"
+  },
+  {
+   "id": "gh-releases-ollama-c1780d2c01331613",
+   "title": "ollama/ollama: Release v0.35.1"
+  },
+  {
+   "id": "gh-releases-ollama-9c7898181506d919",
+   "title": "ollama/ollama: Release v0.35.0"
+  },
+  {
+   "id": "gh-releases-ollama-d83f0c4f6531a69f",
+   "title": "ollama/ollama: Release v0.34.4"
+  },
+  {
+   "id": "gh-releases-ollama-1856a21b309afe62",
+   "title": "ollama/ollama: Release v0.34.3"
+  },
+  {
+   "id": "gh-releases-ollama-7ca343f500b54b87",
+   "title": "ollama/ollama: Release v0.34.2"
+  },
+  {
+   "id": "gh-releases-ollama-8351276c6ecd1817",
+   "title": "ollama/ollama: Release v0.34.1"
+  },
+  {
+   "id": "gh-releases-ollama-7d7a6109aa6e68fd",
+   "title": "ollama/ollama: Release v0.34.0"
+  }
+ ],
+ "updated": [
+  {
+   "id": "hf-models-4c2fe23d879d3c8f",
+   "title": "ahmed-amedo-1/MiMo-V2.6-Flash-RL",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "hf-models-8da590c790deafe4",
+   "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_phrase_de",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "hf-models-8da590c790deafe4",
+   "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_dependency_en",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "cisa-kev-042bd106b079ac18",
+   "title": "CVE-2015-5477: ISC — BIND ( ISC BIND Data Processing Errors Vulnerability)",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11512",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11511",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11510",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11509",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11507",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11505",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11503",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11501",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11500",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11499",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  }
+ ],
+ "corrected": [],
+ "outdated": [],
+ "rejected": [],
+ "contradictions": [
+  {
+   "entry_id": "hf-models-4c2fe23d879d3c8f",
+   "title": "ahmed-amedo-1/MiMo-V2.6-Pro-RL",
+   "candidates": [
+    "hf-models-2aa3ec0b8779e87d"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-c2bef3a328029fbf",
+   "title": "ahmed-amedo-1/DeepSeek-V4.1-Flash",
+   "candidates": [
+    "hf-models-2b264d848f2850f2",
+    "hf-models-47e76f1e3878ad08"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-b747dd584a48e663",
+   "title": "nightmedia/Qwen3.6-35B-A3B-Mirage-qx64-hi-mlx",
+   "candidates": [
+    "hf-models-0a3e79e8b94cd36d",
+    "hf-models-db1554c8cf9cfeee",
+    "hf-models-6f4766f1adb0a528"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-8da590c790deafe4",
+   "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr",
+   "candidates": [
+    "hf-models-cfe3f7106420cb2d",
+    "hf-models-2977c1169033d72f",
+    "hf-models-e08128a985074b8c"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-c59e69cba73e5b3a",
+   "title": "OpenFlowLM/LFM2-2.6B-Transcript-NPU2",
+   "candidates": [
+    "hf-models-65d3464ce59031d0",
+    "hf-models-051d7ece055d2a07"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "gh-releases-ollama-62aee843bae46aa0",
+   "title": "ollama/ollama: Release v0.40.2-rc0",
+   "candidates": [
+    "gh-releases-llamacpp-90d1eba564bdc382"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  }
+ ],
+ "competitor_changes": [
+  {
+   "id": "openai-news-ca1ec6c6a1a1314d",
+   "title": "Pollo AI turns creative ideas into campaigns with OpenAI"
+  },
+  {
+   "id": "openai-news-077dea1e8a7adb2e",
+   "title": "Disrupting AI-enabled “false front” operations"
+  }
+ ],
+ "new_models_tech": [
+  {
+   "id": "hf-models-c613a99f564e1039",
+   "title": "thongbuind/SAI-for-VinFast-FP32_375M"
+  },
+  {
+   "id": "hf-models-4c2fe23d879d3c8f",
+   "title": "ahmed-amedo-1/MiMo-V2.6-Flash-RL"
+  },
+  {
+   "id": "hf-models-c2bef3a328029fbf",
+   "title": "ahmed-amedo-1/DeepSeek-V4.1-Flash"
+  },
+  {
+   "id": "hf-models-b747dd584a48e663",
+   "title": "nightmedia/Qwen3.6-35B-A3B-Mirage-qx64-hi-mlx"
+  },
+  {
+   "id": "hf-models-8da590c790deafe4",
+   "title": "GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_dependency_en"
+  },
+  {
+   "id": "hf-models-ce0788877a51e5b6",
+   "title": "theprint/EventPlanner-v1-2B"
+  },
+  {
+   "id": "hf-models-c59e69cba73e5b3a",
+   "title": "OpenFlowLM/LFM2-2.6B-Transcript-NPU2"
+  },
+  {
+   "id": "openai-news-112b5f00879d4fef",
+   "title": "How Oracle turns days of work into minutes with ChatGPT and Codex"
+  },
+  {
+   "id": "gh-releases-ollama-62aee843bae46aa0",
+   "title": "ollama/ollama: Release v0.40.2-rc0"
+  }
+ ],
+ "security_findings": [],
+ "improvement_suggestions": [
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': nightmedia/Qwen3.6-35B-A3B-Mirage-qx64-hi-mlx",
+   "sources": [
+    "https://huggingface.co/nightmedia/Qwen3.6-35B-A3B-Mirage-qx64-hi-mlx"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-b747dd584a48e663"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_dependency_en",
+   "sources": [
+    "https://huggingface.co/GRAI-UNSTPB/rollama3_1_instruct_dpo_ft_cs_llm_fr"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-8da590c790deafe4"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': thongbuind/SAI-for-VinFast-FP32_375M",
+   "sources": [
+    "https://huggingface.co/thongbuind/SAI-for-VinFast-FP32_375M"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-c613a99f564e1039"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': ahmed-amedo-1/MiMo-V2.6-Flash-RL",
+   "sources": [
+    "https://huggingface.co/ahmed-amedo-1/MiMo-V2.6-Pro-RL"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-4c2fe23d879d3c8f"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': ahmed-amedo-1/DeepSeek-V4.1-Flash",
+   "sources": [
+    "https://huggingface.co/ahmed-amedo-1/DeepSeek-V4.1-Flash"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 15,
+   "entry_id": "hf-models-c2bef3a328029fbf"
+  }
+ ],
+ "rag_usage": {
+  "day": "2026-10-08",
+  "generated_at": "2026-10-08T18:00:31Z",
+  "tests": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+    "found_correct_category": false,
+    "top_matches": [
+     {
+      "id": "gh-releases-ollama-62aee843bae46aa0",
+      "title": "ollama/ollama: Release v0.40.2-rc0",
+      "category": "infrastruktur",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://github.com/ollama/ollama/releases/tag/v0.40.2-rc0"
+     },
+     {
+      "id": "hf-models-c613a99f564e1039",
+      "title": "thongbuind/SAI-for-VinFast-FP32_375M",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/thongbuind/SAI-for-VinFast-FP32_375M"
+     },
+     {
+      "id": "hf-models-c2bef3a328029fbf",
+      "title": "ahmed-amedo-1/DeepSeek-V4.1-Flash",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/ahmed-amedo-1/DeepSeek-V4.1-Flash"
+     }
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "hf-models-ce0788877a51e5b6",
+      "title": "theprint/EventPlanner-v1-2B",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/theprint/EventPlanner-v1-2B"
+     },
+     {
+      "id": "hf-models-c59e69cba73e5b3a",
+      "title": "OpenFlowLM/LFM2-2.6B-Transcript-NPU2",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/OpenFlowLM/LFM2-2.6B-Transcript-NPU2"
+     },
+     {
+      "id": "hf-models-db1554c8cf9cfeee",
+      "title": "bmkzl/Qwen3-Embedding-0.6B",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/bmkzl/Qwen3-Embedding-0.6B"
+     }
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "openai-news-077dea1e8a7adb2e",
+      "title": "Disrupting AI-enabled “false front” operations",
+      "category": "konkurrenz",
+      "freshness": "unbekannt",
+      "trust": 3,
+      "flags": [],
+      "url": "https://openai.com/index/disrupting-ai-enabled-false-front-operations"
+     },
+     {
+      "id": "openai-news-ca1ec6c6a1a1314d",
+      "title": "Pollo AI turns creative ideas into campaigns with OpenAI",
+      "category": "konkurrenz",
+      "freshness": "unbekannt",
+      "trust": 3,
+      "flags": [],
+      "url": "https://openai.com/index/pollo-ai"
+     },
+     {
+      "id": "hf-models-66657bdde76c4a41",
+      "title": "aether-models/qwen3-4b-int8",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/aether-models/qwen3-4b-int8"
+     }
+    ]
+   }
+  ],
+  "answers": [
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "ok": true,
+    "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit der letzten Fragezeitung (2026-10-06) veröffentlicht wurden. Die bisherigen Modelle sind:\n\n- Qwen3-Embedding-0.6B (Pipeline: feature-extraction, Bibliothek: sentence-transformers)\n- Qwen3-4b-int8 (Pipeline: text-generation, Bibliothek: unbekannt)\n- abhinav655/qwen25-preference-expert (Pipeline: text-generation, Bibliothek: peft)\n\nEs gibt keine neuen offenen KI-Modelle, die seit dieser Zeit veröffentlicht wurden.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "hf-models-ce0788877a51e5b6",
+     "hf-models-c59e69cba73e5b3a",
+     "hf-models-db1554c8cf9cfeee"
+    ],
+    "context_entry_ids": [
+     "hf-models-ce0788877a51e5b6",
+     "hf-models-c59e69cba73e5b3a",
+     "hf-models-db1554c8cf9cfeee"
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "ok": true,
+    "answer": "Es gibt keine direkte Information über neue Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die Informationen, die ich habe, betreffen verschiedene neue AI-Modelle und Dienste, aber keine spezifischen Informationen zu solchen Anbietern.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "openai-news-077dea1e8a7adb2e",
+     "openai-news-ca1ec6c6a1a1314d",
+     "hf-models-66657bdde76c4a41"
+    ],
+    "context_entry_ids": [
+     "openai-news-077dea1e8a7adb2e",
+     "openai-news-ca1ec6c6a1a1314d",
+     "hf-models-66657bdde76c4a41"
+    ]
+   }
+  ]
+ },
+ "open_questions": [],
+ "further_research": [
+  "Widerspruchskandidaten manuell gegenprüfen (siehe contradictions).",
+  "Quellen ohne Datum nach Primärquelle durchsuchen."
+ ],
+ "errors": 0,
+ "costs": {
+  "last_run_eur": 0.0,
+  "day_eur": 0.0,
+  "month_eur": 0.0,
+  "note": "Ausschließlich kostenlose offizielle Quellen/APIs (Free-Only-Regel)."
+ },
+ "summary": "11 neue geprüfte Erkenntnisse, 46 bestätigt, 14 aktualisiert, 0 veraltet, 0 verworfen.",
+ "rag_ready_count": 86,
+ "used_in_answer_count": 123
+}
