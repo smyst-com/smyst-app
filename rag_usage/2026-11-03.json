@@ -1,0 +1,147 @@
+{
+ "day": "2026-11-03",
+ "generated_at": "2026-11-03T18:39:39Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-4e412ff816794571",
+     "title": "GHSA-33r5-xmm8-v6x5: Elo JavaScript emitter has sandbox escape to arbitrary Node.js / browser code execution via unfiltered `.constructor` member access",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-33r5-xmm8-v6x5"
+    },
+    {
+     "id": "gh-advisories-8241c8dfb016acd6",
+     "title": "GHSA-7w38-ggh5-v542: Elo Ruby backend has Remote Code Execution via unescaped `#{...}` interpolation in emitted string literals and subtype-constraint labels",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-7w38-ggh5-v542"
+    },
+    {
+     "id": "gh-advisories-3527dd832e351e04",
+     "title": "GHSA-x9rp-7wh3-2rj5: Elo backends have code injection via unvalidated emission of programmatic AST fields",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-x9rp-7wh3-2rj5"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-3162d6dfb8d40c30",
+     "title": "Aadhil96/gemma3-4b-sinhala-v1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Aadhil96/gemma3-4b-sinhala-v1"
+    },
+    {
+     "id": "hf-models-4e38d045975fc5c4",
+     "title": "Maryam033/gpt2-task",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Maryam033/gpt2-task"
+    },
+    {
+     "id": "hf-models-e8dce0cc716fecec",
+     "title": "don0ox1/Qwen3-8B-Roleplay-CN-v7",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/don0ox1/Qwen3-8B-Roleplay-CN-v7"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-b855a7b0b59702ca",
+     "title": "Astrosully/Kyro-29M-Instruct",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Astrosully/Kyro-29M-Instruct"
+    },
+    {
+     "id": "hf-models-58151a13e4553cfb",
+     "title": "henryhale/Kintu-1.0-39M-ONNX",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/henryhale/Kintu-1.0-39M-ONNX"
+    },
+    {
+     "id": "hf-models-3d86f59b8459424d",
+     "title": "Tanatas298/qwen3-4b-finqa-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Tanatas298/qwen3-4b-finqa-lora"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die Remote Code Execution in der Ruby-Backend-Implementation des Pakets @enspirit/elo. Diese Sicherheitslücke ist durch unescaped `#{...}`-Interpolation in ausgewählten Feldern des Programms und Subtype-constraint-labels gefährdet.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-4e412ff816794571",
+    "gh-advisories-8241c8dfb016acd6",
+    "gh-advisories-3527dd832e351e04"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-4e412ff816794571",
+    "gh-advisories-8241c8dfb016acd6",
+    "gh-advisories-3527dd832e351e04"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der aktuellen Liste veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-3162d6dfb8d40c30",
+    "hf-models-4e38d045975fc5c4",
+    "hf-models-e8dce0cc716fecec"
+   ],
+   "context_entry_ids": [
+    "hf-models-3162d6dfb8d40c30",
+    "hf-models-4e38d045975fc5c4",
+    "hf-models-e8dce0cc716fecec"
+   ]
+  }
+ ]
+}

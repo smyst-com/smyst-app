@@ -1,0 +1,164 @@
+{
+ "day": "2026-11-02",
+ "generated_at": "2026-11-02T20:55:57Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-7915c80c72ee906e",
+     "title": "GHSA-f9j6-8p6x-r9j6: SD JWT JS: Tampered disclosures silently dropped instead of rejected",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-f9j6-8p6x-r9j6"
+    },
+    {
+     "id": "hf-models-419e0e8f45aa67b8",
+     "title": "Arabi32/Carbon-X",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Arabi32/Carbon-X"
+    },
+    {
+     "id": "hf-models-47100c9a05681754",
+     "title": "elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/elisaterumi-ai/Qwen3.5-4B-Decision-Sentiment-EN"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-c283cd6994c4415c",
+     "title": "Convergent-ch/Alpina-Titan-2.0-80B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Convergent-ch/Alpina-Titan-2.0-80B"
+    },
+    {
+     "id": "hf-models-6c33fd02594c2f11",
+     "title": "Convergent-ch/Alpina-Big-2.0-300M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Convergent-ch/Alpina-Big-2.0-300M"
+    },
+    {
+     "id": "hf-models-07159df68ca546fd",
+     "title": "ProCreations/Dory-Beam-4B-Accurate",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ProCreations/Dory-Beam-4B-Accurate"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-19244c7aa2063fd3",
+     "title": "Introducing the Grid Protectors Program",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/grid-protectors-program"
+    },
+    {
+     "id": "hf-models-0dc6d6f7304893c3",
+     "title": "CzVod/Clop-Oops-0.55B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/CzVod/Clop-Oops-0.55B"
+    },
+    {
+     "id": "hf-models-2d18054d35b19302",
+     "title": "kolada-app/Kolada-writer",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/kolada-app/Kolada-writer"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **[SD JWT JS](https://github.com/ghsa/ghsa-sd-jwt-js-2026-62374)**. Diese Lücke ist ein **Schwierigkeitsgrad hohes** (CVE-2026-62374) und betroffenes Paket ist **@sd-jwt/decode**.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-7915c80c72ee906e",
+    "hf-models-419e0e8f45aa67b8",
+    "hf-models-47100c9a05681754"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-7915c80c72ee906e",
+    "hf-models-419e0e8f45aa67b8",
+    "hf-models-47100c9a05681754"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen den letzten Antworten veröffentlicht wurden. Die letzten veröffentlichten Modelle sind:\n\n1. Convergent-ch/Alpina-Titan-2.0-80B\n2. Convergent-ch/Alpina-Big-2.0-300M\n3. ProCreations/Dory-Beam-4B-Accurate\n4. CzVod/Clop-Oops-0.55B\n5. kolada-app/Kolada-writer\n\nDiese Modelle sind alle auf Hugging Face veröffentlicht und haben keine Downloads oder Likes. Es gibt keine neuen offenen KI-Modelle, die in dieser Zeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-c283cd6994c4415c",
+    "hf-models-6c33fd02594c2f11",
+    "hf-models-07159df68ca546fd"
+   ],
+   "context_entry_ids": [
+    "hf-models-c283cd6994c4415c",
+    "hf-models-6c33fd02594c2f11",
+    "hf-models-07159df68ca546fd"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine offiziellen Informationen zu einem \"Konkurrenz-Anbietern\" wie OpenAI oder Anthropic. Die angegebenen Links beinhalten Entwicklungen in der Text-Generierung und KI-Bibliothek, aber keine direkten Bezugspunkte zur Frage.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-19244c7aa2063fd3",
+    "hf-models-0dc6d6f7304893c3",
+    "hf-models-2d18054d35b19302"
+   ],
+   "context_entry_ids": [
+    "openai-news-19244c7aa2063fd3",
+    "hf-models-0dc6d6f7304893c3",
+    "hf-models-2d18054d35b19302"
+   ]
+  }
+ ]
+}

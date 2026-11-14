@@ -1,0 +1,106 @@
+{
+ "id": "hf-models-70ebd6be211842ac",
+ "title": "rawmodels/Qwen3.8-27B-antislop-pangram-grpo-GGUF",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, modell, qwen)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: gguf.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: gguf."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/rawmodels/Qwen3.8-27B-antislop-semdiv-grpo-GGUF",
+ "url_normalized": "https://huggingface.co/rawmodels/Qwen3.8-27B-antislop-semdiv-grpo-GGUF",
+ "publisher": "Hugging Face",
+ "published": "2026-10-02",
+ "retrieved": "2026-10-02T16:48:45Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-65d3464ce59031d0",
+  "hf-models-ab73c85fb798070a",
+  "hf-models-d2e79acc79ca246f"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-02T16:48:54Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "rawmodels/Qwen3.8-27B-antislop-semdiv-grpo-GGUF",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: gguf."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-10-02T16:48:54Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "rawmodels/Qwen3.8-27B-antislop-semdiv-grpo-GGUF"
+   },
+   "current": {
+    "title": "rawmodels/Qwen3.8-27B-antislop-pangram-grpo-GGUF"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-02T16:48:54Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-02T16:48:54Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-02T16:48:54Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-02T16:48:54Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-10-02T16:48:54Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-10-02T16:48:54Z",
+ "confirmations": 1
+}

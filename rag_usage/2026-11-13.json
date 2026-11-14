@@ -1,0 +1,149 @@
+{
+ "day": "2026-11-13",
+ "generated_at": "2026-11-13T18:51:47Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-3b30a0099b731223",
+     "title": "GHSA-gpwp-5797-mjff: AutoMapper: Denial of Service via uncontrolled recursion that bypasses MaxDepth",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-gpwp-5797-mjff"
+    },
+    {
+     "id": "gh-advisories-2c54f4b2650062d6",
+     "title": "GHSA-mh32-jxcr-mh9f: Astro: XSS via attribute injection in dynamic tag names",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-mh32-jxcr-mh9f"
+    },
+    {
+     "id": "gh-advisories-5a13d438fca7d434",
+     "title": "GHSA-r3h5-4585-7x3w: Astro: Image endpoint in @astrojs/node can read files from a case-variant sibling of the output directory on case-sensitive filesystems",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-r3h5-4585-7x3w"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-96b085cfdad3f72c",
+     "title": "MadSensiro/SmallMad-30M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/MadSensiro/SmallMad-30M"
+    },
+    {
+     "id": "hf-models-f568a8f4d4438656",
+     "title": "neithenkyeyune/monet-qwen-7b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/neithenkyeyune/monet-qwen-7b-lora"
+    },
+    {
+     "id": "hf-models-89022d8224f1fd27",
+     "title": "mwael399/CarHub-Fanar-1-9B-QLoRA",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mwael399/CarHub-Fanar-1-9B-QLoRA"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-a6953b0dfbca1499",
+     "title": "DeltaTune-Labs/DeltaGRPO-SQL-1.5B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DeltaTune-Labs/DeltaGRPO-SQL-1.5B"
+    },
+    {
+     "id": "hf-models-929a9627d47f239b",
+     "title": "PhantomLatticeLabs/Mistral-7B-Instruct-v0.3-GSD-LQ",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/PhantomLatticeLabs/Mistral-7B-Instruct-v0.3-GSD-LQ"
+    },
+    {
+     "id": "hf-models-0f7a8649c09157f9",
+     "title": "Jidnyasa-Patil/model_bluepulse",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+     ],
+     "url": "https://huggingface.co/Jidnyasa-Patil/model_bluepulse"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Eine neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **XSS (Cross-Site Scripting)**-Lücke in der **astro**-Bibliothek. Diese Lücke ist durch **attribute injection** in dynamic tag names verursacht und kann auf **case-sensitive**-Filesystemnachrichten wirken.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-3b30a0099b731223",
+    "gh-advisories-2c54f4b2650062d6",
+    "gh-advisories-5a13d438fca7d434"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-3b30a0099b731223",
+    "gh-advisories-2c54f4b2650062d6",
+    "gh-advisories-5a13d438fca7d434"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen der letzten Antwort und der Frage veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-96b085cfdad3f72c",
+    "hf-models-f568a8f4d4438656",
+    "hf-models-89022d8224f1fd27"
+   ],
+   "context_entry_ids": [
+    "hf-models-96b085cfdad3f72c",
+    "hf-models-f568a8f4d4438656",
+    "hf-models-89022d8224f1fd27"
+   ]
+  }
+ ]
+}

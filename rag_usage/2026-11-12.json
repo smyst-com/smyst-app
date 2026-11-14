@@ -1,0 +1,147 @@
+{
+ "day": "2026-11-12",
+ "generated_at": "2026-11-12T19:34:36Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-advisories-33d9eadff8c452b8",
+     "title": "GHSA-8835-xmqj-354h: pgEdge Go LLM Library discloses provider API key fragments in error messages",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-8835-xmqj-354h"
+    },
+    {
+     "id": "gh-advisories-8a20ac1afb1ef6d0",
+     "title": "GHSA-7m8x-x364-m26j: Signal K Server: Buffered logs exposed to unauthenticated WebSocket clients",
+     "category": "infrastruktur",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-7m8x-x364-m26j"
+    },
+    {
+     "id": "gh-advisories-ea5c6668541d71bd",
+     "title": "GHSA-g6f8-c3x9-jv7f: code16/sharp: Server-side request forgery through an unanchored autocomplete endpoint check",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-g6f8-c3x9-jv7f"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-e96cc0a47a9e5fe2",
+     "title": "REXINVIN/zz-rc-23258b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/REXINVIN/zz-rc-23258b"
+    },
+    {
+     "id": "hf-models-7bb7467a9e5cc83c",
+     "title": "REXINVIN/zz-rc-23258c",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/REXINVIN/zz-rc-23258c"
+    },
+    {
+     "id": "hf-models-9d0774e742513493",
+     "title": "Ekmek31/trenet-v2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ekmek31/trenet-v2"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "deepmind-blog-4bad5afe01a19f79",
+     "title": "Introducing Gemini 4 Hydrogen",
+     "category": "konkurrenz",
+     "freshness": "aktuell",
+     "trust": 4,
+     "flags": [],
+     "url": "https://deepmind.google/blog/introducing-gemini-4-hydrogen/"
+    },
+    {
+     "id": "hf-models-122ba3ec102f35f9",
+     "title": "REXINVIN/zz-recon-23258",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/REXINVIN/zz-recon-23258"
+    },
+    {
+     "id": "hf-models-477f0f2f0d94903b",
+     "title": "ARDJOEN/gemma-3-270m-it-q8-web",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/ARDJOEN/gemma-3-270m-it-q8-web"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden. Die angegebenen Links sind auf ähnliche Modelle oder Versionen von Modellen für die Text-Dokumentation und -Generierung zu verweisen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-e96cc0a47a9e5fe2",
+    "hf-models-7bb7467a9e5cc83c",
+    "hf-models-9d0774e742513493"
+   ],
+   "context_entry_ids": [
+    "hf-models-e96cc0a47a9e5fe2",
+    "hf-models-7bb7467a9e5cc83c",
+    "hf-models-9d0774e742513493"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine neuen Entwicklungen oder Updates zu Konkurrenz-Anbietern wie OpenAI oder Anthropic zu finden. Die Informationen, die ich habe, betreffen nur neue offene Modelle auf Hugging Face, die keine direkte Verbindung zu diesen Anbietern haben.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "deepmind-blog-4bad5afe01a19f79",
+    "hf-models-122ba3ec102f35f9",
+    "hf-models-477f0f2f0d94903b"
+   ],
+   "context_entry_ids": [
+    "deepmind-blog-4bad5afe01a19f79",
+    "hf-models-122ba3ec102f35f9",
+    "hf-models-477f0f2f0d94903b"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-12",
+ "generated_at": "2026-10-12T20:27:00Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-106a9998411016a3",
+     "title": "ollama/ollama: Release v0.40.4-rc0",
+     "category": "infrastruktur",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.4-rc0"
+    },
+    {
+     "id": "hf-models-d2e2157ce6c0e6c8",
+     "title": "tubby0728/smollm-135m-custom-tokenizer-v3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tubby0728/smollm-135m-custom-tokenizer-v3"
+    },
+    {
+     "id": "hf-models-102c7ec9c95d3800",
+     "title": "luisastellet/qwen-metaphor-unke-camada-5",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/luisastellet/qwen-metaphor-unke-camada-5"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-d072866d919e11cf",
+     "title": "deniscartin/dravenneflm-v3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/deniscartin/dravenneflm-v3"
+    },
+    {
+     "id": "hf-models-29605b34049ebe8c",
+     "title": "Bedirhn77/Mithra-2B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Bedirhn77/Mithra-2B"
+    },
+    {
+     "id": "hf-models-f11eaf1887a9c4ec",
+     "title": "tmhventures/Qwen3-8B-SFTv1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/tmhventures/Qwen3-8B-SFTv1"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-b5757b43a7525c9c",
+     "title": "Jarrodbarnes/qwen3.5-9b-pde-solver",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Jarrodbarnes/qwen3.5-9b-pde-solver"
+    },
+    {
+     "id": "hf-models-6238103667ddd480",
+     "title": "gradients-io-tournaments/augmented-a3d88a1f6929eea4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/gradients-io-tournaments/augmented-a3d88a1f6929eea4"
+    },
+    {
+     "id": "hf-models-c6a884627b2e7d8a",
+     "title": "edededdy/LittleKedi-mini-base",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/edededdy/LittleKedi-mini-base"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit der letzten Fragezeitung (2026-10-12) veröffentlicht wurden. Die Liste der bisherigen offenen KI-Modelle, die in der Fragezeitung erwähnt wurden, ist leer.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-d072866d919e11cf",
+    "hf-models-29605b34049ebe8c",
+    "hf-models-f11eaf1887a9c4ec"
+   ],
+   "context_entry_ids": [
+    "hf-models-d072866d919e11cf",
+    "hf-models-29605b34049ebe8c",
+    "hf-models-f11eaf1887a9c4ec"
+   ]
+  }
+ ]
+}

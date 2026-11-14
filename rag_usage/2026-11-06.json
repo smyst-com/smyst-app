@@ -1,0 +1,164 @@
+{
+ "day": "2026-11-06",
+ "generated_at": "2026-11-06T18:22:18Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-7f3971bc8e90e9e4",
+     "title": "GHSA-xgjr-7j9q-2h4r: listmonk: SQL Injection in `/api/subscribers/export` bypasses table access control, leaking admin password hashes and SMTP credentials",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-xgjr-7j9q-2h4r"
+    },
+    {
+     "id": "gh-advisories-8b5c026622813542",
+     "title": "GHSA-5w5g-j6hw-6p8f: OSAC operator: Kubeconfig credential-plugin execution and SSRF in console proxy",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-5w5g-j6hw-6p8f"
+    },
+    {
+     "id": "gh-advisories-8f0fe29024a79413",
+     "title": "GHSA-92r3-p8c2-3fpx: Eclipse hawkBit DDI has Privilege Escalation that allows Tenant-Isolated Firmware Exfiltration",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-92r3-p8c2-3fpx"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-ad79778d9a3f8d65",
+     "title": "datatab/hcawn-ha",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/datatab/hcawn-ha"
+    },
+    {
+     "id": "hf-models-39bffe7e5b0c1d98",
+     "title": "Yo-Purple/Meditor-2-3.4B-A1.8B-HMoE",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Yo-Purple/Meditor-2-3.4B-A1.8B-HMoE"
+    },
+    {
+     "id": "hf-models-dc1b75585c7aa878",
+     "title": "HerrLei/gemma-2b-finetune",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/HerrLei/gemma-2b-finetune"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-bc8f9eac19663ff6",
+     "title": "Partnering with Hacktron to find vulnerabilities in OpenAI’s systems",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/partnering-with-hacktron"
+    },
+    {
+     "id": "hf-models-fa3f2263a13ae243",
+     "title": "sixstringzen/Hemmingway-1.5-oQ3.5e-mtp",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/sixstringzen/Hemmingway-1.5-oQ3.5e-mtp"
+    },
+    {
+     "id": "hf-models-df59e6589bdfd975",
+     "title": "DedeProGames/Wisp-15M-Instruct",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DedeProGames/Wisp-15M-Instruct"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Keine neue Sicherheitslücke in der genannten Liste wurde in letzter Zeit aktiv ausgenutzt. Das letzte bekannte Sicherheitsrisiko war ein SQL-Injection-Erreger in der Liste Monk, das 2026-11-06 veröffentlicht wurde.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-7f3971bc8e90e9e4",
+    "gh-advisories-8b5c026622813542",
+    "gh-advisories-8f0fe29024a79413"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-7f3971bc8e90e9e4",
+    "gh-advisories-8b5c026622813542",
+    "gh-advisories-8f0fe29024a79413"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikation von smyst-radar bekannt sind.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-ad79778d9a3f8d65",
+    "hf-models-39bffe7e5b0c1d98",
+    "hf-models-dc1b75585c7aa878"
+   ],
+   "context_entry_ids": [
+    "hf-models-ad79778d9a3f8d65",
+    "hf-models-39bffe7e5b0c1d98",
+    "hf-models-dc1b75585c7aa878"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine direkte Information über neue Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die Informationen, die ich habe, betreffen neue Modelle auf Hugging Face, die keine direkte Verbindung zu den Anforderungen des Problems haben.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-bc8f9eac19663ff6",
+    "hf-models-fa3f2263a13ae243",
+    "hf-models-df59e6589bdfd975"
+   ],
+   "context_entry_ids": [
+    "openai-news-bc8f9eac19663ff6",
+    "hf-models-fa3f2263a13ae243",
+    "hf-models-df59e6589bdfd975"
+   ]
+  }
+ ]
+}

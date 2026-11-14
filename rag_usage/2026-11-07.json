@@ -1,0 +1,130 @@
+{
+ "day": "2026-11-07",
+ "generated_at": "2026-11-07T16:59:01Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-18323e253d095937",
+     "title": "khtsly/Kai-2.0-Base",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/khtsly/Kai-2.0-Base"
+    },
+    {
+     "id": "hf-models-ef79d5038245f86b",
+     "title": "jankowal2323/cieslar-qwen-v2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/jankowal2323/cieslar-qwen-v2"
+    },
+    {
+     "id": "hf-models-e1fbb9601a72f552",
+     "title": "Lilgarca/my-model-v02",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Lilgarca/my-model-v02"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-b7bf5770611869cc",
+     "title": "Gramscii-IT/ToolChooser-0.8B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Gramscii-IT/ToolChooser-0.8B"
+    },
+    {
+     "id": "hf-models-18323e253d095937",
+     "title": "khtsly/Kai-2.0-Base",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/khtsly/Kai-2.0-Base"
+    },
+    {
+     "id": "hf-models-ef79d5038245f86b",
+     "title": "jankowal2323/cieslar-qwen-v2",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/jankowal2323/cieslar-qwen-v2"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-e1fbb9601a72f552",
+     "title": "Lilgarca/my-model-v02",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Lilgarca/my-model-v02"
+    },
+    {
+     "id": "hf-models-4023d1b847243267",
+     "title": "AJ-Gonzalez/coder-lfm3-1.7b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/AJ-Gonzalez/coder-lfm3-1.7b"
+    },
+    {
+     "id": "hf-models-a67734876b1e006b",
+     "title": "lonepixel/navoiy-ai-3b-gguf",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/lonepixel/navoiy-ai-3b-gguf"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine offenen KI-Modelle, die in der Zeit seit der letzten Fragezeitung (2026-11-07) veröffentlicht wurden. Die angegebenen Modelle sind alle neuere Versionen der Hugging Face-Plattform und haben keine offenen KI-Modelle mit dem gleichen oder ähnlichen Namen veröffentlicht.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-b7bf5770611869cc",
+    "hf-models-18323e253d095937",
+    "hf-models-ef79d5038245f86b"
+   ],
+   "context_entry_ids": [
+    "hf-models-b7bf5770611869cc",
+    "hf-models-18323e253d095937",
+    "hf-models-ef79d5038245f86b"
+   ]
+  }
+ ]
+}

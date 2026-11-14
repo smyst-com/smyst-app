@@ -1,0 +1,147 @@
+{
+ "day": "2026-11-09",
+ "generated_at": "2026-11-09T21:37:23Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-36f12a1209ff359e",
+     "title": "ollama/ollama: Release v0.40.16-rc0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.16-rc0"
+    },
+    {
+     "id": "gh-advisories-4fedd0a6eb383fd8",
+     "title": "GHSA-vvr2-h2jp-838m: Code Graph RAG: MCP paginated read_file path traversal / arbitrary file read",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-vvr2-h2jp-838m"
+    },
+    {
+     "id": "gh-advisories-a488533aaa5ff888",
+     "title": "GHSA-56x6-q882-mf27: Remark42: Rate limit bypass via unconditional trust of X-Forwarded-For/X-Real-IP headers in direct-internet deployment",
+     "category": "konkurrenz",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-56x6-q882-mf27"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-299d6c33df3a2d81",
+     "title": "RedHotAnton/Qwen3-0.6B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/RedHotAnton/Qwen3-0.6B"
+    },
+    {
+     "id": "hf-models-ee5f9c8b55b5f2da",
+     "title": "SlayerLab/Slayer1B-1.09",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/SlayerLab/Slayer1B-1.09"
+    },
+    {
+     "id": "hf-models-4f25e380daa6bf73",
+     "title": "agentory/model-a",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/agentory/model-a"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-932fe34bad728f30",
+     "title": "Kuken Industries searches 70 years of drawings in minutes",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/kuken"
+    },
+    {
+     "id": "gh-advisories-a488533aaa5ff888",
+     "title": "GHSA-56x6-q882-mf27: Remark42: Rate limit bypass via unconditional trust of X-Forwarded-For/X-Real-IP headers in direct-internet deployment",
+     "category": "konkurrenz",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-56x6-q882-mf27"
+    },
+    {
+     "id": "gh-releases-ollama-36f12a1209ff359e",
+     "title": "ollama/ollama: Release v0.40.16-rc0",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.16-rc0"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die seit der letzten Fragezeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-299d6c33df3a2d81",
+    "hf-models-ee5f9c8b55b5f2da",
+    "hf-models-4f25e380daa6bf73"
+   ],
+   "context_entry_ids": [
+    "hf-models-299d6c33df3a2d81",
+    "hf-models-ee5f9c8b55b5f2da",
+    "hf-models-4f25e380daa6bf73"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine neuen Informationen zu Konkurrenz-Anbietern wie OpenAI oder Anthropic.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-932fe34bad728f30",
+    "gh-advisories-a488533aaa5ff888",
+    "gh-releases-ollama-36f12a1209ff359e"
+   ],
+   "context_entry_ids": [
+    "openai-news-932fe34bad728f30",
+    "gh-advisories-a488533aaa5ff888",
+    "gh-releases-ollama-36f12a1209ff359e"
+   ]
+  }
+ ]
+}

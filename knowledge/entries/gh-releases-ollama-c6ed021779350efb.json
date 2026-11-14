@@ -1,0 +1,82 @@
+{
+ "id": "gh-releases-ollama-c6ed021779350efb",
+ "title": "ollama/ollama: Release v0.40.0-rc6",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, qwen, llama)",
+  "relevance_score": 3
+ },
+ "summary": "Offizielle Release-Notes (v0.40.0-rc6): ## What's Changed **Models run on MLX on Apple Silicon by default** In this release, on Apple Silicon devices, model architectures supported by the MLX runtime will automatically run on MLX. ``` ollama pull qwen3.8 ollama run qwen3.8 ``` Additional models include [gemma4](https://ollama.com/library/gemma4), [qwen3.6](https://ollama.com/library/qwen3.6) and [qwen3.5](https://ollama.com/library/qwen3.5) Decision models are now available on MLX as well: [Nimble](https://ollama.com/library/nimble) [tev1](https://ollama.com/library/tev1) [clef](https://ollama.com/library/clef) [clef-flash](https://ollama.com/library/clef-flash) We will continue testing and enabling additional models. **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.4...v0.40.0-rc3",
+ "key_points": [
+  "Offizielle Release-Notes (v0.40.0-rc6): ## What's Changed **Models run on MLX on Apple Silicon by default** In this release, on Apple Silicon devices, model architectures supported by the MLX runtime will automatically run on MLX",
+  "``` ollama pull qwen3.8 ollama run qwen3.8 ``` Additional models include [gemma4](https://ollama.com/library/gemma4), [qwen3.6](https://ollama.com/library/qwen3.6) and [qwen3.5](https://ollama.com/library/qwen3.5) Decision models are now available on MLX as well: [Nimble](https://ollama.com/library/nimble) [tev1](https://ollama.com/library/tev1) [clef](https://ollama.com/library/clef) [clef-flash](https://ollama.com/library/clef-flash) We will continue testing and enabling additional models",
+  "**Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.4...v0.40.0-rc3"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.40.0-rc6",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.40.0-rc6",
+ "publisher": "GitHub Releases",
+ "published": "2026-09-25",
+ "retrieved": "2026-10-06T17:23:20Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-06T17:23:21Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.40.0-rc6",
+    "summary": "Offizielle Release-Notes (v0.40.0-rc6): ## What's Changed **Models run on MLX on Apple Silicon by default** In this release, on Apple Silicon devices, model architectures supported by the MLX runtime will automatically run on MLX. ``` ollama pull qwen3.8 ollama run qwen3.8 ``` Additional models include [gemma4](https://ollama.com/library/gemma4), [qwen3.6](https://ollama.com/library/qwen3.6) and [qwen3.5](https://ollama.com/library/qwen3.5) Decision models are now available on MLX as well: [Nimble](https://ollama.com/library/nimble) [tev1](https://ollama.com/library/tev1) [clef](https://ollama.com/library/clef) [clef-flash](https://ollama.com/library/clef-flash) We will continue testing and enabling additional models. **Full Changelog**: https://github.com/ollama/ollama/compare/v0.34.4...v0.40.0-rc3"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-06T17:23:21Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-06T17:23:21Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-06T17:23:21Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-06T17:23:21Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

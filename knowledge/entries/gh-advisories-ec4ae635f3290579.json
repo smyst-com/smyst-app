@@ -1,0 +1,101 @@
+{
+ "id": "gh-advisories-ec4ae635f3290579",
+ "title": "GHSA-q6jf-24jf-m3cg: Microsoft Security Advisory CVE-2026-120792 - Aspire Information Disclosure Vulnerability",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-, vulnerability, security, advisory)",
+  "relevance_score": 3
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: Aspire.Cli. CVE: CVE-2026-120792. Zusammenfassung: Microsoft Security Advisory CVE-2026-120792 - Aspire Information Disclosure Vulnerability",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad high",
+  "Betroffenes Paket: Aspire.Cli",
+  "CVE: CVE-2026-120792",
+  "Zusammenfassung: Microsoft Security Advisory CVE-2026-120792 - Aspire Information Disclosure Vulnerability"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-q6jf-24jf-m3cg",
+ "url_normalized": "https://github.com/advisories/GHSA-q6jf-24jf-m3cg",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-11-11",
+ "retrieved": "2026-11-11T12:05:00Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-advisories-176d60e421edbb87",
+  "gh-advisories-9674c6bc1901f1ed",
+  "gh-advisories-97c5d03e14d0c62c"
+ ],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-11T12:05:07Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-q6jf-24jf-m3cg: Microsoft Security Advisory CVE-2026-120792 - Aspire Information Disclosure Vulnerability",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: Aspire.Cli. CVE: CVE-2026-120792. Zusammenfassung: Microsoft Security Advisory CVE-2026-120792 - Aspire Information Disclosure Vulnerability"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-11T12:05:07Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-11T12:05:07Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-11T12:05:07Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-11T12:05:07Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-11-11T18:51:39Z",
+   "from": "rag_ready",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  },
+  {
+   "at": "2026-11-12T13:18:20Z",
+   "from": "stored",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-11-12T13:18:20Z",
+ "confirmations": 2
+}

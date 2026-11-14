@@ -1,0 +1,130 @@
+{
+ "day": "2026-11-11",
+ "generated_at": "2026-11-11T18:51:47Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-f16b4929b73f0ce5",
+     "title": "richardyoung/Mistral-Small-3.2-24B-Instruct-2506-SOM-heretic-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/richardyoung/Mistral-Small-3.2-24B-Instruct-2506-SOM-heretic-GGUF"
+    },
+    {
+     "id": "hf-models-de191042711ad272",
+     "title": "DreamFoundries/BotPsy-0.8B-8bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DreamFoundries/BotPsy-0.8B-8bit"
+    },
+    {
+     "id": "hf-models-ed73bf902ee581a0",
+     "title": "davidheineman/nanogpt-ladder-v3-web-heavy-64m-30tpp-seed-1337",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/davidheineman/nanogpt-ladder-v3-web-heavy-64m-30tpp-seed-1337"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-de191042711ad272",
+     "title": "DreamFoundries/BotPsy-0.8B-8bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DreamFoundries/BotPsy-0.8B-8bit"
+    },
+    {
+     "id": "hf-models-f328063d759c517e",
+     "title": "Neural-Labs/tiny-llm",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Neural-Labs/tiny-llm"
+    },
+    {
+     "id": "hf-models-f22e41b8abc230d9",
+     "title": "PP12546/MiniPolaris-3-Fish-Suiren",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/PP12546/MiniPolaris-3-Fish-Suiren"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-426926086d3a8859",
+     "title": "gmohor21/joblens-mistral-7b-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/gmohor21/joblens-mistral-7b-lora"
+    },
+    {
+     "id": "hf-models-86a0d17122316e79",
+     "title": "Cate-Tech/PhosphorONE-A95B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Cate-Tech/PhosphorONE-A95B"
+    },
+    {
+     "id": "hf-models-4da88ac44fca1ef3",
+     "title": "icxcn/EuroLLM-22B-grc-ro",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/icxcn/EuroLLM-22B-grc-ro"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der aktuellen Liste veröffentlicht wurden. Die Liste ist aus der Zeit vor dem letzten Update (2026-11-10) und enthält nur frühere Releases. Es gibt keine Informationen darüber, ob weitere offene Modelle veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-de191042711ad272",
+    "hf-models-f328063d759c517e",
+    "hf-models-f22e41b8abc230d9"
+   ],
+   "context_entry_ids": [
+    "hf-models-de191042711ad272",
+    "hf-models-f328063d759c517e",
+    "hf-models-f22e41b8abc230d9"
+   ]
+  }
+ ]
+}

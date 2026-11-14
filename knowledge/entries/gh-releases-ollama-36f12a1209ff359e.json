@@ -1,0 +1,87 @@
+{
+ "id": "gh-releases-ollama-36f12a1209ff359e",
+ "title": "ollama/ollama: Release v0.40.16-rc0",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, qwen, llama)",
+  "relevance_score": 3
+ },
+ "summary": "Offizielle Release-Notes (v0.40.16-rc0): ## What's Changed * openai: forward truncation option in responses requests by @marlonferreira1800-hue in https://github.com/ollama/ollama/pull/19501 * openai: return an empty array for /v1/models when no models are installed by @liangliang205 in https://github.com/ollama/ollama/pull/19539 * llama.cpp: version bump b12177 by @dhiltgen in https://github.com/ollama/ollama/pull/19576 * README: add Quock to Mobile community integrations by @matteocelani in https://github.com/ollama/ollama/pull/19361 * windows: add CUDA 13.5 and SM 103 for ARM64 by @dhiltgen in https://github.com/ollama/ollama/pull/19580 * MLX: make Qwen3.8 Flash Next memory efficient by @dhiltgen in https://github.com/ollama/ollama/pull/18078 * launch: fix Claude Code routing and retired model errors by @hoyyeva in https://github.com/ollama/ollama/pull/19587 * Add ripple preview support to the MLX runner by @pdevine in https://github.com/ollama/ollama/pull/19592 ## New Contributors * @marlonferreira1800-hue made their firs",
+ "key_points": [
+  "Offizielle Release-Notes (v0.40.16-rc0): ## What's Changed * openai: forward truncation option in responses requests by @marlonferreira1800-hue in https://github.com/ollama/ollama/pull/19501 * openai: return an empty array for /v1/models when no models are installed by @liangliang205 in https://github.com/ollama/ollama/pull/19539 * llama.cpp: version bump b12177 by @dhiltgen in https://github.com/ollama/ollama/pull/19576 * README: add Quock to Mobile community integrations by @matteocelani in https://github.com/ollama/ollama/pull/19361 * windows: add CUDA 13.5 and SM 103 for ARM64 by @dhiltgen in https://github.com/ollama/ollama/pull/19580 * MLX: make Qwen3.8 Flash Next memory efficient by @dhiltgen in https://github.com/ollama/ollama/pull/18078 * launch: fix Claude Code routing and retired model errors by @hoyyeva in https://github.com/ollama/ollama/pull/19587 * Add ripple preview support to the MLX runner by @pdevine in https://github.com/ollama/ollama/pull/19592 ## New Contributors * @marlonferreira1800-hue made their firs"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.40.16-rc0",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.40.16-rc0",
+ "publisher": "GitHub Releases",
+ "published": "2026-11-09",
+ "retrieved": "2026-11-09T21:36:43Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "ki-modelle",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-09T21:36:45Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.40.16-rc0",
+    "summary": "Offizielle Release-Notes (v0.40.16-rc0): ## What's Changed * openai: forward truncation option in responses requests by @marlonferreira1800-hue in https://github.com/ollama/ollama/pull/19501 * openai: return an empty array for /v1/models when no models are installed by @liangliang205 in https://github.com/ollama/ollama/pull/19539 * llama.cpp: version bump b12177 by @dhiltgen in https://github.com/ollama/ollama/pull/19576 * README: add Quock to Mobile community integrations by @matteocelani in https://github.com/ollama/ollama/pull/19361 * windows: add CUDA 13.5 and SM 103 for ARM64 by @dhiltgen in https://github.com/ollama/ollama/pull/19580 * MLX: make Qwen3.8 Flash Next memory efficient by @dhiltgen in https://github.com/ollama/ollama/pull/18078 * launch: fix Claude Code routing and retired model errors by @hoyyeva in https://github.com/ollama/ollama/pull/19587 * Add ripple preview support to the MLX runner by @pdevine in https://github.com/ollama/ollama/pull/19592 ## New Contributors * @marlonferreira1800-hue made their firs"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-09T21:36:45Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-09T21:36:45Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-09T21:36:45Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-09T21:36:45Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-11-09T21:37:35Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t3)."
+  }
+ ],
+ "status": "used_in_answer",
+ "_rag_flags": []
+}

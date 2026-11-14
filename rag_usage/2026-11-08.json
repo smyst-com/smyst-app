@@ -1,0 +1,130 @@
+{
+ "day": "2026-11-08",
+ "generated_at": "2026-11-08T17:13:38Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-e434d886b30e14bc",
+     "title": "Anirudhan123098/cricket-commentary-slm",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Anirudhan123098/cricket-commentary-slm"
+    },
+    {
+     "id": "hf-models-2fe5c087d2ce636d",
+     "title": "lioncovehx/qwen3-0.6b-trialgpt-draft-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/lioncovehx/qwen3-0.6b-trialgpt-draft-lora"
+    },
+    {
+     "id": "hf-models-0b3a7467b6587aa4",
+     "title": "CompiwerAI/Mtrini-SVL-2.1-CF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/CompiwerAI/Mtrini-SVL-2.1-CF"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-0b3a7467b6587aa4",
+     "title": "CompiwerAI/Mtrini-SVL-2.1-CF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/CompiwerAI/Mtrini-SVL-2.1-CF"
+    },
+    {
+     "id": "hf-models-d8daed3a0864095f",
+     "title": "yunusemrejr/royal-chef",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/yunusemrejr/royal-chef"
+    },
+    {
+     "id": "hf-models-e1fbb9601a72f552",
+     "title": "Lilgarca/my-model-v02",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Lilgarca/my-model-v02"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-4023d1b847243267",
+     "title": "AJ-Gonzalez/coder-lfm3-1.7b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/AJ-Gonzalez/coder-lfm3-1.7b"
+    },
+    {
+     "id": "hf-models-a67734876b1e006b",
+     "title": "lonepixel/navoiy-ai-3b-gguf",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/lonepixel/navoiy-ai-3b-gguf"
+    },
+    {
+     "id": "hf-models-59b113022de69ea7",
+     "title": "Shokou1/qwen3.5-poetry-9b-v7",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Shokou1/qwen3.5-poetry-9b-v7"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Die neuesten offenen KI-Modelle, die ich beobachtet habe, sind die Modelle aus den URLs, die du angegeben hast. Ich kann keine direkte Zusammenfassung oder Vergabe der Qualität dieser Modelle oder ihrer Verfügbarkeit aus deiner Liste anbieten. Es ist jedoch offensichtlich, dass diese Modelle auf Hugging Face veröffentlicht wurden und dass sie auf die Text-Generierung und -Klassifizierung spezialisiert sind.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-0b3a7467b6587aa4",
+    "hf-models-d8daed3a0864095f",
+    "hf-models-e1fbb9601a72f552"
+   ],
+   "context_entry_ids": [
+    "hf-models-0b3a7467b6587aa4",
+    "hf-models-d8daed3a0864095f",
+    "hf-models-e1fbb9601a72f552"
+   ]
+  }
+ ]
+}

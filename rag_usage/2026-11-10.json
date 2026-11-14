@@ -1,0 +1,164 @@
+{
+ "day": "2026-11-10",
+ "generated_at": "2026-11-10T18:48:03Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-2f4d792081ef2052",
+     "title": "GHSA-r7j4-crjv-h467: compose-lint: Text in a pull request can still issue CI workflow commands through compose-lint 0.31.0's output",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-r7j4-crjv-h467"
+    },
+    {
+     "id": "gh-advisories-db760e0243171860",
+     "title": "GHSA-xwgp-w3pj-q5h3: OHIF Viewers: DOM-Based Cross Site Scripting (XSS) through MIME type of document",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-xwgp-w3pj-q5h3"
+    },
+    {
+     "id": "gh-advisories-13eafd6185f14b9a",
+     "title": "GHSA-9wg5-mj3p-v49q: Forge: Certificate signature verified with the issuer's RSA signature scheme",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-9wg5-mj3p-v49q"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-89a69473d3c65940",
+     "title": "Khaledsaad1/Qwen2.5-kd",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Khaledsaad1/Qwen2.5-kd"
+    },
+    {
+     "id": "hf-models-1fe4aba70267c610",
+     "title": "VivienM/joey-lm-fr",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/VivienM/joey-lm-fr"
+    },
+    {
+     "id": "hf-models-36b469d6c7f24a92",
+     "title": "KevinVaillancourt/aya-retrieval-6.37",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/KevinVaillancourt/aya-retrieval-6.37"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-3588ceed41552e46",
+     "title": "Work at the Frontier: AI’s effect on freelance work",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/ai-effect-on-freelance-work"
+    },
+    {
+     "id": "deepmind-blog-0b2e1c02de474f20",
+     "title": "Gemini 4 Carbon is now available",
+     "category": "konkurrenz",
+     "freshness": "aktuell",
+     "trust": 4,
+     "flags": [],
+     "url": "https://deepmind.google/blog/gemini-4-carbon-is-now-available/"
+    },
+    {
+     "id": "google-ai-blog-c5fffc8a0cbdc3d4",
+     "title": "We’re bringing Adobe’s creative and productivity tools closer to your everyday Google apps.",
+     "category": "konkurrenz",
+     "freshness": "aktuell",
+     "trust": 4,
+     "flags": [],
+     "url": "https://blog.google/company-news/inside-google/company-announcements/adobe-google-partnership-integration/"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **DOM-Based Cross Site Scripting (XSS) through MIME type of document**. Diese Sicherheitslücke wurde in einer offiziellen GitHub-Sicherheitswarnung identifiziert, die Schweregrad **high** hat.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-2f4d792081ef2052",
+    "gh-advisories-db760e0243171860",
+    "gh-advisories-13eafd6185f14b9a"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-2f4d792081ef2052",
+    "gh-advisories-db760e0243171860",
+    "gh-advisories-13eafd6185f14b9a"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Woche veröffentlicht wurden. Die bisher bekanntesten offenen KI-Modelle sind Qwen 2.5-kd, Joey-LM, Aya-Retrieval, Enthymeme-Qwen und Qwen 3.5-Poetry, die alle auf Hugging Face veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-89a69473d3c65940",
+    "hf-models-1fe4aba70267c610",
+    "hf-models-36b469d6c7f24a92"
+   ],
+   "context_entry_ids": [
+    "hf-models-89a69473d3c65940",
+    "hf-models-1fe4aba70267c610",
+    "hf-models-36b469d6c7f24a92"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine neuen Informationen zu Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die angegebenen Quellen beinhalten keine direkte Bezugspunkte oder Updates zu solchen Unternehmen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-3588ceed41552e46",
+    "deepmind-blog-0b2e1c02de474f20",
+    "google-ai-blog-c5fffc8a0cbdc3d4"
+   ],
+   "context_entry_ids": [
+    "openai-news-3588ceed41552e46",
+    "deepmind-blog-0b2e1c02de474f20",
+    "google-ai-blog-c5fffc8a0cbdc3d4"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,164 @@
+{
+ "day": "2026-11-14",
+ "generated_at": "2026-11-14T12:13:59Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-c34250fb91a1617f",
+     "title": "GHSA-89p3-fcch-88ph: NLTK: Quadratic-time CPU denial of service in CCG lexicon parser (fromstring) on wide bracket bodies and operator chains",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-89p3-fcch-88ph"
+    },
+    {
+     "id": "gh-advisories-1b9d742bff269064",
+     "title": "GHSA-r53h-rw34-8h97: NLTK: Quadratic-time CPU denial of service in Tree.chomsky_normal_form right-factor binarization via list.pop(0)",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-r53h-rw34-8h97"
+    },
+    {
+     "id": "gh-advisories-e31391a436592061",
+     "title": "GHSA-v8f3-6phw-6mh9: NLTK: Quadratic-time CPU denial of service in ConllCorpusReader SRL instance builder via nested span rescan",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-v8f3-6phw-6mh9"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-c19ede61f031eac3",
+     "title": "olaverse/MIST-QG-1.1",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/olaverse/MIST-QG-1.1"
+    },
+    {
+     "id": "hf-models-fc3ebc961afc5f0d",
+     "title": "Ramu1904/PatternSmith",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Ramu1904/PatternSmith"
+    },
+    {
+     "id": "hf-models-ba46db341b3a6aab",
+     "title": "Xylolabs/Qwen3.5-9B-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Xylolabs/Qwen3.5-9B-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-d1318183fe172893",
+     "title": "Shield helps technicians hand off legacy portal work with OpenAI",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/business/customer-stories/shield"
+    },
+    {
+     "id": "hf-models-2242d711778ce187",
+     "title": "bcckfdn/cevher3-test-8",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bcckfdn/cevher3-test-8"
+    },
+    {
+     "id": "hf-models-118de837552eb21e",
+     "title": "orbbit-AI-026/Dota-3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/orbbit-AI-026/Dota-3"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in der Frage erwähnt wurde, ist die **Quadratic-time CPU denial of service in CCG lexicon parser**. Diese Sicherheitslücke wurde in der **GitHub Advisory Board** veröffentlicht und ist ein **high** Schweregrad. Sie betroffen **NLTK** und ist mit **CVE-2026-126299** verbunden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-c34250fb91a1617f",
+    "gh-advisories-1b9d742bff269064",
+    "gh-advisories-e31391a436592061"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-c34250fb91a1617f",
+    "gh-advisories-1b9d742bff269064",
+    "gh-advisories-e31391a436592061"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit zwischen der letzten Antwort und der Frage veröffentlicht wurden. Die neuesten offenen KI-Modelle, die ich in der Nähe der Zeit veröffentlicht haben, sind:\n\n- [1] olaverse/MIST-QG-1.1 (Hugging Face, 2026-11-14)\n- [2] Ramu1904/PatternSmith (Hugging Face, 2026-11-14)\n- [3] Xylolabs/Qwen3.5-9B-GGUF (Hugging Face, 2026-11-14)\n- [4] bcckfdn/cevher3-test-8 (Hugging Face, 2026-11-14)\n- [5] orbbit-AI-026/Dota-3 (Hugging Face, 2026-11-14)\n\nDiese Modelle sind auf Hugging",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-c19ede61f031eac3",
+    "hf-models-fc3ebc961afc5f0d",
+    "hf-models-ba46db341b3a6aab"
+   ],
+   "context_entry_ids": [
+    "hf-models-c19ede61f031eac3",
+    "hf-models-fc3ebc961afc5f0d",
+    "hf-models-ba46db341b3a6aab"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine offiziellen Informationen über neue Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die verwendeten Quellen sind keine offiziellen Quellen und beinhalten keine direkte Beiträge zu diesem Thema.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-d1318183fe172893",
+    "hf-models-2242d711778ce187",
+    "hf-models-118de837552eb21e"
+   ],
+   "context_entry_ids": [
+    "openai-news-d1318183fe172893",
+    "hf-models-2242d711778ce187",
+    "hf-models-118de837552eb21e"
+   ]
+  }
+ ]
+}

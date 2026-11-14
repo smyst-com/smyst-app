@@ -1,0 +1,85 @@
+{
+ "id": "gh-advisories-da5ae8b06d23c2ba",
+ "title": "GHSA-pcc4-rvhr-2pr8: Graphify Fortran extractor: incomplete cpp #include hardening allows arbitrary host-file read/exfiltration when indexing an untrusted repo",
+ "topic": {
+  "category": "allgemein",
+  "reason": "Sonstige Meldung ohne klare Themen-Zuordnung",
+  "relevance_score": 0
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: graphifyy. CVE: keine. Zusammenfassung: Graphify Fortran extractor: incomplete cpp #include hardening allows arbitrary host-file read/exfiltration when indexing an untrusted repo",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium",
+  "Betroffenes Paket: graphifyy",
+  "CVE: keine",
+  "Zusammenfassung: Graphify Fortran extractor: incomplete cpp #include hardening allows arbitrary host-file read/exfiltration when indexing an untrusted repo"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-pcc4-rvhr-2pr8",
+ "url_normalized": "https://github.com/advisories/GHSA-pcc4-rvhr-2pr8",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-10-19",
+ "retrieved": "2026-10-19T18:20:43Z",
+ "check": "rejected",
+ "check_reason": "Keine erkennbare Relevanz für smyst-Themenfelder.",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "allgemein",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 0,
+ "usage_status": "abgelehnt",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-19T18:20:49Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-pcc4-rvhr-2pr8: Graphify Fortran extractor: incomplete cpp #include hardening allows arbitrary host-file read/exfiltration when indexing an untrusted repo",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: graphifyy. CVE: keine. Zusammenfassung: Graphify Fortran extractor: incomplete cpp #include hardening allows arbitrary host-file read/exfiltration when indexing an untrusted repo"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-19T18:20:49Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-19T18:20:49Z",
+   "from": "analyzed",
+   "to": "rejected",
+   "reason": "Keine erkennbare Relevanz für smyst-Themenfelder."
+  },
+  {
+   "at": "2026-10-19T18:20:49Z",
+   "from": "rejected",
+   "to": "archiviert-als-abgelehnt",
+   "reason": "Nur zu Berichtszwecken archiviert, nicht nutzbar."
+  },
+  {
+   "at": "2026-10-20T09:35:34Z",
+   "from": "archiviert-als-abgelehnt",
+   "to": "stored",
+   "reason": "Unverändert bestätigt (kein neuer Eintrag erzeugt)."
+  }
+ ],
+ "status": "stored",
+ "last_seen": "2026-10-20T09:35:34Z",
+ "confirmations": 1
+}

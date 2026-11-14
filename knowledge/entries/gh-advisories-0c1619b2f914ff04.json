@@ -1,0 +1,87 @@
+{
+ "id": "gh-advisories-0c1619b2f914ff04",
+ "title": "GHSA-mmhr-3c5m-f64f: Soup Sieve: Polynomial-time denial of service in the descendant combinator",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: soupsieve. CVE: CVE-2026-126190. Zusammenfassung: Soup Sieve: Polynomial-time denial of service in the descendant combinator",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad high",
+  "Betroffenes Paket: soupsieve",
+  "CVE: CVE-2026-126190",
+  "Zusammenfassung: Soup Sieve: Polynomial-time denial of service in the descendant combinator"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-mmhr-3c5m-f64f",
+ "url_normalized": "https://github.com/advisories/GHSA-mmhr-3c5m-f64f",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-11-13",
+ "retrieved": "2026-11-13T12:49:25Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-advisories-f6b3e40cd8a00ed0",
+  "gh-advisories-225572748ecceca6",
+  "gh-advisories-67a682b0c8ef52ef"
+ ],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-13T12:49:30Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-mmhr-3c5m-f64f: Soup Sieve: Polynomial-time denial of service in the descendant combinator",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad high. Betroffenes Paket: soupsieve. CVE: CVE-2026-126190. Zusammenfassung: Soup Sieve: Polynomial-time denial of service in the descendant combinator"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-13T12:49:30Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-13T12:49:30Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-13T12:49:30Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-13T12:49:30Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

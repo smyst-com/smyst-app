@@ -1,0 +1,166 @@
+{
+ "day": "2026-11-04",
+ "generated_at": "2026-11-04T18:50:14Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-96a37066b860eae3",
+     "title": "GHSA-93cm-2v4m-c56c: Arc: DuckDB I/O aliases bypass database RBAC after CVE-2026-47735",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-93cm-2v4m-c56c"
+    },
+    {
+     "id": "gh-advisories-dcbf3936d50a6385",
+     "title": "GHSA-mc8m-rr6c-r5qr: @payloadcms/storage-vercel-blob has access control bypass of uploads in Vercel Storage adapter",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-mc8m-rr6c-r5qr"
+    },
+    {
+     "id": "gh-advisories-27845cc8a4d9ff46",
+     "title": "GHSA-3cgg-c5pp-57h6: odf-kit: HTML injection leading to XSS in odtToHtml() and odsToHtml() via unescaped style attribute values",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-3cgg-c5pp-57h6"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-47e2b0a6785e35a9",
+     "title": "personaio/blast-radius-classifier",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/personaio/blast-radius-classifier"
+    },
+    {
+     "id": "hf-models-58151a13e4553cfb",
+     "title": "henryhale/Kintu-1.0-39M-ONNX",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/henryhale/Kintu-1.0-39M-ONNX"
+    },
+    {
+     "id": "hf-models-3d86f59b8459424d",
+     "title": "Tanatas298/qwen3-4b-finqa-lora",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Tanatas298/qwen3-4b-finqa-lora"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-3a06f84c0f51a102",
+     "title": "OpenAI to acquire Pierre Computer Company, Inc.",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/openai-to-acquire-pierre"
+    },
+    {
+     "id": "hf-models-70e7e77bf5a9be1e",
+     "title": "bouroo/flint-mlx-mxfp4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+     ],
+     "url": "https://huggingface.co/bouroo/flint-mlx-mxfp4"
+    },
+    {
+     "id": "hf-models-82fad3f991914011",
+     "title": "DuoNeural/FC-CDM-Poincare-7L-108M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DuoNeural/FC-CDM-Poincare-7L-108M"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist eine Bypass von der Resource-Bound-Access-Control (RBAC) in der DuckDB-I/O-Alias-Implementierung. Diese Sicherheitslücke wurde am 4. November 2026 bekanntgegeben und ist ein Medium-Schwerfall.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-96a37066b860eae3",
+    "gh-advisories-dcbf3936d50a6385",
+    "gh-advisories-27845cc8a4d9ff46"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-96a37066b860eae3",
+    "gh-advisories-dcbf3936d50a6385",
+    "gh-advisories-27845cc8a4d9ff46"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine offenen KI-Modelle, die in der Zeit von 2026-10-25 bis 2026-11-03 veröffentlicht wurden. Die neuesten offenen KI-Modelle, die ich in der Nähe der Zeit veröffentlicht haben, sind:\n\n- personaio/blast-radius-classifier (2026-11-04)\n- henryhale/Kintu-1.0-39M-ONNX (2026-11-03)\n- Tanatas298/qwen3-4b-finqa-lora (2026-11-03)\n- bouroo/flint-mlx-mxfp4 (2026-10-25)\n- DuoNeural/FC-CDM-Poincare-7L-108M (2026-10-25)\n\nDiese Modelle sind auf Hugging Face veröffentlicht und haben keine Downloads oder Likes.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-47e2b0a6785e35a9",
+    "hf-models-58151a13e4553cfb",
+    "hf-models-3d86f59b8459424d"
+   ],
+   "context_entry_ids": [
+    "hf-models-47e2b0a6785e35a9",
+    "hf-models-58151a13e4553cfb",
+    "hf-models-3d86f59b8459424d"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine neuen Informationen zu Konkurrenz-Anbietern wie OpenAI oder Anthropic. Die angegebenen Quellen beinhalten keine direkte Verbindung zu aktuellen Entwicklungen oder Neuigkeiten in diesem Bereich.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-3a06f84c0f51a102",
+    "hf-models-70e7e77bf5a9be1e",
+    "hf-models-82fad3f991914011"
+   ],
+   "context_entry_ids": [
+    "openai-news-3a06f84c0f51a102",
+    "hf-models-70e7e77bf5a9be1e",
+    "hf-models-82fad3f991914011"
+   ]
+  }
+ ]
+}

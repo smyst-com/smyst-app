@@ -1,0 +1,130 @@
+{
+ "day": "2026-10-06",
+ "generated_at": "2026-10-06T17:23:28Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "gh-releases-ollama-c6ed021779350efb",
+     "title": "ollama/ollama: Release v0.40.0-rc6",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/ollama/ollama/releases/tag/v0.40.0-rc6"
+    },
+    {
+     "id": "hf-models-6cbaff56654be406",
+     "title": "Blackfrost-AI/KOLIBRI-1-DERISKED-BF16",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Blackfrost-AI/KOLIBRI-1-DERISKED-BF16"
+    },
+    {
+     "id": "hf-models-eee0711293587c30",
+     "title": "drelixer/HyperS-10M-Base-v1.1b-100M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/drelixer/HyperS-10M-Base-v1.1b-100M"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-1b6e70e80eec87d8",
+     "title": "aamosK/Beef16M",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aamosK/Beef16M"
+    },
+    {
+     "id": "hf-models-b6b98eb71df424c4",
+     "title": "lautiss/brain-v0.1-base",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/lautiss/brain-v0.1-base"
+    },
+    {
+     "id": "hf-models-6cbaff56654be406",
+     "title": "Blackfrost-AI/KOLIBRI-1-DERISKED-BF16",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Blackfrost-AI/KOLIBRI-1-DERISKED-BF16"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "openai-news-60ef2af305e795fe",
+     "title": "Atlassian and OpenAI expand partnership to turn enterprise knowledge into action",
+     "category": "ki-modelle",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/atlassian-partnership"
+    },
+    {
+     "id": "hf-models-db1554c8cf9cfeee",
+     "title": "bmkzl/Qwen3-Embedding-0.6B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/bmkzl/Qwen3-Embedding-0.6B"
+    },
+    {
+     "id": "hf-models-66657bdde76c4a41",
+     "title": "aether-models/qwen3-4b-int8",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/aether-models/qwen3-4b-int8"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die auf dieser Liste veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-1b6e70e80eec87d8",
+    "hf-models-b6b98eb71df424c4",
+    "hf-models-6cbaff56654be406"
+   ],
+   "context_entry_ids": [
+    "hf-models-1b6e70e80eec87d8",
+    "hf-models-b6b98eb71df424c4",
+    "hf-models-6cbaff56654be406"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-26",
+ "generated_at": "2026-10-26T17:43:47Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-ec53a19ef403e0b9",
+     "title": "hmzprover/hpsearch-rerank-4b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/hmzprover/hpsearch-rerank-4b"
+    },
+    {
+     "id": "hf-models-3a5622c184f4d527",
+     "title": "fgparamio/sauron-lora-qwen3-4b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/fgparamio/sauron-lora-qwen3-4b"
+    },
+    {
+     "id": "hf-models-e5a6f8edbf3f1bc7",
+     "title": "slip618/Qwen3-48B-A4B-Savant-Commander-Distill-12X-Closed-Open-Heretic-Uncensored-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/slip618/Qwen3-48B-A4B-Savant-Commander-Distill-12X-Closed-Open-Heretic-Uncensored-GGUF"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-d20b34479f1a0bab",
+     "title": "xsingh/o1-small",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/xsingh/o1-small"
+    },
+    {
+     "id": "hf-models-ec53a19ef403e0b9",
+     "title": "hmzprover/hpsearch-rerank-4b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/hmzprover/hpsearch-rerank-4b"
+    },
+    {
+     "id": "hf-models-9afffe72556081f9",
+     "title": "sekkit/Hy-SimulMT-30B-A3B",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/sekkit/Hy-SimulMT-30B-A3B"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-eb7708c5f537ab79",
+     "title": "How Fanatics and OpenAI streamline the fan experience",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/fanatics-streamline-fan-experience"
+    },
+    {
+     "id": "hf-models-24c7937b0a4ad0ee",
+     "title": "Wynnoaasf/wynr-ai-1.5b-merged",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Wynnoaasf/wynr-ai-1.5b-merged"
+    },
+    {
+     "id": "hf-models-1346a7a9abc70ba3",
+     "title": "mradermacher/Llama3Ternary_2b-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mradermacher/Llama3Ternary_2b-GGUF"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Publikation gelistet wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-d20b34479f1a0bab",
+    "hf-models-ec53a19ef403e0b9",
+    "hf-models-9afffe72556081f9"
+   ],
+   "context_entry_ids": [
+    "hf-models-d20b34479f1a0bab",
+    "hf-models-ec53a19ef403e0b9",
+    "hf-models-9afffe72556081f9"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine neuen Entwicklungen oder Updates zu Konkurrenz-Anbietern wie OpenAI oder Anthropic in der angegebenen Liste. Die Quellen beinhalten Informationen über neue Modelle und Updates, aber keine Informationen über aktuelle Entwicklungen oder Updates von OpenAI oder Anthropic.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-eb7708c5f537ab79",
+    "hf-models-24c7937b0a4ad0ee",
+    "hf-models-1346a7a9abc70ba3"
+   ],
+   "context_entry_ids": [
+    "openai-news-eb7708c5f537ab79",
+    "hf-models-24c7937b0a4ad0ee",
+    "hf-models-1346a7a9abc70ba3"
+   ]
+  }
+ ]
+}

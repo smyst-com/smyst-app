@@ -1,0 +1,90 @@
+{
+ "id": "gh-advisories-7f3971bc8e90e9e4",
+ "title": "GHSA-xgjr-7j9q-2h4r: listmonk: SQL Injection in `/api/subscribers/export` bypasses table access control, leaking admin password hashes and SMTP credentials",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-)",
+  "relevance_score": 1
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/knadh/listmonk. CVE: CVE-2026-62361. Zusammenfassung: listmonk: SQL Injection in `/api/subscribers/export` bypasses table access control, leaking admin password hashes and SMTP credentials",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium",
+  "Betroffenes Paket: github.com/knadh/listmonk",
+  "CVE: CVE-2026-62361",
+  "Zusammenfassung: listmonk: SQL Injection in `/api/subscribers/export` bypasses table access control, leaking admin password hashes and SMTP credentials"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-xgjr-7j9q-2h4r",
+ "url_normalized": "https://github.com/advisories/GHSA-xgjr-7j9q-2h4r",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-11-06",
+ "retrieved": "2026-11-06T18:22:06Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 1/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 1,
+ "usage_status": "in Antwort verwendet (Test)",
+ "used_in_answer": true,
+ "rag_used_count": 1,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-06T18:22:11Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-xgjr-7j9q-2h4r: listmonk: SQL Injection in `/api/subscribers/export` bypasses table access control, leaking admin password hashes and SMTP credentials",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad medium. Betroffenes Paket: github.com/knadh/listmonk. CVE: CVE-2026-62361. Zusammenfassung: listmonk: SQL Injection in `/api/subscribers/export` bypasses table access control, leaking admin password hashes and SMTP credentials"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-06T18:22:11Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-06T18:22:11Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-06T18:22:11Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-06T18:22:11Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-11-06T18:22:35Z",
+   "from": "rag_ready",
+   "to": "used_in_answer",
+   "reason": "Erfolgreich in Testantwort verwendet (Frage: t1)."
+  }
+ ],
+ "status": "used_in_answer",
+ "_rag_flags": []
+}

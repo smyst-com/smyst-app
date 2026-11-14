@@ -1,0 +1,125 @@
+{
+ "id": "hf-models-53f6062b71952999",
+ "title": "mdcreativeagent/Llama-3.1-8B-Lexi-Uncensored-V2",
+ "topic": {
+  "category": "ki-modelle",
+  "reason": "Neue KI-Modelle, Funktionen, Benchmarks (Treffer: model, instruct, modell, llama)",
+  "relevance_score": 3
+ },
+ "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers.",
+ "key_points": [
+  "Neues offenes Modell auf Hugging Face",
+  "Likes: 0, Downloads: 0",
+  "Pipeline: text-generation",
+  "Bibliothek: transformers."
+ ],
+ "source": {
+  "id": "hf-models",
+  "name": "Hugging Face Modelle (neu veröffentlicht)",
+  "kind": "api",
+  "trust": 5,
+  "trust_reason": "Quellklasse api (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://huggingface.co/mdcreativeagent/DarkIdol-Llama-3.1-8B-Instruct-1.2-Uncensored",
+ "url_normalized": "https://huggingface.co/mdcreativeagent/DarkIdol-Llama-3.1-8B-Instruct-1.2-Uncensored",
+ "publisher": "Hugging Face",
+ "published": "2026-11-06",
+ "retrieved": "2026-11-06T12:57:40Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "hf-models-a226b4d0fb46d2d6",
+  "hf-models-98e785d996c178ec",
+  "hf-models-aa9e1b29b5bf468c"
+ ],
+ "tags": [
+  "ki-modelle",
+  "api",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-06T12:57:52Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "mdcreativeagent/DarkIdol-Llama-3.1-8B-Instruct-1.2-Uncensored",
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: unbekannt."
+   }
+  },
+  {
+   "version": 2,
+   "date": "2026-11-06T12:57:52Z",
+   "reason": "Inhaltliche Änderung der Quelle: summary, title",
+   "previous": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: unbekannt.",
+    "title": "mdcreativeagent/DarkIdol-Llama-3.1-8B-Instruct-1.2-Uncensored"
+   },
+   "current": {
+    "summary": "Neues offenes Modell auf Hugging Face. Likes: 0, Downloads: 0. Pipeline: text-generation. Bibliothek: transformers.",
+    "title": "mdcreativeagent/Llama-3.2-3B-Instruct-uncensored"
+   }
+  },
+  {
+   "version": 3,
+   "date": "2026-11-06T12:57:52Z",
+   "reason": "Inhaltliche Änderung der Quelle: title",
+   "previous": {
+    "title": "mdcreativeagent/Llama-3.2-3B-Instruct-uncensored"
+   },
+   "current": {
+    "title": "mdcreativeagent/Llama-3.1-8B-Lexi-Uncensored-V2"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "rag_ready",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (summary, title)."
+  },
+  {
+   "at": "2026-11-06T12:57:52Z",
+   "from": "updated",
+   "to": "updated",
+   "reason": "Quelle aktualisiert (title)."
+  }
+ ],
+ "status": "updated",
+ "last_seen": "2026-11-06T12:57:52Z",
+ "confirmations": 2
+}

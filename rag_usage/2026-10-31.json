@@ -1,0 +1,150 @@
+{
+ "day": "2026-10-31",
+ "generated_at": "2026-10-31T16:34:25Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-0042021a2a9378a4",
+     "title": "GHSA-cggf-277g-3q54: pypdf has possible large memory usage when parsing page tree",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-cggf-277g-3q54"
+    },
+    {
+     "id": "gh-advisories-e679292e76551902",
+     "title": "GHSA-mfr5-77xh-9j7h: pypdf has possible infinite loop when cloning dictionaries",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-mfr5-77xh-9j7h"
+    },
+    {
+     "id": "gh-advisories-225572748ecceca6",
+     "title": "GHSA-4528-x5fx-h6hg: joi: quadratic-time split in `string().email({ multiple: true })` allows denial of service",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-4528-x5fx-h6hg"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-f62f889160334011",
+     "title": "kavanmevada/eng-word-model-n",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/kavanmevada/eng-word-model-n"
+    },
+    {
+     "id": "hf-models-027fde0c9d104360",
+     "title": "tinyopsec/TCAndon-Router-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen",
+      "widersprüchliche Information in denselben Top-Treffern — kennzeichnen"
+     ],
+     "url": "https://huggingface.co/tinyopsec/TCAndon-Router-GGUF"
+    },
+    {
+     "id": "hf-models-9fa1d13841939af9",
+     "title": "prem-ai-ml-engineer/TinyLlama-chat",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/prem-ai-ml-engineer/TinyLlama-chat"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-2cce9cd8181352c3",
+     "title": "saidutta69/EuroLLM-1.7B-Instruct-heretic",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/saidutta69/EuroLLM-1.7B-Instruct-heretic"
+    },
+    {
+     "id": "hf-models-8c593415ad7907e8",
+     "title": "Kanz4kii/Next-Concept-Modeling",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Kanz4kii/Next-Concept-Modeling"
+    },
+    {
+     "id": "hf-models-134e965b99acc92d",
+     "title": "iromu/Qwen3-0.6B-openjev-NVFP4",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/iromu/Qwen3-0.6B-openjev-NVFP4"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Die neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die \"quadratic-time parsing of Content-Disposition parameters allows denial of service\" (Quelle: GitHub Advisory Board, veröffentlicht: 2026-10-30, Vertrauen 5/5). Diese Sicherheitslücke ist in der @hapi/content-Paket betroffen und kann zu einem Denial of Service (DoS) führen.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-0042021a2a9378a4",
+    "gh-advisories-e679292e76551902",
+    "gh-advisories-225572748ecceca6"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-0042021a2a9378a4",
+    "gh-advisories-e679292e76551902",
+    "gh-advisories-225572748ecceca6"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Keine neuen offenen KI-Modelle, die in der aktuellen Liste veröffentlicht wurden, haben sich hinsichtlich der Frage \"Welche neuen offenen KI-Modelle wurden veröffentlicht?\" bewährt. Die Liste ist jedoch nicht vollständig und könnte weitere neuesten Entwicklungen enthalten.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-f62f889160334011",
+    "hf-models-027fde0c9d104360",
+    "hf-models-9fa1d13841939af9"
+   ],
+   "context_entry_ids": [
+    "hf-models-f62f889160334011",
+    "hf-models-027fde0c9d104360",
+    "hf-models-9fa1d13841939af9"
+   ]
+  }
+ ]
+}

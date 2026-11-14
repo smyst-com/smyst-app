@@ -1,0 +1,147 @@
+{
+ "day": "2026-09-30",
+ "generated_at": "2026-09-30T17:00:10Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-427666973fdba1c0",
+     "title": "muhamad-geosurge/invert-polarity-56159e64-0eb6-4eaa-9608-08f385da12bb",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/muhamad-geosurge/invert-polarity-56159e64-0eb6-4eaa-9608-08f385da12bb"
+    },
+    {
+     "id": "hf-models-69b28b67c78646a9",
+     "title": "Shaq2/KrishokChat-Advisory-System",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Shaq2/KrishokChat-Advisory-System"
+    },
+    {
+     "id": "hf-models-658a7e45a27c4790",
+     "title": "BrandonHowe/Qwen3-8b-urban-qwen-seed1-20260930-CPT-merged-epoch-3",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/BrandonHowe/Qwen3-8b-urban-qwen-seed1-20260930-CPT-merged-epoch-3"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-69b28b67c78646a9",
+     "title": "Shaq2/KrishokChat-Advisory-System",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Shaq2/KrishokChat-Advisory-System"
+    },
+    {
+     "id": "hf-models-476a795ea9f97db4",
+     "title": "mandododo/polyglot-cleanup-qwen3-1.7b",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/mandododo/polyglot-cleanup-qwen3-1.7b"
+    },
+    {
+     "id": "hf-models-98c3a413d068013f",
+     "title": "nickkats1/qwen-instruct-chat",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/nickkats1/qwen-instruct-chat"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "openai-news-b5e5e43443d214df",
+     "title": "Helping small businesses put AI to work",
+     "category": "konkurrenz",
+     "freshness": "unbekannt",
+     "trust": 3,
+     "flags": [],
+     "url": "https://openai.com/index/helping-small-businesses-put-ai-to-work"
+    },
+    {
+     "id": "hf-models-786f4953e5fb5326",
+     "title": "m-b-edw/llama-3.2-3b-sft-indonesian",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/m-b-edw/llama-3.2-3b-sft-indonesian"
+    },
+    {
+     "id": "hf-models-1275fa000ddaecd8",
+     "title": "DeV-ZEr0/highontherapy-native",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/DeV-ZEr0/highontherapy-native"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die in der letzten Zeit veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-69b28b67c78646a9",
+    "hf-models-476a795ea9f97db4",
+    "hf-models-98c3a413d068013f"
+   ],
+   "context_entry_ids": [
+    "hf-models-69b28b67c78646a9",
+    "hf-models-476a795ea9f97db4",
+    "hf-models-98c3a413d068013f"
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "ok": true,
+   "answer": "Es gibt keine neuen Nachrichten oder Informationen zu Konkurrenz-Anbietern wie OpenAI oder Anthropic zu finden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "openai-news-b5e5e43443d214df",
+    "hf-models-786f4953e5fb5326",
+    "hf-models-1275fa000ddaecd8"
+   ],
+   "context_entry_ids": [
+    "openai-news-b5e5e43443d214df",
+    "hf-models-786f4953e5fb5326",
+    "hf-models-1275fa000ddaecd8"
+   ]
+  }
+ ]
+}

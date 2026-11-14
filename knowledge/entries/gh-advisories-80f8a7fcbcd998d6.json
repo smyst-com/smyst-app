@@ -1,0 +1,87 @@
+{
+ "id": "gh-advisories-80f8a7fcbcd998d6",
+ "title": "GHSA-4g86-54fm-h9h8: Microsoft Security Advisory CVE-2026-118740 - Aspire Security Feature Bypass Vulnerability",
+ "topic": {
+  "category": "sicherheit",
+  "reason": "Sicherheitsentwicklungen, Schwachstellen, Schutz (Treffer: cve-, vulnerability, security, advisory)",
+  "relevance_score": 3
+ },
+ "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad critical. Betroffenes Paket: Aspire.Dashboard.Sdk.linux-x64. CVE: CVE-2026-118740. Zusammenfassung: Microsoft Security Advisory CVE-2026-118740 - Aspire Security Feature Bypass Vulnerability",
+ "key_points": [
+  "Offizielle GitHub-Sicherheitswarnung, Schweregrad critical",
+  "Betroffenes Paket: Aspire.Dashboard.Sdk.linux-x64",
+  "CVE: CVE-2026-118740",
+  "Zusammenfassung: Microsoft Security Advisory CVE-2026-118740 - Aspire Security Feature Bypass Vulnerability"
+ ],
+ "source": {
+  "id": "gh-advisories",
+  "name": "GitHub Security Advisories (offiziell)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/advisories/GHSA-4g86-54fm-h9h8",
+ "url_normalized": "https://github.com/advisories/GHSA-4g86-54fm-h9h8",
+ "publisher": "GitHub Advisory Board",
+ "published": "2026-11-12",
+ "retrieved": "2026-11-12T19:34:22Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 3/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-advisories-ec4ae635f3290579",
+  "gh-advisories-7ad43c762becbba1",
+  "gh-advisories-176d60e421edbb87"
+ ],
+ "tags": [
+  "sicherheit",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 3,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-11-12T19:34:28Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "GHSA-4g86-54fm-h9h8: Microsoft Security Advisory CVE-2026-118740 - Aspire Security Feature Bypass Vulnerability",
+    "summary": "Offizielle GitHub-Sicherheitswarnung, Schweregrad critical. Betroffenes Paket: Aspire.Dashboard.Sdk.linux-x64. CVE: CVE-2026-118740. Zusammenfassung: Microsoft Security Advisory CVE-2026-118740 - Aspire Security Feature Bypass Vulnerability"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-11-12T19:34:28Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-11-12T19:34:28Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-11-12T19:34:28Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-11-12T19:34:28Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

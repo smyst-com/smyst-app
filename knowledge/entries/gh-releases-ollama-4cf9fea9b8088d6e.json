@@ -1,0 +1,82 @@
+{
+ "id": "gh-releases-ollama-4cf9fea9b8088d6e",
+ "title": "ollama/ollama: Release v0.40.9-rc1",
+ "topic": {
+  "category": "infrastruktur",
+  "reason": "Infrastruktur, Frameworks, RAG- und Agentensysteme (Treffer: llama.cpp, ollama)",
+  "relevance_score": 2
+ },
+ "summary": "Offizielle Release-Notes (v0.40.9-rc1): ## What's Changed - llama.cpp update **Full Changelog**: https://github.com/ollama/ollama/compare/v0.40.8...v0.40.9-rc0",
+ "key_points": [
+  "Offizielle Release-Notes (v0.40.9-rc1): ## What's Changed - llama.cpp update **Full Changelog**: https://github.com/ollama/ollama/compare/v0.40.8...v0.40.9-rc0"
+ ],
+ "source": {
+  "id": "gh-releases-ollama",
+  "name": "Ollama Releases (offizielle Änderungen)",
+  "kind": "github",
+  "trust": 5,
+  "trust_reason": "Quellklasse github (Basis 5); Primär-/Offizialquelle"
+ },
+ "source_url": "https://github.com/ollama/ollama/releases/tag/v0.40.9-rc1",
+ "url_normalized": "https://github.com/ollama/ollama/releases/tag/v0.40.9-rc1",
+ "publisher": "GitHub Releases",
+ "published": "2026-10-22",
+ "retrieved": "2026-10-22T09:34:57Z",
+ "check": "verified",
+ "check_reason": "Regelprüfung bestanden: Relevanz 2/3, Vertrauen 5/5, Aktualität aktuell",
+ "trust_level": 5,
+ "freshness": "aktuell",
+ "injection_suspicion": [],
+ "contradiction_candidates": [
+  "gh-releases-llamacpp-90d1eba564bdc382"
+ ],
+ "tags": [
+  "infrastruktur",
+  "github",
+  "aktuell"
+ ],
+ "relevance_smyst": 2,
+ "usage_status": "gespeichert-geprüft",
+ "used_in_answer": false,
+ "rag_used_count": 0,
+ "training_approved": false,
+ "versions": [
+  {
+   "version": 1,
+   "date": "2026-10-22T09:34:58Z",
+   "reason": "Erstfund durch smyst radar",
+   "previous": null,
+   "current": {
+    "title": "ollama/ollama: Release v0.40.9-rc1",
+    "summary": "Offizielle Release-Notes (v0.40.9-rc1): ## What's Changed - llama.cpp update **Full Changelog**: https://github.com/ollama/ollama/compare/v0.40.8...v0.40.9-rc0"
+   }
+  }
+ ],
+ "status_history": [
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "found",
+   "to": "analyzed",
+   "reason": "Kategorisiert und regelbasiert bewertet."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "analyzed",
+   "to": "verified",
+   "reason": "Prüfung bestanden (Vertrauen/Relevanz/Aktualität)."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "verified",
+   "to": "stored",
+   "reason": "In Wissensbasis gespeichert."
+  },
+  {
+   "at": "2026-10-22T09:34:58Z",
+   "from": "stored",
+   "to": "rag_ready",
+   "reason": "Für RAG-Abruf freigegeben (geprüft, vertrauenswürdig)."
+  }
+ ],
+ "status": "rag_ready"
+}

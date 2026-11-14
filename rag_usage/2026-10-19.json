@@ -1,0 +1,147 @@
+{
+ "day": "2026-10-19",
+ "generated_at": "2026-10-19T18:20:58Z",
+ "tests": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "gh-advisories-ed7502053d2edcee",
+     "title": "GHSA-5wr8-gcqf-gqf3: aiohttp server lacks an initial request/header timeout",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-5wr8-gcqf-gqf3"
+    },
+    {
+     "id": "gh-advisories-d8f2503b5217747e",
+     "title": "GHSA-494j-54xm-rwp3: AIOHTTP: Secure attribute not enforced for shared cookie",
+     "category": "sicherheit",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-494j-54xm-rwp3"
+    },
+    {
+     "id": "gh-advisories-4d52121d0bb7e6d0",
+     "title": "GHSA-2g87-pp6c-29x5: aiohttp: Multiple instances of excessive or unbounded memory/CPU use",
+     "category": "forschung",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://github.com/advisories/GHSA-2g87-pp6c-29x5"
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+   "found_correct_category": true,
+   "top_matches": [
+    {
+     "id": "hf-models-8d84e531fefd91aa",
+     "title": "smallAI/loop-distil-checkpoints",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/smallAI/loop-distil-checkpoints"
+    },
+    {
+     "id": "hf-models-32dba40874bf71c7",
+     "title": "qikp/LFM2.5-1.2B-Thinking-GGUF",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/qikp/LFM2.5-1.2B-Thinking-GGUF"
+    },
+    {
+     "id": "hf-models-f7fc0c3d78ee7e73",
+     "title": "Genrius-AI/Llama-3.1-8B-Pingala8-2bit",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Genrius-AI/Llama-3.1-8B-Pingala8-2bit"
+    }
+   ]
+  },
+  {
+   "id": "t3",
+   "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+   "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+   "found_correct_category": false,
+   "top_matches": [
+    {
+     "id": "hf-models-c7467239def6e793",
+     "title": "Coolboy11/qwen3.5-4b-cyber-agent-EXECUTOR",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Coolboy11/qwen3.5-4b-cyber-agent-EXECUTOR"
+    },
+    {
+     "id": "hf-models-260f2a9108e5d62c",
+     "title": "jacobdavis404/Qwen2.5-3B-Instruct-Random15K-SFT",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/jacobdavis404/Qwen2.5-3B-Instruct-Random15K-SFT"
+    },
+    {
+     "id": "hf-models-2b6f94ef53d09eae",
+     "title": "Angshul/symbolic-wavelet-gutenberg-benchmark",
+     "category": "ki-modelle",
+     "freshness": "aktuell",
+     "trust": 5,
+     "flags": [],
+     "url": "https://huggingface.co/Angshul/symbolic-wavelet-gutenberg-benchmark"
+    }
+   ]
+  }
+ ],
+ "answers": [
+  {
+   "id": "t1",
+   "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+   "ok": true,
+   "answer": "Eine neue Sicherheitslücke, die in letzter Zeit aktiv ausgenutzt wurde, ist die **aiohttp**-Lücke. Sie wurde in der [GitHub Advisory Board](https://github.com/advisories/GHSA-5wr8-gcqf-gqf3) veröffentlicht und ist ein **high** Schweregrad. Sie betont, dass **aiohttp**-Serveren **lacks an initial request/header timeout** und **Secure attribute not enforced for shared cookie**.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "gh-advisories-ed7502053d2edcee",
+    "gh-advisories-d8f2503b5217747e",
+    "gh-advisories-4d52121d0bb7e6d0"
+   ],
+   "context_entry_ids": [
+    "gh-advisories-ed7502053d2edcee",
+    "gh-advisories-d8f2503b5217747e",
+    "gh-advisories-4d52121d0bb7e6d0"
+   ]
+  },
+  {
+   "id": "t2",
+   "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+   "ok": true,
+   "answer": "Es gibt keine neuen offenen KI-Modelle, die von mir bekannter Name veröffentlicht wurden.",
+   "model": "smyst-1.1",
+   "used_entry_ids": [
+    "hf-models-8d84e531fefd91aa",
+    "hf-models-32dba40874bf71c7",
+    "hf-models-f7fc0c3d78ee7e73"
+   ],
+   "context_entry_ids": [
+    "hf-models-8d84e531fefd91aa",
+    "hf-models-32dba40874bf71c7",
+    "hf-models-f7fc0c3d78ee7e73"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1041 @@
+{
+ "title": "Was hat smyst radar heute dazugelernt?",
+ "day": "2026-10-14",
+ "generated_at": "2026-10-14T16:12:56Z",
+ "paused": false,
+ "topics_researched": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.32,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.11,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.23,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.08,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 0,
+   "duration_s": 0.21,
+   "ok": false
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.43,
+   "ok": true
+  },
+  {
+   "source_id": "gh-advisories",
+   "name": "GitHub Security Advisories (offiziell)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.5,
+   "ok": true
+  },
+  {
+   "source_id": "arxiv-ml",
+   "name": "arXiv (cs.LG Machine Learning)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.08,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.58,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.4,
+   "ok": true
+  }
+ ],
+ "topics_reasons": [
+  {
+   "id": "arxiv-ai",
+   "reason": "Wissenschaftliche Neuerscheinungen zu KI, Sprachmodellen und Sicherheit."
+  },
+  {
+   "id": "hf-models",
+   "reason": "Neue offene KI-Modelle und deren Metadaten direkt vom Primäranbieter."
+  },
+  {
+   "id": "cisa-kev",
+   "reason": "Offizielle US-Behördenliste aktiv ausgenutzter Schwachstellen."
+  },
+  {
+   "id": "openai-news",
+   "reason": "Offizielle Veröffentlichungen eines Konkurrenz-Anbieters."
+  },
+  {
+   "id": "deepmind-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "google-ai-blog",
+   "reason": "Offizielle Forschungs- und Produktankündigungen."
+  },
+  {
+   "id": "gh-advisories",
+   "reason": "Offizielle, geprüfte Sicherheitswarnungen des GitHub Advisory-Boards."
+  },
+  {
+   "id": "arxiv-ml",
+   "reason": "Wissenschaftliche Neuerscheinungen zu Lernverfahren und Architekturen."
+  },
+  {
+   "id": "gh-releases-llamacpp",
+   "reason": "Relevante Infrastruktur für das eigene smyst-Modell (llama-server)."
+  },
+  {
+   "id": "gh-releases-ollama",
+   "reason": "Ökosystem-Entwicklungen für lokale LLM-Betrieb."
+  }
+ ],
+ "sources_examined": [
+  {
+   "source_id": "arxiv-ai",
+   "name": "arXiv (cs.AI, cs.CL, cs.CR)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.32,
+   "ok": true
+  },
+  {
+   "source_id": "hf-models",
+   "name": "Hugging Face Modelle (neu veröffentlicht)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.11,
+   "ok": true
+  },
+  {
+   "source_id": "cisa-kev",
+   "name": "CISA Known Exploited Vulnerabilities",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.23,
+   "ok": true
+  },
+  {
+   "source_id": "openai-news",
+   "name": "OpenAI Neuigkeiten (offizieller RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.08,
+   "ok": true
+  },
+  {
+   "source_id": "deepmind-blog",
+   "name": "Google DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 0,
+   "duration_s": 0.21,
+   "ok": false
+  },
+  {
+   "source_id": "google-ai-blog",
+   "name": "Google AI & DeepMind Blog (RSS)",
+   "kind": "rss",
+   "items": 10,
+   "duration_s": 0.43,
+   "ok": true
+  },
+  {
+   "source_id": "gh-advisories",
+   "name": "GitHub Security Advisories (offiziell)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.5,
+   "ok": true
+  },
+  {
+   "source_id": "arxiv-ml",
+   "name": "arXiv (cs.LG Machine Learning)",
+   "kind": "api",
+   "items": 10,
+   "duration_s": 0.08,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-llamacpp",
+   "name": "llama.cpp Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.58,
+   "ok": true
+  },
+  {
+   "source_id": "gh-releases-ollama",
+   "name": "Ollama Releases (offizielle Änderungen)",
+   "kind": "github",
+   "items": 10,
+   "duration_s": 0.4,
+   "ok": true
+  }
+ ],
+ "sources_examined_count": 10,
+ "sources_ok_count": 9,
+ "findings_count": 75,
+ "new_insights": [
+  {
+   "id": "hf-models-3f6492147fefa53b",
+   "title": "bbcnhk/Qwen3-4B-GGUF",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/bbcnhk/Qwen3-4B-GGUF"
+  },
+  {
+   "id": "hf-models-8d0810478ccc274c",
+   "title": "AMAImedia/Ling-3.1-Flash-BF16-GGUF",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/AMAImedia/Ling-3.1-Flash-BF16-GGUF"
+  },
+  {
+   "id": "hf-models-c32a7f6d28828e2c",
+   "title": "intel-ai/DeepSeek-V4-Flash-MXFP4-Mixed-CT-AutoRound",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/intel-ai/DeepSeek-V4-Flash-MXFP4-Mixed-CT-AutoRound"
+  },
+  {
+   "id": "hf-models-d5284b8740938983",
+   "title": "talha085/Lale-3B-adapter",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/talha085/Lale-3B-adapter"
+  },
+  {
+   "id": "hf-models-c6005fdc79cbc5be",
+   "title": "shabieh2/1015_cluster_trunc_3_epoch",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/shabieh2/1015_cluster_trunc_3_epoch"
+  },
+  {
+   "id": "hf-models-5258c6edcb55ff79",
+   "title": "sstoica12/acquisition_generator_AS_confidence_medmcqa_llama8b",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/sstoica12/acquisition_generator_AS_confidence_medmcqa_llama8b"
+  },
+  {
+   "id": "hf-models-6e7d29609afab2fe",
+   "title": "Avarian/granite-8b-polymath-v2",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/Avarian/granite-8b-polymath-v2"
+  },
+  {
+   "id": "hf-models-8bee8fbf82ee4d01",
+   "title": "xtools-at/Qwen3.5-9B-Medical-Reasoning",
+   "category": "ki-modelle",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://huggingface.co/xtools-at/Qwen3.5-9B-Medical-Reasoning"
+  },
+  {
+   "id": "openai-news-e181547094b0a112",
+   "title": "How Third Moment Research runs 10,000 agents for 36+ hours",
+   "category": "ki-modelle",
+   "trust": 3,
+   "freshness": "unbekannt",
+   "url": "https://openai.com/index/third-moment-research"
+  },
+  {
+   "id": "gh-advisories-9674c6bc1901f1ed",
+   "title": "GHSA-w6wh-p4g7-mpj2: Microsoft Security Advisory CVE-2026-96225 - .NET and Visual Studio Elevation of Privilege Vulnerability",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-w6wh-p4g7-mpj2"
+  },
+  {
+   "id": "gh-advisories-97c5d03e14d0c62c",
+   "title": "GHSA-qjpx-jqm5-h2c4: Microsoft Security Advisory CVE-2026-96230 - ASP.NET Core Remote Code Execution Vulnerability",
+   "category": "sicherheit",
+   "trust": 5,
+   "freshness": "aktuell",
+   "url": "https://github.com/advisories/GHSA-qjpx-jqm5-h2c4"
+  }
+ ],
+ "confirmed": [
+  {
+   "id": "arxiv-ai-49662031faa02357",
+   "title": "ChunkAct: Action Chunking for Agentic Robotics"
+  },
+  {
+   "id": "arxiv-ai-724ce95187c0c9f4",
+   "title": "What Matters in Quality-Aware VLA Pretraining: A Benchmark and Empirical Study"
+  },
+  {
+   "id": "arxiv-ai-0e9d77395d32be9e",
+   "title": "Tev: Scaling Long-Horizon Agentic Environments with Dense Progress Rewards"
+  },
+  {
+   "id": "arxiv-ai-53b1aad973abf94d",
+   "title": "DoubtLess: Training-Free Contrastive Decoding for Efficient Reasoning"
+  },
+  {
+   "id": "arxiv-ai-2c6daef373c71bcf",
+   "title": "AesCode: Aesthetic Code Generation with Decoupled Cross-Modal Rewards"
+  },
+  {
+   "id": "arxiv-ai-bbb6da8211b585ca",
+   "title": "Hybrid Reasoning Agents"
+  },
+  {
+   "id": "arxiv-ai-5f79c805286cb188",
+   "title": "Two Clocks: Why Larger Rollout Batches Learn Slower but Fail on Schedule in Reinforcement Learning with Verifiable Rewards"
+  },
+  {
+   "id": "arxiv-ai-2a29342ec132aadc",
+   "title": "MFG: Multi-turn Feedback Guided Molecular Optimization"
+  },
+  {
+   "id": "arxiv-ai-34ca09fd92bf55c1",
+   "title": "The Last Remote Sensing Model Built by Humans? Casting Any Earth Observation Task as Recursive Self-Improvement"
+  },
+  {
+   "id": "arxiv-ai-abe4f0c4c97f93e2",
+   "title": "LIBERO-RIG: A Hardware-Setup Robustness Benchmark for Vision-Language-Action Models"
+  },
+  {
+   "id": "cisa-kev-042bd106b079ac18",
+   "title": "CVE-2026-104935: Ivanti — Connect Secure (Ivanti Connect Secure Authentication Bypass by Spoofing Vulnerability)"
+  },
+  {
+   "id": "openai-news-2f3282e483141f68",
+   "title": "The EU’s next chapter in AI is agentic"
+  },
+  {
+   "id": "openai-news-ffc748cb8d88a919",
+   "title": "Higgsfield takes AI video from 1 minute to over 10"
+  },
+  {
+   "id": "openai-news-90995f7dbc9c2674",
+   "title": "Asana cuts model costs 76x in browser tests with GPT-6.1 Sol"
+  },
+  {
+   "id": "openai-news-edd58468d564448f",
+   "title": "Sophos cuts threat investigation time by 96% with OpenAI Daybreak"
+  },
+  {
+   "id": "openai-news-112b5f00879d4fef",
+   "title": "How Oracle turns days of work into minutes with ChatGPT and Codex"
+  },
+  {
+   "id": "openai-news-ca1ec6c6a1a1314d",
+   "title": "Pollo AI turns creative ideas into campaigns with OpenAI"
+  },
+  {
+   "id": "openai-news-f6d3626eb7c890d9",
+   "title": "LegalOn halves Codex costs while maintaining development speed"
+  },
+  {
+   "id": "openai-news-077dea1e8a7adb2e",
+   "title": "Disrupting AI-enabled “false front” operations"
+  },
+  {
+   "id": "openai-news-ad4e14640e358f44",
+   "title": "Helping teens learn, plan, and shape the future of AI"
+  },
+  {
+   "id": "deepmind-blog-f174716114a9131e",
+   "title": "Gemini 4 Argon: Built to solve your hardest problems"
+  },
+  {
+   "id": "google-ai-blog-22643d6fcb195220",
+   "title": "Introducing Playground: Create and play custom games"
+  },
+  {
+   "id": "google-ai-blog-1122627a66dfc215",
+   "title": "The latest AI news we announced in September 2026"
+  },
+  {
+   "id": "google-ai-blog-1eadd5627184a89f",
+   "title": "Watch the winning trailer from the Future Vision XPRIZE, The Gifted."
+  },
+  {
+   "id": "google-ai-blog-8a86c97089bb6492",
+   "title": "Google Beam expands with new regions, partners, and customers"
+  },
+  {
+   "id": "google-ai-blog-079e661c04cec0b0",
+   "title": "New experts join Google’s AI & Economy team"
+  },
+  {
+   "id": "google-ai-blog-13d62ca6fcfd55d7",
+   "title": "Co-creating the future of fashion with Google"
+  },
+  {
+   "id": "google-ai-blog-e7b9d12d1b3a7eb0",
+   "title": "Making global data easier to explore"
+  },
+  {
+   "id": "google-ai-blog-18592959ad29d5e2",
+   "title": "AI for Societal Impact"
+  },
+  {
+   "id": "google-ai-blog-b86d9a766fb72b73",
+   "title": "Building AI to accelerate science and improve lives"
+  },
+  {
+   "id": "gh-advisories-ff6797c6b1c77a7f",
+   "title": "GHSA-mf4x-w4gh-4656: Microsoft Security Advisory CVE-2026-70186 - ASP.NET Core Denial of Service Vulnerability"
+  },
+  {
+   "id": "arxiv-ml-457297c25f28f70c",
+   "title": "Cepheid: Decoupling Scale from Structure for Cross-Family Motion Completion"
+  },
+  {
+   "id": "arxiv-ml-39dcbdd0f90904ca",
+   "title": "Data Free Training of Diffusion Models for Lattice Field Theories"
+  },
+  {
+   "id": "arxiv-ml-64b57e24fa41d069",
+   "title": "Exact Topological Compliance: Generating Persistence-Equivalent Graphs"
+  },
+  {
+   "id": "arxiv-ml-ad3244d17b99dba6",
+   "title": "Who Improves the Robot? Toward Physical Recursive Self-Improvement"
+  },
+  {
+   "id": "gh-releases-ollama-8c1adb03594cb699",
+   "title": "ollama/ollama: Release v0.40.4"
+  },
+  {
+   "id": "gh-releases-ollama-1506c729d9b4dc2d",
+   "title": "ollama/ollama: Release v0.40.3"
+  },
+  {
+   "id": "gh-releases-ollama-393ffb505eafea09",
+   "title": "ollama/ollama: Release v0.40.2"
+  },
+  {
+   "id": "gh-releases-ollama-81a0b4d6f86dd623",
+   "title": "ollama/ollama: Release v0.40.1"
+  },
+  {
+   "id": "gh-releases-ollama-88cd05e9f93a5e9a",
+   "title": "ollama/ollama: Release v0.40.0"
+  },
+  {
+   "id": "gh-releases-ollama-c1780d2c01331613",
+   "title": "ollama/ollama: Release v0.35.1"
+  },
+  {
+   "id": "gh-releases-ollama-9c7898181506d919",
+   "title": "ollama/ollama: Release v0.35.0"
+  },
+  {
+   "id": "gh-releases-ollama-d83f0c4f6531a69f",
+   "title": "ollama/ollama: Release v0.34.4"
+  },
+  {
+   "id": "gh-releases-ollama-1856a21b309afe62",
+   "title": "ollama/ollama: Release v0.34.3"
+  },
+  {
+   "id": "gh-releases-ollama-7ca343f500b54b87",
+   "title": "ollama/ollama: Release v0.34.2"
+  }
+ ],
+ "updated": [
+  {
+   "id": "hf-models-c6005fdc79cbc5be",
+   "title": "shabieh2/1015_cluster_trunc_2_epoch",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: title"
+   ]
+  },
+  {
+   "id": "gh-advisories-81aa072f128a14b6",
+   "title": "GHSA-4j9v-h7pp-725h: Microsoft Security Advisory CVE-2026-70035 - .NET and Visual Studio Remote Code Execution Vulnerability",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-advisories-81aa072f128a14b6",
+   "title": "GHSA-pfwj-2f93-rf42: Microsoft Security Advisory CVE-2026-70007 - .NET and Visual Studio Remote Code Execution Vulnerability",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-advisories-81aa072f128a14b6",
+   "title": "GHSA-c27m-942f-rcfh: Microsoft Security Advisory CVE-2026-87697 - .NET and Visual Studio Remote Code Execution Vulnerability",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-advisories-81aa072f128a14b6",
+   "title": "GHSA-xq57-crx4-g373: Microsoft Security Advisory CVE-2026-96224 - .NET and Visual Studio Remote Code Execution Vulnerability",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-advisories-81aa072f128a14b6",
+   "title": "GHSA-f63g-mx39-3r38: Microsoft Security Advisory CVE-2026-85363 - .NET and Visual Studio Remote Code Execution Vulnerability",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11617",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11612",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11609",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11608",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11607",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11606",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11604",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11603",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11602",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  },
+  {
+   "id": "gh-releases-llamacpp-90d1eba564bdc382",
+   "title": "ggml-org/llama.cpp: Release b11601",
+   "changed": [
+    "Inhaltliche Änderung der Quelle: summary, title"
+   ]
+  }
+ ],
+ "corrected": [],
+ "outdated": [],
+ "rejected": [],
+ "contradictions": [
+  {
+   "entry_id": "hf-models-3f6492147fefa53b",
+   "title": "bbcnhk/Qwen3-4B-GGUF",
+   "candidates": [
+    "hf-models-50dad884384925f7",
+    "hf-models-e91a837edb8e9af1",
+    "hf-models-35ed274711c4088f"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-8d0810478ccc274c",
+   "title": "AMAImedia/Ling-3.1-Flash-BF16-GGUF",
+   "candidates": [
+    "hf-models-2bae297ba5d95212",
+    "hf-models-63074a5624bdbd54",
+    "hf-models-0f30a27e5d33c6ec"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-c32a7f6d28828e2c",
+   "title": "intel-ai/DeepSeek-V4-Flash-MXFP4-Mixed-CT-AutoRound",
+   "candidates": [
+    "hf-models-fc6736c749df0c5b",
+    "hf-models-d5238110daa2437d",
+    "hf-models-c2bef3a328029fbf"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-d5284b8740938983",
+   "title": "talha085/Lale-3B-adapter",
+   "candidates": [
+    "hf-models-aec4dc955973618c"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-6e7d29609afab2fe",
+   "title": "Avarian/granite-8b-polymath-v2",
+   "candidates": [
+    "hf-models-888ad4e2b154f39e"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "hf-models-8bee8fbf82ee4d01",
+   "title": "xtools-at/Qwen3.5-9B-Medical-Reasoning",
+   "candidates": [
+    "arxiv-ai-bbb6da8211b585ca",
+    "hf-models-f11eaf1887a9c4ec",
+    "hf-models-3856cbcbe6b64b08"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "openai-news-e181547094b0a112",
+   "title": "How Third Moment Research runs 10,000 agents for 36+ hours",
+   "candidates": [
+    "arxiv-ai-bbb6da8211b585ca"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "gh-advisories-9674c6bc1901f1ed",
+   "title": "GHSA-w6wh-p4g7-mpj2: Microsoft Security Advisory CVE-2026-96225 - .NET and Visual Studio Elevation of Privilege Vulnerability",
+   "candidates": [
+    "cisa-kev-042bd106b079ac18"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  },
+  {
+   "entry_id": "gh-advisories-97c5d03e14d0c62c",
+   "title": "GHSA-qjpx-jqm5-h2c4: Microsoft Security Advisory CVE-2026-96230 - ASP.NET Core Remote Code Execution Vulnerability",
+   "candidates": [
+    "cisa-kev-042bd106b079ac18"
+   ],
+   "note": "Ähnliche Titel, unterschiedliches Datum — manuelle Gegenprüfung empfohlen (Kennzeichnung, keine automatische Entscheidung)."
+  }
+ ],
+ "competitor_changes": [],
+ "new_models_tech": [
+  {
+   "id": "hf-models-3f6492147fefa53b",
+   "title": "bbcnhk/Qwen3-4B-GGUF"
+  },
+  {
+   "id": "hf-models-8d0810478ccc274c",
+   "title": "AMAImedia/Ling-3.1-Flash-BF16-GGUF"
+  },
+  {
+   "id": "hf-models-c32a7f6d28828e2c",
+   "title": "intel-ai/DeepSeek-V4-Flash-MXFP4-Mixed-CT-AutoRound"
+  },
+  {
+   "id": "hf-models-d5284b8740938983",
+   "title": "talha085/Lale-3B-adapter"
+  },
+  {
+   "id": "hf-models-c6005fdc79cbc5be",
+   "title": "shabieh2/1015_cluster_trunc_2_epoch"
+  },
+  {
+   "id": "hf-models-5258c6edcb55ff79",
+   "title": "sstoica12/acquisition_generator_AS_confidence_medmcqa_llama8b"
+  },
+  {
+   "id": "hf-models-6e7d29609afab2fe",
+   "title": "Avarian/granite-8b-polymath-v2"
+  },
+  {
+   "id": "hf-models-8bee8fbf82ee4d01",
+   "title": "xtools-at/Qwen3.5-9B-Medical-Reasoning"
+  },
+  {
+   "id": "openai-news-e181547094b0a112",
+   "title": "How Third Moment Research runs 10,000 agents for 36+ hours"
+  }
+ ],
+ "security_findings": [
+  {
+   "id": "gh-advisories-9674c6bc1901f1ed",
+   "title": "GHSA-w6wh-p4g7-mpj2: Microsoft Security Advisory CVE-2026-96225 - .NET and Visual Studio Elevation of Privilege Vulnerability"
+  },
+  {
+   "id": "gh-advisories-97c5d03e14d0c62c",
+   "title": "GHSA-qjpx-jqm5-h2c4: Microsoft Security Advisory CVE-2026-96230 - ASP.NET Core Remote Code Execution Vulnerability"
+  }
+ ],
+ "improvement_suggestions": [
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': bbcnhk/Qwen3-4B-GGUF",
+   "sources": [
+    "https://huggingface.co/bbcnhk/Qwen3-4B-GGUF"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-3f6492147fefa53b"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': sstoica12/acquisition_generator_AS_confidence_medmcqa_llama8b",
+   "sources": [
+    "https://huggingface.co/sstoica12/acquisition_generator_AS_confidence_medmcqa_llama8b"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-5258c6edcb55ff79"
+  },
+  {
+   "title": "Erkanntes Konkurrenz-/Modell-Feature als mögliche smyst.com-Verbesserung bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'ki-modelle': xtools-at/Qwen3.5-9B-Medical-Reasoning",
+   "sources": [
+    "https://huggingface.co/xtools-at/Qwen3.5-9B-Medical-Reasoning"
+   ],
+   "observations": [
+    "Neues offenes Modell auf Hugging Face",
+    "Likes: 0, Downloads: 0"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Produkt",
+    "Chat"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Nutzertest mit/ohne Feature; Chat-Qualität (Eval) vorher/nachher vergleichen.",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "hf-models-8bee8fbf82ee4d01"
+  },
+  {
+   "title": "Betroffene Komponenten (llama.cpp, Abhängigkeiten, Hosting) gegen die neue Schwachstelle prüfen und Patch-Stand bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'sicherheit': GHSA-w6wh-p4g7-mpj2: Microsoft Security Advisory CVE-2026-96225 - .NET and Visual Studio Elevation of Privilege Vulnerab",
+   "sources": [
+    "https://github.com/advisories/GHSA-w6wh-p4g7-mpj2"
+   ],
+   "observations": [
+    "Offizielle GitHub-Sicherheitswarnung, Schweregrad high",
+    "Betroffenes Paket: Microsoft.NETCore.App.Runtime.linux-arm"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Backend",
+    "Modelle",
+    "Admin"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Versionsabgleich vor/nach Patch; Smoke-Tests (providers ping, Gast-Chat).",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "gh-advisories-9674c6bc1901f1ed"
+  },
+  {
+   "title": "Betroffene Komponenten (llama.cpp, Abhängigkeiten, Hosting) gegen die neue Schwachstelle prüfen und Patch-Stand bewerten.",
+   "problem": "Neue Erkenntnis aus Kategorie 'sicherheit': GHSA-qjpx-jqm5-h2c4: Microsoft Security Advisory CVE-2026-96230 - ASP.NET Core Remote Code Execution Vulnerability",
+   "sources": [
+    "https://github.com/advisories/GHSA-qjpx-jqm5-h2c4"
+   ],
+   "observations": [
+    "Offizielle GitHub-Sicherheitswarnung, Schweregrad high",
+    "Betroffenes Paket: Microsoft.AspNetCore.Components.WebAssembly.Server"
+   ],
+   "benefit": "Qualität, Sicherheit oder Attraktivität von smyst.com kann steigen.",
+   "affected_areas": [
+    "Backend",
+    "Modelle",
+    "Admin"
+   ],
+   "costs": "0 EUR Planziel — Free-Only-Regel; kostenpflichtige Wege sind nicht vorgeschlagen.",
+   "risks": "Änderungsrisiko besteht — deshalb nur Vorschlag, Umsetzung ausschließlich über separates Prüf-/Freigabeverfahren.",
+   "privacy_risks": "Keine Nutzerdaten betroffen (Recherche nutzt nur öffentliche Quellen).",
+   "test": "Versionsabgleich vor/nach Patch; Smoke-Tests (providers ping, Gast-Chat).",
+   "metrics_before_after": [
+    "Antwortzeit Chat",
+    "Eval-Score",
+    "RAG-Trefferqualität",
+    "Fehlerrate"
+   ],
+   "priority": 20,
+   "entry_id": "gh-advisories-97c5d03e14d0c62c"
+  }
+ ],
+ "rag_usage": {
+  "day": "2026-10-14",
+  "generated_at": "2026-10-14T16:13:05Z",
+  "tests": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "why": "Prüft Abruf von Sicherheitswissen mit Aktualitäts-/Vertrauensfilter.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "gh-advisories-9674c6bc1901f1ed",
+      "title": "GHSA-w6wh-p4g7-mpj2: Microsoft Security Advisory CVE-2026-96225 - .NET and Visual Studio Elevation of Privilege Vulnerability",
+      "category": "sicherheit",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://github.com/advisories/GHSA-w6wh-p4g7-mpj2"
+     },
+     {
+      "id": "gh-advisories-97c5d03e14d0c62c",
+      "title": "GHSA-qjpx-jqm5-h2c4: Microsoft Security Advisory CVE-2026-96230 - ASP.NET Core Remote Code Execution Vulnerability",
+      "category": "sicherheit",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://github.com/advisories/GHSA-qjpx-jqm5-h2c4"
+     },
+     {
+      "id": "hf-models-3f6492147fefa53b",
+      "title": "bbcnhk/Qwen3-4B-GGUF",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/bbcnhk/Qwen3-4B-GGUF"
+     }
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "why": "Prüft Abruf von Modell-Neuheiten für smyst-Weiterentwicklung.",
+    "found_correct_category": true,
+    "top_matches": [
+     {
+      "id": "hf-models-d5284b8740938983",
+      "title": "talha085/Lale-3B-adapter",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/talha085/Lale-3B-adapter"
+     },
+     {
+      "id": "hf-models-6e7d29609afab2fe",
+      "title": "Avarian/granite-8b-polymath-v2",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/Avarian/granite-8b-polymath-v2"
+     },
+     {
+      "id": "hf-models-8bee8fbf82ee4d01",
+      "title": "xtools-at/Qwen3.5-9B-Medical-Reasoning",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/xtools-at/Qwen3.5-9B-Medical-Reasoning"
+     }
+    ]
+   },
+   {
+    "id": "t3",
+    "question": "Was gibt es Neues zu Konkurrenz-Anbietern wie OpenAI oder Anthropic?",
+    "why": "Prüft Konkurrenzbeobachtung aus offiziellen Quellen.",
+    "found_correct_category": false,
+    "top_matches": [
+     {
+      "id": "hf-models-fc6736c749df0c5b",
+      "title": "rothgar/deepseek-v4.1-flash-p300x2",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/rothgar/deepseek-v4.1-flash-p300x2"
+     },
+     {
+      "id": "hf-models-96d91bd7c8c541dc",
+      "title": "KilaAI/kila-coder-1.5b-lora",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/KilaAI/kila-coder-1.5b-lora"
+     },
+     {
+      "id": "hf-models-d168b0b7dbf92186",
+      "title": "Angshul/TransWave-Meyer-96M-C4-4.5B",
+      "category": "ki-modelle",
+      "freshness": "aktuell",
+      "trust": 5,
+      "flags": [],
+      "url": "https://huggingface.co/Angshul/TransWave-Meyer-96M-C4-4.5B"
+     }
+    ]
+   }
+  ],
+  "answers": [
+   {
+    "id": "t1",
+    "question": "Welche neue Sicherheitslücke wurde in letzter Zeit aktiv ausgenutzt?",
+    "ok": true,
+    "answer": "Die neue Sicherheitslücke, die in der Frage erwähnt wurde, ist die .NET und Visual Studio Elevation of Privilege Vulnerability. Diese Lücke wurde in der Microsoft Security Advisory CVE-2026-96225 beschrieben und ist ein Remote Code Execution-Vulnerability.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "gh-advisories-9674c6bc1901f1ed",
+     "gh-advisories-97c5d03e14d0c62c",
+     "hf-models-3f6492147fefa53b"
+    ],
+    "context_entry_ids": [
+     "gh-advisories-9674c6bc1901f1ed",
+     "gh-advisories-97c5d03e14d0c62c",
+     "hf-models-3f6492147fefa53b"
+    ]
+   },
+   {
+    "id": "t2",
+    "question": "Welche neuen offenen KI-Modelle wurden veröffentlicht?",
+    "ok": true,
+    "answer": "Es gibt keine neuen offenen KI-Modelle, die in der Zeit seit der letzten Antwort veröffentlicht wurden. Die frühesten Modelle, die ich in der Liste haben sah, stammen von 2026.",
+    "model": "smyst-1.1",
+    "used_entry_ids": [
+     "hf-models-d5284b8740938983",
+     "hf-models-6e7d29609afab2fe",
+     "hf-models-8bee8fbf82ee4d01"
+    ],
+    "context_entry_ids": [
+     "hf-models-d5284b8740938983",
+     "hf-models-6e7d29609afab2fe",
+     "hf-models-8bee8fbf82ee4d01"
+    ]
+   }
+  ]
+ },
+ "open_questions": [],
+ "further_research": [
+  "Widerspruchskandidaten manuell gegenprüfen (siehe contradictions).",
+  "Quellen ohne Datum nach Primärquelle durchsuchen."
+ ],
+ "errors": 1,
+ "costs": {
+  "last_run_eur": 0.0,
+  "day_eur": 0.0,
+  "month_eur": 0.0,
+  "note": "Ausschließlich kostenlose offizielle Quellen/APIs (Free-Only-Regel)."
+ },
+ "summary": "11 neue geprüfte Erkenntnisse, 45 bestätigt, 16 aktualisiert, 0 veraltet, 0 verworfen.",
+ "rag_ready_count": 117,
+ "used_in_answer_count": 168
+}
